@@ -1,0 +1,35 @@
+{
+  "canisters": {
+    "modclub": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko"
+    },
+    "modclub_assets": {
+      "dependencies": [
+        "modclub"
+      ],
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "dfx": "0.8.0",
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}
