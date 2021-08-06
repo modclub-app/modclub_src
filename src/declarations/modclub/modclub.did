@@ -1,0 +1,47 @@
+type Timestamp = int;
+type ModClub = 
+ service {
+   addToWaitList: (text) -> (text);
+   getContent: (text) -> (opt Content) query;
+   getProviderContent: () -> (vec ContentPlus) query;
+   getWaitList: () -> (vec text);
+   registerModerator: (text, opt text) -> (text);
+   registerProvider: (text) -> (text);
+   submitText: (text, text, opt text) -> (text);
+ };
+type ContentType = 
+ variant {
+   imageBlob;
+   imageUrl;
+   multiText;
+   "text";
+ };
+type ContentStatus = 
+ variant {
+   approved;
+   rejected;
+   reviewRequired;
+ };
+type ContentPlus = 
+ record {
+   contentType: ContentType;
+   createdAt: Timestamp;
+   id: ContentId;
+   sourceId: text;
+   status: ContentStatus;
+   "text": opt text;
+   title: opt text;
+   updateAt: Timestamp;
+ };
+type ContentId = text;
+type Content = 
+ record {
+   contentType: ContentType;
+   createdAt: Timestamp;
+   id: ContentId;
+   sourceId: text;
+   status: ContentStatus;
+   title: opt text;
+   updateAt: Timestamp;
+ };
+service : () -> ModClub

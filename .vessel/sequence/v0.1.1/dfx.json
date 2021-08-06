@@ -1,0 +1,20 @@
+{
+  "canisters": {
+    "UnitTest": {
+      "main": "test/Main.mo"
+    },
+    "Search": {
+      "main": "example/SearchService/Service.mo"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "vessel --package-set example-package-set.dhall sources",
+      "output": "canisters/"
+    },
+    "start": {
+      "address": "127.0.0.1",
+      "port": 8000
+    }
+  }
+}

@@ -1,0 +1,56 @@
+$font-family: "Nunito Sans", "Helvetica Neue", Arial, sans-serif;
+$padding: 20px;
+$fill-color: #ff2d55;
+$label-color-secondary: #9eacb7;
+$link-highlight-color: #14171a;
+$menu-item-color: #80878f;
+$label-color: #969ca2;
+$default-text-color: #14171a;
+$secondary-text-color: #80878f;
+
+$light-background-color: #f9fafb;
+$highlight-background-color: #f8f9fa;
+$border-color: #e1e3e6;
+$border-color-light: #f5f5f5;
+$border-color-dark: #cccfd2;
+$inner-border-color: #eee;
+$input-border-color: #ddd;
+$editor-height: 100%;
+$box-shadow-color: rgba(27, 39, 51, 0.08);
+$box-shadow: 0 0 0 0.5px #e6e7ec, 0 8px 16px rgba(27, 39, 51, 0.08);
+$box-shadow-dark: 0 0 0 0.5px $border-color, 0 3px 10px rgba(27, 39, 51, 0.1);
+$box-shadow-thin: 0px 0px 5px rgba(0, 0, 0, 0.08);
+
+$transition-time: 0.2s;
+
+// New stuff
+$link-color: #fff;
+$background-color: #1e2131;
+$foreground-color: #fff;
+$border-color: rgba(0, 0, 0, 0.25);
+$card-background-color: rgba(0, 0, 0, 0.25);
+$label-color: #64687c;
+$gain-color: #00cc00;
+$null-color: #5c6073;
+$loss-color: #ff5745;
+$hover-bg-color: #212537;
+$button-background-color: #0077f7;
+$button-foreground-color: #fff;
+
+.transition {
+  -webkit-transition: $transition-time;
+  -moz-transition: $transition-time;
+  -o-transition: $transition-time;
+  transition: $transition-time;
+}
+
+.dividing-line {
+  height: 1px;
+  width: 100%;
+  border-bottom: 1px solid $border-color;
+}
+
+// Snapchat styles
+$snap-color: #fffc00;
+$snap-blue: #3cb2e2;
+$snap-red: #e92754;
