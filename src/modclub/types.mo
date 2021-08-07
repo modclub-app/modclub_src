@@ -15,6 +15,11 @@ module {
     #vote;
     #registerRule;
   };
+
+  public type Decision = {
+    #approved;
+    #rejected;
+  };
   
   public type ContentStatus = {
     #approved;
@@ -36,8 +41,6 @@ module {
   public type Role = {
     // A content moderator
     #moderator;
-    // A UGC data provider
-    #provider;
     // A modclub admin
     #admin;
     // Modclub owner aka me
@@ -62,6 +65,7 @@ module {
 
   public type Content = {
     id: ContentId;
+    providerId: Principal;
     contentType: ContentType;
     sourceId: Text;
     status: ContentStatus; 
@@ -110,7 +114,16 @@ module {
     id: VoteId;
     contentId: Text;
     userId: UserId;
-    approved: Bool;
+    decision: Decision;
     rulesBroken: ?[RuleId];  
   };
+
+  public type ContentResult = {
+    sourceId: Text;
+    status: ContentStatus;
+  };
+
+  public type SubscribeMessage = {
+     callback: shared (ContentResult) -> (); 
+    };
 };

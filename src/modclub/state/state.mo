@@ -9,7 +9,7 @@ import SeqObj "./SeqObj";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
 import Buffer "mo:base/Buffer";
-import Set "mo:base/Set";
+import TrieSet "mo:base/TrieSet";
 
 // types in separate file
 import Types "../types";
@@ -22,26 +22,23 @@ module State {
   type Content = Types.Content;
   type Provider = Types.Provider;
   type Rel<X, Y> = RelObj.RelObj<X, Y>;
-  
-
-  // Our representation of finite mappings.
   public type MapShared<X, Y> = Trie.Trie<X, Y>;
   public type Map<X, Y> = HashMap.HashMap<X, Y>;
 
-  /// State (internal CanCan use only).
-  ///
-  /// Not a shared type because of OO containers and HO functions.
-  /// So, cannot send in messages or store in stable memory.
-  ///
   public type State = {
     // Providers
     providers : Map<Principal, Provider>;
+
+    // Pub / Sub for Providers
+    providerSubs: Map<Principal, Types.SubscribeMessage>;
 
     /// all profiles.
     profiles : Map<Types.UserId, Profile>;
 
     /// all content.
     content : Map<Types.ContentId, Types.Content>;
+
+    votes : Map<Types.VoteId, Types.Vote>;
 
     textContent: Map<Types.ContentId, Types.TextContent>;
 
@@ -52,19 +49,19 @@ module State {
     imageContent: Map<Types.ContentId, Types.Image>;
 
     // All of the approved content for each provider
-    contentApproved: Map<Principal, Set.Set<Types.ContentId>>;
+    contentApproved: Rel<Principal, Types.ContentId>;
 
     // All of the rejected content for each provider
-    contentRejected: Map<Principal, Set.Set<Types.ContentId>>;
+    contentRejected: Rel<Principal, Types.ContentId>;
 
     // All of the new content that has not been approved / rejected
-    contentNew: Map<Principal, Set.Set<Types.ContentId>>;
+    contentNew: Rel<Principal, Types.ContentId>;
 
     // relates content to votes
     content2votes: Rel<Types.ContentId, Types.VoteId>;
 
     // relates users to votes
-    user2votes: Rel<Types.UserId, Types.VoteId>;
+    mods2votes: Rel<Types.UserId, Types.VoteId>;
 
     // related content to providers
     provider2content: Rel<Types.ProviderId, Types.ContentId>;
@@ -87,32 +84,36 @@ module State {
     let st : State = {
       providers = HashMap.HashMap<Principal, Provider>(1, Principal.equal, Principal.hash);
 
+      providerSubs =  HashMap.HashMap<Principal, Types.SubscribeMessage>(1, Principal.equal, Principal.hash);
+
       profiles = HashMap.HashMap<Types.UserId, Profile>(1, Principal.equal, Principal.hash);
 
       content = HashMap.HashMap<Types.ContentId, Types.Content>(1, Text.equal, Text.hash);
-    
-    textContent =  HashMap.HashMap<Types.ContentId, Types.TextContent>(1, Text.equal, Text.hash);
 
-    multiTextContent = HashMap.HashMap<Types.ContentId, Types.MultiTextContent>(1, Text.equal, Text.hash);
+      votes = HashMap.HashMap<Types.VoteId, Types.Vote>(1, Text.equal, Text.hash);
+      
+      textContent =  HashMap.HashMap<Types.ContentId, Types.TextContent>(1, Text.equal, Text.hash);
 
-    imageUrlContent = HashMap.HashMap<Types.ContentId, Types.ImageUrl>(1, Text.equal, Text.hash);
+      multiTextContent = HashMap.HashMap<Types.ContentId, Types.MultiTextContent>(1, Text.equal, Text.hash);
 
-    imageContent =  HashMap.HashMap<Types.ContentId, Types.Image>(1, Text.equal, Text.hash);
+      imageUrlContent = HashMap.HashMap<Types.ContentId, Types.ImageUrl>(1, Text.equal, Text.hash);
 
-    // All of the approved content for each provider
-    contentApproved = HashMap.HashMap<Principal, Set.Set<Types.ContentId>>(1, Principal.equal, Principal.hash);
+      imageContent =  HashMap.HashMap<Types.ContentId, Types.Image>(1, Text.equal, Text.hash);
 
-    // All of the rejected content for each provider
-    contentRejected = HashMap.HashMap<Principal, Set.Set<Types.ContentId>>(1, Principal.equal, Principal.hash);
+      // All of the approved content for each provider
+      contentApproved = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
 
-    // All of the new content that has not been approved / rejected
-    contentNew = HashMap.HashMap<Principal, Set.Set<Types.ContentId>>(1, Principal.equal, Principal.hash);
+      // All of the rejected content for each provider
+      contentRejected = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
+
+      // All of the new content that has not been approved / rejected
+      contentNew = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
 
       // relates content to votes
       content2votes = RelObj.RelObj(hash, equal);
 
-        // relates users to votes
-      user2votes = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
+        // relates mods to votes
+      mods2votes = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
 
       //relates providers to content
       provider2content = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
@@ -131,7 +132,7 @@ module State {
 
   public func fromState(state: State) : StateShared {
     let st : StateShared = {
-      providers = Iter.toArray(state.providers.entries();)
+      providers = Iter.toArray(state.providers.entries());
       profiles = Iter.toArray(state.profiles.entries());
       content = Iter.toArray(state.content.entries());
     };
