@@ -3,7 +3,8 @@ type SubscribeMessage = record {callback: func (ContentResult) -> () oneway;};
 type ModClub = 
  service {
    addToWaitList: (text) -> (text);
-   getAllContent: () -> (vec Content) query;
+   deregisterProvider: () -> (text);
+   getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getContent: (text) -> (opt Content) query;
    getProviderContent: () -> (vec ContentPlus) query;
    getWaitList: () -> (vec text);
@@ -28,8 +29,8 @@ type ContentType =
 type ContentStatus = 
  variant {
    approved;
+   new;
    rejected;
-   reviewRequired;
  };
 type ContentResult = 
  record {
@@ -45,7 +46,7 @@ type ContentPlus =
    status: ContentStatus;
    "text": opt text;
    title: opt text;
-   updateAt: Timestamp;
+   updatedAt: Timestamp;
  };
 type ContentId__1 = text;
 type ContentId = text;

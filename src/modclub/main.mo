@@ -13,12 +13,14 @@ import TrieSet "mo:base/TrieSet";
 import Types "./types";
 import Option "mo:base/Option";
 import Debug "mo:base/Debug";
+import Order "mo:base/Order";
+import Rel "./state/Rel";
 
 shared ({caller = initializer}) actor class ModClub () {
 
   // Vars
-  var minVotes = 1;
-  var maxWaitListSize = 20000;
+  var minVotes = 1; //todo: Temp var, will switch to provider defined rules in next release
+  var maxWaitListSize = 20000; // In case someone spams us, limit the waitlist
   let waitList = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
   var state = State.empty();
 
@@ -36,6 +38,7 @@ shared ({caller = initializer}) actor class ModClub () {
   type UserId = Types.UserId;
   type Role = Types.Role;
 
+ // Waitlist functions
  public func addToWaitList(email : Text) : async Text {
       if(waitList.size() > maxWaitListSize) {
         return "Sorry, the waitlist is full";
@@ -61,8 +64,7 @@ shared ({caller = initializer}) actor class ModClub () {
   };
 
   // Provider functions
-
-  // todo: Require cylces on provider registration
+  // todo: Require cylces on provider registration, add provider imageURl, description 
   public shared({ caller }) func registerProvider(appName: Text) : async Text {
     switch(state.providers.get(caller)){
       case (null) {
@@ -79,21 +81,26 @@ shared ({caller = initializer}) actor class ModClub () {
     };
   };
 
+  public shared({ caller }) func deregisterProvider() : async Text {
+    switch(state.providers.get(caller)){
+      case (null) {
+        return "Provider does not exist";
+      };
+       case (?result) {
+         state.providers.delete(caller);
+         return "Provider deregistered";
+       };
+    };
+  };
+
+  // Subscribe function for providers to register their callback after a vote decision has been made
   public shared({caller}) func subscribe(sub: SubscribeMessage) : async() {
     await checkProviderPermission(caller);
+    Debug.print(Principal.toText(caller) # " subscribed" );
     state.providerSubs.put(caller, sub);
   };
 
-  public query func getAllContent() : async [Content] {
-     let buf = Buffer.Buffer<Content>(0);
-     for( (id, content) in state.content.entries()){
-       buf.add(content);
-     };
-    return buf.toArray();
-  };
-
   public query({caller}) func getContent(id: Text) : async ?Content {
-      
       return state.content.get(id);
   };
 
@@ -102,6 +109,87 @@ shared ({caller = initializer}) actor class ModClub () {
       case (null) throw Error.reject("unauthorized");
       case(_) ();
     };
+  };
+
+  public shared({ caller }) func submitText(sourceId: Text, text: Text, title: ?Text ) : async Text {
+    await checkProviderPermission(caller);
+    let now = timeNow_();
+    let content : Content  = {
+        id = Principal.toText(caller) # "-content-" # (Int.toText(now));
+        providerId = caller;
+        contentType = #text;
+        status = #new;
+        sourceId = sourceId;
+        title = title;
+        createdAt= now;
+        updateAt= now;
+    };
+    let textContent : TextContent = {
+      id = content.id;
+      text = text;
+    };
+      // Store and update relationships
+      state.content.put(content.id, content);
+      state.textContent.put(content.id, textContent);
+      state.provider2content.put(caller, content.id);
+      state.contentNew.put(caller, content.id);
+      return content.id;
+    };
+
+  // Retreives all content for the calling Provider
+  public query({ caller }) func getProviderContent() : async [ContentPlus] {
+      let buf = Buffer.Buffer<ContentPlus>(0);
+      for (cid in state.provider2content.get0(caller).vals()) {
+        switch(getContentPlus((cid))) {
+          case (?result) {
+            buf.add(result);
+          };
+          case (_) ();
+        };
+      };
+      buf.toArray();
+  };
+  
+  // Moderator functions
+
+  public query({ caller }) func getAllContent(status: Types.ContentStatus) : async [ContentPlus] {
+     var contentRel : ?Rel.Rel<Principal, Types.ContentId> = null;
+     let buf = Buffer.Buffer<ContentPlus>(0);
+     for ( (pid, p) in state.providers.entries()){
+       switch(status){
+         case(#new){
+          for(cid in state.contentNew.get0(pid).vals()){
+            switch(getContentPlus((cid))) {
+              case (?result) {
+                buf.add(result);
+              };
+              case (_) ();
+              };
+          };
+         };
+         case(#approved){
+          for(cid in state.contentApproved.get0(pid).vals()){
+            switch(getContentPlus((cid))) {
+              case (?result) {
+                buf.add(result);
+              };
+              case (_) ();
+              };
+          };
+         };
+         case(#rejected){
+          for(cid in state.contentRejected.get0(pid).vals()){
+            switch(getContentPlus((cid))) {
+              case (?result) {
+                buf.add(result);
+              };
+              case (_) ();
+              };
+          };
+         };
+       };
+     };
+    return Array.sort(buf.toArray(), compareContent);
   };
 
   func checkProfilePermission(p: Principal, action: Types.Action) : async () {
@@ -118,60 +206,6 @@ shared ({caller = initializer}) actor class ModClub () {
     };
     if(unauthorized) throw Error.reject("unauthorized");
   }; 
-
-  public shared({ caller }) func submitText(sourceId: Text, text: Text, title: ?Text ) : async Text {
-    await checkProviderPermission(caller);
-    let now = timeNow_();
-    let content : Content  = {
-        id = Principal.toText(caller) # "-content-" # (Int.toText(now));
-        providerId = caller;
-        contentType = #text;
-        status = #reviewRequired;
-        sourceId = sourceId;
-        title = title;
-        createdAt= now;
-        updateAt= now;
-    };
-    let textContent : TextContent = {
-      id = content.id;
-      text = text;
-    };
-      state.content.put(content.id, content);
-      state.textContent.put(content.id, textContent);
-      state.provider2content.put(caller, content.id);
-      state.contentNew.put(caller, content.id);
-      return content.id;
-    };
-
-  public query({ caller }) func getProviderContent() : async [ContentPlus] {
-      let buf = Buffer.Buffer<ContentPlus>(0);
-      for (cid in state.provider2content.get0(caller).vals()) {
-        switch(state.content.get(cid)) {
-          case (?result) {
-            buf.add({
-                    id = result.id;
-                    providerId = result.providerId;
-                    contentType = result.contentType;
-                    status = result.status;
-                    sourceId = result.sourceId;
-                    title = result.title;
-                    createdAt = result.createdAt;
-                    updateAt = result.updateAt;
-                    text = do  ?{
-                      switch(state.textContent.get(result.id)) {
-                        case(?x) x.text;
-                        case(_) "";
-                      };
-                    };
-                  });
-          };
-          case (_) ();
-        };
-      };
-      buf.toArray();
-  };
-  
-  // Moderator functions
 
   public shared({ caller }) func registerModerator(userName: Text, picUrl: ?Text) : async Text {
       // Check if already registered
@@ -204,7 +238,7 @@ shared ({caller = initializer}) actor class ModClub () {
 
     switch(state.content.get(contentId)){
       case(?content) {
-        if(content.status != #reviewRequired) return "Content has already been reviewed";
+        if(content.status != #new) return "Content has already been reviewed";
         var voteApproved : Nat = 0;
         var voteRejected : Nat = 0;
         for(vid in state.content2votes.get0(contentId).vals()){
@@ -219,7 +253,7 @@ shared ({caller = initializer}) actor class ModClub () {
                 case(_) ();
               };
           };
-          //todo: Eventually add rules that were broken
+          //todo: Eventually accept rules that this content broke
           let vote : Types.Vote = {
               id = voteId;
               contentId =  contentId;
@@ -235,8 +269,13 @@ shared ({caller = initializer}) actor class ModClub () {
               voteRejected += 1;
             };
           };
+
+          // Update relations
+          state.content2votes.put(content.id, vote.id);
           state.mods2votes.put(caller, vote.id);
           state.votes.put(vote.id, vote);
+
+          // Evaluate and send notification to provider
           await evaluateVotes(content, voteApproved, voteRejected);
           return "Vote successful";
         };
@@ -247,7 +286,7 @@ shared ({caller = initializer}) actor class ModClub () {
   
   private func evaluateVotes(content: Content, aCount: Nat, rCount: Nat) : async() {
     var finishedVote = false;
-    var status : Types.ContentStatus = #reviewRequired;
+    var status : Types.ContentStatus = #new;
     // todo: Get the rules for this provider to determine if the votes have passed or not
     if(aCount >= minVotes) {
       // Approved
@@ -296,7 +335,42 @@ shared ({caller = initializer}) actor class ModClub () {
 
   // Helpers
 
-  func timeNow_() : Timestamp {
+  private func getContentPlus(contentId: ContentId) : ?ContentPlus {
+    switch(state.content.get(contentId)) {
+          case (?result) {
+            let content : ContentPlus = {
+                    id = result.id;
+                    providerId = result.providerId;
+                    contentType = result.contentType;
+                    status = result.status;
+                    sourceId = result.sourceId;
+                    title = result.title;
+                    createdAt = result.createdAt;
+                    updatedAt = result.updateAt;
+                    text = do  ?{
+                      switch(state.textContent.get(result.id)) {
+                        case(?x) x.text;
+                        case(_) "";
+                      };
+                    };
+                  };
+            return ?content;
+          };
+          case (_) null;
+    };
+  };
+
+ private func compareContent(a : ContentPlus, b: ContentPlus) : Order.Order {
+      if(a.updatedAt > b.updatedAt) {
+        #greater;
+      } else if ( a.updatedAt < b.updatedAt) {
+        #less;
+      } else {
+        #equal;
+      }
+    };
+
+ private func timeNow_() : Timestamp {
       Time.now() 
   };
 
@@ -305,10 +379,13 @@ shared ({caller = initializer}) actor class ModClub () {
 
   system func preupgrade() {
     stateShared := State.fromState(state);
+    Debug.print("MODCLUB PREUPGRRADE");
   };
 
   system func postupgrade() {
+    state := State.empty();
     state := State.toState(stateShared);
     stateShared := State.emptyShared();
+    Debug.print("MODCLUB POSTUPGRADE");
   };
 };

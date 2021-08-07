@@ -24,7 +24,7 @@ module {
   public type ContentStatus = {
     #approved;
     #rejected;
-    #reviewRequired;
+    #new;
   };
   
   public type ContentType = {
@@ -59,7 +59,7 @@ module {
     status: ContentStatus; 
     title: ?Text;
     createdAt: Timestamp;
-    updateAt: Timestamp;
+    updatedAt: Timestamp;
     text: ?Text;
   };
 
@@ -124,6 +124,11 @@ module {
   };
 
   public type SubscribeMessage = {
-     callback: shared (ContentResult) -> (); 
+    callback: shared (ContentResult) -> (); 
     };
+  
+  public type GetContentParams = {
+    status: ContentStatus;
+    provider: Principal;
+  }
 };

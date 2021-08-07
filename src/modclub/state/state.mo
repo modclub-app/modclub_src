@@ -22,6 +22,7 @@ module State {
   type Content = Types.Content;
   type Provider = Types.Provider;
   type Rel<X, Y> = RelObj.RelObj<X, Y>;
+  public type RelShared<X, Y> = Rel.RelShared<X, Y>;
   public type MapShared<X, Y> = Trie.Trie<X, Y>;
   public type Map<X, Y> = HashMap.HashMap<X, Y>;
 
@@ -42,11 +43,12 @@ module State {
 
     textContent: Map<Types.ContentId, Types.TextContent>;
 
-    multiTextContent: Map<Types.ContentId, Types.MultiTextContent>;
+    // todo: Implement support for these
+    // multiTextContent: Map<Types.ContentId, Types.MultiTextContent>;
 
-    imageUrlContent: Map<Types.ContentId, Types.ImageUrl>;
+    // imageUrlContent: Map<Types.ContentId, Types.ImageUrl>;
 
-    imageContent: Map<Types.ContentId, Types.Image>;
+    // imageContent: Map<Types.ContentId, Types.Image>;
 
     // All of the approved content for each provider
     contentApproved: Rel<Principal, Types.ContentId>;
@@ -76,6 +78,8 @@ module State {
 
     /// all users. see andrew for disambiguation
     content : [(Types.ContentId, Types.Content)];
+
+    //todo: Save state for other relations 
   };
 
   public func empty () : State {
@@ -94,11 +98,12 @@ module State {
       
       textContent =  HashMap.HashMap<Types.ContentId, Types.TextContent>(1, Text.equal, Text.hash);
 
-      multiTextContent = HashMap.HashMap<Types.ContentId, Types.MultiTextContent>(1, Text.equal, Text.hash);
+      // todo: Implement support for these
+      // multiTextContent = HashMap.HashMap<Types.ContentId, Types.MultiTextContent>(1, Text.equal, Text.hash);
 
-      imageUrlContent = HashMap.HashMap<Types.ContentId, Types.ImageUrl>(1, Text.equal, Text.hash);
+      // imageUrlContent = HashMap.HashMap<Types.ContentId, Types.ImageUrl>(1, Text.equal, Text.hash);
 
-      imageContent =  HashMap.HashMap<Types.ContentId, Types.Image>(1, Text.equal, Text.hash);
+      // imageContent =  HashMap.HashMap<Types.ContentId, Types.Image>(1, Text.equal, Text.hash);
 
       // All of the approved content for each provider
       contentApproved = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
@@ -125,7 +130,7 @@ module State {
     let st : StateShared = {
       profiles = [];
       content = [];
-      providers = [];
+      providers = [];      
     };
     st;
   };
@@ -141,6 +146,7 @@ module State {
 
   public func toState(stateShared: StateShared) : State {
     let state = empty();
+    let x = 1;
     for( (id, content) in stateShared.content.vals()) {
       state.content.put(id, content);
     };

@@ -1,10 +1,10 @@
 export const idlFactory = ({ IDL }) => {
-  const ContentId__1 = IDL.Text;
   const ContentStatus = IDL.Variant({
+    'new' : IDL.Null,
     'approved' : IDL.Null,
     'rejected' : IDL.Null,
-    'reviewRequired' : IDL.Null,
   });
+  const ContentId__1 = IDL.Text;
   const ContentType = IDL.Variant({
     'imageBlob' : IDL.Null,
     'text' : IDL.Null,
@@ -12,6 +12,16 @@ export const idlFactory = ({ IDL }) => {
     'multiText' : IDL.Null,
   });
   const Timestamp = IDL.Int;
+  const ContentPlus = IDL.Record({
+    'id' : ContentId__1,
+    'status' : ContentStatus,
+    'title' : IDL.Opt(IDL.Text),
+    'contentType' : ContentType,
+    'createdAt' : Timestamp,
+    'text' : IDL.Opt(IDL.Text),
+    'sourceId' : IDL.Text,
+    'updatedAt' : Timestamp,
+  });
   const Content = IDL.Record({
     'id' : ContentId__1,
     'status' : ContentStatus,
@@ -21,16 +31,6 @@ export const idlFactory = ({ IDL }) => {
     'sourceId' : IDL.Text,
     'updateAt' : Timestamp,
     'providerId' : IDL.Principal,
-  });
-  const ContentPlus = IDL.Record({
-    'id' : ContentId__1,
-    'status' : ContentStatus,
-    'title' : IDL.Opt(IDL.Text),
-    'contentType' : ContentType,
-    'createdAt' : Timestamp,
-    'text' : IDL.Opt(IDL.Text),
-    'sourceId' : IDL.Text,
-    'updateAt' : Timestamp,
   });
   const ContentResult = IDL.Record({
     'status' : ContentStatus,
@@ -46,7 +46,12 @@ export const idlFactory = ({ IDL }) => {
   });
   const ModClub = IDL.Service({
     'addToWaitList' : IDL.Func([IDL.Text], [IDL.Text], []),
-    'getAllContent' : IDL.Func([], [IDL.Vec(Content)], ['query']),
+    'deregisterProvider' : IDL.Func([], [IDL.Text], []),
+    'getAllContent' : IDL.Func(
+        [ContentStatus],
+        [IDL.Vec(ContentPlus)],
+        ['query'],
+      ),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(Content)], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getWaitList' : IDL.Func([], [IDL.Vec(IDL.Text)], []),

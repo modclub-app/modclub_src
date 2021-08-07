@@ -19,12 +19,12 @@ export interface ContentPlus {
   'createdAt' : Timestamp,
   'text' : [] | [string],
   'sourceId' : string,
-  'updateAt' : Timestamp,
+  'updatedAt' : Timestamp,
 }
 export interface ContentResult { 'status' : ContentStatus, 'sourceId' : string }
-export type ContentStatus = { 'approved' : null } |
-  { 'rejected' : null } |
-  { 'reviewRequired' : null };
+export type ContentStatus = { 'new' : null } |
+  { 'approved' : null } |
+  { 'rejected' : null };
 export type ContentType = { 'imageBlob' : null } |
   { 'text' : null } |
   { 'imageUrl' : null } |
@@ -33,7 +33,8 @@ export type Decision = { 'approved' : null } |
   { 'rejected' : null };
 export interface ModClub {
   'addToWaitList' : (arg_0: string) => Promise<string>,
-  'getAllContent' : () => Promise<Array<Content>>,
+  'deregisterProvider' : () => Promise<string>,
+  'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getContent' : (arg_0: string) => Promise<[] | [Content]>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getWaitList' : () => Promise<Array<string>>,
