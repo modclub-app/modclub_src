@@ -4,15 +4,20 @@ import Text "mo:base/Text";
 module { 
 
   type ContentId = Text;
-    public type ContentStatus = {
-      #approved;
-      #rejected;
-      #reviewRequired;
-    };
+  public type ContentStatus = {
+    #approved;
+    #rejected;
+    #reviewRequired;
+  };
 
   public type ContentResult = {
     sourceId: Text;
     status: ContentStatus;
+  };
+
+  public type ProviderSettings = {
+    minVotes: Nat;
+    minStaked: Nat;
   };
 
   public type SubscribeMessage = { callback: shared ContentResult -> (); };
@@ -22,6 +27,9 @@ module {
       actor "rrkah-fqaaa-aaaaa-aaaaq-cai" : actor {      
         registerProvider: (Text) -> async Text;
         deregisterProvider: () -> async Text;
+        addContentRules: ([Text]) -> async ();
+        removeContentRules: ([Text]) -> async ();
+        updateSettings: (ProviderSettings) -> async ();
         submitText: (Text, Text, ?Text) -> async Text;
         subscribe: (SubscribeMessage) -> async ();
       };

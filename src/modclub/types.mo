@@ -1,12 +1,13 @@
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
-import Hash "mo:base/Hash"
+import Hash "mo:base/Hash";
+import Nat "mo:base/Nat";
 
 module {
   public type Timestamp = Int; // See mo:base/Time and Time.now()
   public type UserId = Principal;
-  public type RuleId = Hash.Hash;
   public type ContentId = Text;
+  public type RuleId = Text;
   public type VoteId = Text;
   public type ProviderId = Principal;
 
@@ -41,7 +42,7 @@ module {
   public type Role = {
     // A content moderator
     #moderator;
-    // A modclub admin
+    // A provider admin
     #admin;
     // Modclub owner aka me
     #owner;
@@ -54,9 +55,14 @@ module {
 
   public type ContentPlus = {
     id: ContentId;
+    providerId: Principal;
+    appName: Text;
     contentType: ContentType;
     sourceId: Text;
-    status: ContentStatus; 
+    status: ContentStatus;
+    voteCount: Nat;
+    minVotes: Nat;
+    minStake: Nat; 
     title: ?Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
@@ -71,7 +77,7 @@ module {
     status: ContentStatus; 
     title: ?Text;
     createdAt: Timestamp;
-    updateAt: Timestamp;
+    updatedAt: Timestamp;
   };
 
   public type TextContent = {
@@ -89,9 +95,10 @@ module {
     url: Text;
   };
 
-  public type Image = {
+  public type ImageContent = {
     id: ContentId;
-    data: [Nat8]
+    data: [Nat8];
+    imageType: Text;
   };
 
   public type Provider = {
@@ -99,6 +106,12 @@ module {
     appName: Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
+    settings: ProviderSettings;
+  };
+
+  public type ProviderSettings = {
+    minVotes: Nat;
+    minStaked: Nat;
   };
 
   public type Profile = {
@@ -115,7 +128,7 @@ module {
     contentId: Text;
     userId: UserId;
     decision: Decision;
-    rulesBroken: ?[RuleId];  
+    violatedRules: ?[RuleId];  
   };
 
   public type ContentResult = {
@@ -130,5 +143,11 @@ module {
   public type GetContentParams = {
     status: ContentStatus;
     provider: Principal;
-  }
+  };
+
+  public type VoteCount = {
+    approvedCount: Nat;
+    rejectedCount: Nat;
+  };
+
 };

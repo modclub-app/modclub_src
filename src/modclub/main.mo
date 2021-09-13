@@ -3,6 +3,7 @@ import Buffer "mo:base/Buffer";
 import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
+import Nat "mo:base/Nat";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
@@ -17,9 +18,6 @@ import Order "mo:base/Order";
 import Rel "./state/Rel";
 
 shared ({caller = initializer}) actor class ModClub () {
-
-  // Vars
-  var minVotes = 1; //todo: Temp var, will switch to provider defined rules in next release
   var maxWaitListSize = 20000; // In case someone spams us, limit the waitlist
   let waitList = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
   var state = State.empty();
@@ -30,6 +28,7 @@ shared ({caller = initializer}) actor class ModClub () {
   type TextContent = Types.TextContent;
   type MultiTextContent = Types.MultiTextContent;
   type ImageUrlContent = Types.ImageUrl;
+  type ImageContent = Types.ImageContent;
   type Profile = Types.Profile;
   type Timestamp = Types.Timestamp;
   type ContentId = Types.ContentId;
@@ -37,6 +36,7 @@ shared ({caller = initializer}) actor class ModClub () {
   type SubscribeMessage = Types.SubscribeMessage;
   type UserId = Types.UserId;
   type Role = Types.Role;
+  type Rule = Types.Rule;
 
  // Waitlist functions
  public func addToWaitList(email : Text) : async Text {
@@ -74,6 +74,10 @@ shared ({caller = initializer}) actor class ModClub () {
           appName = appName;
           createdAt = now;
           updatedAt = now;
+          settings = {
+            minVotes = 2; // At least 2 votes required to finalize a decision
+            minStaked = 0; // Default amount staked, change when tokens are released
+          };
         });
         return "Registration successful";
       };
@@ -91,6 +95,60 @@ shared ({caller = initializer}) actor class ModClub () {
          return "Provider deregistered";
        };
     };
+  };
+
+  public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) {
+    var provider = state.providers.get(caller);
+    switch(provider) {
+      case (?result) {
+        let now = timeNow_();
+        // Update the providers settings
+        state.providers.put(caller, {
+              id = caller;
+              appName = result.appName;
+              createdAt = result.createdAt;
+              updatedAt = now;
+              settings = settings;
+        });
+      };
+      case(null) ();
+    };
+
+    // todo: Re-evaluate all new content with votes to determine if a potential decision can be made 
+  };
+
+  public shared({ caller }) func addContentRules(rules: [Text]) {
+    await checkProviderPermission(caller);
+    for(rule in rules.vals()){
+      var ruleId = generateId(caller, "rule");
+       Debug.print( "Created ruleID " # ruleId );
+      state.rules.put(ruleId, {
+        id = ruleId;
+        description = rule;
+      });
+      state.provider2rules.put(caller, ruleId);
+    }
+  };
+
+  public shared({ caller }) func removeContentRules(ruleIds: [Types.RuleId]) {
+    for(ruleId in ruleIds.vals()){
+      state.provider2rules.delete(caller, ruleId);
+    }
+  };
+
+  public query({caller}) func getContentRules() : async [Rule] {
+    Debug.print(Principal.toText(caller) # " retrieving rules" );
+    let buf = Buffer.Buffer<Rule>(0);
+    for(ruleId in state.provider2rules.get0(caller).vals()){
+      Debug.print( "Adding ruleID " # ruleId );
+      switch(state.rules.get(ruleId)){
+        case(?rule){
+          buf.add(rule);
+        };
+        case(_)();
+      };
+    };
+    return buf.toArray();
   };
 
   // Subscribe function for providers to register their callback after a vote decision has been made
@@ -113,17 +171,7 @@ shared ({caller = initializer}) actor class ModClub () {
 
   public shared({ caller }) func submitText(sourceId: Text, text: Text, title: ?Text ) : async Text {
     await checkProviderPermission(caller);
-    let now = timeNow_();
-    let content : Content  = {
-        id = Principal.toText(caller) # "-content-" # (Int.toText(now));
-        providerId = caller;
-        contentType = #text;
-        status = #new;
-        sourceId = sourceId;
-        title = title;
-        createdAt= now;
-        updateAt= now;
-    };
+    let content = createContentObj(sourceId, caller, #text, title);
     let textContent : TextContent = {
       id = content.id;
       text = text;
@@ -131,6 +179,22 @@ shared ({caller = initializer}) actor class ModClub () {
       // Store and update relationships
       state.content.put(content.id, content);
       state.textContent.put(content.id, textContent);
+      state.provider2content.put(caller, content.id);
+      state.contentNew.put(caller, content.id);
+      return content.id;
+    };
+  
+    public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
+    await checkProviderPermission(caller);
+    let content = createContentObj(sourceId, caller, #imageBlob, title);
+    let imageContent : ImageContent = {
+      id = content.id;
+      data = image;
+      imageType = imageType;
+    };
+      // Store and update relationships
+      state.content.put(content.id, content);
+      state.imageContent.put(content.id, imageContent);
       state.provider2content.put(caller, content.id);
       state.contentNew.put(caller, content.id);
       return content.id;
@@ -226,7 +290,7 @@ shared ({caller = initializer}) actor class ModClub () {
       }
   };
 
-  public shared({ caller }) func vote(contentId: ContentId, decision: Decision) : async Text {
+  public shared({ caller }) func vote(contentId: ContentId, decision: Decision, violatedRules: ?[Types.RuleId]) : async Text {
     await checkProfilePermission(caller, #vote);
     let voteId = "vote-" # Principal.toText(caller) # contentId;
     switch(state.votes.get(voteId)){
@@ -241,25 +305,28 @@ shared ({caller = initializer}) actor class ModClub () {
         if(content.status != #new) return "Content has already been reviewed";
         var voteApproved : Nat = 0;
         var voteRejected : Nat = 0;
-        for(vid in state.content2votes.get0(contentId).vals()){
-              switch(state.votes.get(vid)){
-                case(?v){
-                  if(v.decision == #approved){
-                    voteApproved += 1;
-                  } else {
-                    voteRejected += 1;
-                  };
-                }; 
-                case(_) ();
+        var voteCount = getVoteCount(contentId);
+        voteApproved := voteApproved + voteCount.approvedCount;
+        voteRejected := voteRejected + voteCount.rejectedCount;
+
+        // Check if the rules provided are valid
+        if(decision == #rejected) {
+          switch(violatedRules){
+            case(?result){
+              if(validateRules(contentId, result) != true){
+                throw Error.reject("The violated rules provided are incorrect");
               };
+            };
+            case(_) throw Error.reject("Must provide rules that were violated");
           };
-          //todo: Eventually accept rules that this content broke
+        };
+
           let vote : Types.Vote = {
               id = voteId;
               contentId =  contentId;
               userId = caller;
               decision = decision; 
-              rulesBroken = null;
+              violatedRules = violatedRules;
           };
           switch(decision){
             case(#approved) {
@@ -283,82 +350,193 @@ shared ({caller = initializer}) actor class ModClub () {
         }; 
         return "";         
       };
+
+  public query({ caller }) func getMyVotes() : async [Types.Vote] {
+      let buf = Buffer.Buffer<Types.Vote>(0);
+      for (vid in state.mods2votes.get0(caller).vals()) {
+        switch(state.votes.get(vid)) {
+          case (?result) {
+            buf.add(result);
+          };
+          case (_) ();
+        };
+      };
+      buf.toArray();
+  };
   
   private func evaluateVotes(content: Content, aCount: Nat, rCount: Nat) : async() {
     var finishedVote = false;
     var status : Types.ContentStatus = #new;
-    // todo: Get the rules for this provider to determine if the votes have passed or not
-    if(aCount >= minVotes) {
-      // Approved
-      finishedVote := true;
-      status := #approved;
-      state.contentNew.delete(content.providerId, content.id);
-      state.contentApproved.put(content.providerId, content.id);
-    } else if ( rCount >= minVotes) {
-      // Rejected
-      status := #rejected;
-      finishedVote := true;
-      state.contentNew.delete(content.providerId, content.id);
-      state.contentRejected.put(content.providerId, content.id);
-    } else {
-      return;
-    };
-
-    if(finishedVote) {
-      state.content.put(content.id, {
-            id = content.id;
-            providerId = content.providerId;
-            contentType = content.contentType;
-            status = status;
-            sourceId = content.sourceId;
-            title = content.title;
-            createdAt = content.createdAt;
-            updateAt = timeNow_();
-      });
-
-      // Call the providers callback
-      switch(state.providerSubs.get(content.providerId)){
-        case(?result){
-          result.callback({
-            id = content.id;
-            sourceId = content.sourceId;
-            status = status;
-          });
-          Debug.print("Called callback for provider " # Principal.toText(content.providerId) );
+    switch(state.providers.get(content.providerId)) {
+      case(?provider) {
+        var minVotes = provider.settings.minVotes;
+        if(aCount >= minVotes) {
+          // Approved
+          finishedVote := true;
+          status := #approved;
+          state.contentNew.delete(content.providerId, content.id);
+          state.contentApproved.put(content.providerId, content.id);
+        } else if ( rCount >= minVotes) {
+          // Rejected
+          status := #rejected;
+          finishedVote := true;
+          state.contentNew.delete(content.providerId, content.id);
+          state.contentRejected.put(content.providerId, content.id);
+        } else {
+          return;
         };
-        case(_){
-          Debug.print("Provider " # Principal.toText(content.providerId) # " has not subscribed a callback");
-        }
-      }
-    }
+
+        if(finishedVote) {
+          state.content.put(content.id, {
+                id = content.id;
+                providerId = content.providerId;
+                contentType = content.contentType;
+                status = status;
+                sourceId = content.sourceId;
+                title = content.title;
+                createdAt = content.createdAt;
+                updatedAt = timeNow_();
+          });
+
+            // Call the providers callback
+            switch(state.providerSubs.get(content.providerId)){
+              case(?result){
+                result.callback({
+                  id = content.id;
+                  sourceId = content.sourceId;
+                  status = status;
+                });
+                Debug.print("Called callback for provider " # Principal.toText(content.providerId) );
+              };
+              case(_){
+                Debug.print("Provider " # Principal.toText(content.providerId) # " has not subscribed a callback");
+              }
+            };
+          };
+      };
+      case(null) ();
+    };
   };
 
   // Helpers
 
+  private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {
+    let now = timeNow_();
+    let content : Content  = {
+        id = generateId(caller, "content");
+        providerId = caller;
+        contentType = contentType;
+        status = #new;
+        sourceId = sourceId;
+        title = title;
+        createdAt= now;
+        updatedAt= now;
+    };
+    return content;
+  };
+
+  // Generates a semi unique ID
+  private func generateId(caller: Principal, category: Text): Text {
+    var count : Nat = 0;
+    switch(state.GLOBAL_ID_MAP.get(category)){
+      case(?result){
+        count := result;
+      };
+      case(_) ();
+    };
+    count := count + 1;
+    state.GLOBAL_ID_MAP.put(category, count);
+    return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
+  };
+
   private func getContentPlus(contentId: ContentId) : ?ContentPlus {
     switch(state.content.get(contentId)) {
-          case (?result) {
-            let content : ContentPlus = {
-                    id = result.id;
-                    providerId = result.providerId;
-                    contentType = result.contentType;
-                    status = result.status;
-                    sourceId = result.sourceId;
-                    title = result.title;
-                    createdAt = result.createdAt;
-                    updatedAt = result.updateAt;
-                    text = do  ?{
-                      switch(state.textContent.get(result.id)) {
-                        case(?x) x.text;
-                        case(_) "";
+          case (?content) {
+            let voteCount = getVoteCount(contentId);
+            switch (state.providers.get(content.providerId)){
+              case(?provider) {
+                let result : ContentPlus = {
+                        id = content.id;
+                        appName = provider.appName;
+                        minStake = provider.settings.minStaked;
+                        minVotes = provider.settings.minVotes;
+                        voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+                        providerId = content.providerId;
+                        contentType = content.contentType;
+                        status = content.status;
+                        sourceId = content.sourceId;
+                        title = content.title;
+                        createdAt = content.createdAt;
+                        updatedAt = content.updatedAt;
+                        text = do  ?{
+                          switch(state.textContent.get(content.id)) {
+                            case(?x) x.text;
+                            case(_) "";
+                          };
+                        };
                       };
-                    };
-                  };
-            return ?content;
+                return ?result;
+              };
+            case(_) null;
+            };
           };
           case (_) null;
     };
   };
+
+
+  private func getRules(providerId: Principal) : [Types.Rule] {
+    let buf = Buffer.Buffer<Types.Rule>(0);
+    for(ruleId in state.provider2rules.get0(providerId).vals()){
+      switch(state.rules.get(ruleId)){
+        case(?rule){
+          buf.add(rule);
+        };
+        case(_)();
+      };
+    };
+    buf.toArray();
+  };
+
+ private func validateRules(contentId: ContentId, violatedRules: [Types.RuleId]) : Bool {
+    switch(state.content.get(contentId)){
+      case(?content) {
+        for(rule in violatedRules.vals()){
+          let isMember : Bool = state.provider2rules.isMember(content.providerId, rule);
+          if(isMember != true) {
+            return false;
+          };
+        };
+      };
+      case(_) { 
+        return false;
+      }
+    };
+
+    return true;
+ };
+
+ private func getVoteCount(contentId: ContentId) : Types.VoteCount {
+   var voteApproved : Nat = 0;
+   var voteRejected : Nat  = 0;
+    for(vid in state.content2votes.get0(contentId).vals()){
+      switch(state.votes.get(vid)){
+        case(?v){
+          if(v.decision == #approved){
+            voteApproved += 1;
+          } else {
+            voteRejected += 1;
+          };
+        }; 
+        case(_) ();
+      };
+  };
+
+  return {
+    approvedCount = voteApproved;
+    rejectedCount = voteRejected;
+  };
+ };
 
  private func compareContent(a : ContentPlus, b: ContentPlus) : Order.Order {
       if(a.updatedAt > b.updatedAt) {

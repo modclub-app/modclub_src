@@ -1,18 +1,50 @@
+type VoteId = text;
+type Vote = 
+ record {
+   contentId: text;
+   decision: Decision__1;
+   id: VoteId;
+   userId: UserId;
+   violatedRules: opt vec RuleId;
+ };
+type UserId = principal;
 type Timestamp = int;
 type SubscribeMessage = record {callback: func (ContentResult) -> () oneway;};
+type RuleId = text;
+type Rule = 
+ record {
+   description: text;
+   id: RuleId;
+ };
+type ProviderSettings = 
+ record {
+   minStaked: nat;
+   minVotes: nat;
+ };
 type ModClub = 
  service {
+   addContentRules: (vec text) -> () oneway;
    addToWaitList: (text) -> (text);
    deregisterProvider: () -> (text);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getContent: (text) -> (opt Content) query;
+   getContentRules: () -> (vec Rule) query;
+   getMyVotes: () -> (vec Vote) query;
    getProviderContent: () -> (vec ContentPlus) query;
    getWaitList: () -> (vec text);
    registerModerator: (text, opt text) -> (text);
    registerProvider: (text) -> (text);
+   removeContentRules: (vec RuleId) -> () oneway;
+   submitImage: (text, vec nat8, text, opt text) -> (text);
    submitText: (text, text, opt text) -> (text);
    subscribe: (SubscribeMessage) -> ();
-   vote: (ContentId, Decision) -> (text);
+   updateSettings: (ProviderSettings) -> () oneway;
+   vote: (ContentId, Decision, opt vec RuleId) -> (text);
+ };
+type Decision__1 = 
+ variant {
+   approved;
+   rejected;
  };
 type Decision = 
  variant {
@@ -39,14 +71,19 @@ type ContentResult =
  };
 type ContentPlus = 
  record {
+   appName: text;
    contentType: ContentType;
    createdAt: Timestamp;
    id: ContentId__1;
+   minStake: nat;
+   minVotes: nat;
+   providerId: principal;
    sourceId: text;
    status: ContentStatus;
    "text": opt text;
    title: opt text;
    updatedAt: Timestamp;
+   voteCount: nat;
  };
 type ContentId__1 = text;
 type ContentId = text;
@@ -59,6 +96,6 @@ type Content =
    sourceId: text;
    status: ContentStatus;
    title: opt text;
-   updateAt: Timestamp;
+   updatedAt: Timestamp;
  };
 service : () -> ModClub

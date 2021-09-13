@@ -1,0 +1,18 @@
+type ContentStatus = 
+ variant {
+   approved;
+   rejected;
+   reviewRequired;
+ };
+type ContentResult = 
+ record {
+   sourceId: text;
+   status: ContentStatus;
+ };
+service : {
+  deregister: () -> (text);
+  greet: (text) -> (text);
+  subscribe: () -> ();
+  test: () -> (text);
+  voteResult: (ContentResult) -> () oneway;
+}
