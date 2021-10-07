@@ -1,0 +1,33 @@
+@import "../../common.scss";
+
+.CardSpacing {
+  margin: 20px;
+}
+
+.Card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: $card-background;
+  border-radius: 4px;
+}
+
+.gradient-line {
+  height: 1px;
+  width: 80%;
+  border-bottom: 1px solid;
+  border-image-slice: 1;
+  border-image-source: linear-gradient(to left, #3d52fa, #c91988);
+}
+
+.border-gradient {
+  border: 10px solid;
+  border-image-slice: 1;
+  border-width: 5px;
+}
+.border-gradient-purple {
+  border-image-source: linear-gradient(to left, #743ad5, #d53a9d);
+}
+.border-gradient-green {
+  border-image-source: linear-gradient(to left, #00c853, #b2ff59);
+}

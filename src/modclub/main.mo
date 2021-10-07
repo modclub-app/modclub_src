@@ -18,6 +18,9 @@ import Order "mo:base/Order";
 import Rel "./state/Rel";
 
 shared ({caller = initializer}) actor class ModClub () {
+  var MAX_RESULT_SIZE_BYTES     = 1_000_000; // 1MB Default
+  var HTTP_STREAMING_SIZE_BYTES = 1_900_000;
+  
   var maxWaitListSize = 20000; // In case someone spams us, limit the waitlist
   let waitList = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
   var state = State.empty();

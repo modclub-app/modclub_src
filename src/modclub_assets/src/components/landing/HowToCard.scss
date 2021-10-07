@@ -1,0 +1,25 @@
+@import "../../common.scss";
+
+.HowTo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 200px;
+  height: 200px;
+  font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.desc {
+  margin-left: 5px;
+  margin-right: 5px;
+  color: $secondary-text-color;
+  font-size: 12px;
+  text-align: center;
+}

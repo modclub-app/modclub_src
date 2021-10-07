@@ -1,4 +1,5 @@
 import Text "mo:base/Text";
+import Nat "mo:base/Nat";
 
 // This is the interface to modclub for providers
 module { 
@@ -31,6 +32,7 @@ module {
         removeContentRules: ([Text]) -> async ();
         updateSettings: (ProviderSettings) -> async ();
         submitText: (Text, Text, ?Text) -> async Text;
+        submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
         subscribe: (SubscribeMessage) -> async ();
       };
 };

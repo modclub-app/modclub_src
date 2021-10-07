@@ -1,0 +1,13 @@
+.Outer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Header {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1360px;
+  width: 90%;
+  font-size: 14px;
+}

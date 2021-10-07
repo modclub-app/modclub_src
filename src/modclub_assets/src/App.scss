@@ -1,320 +1,71 @@
+@import "./common.scss";
+@import url("https://fonts.googleapis.com/css?family=Poppins");
+
 body,
 html,
 #root {
   height: 100%;
-}
-
-.signup {
-  display: flex;
-  justify-content: left;
   width: 100%;
+  font-family: "Poppins", sans-serif !important;
 }
 
-.ButtonOutlined {
-  box-sizing: border-box;
-  padding: 16px 45px;
-  border: 1px solid #3d52fa;
-  border-radius: 6px;
-  background-color: #3d52fa;
-  font-family: "Poppins", sans-serif;
-  color: #ffffff;
-  height: 72px;
-  width: 250px;
-  min-width: 250px;
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 0;
+#app {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+h1,
+h2 {
+  color: white;
+}
+
+discord {
+  color: #1d82ee;
+}
+
+a:visited {
   text-decoration: none;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.BlueButton {
+  border-radius: 4px;
+  background-color: $button-background-color;
+  color: $button-foreground-color;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 900;
+  border-style: none;
+}
+.BlueButton:hover {
+  background-color: $button-background-hover-color;
   cursor: pointer;
 }
 
-.ButtonOutlined:disabled {
-  opacity: 0.5;
-}
-
-.textInput {
-  background: #f4f4f5;
-  border: 1px solid #f4f4f5;
-  min-width: 250px;
-  width: 250px;
-  font-size: 18px;
-  outline: none;
-  transition: all 0.25s;
-  height: 72px;
-  box-sizing: border-box;
+.DarkButton {
   border-radius: 4px;
-  margin-right: 20px;
-  margin-bottom: 10px;
-  &:focus {
-    background: #fff;
-    border: 1px solid #3d52fa;
-  }
-  &:hover {
-    background: #fff;
-    border: 1px solid #f4f4f5;
-  }
-  &:disabled {
-    opacity: 0.5;
-  }
+  background-color: transparent;
+  border: 1px solid;
+  font-weight: 900;
+  color: #fff;
 }
 
-.modclub-home * {
-  box-sizing: border-box;
-  font-family: "Roboto", sans-serif;
-}
-
-.modclub-home {
-  height: 100%;
-  h1 {
-    color: #fff;
-    font-size: 50px;
-    margin-bottom: 10px;
-    padding-bottom: 20px;
-    padding-top: 0;
-    margin-top: 0;
-    line-height: 100%;
-    font-family: "Poppins", sans-serif;
-  }
-  h2 {
-    font-weight: 500;
-    font-size: 22px;
-    color: #818a94;
-    line-height: 125%;
-    padding-bottom: 20px;
-  }
-
-  h3 {
-    font-weight: 500;
-    font-size: 22px;
-    color: #fff;
-    line-height: 125%;
-    padding-bottom: 20px;
-  }
-  .beta-message {
-    font-size: 16px;
-    color: #666;
-    margin-top: 60px;
-    margin-bottom: 35px;
-    max-width: 600px;
-    line-height: 120%;
-  }
-  .ButtonOutlined {
-    cursor: pointer;
-    font-size: 20px;
-  }
-  .siteTitle {
-    color: #fff;
-    font-size: 50px;
-    font-weight: 800;
-    margin-bottom: 10px;
-    padding-bottom: 20px;
-    padding-right: 10px;
-    padding-left: 10px;
-    padding-top: 0;
-    margin-top: 0;
-    line-height: 100%;
-    font-family: "Poppins", sans-serif;
-  }
-}
-
-.modclub-footer a {
+.DarkButton:hover {
+  background-color: rgba(255, 255, 255, 0.856);
   color: #000;
-}
-
-.modclub-home .modclub-footer div:first-child img {
-  width: 92px;
-  height: auto;
-}
-
-.modclub-home {
-  padding-top: 50px;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  .logo {
-    object-fit: contain;
-    height: 25px;
-  }
-  .inner {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 900px;
-    flex: 0 0 auto;
-    width: 100%;
-    margin-top: 100px;
-    margin-bottom: 0px;
-  }
-  .left {
-    width: 55%;
-  }
-  .right {
-    width: 35%;
-    img {
-      height: 620px;
-      transform: rotate(10deg);
-    }
-  }
-}
-
-.features {
-  max-width: 900px;
-  flex: 0 0 auto;
-  width: 100%;
-  margin-top: 120px;
-  padding-bottom: 80px;
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  .modclub-home-feature {
-    display: flex;
-    flex: 0 0 auto;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 100px;
-    .text-wrapper {
-      margin-left: 75px;
-    }
-    &:nth-child(even) {
-      flex-direction: row-reverse;
-      .text-wrapper {
-        margin-right: 75px;
-        margin-left: 0;
-      }
-    }
-    &:last-child {
-      margin-bottom: 50px;
-    }
-  }
-  img {
-    object-fit: contain;
-    width: 300px;
-    margin-bottom: 40px;
-  }
-  .text-wrapper {
-    max-width: 450px;
-  }
-  .text {
-    color: #fff;
-    font-size: 40px;
-    font-weight: 900;
-  }
-  .description {
-    color: #818a94;
-    font-size: 22px;
-    margin-top: 15px;
-    line-height: 130%;
-  }
-}
-
-.join-footer {
-  display: flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding-bottom: 100px;
-  line-height: 155%;
-  .text {
-    font-size: 18px;
-    color: #818a94;
-    margin-bottom: 30px;
-    max-width: 600px;
-    text-align: center;
-  }
-}
-
-@media (max-width: 752px) {
-  .modclub-home {
-    padding: 20px;
-  }
-  .modclub-home .inner {
-    text-align: center;
-    margin-top: 30px;
-    display: block;
-  }
-  .modclub-home .left,
-  .modclub-home .right {
-    width: 100%;
-    margin-bottom: 30px;
-  }
-  .modclub-home .right {
-    margin-top: 50px !important;
-    margin-bottom: 70px !important;
-  }
-  .modclub-home .right img {
-    transform: none;
-  }
-  .modclub-home h1 {
-    font-size: 40px;
-  }
-  .siteTitle {
-    font-size: 30px;
-  }
-  .signup {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-  }
-  .textInput {
-    margin-right: 0px;
-  }
-  .features {
-    margin-top: 0;
-    display: block;
-    padding-bottom: 0;
-  }
-  .features .modclub-home-feature {
-    display: flex;
-    flex-direction: column-reverse;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    text-align: center;
-    margin-bottom: 30px;
-    &:last-child {
-      flex-direction: column-reverse;
-    }
-  }
-  .features .modclub-home-feature:nth-child(even) {
-    flex-direction: column-reverse;
-  }
-  .features .modclub-home-feature:nth-child(even) .text-wrapper {
-    margin-right: 0;
-  }
-  .features .modclub-home-feature .text-wrapper {
-    margin-left: 0;
-    max-width: auto;
-    width: 100%;
-  }
-  .features img {
-    margin: 30px 0;
-  }
-}
-
-.footer-menu {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 10px 0;
-  a {
-    color: #fff;
-    font-size: 14px;
-    font-weight: bold;
-  }
-  ul {
-    display: flex;
-    list-style: none;
-    text-align: left;
-    padding-left: 0;
-    margin-left: 0;
-  }
-  li {
-    padding-left: 0;
-    margin-left: 0;
-  }
+  cursor: pointer;
 }

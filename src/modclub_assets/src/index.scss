@@ -1,4 +1,4 @@
-@import "./variables.scss";
+@import "./common.scss";
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,600;1,700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap");
 
@@ -32,43 +32,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-body.themed {
-  @media (prefers-color-scheme: dark) {
-    background-color: #0d0f12;
-    color: #fff;
-    border-color: $border-color-dark;
-    h1,
-    h2,
-    h3,
-    h4 {
-      color: #fff;
-    }
-    a {
-      color: #3380da;
-    }
-    .HeaderLogo img {
-      filter: invert(1);
-    }
-  }
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
-}
-
-#app-container {
-  &.wide {
-    max-width: 100%;
-    padding: 0;
-  }
-  height: 100%;
-}
-
 body {
-  background-color: #111212 !important;
+  background-color: #111215 !important;
+  color: #fff;
 }
 
 .fa {
   font-family: "FontAwesome" !important;
+}
+
+html {
+  box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }

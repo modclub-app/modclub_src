@@ -2,7 +2,6 @@ import Debug "mo:base/Debug";
 import Text "mo:base/Text";
 import ModClub "./modclub/modclub";
 
-
 actor {
     type SubscribeMessage = ModClub.SubscribeMessage;
     type ContentResult = ModClub.ContentResult;
@@ -28,7 +27,7 @@ actor {
         let test1 = await MC.submitText("id_1", "Test 1 text", ?"Test 111 Title");
         let test2 = await MC.submitText("id_2", "Test 2 text", ?"Test 111 Title");
         let test3 = await MC.submitText("id_3", "Test 3 text", ?"Test 111 Title");
-        return registerResult # "\n" # test1 # "\n" # test2 # "\n" # test3;
+        return registerResult # "\n " # test1 # "\n" # test2 # "\n" # test3;
     };
 
     public func subscribe() : async() {

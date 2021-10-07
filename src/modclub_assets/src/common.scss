@@ -1,0 +1,14 @@
+$secondary-text-color: #818a94;
+$horizontal-line-color: #3e4348;
+$card-background: #212121;
+
+$button-background-color: #3d52fa;
+$button-background-hover-color: #5769f5;
+$button-foreground-color: #fff;
+$dark-button-border-color: #818a94;
+
+.horizontal-line {
+  height: 1px;
+  width: 100%;
+  border-bottom: 1px solid $horizontal-line-color;
+}
