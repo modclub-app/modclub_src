@@ -1,0 +1,38 @@
+@import "../../common.scss";
+.LandingButtons {
+  width: 200px;
+  height: 40px;
+  margin: 20px;
+}
+
+.slogan {
+  width: 500px;
+  text-align: center;
+}
+
+.miniSlogan {
+  color: $secondary-text-color;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 400;
+  max-width: 747px;
+}
+
+.Landing {
+  max-width: 800px;
+}
+
+.LineStyle {
+  max-width: 800px;
+  margin-top: 100px;
+  margin-bottom: 100px;
+}
+
+.MainButtons {
+  margin-top: 55px;
+}
+
+.Cards {
+  display: flex;
+  justify-content: space-evenly;
+}
