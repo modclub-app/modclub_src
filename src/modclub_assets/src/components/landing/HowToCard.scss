@@ -4,22 +4,41 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 200px;
-  height: 200px;
+  justify-content: space-evenly;
+  width: 215px;
+  height: 320px;
   font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.titlePair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.step,
 .title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   padding-top: 10px;
   padding-bottom: 10px;
 }
 
+.step {
+  padding-bottom: 0px;
+}
 .desc {
   margin-left: 5px;
   margin-right: 5px;
   color: $secondary-text-color;
-  font-size: 12px;
+  font-size: 16px;
   text-align: center;
+}
+
+.pic {
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  margin: 10px;
 }

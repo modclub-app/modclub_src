@@ -1,0 +1,47 @@
+@import "../../../common.scss";
+
+.roadmapLine {
+  margin-left: 0px;
+  margin-right: 0px;
+  content: " ";
+  display: flex;
+  width: 30px;
+  height: 700px;
+  border-radius: 5px;
+  background-color: #c91988; /* For browsers that do not support gradients */
+  background-image: linear-gradient(#3d52fa, #c91988);
+}
+
+.roadmapTitle {
+  font-weight: 900;
+  font-size: 18px;
+  text-align: center;
+  padding-top: 15px;
+}
+
+.roadmapPoint {
+  font-weight: 500;
+  margin-right: 10px;
+  font-size: 15px;
+  color: $secondary-text-color;
+}
+
+.rCard {
+  width: 250px;
+}
+
+.roadmapPoints {
+  margin: 5;
+  padding: 1;
+  li {
+    margin-top: 4px;
+  }
+}
+
+.leftCards {
+  margin-right: 25px;
+}
+
+.rightCards {
+  margin-left: 25px;
+}

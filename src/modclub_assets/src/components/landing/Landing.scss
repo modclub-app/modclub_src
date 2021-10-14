@@ -1,25 +1,29 @@
 @import "../../common.scss";
 .LandingButtons {
   width: 200px;
-  height: 40px;
-  margin: 20px;
+  height: 60px;
+  font-size: 18px;
 }
 
 .slogan {
-  width: 500px;
+  font-size: 44px;
+  max-width: 800px;
   text-align: center;
 }
 
 .miniSlogan {
   color: $secondary-text-color;
   text-align: center;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 400;
   max-width: 747px;
 }
 
 .Landing {
-  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 960px;
 }
 
 .LineStyle {
@@ -29,10 +33,56 @@
 }
 
 .MainButtons {
+  display: flex;
+  flex-wrap: wrap;
   margin-top: 55px;
+  width: 450px;
+  justify-content: space-between;
 }
 
 .Cards {
   display: flex;
+  margin-top: 24px;
   justify-content: space-evenly;
+}
+
+.HighlightedTextTitle {
+  color: $highlighted-text;
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.TextTitle {
+  color: #fff;
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.ModeratorSection {
+  display: flex;
+  height: 80%;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.ModerateText {
+  color: $secondary-text-color;
+  font-size: 24px;
+  width: 350px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.TokenomicsText {
+  color: $secondary-text-color;
+  font-size: 14px;
+  width: 300px;
+}
+
+.CommunitySection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  width: 100%;
 }

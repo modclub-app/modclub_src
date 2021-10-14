@@ -1,0 +1,53 @@
+@import "../../common.scss";
+.Footer {
+  display: flex;
+  background-color: #000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding-left: 100px;
+  padding-right: 100px;
+}
+
+.FooterCol {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 250px;
+}
+
+.FooterLogo {
+  margin-top: 15px;
+  img {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+.FooterRow {
+  display: flex;
+  width: 100%;
+  p {
+    font-weight: 700;
+  }
+}
+
+.FooterList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: $secondary-text-color;
+  li {
+    padding-top: 5px;
+  }
+}
+
+.Copywrite {
+  color: $secondary-text-color;
+}
+
+.FooterLine {
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
