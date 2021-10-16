@@ -45,3 +45,33 @@
 .rightCards {
   margin-left: 25px;
 }
+
+@media screen and (max-width: 992px) {
+  .roadmapLine {
+    display: none;
+  }
+
+  .leftCards {
+    margin: 0;
+  }
+
+  .rightCards {
+    margin: 0;
+  }
+
+  .arrow-right {
+    content: "";
+  }
+
+  .arrow-left {
+    content: "";
+  }
+
+  .Card.arrow-right:after {
+    content: none !important;
+  }
+
+  .Card.arrow-left:after {
+    content: none !important;
+  }
+}

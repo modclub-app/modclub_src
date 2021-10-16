@@ -46,7 +46,7 @@ const styles = {
 export default function Faq() {
   return (
       <div className="FaqOuter">
-        <div style={{ width: 400 }}>
+        
           <Accordion allowZeroExpanded>
             {data.rows.map((item) => (
               <AccordionItem key={item.uuid}>
@@ -57,7 +57,7 @@ export default function Faq() {
               </AccordionItem>
             ))}
           </Accordion>
-        </div>
+
       </div>
   );
 }

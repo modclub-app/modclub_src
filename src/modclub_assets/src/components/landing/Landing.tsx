@@ -15,7 +15,7 @@ import HumanityImg from "../../../assets/humanity.png";
 import IntegrationImg from "../../../assets/integrate.png";
 import Charts, { ChartType } from "chart.js";
 import Roadmap from "./roadmap/Roadmap";
-import Team from './team/Team';
+import Team from "./team/Team";
 import Faq from "./faq/Faq";
 import Contact from "./contact/Contact";
 import Community from "./community/Community";
@@ -45,7 +45,7 @@ const data = {
   datasets: [
     {
       label: "# of Votes",
-      data: [20, 15, 10, 5, 10, 39.75, 0.25],
+      data: [20, 15, 10, 5, 10, 38, 2],
       backgroundColor: [
         "#FB6A00", // Team
         "#5EBEE1", // Private
@@ -107,12 +107,15 @@ export default function Landing() {
         </div>
         <div className="LineStyle horizontal-line "></div>
         <div className="row">
-          <img src={RewardsImg} style={{ marginRight: 10 }} />
+          <img
+            className="rewardsImg"
+            src={RewardsImg}
+            style={{ marginRight: 10 }}
+          />
           <div className="ModeratorSection" style={{ marginLeft: 10 }}>
-            <div>
               <div className="HighlightedTextTitle">Become a Moderator</div>
               <div className="TextTitle">Earn Rewards</div>
-            </div>
+        
             <div className="ModerateText">
               Moderators earn reward tokens for actively moderating and
               participating on the platform.
@@ -122,43 +125,49 @@ export default function Landing() {
           </div>
         </div>
         <div className="LineStyle horizontal-line "></div>
-        <a id="developers"/>
-        <div className="TextTitle marginTop marginBottom">
-          Benefits for Developers
-        </div>
-        <div className="Cards">
-          <BenefitCard
-            title="A large community 
+        <a id="developers" />
+        <div className="column">
+          <div className="TextTitle marginTop marginBottom">
+            Benefits for Developers
+          </div>
+          <div className="Cards">
+            <BenefitCard
+              title="A large community 
           of moderators"
-            img={CommunityImg}
-            desc="Modclub is the central place for Apps to offload their moderation. We will always have a large community of moderators."
-          />
-          <BenefitCard
-            title="Reward users with 
+              img={CommunityImg}
+              desc="Modclub is the central place for Apps to offload their moderation. We will always have a large community of moderators."
+            />
+            <BenefitCard
+              title="Reward users with 
           your own token"
-            img={WinnerImg}
-            desc="If you have your own platform token. You can choose to reward moderators."
-          />
-          <BenefitCard
-            title="Proof 
+              img={WinnerImg}
+              desc="If you have your own platform token. You can choose to reward moderators."
+            />
+            <BenefitCard
+              title="Proof 
           of Humanity"
-            img={HumanityImg}
-            desc="Use MODCLUB to prove your users are real."
-          />
-          <BenefitCard
-            title="Easy 
+              img={HumanityImg}
+              desc="Use MODCLUB to prove your users are real."
+            />
+            <BenefitCard
+              title="Easy 
           to Integrate"
-            img={IntegrationImg}
-            desc="With our SDK you can get setup in minutes."
-          />
+              img={IntegrationImg}
+              desc="With our SDK you can get setup in minutes."
+            />
+          </div>
+          <button className="BlueButton DevButton marginTop marginBottom">
+            Developer Sign Up
+          </button>
         </div>
-        <button className="BlueButton LandingButtons marginTop marginBottom">
-          Developer Sign Up
-        </button>
         <div className="LineStyle horizontal-line "></div>
-        <a id="tokenomics"/>
+        <a id="tokenomics" />
         <div className="row" style={{ width: "100%" }}>
-          <div className="column columnLeft" style={{ paddingLeft: 20 }}>
+          <div
+            id="tokenSection"
+            className="column columnLeft"
+            style={{ paddingLeft: 20 }}
+          >
             <div className="TextTitle marginTop marginBottom">Tokenomics</div>
             <div className="TokenomicsText marginBottom">
               MODCLUB (MOD) adopts a deflationary system where the more MOD are
@@ -167,17 +176,19 @@ export default function Landing() {
               platform services and get access to Airdrops and other awesome
               features.
             </div>
-            <Doughnut
-              data={data}
-              options={{
-                plugins: {
-                  legend: {
-                    position: "bottom",
-                    align: "start",
+            <div className="tokenomicsPie">
+              <Doughnut
+                data={data}
+                options={{
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                      align: "start",
+                    },
                   },
-                },
-              }}
-            />
+                }}
+              />
+            </div>
           </div>
           <div className="row left">
             <div className="column">
@@ -187,40 +198,34 @@ export default function Landing() {
             </div>
             <div className="column">
               <TokenomicsBox title="Token Symbol" value="MOD" />
-              <TokenomicsBox title="Token Type" value="Utility" />
+              <TokenomicsBox title="Token Supply" value="Deflationary" />
             </div>
           </div>
         </div>
         <div className="LineStyle horizontal-line "></div>
-        <a id="roadmap"/>
-        <div className="column" >
-          <div className="TextTitle marginTop marginBottom">
-              Roadmap
-          </div>
+        <a id="roadmap" />
+        <div className="column">
+          <div className="TextTitle marginTop marginBottom">Roadmap</div>
           <div>
             <strong>2021</strong>
           </div>
-            <Roadmap />
+          <Roadmap />
         </div>
         <div className="LineStyle horizontal-line "></div>
-        <a id="team"/>
+        <a id="team" />
         <div className="row">
           <Team />
         </div>
         <div className="LineStyle horizontal-line "></div>
         <div className="row">
-          <div className="column columnLeft">
-            <div className="TextTitle marginTop marginBottom">
-                FAQ
-            </div>
+          <div className="FaqSection">
+            <div className="TextTitle marginTop marginBottom">FAQ</div>
             <Faq />
           </div>
-          <div  className="CommunitySection">
-            <div className="TextTitle marginTop marginBottom">
-                Community
-            </div>
-            <Community/>
-          </div>          
+          <div className="CommunitySection">
+            <div className="TextTitle marginTop marginBottom">Community</div>
+            <Community />
+          </div>
         </div>
         <div className="LineStyle horizontal-line "></div>
       </div>

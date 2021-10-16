@@ -10,3 +10,9 @@
     margin-right: 10px;
   }
 }
+
+@media screen and (max-width: 833px) {
+  .MenuItems {
+    display: none;
+  }
+}

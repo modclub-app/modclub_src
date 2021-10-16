@@ -5,6 +5,12 @@
   font-size: 18px;
 }
 
+.DevButton {
+  width: 200px;
+  height: 60px;
+  font-size: 18px;
+}
+
 .slogan {
   font-size: 44px;
   max-width: 800px;
@@ -79,10 +85,62 @@
   width: 300px;
 }
 
+.FaqSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  width: 100%;
+}
+
 .CommunitySection {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   height: 100%;
   width: 100%;
+}
+
+.rewardsImg {
+  width: 400;
+  height: 500px;
+}
+
+.tokenomicsPie {
+  max-width: 500px;
+}
+
+@media screen and (max-width: 992px) {
+  .slogan {
+    font-size: 28px;
+  }
+
+  .LandingButtons {
+    width: 150px;
+    height: 50px;
+  }
+
+  .MainButtons {
+    width: 320px;
+  }
+
+  .FaqSection {
+    align-items: center;
+  }
+
+  .CommunitySection {
+    align-items: center;
+  }
+
+  .CommunityCard {
+    margin-bottom: 5px;
+  }
+
+  .HighlightedTextTitle {
+    font-size: 34px;
+  }
+
+  .TextTitle {
+    font-size: 29px;
+  }
 }

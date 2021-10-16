@@ -8,9 +8,9 @@ import Card from "../../common/Card";
 export default function Community() {
   return (
     <div className="column" style={{height: '100%',justifyContent:'space-evenly'}}>
-      <div className="row" style={{justifyContent:'space-evenly'}}>
+      <div className="row" style={{justifyContent:'space-evenly', marginBottom: 5}}>
   
-        <div className="CommunityCard">
+        <div className="CommunityCard" >
           <a href="https://twitter.com/ModclubApp">
               <img className="CommunityImg" src={twitterImg}/>
           </a>

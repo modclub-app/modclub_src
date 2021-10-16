@@ -6,8 +6,12 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding-left: 100px;
-  padding-right: 100px;
+}
+
+.FooterInner {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
 }
 
 .FooterCol {

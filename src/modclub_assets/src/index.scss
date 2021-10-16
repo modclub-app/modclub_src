@@ -4,14 +4,11 @@
 body {
   margin: 0;
   padding: 0;
-  /* font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif; */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
   background-color: #111215 !important;
   color: #fff;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html {
@@ -39,19 +36,19 @@ html {
 }
 
 .columnLeft {
-  align-items: flex-start !important;
+  align-items: flex-start;
 }
 
 .columnRight {
-  align-items: flex-end !important;
+  align-items: flex-end;
 }
 
 .left {
-  justify-content: left !important;
+  justify-content: left;
 }
 
 .right {
-  justify-content: right !important;
+  justify-content: right;
 }
 
 .marginTop {
@@ -60,4 +57,43 @@ html {
 
 .marginBottom {
   margin-bottom: 20px;
+}
+
+@media screen and (max-width: 992px) {
+  .row {
+    flex-direction: column;
+  }
+
+  .Cards {
+    flex-direction: column;
+  }
+
+  .CardSpacing {
+    margin: 0;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  #tokenSection {
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .ModeratorSection {
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+  }
+
+  .columnLeft {
+    align-items: center;
+  }
+
+  .columnRight {
+    align-items: center;
+  }
+
+  .ModerateText {
+    text-align: center;
+  }
 }

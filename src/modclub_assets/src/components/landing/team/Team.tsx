@@ -8,9 +8,9 @@ import chris from '../../../../assets/chris.png';
 
 export default function Team() {
   return (
-    <div className="column columnLeft">
+    <div className="column">
       <div className="TextTitle marginTop marginBottom">Our Team</div>
-      <div className="row">
+      <div className="Cards">
         <Card >
           <div className="TeamCard">
             <img className="TeamMemberAvatar" src={raheel} />

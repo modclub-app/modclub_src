@@ -1,0 +1,12 @@
+#Hamburger {
+  display: none;
+}
+.BurgerButtons {
+  width: 200px;
+  height: 60px;
+}
+@media screen and (max-width: 833px) {
+  #Hamburger {
+    display: flex;
+  }
+}

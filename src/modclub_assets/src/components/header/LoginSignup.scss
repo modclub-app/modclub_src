@@ -10,3 +10,9 @@
     height: 40px;
   }
 }
+
+@media screen and (max-width: 834px) {
+  .LoginSignup {
+    display: none;
+  }
+}
