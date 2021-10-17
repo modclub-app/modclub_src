@@ -36,7 +36,7 @@ export default function Community() {
         </div>
       
         <div className="CommunityCard">
-          <a href="https://twitter.com/ModclubApp">
+          <a href="https://medium.com/@modclub">
               <img className="CommunityImg" src={mediumImg}/>
           </a>
           <p className="CommunityTitle">Medium</p>

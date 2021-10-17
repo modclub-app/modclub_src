@@ -10,7 +10,6 @@ export default function Header() {
       <div className="Header">
         <Logo />
         <MenuItems />
-        <LoginSignup />
         <Hamburger />
       </div>
     </div>

@@ -37,22 +37,11 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-          <div className="FooterCol">
-            <p>Your Account</p>
-            <ul className="FooterList">
-              <li>
-                <a href="/login">Login</a>
-              </li>
-              <li>
-                <a href="/signUp">Sign Up</a>
-              </li>
-            </ul>
-          </div>
         </div>
         <div className="horizontal-line FooterLine"></div>
         <div className="FooterRow" style={{ justifyContent: "space-between" }}>
           <span className="Copywrite">
-            © 2021 ModClub. All Rights Reserved{" "}
+            © 2021 MODCLUB. All Rights Reserved{" "}
           </span>
           <a className="Copywrite" href="#main">
             Go to the top

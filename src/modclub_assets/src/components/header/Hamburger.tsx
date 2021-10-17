@@ -46,12 +46,12 @@ const Menu = ({ open }) => {
       <a href="#tokenomics">Tokenomics</a>
       <a href="#team">Team</a>
       <a href="#roadmap">Roadmap</a>
-      <div className="column">
+      <div className="column" style={{ display:'none'}}>
         <button className="DarkButton" style={{ height: 60, width: 200, marginTop: 20, marginBottom: 10 }}>
           Login
         </button>
       </div>
-      <div className="column">
+      <div className="column" style={{ display:'none'}}>
         <button className="BlueButton BurgerButtons">
           Sign Up
         </button>

@@ -43,7 +43,7 @@
   flex-wrap: wrap;
   margin-top: 55px;
   width: 450px;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .Cards {
@@ -109,10 +109,19 @@
 .tokenomicsPie {
   max-width: 500px;
 }
+.DfinityLogo {
+  height: 22px;
+  width: 42px;
+}
 
 @media screen and (max-width: 992px) {
   .slogan {
     font-size: 28px;
+  }
+
+  .DfinityLogo {
+    height: 15px;
+    width: 32px;
   }
 
   .LandingButtons {

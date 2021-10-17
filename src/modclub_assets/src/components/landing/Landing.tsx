@@ -20,16 +20,18 @@ import Faq from "./faq/Faq";
 import Contact from "./contact/Contact";
 import Community from "./community/Community";
 import Footer from "../footer/Footer";
+import DfinityLogo from "../../../assets/dfinity.svg";
+
 const options = {
-  legend: {
-    display: false,
-    position: "right",
-  },
-  elements: {
-    arc: {
-      borderWidth: 0,
-    },
-  },
+  // legend: {
+  //   display: false,
+  //   position: "right",
+  // },
+  // elements: {
+  //   arc: {
+  //     borderWidth: 0,
+  //   },
+  // },
 };
 
 const data = {
@@ -38,14 +40,14 @@ const data = {
     "Private Sale",
     "Public Sale",
     "Advisors",
-    "Marketing & Relations",
+    "Marketing",
     "Reserve",
     "Airdrop",
   ],
   datasets: [
     {
-      label: "# of Votes",
-      data: [20, 15, 10, 5, 10, 38, 2],
+      label: "Allocation",      
+      data: [20, 15, 10, 5, 10, 39, 1],
       backgroundColor: [
         "#FB6A00", // Team
         "#5EBEE1", // Private
@@ -56,9 +58,16 @@ const data = {
         "#007CE0", // Airdrop
       ],
       borderColor: "#000",
-      borderWidth: 1,
+      borderWidth: 1,  
     },
   ],
+  plugins: {
+    labels: {
+      render: "percentage",
+      fontColor: '#fff',
+      precision: 2
+    }
+  }
 };
 
 export default function Landing() {
@@ -66,16 +75,14 @@ export default function Landing() {
     <div className="column">
       <div className="Landing">
         <h1 className="slogan">
-          Simple and secure, user generated content moderation
+          Decentralized content moderation on the Internet Computer{" "}
+          <img className="DfinityLogo" src={DfinityLogo} />
         </h1>
         <p className="miniSlogan">
-          Modclub is a decentralized content moderation platform, it simplifies
-          the moderation process and makes it easy for moderators and dApps to
-          work together
+          MODCLUB is a decentralized content moderation platform, it simplifies the moderation process by connecting our community to dApps that need UGC moderation.
         </p>
         <div className="MainButtons">
-          <button className="BlueButton LandingButtons">Sign Up</button>
-          <button className="DarkButton LandingButtons">Lean More</button>
+          <button className="DarkButton LandingButtons">Coming Soon</button>
         </div>
         <div className="LineStyle horizontal-line "></div>
         <div className="TextTitle">How it works</div>
@@ -84,25 +91,25 @@ export default function Landing() {
             step={1}
             title="UGC Data Ingestion"
             img={HowTo1}
-            desc="DApps send content to Modclub that needs to be reviewed."
+            desc="DApps send UGC data to MODCLUB for review."
           />
           <HowToCard
             step={2}
-            title="Reviewal Phase"
+            title="Moderator Review"
             img={HowTo2}
-            desc="Moderators review the content and vote to approve or reject it."
+            desc="Moderators review the content then vote to approve or reject it."
           />
           <HowToCard
             step={3}
             title="Reward Distribution"
             img={HowTo3}
-            desc="Moderators who voted with majority receive rewards"
+            desc="Moderators who voted with majority receive rewards."
           />
           <HowToCard
             step={4}
             title="Notification"
             img={HowTo4}
-            desc="Modclub notifies the dApp of the final voting result."
+            desc="MODCLUB notifies the dApp of the final voting result."
           />
         </div>
         <div className="LineStyle horizontal-line "></div>
@@ -113,15 +120,15 @@ export default function Landing() {
             style={{ marginRight: 10 }}
           />
           <div className="ModeratorSection" style={{ marginLeft: 10 }}>
-              <div className="HighlightedTextTitle">Become a Moderator</div>
-              <div className="TextTitle">Earn Rewards</div>
-        
+            <div className="HighlightedTextTitle">Become a Moderator</div>
+            <div className="TextTitle">Earn Rewards</div>
+
             <div className="ModerateText">
               Moderators earn reward tokens for actively moderating and
               participating on the platform.
             </div>
 
-            <button className="BlueButton LandingButtons">Sign Up</button>
+            <button className="DarkButton LandingButtons">Coming Soon</button>
           </div>
         </div>
         <div className="LineStyle horizontal-line "></div>
@@ -135,13 +142,13 @@ export default function Landing() {
               title="A large community 
           of moderators"
               img={CommunityImg}
-              desc="Modclub is the central place for Apps to offload their moderation. We will always have a large community of moderators."
+              desc="MODCLUB is the central place for dApps to offload their moderation."
             />
             <BenefitCard
               title="Reward users with 
           your own token"
               img={WinnerImg}
-              desc="If you have your own platform token. You can choose to reward moderators."
+              desc="You can choose to reward moderators with your own platform token."
             />
             <BenefitCard
               title="Proof 
@@ -156,9 +163,11 @@ export default function Landing() {
               desc="With our SDK you can get setup in minutes."
             />
           </div>
-          <button className="BlueButton DevButton marginTop marginBottom">
-            Developer Sign Up
-          </button>
+          <a href="mailto:team@modclub.app">
+            <button className="BlueButton DevButton marginTop marginBottom">
+              Contact Us
+            </button>
+          </a>
         </div>
         <div className="LineStyle horizontal-line "></div>
         <a id="tokenomics" />
@@ -169,17 +178,14 @@ export default function Landing() {
             style={{ paddingLeft: 20 }}
           >
             <div className="TextTitle marginTop marginBottom">Tokenomics</div>
-            <div className="TokenomicsText marginBottom">
-              MODCLUB (MOD) adopts a deflationary system where the more MOD are
-              used the more tokens are burned. It will have a Max-Supply of 100
-              Millions and it can be used to earn platform fees, pay for
-              platform services and get access to Airdrops and other awesome
+            <div className="Tokenomics Text marginBottom">
+              MODCLUB Tokens (MOD) will play a crucial role in the MODCLUB ecosystem. It is a reputation token that is required in order to participate in the platform. It can be used to receive rewards, participate in governance, get access to Airdrops and other awesome
               features.
             </div>
             <div className="tokenomicsPie">
               <Doughnut
-                data={data}
-                options={{
+                data={data}                
+                options={{                  
                   plugins: {
                     legend: {
                       position: "bottom",
@@ -194,7 +200,7 @@ export default function Landing() {
             <div className="column">
               <TokenomicsBox title="Initial Max Supply" value="1,000,000,000" />
               <TokenomicsBox title="Token Type" value="Utility" />
-              <TokenomicsBox title="Initial Price" value="$0.01" />
+              <TokenomicsBox title="Initial Price" value="TBD" />
             </div>
             <div className="column">
               <TokenomicsBox title="Token Symbol" value="MOD" />
@@ -233,3 +239,7 @@ export default function Landing() {
     </div>
   );
 }
+function hexToRgb(arg0: any) {
+  throw new Error("Function not implemented.");
+}
+
