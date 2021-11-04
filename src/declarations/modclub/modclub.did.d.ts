@@ -45,6 +45,7 @@ export interface ModClub {
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getContent' : (arg_0: string) => Promise<[] | [Content]>,
   'getContentRules' : () => Promise<Array<Rule>>,
+  'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
   'getMyVotes' : () => Promise<Array<Vote>>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getWaitList' : () => Promise<Array<string>>,
@@ -53,6 +54,9 @@ export interface ModClub {
     >,
   'registerProvider' : (arg_0: string) => Promise<string>,
   'removeContentRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
+  'sendImage' : (arg_0: string, arg_1: Array<number>, arg_2: string) => Promise<
+      string
+    >,
   'submitImage' : (
       arg_0: string,
       arg_1: Array<number>,

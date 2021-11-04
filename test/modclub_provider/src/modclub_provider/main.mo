@@ -21,7 +21,7 @@ actor {
         await MC.addContentRules(["No violent content", "No drugs"]);
 
         // Update settings
-        await MC.updateSettings({minVotes = 3; minStaked = 0});
+        await MC.updateSettings({minVotes = 2; minStaked = 0});
 
         // Submit content to be reviewed by moderators
         let test1 = await MC.submitText("id_1", "Test 1 text", ?"Test 111 Title");

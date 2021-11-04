@@ -79,6 +79,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(Content)], ['query']),
     'getContentRules' : IDL.Func([], [IDL.Vec(Rule)], ['query']),
+    'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
     'getMyVotes' : IDL.Func([], [IDL.Vec(Vote)], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getWaitList' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
@@ -89,6 +90,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'registerProvider' : IDL.Func([IDL.Text], [IDL.Text], []),
     'removeContentRules' : IDL.Func([IDL.Vec(RuleId)], [], ['oneway']),
+    'sendImage' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'submitImage' : IDL.Func(
         [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Opt(IDL.Text)],
         [IDL.Text],

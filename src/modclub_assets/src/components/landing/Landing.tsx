@@ -21,6 +21,10 @@ import Contact from "./contact/Contact";
 import Community from "./community/Community";
 import Footer from "../footer/Footer";
 import DfinityLogo from "../../../assets/dfinity.svg";
+import { fileToImgSrc, getImage, imageToUint8Array, sendImage, UploadImage } from "../../utils/canister";
+import { useState } from "react";
+import { Base64Binary } from "../../utils/util";
+import { Auth } from "../../Auth";
 
 const options = {
   // legend: {
@@ -71,6 +75,29 @@ const data = {
 };
 
 export default function Landing() {
+  const [pic, setPic] = useState(null);
+
+  const getPic = async () => {
+    const data = await getImage('id_1');
+    setPic(fileToImgSrc(data));
+  };
+
+  const handleFileChange = (files) => {
+    if (files.length > 0) {
+      const f = files[0];
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const metadata = `name: ${f.name}, type: ${f.type}, size: ${f.size}, contents:`;
+        console.log("Data Type: " + (typeof evt.target.result));
+        console.log({ metadata })
+        console.log(evt.target.result);
+        const data = (typeof evt.target.result == "string") ? evt.target.result : null;
+        UploadImage(data);
+      };
+      reader.readAsDataURL(f);
+    }
+  }
+
   return (
     <div className="column">
       <div className="Landing">
@@ -82,8 +109,14 @@ export default function Landing() {
           MODCLUB is a decentralized content moderation platform, it simplifies the moderation process by connecting our community to dApps that need UGC moderation.
         </p>
         <div className="MainButtons">
-          <button className="DarkButton LandingButtons">Coming Soon</button>
+          <button className="DarkButton LandingButtons" onClick={() => getPic()}>Coming Soon</button>
+          
+          <Auth />
+
         </div>
+        <img src={pic} width="100" height="100" />
+
+        <input type="file" onChange={ (e) => handleFileChange(e.target.files) } />
         <div className="LineStyle horizontal-line "></div>
         <div className="TextTitle">How it works</div>
         <div className="Cards">

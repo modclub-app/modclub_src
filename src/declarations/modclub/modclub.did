@@ -29,12 +29,14 @@ type ModClub =
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getContent: (text) -> (opt Content) query;
    getContentRules: () -> (vec Rule) query;
+   getImage: (text) -> (opt vec nat8) query;
    getMyVotes: () -> (vec Vote) query;
    getProviderContent: () -> (vec ContentPlus) query;
    getWaitList: () -> (vec text);
    registerModerator: (text, opt text) -> (text);
    registerProvider: (text) -> (text);
    removeContentRules: (vec RuleId) -> () oneway;
+   sendImage: (text, vec nat8, text) -> (text);
    submitImage: (text, vec nat8, text, opt text) -> (text);
    submitText: (text, text, opt text) -> (text);
    subscribe: (SubscribeMessage) -> ();

@@ -7,7 +7,7 @@ import Nat "mo:base/Nat";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
-import State "./state/state";
+import State "./state";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieSet "mo:base/TrieSet";
@@ -15,15 +15,14 @@ import Types "./types";
 import Option "mo:base/Option";
 import Debug "mo:base/Debug";
 import Order "mo:base/Order";
-import Rel "./state/Rel";
+import Rel "data_structures/Rel";
 
-shared ({caller = initializer}) actor class ModClub () {
-  var MAX_RESULT_SIZE_BYTES     = 1_000_000; // 1MB Default
-  var HTTP_STREAMING_SIZE_BYTES = 1_900_000;
-  
-  var maxWaitListSize = 20000; // In case someone spams us, limit the waitlist
-  let waitList = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
-  var state = State.empty();
+shared ({caller = initializer}) actor class ModClub () {  
+
+  // Constants
+  let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
+  let DEFAULT_MIN_VOTES = 2;
+  let DEFAULT_MIN_STAKED = 0;
 
   // Types
   type Content = Types.Content;
@@ -41,9 +40,13 @@ shared ({caller = initializer}) actor class ModClub () {
   type Role = Types.Role;
   type Rule = Types.Rule;
 
+  // Global Objects
+  let waitList = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+  var state = State.empty();
+
  // Waitlist functions
  public func addToWaitList(email : Text) : async Text {
-      if(waitList.size() > maxWaitListSize) {
+      if(waitList.size() > MAX_WAIT_LIST_SIZE) {
         return "Sorry, the waitlist is full";
       };
       switch (waitList.get(email)) {        
@@ -78,8 +81,8 @@ shared ({caller = initializer}) actor class ModClub () {
           createdAt = now;
           updatedAt = now;
           settings = {
-            minVotes = 2; // At least 2 votes required to finalize a decision
-            minStaked = 0; // Default amount staked, change when tokens are released
+            minVotes = DEFAULT_MIN_VOTES; // At least 2 votes required to finalize a decision
+            minStaked = DEFAULT_MIN_STAKED; // Default amount staked, change when tokens are released
           };
         });
         return "Registration successful";
@@ -201,6 +204,27 @@ shared ({caller = initializer}) actor class ModClub () {
       state.provider2content.put(caller, content.id);
       state.contentNew.put(caller, content.id);
       return content.id;
+    };
+
+    public shared({ caller }) func sendImage(sourceId: Text, image: [Nat8], imageType: Text ) : async Text {   
+
+    let imageContent : ImageContent = {
+      id = sourceId;
+      data = image;
+      imageType = imageType;
+    };
+
+      state.imageContent.put(sourceId, imageContent);
+      return sourceId;
+    };
+
+    public query func getImage(sourceId: Text) : async ?[Nat8] {
+      switch(state.imageContent.get(sourceId)) {
+        case(?result) {
+          return ?result.data;
+        };
+        case (_) null;
+      }
     };
 
   // Retreives all content for the calling Provider

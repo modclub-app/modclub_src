@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AuthClient } from "@dfinity/auth-client";
-import dfinityLogo from "./assets/dfinity.svg";
+import dfinityLogo from "../assets/dfinity.svg";
 
 // Note: This is just a basic example to get you started
 function Auth() {
   const [signedIn, setSignedIn] = useState(false);
-  const [principal, setPrincipal] = useState("");
-  const [client, setClient] = useState();
+  const [_principal, setPrincipal] = useState("");
+  const [_client, setClient] = useState(null);
 
   const initAuth = async () => {
     const client = await AuthClient.create();
@@ -24,12 +24,12 @@ function Auth() {
 
   const signIn = async () => {
     const { identity, principal } = await new Promise((resolve, reject) => {
-      client.login({
+      _client.login({
         identityProvider: "https://identity.ic0.app",
         onSuccess: () => {
-          const identity = client.getIdentity();
-          const principal = identity.getPrincipal().toString();
-          resolve({ identity, principal });
+          const i = _client.getIdentity();
+          const p = identity.getPrincipal().toString();
+          resolve({ identity: i, principal: p });
         },
         onError: reject,
       });
@@ -39,7 +39,7 @@ function Auth() {
   };
 
   const signOut = async () => {
-    await client.logout();
+    await _client.logout();
     setSignedIn(false);
     setPrincipal("");
   };
@@ -50,7 +50,7 @@ function Auth() {
 
   return (
     <div className="auth-section">
-      {!signedIn && client ? (
+      {!signedIn && _client ? (
         <button onClick={signIn} className="auth-button">
           Sign in
           <img
@@ -62,7 +62,7 @@ function Auth() {
 
       {signedIn ? (
         <>
-          <p>Signed in as: {principal}</p>
+          <p>Signed in as: {_principal}</p>
           <button onClick={signOut} className="auth-button">
             Sign out
           </button>

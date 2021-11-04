@@ -5,19 +5,17 @@ import Int "mo:base/Int";
 import Trie "mo:base/Trie";
 import TrieMap "mo:base/TrieMap";
 import HashMap "mo:base/HashMap";
-import SeqObj "./SeqObj";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
 import Buffer "mo:base/Buffer";
 import TrieSet "mo:base/TrieSet";
+import SeqObj "data_structures/SeqObj";
+import Rel "data_structures/Rel";
+import RelObj "data_structures/RelObj";
 
-// types in separate file
-import Types "../types";
-import Rel "./Rel";
-import RelObj "./RelObj";
+import Types "./types";
 
 module State {
-
   type Profile = Types.Profile;
   type Content = Types.Content;
   type Provider = Types.Provider;
@@ -47,11 +45,6 @@ module State {
     votes : Map<Types.VoteId, Types.Vote>;
 
     textContent: Map<Types.ContentId, Types.TextContent>;
-
-    // todo: Implement support for these
-    // multiTextContent: Map<Types.ContentId, Types.MultiTextContent>;
-
-    // imageUrlContent: Map<Types.ContentId, Types.ImageUrl>;
 
     imageContent: Map<Types.ContentId, Types.ImageContent>;
 
@@ -111,11 +104,6 @@ module State {
       
       textContent =  HashMap.HashMap<Types.ContentId, Types.TextContent>(1, Text.equal, Text.hash);
 
-      // todo: Implement support for these
-      // multiTextContent = HashMap.HashMap<Types.ContentId, Types.MultiTextContent>(1, Text.equal, Text.hash);
-
-      // imageUrlContent = HashMap.HashMap<Types.ContentId, Types.ImageUrl>(1, Text.equal, Text.hash);
-
       imageContent =  HashMap.HashMap<Types.ContentId, Types.ImageContent>(1, Text.equal, Text.hash);
 
       // All of the approved content for each provider
@@ -135,7 +123,6 @@ module State {
 
       //relates providers to content
       provider2content = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
-
 
       //relates providers to content
       provider2rules = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));

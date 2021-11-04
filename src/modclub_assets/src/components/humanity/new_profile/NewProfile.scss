@@ -1,0 +1,30 @@
+.ProfileSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+}
+
+form {
+  width: 100%;
+}
+.inputField {
+  width: 100%;
+  margin-top: 5px;
+  input {
+    height: 40px;
+    width: 100%;
+    border-radius: 4px;
+    padding: 5px;
+    border-style: none;
+  }
+
+  textarea {
+    height: 150px;
+    width: 100%;
+    padding: 5px;
+    border-radius: 4px;
+    resize: none;
+  }
+}

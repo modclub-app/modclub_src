@@ -69,7 +69,7 @@ module.exports = {
     rules: [
       { test: /\.(js|ts)x?$/, loader: "ts-loader" },
       {
-        test: /\.s[ac]ss$/i,
+        test: /\.(sa|sc|c)ss$/,
         use: [
           // Creates `style` nodes from JS strings
           "style-loader",
@@ -130,5 +130,6 @@ module.exports = {
     hot: true,
     contentBase: path.resolve(__dirname, "./src/modclub_assets"),
     watchContentBase: true,
+    historyApiFallback: true,
   },
 };
