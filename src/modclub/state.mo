@@ -37,6 +37,9 @@ module State {
     /// all profiles.
     profiles : Map<Types.UserId, Profile>;
 
+    /// usernames to userIds.
+    usernames : Map<Text, Types.UserId>;
+
     /// all content.
     content : Map<Types.ContentId, Types.Content>;
 
@@ -95,6 +98,8 @@ module State {
       providerSubs =  HashMap.HashMap<Principal, Types.SubscribeMessage>(1, Principal.equal, Principal.hash);
 
       profiles = HashMap.HashMap<Types.UserId, Profile>(1, Principal.equal, Principal.hash);
+
+      usernames = HashMap.HashMap<Text, Types.UserId>(1, Text.equal, Text.hash);
 
       content = HashMap.HashMap<Types.ContentId, Types.Content>(1, Text.equal, Text.hash);
 

@@ -22,7 +22,7 @@ import Footer from "../../footer/Footer";
 import DfinityLogo from "../../../../assets/dfinity.svg";
 import { fileToImgSrc, getImage, UploadImage } from "../../../utils/api";
 import { useState } from "react";
-
+import { useHistory } from "react-router-dom";
 import { SignIn } from "../../Auth/SignIn";
 
 const options = {
@@ -75,6 +75,7 @@ const data = {
 
 export default function Landing() {
   const [pic, setPic] = useState(null);
+  const history = useHistory();
 
   const getPic = async () => {
     const data = await getImage('id_1');
@@ -108,7 +109,7 @@ export default function Landing() {
           MODCLUB is a decentralized content moderation platform, it simplifies the moderation process by connecting our community to dApps that need UGC moderation.
         </p>
         <div className="MainButtons">
-          <button className="DarkButton LandingButtons" onClick={() => getPic()}>Coming Soon</button>
+          <button className="DarkButton LandingButtons" onClick={() => history.push('/app')}>Coming Soon</button>
           <SignIn />
         </div>
         <img src={pic} width="100" height="100" />

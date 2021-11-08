@@ -15,7 +15,7 @@ import ModclubApp from "./components/app/ModclubApp";
 export default function App() {
   return (
     <Router>
-      <div>
+      <>
         {/* A <Switch> looks through its children <Route>s and
             renders the first one that matches the current URL. */}
         <Switch>
@@ -26,7 +26,7 @@ export default function App() {
             <External />
           </Route>
         </Switch>
-      </div>
+      </>
     </Router>
   );
 }

@@ -298,24 +298,37 @@ shared ({caller = initializer}) actor class ModClub () {
     if(unauthorized) throw Error.reject("unauthorized");
   }; 
 
-  public shared({ caller }) func registerModerator(userName: Text, picUrl: ?Text) : async Text {
+  public shared({ caller }) func registerModerator(userName: Text, picUrl: ?Text) : async Profile {
       // Check if already registered
       switch(state.profiles.get(caller)){
         case (null) {
-          let now = timeNow_();
-          state.profiles.put(caller, {
-            id=caller;
-            userName= userName;
-            picUrl = picUrl;
-            createdAt = now;
-            updatedAt = now;
-            role = #moderator;
-          });
-          return "Registered successfully"; 
+          switch( await checkUsernameAvailable(userName) ) {
+            case(true) {
+              let now = timeNow_();
+              let profile = {
+                id = caller;
+                userName = userName;
+                picUrl = picUrl;
+                role = #moderator;
+                createdAt = now;
+                updatedAt = now;
+              };
+              state.profiles.put(caller, profile);
+              return profile;
+            };
+            case(false) throw Error.reject("username already taken");
+          };
         };
-        case (?result) return "Already registered";
+        case (?result) throw Error.reject("Already registered");
       }
   };
+
+  public shared({ caller }) func getProfile() : async Profile {
+      switch(state.profiles.get(caller)){
+        case (null) throw Error.reject("profile not found");
+        case (?result) return result;
+      };
+    };
 
   public shared({ caller }) func vote(contentId: ContentId, decision: Decision, violatedRules: ?[Types.RuleId]) : async Text {
     await checkProfilePermission(caller, #vote);
@@ -446,6 +459,12 @@ shared ({caller = initializer}) actor class ModClub () {
   };
 
   // Helpers
+  public query func checkUsernameAvailable(userName_ : Text): async Bool {
+    switch (state.usernames.get(userName_)) {
+      case (?_) { /* error -- ID already taken. */ false };
+      case null { /* ok, not taken yet. */ true };
+    }
+  };
 
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {
     let now = timeNow_();

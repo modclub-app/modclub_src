@@ -1,19 +1,23 @@
 import "./NewProfile.scss";
 import { Form, Field } from 'react-final-form';
+import { registerModerator } from "../../../../utils/api";
 
 
 
 
 export default function NewProfile() {
-  const onFormSubmit = (values: any) => {
+  const onFormSubmit = async (values: any) => {
     const { username, email, description } = values;
     if (!username) {
       console.error('Please enter a username');
       return;
     }
+   const user = await registerModerator(username);
+
   };
 
   return (
+    <div className="main">
     <div className="ProfileSection">
       <h1>Create your profile</h1>
       <Form
@@ -48,6 +52,7 @@ export default function NewProfile() {
             </div>
           </form>
         )} />
-    </div>
+      </div>
+      </div>
   );
 }

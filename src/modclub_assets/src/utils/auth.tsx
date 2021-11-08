@@ -4,6 +4,7 @@ import { authClient as authenticationClient } from "./authClient";
 import { actorController } from "./actor";
 import { Identity } from "@dfinity/agent";
 import { getUserFromCanister, getUserFromStorage } from "./util";
+import { Profile } from "./types";
 
 export interface AuthContext {
   isAuthenticated: boolean;
@@ -12,15 +13,15 @@ export interface AuthContext {
   identity?: Identity;
   logIn: () => Promise<void>;
   logOut: () => void;
-  user: string;
-  setUser: (id: string) => void;
+  user: Profile;
+  setUser: (user: Profile) => void;
 }
 
 const KEY_LOCALSTORAGE_USER = "user"; 
 
 // Provider hook that creates auth object and handles state
 export function useProvideAuth(authClient): AuthContext {
-  const [user, setUser] = useState<string | undefined>();
+  const [user, setUser] = useState<Profile | undefined>();
   const [isAuthenticatedLocal, setIsAuthenticatedLocal] = useState<boolean>(
     false
   );
@@ -44,7 +45,7 @@ export function useProvideAuth(authClient): AuthContext {
       // Check to make sure your local storage user exists on the backend, and
       // log out if it doesn't (this is when you have your user stored in local
       // storage but the user was cleared from the backend)
-      getUserFromCanister(lsUser).then((user_) => !user_ && logOut());
+      getUserFromCanister(lsUser.id.toText()).then((user_) => !user_ && logOut());
       return () => void 0;
     }
   };
@@ -77,7 +78,7 @@ export function useProvideAuth(authClient): AuthContext {
     if (user && !getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER)) {
       localStorage.setItem(
         KEY_LOCALSTORAGE_USER,
-        JSON.stringify({ user: user }, (key, value) =>
+        JSON.stringify({ ...user }, (key, value) =>
           typeof value === "bigint" ? value.toString() : value
         )
       );

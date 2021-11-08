@@ -1,3 +1,6 @@
+import { unwrap } from "./api";
+import { Profile } from "./types";
+
 export const Base64Binary = {
   _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
 
@@ -86,7 +89,7 @@ function toBlob(
 export function getUserFromStorage(
   storage = window.localStorage,
   key: string
-): string {
+): Profile | null {
   const lsUser = storage.getItem(key);
   if (lsUser) {
     return JSON.parse(lsUser, (k, v) => {
@@ -94,22 +97,8 @@ export function getUserFromStorage(
         return BigInt(v);
       }
       return v;
-    }) as string;
+    }) as Profile;
   } else {
     return undefined;
   }
-}
-
-export async function getUserFromCanister(
-  userId: string
-): Promise<string | null> {
-  // const icUser = unwrap<string>(
-  //   await (await CanCan.actor).getProfilePlus([userId], userId)
-  // );
-  // if (icUser) {
-  //   return icUser;
-  // } else {
-  //   return null;
-  // }
-  return "test";
 }

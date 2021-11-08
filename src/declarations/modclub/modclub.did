@@ -16,24 +16,41 @@ type Rule =
    description: text;
    id: RuleId;
  };
+type Role = 
+ variant {
+   admin;
+   moderator;
+   owner;
+ };
 type ProviderSettings = 
  record {
    minStaked: nat;
    minVotes: nat;
  };
+type Profile = 
+ record {
+   createdAt: Timestamp;
+   id: UserId;
+   picUrl: opt text;
+   role: Role;
+   updatedAt: Timestamp;
+   userName: text;
+ };
 type ModClub = 
  service {
    addContentRules: (vec text) -> () oneway;
    addToWaitList: (text) -> (text);
+   checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getContent: (text) -> (opt Content) query;
    getContentRules: () -> (vec Rule) query;
    getImage: (text) -> (opt vec nat8) query;
    getMyVotes: () -> (vec Vote) query;
+   getProfile: () -> (Profile);
    getProviderContent: () -> (vec ContentPlus) query;
    getWaitList: () -> (vec text);
-   registerModerator: (text, opt text) -> (text);
+   registerModerator: (text, opt text) -> (Profile);
    registerProvider: (text) -> (text);
    removeContentRules: (vec RuleId) -> () oneway;
    sendImage: (text, vec nat8, text) -> (text);

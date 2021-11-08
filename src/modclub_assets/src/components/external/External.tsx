@@ -5,13 +5,13 @@ import NewProfile from "../auth/humanity/new_profile/NewProfile";
 
 export default function External() {
   return (
-    <div>
+    <>
       <Header />
       <Switch>
         <Route exact path="/" component={Home} />
         <Route path="/signup" component={NewProfile} />
         <Route path="/terms" component={Home} />
       </Switch>
-    </div>
+    </>
   );
 }

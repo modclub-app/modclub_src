@@ -52,6 +52,19 @@ export const idlFactory = ({ IDL }) => {
     'userId' : UserId,
     'violatedRules' : IDL.Opt(IDL.Vec(RuleId)),
   });
+  const Role = IDL.Variant({
+    'admin' : IDL.Null,
+    'moderator' : IDL.Null,
+    'owner' : IDL.Null,
+  });
+  const Profile = IDL.Record({
+    'id' : UserId,
+    'userName' : IDL.Text,
+    'createdAt' : Timestamp,
+    'role' : Role,
+    'picUrl' : IDL.Opt(IDL.Text),
+    'updatedAt' : Timestamp,
+  });
   const ContentResult = IDL.Record({
     'status' : ContentStatus,
     'sourceId' : IDL.Text,
@@ -71,6 +84,7 @@ export const idlFactory = ({ IDL }) => {
   const ModClub = IDL.Service({
     'addContentRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
     'addToWaitList' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'getAllContent' : IDL.Func(
         [ContentStatus],
@@ -81,11 +95,12 @@ export const idlFactory = ({ IDL }) => {
     'getContentRules' : IDL.Func([], [IDL.Vec(Rule)], ['query']),
     'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
     'getMyVotes' : IDL.Func([], [IDL.Vec(Vote)], ['query']),
+    'getProfile' : IDL.Func([], [Profile], []),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getWaitList' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Text)],
-        [IDL.Text],
+        [Profile],
         [],
       ),
     'registerProvider' : IDL.Func([IDL.Text], [IDL.Text], []),
