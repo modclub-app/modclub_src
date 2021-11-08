@@ -1,4 +1,3 @@
-import Card from "../../common/Card";
 import "./Faq.scss";
 import {
   Accordion,

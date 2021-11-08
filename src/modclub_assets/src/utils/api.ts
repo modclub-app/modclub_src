@@ -1,37 +1,9 @@
 import { modclub } from "../../../declarations/modclub";
-
+import { imageToUint8Array } from "./util";
 export type Optional<Type> = [Type] | [];
-
-function toBlob(
-  canvas: HTMLCanvasElement,
-  type: string = "image/png",
-  quality: number = 1
-): Promise<number[]> {
-  return new Promise((resolve) =>
-    canvas.toBlob(
-      (canvasBlob) => {
-        canvasBlob!.arrayBuffer().then((arrayBuffer) => {
-          resolve([...new Uint8Array(arrayBuffer)]);
-        });
-      },
-      type,
-      quality
-    )
-  );
-}
-
-export async function imageToUint8Array(image): Promise<number[]> {
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  canvas.width = image.width;
-  canvas.height = image.height;
-  context.drawImage(image, 0, 0);
-  return await toBlob(context.canvas, "image/png");
-}
 
 export async function UploadImage(src: string) {
   const image = new Image();
-  // stackoverflow logo
   image.src = src;
 
   image.onload = async () => {

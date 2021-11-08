@@ -1,10 +1,10 @@
 import "./Team.scss";
 
-import Card from "../../common/Card";
-import raheel from '../../../../assets/raheel.png';
-import pema from '../../../../assets/pema.png';
-import max from '../../../../assets/max.png';
-import chris from '../../../../assets/chris.png';
+import Card from "../../../common/Card";
+import raheel from '../../../../../assets/raheel.png';
+import pema from '../../../../../assets/pema.png';
+import max from '../../../../../assets/max.png';
+import chris from '../../../../../assets/chris.png';
 
 export default function Team() {
   return (

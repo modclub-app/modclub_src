@@ -36,7 +36,7 @@ export const Base64Binary = {
 
     input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
 
-    for (i = 0; i < bytes; i += 3) {
+    for (; i < bytes; i += 3) {
       //get the 3 octects in 4 ascii chars
       enc1 = this._keyStr.indexOf(input.charAt(j++));
       enc2 = this._keyStr.indexOf(input.charAt(j++));
@@ -55,3 +55,61 @@ export const Base64Binary = {
     return uarray;
   },
 };
+
+export async function imageToUint8Array(image): Promise<number[]> {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  context.drawImage(image, 0, 0);
+  return toBlob(context.canvas, "image/png");
+}
+
+function toBlob(
+  canvas: HTMLCanvasElement,
+  type: string = "image/png",
+  quality: number = 1
+): Promise<number[]> {
+  return new Promise((resolve) =>
+    canvas.toBlob(
+      (canvasBlob) => {
+        canvasBlob!.arrayBuffer().then((arrayBuffer) => {
+          resolve([...new Uint8Array(arrayBuffer)]);
+        });
+      },
+      type,
+      quality
+    )
+  );
+}
+
+export function getUserFromStorage(
+  storage = window.localStorage,
+  key: string
+): string {
+  const lsUser = storage.getItem(key);
+  if (lsUser) {
+    return JSON.parse(lsUser, (k, v) => {
+      if (k === "rewards") {
+        return BigInt(v);
+      }
+      return v;
+    }) as string;
+  } else {
+    return undefined;
+  }
+}
+
+export async function getUserFromCanister(
+  userId: string
+): Promise<string | null> {
+  // const icUser = unwrap<string>(
+  //   await (await CanCan.actor).getProfilePlus([userId], userId)
+  // );
+  // if (icUser) {
+  //   return icUser;
+  // } else {
+  //   return null;
+  // }
+  return "test";
+}

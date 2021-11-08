@@ -22,20 +22,26 @@ function Auth() {
     }
   };
 
-  const signIn = async () => {
-    const { identity, principal } = await new Promise((resolve, reject) => {
-      _client.login({
-        identityProvider: "https://identity.ic0.app",
-        onSuccess: () => {
-          const i = _client.getIdentity();
-          const p = identity.getPrincipal().toString();
-          resolve({ identity: i, principal: p });
-        },
-        onError: reject,
-      });
-    });
+  const handleAuth = (identity, principal) => {
     setSignedIn(true);
     setPrincipal(principal);
+  };
+
+  const signIn = async () => {
+    await _client.login({
+      identityProvider:
+        process.env.DFX_NETWORK == "local"
+          ? process.env.LOCAL_II_CANISTER
+          : "https://identity.ic0.app",
+    });
+    const identity = _client.getIdentity();
+    if (identity) {
+      const i = _client.getIdentity();
+      const p = identity.getPrincipal().toString();
+      handleAuth(i, p);
+    } else {
+      console.log("Failed to sign in");
+    }
   };
 
   const signOut = async () => {

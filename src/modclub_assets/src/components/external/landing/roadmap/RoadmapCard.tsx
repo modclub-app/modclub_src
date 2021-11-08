@@ -1,4 +1,4 @@
-import Card from "../../common/Card";
+import Card from "../../../common/Card";
 import "./Roadmap.scss";
 
 interface Props {

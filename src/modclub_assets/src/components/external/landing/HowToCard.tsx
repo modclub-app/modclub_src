@@ -1,5 +1,5 @@
 import "./HowToCard.scss";
-import Card from "../common/Card";
+import Card from "../../common/Card";
 
 interface Props {
   title: string;

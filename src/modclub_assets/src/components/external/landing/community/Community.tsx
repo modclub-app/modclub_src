@@ -1,10 +1,9 @@
 import "./Community.scss";
-import twitterImg from '../../../../assets/twitter.png';
-import discordImg from '../../../../assets/discord.jpeg';
-import dscvrImg from '../../../../assets/dscvr.jpeg';
-import mediumImg from '../../../../assets/medium.png';
+import twitterImg from '../../../../../assets/twitter.png';
+import discordImg from '../../../../../assets/discord.jpeg';
+import dscvrImg from '../../../../../assets/dscvr.jpeg';
+import mediumImg from '../../../../../assets/medium.png';
 
-import Card from "../../common/Card";
 export default function Community() {
   return (
     <div className="column" style={{height: '100%',justifyContent:'space-evenly'}}>

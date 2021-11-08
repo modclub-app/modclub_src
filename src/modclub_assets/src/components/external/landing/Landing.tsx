@@ -1,30 +1,29 @@
 import "./Landing.scss";
-import Card from "../common/Card";
+import Card from "../../common/Card";
 import HowToCard from "./HowToCard";
 import BenefitCard from "./BenefitCard";
 import TokenomicsBox from "./TokenomicsBox";
 import { Doughnut } from "react-chartjs-2";
-import HowTo1 from "../../../assets/network.png";
-import HowTo2 from "../../../assets/internet.png";
-import HowTo3 from "../../../assets/award.png";
-import HowTo4 from "../../../assets/network2.png";
-import RewardsImg from "../../../assets/Section3.png";
-import CommunityImg from "../../../assets/community.png";
-import WinnerImg from "../../../assets/winner.png";
-import HumanityImg from "../../../assets/humanity.png";
-import IntegrationImg from "../../../assets/integrate.png";
+import HowTo1 from "../../../../assets/network.png";
+import HowTo2 from "../../../../assets/internet.png";
+import HowTo3 from "../../../../assets/award.png";
+import HowTo4 from "../../../../assets/network2.png";
+import RewardsImg from "../../../../assets/Section3.png";
+import CommunityImg from "../../../../assets/community.png";
+import WinnerImg from "../../../../assets/winner.png";
+import HumanityImg from "../../../../assets/humanity.png";
+import IntegrationImg from "../../../../assets/integrate.png";
 import Charts, { ChartType } from "chart.js";
 import Roadmap from "./roadmap/Roadmap";
 import Team from "./team/Team";
 import Faq from "./faq/Faq";
-import Contact from "./contact/Contact";
 import Community from "./community/Community";
-import Footer from "../footer/Footer";
-import DfinityLogo from "../../../assets/dfinity.svg";
-import { fileToImgSrc, getImage, imageToUint8Array, sendImage, UploadImage } from "../../utils/canister";
+import Footer from "../../footer/Footer";
+import DfinityLogo from "../../../../assets/dfinity.svg";
+import { fileToImgSrc, getImage, UploadImage } from "../../../utils/api";
 import { useState } from "react";
-import { Base64Binary } from "../../utils/util";
-import { Auth } from "../../Auth";
+
+import { SignIn } from "../../Auth/SignIn";
 
 const options = {
   // legend: {
@@ -110,9 +109,7 @@ export default function Landing() {
         </p>
         <div className="MainButtons">
           <button className="DarkButton LandingButtons" onClick={() => getPic()}>Coming Soon</button>
-          
-          <Auth />
-
+          <SignIn />
         </div>
         <img src={pic} width="100" height="100" />
 

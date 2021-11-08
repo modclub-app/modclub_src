@@ -4,6 +4,10 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
+// Replace this value with the ID of your local Internet Identity canister
+const LOCAL_II_CANISTER =
+  "http://rwlgt-iiaaa-aaaaa-aaaaa-cai.localhost:8000/#authorize";
+
 let localCanisters, prodCanisters, canisters;
 
 function initCanisterIds() {
@@ -110,6 +114,8 @@ module.exports = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       MODCLUB_CANISTER_ID: canisters["modclub"],
+      LOCAL_II_CANISTER,
+      DFX_NETWORK: process.env.DFX_NETWORK || "local",
     }),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],

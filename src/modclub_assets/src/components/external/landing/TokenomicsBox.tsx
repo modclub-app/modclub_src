@@ -1,5 +1,5 @@
 import "./TokenomicsBox.scss";
-import GradientCard from "../common/GradientCard";
+import GradientCard from "../../common/GradientCard";
 
 interface Props {
   title: string;
