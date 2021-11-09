@@ -121,6 +121,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'subscribe' : IDL.Func([SubscribeMessage], [], []),
+    'updateProfile' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [Profile], []),
     'updateSettings' : IDL.Func([ProviderSettings], [], ['oneway']),
     'vote' : IDL.Func(
         [ContentId, Decision, IDL.Opt(IDL.Vec(RuleId))],

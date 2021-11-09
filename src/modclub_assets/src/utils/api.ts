@@ -1,6 +1,6 @@
 import { imageToUint8Array } from "./util";
 import { actorController } from "./actor";
-import { Profile } from "./types";
+import { ContentPlus, ContentStatus, Profile } from "./types";
 
 export type Optional<Type> = [Type] | [];
 
@@ -40,15 +40,21 @@ export async function registerModerator(username: string): Promise<Profile> {
 }
 
 export async function getUserFromCanister(): Promise<Profile | null> {
-  const icUser = unwrap<Profile>(await (await modclub).getProfile());
+  const icUser = await (await modclub).getProfile();
   if (icUser) {
     return icUser;
   } else {
     return null;
   }
-  return "test";
 }
 
+export async function getAllContent(
+  status: ContentStatus
+): Promise<ContentPlus[]> {
+  return (await modclub).getAllContent(status);
+}
+
+// Move these to util.ts
 export function fileToImgSrc(file: number[], imgType = "png"): string {
   const bufferBlob = [Buffer.from(new Uint8Array(file))];
   const picBlob = new Blob(bufferBlob, { type: `image/{imgType}` });

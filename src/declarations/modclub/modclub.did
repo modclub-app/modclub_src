@@ -57,6 +57,7 @@ type ModClub =
    submitImage: (text, vec nat8, text, opt text) -> (text);
    submitText: (text, text, opt text) -> (text);
    subscribe: (SubscribeMessage) -> ();
+   updateProfile: (text, opt text) -> (Profile);
    updateSettings: (ProviderSettings) -> () oneway;
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
  };

@@ -328,7 +328,31 @@ shared ({caller = initializer}) actor class ModClub () {
         case (null) throw Error.reject("profile not found");
         case (?result) return result;
       };
-    };
+  };
+
+  public shared({ caller }) func updateProfile(userName: Text, picUrl: ?Text) : async Profile {
+      switch(state.profiles.get(caller)){
+        case (null) throw Error.reject("profile not found");
+        case (?result) {
+          switch( await checkUsernameAvailable(userName) ) {
+            case(true) {
+              let now = timeNow_();
+              let profile = {
+                id = caller;
+                userName = userName;
+                picUrl = picUrl;
+                role = result.role;
+                createdAt = result.createdAt;
+                updatedAt = now;
+              };
+              state.profiles.put(caller, profile);
+              return profile;
+            };
+            case(false) throw Error.reject("username already taken");
+          };
+        };
+      };
+  };
 
   public shared({ caller }) func vote(contentId: ContentId, decision: Decision, violatedRules: ?[Types.RuleId]) : async Text {
     await checkProfilePermission(caller, #vote);

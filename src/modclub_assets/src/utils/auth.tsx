@@ -3,8 +3,9 @@ import { authClient as authenticationClient } from "./authClient";
 
 import { actorController } from "./actor";
 import { Identity } from "@dfinity/agent";
-import { getUserFromCanister, getUserFromStorage } from "./util";
+import { getUserFromStorage } from "./util";
 import { Profile } from "./types";
+import { getUserFromCanister } from './api';
 
 export interface AuthContext {
   isAuthenticated: boolean;
@@ -45,7 +46,7 @@ export function useProvideAuth(authClient): AuthContext {
       // Check to make sure your local storage user exists on the backend, and
       // log out if it doesn't (this is when you have your user stored in local
       // storage but the user was cleared from the backend)
-      getUserFromCanister(lsUser.id.toText()).then((user_) => !user_ && logOut());
+      getUserFromCanister().then((user_) => !user_ && logOut());
       return () => void 0;
     }
   };

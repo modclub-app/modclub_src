@@ -71,6 +71,7 @@ export interface ModClub {
       arg_2: [] | [string],
     ) => Promise<string>,
   'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
+  'updateProfile' : (arg_0: string, arg_1: [] | [string]) => Promise<Profile>,
   'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
   'vote' : (
       arg_0: ContentId,
