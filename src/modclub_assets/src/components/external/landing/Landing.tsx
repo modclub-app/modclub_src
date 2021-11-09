@@ -21,9 +21,11 @@ import Community from "./community/Community";
 import Footer from "../../footer/Footer";
 import DfinityLogo from "../../../../assets/dfinity.svg";
 import { fileToImgSrc, getImage, UploadImage } from "../../../utils/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { SignIn } from "../../Auth/SignIn";
+import { getAllContent } from "../../../utils/api";
+import MenuItems from "../../header/MenuItems";
 
 const options = {
   // legend: {
@@ -75,6 +77,7 @@ const data = {
 
 export default function Landing() {
   const [pic, setPic] = useState(null);
+  const [content, setContent] = useState(null);
   const history = useHistory();
 
   const getPic = async () => {
@@ -98,6 +101,25 @@ export default function Landing() {
     }
   }
 
+  const renderContent = async () => {
+    const status = { 'new' : null };
+    const content = await getAllContent(status);
+    console.log({ content });
+    let result = [];
+   
+    for (const item of content) {
+      const str = item.id + " " + item.title + " " + item.text + " ";
+      result.push(<li>{str}</li>);
+    }
+    setContent(<ul>{result}</ul>); 
+  }
+
+  useEffect(() => {
+    renderContent();
+  }, []);
+
+  
+
   return (
     <div className="column">
       <div className="Landing">
@@ -116,6 +138,7 @@ export default function Landing() {
 
         <input type="file" onChange={ (e) => handleFileChange(e.target.files) } />
         <div className="LineStyle horizontal-line "></div>
+        {content}
         <div className="TextTitle">How it works</div>
         <div className="Cards">
           <HowToCard

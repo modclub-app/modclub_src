@@ -1,6 +1,7 @@
 import { imageToUint8Array } from "./util";
 import { actorController } from "./actor";
 import { ContentPlus, ContentStatus, Profile } from "./types";
+import { MC } from "../../../declarations/modclub/index";
 
 export type Optional<Type> = [Type] | [];
 
@@ -51,7 +52,7 @@ export async function getUserFromCanister(): Promise<Profile | null> {
 export async function getAllContent(
   status: ContentStatus
 ): Promise<ContentPlus[]> {
-  return (await modclub).getAllContent(status);
+  return await MC.getAllContent(status);
 }
 
 // Move these to util.ts
