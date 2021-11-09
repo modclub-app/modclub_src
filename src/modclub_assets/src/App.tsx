@@ -1,5 +1,6 @@
 import React from "react";
 import "./App.scss";
+import './bulma.css'
 
 import {
   BrowserRouter as Router,
@@ -10,6 +11,7 @@ import {
 import Home from "./components/external/Home";
 import External from "./components/external/External";
 import ModclubApp from "./components/app/ModclubApp";
+
 
 
 export default function App() {

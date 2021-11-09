@@ -1,4 +1,3 @@
-import react from 'react';
 import LogoImg from '../../../assets/logo.png';
 import "./LogoComponent.scss";
 
