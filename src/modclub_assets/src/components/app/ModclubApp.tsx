@@ -96,15 +96,28 @@ export default function ModclubApp() {
               </div>
             </div>
 
-            {content}
+            {/* {content} */}
+
+            {/* <Switch>
+              <Route exact path={path}>
+                <h3>Please select a topic.</h3>
+              </Route>
+              <Route path={`${path}/:topicId`}>
+                <Topic />
+              </Route>
+            </Switch> */}
 
             <Link to={`${url}/components`}>Components</Link>
             <Switch>
+              
+              {/* <Route path={`${path}/components`}>
+                <Topic />
+              </Route> */}
+              <Route path="/app/components">
+                <Topic />
+              </Route>
               <Route path="/app">
                 <h3>here?</h3>
-              </Route>
-              <Route path={`${path}/components`}>
-                <Topic />
               </Route>
             </Switch>
 
