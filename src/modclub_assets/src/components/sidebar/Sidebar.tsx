@@ -3,7 +3,7 @@ import "./Sidebar.scss";
 
 export default function Sidebar() {
   return (
-    <div className="column is-3 has-background-black">
+    <div className="column is-3 has-background-black is-justify-content-flex-start">
       <aside className="p-3">
         <div className="Logo mt-3">
           <img src={LogoImg} />

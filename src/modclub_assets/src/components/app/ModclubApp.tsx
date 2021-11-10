@@ -25,14 +25,20 @@ export default function ModclubApp() {
   const renderContent = async () => {
     const status = { 'new' : null };
     const content = await getAllContent(status);
-    console.log({ content });
     let result = [];
    
     for (const item of content) {
-      const str = item.id + " " + item.title + " " + item.text + " ";
-      result.push(<li>{str}</li>);
+      console.log('item', item)
+      result.push(
+        <div className="card mb-5">
+          <div className="card-content">
+            <h3 className="subtitle">{item.appName}</h3>
+            <p>{item.text}</p>
+          </div>
+        </div>
+      );
     }
-    setContent(<ul>{result}</ul>); 
+    setContent(<>{result}</>); 
   }
 
   useEffect(() => {
@@ -45,8 +51,6 @@ export default function ModclubApp() {
   }, [identity, user, history]);
 
   let { path, url } = useRouteMatch();
-
-  console.log('path', path)
 
   const fullWidth = {
     width: '100%'
@@ -65,7 +69,7 @@ export default function ModclubApp() {
                   <div className="card-content">
                     <div>
                       <p>Wallet</p>
-                      <h3 className="subtitle">500</h3>
+                      <h3 className="title">500</h3>
                     </div>
                   </div>
                 </div>
@@ -75,7 +79,7 @@ export default function ModclubApp() {
                   <div className="card-content">
                     <div>
                       <p>Staked</p>
-                      <h3 className="subtitle">1000</h3>
+                      <h3 className="title">1000</h3>
                     </div>
                   </div>
                 </div>
@@ -85,12 +89,14 @@ export default function ModclubApp() {
                   <div className="card-content">
                     <div>
                       <p>Vote performance</p>
-                      <h3 className="subtitle">50%</h3>
+                      <h3 className="title">50%</h3>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {content}
 
             <Link to={`${url}/components`}>Components</Link>
             <Switch>
