@@ -1,32 +1,53 @@
-import modclubImg from "../../../assets/logo.png";
+import LogoImg from '../../../assets/logo.png';
+import "./Sidebar.scss";
 
 export default function Sidebar() {
   return (
-    <div className="column">
-      <aside className="column is-2 is-narrow-mobile is-fullheight section is-hidden-mobile">
-
-        <div className="FooterLogo">
-          <img src={modclubImg} />
+    <div className="column is-3 has-background-black">
+      <aside className="p-3">
+        <div className="Logo mt-3">
+          <img src={LogoImg} />
+          <p> MODCLUB </p>
         </div>
 
-        <p className="menu-label is-hidden-touch">Navigation</p>
+        <hr />
+
         <ul className="menu-list">
           <li>
             <a href="#">
-              <span className="icon"></span> Home
+              <span className="icon"></span>
+              <span>Dashboard</span>
             </a>
           </li>
           <li>
-            <a href="#" className="is-active">
-              <span className="icon"></span> Links
+            <a href="#">
+              <span className="icon"></span>
+              <span>Tasks</span>
             </a>
           </li>
           <li>
-            <a href="#" className="">
-              <span className="icon"></span> About
+            <a href="#">
+              <span className="icon"></span>
+              <span>Human Verification</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span className="icon"></span>
+              <span>Support</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <span className="icon"></span>
+              <span>Logout</span>
             </a>
           </li>
         </ul>
+
+        <button className="button is-large is-primary is-fullwidth mt-6">
+          Invite a Moderator
+        </button>
       </aside>
 
 
