@@ -1,4 +1,4 @@
-import LogoImg from '../../../assets/logo.png';
+import LogoImg from '../../../../assets/logo.png';
 import "./Sidebar.scss";
 
 export default function Sidebar() {

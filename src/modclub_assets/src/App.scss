@@ -79,15 +79,52 @@ h3.title {
   font-weight: 700;
 }
 
-.button.is-large {
+.button {
   font-weight: 700;
+  background: none;
+  color: #fff;
+  border-color: #ccc;
+}
+
+.button.is-large {
   font-size: 1rem;
 }
 .button.is-primary {
   background: #3d52fa;
 }
+.button.is-danger {
+  background: #c91988;
+}
+
+.button.is-outlined {
+  background: linear-gradient(to left, #3d52fa, #c91988);
+  border: 0;
+  &:after {
+    content: '';
+    position: absolute;
+    background: #000;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    border-radius: 4px;
+  }
+  * {
+    z-index: 1;
+  }
+}
 
 .card {
   background: #000;
   color: #ccc;
+}
+.card-footer {
+  border-color: #ccc;
+  margin: 0 1.5rem 1.5rem 1.5rem;
+  padding: 1.5rem 0;
+  justify-content: space-between;
+
+  .button:not(:first-child) {
+    margin-left: 1rem;
+  }
 }

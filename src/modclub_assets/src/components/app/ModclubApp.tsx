@@ -1,56 +1,23 @@
 import { Switch, BrowserRouter, Route, useRouteMatch, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "../../utils/auth";
-import { getAllContent } from "../../utils/api";
 import { useHistory } from "react-router-dom";
 import { SignIn } from "../Auth/SignIn";
-import Sidebar from "../sidebar/Sidebar";
+import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
-
-function Topic() {
-  return (
-    <div>
-      <h3>Topic</h3>
-    </div>
-  );
-}
-
-
+import List from "./list/List";
 
 export default function ModclubApp() {
-  const [content, setContent] = useState(null);
   const { isAuthReady, isAuthenticated, user, identity } = useAuth(); 
   const history = useHistory();
 
-  const renderContent = async () => {
-    const status = { 'new' : null };
-    const content = await getAllContent(status);
-    let result = [];
-   
-    for (const item of content) {
-      console.log('item', item)
-      result.push(
-        <div className="card mb-5">
-          <div className="card-content">
-            <h3 className="subtitle">{item.appName}</h3>
-            <p>{item.text}</p>
-          </div>
-        </div>
-      );
-    }
-    setContent(<>{result}</>); 
-  }
-
   useEffect(() => {
-    renderContent();
     console.log({ identity, user });
     console.log(identity?.getPrincipal().toString())
     if (!user && isAuthenticated) {
       history.push("/signup");
     }
   }, [identity, user, history]);
-
-  let { path, url } = useRouteMatch();
 
   const fullWidth = {
     width: '100%'
@@ -96,7 +63,7 @@ export default function ModclubApp() {
               </div>
             </div>
 
-            {/* {content} */}
+            <List />
 
             {/* <Switch>
               <Route exact path={path}>
@@ -105,21 +72,21 @@ export default function ModclubApp() {
               <Route path={`${path}/:topicId`}>
                 <Topic />
               </Route>
-            </Switch> */}
+            </Switch>
 
             <Link to={`${url}/components`}>Components</Link>
             <Switch>
               
-              {/* <Route path={`${path}/components`}>
+              <Route path={`${path}/components`}>
                 <Topic />
-              </Route> */}
+              </Route>
               <Route path="/app/components">
                 <Topic />
               </Route>
               <Route path="/app">
                 <h3>here?</h3>
               </Route>
-            </Switch>
+            </Switch> */}
 
           </section>
         </div>
