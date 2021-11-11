@@ -5,7 +5,17 @@ import { useHistory } from "react-router-dom";
 import { SignIn } from "../Auth/SignIn";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
-import List from "./list/List";
+import Tasks from "./tasks/Tasks";
+import Task from "./tasks/Task";
+
+function Dashboard() {
+  return (
+    <div>
+      <h3>Dashboard</h3>
+    </div>
+  );
+}
+
 
 export default function ModclubApp() {
   const { isAuthReady, isAuthenticated, user, identity } = useAuth(); 
@@ -63,30 +73,18 @@ export default function ModclubApp() {
               </div>
             </div>
 
-            <List />
-
-            {/* <Switch>
-              <Route exact path={path}>
-                <h3>Please select a topic.</h3>
+            <Switch>
+              <Route exact path="/app">
+                <Dashboard />
               </Route>
-              <Route path={`${path}/:topicId`}>
-                <Topic />
+              <Route exact path="/app/tasks">
+                <Tasks />
+              </Route>
+              {/* <Route path={`${path}/:topicId`}> */}
+              <Route path="/app/tasks/:taskId">
+                <Task />
               </Route>
             </Switch>
-
-            <Link to={`${url}/components`}>Components</Link>
-            <Switch>
-              
-              <Route path={`${path}/components`}>
-                <Topic />
-              </Route>
-              <Route path="/app/components">
-                <Topic />
-              </Route>
-              <Route path="/app">
-                <h3>here?</h3>
-              </Route>
-            </Switch> */}
 
           </section>
         </div>

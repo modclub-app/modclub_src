@@ -104,6 +104,11 @@ const StyledBurger = styled.button`
 `;
 
 const Burger = ({ open, setOpen }) => {
+  if (open) {
+    return (
+      <p>opened!!!</p>
+    )
+  } else {
   return (
     <StyledBurger open={open} onClick={() => setOpen(!open)}>
       <div />
@@ -111,6 +116,7 @@ const Burger = ({ open, setOpen }) => {
       <div />
     </StyledBurger>
   );
+  }
 };
 
 const Hamburger = () => {

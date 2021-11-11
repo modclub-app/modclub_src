@@ -1,5 +1,9 @@
+// import React, { ReactDOM } from "react";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getAllContent } from "../../../utils/api";
+import Reject from "../modals/Reject";
+import Approve from "../modals/Approve";
 
 export default function ModclubApp() {
   const [content, setContent] = useState(null);
@@ -12,7 +16,7 @@ export default function ModclubApp() {
     for (const item of content) {
       console.log('item', item)
       result.push(
-        <div className="card mb-5">
+        <div className="card mb-5" key={item.id}>
           <header className="card-header">
             <p className="card-header-title">
               {item.appName}
@@ -38,9 +42,9 @@ export default function ModclubApp() {
               </a>
             </div>
             <div>
-              <a href="#" className="button">See More</a>
-              <a href="#" className="button is-danger">Reject</a>
-              <a href="#" className="button is-primary">Approve</a>
+              <Link to={`/app/tasks/${item.id}`} className="button">See More</Link>
+              <Reject platform={item.appName} />
+              <Approve platform={item.appName} />
             </div>
           </footer>
         </div>
@@ -52,7 +56,7 @@ export default function ModclubApp() {
   useEffect(() => {
     renderContent();
   }, []);
-
+  
   return (
     <>
       {content}

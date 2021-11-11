@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import LogoImg from '../../../../assets/logo.png';
 import "./Sidebar.scss";
 
@@ -14,28 +15,28 @@ export default function Sidebar() {
 
         <ul className="menu-list">
           <li>
-            <a href="#">
+            <Link to="/app">
               <span className="icon"></span>
               <span>Dashboard</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#">
+            <Link to="/app/tasks">
               <span className="icon"></span>
               <span>Tasks</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#">
+            <Link to="/app/verification">
               <span className="icon"></span>
               <span>Human Verification</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#">
+            <Link to="/app/support">
               <span className="icon"></span>
               <span>Support</span>
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#">
