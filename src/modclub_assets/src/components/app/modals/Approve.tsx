@@ -6,11 +6,15 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
     <div className="modal-card">
       <section className="modal-card-body">
         <h3 className="subtitle">Approve Confirmation</h3>
-        <p>You are confirming that this post follows {platform}'s rules</p>
+        <p>You are confirming that this post follows {platform}'s rules.</p>
+        <p>Voting incorrectly will result in some loss of staked tokens.</p>
       </section>
       <footer className="modal-card-foot">
-        <button className="button is-primary" onClick={handleSave}>Save</button>
-        <button className="button is-warning" onClick={toggle}>Cancelar</button>
+        <a href="#">View {platform}'s rules</a>
+        <div>
+          <button className="button is-dark" onClick={toggle}>CANCEL</button>
+          <button className="button is-primary" onClick={handleSave}>CONFIRM</button>
+        </div>
       </footer>
     </div>
   </div>

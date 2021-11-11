@@ -90,14 +90,14 @@ h3.title {
   font-size: 1rem;
 }
 .button.is-primary {
-  background: #3d52fa;
+  background: $button-background-color;
 }
 .button.is-danger {
-  background: #c91988;
+  background: $highlighted-text;
 }
 
 .button.is-outlined {
-  background: linear-gradient(to left, #3d52fa, #c91988);
+  background: linear-gradient(to left, $button-background-color, $highlighted-text);
   border: 0;
   &:after {
     content: '';
@@ -128,3 +128,290 @@ h3.title {
     margin-left: 1rem;
   }
 }
+
+.modal-card-body {
+  background: #000;
+  color: #fff;
+  padding: 5rem 4rem 3rem;
+
+  .card {
+    background: $card-background;
+  }
+}
+.modal-card-foot {
+  background: #000;
+  padding: 1rem 4rem 5rem;
+  border-top: 0;
+  justify-content: space-between;
+  border-bottom: 2px solid;
+  border-image-source: linear-gradient(to left, $button-background-color, #c91988);
+  border-image-slice: 1;  
+
+  a {
+    text-decoration: underline;
+  }
+}
+.modal-card-foot .button:not(:last-child) {
+  margin-right: 0;
+}
+
+
+input[type="checkbox"] {
+  outline: 0;
+  user-select: none;
+  display: inline-block;
+  position: absolute;
+  opacity: 0;
+
+  + label:before {
+    border-radius: 24px;
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    width: 3rem;
+    height: 1.5rem;
+    background: #000;
+    content: '';
+  }
+  + label:after {
+    border-radius: 50%;
+    display: block;
+    position: absolute;
+    top: .25rem;
+    right: 1.625rem;
+    width: 1rem;
+    height: 1rem;
+    transform: translate3d(0, 0, 0);
+    background: $card-background;
+    transition: all 0.25s ease-out;
+    content: '';
+  }
+  &:checked {
+    + label:before {
+      background: linear-gradient(to left, $button-background-color, $highlighted-text);
+    }
+    + label:after {
+      right: .25rem;
+      background: #fff;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// $switch-background: #ccc !default;
+// $switch-border: .1rem solid transparent !default;
+// $switch-background-active: red !default;
+// $switch-radius: 5px !default;
+// $switch-paddle-background: #fff !default;
+// $switch-paddle-background-active: red !default;
+// $switch-paddle-offset: 0.25rem !default;
+// $switch-paddle-transition: all 0.25s ease-out !default;
+// $switch-focus: 1px dotted #ccc !default;
+
+// @mixin switch-size($size) {
+//   $switch-height: $size * 1.5;
+//   $switch-width: $switch-height * 2;
+//   $paddle-height: $switch-height - ($switch-paddle-offset * 2);
+//   $paddle-width: $switch-height - ($switch-paddle-offset * 2);
+//   $paddle-active-offest: $switch-width - $paddle-width - ($switch-paddle-offset * 1.5);
+
+//   + label {
+//     position: relative;
+//     display: initial;
+//     font-size: $size;
+//     line-height: initial;
+//     padding-left: $switch-width + .5;
+//     padding-top: .2rem;
+//     cursor: pointer;
+
+//     &::before,
+//     &:before {
+//       position: absolute;
+//       display: block;
+//       top: 0;
+//       left: 0;
+//       width: $switch-width;
+//       height: $switch-height;
+//       border: $switch-border;
+//       border-radius: $switch-radius;
+//       background: $switch-background;
+//       content: ''; }
+
+//     &::after,
+//     &:after {
+//       display: block;
+//       position: absolute;
+//       top: ( $switch-height / 2 ) - ( $paddle-height / 2 );
+//       left: $switch-paddle-offset;
+//       width: $paddle-width;
+//       height: $paddle-height;
+//       transform: translate3d(0, 0, 0);
+//       border-radius: $switch-radius;
+//       background: $switch-paddle-background;
+//       transition: $switch-paddle-transition;
+//       content: ''; } }
+
+//   &.is-rtl {
+//     + label {
+//       padding-left: 0;
+//       padding-right: $switch-width + .5;
+//       &::before,
+//       &:before {
+//         left: auto;
+//         right: 0; }
+//       &::after,
+//       &:after {
+//         left: auto;
+//         right: $switch-paddle-offset; } } }
+
+//   &:checked {
+//     + label {
+//       &::before,
+//       &:before {
+//         background: $switch-background-active; }
+//       &::after {
+//         left: $paddle-active-offest; } }
+//     &.is-rtl {
+//       + label {
+//         &::after,
+//         &:after {
+//           left: auto;
+//           right: $paddle-active-offest; } } } }
+
+//   &.is-outlined {
+//     + label {
+//       &::before,
+//       &:before {
+//         background-color: transparent;
+//         border-color: $switch-background; }
+//       &::after,
+//       &:after {
+//         background: $switch-background; } }
+//     &:checked {
+//       + label {
+//         &::before,
+//         &:before {
+//           background-color: transparent;
+//           border-color: $switch-background-active; }
+//         &::after,
+//         &:after {
+//           background: $switch-paddle-background-active; } } } }
+
+//   &.is-thin {
+//     + label {
+//       &::before,
+//       &:before {
+//         top: $switch-height / 2.75;
+//         height: $switch-height / 4; }
+//       &::after,
+//       &:after {
+//         box-shadow: 0px 0px 3px #ccc; } } }
+
+//   &.is-rounded {
+//     + label {
+//       &::before,
+//       &:before {
+//         border-radius: $radius-large * 4; }
+//       &::after,
+//       &:after {
+//         border-radius: 50%; } } } }
+
+
+// .switch[type="checkbox"] {
+//   outline: 0;
+//   user-select: none;
+//   display: inline-block;
+//   position: absolute;
+//   opacity: 0;
+
+//   &:focus {
+//     + label {
+//       &::before,
+//       &:before,
+//       &::after,
+//       &:after {
+//         outline: $switch-focus; } } }
+
+//   &[disabled] {
+//     cursor: not-allowed;
+//     + label {
+//       opacity: 0.5;
+//       &::before,
+//       &:before {
+//         opacity: 0.5; }
+//       &::after,
+//       &:after {
+//         opacity: 0.5; }
+//       &:hover {
+//         cursor: not-allowed; } } }
+
+//   @include switch-size($size-normal);
+//   &.is-small {
+//     @include switch-size($size-small); }
+//   &.is-medium {
+//     @include switch-size($size-medium); }
+//   &.is-large {
+//     @include switch-size($size-large); }
+
+//   @each $name, $pair in $colors {
+//     $color: nth($pair, 1);
+//     $color-invert: nth($pair, 2);
+//     &.is-#{$name} {
+//       &:checked {
+//         + label {
+//           &::before,
+//           &:before {
+//             background: $color; } } }
+//       &.is-outlined {
+//         &:checked {
+//           + label {
+//             &::before,
+//             &:before {
+//               background-color: transparent;
+//               border-color: $color !important; }
+//             &::after,
+//             &:after {
+//               background: $color; } } } }
+//       &.is-thin {
+//         &.is-outlined {
+//           + label {
+//             &::after,
+//             &:after {
+//               box-shadow: none; } } } } }
+//     &.is-unchecked-#{$name} {
+//       + label {
+//         &::before,
+//         &:before {
+//           background: $color; } }
+//       &.is-outlined {
+//         + label {
+//           &::before,
+//           &:before {
+//             background-color: transparent;
+//             border-color: $color !important; }
+//           &::after,
+//           &:after {
+//             background: $color; } } } } } }
