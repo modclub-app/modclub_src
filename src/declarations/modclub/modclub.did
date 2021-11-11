@@ -43,7 +43,7 @@ type ModClub =
    checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
-   getContent: (text) -> (opt Content) query;
+   getContent: (text) -> (opt ContentPlus) query;
    getContentRules: () -> (vec Rule) query;
    getImage: (text) -> (opt vec nat8) query;
    getMyVotes: () -> (vec Vote) query;
@@ -107,15 +107,4 @@ type ContentPlus =
  };
 type ContentId__1 = text;
 type ContentId = text;
-type Content = 
- record {
-   contentType: ContentType;
-   createdAt: Timestamp;
-   id: ContentId__1;
-   providerId: principal;
-   sourceId: text;
-   status: ContentStatus;
-   title: opt text;
-   updatedAt: Timestamp;
- };
 service : () -> ModClub

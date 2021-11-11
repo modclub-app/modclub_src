@@ -164,8 +164,8 @@ shared ({caller = initializer}) actor class ModClub () {
     state.providerSubs.put(caller, sub);
   };
 
-  public query({caller}) func getContent(id: Text) : async ?Content {
-      return state.content.get(id);
+  public query({caller}) func getContent(id: Text) : async ?ContentPlus {
+      return getContentPlus(id);  
   };
 
   func checkProviderPermission(p: Principal) : async () {

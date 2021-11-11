@@ -27,16 +27,6 @@ export const idlFactory = ({ IDL }) => {
     'updatedAt' : Timestamp,
     'providerId' : IDL.Principal,
   });
-  const Content = IDL.Record({
-    'id' : ContentId__1,
-    'status' : ContentStatus,
-    'title' : IDL.Opt(IDL.Text),
-    'contentType' : ContentType,
-    'createdAt' : Timestamp,
-    'sourceId' : IDL.Text,
-    'updatedAt' : Timestamp,
-    'providerId' : IDL.Principal,
-  });
   const RuleId = IDL.Text;
   const Rule = IDL.Record({ 'id' : RuleId, 'description' : IDL.Text });
   const VoteId = IDL.Text;
@@ -91,7 +81,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ContentPlus)],
         ['query'],
       ),
-    'getContent' : IDL.Func([IDL.Text], [IDL.Opt(Content)], ['query']),
+    'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getContentRules' : IDL.Func([], [IDL.Vec(Rule)], ['query']),
     'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
     'getMyVotes' : IDL.Func([], [IDL.Vec(Vote)], ['query']),
