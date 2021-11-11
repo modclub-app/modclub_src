@@ -1,19 +1,28 @@
 import "./NewProfile.scss";
 import { Form, Field } from 'react-final-form';
-import { registerModerator } from "../../../../utils/api";
-
+import { registerModerator } from "../../../utils/api";
+import { useAuth } from "../../../utils/auth";
+import { useHistory } from "react-router-dom";  
 
 
 
 export default function NewProfile() {
+  const { history } = useHistory();
+  const { setUser } = useAuth();
   const onFormSubmit = async (values: any) => {
     const { username, email, description } = values;
     if (!username) {
       console.error('Please enter a username');
       return;
     }
-   const user = await registerModerator(username);
-
+    const user = await registerModerator(username);
+    if (user) {
+      setUser(user);
+      history.push('/app');
+    } else {
+      console.error('Error creating user');
+    }
+    
   };
 
   return (
@@ -48,7 +57,7 @@ export default function NewProfile() {
               />
             </div>
             <div className="inputField">
-              <input type='button' className="BlueButton" value="Next"/>
+              <input type='submit' className="BlueButton" value="Submit"/>
             </div>
           </form>
         )} />

@@ -37,4 +37,4 @@ export const createActor = (canisterId, options) => {
  * A ready-to-use agent for the modclub canister
  * @type {import("@dfinity/agent").ActorSubclass<import("./modclub.did.js")._SERVICE>}
  */
-export const MC = createActor(canisterId);
+export const modclub = createActor(canisterId);

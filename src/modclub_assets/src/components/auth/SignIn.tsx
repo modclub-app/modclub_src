@@ -7,8 +7,8 @@ import { useAuth } from "../../utils/auth";
  * Internet Identity Service.
  */
 export function SignIn(props: PropsWithChildren<{}>) {
-  const auth = useAuth();
-
+  const {logIn, isAuthenticated, user} = useAuth();
+  const history = useHistory();
   // If the auth provider has a user (which could be from local storage) and
   // the user is properly authenticated with the identity provider service then
   // send the user to their feed, as they are correctly signed in.
@@ -17,7 +17,17 @@ export function SignIn(props: PropsWithChildren<{}>) {
   // Initiates the login flow with the identity provider service, sending the
   // user to a new tab
   const handleLogin = async () => {
-    await auth.logIn();
+    if (!isAuthenticated) {
+      await logIn();
+    }
+    
+    if (isAuthenticated && !user) {
+      // If the user is authenticated but the user is not in the database,
+      history.push("/signup");
+    } else {
+      history.push("/app");
+    }
+
   };
 
   return (

@@ -1,7 +1,7 @@
 import Header from "../header/Header";
 import { Route, Switch } from 'react-router-dom';
 import Home from "./Home";
-import NewProfile from "../auth/humanity/new_profile/NewProfile";
+import NewProfile from "../auth/new_profile/NewProfile";
 
 export default function External() {
   return (

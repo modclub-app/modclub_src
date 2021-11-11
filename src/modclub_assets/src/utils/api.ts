@@ -1,7 +1,7 @@
 import { imageToUint8Array } from "./util";
 import { actorController } from "./actor";
 import { ContentPlus, ContentStatus, Profile } from "./types";
-import { MC } from "../../../declarations/modclub/index";
+import { modclub as MC } from "../../../declarations/modclub/index";
 
 export type Optional<Type> = [Type] | [];
 

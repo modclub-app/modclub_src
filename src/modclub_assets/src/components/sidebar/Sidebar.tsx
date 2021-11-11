@@ -1,7 +1,11 @@
 import LogoImg from '../../../assets/logo.png';
 import "./Sidebar.scss";
+import { useAuth } from '../../utils/auth';
+import { SignIn } from '../Auth/SignIn';
 
 export default function Sidebar() {
+  const { user, isAuthenticated } = useAuth();
+
   return (
     <div className="column is-3 has-background-black is-justify-content-flex-start">
       <aside className="p-3">
@@ -9,8 +13,10 @@ export default function Sidebar() {
           <img src={LogoImg} />
           <p> MODCLUB </p>
         </div>
-
+    
         <hr />
+
+        {isAuthenticated && user ? (<p> Username: { user.userName }</p>) : <SignIn /> }
 
         <ul className="menu-list">
           <li>
