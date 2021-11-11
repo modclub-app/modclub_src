@@ -52,7 +52,13 @@ export async function getUserFromCanister(): Promise<Profile | null> {
 export async function getAllContent(
   status: ContentStatus
 ): Promise<ContentPlus[]> {
-  return await MC.getAllContent(status);
+  return MC.getAllContent(status);
+}
+
+export async function getContent(
+  contentId: string
+): Promise<ContentPlus | null> {
+  return unwrap<ContentPlus>(await MC.getContent(contentId));
 }
 
 // Move these to util.ts

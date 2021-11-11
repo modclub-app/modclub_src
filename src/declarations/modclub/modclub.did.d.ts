@@ -1,14 +1,4 @@
 import type { Principal } from '@dfinity/principal';
-export interface Content {
-  'id' : ContentId__1,
-  'status' : ContentStatus,
-  'title' : [] | [string],
-  'contentType' : ContentType,
-  'createdAt' : Timestamp,
-  'sourceId' : string,
-  'updatedAt' : Timestamp,
-  'providerId' : Principal,
-}
 export type ContentId = string;
 export type ContentId__1 = string;
 export interface ContentPlus {
@@ -44,7 +34,7 @@ export interface ModClub {
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
-  'getContent' : (arg_0: string) => Promise<[] | [Content]>,
+  'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getContentRules' : () => Promise<Array<Rule>>,
   'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
   'getMyVotes' : () => Promise<Array<Vote>>,
