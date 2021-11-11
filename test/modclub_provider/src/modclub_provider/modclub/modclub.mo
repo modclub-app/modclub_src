@@ -25,7 +25,7 @@ module {
 
   // Have to hardcode principal for modclub, change it to production canister ID later
   public let ModClub =
-      actor "rkp4c-7iaaa-aaaaa-aaaca-cai" : actor {      
+      actor "rrkah-fqaaa-aaaaa-aaaaq-cai" : actor {      
         registerProvider: (Text) -> async Text;
         deregisterProvider: () -> async Text;
         addContentRules: ([Text]) -> async ();

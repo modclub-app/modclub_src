@@ -80,10 +80,9 @@ export default function ModclubApp() {
               <Route exact path="/app/tasks">
                 <Tasks />
               </Route>
-              {/* <Route path={`${path}/:topicId`}> */}
-              <Route path="/app/tasks/:taskId">
+              {/* <Route path="/app/tasks/:taskId">
                 <Task />
-              </Route>
+              </Route> */}
             </Switch>
 
           </section>

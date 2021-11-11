@@ -11,6 +11,7 @@ export default function ModclubApp() {
   const renderContent = async () => {
     const status = { 'new' : null };
     const content = await getAllContent(status);
+    console.log('content', content)
     let result = [];
    
     for (const item of content) {
@@ -59,6 +60,7 @@ export default function ModclubApp() {
   
   return (
     <>
+      <h1 className="title">Tasks Component</h1>
       {content}
     </>
   )
