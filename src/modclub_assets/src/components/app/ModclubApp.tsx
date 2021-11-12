@@ -8,6 +8,7 @@ import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
 import Moderators from "./moderators/Moderators";
+import Activity from "./activity/Activity";
 
 function Dashboard() {
   return (
@@ -86,6 +87,9 @@ export default function ModclubApp() {
               <Route exact path="/app/moderators">
                 <Moderators />
               </Route>
+              <Route exact path="/app/activity">
+                <Activity />
+              </Route>              
             </Switch>
 
           </section>

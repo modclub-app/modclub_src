@@ -1,67 +1,96 @@
-// import React, { ReactDOM } from "react";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getAllContent } from "../../../utils/api";
-import Reject from "../modals/Reject";
-import Approve from "../modals/Approve";
 
 export default function Tasks() {
   const [content, setContent] = useState(null);
 
-  const renderContent = async () => {
-    const status = { 'new' : null };
-    const content = await getAllContent(status);
-    console.log('content', content)
-    let result = [];
-   
-    for (const item of content) {
-      console.log('item', item)
-      result.push(
-        <div className="card mb-5" key={item.id}>
-          <header className="card-header">
-            <p className="card-header-title">
-              {item.appName}
-              <span>Submitted by {item.sourceId}</span>
-            </p>
-            <progress className="progress" value="15" max="100"></progress>
-            <span>10/15 votes</span>
-          </header>
-          <div className="card-content">
-            <h3 className="subtitle">{item.title}</h3>
-            <p>{item.text}</p>
-
-            createdAt? {item.createdAt}
-          </div>
-          <footer className="card-footer">
-            <div>
-              <a className="button is-outlined">
-                <span className="icon"></span>
-                <span>Rq Stake: {item.minStake}</span>
-              </a>
-              <a className="button is-outlined">
-                <span className="icon"></span>
-                <span>Reward: {item.minStake}</span>
-              </a>
-            </div>
-            <div>
-              <Link to={`/app/tasks/${item.id}`} className="button">See More</Link>
-              <Reject platform={item.appName} />
-              <Approve platform={item.appName} />
-            </div>
-          </footer>
-        </div>
-      );
-    }
-    setContent(<>{result}</>); 
-  }
-
   useEffect(() => {
-    renderContent();
   }, []);
   
   return (
     <>
-      {content}
+      <div className="card mb-5">
+        <div className="card-content">
+          <h1 className="title">Moderators</h1>
+        </div>
+      </div>
+      <div className="card">
+        <div className="card-content">
+          <h3 className="subtitle">Most active moderators</h3>
+
+          <table className="table is-striped">
+            <thead>
+              <tr>
+                <th>MODID</th>
+                <th>Name</th>
+                <th>Voted amt</th>
+                <th>Reward received</th>
+                <th>Platform rewards</th>
+                <th>Last voted</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>483250</td>
+                <td>Joe Smit</td>
+                <td>421</td>
+                <td>3000 MOD</td>
+                <td>3000 DSCVR</td>
+                <td>10/09/2021</td>
+                <td>
+                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
+                </td>
+              </tr>
+              <tr>
+                <td>483250</td>
+                <td>Joe Smit</td>
+                <td>421</td>
+                <td>3000 MOD</td>
+                <td>3000 DSCVR</td>
+                <td>10/09/2021</td>
+                <td>
+                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
+                </td>
+              </tr>
+              <tr>
+                <td>483250</td>
+                <td>Joe Smit</td>
+                <td>421</td>
+                <td>3000 MOD</td>
+                <td>3000 DSCVR</td>
+                <td>10/09/2021</td>
+                <td>
+                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
+                </td>
+              </tr>
+              <tr>
+                <td>483250</td>
+                <td>Joe Smit</td>
+                <td>421</td>
+                <td>3000 MOD</td>
+                <td>3000 DSCVR</td>
+                <td>10/09/2021</td>
+                <td>
+                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
+                </td>
+              </tr>
+              <tr>
+                <td>483250</td>
+                <td>Joe Smit</td>
+                <td>421</td>
+                <td>3000 MOD</td>
+                <td>3000 DSCVR</td>
+                <td>10/09/2021</td>
+                <td>
+                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
     </>
   )
 }

@@ -100,25 +100,6 @@ html,
   font-weight: 700;
   line-height: 1.25;
   padding: 0;
-
-  &.is-size-1 {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-
-    span {
-      font-size: 1.25rem;
-      line-height: 1.25rem;
-      margin-left: .25rem;
-
-      span {
-        display: block;
-        font-size: 1rem;
-        font-weight: 400;
-        margin: 0;
-      }
-    }
-  }
 }
 
 .subtitle {
@@ -126,12 +107,25 @@ html,
   font-weight: 700;
 }
 
-.has-background-black {
+.has-background-black, .hero.is-black {
   background: $black !important;
 }
 
 .has-background-dark {
   background: $dark !important;
+}
+
+hr {
+  background: $silver;
+  height: 1px;
+}
+
+.has-text-secondary {
+  color: $secondary;
+}
+
+.has-text-silver {
+  color: $silver;
 }
 
 .button {
@@ -145,6 +139,11 @@ html,
     font-size: 1rem;
   }
 
+  &.is-small:not(.is-rounded) {
+    border-radius: 4px;
+    height: 1.5rem;
+  }
+
   &.is-primary {
     background: $primary;
     &:hover {
@@ -154,6 +153,11 @@ html,
 
   &.is-danger {
     background: $secondary;
+  }
+
+  &.is-gradient {
+    background: linear-gradient(to left, $primary, $secondary);
+    border: 0;
   }
 
   &.is-outlined {
@@ -179,6 +183,10 @@ html,
   margin-right: .75rem;
 }
 
+.column > .card {
+  height: 100%;
+}
+
 .card {
   background: $black;
   color: $light;
@@ -190,6 +198,25 @@ html,
     .card-content {
       background: $black;
       margin: 2px;
+    }
+
+    .is-size-1 {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+  
+      span {
+        font-size: 1.25rem;
+        line-height: 1.25rem;
+        margin-left: .25rem;
+  
+        span {
+          display: block;
+          font-size: 1rem;
+          font-weight: 400;
+          margin: 0;
+        }
+      }
     }
   }
 }
@@ -328,8 +355,16 @@ input[type="checkbox"] {
   background: none;
   color: $light;
 
+  thead th {
+    color: $white;
+    font-size: 1.25rem;
+  }
+
   td, th {
     border: 0;
+    vertical-align: middle;
+    text-align: center !important;
+
     &:first-child {
       border-top-left-radius: 0.25rem;
       border-bottom-left-radius: 0.25rem;
