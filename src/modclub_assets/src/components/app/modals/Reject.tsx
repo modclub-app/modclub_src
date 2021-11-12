@@ -7,7 +7,7 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
       <section className="modal-card-body">
         <h3 className="subtitle">Reject Confirmation</h3>
         <p className="mb-3">Select which rules were broken:</p>
-        <div className="card">
+        <div className="card has-background-dark">
           <div className="card-content">
 
             <div className="field level is-relative">
@@ -38,7 +38,7 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
         <p className="is-size-7">Voting incorrectly will result in some loss<br />of staked tokens.</p>
         <div>
           <button className="button is-dark" onClick={toggle}>CANCEL</button>
-          <button className="button is-primary" onClick={handleSave}>CONFIRM</button>
+          <button className="button is-primary ml-3" onClick={handleSave}>CONFIRM</button>
         </div>
       </footer>
     </div>
@@ -46,23 +46,25 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
 );
 
 export default function Approve({ platform }) {
-    const [active, setActive] = useState(false);
-    const toggle = () => setActive(!active);
-  
-    const handleSave = () => {
-      console.log("handleSave")
-      toggle();
-    };
-  
-    return (
-      <>
-        <button className="button is-danger" onClick={toggle}>Reject</button>
-        <Modal
-          active={active}
-          platform={platform}
-          toggle={toggle}
-          handleSave={handleSave}
-        />
-      </>
-    );
+  const [active, setActive] = useState(false);
+  const toggle = () => setActive(!active);
+
+  const handleSave = () => {
+    console.log("handleSave")
+    // TODO pending spinner
+    // TODO pass which toggled
+    toggle();
   };
+
+  return (
+    <>
+      <button className="button is-danger is-flex-grow-1" onClick={toggle}>Reject</button>
+      <Modal
+        active={active}
+        platform={platform}
+        toggle={toggle}
+        handleSave={handleSave}
+      />
+    </>
+  );
+};

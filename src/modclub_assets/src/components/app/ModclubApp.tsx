@@ -7,6 +7,7 @@ import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
+import Moderators from "./moderators/Moderators";
 
 function Dashboard() {
   return (
@@ -15,7 +16,6 @@ function Dashboard() {
     </div>
   );
 }
-
 
 export default function ModclubApp() {
   const { isAuthReady, isAuthenticated, user, identity } = useAuth(); 
@@ -37,7 +37,7 @@ export default function ModclubApp() {
     <>
       <section className="container columns">
         <Sidebar />
-        <div className="column is-justify-content-flex-start mt-6 ml-6">
+        <div className="column is-justify-content-flex-start mt-4 ml-5">
 
           <section className="container" style={fullWidth}>
             <div className="columns">
@@ -46,7 +46,7 @@ export default function ModclubApp() {
                   <div className="card-content">
                     <div>
                       <p>Wallet</p>
-                      <h3 className="title">500</h3>
+                      <h3 className="title is-size-1">500</h3>
                     </div>
                   </div>
                 </div>
@@ -56,7 +56,7 @@ export default function ModclubApp() {
                   <div className="card-content">
                     <div>
                       <p>Staked</p>
-                      <h3 className="title">1000</h3>
+                      <h3 className="title is-size-1">1000</h3>
                     </div>
                   </div>
                 </div>
@@ -66,7 +66,7 @@ export default function ModclubApp() {
                   <div className="card-content">
                     <div>
                       <p>Vote performance</p>
-                      <h3 className="title">50%</h3>
+                      <h3 className="title is-size-1">50%</h3>
                     </div>
                   </div>
                 </div>
@@ -80,9 +80,12 @@ export default function ModclubApp() {
               <Route exact path="/app/tasks">
                 <Tasks />
               </Route>
-              {/* <Route path="/app/tasks/:taskId">
-                <Task />
-              </Route> */}
+              <Route path="/app/tasks/:taskId">
+                <Task /> 
+              </Route>
+              <Route exact path="/app/moderators">
+                <Moderators />
+              </Route>
             </Switch>
 
           </section>

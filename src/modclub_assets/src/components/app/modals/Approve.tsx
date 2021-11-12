@@ -13,7 +13,7 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
         <a href="#">View {platform}'s rules</a>
         <div>
           <button className="button is-dark" onClick={toggle}>CANCEL</button>
-          <button className="button is-primary" onClick={handleSave}>CONFIRM</button>
+          <button className="button is-primary ml-3" onClick={handleSave}>CONFIRM</button>
         </div>
       </footer>
     </div>
@@ -21,23 +21,24 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
 );
 
 export default function Approve({ platform }) {
-    const [active, setActive] = useState(false);
-    const toggle = () => setActive(!active);
-  
-    const handleSave = () => {
-      console.log("handleSave")
-      toggle();
-    };
-  
-    return (
-      <>
-        <button className="button is-primary" onClick={toggle}>Approve</button>
-        <Modal
-          active={active}
-          platform={platform}
-          toggle={toggle}
-          handleSave={handleSave}
-        />
-      </>
-    );
+  const [active, setActive] = useState(false);
+  const toggle = () => setActive(!active);
+
+  const handleSave = () => {
+    console.log("handleSave")
+    // TODO pending spinner
+    toggle();
   };
+
+  return (
+    <>
+      <button className="button is-primary is-flex-grow-1" onClick={toggle}>Approve</button>
+      <Modal
+        active={active}
+        platform={platform}
+        toggle={toggle}
+        handleSave={handleSave}
+      />
+    </>
+  );
+};

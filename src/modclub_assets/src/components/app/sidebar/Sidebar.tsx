@@ -1,29 +1,35 @@
 import { Link } from "react-router-dom";
-import LogoImg from '../../../../assets/logo.png';
+// import LogoImg from '../../../../assets/logo.png';
 import "./Sidebar.scss";
-import { useAuth } from '../../utils/auth';
-import { SignIn } from '../Auth/SignIn';
+// import { useAuth } from '../../utils/auth';
+// import { SignIn } from '../Auth/SignIn';
 
 export default function Sidebar() {
-  const { user, isAuthenticated } = useAuth();
+  // const { user, isAuthenticated } = useAuth();
 
   return (
-    <div className="column is-3 has-background-black is-justify-content-flex-start">
+    <div className="column is-one-fifth has-background-black">
       <aside className="p-3">
         <div className="Logo mt-3">
-          <img src={LogoImg} />
+          {/* <img src={LogoImg} /> */}
           <p> MODCLUB </p>
         </div>
     
         <hr />
 
-        {isAuthenticated && user ? (<p> Username: { user.userName }</p>) : <SignIn /> }
+        {/* {isAuthenticated && user ? (<p> Username: { user.userName }</p>) : <SignIn /> } */}
 
         <ul className="menu-list">
           <li>
             <Link to="/app">
               <span className="icon"></span>
               <span>Dashboard</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/app/moderators">
+              <span className="icon"></span>
+              <span>Moderators</span>
             </Link>
           </li>
           <li>
@@ -42,6 +48,12 @@ export default function Sidebar() {
             <Link to="/app/support">
               <span className="icon"></span>
               <span>Support</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/app/activity">
+              <span className="icon"></span>
+              <span>Activity</span>
             </Link>
           </li>
           <li>
