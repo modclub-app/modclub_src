@@ -1,25 +1,6 @@
-// @import "./common.scss";
+@import "./common.scss";
 @import url("https://fonts.googleapis.com/css?family=Poppins");
 
-
-// $secondary-text-color: #818a94;
-// $horizontal-line-color: #3e4348;
-// $card-background: #212121;
-// $highlighted-text: #c91988;
-
-// $button-background-color: #3d52fa;
-// $button-background-hover-color: #5769f5;
-// $button-foreground-color: #fff;
-// $dark-button-border-color: #818a94;
-
-$primary: #3d52fa;
-$primary-hover: #5769f5;
-$secondary: #c91988;
-$white: #fff;
-$light: #c4c4c4;
-$silver: #818A94;
-$dark: #212121;
-$black: #121212;
 
 body,
 html,
@@ -95,6 +76,22 @@ html,
 
 
 /* Bulma Overrides */
+@media screen and (min-width: 769px), print {
+  .hero.is-medium .hero-body {
+    padding: 4rem 16% 0;
+  }
+}
+
+a.navbar-item {
+  font-weight: 700;
+  color: $white;
+
+  &:hover {
+    background: none;
+    color: $white;
+  }
+}
+
 .title {
   color: #fff;
   font-weight: 700;
@@ -137,6 +134,12 @@ hr {
 
   &.is-large {
     font-size: 1rem;
+
+    &.extra {
+      font-size: 1.25rem;
+      padding: 2rem;
+      width: 200px;
+    }
   }
 
   &.is-small:not(.is-rounded) {
@@ -183,13 +186,24 @@ hr {
   margin-right: .75rem;
 }
 
-.column > .card {
-  height: 100%;
-}
-
 .card {
   background: $black;
   color: $light;
+
+  &.is-fullheight {
+    height: 100%;
+  }
+
+  &.has-bottom-gradient::after {
+    content: '';
+    display: block;
+    height: 1px;
+    position: absolute;
+    left: 2em;
+    right: 2rem;
+    bottom: 1px;
+    background: linear-gradient(to left, $primary, $secondary);
+  }
 
   &.has-gradient {
     background: linear-gradient(to left, $primary, $secondary);
@@ -379,12 +393,4 @@ input[type="checkbox"] {
     background: $dark;
   }
 }
-
-
-
-
-
-
-
-
 

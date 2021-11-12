@@ -1,155 +1,37 @@
 @import "../../../common.scss";
-.LandingButtons {
-  width: 200px;
-  height: 60px;
-  font-size: 18px;
+
+.roadmapLine {
+  width: 1rem;
+  height: 700px;
+  border-radius: 1rem;
+  background-color: $secondary;
+  background-image: linear-gradient($primary, $secondary);
+  position: absolute;
+  left: auto;
+  right: auto;
+  top: 1rem;
 }
 
-.DevButton {
-  width: 200px;
-  height: 60px;
-  font-size: 18px;
-}
+.card {
+  &.arrow-left::after, &.arrow-right:after {
+    content: '';
+    position: absolute;
+    left: -15px;
+    top: 15px;
+    border-top: 15px solid transparent;
+    border-right: 15px solid $dark;
+    border-left: none;
+    border-bottom: 15px solid transparent;
 
-.slogan {
-  font-size: 44px;
-  max-width: 800px;
-  text-align: center;
-}
-
-.miniSlogan {
-  color: $secondary-text-color;
-  text-align: center;
-  font-size: 22px;
-  font-weight: 400;
-  max-width: 747px;
-}
-
-.Landing {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 960px;
-}
-
-.LineStyle {
-  max-width: 800px;
-  margin-top: 100px;
-  margin-bottom: 100px;
-}
-
-.MainButtons {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 55px;
-  width: 450px;
-  justify-content: center;
-}
-
-.Cards {
-  display: flex;
-  margin-top: 24px;
-  justify-content: space-evenly;
-}
-
-.HighlightedTextTitle {
-  color: $highlighted-text;
-  font-size: 44px;
-  font-weight: 700;
-}
-
-.TextTitle {
-  color: #fff;
-  font-size: 44px;
-  font-weight: 700;
-}
-
-.ModeratorSection {
-  display: flex;
-  height: 80%;
-  flex-direction: column;
-  justify-content: space-evenly;
-}
-
-.ModerateText {
-  color: $secondary-text-color;
-  font-size: 24px;
-  width: 350px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-.TokenomicsText {
-  color: $secondary-text-color;
-  font-size: 14px;
-  width: 300px;
-}
-
-.FaqSection {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  height: 100%;
-  width: 100%;
-}
-
-.CommunitySection {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  height: 100%;
-  width: 100%;
-}
-
-.rewardsImg {
-  width: 400;
-  height: 500px;
-}
-
-.tokenomicsPie {
-  max-width: 500px;
-}
-.DfinityLogo {
-  height: 22px;
-  width: 42px;
-}
-
-@media screen and (max-width: 992px) {
-  .slogan {
-    font-size: 28px;
+    @media screen and (max-width: 768px) {
+      content: none;
+    }
   }
 
-  .DfinityLogo {
-    height: 15px;
-    width: 32px;
-  }
-
-  .LandingButtons {
-    width: 150px;
-    height: 50px;
-  }
-
-  .MainButtons {
-    width: 320px;
-  }
-
-  .FaqSection {
-    align-items: center;
-  }
-
-  .CommunitySection {
-    align-items: center;
-  }
-
-  .CommunityCard {
-    margin-bottom: 5px;
-  }
-
-  .HighlightedTextTitle {
-    font-size: 34px;
-  }
-
-  .TextTitle {
-    font-size: 29px;
+  &.arrow-right::after {
+    left: auto;
+    right: -15px;
+    border-right: none;
+    border-left: 15px solid $dark;
   }
 }
