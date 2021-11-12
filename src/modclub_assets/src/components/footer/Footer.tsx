@@ -1,53 +1,44 @@
-import "./Footer.scss";
 import modclubImg from "../../../assets/logo.png";
+
 export default function Footer() {
   return (
-    <div className="Footer">
-      <div className="FooterInner">
-        <div className="FooterRow">
-          <div className="FooterCol">
-            <a href="/">
-              <div className="FooterLogo">
-                <img src={modclubImg} />
-              </div>
+    <footer className="section footer has-background-black pb-6">
+      <div className="container content">
+
+        <div className="columns">
+          <div className="column is-one-fifth">
+            <img src={modclubImg} style={{ width: 60, height: 60 }} />
+          </div>
+          <div className="column is-one-fifth">
+            <h4 className="subtitle has-text-white">Menu</h4>
+            <a href="#developers" className="is-block has-text-white">
+              Developers
+            </a>
+            <a href="#tokenomics" className="is-block has-text-white">
+              Tokenomics
+            </a>
+            <a href="#team" className="is-block has-text-white">
+              Team
+            </a>
+            <a href="#roadmap" className="is-block has-text-white">
+              Roadmap
             </a>
           </div>
-          <div className="FooterCol">
-            <p>Menu</p>
-            <ul className="FooterList">
-              <li>
-                <a href="#developers">Developers</a>
-              </li>
-              <li>
-                <a href="#tokenomics">Tokenomics</a>
-              </li>
-              <li>
-                <a href="#team">Team</a>
-              </li>
-              <li>
-                <a href="#roadmap">Roadmap</a>
-              </li>
-            </ul>
-          </div>
-          <div className="FooterCol">
-            <p>Company</p>
-            <ul className="FooterList">
-              <li>
-                <a href="mailto:team@modclub.app">Contact</a>
-              </li>
-            </ul>
+          <div className="column is-one-fifth">
+            <h4 className="subtitle has-text-white">Company</h4>
+            <a href="#contact" className="is-block has-text-white">
+              Contact
+            </a>
           </div>
         </div>
-        <div className="horizontal-line FooterLine"></div>
-        <div className="FooterRow" style={{ justifyContent: "space-between" }}>
-          <span className="Copywrite">
-            © 2021 MODCLUB. All Rights Reserved{" "}
-          </span>
-          <a className="Copywrite" href="#main">
-            Go to the top
-          </a>
+
+        <hr style={{ marginTop: 60, marginBottom: 60 }} />
+        
+        <div className="level">
+          <p className="has-text-silver">&copy; 2021 MODCLUB. All Rights Reserved</p>
+          <a href="#main" className="has-text-silver">Go to the top</a>
         </div>
       </div>
-    </div>
+    </footer>
   );
 }

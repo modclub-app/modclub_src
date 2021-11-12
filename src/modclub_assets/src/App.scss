@@ -253,15 +253,17 @@ hr {
     }
   }
 
+
   .progress {
     width: 100px;
     margin: 0;
 
     + span {
+      color: $white;
       width: 100px;
       font-size: 11px;
       position: absolute;
-      top: 1.5rem;
+      top: 1.75rem;
       right: 1.5rem;
       text-align: center;
     }
@@ -348,21 +350,31 @@ input[type="checkbox"] {
   }
 }
 
-.progress::-webkit-progress-bar {
-  background-color: $dark;
+.progress {
+  height: 1.5rem;
+  border-radius: 4px;
+
+  &::-webkit-progress-bar {
+    background-color: $dark;
+  }
+
+  &::-webkit-progress-value {
+    background: linear-gradient(to left, $primary, $secondary);
+    border-radius: 4px;
+  }
+
+  &::-moz-progress-bar {
+    background: linear-gradient(to left, $primary, $secondary);
+    border-radius: 4px;
+  }
+
+  &::-ms-fill {
+    background: linear-gradient(to left, $primary, $secondary);
+    border-radius: 4px;
+  }
 }
 
-.progress::-webkit-progress-value {
-  background: linear-gradient(to left, $primary, $secondary);
-}
 
-.progress::-moz-progress-bar {
-  background: linear-gradient(to left, $primary, $secondary);
-}
-
-.progress::-ms-fill {
-  background: linear-gradient(to left, $primary, $secondary);
-}
 
 .table {
   width: 100%;
@@ -374,10 +386,15 @@ input[type="checkbox"] {
     font-size: 1.25rem;
   }
 
+  &:not(.has-text-left) {
+    td, th {
+      text-align: center !important;
+    }
+  }
+
   td, th {
     border: 0;
     vertical-align: middle;
-    text-align: center !important;
 
     &:first-child {
       border-top-left-radius: 0.25rem;
@@ -386,6 +403,7 @@ input[type="checkbox"] {
     &:last-child {
       border-top-right-radius: 0.25rem;
       border-bottom-right-radius: 0.25rem;
+      text-align: right;
     }
   }
 

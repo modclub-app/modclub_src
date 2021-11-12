@@ -36,9 +36,9 @@ export default function ModclubApp() {
 
   return (
     <>
-      <section className="container columns">
+      <section className="container columns mb-0">
         <Sidebar />
-        <div className="column is-justify-content-flex-start mt-4 ml-5">
+        <div className="column is-justify-content-flex-start mt-4 ml-5 pb-6">
 
           <section className="container" style={fullWidth}>
             <div className="columns">

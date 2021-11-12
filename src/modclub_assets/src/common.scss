@@ -22,3 +22,14 @@ $light: #c4c4c4;
 $silver: #818A94;
 $dark: #212121;
 $black: #121212;
+
+
+.DfinityLogo {
+  height: 22px;
+  width: 42px;
+
+  @media screen and (max-width: 992px) {
+    height: 15px;
+    width: 32px;
+  }
+}
