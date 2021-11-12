@@ -23,6 +23,7 @@ shared ({caller = initializer}) actor class ModClub () {
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
+  let NANOS_PER_MILLI = 1000000;
 
   // Types
   type Content = Types.Content;
@@ -536,8 +537,8 @@ shared ({caller = initializer}) actor class ModClub () {
                         status = content.status;
                         sourceId = content.sourceId;
                         title = content.title;
-                        createdAt = content.createdAt;
-                        updatedAt = content.updatedAt;
+                        createdAt = content.createdAt / NANOS_PER_MILLI ; // Convert to milliseconds
+                        updatedAt = content.updatedAt / NANOS_PER_MILLI ; // Convert to milliseconds
                         text = do  ?{
                           switch(state.textContent.get(content.id)) {
                             case(?x) x.text;
