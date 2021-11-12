@@ -1,5 +1,21 @@
 @import "../../../common.scss";
 
+a.navbar-item {
+  font-weight: 700;
+  color: $white;
+
+  &:hover {
+    background: none;
+    color: $white;
+  }
+}
+
+@media screen and (min-width: 769px), print {
+  .hero.is-medium .hero-body {
+    padding: 4rem 16% 0;
+  }
+}
+
 .roadmapLine {
   width: 1rem;
   height: 700px;

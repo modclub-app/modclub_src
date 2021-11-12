@@ -1,15 +1,17 @@
 import { useState } from "react";
+import modalbgImg from '../../../../assets/modalbg.svg';
+import rejectImg from '../../../../assets/reject.svg';
 
 const Modal = ({ active, platform, toggle, handleSave }) => (
   <div className={`modal ${active ? "is-active" : ""}`}>
     <div className="modal-background" onClick={toggle} />
-    <div className="modal-card">
+    <div className="modal-card" style={{ backgroundImage: `url(${modalbgImg})`}}>
       <section className="modal-card-body">
+        <img src={rejectImg} />
         <h3 className="subtitle">Reject Confirmation</h3>
         <p className="mb-3">Select which rules were broken:</p>
         <div className="card has-background-dark">
           <div className="card-content">
-
             <div className="field level is-relative">
               <input type="checkbox" id="sex" name="sex" /> 
               <label htmlFor="sex" className="is-clickable is-flex-grow-1">No sex or drugs</label>

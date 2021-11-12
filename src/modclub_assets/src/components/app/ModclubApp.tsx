@@ -10,6 +10,10 @@ import Task from "./tasks/Task";
 import Moderators from "./moderators/Moderators";
 import Activity from "./activity/Activity";
 
+import walletImg from '../../../assets/wallet.svg';
+import stakedImg from '../../../assets/staked.svg';
+import performanceImg from '../../../assets/performance.svg';
+
 function Dashboard() {
   return (
     <div>
@@ -44,30 +48,33 @@ export default function ModclubApp() {
             <div className="columns">
               <div className="column">
                 <div className="card" style={fullWidth}>
-                  <div className="card-content">
-                    <div>
-                      <p>Wallet</p>
-                      <h3 className="title is-size-1">500</h3>
+                  <div className="card-content is-flex">
+                    <img src={walletImg} />
+                    <div className="ml-3">
+                      <p style={{ lineHeight: 1 }}>Wallet</p>
+                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>500</h3>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="column">
                 <div className="card" style={fullWidth}>
-                  <div className="card-content">
-                    <div>
-                      <p>Staked</p>
-                      <h3 className="title is-size-1">1000</h3>
+                  <div className="card-content is-flex">
+                    <img src={stakedImg} />
+                    <div className="ml-3">
+                      <p style={{ lineHeight: 1 }}>Staked</p>
+                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>1000</h3>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="column">
                 <div className="card" style={fullWidth}>
-                  <div className="card-content">
-                    <div>
-                      <p>Vote performance</p>
-                      <h3 className="title is-size-1">50%</h3>
+                <div className="card-content is-flex">
+                    <img src={performanceImg} />
+                    <div className="ml-3">
+                      <p style={{ lineHeight: 1 }}>Vote performance</p>
+                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>50%</h3>
                     </div>
                   </div>
                 </div>

@@ -1,11 +1,14 @@
 import { useState } from "react";
+import modalbgImg from '../../../../assets/modalbg.svg';
+import approveImg from '../../../../assets/approve.svg';
 
 const Modal = ({ active, platform, toggle, handleSave }) => (
   <div className={`modal ${active ? "is-active" : ""}`}>
     <div className="modal-background" onClick={toggle} />
-    <div className="modal-card">
+    <div className="modal-card" style={{ backgroundImage: `url(${modalbgImg})`}}>
       <section className="modal-card-body">
-        <h3 className="subtitle">Approve Confirmation</h3>
+        <img src={approveImg} />
+        <h3 className="subtitle mt-3">Approve Confirmation</h3>
         <p>You are confirming that this post follows {platform}'s rules.</p>
         <p>Voting incorrectly will result in some loss of staked tokens.</p>
       </section>

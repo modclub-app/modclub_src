@@ -1,7 +1,6 @@
 @import "./common.scss";
 @import url("https://fonts.googleapis.com/css?family=Poppins");
 
-
 body,
 html,
 #app {
@@ -10,87 +9,13 @@ html,
   background: $dark;
 }
 
-
-// body,
-// html,
-// #app {
-//   height: 100vh;
-//   width: 100vw;
-//   font-family: "Poppins", sans-serif !important;
-// }
-
-// .main {
-//   display: flex;
-//   flex-direction: column;
-//   width: 100%;
-//   height: 100%;
-// }
-
-// h1,
-// h2 {
-//   color: white;
-// }
-
-// discord {
-//   color: #1d82ee;
-// }
-
-// a:visited {
-//   text-decoration: none;
-// }
-
-// a {
-//   color: #fff;
-//   text-decoration: none;
-// }
-
-// .BlueButton {
-//   border-radius: 4px;
-//   background-color: $primary;
-//   color: $white;
-//   text-align: center;
-//   text-decoration: none;
-//   font-weight: 900;
-//   border-style: none;
-// }
-// .BlueButton:hover {
-//   background-color: $primary-hover;
-//   cursor: pointer;
-// }
-
-// .DarkButton {
-//   border-radius: 4px;
-//   background-color: transparent;
-//   border: 1px solid;
-//   font-weight: 900;
-//   color: #fff;
-// }
-
-// .DarkButton:hover {
-//   background-color: rgba(255, 255, 255, 0.856);
-//   color: #000;
-//   cursor: pointer;
-// }
-
-
-
-
-/* Bulma Overrides */
-@media screen and (min-width: 769px), print {
-  .hero.is-medium .hero-body {
-    padding: 4rem 16% 0;
-  }
+a {
+ color: $primary;
+ &:hover {
+   color: $primary-hover;
+ }
 }
 
-a.navbar-item {
-  font-weight: 700;
-  color: $white;
-
-  &:hover {
-    background: none;
-    color: $white;
-  }
-}
 
 .title {
   color: #fff;
@@ -253,7 +178,6 @@ hr {
     }
   }
 
-
   .progress {
     width: 100px;
     margin: 0;
@@ -281,13 +205,19 @@ hr {
   }
 }
 
+
+.modal-card {
+  background-color: $black;
+  background-size: cover;
+}
+
 .modal-card-body {
-  background: $black;
+  background: none;
   color: $white;
-  padding: 5rem 4rem 3rem;
+  padding: 7rem 4rem 3rem;
 }
 .modal-card-foot {
-  background: $black;
+  background: none;
   padding: 1rem 4rem 5rem;
   border-top: 0;
   justify-content: space-between;
