@@ -44,19 +44,15 @@ const styles = {
 
 export default function Faq() {
   return (
-      <div className="FaqOuter">
-        
-          <Accordion allowZeroExpanded>
-            {data.rows.map((item) => (
-              <AccordionItem key={item.uuid}>
-                <AccordionItemHeading>
-                  <AccordionItemButton>{item.title}</AccordionItemButton>
-                </AccordionItemHeading>
-                <AccordionItemPanel>{item.content}</AccordionItemPanel>
-              </AccordionItem>
-            ))}
-          </Accordion>
-
-      </div>
+    <Accordion allowZeroExpanded>
+      {data.rows.map((item) => (
+        <AccordionItem key={item.uuid}>
+          <AccordionItemHeading>
+            <AccordionItemButton>{item.title}</AccordionItemButton>
+          </AccordionItemHeading>
+          <AccordionItemPanel>{item.content}</AccordionItemPanel>
+        </AccordionItem>
+      ))}
+    </Accordion>
   );
 }

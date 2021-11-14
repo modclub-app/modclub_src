@@ -1,48 +1,32 @@
 import { Switch, BrowserRouter, Route, useRouteMatch, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "../../utils/auth";
-import { getAllContent } from "../../utils/api";
 import { useHistory } from "react-router-dom";
 import { SignIn } from "../Auth/SignIn";
-import Sidebar from "../sidebar/Sidebar";
+import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
+import Tasks from "./tasks/Tasks";
+import Task from "./tasks/Task";
+import Moderators from "./moderators/Moderators";
+import Activity from "./activity/Activity";
 
-function Topic() {
+import walletImg from '../../../assets/wallet.svg';
+import stakedImg from '../../../assets/staked.svg';
+import performanceImg from '../../../assets/performance.svg';
+
+function Dashboard() {
   return (
     <div>
-      <h3>Topic</h3>
+      <h3>Dashboard</h3>
     </div>
   );
 }
 
-
-
 export default function ModclubApp() {
-  const [content, setContent] = useState(null);
   const { isAuthReady, isAuthenticated, user, identity } = useAuth(); 
   const history = useHistory();
 
-  const renderContent = async () => {
-    const status = { 'new' : null };
-    const content = await getAllContent(status);
-    let result = [];
-   
-    for (const item of content) {
-      console.log('item', item)
-      result.push(
-        <div className="card mb-5">
-          <div className="card-content">
-            <h3 className="subtitle">{item.appName}</h3>
-            <p>{item.text}</p>
-          </div>
-        </div>
-      );
-    }
-    setContent(<>{result}</>); 
-  }
-
   useEffect(() => {
-    renderContent();
     console.log({ identity, user });
     console.log(identity?.getPrincipal().toString())
     if (!user && isAuthenticated) {
@@ -50,75 +34,69 @@ export default function ModclubApp() {
     }
   }, [identity, user, history]);
 
-  let { path, url } = useRouteMatch();
-
   const fullWidth = {
     width: '100%'
   };
 
   return (
     <>
-      <section className="container columns">
+      <section className="container columns mb-0">
         <Sidebar />
-        <div className="column is-justify-content-flex-start mt-6 ml-6">
+        <div className="column is-justify-content-flex-start mt-4 ml-5 pb-6">
 
           <section className="container" style={fullWidth}>
             <div className="columns">
               <div className="column">
                 <div className="card" style={fullWidth}>
-                  <div className="card-content">
-                    <div>
-                      <p>Wallet</p>
-                      <h3 className="title">500</h3>
+                  <div className="card-content is-flex">
+                    <img src={walletImg} />
+                    <div className="ml-3">
+                      <p style={{ lineHeight: 1 }}>Wallet</p>
+                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>500</h3>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="column">
                 <div className="card" style={fullWidth}>
-                  <div className="card-content">
-                    <div>
-                      <p>Staked</p>
-                      <h3 className="title">1000</h3>
+                  <div className="card-content is-flex">
+                    <img src={stakedImg} />
+                    <div className="ml-3">
+                      <p style={{ lineHeight: 1 }}>Staked</p>
+                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>1000</h3>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="column">
                 <div className="card" style={fullWidth}>
-                  <div className="card-content">
-                    <div>
-                      <p>Vote performance</p>
-                      <h3 className="title">50%</h3>
+                <div className="card-content is-flex">
+                    <img src={performanceImg} />
+                    <div className="ml-3">
+                      <p style={{ lineHeight: 1 }}>Vote performance</p>
+                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>50%</h3>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* {content} */}
-
-            {/* <Switch>
-              <Route exact path={path}>
-                <h3>Please select a topic.</h3>
-              </Route>
-              <Route path={`${path}/:topicId`}>
-                <Topic />
-              </Route>
-            </Switch> */}
-
-            <Link to={`${url}/components`}>Components</Link>
             <Switch>
-              
-              {/* <Route path={`${path}/components`}>
-                <Topic />
-              </Route> */}
-              <Route path="/app/components">
-                <Topic />
+              <Route exact path="/app">
+                <Dashboard />
               </Route>
-              <Route path="/app">
-                <h3>here?</h3>
+              <Route exact path="/app/tasks">
+                <Tasks />
               </Route>
+              <Route path="/app/tasks/:taskId">
+                <Task /> 
+              </Route>
+              <Route exact path="/app/moderators">
+                <Moderators />
+              </Route>
+              <Route exact path="/app/activity">
+                <Activity />
+              </Route>              
             </Switch>
 
           </section>

@@ -4,8 +4,6 @@ import { registerModerator } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { useHistory } from "react-router-dom";  
 
-
-
 export default function NewProfile() {
   const { history } = useHistory();
   const { setUser } = useAuth();

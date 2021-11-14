@@ -1,8 +1,4 @@
 import "./Landing.scss";
-import Card from "../../common/Card";
-import HowToCard from "./HowToCard";
-import BenefitCard from "./BenefitCard";
-import TokenomicsBox from "./TokenomicsBox";
 import { Doughnut } from "react-chartjs-2";
 import HowTo1 from "../../../../assets/network.png";
 import HowTo2 from "../../../../assets/internet.png";
@@ -13,11 +9,7 @@ import CommunityImg from "../../../../assets/community.png";
 import WinnerImg from "../../../../assets/winner.png";
 import HumanityImg from "../../../../assets/humanity.png";
 import IntegrationImg from "../../../../assets/integrate.png";
-import Charts, { ChartType } from "chart.js";
-import Roadmap from "./roadmap/Roadmap";
-import Team from "./team/Team";
 import Faq from "./faq/Faq";
-import Community from "./community/Community";
 import Footer from "../../footer/Footer";
 import DfinityLogo from "../../../../assets/dfinity.svg";
 import { getImage, UploadImage } from "../../../utils/api";
@@ -25,20 +17,20 @@ import { fileToImgSrc } from "../../../utils/util";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { SignIn } from "../../Auth/SignIn";
-import { getAllContent } from "../../../utils/api";
-import MenuItems from "../../header/MenuItems";
 
-const options = {
-  // legend: {
-  //   display: false,
-  //   position: "right",
-  // },
-  // elements: {
-  //   arc: {
-  //     borderWidth: 0,
-  //   },
-  // },
-};
+
+
+
+
+
+import raheel from '../../../../assets/raheel.png';
+import pema from '../../../../assets/pema.png';
+import max from '../../../../assets/max.png';
+import chris from '../../../../assets/chris.png';
+import twitterImg from '../../../../assets/twitter.png';
+import discordImg from '../../../../assets/discord.jpeg';
+import dscvrImg from '../../../../assets/dscvr.jpeg';
+import mediumImg from '../../../../assets/medium.png';
 
 const data = {
   labels: [
@@ -77,170 +69,159 @@ const data = {
 };
 
 export default function Landing() {
-  const [pic, setPic] = useState(null);
-  const [content, setContent] = useState(null);
-  const history = useHistory();
-
-  const getPic = async () => {
-    const data = await getImage('id_1');
-    setPic(fileToImgSrc(data));
-  };
-
-  const handleFileChange = (files) => {
-    if (files.length > 0) {
-      const f = files[0];
-      const reader = new FileReader();
-      reader.onload = function (evt) {
-        const metadata = `name: ${f.name}, type: ${f.type}, size: ${f.size}, contents:`;
-        console.log("Data Type: " + (typeof evt.target.result));
-        console.log({ metadata })
-        console.log(evt.target.result);
-        const data = (typeof evt.target.result == "string") ? evt.target.result : null;
-        UploadImage(data);
-      };
-      reader.readAsDataURL(f);
-    }
-  }
-
-  const renderContent = async () => {
-    const status = { 'new' : null };
-    const content = await getAllContent(status);
-    console.log({ content });
-    let result = [];
-   
-    for (const item of content) {
-      const str = item.id + " " + item.title + " " + item.text + " ";
-      result.push(<li>{str}</li>);
-    }
-    setContent(<ul>{result}</ul>); 
-  }
-
-  useEffect(() => {
-    renderContent();
-  }, []);
-
-  
-
   return (
-    <div className="column">
-      <div className="Landing">
-        <h1 className="slogan">
+  <div className="has-background-black">
+    <section className="hero is-black is-medium">
+      <div className="hero-body container has-text-centered">
+        <h1 className="title is-size-1">
           Decentralized content moderation on the Internet Computer{" "}
           <img className="DfinityLogo" src={DfinityLogo} />
         </h1>
-        <p className="miniSlogan">
+        <p className="has-text-silver is-size-4 has-text-centered mb-6">
           MODCLUB is a decentralized content moderation platform, it simplifies the moderation process by connecting our community to dApps that need UGC moderation.
         </p>
-        <div className="MainButtons">
-          <button className="DarkButton LandingButtons" onClick={() => history.push('/app')}>Coming Soon</button>
-          <SignIn />
+        <div>
+          <a className="button is-large extra mt-6">Coming Soon</a>
         </div>
-        <img src={pic} width="100" height="100" />
+      </div>
+    </section>
 
-        <input type="file" onChange={ (e) => handleFileChange(e.target.files) } />
-        <div className="LineStyle horizontal-line "></div>
-        {content}
-        <div className="TextTitle">How it works</div>
-        <div className="Cards">
-          <HowToCard
-            step={1}
-            title="UGC Data Ingestion"
-            img={HowTo1}
-            desc="DApps send UGC data to MODCLUB for review."
-          />
-          <HowToCard
-            step={2}
-            title="Moderator Review"
-            img={HowTo2}
-            desc="Moderators review the content then vote to approve or reject it."
-          />
-          <HowToCard
-            step={3}
-            title="Reward Distribution"
-            img={HowTo3}
-            desc="Moderators who voted with majority receive rewards."
-          />
-          <HowToCard
-            step={4}
-            title="Notification"
-            img={HowTo4}
-            desc="MODCLUB notifies the dApp of the final voting result."
-          />
-        </div>
-        <div className="LineStyle horizontal-line "></div>
-        <div className="row">
-          <img
-            className="rewardsImg"
-            src={RewardsImg}
-            style={{ marginRight: 10 }}
-          />
-          <div className="ModeratorSection" style={{ marginLeft: 10 }}>
-            <div className="HighlightedTextTitle">Become a Moderator</div>
-            <div className="TextTitle">Earn Rewards</div>
+    <section className="section">
+      <div className="container" style={{ maxWidth: 960 }}>
 
-            <div className="ModerateText">
-              Moderators earn reward tokens for actively moderating and
-              participating on the platform.
+        <hr style={{ margin: 100 }} />
+
+        <h1 className="title is-size-1 has-text-centered mt-6">
+          How it works
+        </h1>
+
+        <div className="columns">
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content has-text-centered pt-6 px-2">
+                <h3 className="subtitle mb-4">Step 1</h3>
+                <h3 className="subtitle">UGC Data Ingestion</h3>
+                <img src={HowTo1} style={{ height: 60, width: 60, margin: 10 }} />
+                <p className="is-size-5 has-text-silver">DApps send UGC data to MODCLUB for review.</p>
+              </div>
             </div>
+          </div>
 
-            <button className="DarkButton LandingButtons">Coming Soon</button>
-          </div>
-        </div>
-        <div className="LineStyle horizontal-line "></div>
-        <a id="developers" />
-        <div className="column">
-          <div className="TextTitle marginTop marginBottom">
-            Benefits for Developers
-          </div>
-          <div className="Cards">
-            <BenefitCard
-              title="A large community 
-          of moderators"
-              img={CommunityImg}
-              desc="MODCLUB is the central place for dApps to offload their moderation."
-            />
-            <BenefitCard
-              title="Reward users with 
-          your own token"
-              img={WinnerImg}
-              desc="You can choose to reward moderators with your own platform token."
-            />
-            <BenefitCard
-              title="Proof 
-          of Humanity"
-              img={HumanityImg}
-              desc="Use MODCLUB to prove your users are real."
-            />
-            <BenefitCard
-              title="Easy 
-          to Integrate"
-              img={IntegrationImg}
-              desc="With our SDK you can get setup in minutes."
-            />
-          </div>
-          <a href="mailto:team@modclub.app">
-            <button className="BlueButton DevButton marginTop marginBottom">
-              Contact Us
-            </button>
-          </a>
-        </div>
-        <div className="LineStyle horizontal-line "></div>
-        <a id="tokenomics" />
-        <div className="row" style={{ width: "100%" }}>
-          <div
-            id="tokenSection"
-            className="column columnLeft"
-            style={{ paddingLeft: 20 }}
-          >
-            <div className="TextTitle marginTop marginBottom">Tokenomics</div>
-            <div className="Tokenomics Text marginBottom">
-              MODCLUB Tokens (MOD) will play a crucial role in the MODCLUB ecosystem. It is a reputation token that is required in order to participate in the platform. It can be used to receive rewards, participate in governance, get access to Airdrops and other awesome
-              features.
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content has-text-centered pt-6 px-2">
+                <h3 className="subtitle mb-4">Step 2</h3>
+                <h3 className="subtitle">Moderator Review</h3>
+                <img src={HowTo2} style={{ height: 60, width: 60, margin: 10 }} />
+                <p className="is-size-5 has-text-silver">Moderators review the content then vote to approve or reject it.</p>
+              </div>
             </div>
-            <div className="tokenomicsPie">
+          </div>
+
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content has-text-centered pt-6 px-2">
+                <h3 className="subtitle mb-4">Step 3</h3>
+                <h3 className="subtitle">Reward Distribution</h3>
+                <img src={HowTo3} style={{ height: 60, width: 60, margin: 10 }} />
+                <p className="is-size-5 has-text-silver">Moderators who voted with majority receive rewards.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content has-text-centered pt-6 px-2">
+                <h3 className="subtitle mb-4">Step 4</h3>
+                <h3 className="subtitle">Notification</h3>
+                <img src={HowTo4} style={{ height: 60, width: 60, margin: 10 }} />
+                <p className="is-size-5 has-text-silver">MODCLUB notifies the dApp of the final voting result.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr style={{ margin: 100 }} />
+
+        <div className="columns">
+          <div className="column has-text-right">
+            <img
+              src={RewardsImg}
+              style={{ height: 500, marginRight: 10 }}
+            />
+          </div>
+          <div className="column">
+            <h3 className="title is-size-1 has-text-secondary mb-3">Become a Moderator</h3>
+            <h3 className="title is-size-1">Earn Rewards</h3>
+            <p className="has-text-silver is-size-4 mb-5">
+              Moderators earn reward tokens for actively moderating and participating on the platform.
+            </p>
+            <a className="button is-large extra">Coming Soon</a>
+          </div>
+        </div>
+
+        <hr style={{ margin: 100 }} />
+
+        <h3 className="title is-size-1 has-text-centered">Benefits for Developers</h3>
+
+        <div className="columns">
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content p-3">
+                <img src={CommunityImg} style={{ height: 105, width: 185, borderRadius: 4 }} />
+                <h3 className="subtitle my-4">A large community of moderators</h3>
+                <p className="has-text-silver mb-6">MODCLUB is the central place for dApps to offload their moderation.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content p-3">
+                <img src={WinnerImg} style={{ height: 105, width: 185, borderRadius: 4 }} />
+                <h3 className="subtitle my-4">Reward users with your own token</h3>
+                <p className="has-text-silver mb-6">You can choose to reward moderators with your own platform token.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content p-3">
+                <img src={HumanityImg} style={{ height: 105, width: 185, borderRadius: 4 }} />
+                <h3 className="subtitle my-4">Proof of Humanity</h3>
+                <p className="has-text-silver mb-6">Use MODCLUB to prove your users are real.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content p-3">
+                <img src={IntegrationImg} style={{ height: 105, width: 185, borderRadius: 4 }} />
+                <h3 className="subtitle my-4">Easy to Integrate</h3>
+                <p className="has-text-silver mb-6">With our SDK you can get setup in minutes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="has-text-centered pt-3">
+          <a className="button is-large extra is-primary">Contact Us</a>
+        </div>
+
+        <hr style={{ margin: 100 }} />
+
+        <div className="columns">
+          <div className="column">
+            <h3 className="title is-size-1 mt-5">Tokenomics</h3>
+            <p className="is-size-5 has-text-white mb-5">
+              MODCLUB Tokens (MOD) will play a crucial role in the MODCLUB ecosystem. It is a reputation token that is required in order to participate in the platform. It can be used to receive rewards, participate in governance, get access to Airdrops and other awesome features.
+            </p>
+            <div style={{ width: 320}}>
               <Doughnut
-                data={data}                
-                options={{                  
+                data={data}
+                options={{
                   plugins: {
                     legend: {
                       position: "bottom",
@@ -251,50 +232,228 @@ export default function Landing() {
               />
             </div>
           </div>
-          <div className="row left">
-            <div className="column">
-              <TokenomicsBox title="Initial Max Supply" value="1,000,000,000" />
-              <TokenomicsBox title="Token Type" value="Utility" />
-              <TokenomicsBox title="Initial Price" value="TBD" />
+          <div className="column">
+            <div className="columns">
+              <div className="column mr-5">
+                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
+                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
+                    <label className="label has-text-white mt-3">Initial Max Supply</label>
+                    <p className="has-text-silver is-size-4 mb-3">1,000,000,000</p>
+                  </div>
+                </div>
+                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
+                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
+                    <label className="label has-text-white mt-3">Token Type</label>
+                    <p className="has-text-silver is-size-4 mb-3">Utility</p>
+                  </div>
+                </div>
+                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
+                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
+                    <label className="label has-text-white mt-3">Initial Price</label>
+                    <p className="has-text-silver is-size-4 mb-3">TBD</p>
+                  </div>
+                </div>
+              </div>
+              <div className="column is-flex is-flex-direction-column is-justify-content-center">
+                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
+                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
+                    <label className="label has-text-white mt-3">Token Symbol</label>
+                    <p className="has-text-silver is-size-4 mb-3">MOD</p>
+                  </div>
+                </div>
+                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
+                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
+                    <label className="label has-text-white mt-3">Token Supply</label>
+                    <p className="has-text-silver is-size-4 mb-3">Deflationary</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="column">
-              <TokenomicsBox title="Token Symbol" value="MOD" />
-              <TokenomicsBox title="Token Supply" value="Deflationary" />
+          </div>
+        </div>
+
+        <hr style={{ margin: 100 }} />
+
+        <h3 className="title is-size-1 has-text-centered">Roadmap</h3>
+
+        <label className="label has-text-white has-text-centered">2021</label>
+
+        <div className="columns is-justify-content-center is-relative">
+
+          <div className="roadmapLine is-hidden-mobile"></div>
+
+          <div className="column is-one-quarter mr-6">
+            <div className="card has-background-dark my-6 arrow-right">
+              <div className="card-content">
+                <h4 className="subtitle">Q4 2021</h4>
+                <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                  <li>Web Application MVP</li>
+                  <li>Content Moderation</li>
+                  <li>Proof of Humanity</li>
+                  <li>Launch SDK</li>
+                  <li>Fundraising</li>
+                </ul>
+              </div>
+            </div>
+            <div className="card has-background-dark mb-6 arrow-right">
+              <div className="card-content">
+                <h4 className="subtitle">Q2 2022</h4>
+                <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                  <li>Content labelling support</li>
+                  <li>Public sale &amp; Token launch</li>
+                  <li>Enable moderators to receive partner tokens</li>
+                </ul>
+              </div>
+            </div>
+            <div className="card has-background-dark mb-6 arrow-right">
+              <div className="card-content">
+                <h4 className="subtitle">Q4 2022</h4>
+                <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                  <li>AI content filtering</li>
+                  <li>AI image detection</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="column is-one-quarter">
+            <div className="card has-background-dark mb-6 arrow-left">
+              <div className="card-content" style={{ marginTop: 100 }}>
+                <h4 className="subtitle">Q1 2022</h4>
+                <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                  <li>UGC Pre-approval</li>
+                  <li>Programatic scripting</li>
+                  <li>Plug wallet support</li>
+                  <li>Complete raise</li>
+                  <li>Team buildout</li>
+                </ul>
+              </div>
+            </div>
+            <div className="card has-background-dark mb-6 arrow-left">
+              <div className="card-content">
+                <h4 className="subtitle">Q3 2022</h4>
+                <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                  <li>KYC</li>
+                  <li>Governance System</li>
+                  <li>Multi-language support</li>
+                  <li>Moderator educational content</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-        <div className="LineStyle horizontal-line "></div>
-        <a id="roadmap" />
-        <div className="column">
-          <div className="TextTitle marginTop marginBottom">Roadmap</div>
-          <div>
-            <strong>2021</strong>
+
+        <hr style={{ margin: 100 }} />
+        
+        <h3 className="title is-size-1 has-text-centered">Our Team</h3>
+
+        <div className="columns">
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content has-text-centered">
+                <img src={raheel} style={{ width: 128, height: 128 }} />
+                <h3 className="subtitle my-4">Raheel Govindji</h3>
+                <p className="has-text-silver is-size-5">CEO and Founder</p>
+              </div>
+            </div>
           </div>
-          <Roadmap />
-        </div>
-        <div className="LineStyle horizontal-line "></div>
-        <a id="team" />
-        <div className="row">
-          <Team />
-        </div>
-        <div className="LineStyle horizontal-line "></div>
-        <div className="row">
-          <div className="FaqSection">
-            <div className="TextTitle marginTop marginBottom">FAQ</div>
-            <Faq />
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content has-text-centered">
+                <img src={chris} style={{ width: 128, height: 128 }} />
+                <h3 className="subtitle my-4">Chris Porteus</h3>
+                <p className="has-text-silver is-size-5">Marketing Advisor</p>
+              </div>
+            </div>
           </div>
-          <div className="CommunitySection">
-            <div className="TextTitle marginTop marginBottom">Community</div>
-            <Community />
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content has-text-centered">
+                <img src={pema} style={{ width: 128, height: 128 }} />
+                <h3 className="subtitle my-4">Pema Banigan</h3>
+                <p className="has-text-silver is-size-5">Partnership Lead</p>
+              </div>
+            </div>
+          </div>
+          <div className="column">
+            <div className="card is-fullheight has-background-dark has-bottom-gradient">
+              <div className="card-content has-text-centered">
+                <img src={max} style={{ width: 128, height: 128 }} />
+                <h3 className="subtitle my-4">Max Zidel</h3>
+                <p className="has-text-silver is-size-5">Business Advisor</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="LineStyle horizontal-line "></div>
+
+        <hr style={{ margin: 100 }} />
+
+        <div className="columns">
+          <div className="column is-flex is-flex-direction-column">
+            <h3 className="title is-size-1">FAQ</h3>
+
+            <div className="card is-fullheight has-background-dark">
+              <div className="card-content p-0">
+                <Faq />
+              </div>
+            </div>
+          </div>
+
+          <div className="column">
+            <h3 className="title is-size-1">Community</h3>
+
+            <div className="columns is-multiline">
+              <div className="column is-half">
+                <div className="card has-background-dark">
+                  <div className="card-content has-text-centered">
+                    <a href="https://twitter.com/ModclubApp" target="_blank">
+                      <img src={twitterImg} style={{ width: 60, height: 60, borderRadius: 4 }} />
+                    </a>
+                    <h3 className="subtitle mt-5">Twitter</h3>
+                  </div>
+                </div>
+              </div>
+              <div className="column is-half">
+                <div className="card has-background-dark">
+                  <div className="card-content has-text-centered">
+                    <a href="http://discord.gg/8zUrHd46Tf" target="_blank">
+                      <img src={discordImg} style={{ width: 60, height: 60, borderRadius: 4 }} />
+                    </a>
+                    <h3 className="subtitle mt-5">Discord</h3>
+                  </div>
+                </div>
+              </div>
+              <div className="column is-half">
+                <div className="card has-background-dark">
+                  <div className="card-content has-text-centered">
+                    <a href="https://dscvr.one" target="_blank">
+                      <img src={dscvrImg} style={{ width: 60, height: 60, borderRadius: 4 }} />
+                    </a>
+                    <h3 className="subtitle mt-5">DSCVR</h3>
+                  </div>
+                </div>
+              </div>
+              <div className="column is-half">
+                <div className="card has-background-dark">
+                  <div className="card-content has-text-centered">
+                    <a href="https://medium.com/@modclub" target="_blank">
+                      <img src={mediumImg} style={{ width: 60, height: 60, borderRadius: 4 }} />
+                    </a>
+                    <h3 className="subtitle mt-5">Medium</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr style={{ margin: 100 }} />
+
       </div>
-      <Footer />
-    </div>
+    </section>
+
+    <Footer />
+  </div>
   );
-}
-function hexToRgb(arg0: any) {
-  throw new Error("Function not implemented.");
 }
 
