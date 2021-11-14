@@ -1,6 +1,6 @@
-import { imageToUint8Array } from "./util";
+import { imageToUint8Array, unwrap } from "./util";
 import { actorController } from "./actor";
-import { ContentPlus, ContentStatus, Profile } from "./types";
+import { ContentPlus, ContentStatus, Decision, Profile, RuleId } from "./types";
 import { modclub as MC } from "../../../declarations/modclub/index";
 
 export type Optional<Type> = [Type] | [];
@@ -61,21 +61,10 @@ export async function getContent(
   return unwrap<ContentPlus>(await MC.getContent(contentId));
 }
 
-// Move these to util.ts
-export function fileToImgSrc(file: number[], imgType = "png"): string {
-  const bufferBlob = [Buffer.from(new Uint8Array(file))];
-  const picBlob = new Blob(bufferBlob, { type: `image/{imgType}` });
-  const picSrc = URL.createObjectURL(picBlob);
-  return picSrc;
+export async function vote(
+  contentId: string,
+  decision: Decision,
+  rules?: RuleId[]
+): Promise<string> {
+  return (await modclub).vote(contentId, decision, [rules]);
 }
-
-export function unwrap<T>(val: Optional<T>): T | null {
-  if (val[0] === undefined) {
-    return null;
-  } else {
-    return val[0];
-  }
-}
-
-export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
-  Array.from(new Uint8Array(file));
