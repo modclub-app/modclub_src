@@ -70,7 +70,7 @@ const data = {
 
 export default function Landing() {
   return (
-  <div className="has-background-black">
+  <div className="landing-page has-background-black">
     <section className="hero is-black is-medium">
       <div className="hero-body container has-text-centered">
         <h1 className="title is-size-1">
@@ -89,9 +89,7 @@ export default function Landing() {
     <section className="section">
       <div className="container" style={{ maxWidth: 960 }}>
 
-        <hr style={{ margin: 100 }} />
-
-        <h1 className="title is-size-1 has-text-centered mt-6">
+        <h1 className="title is-size-1 has-text-centered">
           How it works
         </h1>
 
@@ -140,11 +138,15 @@ export default function Landing() {
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <hr style={{ margin: 100 }} />
+
+    <section className="section">
+      <div className="container" style={{ maxWidth: 960 }}>
 
         <div className="columns">
-          <div className="column has-text-right">
+          <div className="column RewardsImg">
             <img
               src={RewardsImg}
               style={{ height: 500, marginRight: 10 }}
@@ -160,15 +162,19 @@ export default function Landing() {
           </div>
         </div>
 
-        <hr style={{ margin: 100 }} />
+      </div>
+    </section>
 
-        <h3 className="title is-size-1 has-text-centered">Benefits for Developers</h3>
+    <section className="section">
+      <div className="container" style={{ maxWidth: 960 }}>
+
+        <h3 className="title is-size-1 has-text-centered mb-6">Benefits for Developers</h3>
 
         <div className="columns">
           <div className="column">
             <div className="card is-fullheight has-background-dark has-bottom-gradient">
               <div className="card-content p-3">
-                <img src={CommunityImg} style={{ height: 105, width: 185, borderRadius: 4 }} />
+                <img src={CommunityImg} style={{ height: 105, width: 185, borderRadius: 4, display: 'block', margin: 'auto' }} />
                 <h3 className="subtitle my-4">A large community of moderators</h3>
                 <p className="has-text-silver mb-6">MODCLUB is the central place for dApps to offload their moderation.</p>
               </div>
@@ -178,7 +184,7 @@ export default function Landing() {
           <div className="column">
             <div className="card is-fullheight has-background-dark has-bottom-gradient">
               <div className="card-content p-3">
-                <img src={WinnerImg} style={{ height: 105, width: 185, borderRadius: 4 }} />
+                <img src={WinnerImg} style={{ height: 105, width: 185, borderRadius: 4, display: 'block', margin: 'auto' }} />
                 <h3 className="subtitle my-4">Reward users with your own token</h3>
                 <p className="has-text-silver mb-6">You can choose to reward moderators with your own platform token.</p>
               </div>
@@ -188,7 +194,7 @@ export default function Landing() {
           <div className="column">
             <div className="card is-fullheight has-background-dark has-bottom-gradient">
               <div className="card-content p-3">
-                <img src={HumanityImg} style={{ height: 105, width: 185, borderRadius: 4 }} />
+                <img src={HumanityImg} style={{ height: 105, width: 185, borderRadius: 4, display: 'block', margin: 'auto' }} />
                 <h3 className="subtitle my-4">Proof of Humanity</h3>
                 <p className="has-text-silver mb-6">Use MODCLUB to prove your users are real.</p>
               </div>
@@ -198,7 +204,7 @@ export default function Landing() {
           <div className="column">
             <div className="card is-fullheight has-background-dark has-bottom-gradient">
               <div className="card-content p-3">
-                <img src={IntegrationImg} style={{ height: 105, width: 185, borderRadius: 4 }} />
+                <img src={IntegrationImg} style={{ height: 105, width: 185, borderRadius: 4, display: 'block', margin: 'auto' }} />
                 <h3 className="subtitle my-4">Easy to Integrate</h3>
                 <p className="has-text-silver mb-6">With our SDK you can get setup in minutes.</p>
               </div>
@@ -210,11 +216,15 @@ export default function Landing() {
           <a className="button is-large extra is-primary">Contact Us</a>
         </div>
 
-        <hr style={{ margin: 100 }} />
+      </div>
+    </section>
+
+    <section className="section Tokenomics">
+      <div className="container" style={{ maxWidth: 960 }}>
 
         <div className="columns">
           <div className="column">
-            <h3 className="title is-size-1 mt-5">Tokenomics</h3>
+            <h3 className="title is-size-1">Tokenomics</h3>
             <p className="is-size-5 has-text-white mb-5">
               MODCLUB Tokens (MOD) will play a crucial role in the MODCLUB ecosystem. It is a reputation token that is required in order to participate in the platform. It can be used to receive rewards, participate in governance, get access to Airdrops and other awesome features.
             </p>
@@ -234,7 +244,7 @@ export default function Landing() {
           </div>
           <div className="column">
             <div className="columns">
-              <div className="column mr-5">
+              <div className="column pb-0">
                 <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
                   <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
                     <label className="label has-text-white mt-3">Initial Max Supply</label>
@@ -261,7 +271,7 @@ export default function Landing() {
                     <p className="has-text-silver is-size-4 mb-3">MOD</p>
                   </div>
                 </div>
-                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
+                <div className="card has-gradient" style={{ borderRadius: 0 }}>
                   <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
                     <label className="label has-text-white mt-3">Token Supply</label>
                     <p className="has-text-silver is-size-4 mb-3">Deflationary</p>
@@ -272,17 +282,21 @@ export default function Landing() {
           </div>
         </div>
 
-        <hr style={{ margin: 100 }} />
+      </div>
+    </section>
+
+    <section className="section">
+      <div className="container" style={{ maxWidth: 960 }}>
 
         <h3 className="title is-size-1 has-text-centered">Roadmap</h3>
 
         <label className="label has-text-white has-text-centered">2021</label>
 
-        <div className="columns is-justify-content-center is-relative">
+        <div className="columns is-justify-content-center is-relative is-hidden-mobile">
 
-          <div className="roadmapLine is-hidden-mobile"></div>
+          <div className="roadmapLine"></div>
 
-          <div className="column is-one-quarter mr-6">
+          <div className="column is-one-quarter">
             <div className="card has-background-dark my-6 arrow-right">
               <div className="card-content">
                 <h4 className="subtitle">Q4 2021</h4>
@@ -343,7 +357,73 @@ export default function Landing() {
           </div>
         </div>
 
-        <hr style={{ margin: 100 }} />
+
+
+
+
+
+
+        <div className="is-hidden-tablet-only	is-hidden-desktop-only is-hidden-widescreen-only">
+          <div className="card has-background-dark mb-6">
+            <div className="card-content">
+              <h4 className="subtitle">Q4 2021</h4>
+              <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                <li>Web Application MVP</li>
+                <li>Content Moderation</li>
+                <li>Proof of Humanity</li>
+                <li>Launch SDK</li>
+                <li>Fundraising</li>
+              </ul>
+            </div>
+          </div>
+          <div className="card has-background-dark mb-6">
+            <div className="card-content">
+              <h4 className="subtitle">Q1 2022</h4>
+              <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                <li>UGC Pre-approval</li>
+                <li>Programatic scripting</li>
+                <li>Plug wallet support</li>
+                <li>Complete raise</li>
+                <li>Team buildout</li>
+              </ul>
+            </div>
+          </div>
+          <div className="card has-background-dark mb-6">
+            <div className="card-content">
+              <h4 className="subtitle">Q2 2022</h4>
+              <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                <li>Content labelling support</li>
+                <li>Public sale &amp; Token launch</li>
+                <li>Enable moderators to receive partner tokens</li>
+              </ul>
+            </div>
+          </div>
+          <div className="card has-background-dark mb-6">
+            <div className="card-content">
+              <h4 className="subtitle">Q3 2022</h4>
+              <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                <li>KYC</li>
+                <li>Governance System</li>
+                <li>Multi-language support</li>
+                <li>Moderator educational content</li>
+              </ul>
+            </div>
+          </div>
+          <div className="card has-background-dark mb-6">
+            <div className="card-content">
+              <h4 className="subtitle">Q4 2022</h4>
+              <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                <li>AI content filtering</li>
+                <li>AI image detection</li>
+              </ul>
+            </div>
+          </div>          
+        </div>
+      </div>
+    </section>
+
+    <section className="section">
+      <div className="container" style={{ maxWidth: 960 }}>
         
         <h3 className="title is-size-1 has-text-centered">Our Team</h3>
 
@@ -386,7 +466,11 @@ export default function Landing() {
           </div>
         </div>
 
-        <hr style={{ margin: 100 }} />
+      </div>
+    </section>
+
+    <section className="section">
+      <div className="container" style={{ maxWidth: 960 }}>
 
         <div className="columns">
           <div className="column is-flex is-flex-direction-column">
@@ -446,8 +530,6 @@ export default function Landing() {
             </div>
           </div>
         </div>
-
-        <hr style={{ margin: 100 }} />
 
       </div>
     </section>

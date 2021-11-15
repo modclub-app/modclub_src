@@ -3,11 +3,12 @@ import styled from "styled-components";
 import "./Hamburger.scss";
 
 const StyledMenu = styled.nav`
-  display: flex;
+  // display: flex;
   flex-direction: column;
   justify-content: center;
   background: #111215;
   transform: ${({ open }) => (open ? "translateX(0)" : "translateX(100%)")};
+  display: ${({ open }) => (open ? "flex" : "none")};
   text-align: left;
   padding: 2rem;
   position: absolute;
@@ -15,7 +16,7 @@ const StyledMenu = styled.nav`
   left: 0;
   transition: transform 0.3s ease-in-out;
 
-  @media (max-width: 833px) {
+  @media (max-width: 1023px) {
     width: 100%;
   }
 
