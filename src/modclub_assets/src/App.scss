@@ -1,5 +1,14 @@
 @import "./common.scss";
 @import url("https://fonts.googleapis.com/css?family=Poppins");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+.icon {
+  // font-family: "Material Icons";
+  background: -webkit-linear-gradient($primary, $secondary);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
 body,
 html,

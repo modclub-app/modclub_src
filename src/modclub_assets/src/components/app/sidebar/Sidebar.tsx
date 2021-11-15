@@ -34,6 +34,10 @@ export default function Sidebar() {
 
         {isAuthenticated && user ? (<p> Username: { user.userName }</p>) : <SignIn /> }
 
+        <span className="icon">
+          <span className="material-icons">playlist_add_check</span>
+        </span>
+
         <ul className="menu-list">
           <li>
             <Link to="/app">
