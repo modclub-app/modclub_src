@@ -8,6 +8,7 @@ import Approve from "../modals/Approve";
 export default function Tasks() {
   const [content, setContent] = useState(null);
 
+
   const renderContent = async () => {
     const status = { 'new' : null };
     const content = await getAllContent(status);

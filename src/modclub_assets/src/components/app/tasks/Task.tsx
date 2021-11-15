@@ -4,13 +4,13 @@ import { useParams } from "react-router";
 import { getContent } from "../../../utils/api";
 import Reject from "../modals/Reject";
 import Approve from "../modals/Approve";
-import blueArrowIcon from '../../../../assets/icons/blue_arrow.svg';
 import { formatDistanceStrict, format } from "date-fns";
 
 
-import linkIcon from '../../../../assets/icons/link.svg';
-import commentIcon from '../../../../assets/icons/comment.svg';
-import categoryIcon from '../../../../assets/icons/category.svg';
+// import blueArrowIcon from '../../../../assets/icons/blue_arrow.svg';
+// import linkIcon from '../../../../assets/icons/link.svg';
+// import commentIcon from '../../../../assets/icons/comment.svg';
+// import categoryIcon from '../../../../assets/icons/category.svg';
 
 
 export default function Task() {
@@ -55,9 +55,9 @@ export default function Task() {
 
                     <div className="level mb-2">
                       <label className="label mb-0 is-flex is-align-items-center">
-                      <span className="icon mr-3">
-                        <img src={linkIcon} />
-                      </span>
+                        <span className="icon">
+                          <span className="material-icons">assignment_ind</span>
+                        </span>
                         <span>Link to Post</span>
                       </label>
                       <p className="has-text-silver">http://www.example.com/post1</p>
@@ -65,9 +65,9 @@ export default function Task() {
 
                     <div className="level mb-2">
                       <label className="label mb-0 is-flex is-align-items-center">
-                      <span className="icon mr-3">
-                        <img src={categoryIcon} />
-                      </span>
+                        <span className="icon">
+                          <span className="material-icons">assignment_ind</span>
+                        </span>
                         <span>Category</span>
                       </label>
                       <p className="has-text-silver">Gaming</p>
@@ -75,9 +75,9 @@ export default function Task() {
 
                     <div className="level mb-2">
                       <label className="label mb-0 is-flex is-align-items-center">
-                      <span className="icon mr-3">
-                        <img src={commentIcon} />
-                      </span>
+                        <span className="icon">
+                          <span className="material-icons">assignment_ind</span>
+                        </span>
                         <span>Comment</span>
                       </label>
                       <p className="has-text-silver">This post looked suspicious please review as we are not sure.</p>
@@ -128,7 +128,7 @@ export default function Task() {
               <ul>
                 <li>
                   <span className="icon mr-2">
-                    <img src={blueArrowIcon} />
+                    <span className="material-icons">assignment_ind</span>
                   </span>
                   <span>No sex or drugs</span>
                 </li>

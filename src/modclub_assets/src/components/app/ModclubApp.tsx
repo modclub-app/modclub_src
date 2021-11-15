@@ -30,7 +30,7 @@ export default function ModclubApp() {
     console.log({ identity, user });
     console.log(identity?.getPrincipal().toString())
     if (!user && isAuthenticated) {
-      history.push("/signup");
+      // history.push("/signup");
     }
   }, [identity, user, history]);
 

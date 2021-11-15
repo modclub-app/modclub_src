@@ -1,26 +1,15 @@
 import { Link } from "react-router-dom";
 import "./Sidebar.scss";
 import LogoImg from '../../../../assets/logo.png';
-
-import hamburgerIcon from '../../../../assets/icons/hamburger.svg';
-import tasksIcon from '../../../../assets/icons/tasks.svg';
-import moderatorIcon from '../../../../assets/icons/moderator.svg';
-
-
-import appsIcon from '../../../../assets/icons/apps.svg';
-import rewardsIcon from '../../../../assets/icons/rewards.svg';
-import checkIcon from '../../../../assets/icons/check.svg';
-import questionIcon from '../../../../assets/icons/question.svg';
-import starIcon from '../../../../assets/icons/star.svg';
-import logoutIcon from '../../../../assets/icons/logout.svg';
-
-
-
 import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
 
 export default function Sidebar() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logOut } = useAuth();
+
+  const handleLogOut = async () => {
+    await logOut();
+  };
 
   return (
     <div className="column is-one-fifth has-background-black">
@@ -34,23 +23,19 @@ export default function Sidebar() {
 
         {isAuthenticated && user ? (<p> Username: { user.userName }</p>) : <SignIn /> }
 
-        <span className="icon">
-          <span className="material-icons">playlist_add_check</span>
-        </span>
-
         <ul className="menu-list">
           <li>
             <Link to="/app">
               <span className="icon">
-                <img src={hamburgerIcon} />
+                <span className="material-icons">dehaze</span>
               </span>
               <span>Dashboard</span>
             </Link>
           </li>
           <li>
             <Link to="/app/moderators">
-            <span className="icon">
-                <img src={moderatorIcon} />
+              <span className="icon">
+                <span className="material-icons">assignment_ind</span>
               </span>
               <span>Moderators</span>
             </Link>
@@ -58,7 +43,7 @@ export default function Sidebar() {
           <li>
             <Link to="/app/tasks">
               <span className="icon">
-                <img src={tasksIcon} />
+                <span className="material-icons">playlist_add_check</span>
               </span>
               <span>Tasks</span>
             </Link>
@@ -66,7 +51,7 @@ export default function Sidebar() {
           <li>
             <Link to="/app/verification">
               <span className="icon">
-                <img src={checkIcon} />
+                <span className="material-icons">check_circle_outline</span>
               </span>
               <span>Human Verification</span>
             </Link>
@@ -74,7 +59,7 @@ export default function Sidebar() {
           <li>
             <Link to="/app/support">
               <span className="icon">
-                <img src={questionIcon} />
+                <span className="material-icons">help_outline</span>
               </span>
               <span>Support</span>
             </Link>
@@ -82,15 +67,15 @@ export default function Sidebar() {
           <li>
             <Link to="/app/activity">
               <span className="icon">
-                <img src={hamburgerIcon} />
+                <span className="material-icons">stars</span>
               </span>
               <span>Activity</span>
             </Link>
           </li>
           <li>
-            <a href="#">
+            <a href="#" onClick={handleLogOut} >
               <span className="icon">
-                <img src={logoutIcon} />
+                <span className="material-icons">logout</span>
               </span>
               <span>Logout</span>
             </a>
@@ -101,9 +86,6 @@ export default function Sidebar() {
           Invite a Moderator
         </button>
       </aside>
-
-
-      
     </div>
   );
 }
