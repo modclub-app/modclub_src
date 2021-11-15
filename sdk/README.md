@@ -50,7 +50,7 @@ await MC.submitImage("my_content_id", imageData, "image/png", ?"Title of Image C
 
 You can set the rules that moderators should use to evaluate if the submitted content violates those them or not.
 
-**addContentRules** - Add content rules
+**addRules** - Add content rules
 Params:
 - *rules* - [Text] - An array of Texts that describe your content rules
 

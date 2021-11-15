@@ -1,7 +1,17 @@
 import { imageToUint8Array, unwrap } from "./util";
 import { actorController } from "./actor";
-import { ContentPlus, ContentStatus, Decision, Profile, RuleId } from "./types";
+import {
+  ContentPlus,
+  ContentStatus,
+  Decision,
+  Profile,
+  RuleId,
+  Rule,
+  ProviderPlus,
+  Activity,
+} from "./types";
 import { modclub as MC } from "../../../declarations/modclub/index";
+import { Principal } from "@dfinity/principal";
 
 export type Optional<Type> = [Type] | [];
 
@@ -67,4 +77,16 @@ export async function vote(
   rules?: RuleId[]
 ): Promise<string> {
   return (await modclub).vote(contentId, decision, [rules]);
+}
+
+export async function getRules(providerId: string): Promise<Rule[]> {
+  return (await modclub).getRules(Principal.fromText(providerId));
+}
+
+export async function getProvider(providerId: string): Promise<ProviderPlus> {
+  return (await modclub).getProvider(Principal.fromText(providerId));
+}
+
+export async function getActivity(): Promise<Activity[]> {
+  return (await modclub).getActivity();
 }

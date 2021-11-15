@@ -37,7 +37,7 @@ export default function Task() {
             <div className="card-content">
               <header className="card-header">
                 <p className="card-header-title">
-                  {content.appName}
+                  {content.providerName}
                   <span>Submitted by {content.sourceId}</span>
                 </p>
                 <progress className="progress is-primary" value="80" max="100"></progress>
@@ -87,8 +87,8 @@ export default function Task() {
                 </div>
 
                 <div className="level">
-                  <Reject platform={content.appName} />
-                  <Approve platform={content.appName} />
+                  <Reject platform={content.providerName} />
+                  <Approve platform={content.providerName} />
                 </div>
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function Task() {
           <div className="card">
             <div className="card-content">
               <div className="level">
-                <h4 className="subtitle mb-0">{content.appName}</h4>
+                <h4 className="subtitle mb-0">{content.providerName}</h4>
                 <a href="#">+ Follow</a>
               </div>
 

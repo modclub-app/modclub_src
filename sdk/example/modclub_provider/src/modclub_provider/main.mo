@@ -19,7 +19,7 @@ actor {
         await subscribe();
 
         // Add content rules
-        await MC.addContentRules(["No violent content", "No drugs"]);
+        await MC.addRules(["No violent content", "No drugs"]);
 
         // Update settings
         await MC.updateSettings({minVotes = 3; minStaked = 0});
