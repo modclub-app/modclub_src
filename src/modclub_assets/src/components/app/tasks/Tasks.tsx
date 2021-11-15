@@ -45,8 +45,8 @@ export default function Tasks() {
             </div>
             <div>
               <Link to={`/app/tasks/${item.id}`} className="button">See More</Link>
-              <Reject platform={item.providerName} />
-              <Approve platform={item.providerName} />
+              <Reject platform={item.providerName} id={item.id} />
+              <Approve platform={item.providerName} id={item.id} />
             </div>
           </footer>
         </div>

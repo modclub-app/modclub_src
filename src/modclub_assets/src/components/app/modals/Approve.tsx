@@ -2,7 +2,7 @@ import { useState } from "react";
 import modalbgImg from '../../../../assets/modalbg.svg';
 import approveImg from '../../../../assets/approve.svg';
 import { vote } from "../../../utils/api";
-import { DecisionOptions } from "../../../utils/types";
+
 
 const Modal = ({ active, platform, toggle, handleSave }) => (
   <div className={`modal ${active ? "is-active" : ""}`}>
