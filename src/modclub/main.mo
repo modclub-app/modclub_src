@@ -23,6 +23,7 @@ shared ({caller = initializer}) actor class ModClub () {
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
+  let NANOS_PER_MILLI = 1000000;
 
   // Types
   type Content = Types.Content;
@@ -39,31 +40,12 @@ shared ({caller = initializer}) actor class ModClub () {
   type UserId = Types.UserId;
   type Role = Types.Role;
   type Rule = Types.Rule;
+  type Image = Types.Image;
+  type ProviderPlus = Types.ProviderPlus; 
+  type Activity = Types.Activity;
 
-  // Global Objects
-  let waitList = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+  // Global Objects  
   var state = State.empty();
-
- // Waitlist functions
- public func addToWaitList(email : Text) : async Text {
-      if(waitList.size() > MAX_WAIT_LIST_SIZE) {
-        return "Sorry, the waitlist is full";
-      };
-      switch (waitList.get(email)) {        
-        case (?result) return "The email address " # email # " has already joined the waitlist";
-        case (_) waitList.put(email, email);
-      };
-      return "Thank you for joining the waitlist";
-    };
-  
-  public shared({ caller }) func getWaitList() : async [Text] {
-    await checkPermission(caller);
-    var result : [Text] = [];
-    for( x in waitList.entries()) {
-      result := Array.append<Text>(result, [x.1]);
-    };
-    return result;
-  };
 
   func checkPermission(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
@@ -71,13 +53,19 @@ shared ({caller = initializer}) actor class ModClub () {
 
   // Provider functions
   // todo: Require cylces on provider registration, add provider imageURl, description 
-  public shared({ caller }) func registerProvider(appName: Text) : async Text {
+  public shared({ caller }) func registerProvider(
+    name: Text,
+    description: Text,
+    image: ?Image
+    ) : async Text {
     switch(state.providers.get(caller)){
       case (null) {
         let now = timeNow_();
         state.providers.put(caller, {
           id = caller;
-          appName = appName;
+          name = name;
+          description = description;
+          image = image;
           createdAt = now;
           updatedAt = now;
           settings = {
@@ -111,7 +99,9 @@ shared ({caller = initializer}) actor class ModClub () {
         // Update the providers settings
         state.providers.put(caller, {
               id = caller;
-              appName = result.appName;
+              name = result.name;
+              description = result.description;
+              image = result.image;
               createdAt = result.createdAt;
               updatedAt = now;
               settings = settings;
@@ -123,38 +113,46 @@ shared ({caller = initializer}) actor class ModClub () {
     // todo: Re-evaluate all new content with votes to determine if a potential decision can be made 
   };
 
-  public shared({ caller }) func addContentRules(rules: [Text]) {
+  public func getProvider(providerId: Principal) : async ProviderPlus {
+    switch(state.providers.get(providerId)){
+      case(?provider) {
+      let result : ProviderPlus = {
+        id = provider.id;
+        name = provider.name;
+        description = provider.description;
+        image = provider.image;
+        createdAt = provider.createdAt;
+        updatedAt = provider.updatedAt;
+        settings = provider.settings;
+        rules = await getRules(provider.id);
+        contentCount = state.provider2content.get0Size(provider.id); 
+        activeCount = 100; // Todo calculate active content count
+        rewardsSpent = 5000; // Todo calculate rewards spent           
+        };
+        return result;
+      };
+      case(null) {
+        throw Error.reject( "Provider does not exist" );         
+      };
+    };
+  };
+
+  public shared({ caller }) func addRules(rules: [Text]) {
     await checkProviderPermission(caller);
-    for(rule in rules.vals()){
-      var ruleId = generateId(caller, "rule");
-       Debug.print( "Created ruleID " # ruleId );
+    for(rule in rules.vals()) {
+      var ruleId = generateId(caller, "rule");       
       state.rules.put(ruleId, {
         id = ruleId;
         description = rule;
       });
       state.provider2rules.put(caller, ruleId);
-    }
-  };
-
-  public shared({ caller }) func removeContentRules(ruleIds: [Types.RuleId]) {
-    for(ruleId in ruleIds.vals()){
-      state.provider2rules.delete(caller, ruleId);
-    }
-  };
-
-  public query({caller}) func getContentRules() : async [Rule] {
-    Debug.print(Principal.toText(caller) # " retrieving rules" );
-    let buf = Buffer.Buffer<Rule>(0);
-    for(ruleId in state.provider2rules.get0(caller).vals()){
-      Debug.print( "Adding ruleID " # ruleId );
-      switch(state.rules.get(ruleId)){
-        case(?rule){
-          buf.add(rule);
-        };
-        case(_)();
-      };
     };
-    return buf.toArray();
+  };
+
+  public shared({ caller }) func removeRules(ruleIds: [Types.RuleId]) {
+    for(ruleId in ruleIds.vals()) {
+      state.provider2rules.delete(caller, ruleId);
+    };
   };
 
   // Subscribe function for providers to register their callback after a vote decision has been made
@@ -193,10 +191,13 @@ shared ({caller = initializer}) actor class ModClub () {
     public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
     await checkProviderPermission(caller);
     let content = createContentObj(sourceId, caller, #imageBlob, title);
+
     let imageContent : ImageContent = {
       id = content.id;
-      data = image;
-      imageType = imageType;
+      image  = {
+        data = image;
+        imageType = imageType;
+      };
     };
       // Store and update relationships
       state.content.put(content.id, content);
@@ -206,12 +207,14 @@ shared ({caller = initializer}) actor class ModClub () {
       return content.id;
     };
 
-    public shared({ caller }) func sendImage(sourceId: Text, image: [Nat8], imageType: Text ) : async Text {   
+    public shared({ caller }) func sendImage(sourceId: Text, image: [Nat8], imageType: Text ) : async Text {  
 
     let imageContent : ImageContent = {
       id = sourceId;
-      data = image;
-      imageType = imageType;
+      image = {
+        data = image;
+        imageType = imageType;
+      };
     };
 
       state.imageContent.put(sourceId, imageContent);
@@ -221,7 +224,7 @@ shared ({caller = initializer}) actor class ModClub () {
     public query func getImage(sourceId: Text) : async ?[Nat8] {
       switch(state.imageContent.get(sourceId)) {
         case(?result) {
-          return ?result.data;
+          return ?result.image.data;
         };
         case (_) null;
       }
@@ -391,6 +394,7 @@ shared ({caller = initializer}) actor class ModClub () {
               userId = caller;
               decision = decision; 
               violatedRules = violatedRules;
+              createdAt = timeNow_();
           };
           switch(decision){
             case(#approved) {
@@ -415,17 +419,38 @@ shared ({caller = initializer}) actor class ModClub () {
         return "";         
       };
 
-  public query({ caller }) func getMyVotes() : async [Types.Vote] {
-      let buf = Buffer.Buffer<Types.Vote>(0);
+  public query({ caller }) func getActivity() : async [Activity] {
+      let buf = Buffer.Buffer<Types.Activity>(0);
       for (vid in state.mods2votes.get0(caller).vals()) {
         switch(state.votes.get(vid)) {
-          case (?result) {
-            buf.add(result);
-          };
-          case (_) ();
+          case (?vote) {
+            switch(state.content.get(vote.contentId)) {
+              case (?content) {
+                let voteCount = getVoteCount(content.id);
+                let item : Activity = {
+                    vote = vote;
+                    providerId = content.providerId;
+                    providerName =  "Temp";
+                    contentType = content.contentType;    
+                    status =  content.status;
+                    title = content.title;
+                    createdAt = content.createdAt;
+                    updatedAt = content.updatedAt;
+                    voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+                    minVotes = 10;
+                    minStake = 1000;
+                    reward = 1;
+                    rewardRelease = timeNow_();
+                };
+                buf.add(item);
+              };
+              case(_) (); 
+          };          
         };
-      };
-      buf.toArray();
+        case (_) ();
+      };    
+  };
+    buf.toArray();
   };
   
   private func evaluateVotes(content: Content, aCount: Nat, rCount: Nat) : async() {
@@ -481,6 +506,19 @@ shared ({caller = initializer}) actor class ModClub () {
       case(null) ();
     };
   };
+  
+  public func getRules(providerId: Principal) : async [Types.Rule] {
+    let buf = Buffer.Buffer<Types.Rule>(0);
+    for(ruleId in state.provider2rules.get0(providerId).vals()){
+      switch(state.rules.get(ruleId)){
+        case(?rule){
+          buf.add(rule);
+        };
+        case(_)();
+      };
+    };
+    buf.toArray();
+  };
 
   // Helpers
   public query func checkUsernameAvailable(userName_ : Text): async Bool {
@@ -527,7 +565,7 @@ shared ({caller = initializer}) actor class ModClub () {
               case(?provider) {
                 let result : ContentPlus = {
                         id = content.id;
-                        appName = provider.appName;
+                        providerName = provider.name;
                         minStake = provider.settings.minStaked;
                         minVotes = provider.settings.minVotes;
                         voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
@@ -536,8 +574,8 @@ shared ({caller = initializer}) actor class ModClub () {
                         status = content.status;
                         sourceId = content.sourceId;
                         title = content.title;
-                        createdAt = content.createdAt;
-                        updatedAt = content.updatedAt;
+                        createdAt = content.createdAt; 
+                        updatedAt = content.updatedAt; 
                         text = do  ?{
                           switch(state.textContent.get(content.id)) {
                             case(?x) x.text;
@@ -552,20 +590,6 @@ shared ({caller = initializer}) actor class ModClub () {
           };
           case (_) null;
     };
-  };
-
-
-  private func getRules(providerId: Principal) : [Types.Rule] {
-    let buf = Buffer.Buffer<Types.Rule>(0);
-    for(ruleId in state.provider2rules.get0(providerId).vals()){
-      switch(state.rules.get(ruleId)){
-        case(?rule){
-          buf.add(rule);
-        };
-        case(_)();
-      };
-    };
-    buf.toArray();
   };
 
  private func validateRules(contentId: ContentId, violatedRules: [Types.RuleId]) : Bool {
@@ -619,7 +643,7 @@ shared ({caller = initializer}) actor class ModClub () {
     };
 
  private func timeNow_() : Timestamp {
-      Time.now() 
+      Time.now()  / NANOS_PER_MILLI; // Convert to milliseconds
   };
 
   // Upgrade logic / code

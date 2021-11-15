@@ -56,7 +56,7 @@ module {
   public type ContentPlus = {
     id: ContentId;
     providerId: Principal;
-    appName: Text;
+    providerName: Text;
     contentType: ContentType;
     sourceId: Text;
     status: ContentStatus;
@@ -97,16 +97,36 @@ module {
 
   public type ImageContent = {
     id: ContentId;
+    image: Image;
+  };
+
+  public type Image = {    
     data: [Nat8];
     imageType: Text;
   };
 
   public type Provider = {
     id: Principal;
-    appName: Text;
+    name: Text;    
+    description: Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
     settings: ProviderSettings;
+    image: ?Image;
+  };
+
+  public type ProviderPlus = {
+    id: Principal;
+    name: Text;    
+    description: Text;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+    settings: ProviderSettings;
+    image: ?Image;
+    contentCount: Nat;
+    activeCount: Nat;
+    rewardsSpent: Nat;
+    rules: [Rule];
   };
 
   public type ProviderSettings = {
@@ -129,6 +149,7 @@ module {
     userId: UserId;
     decision: Decision;
     violatedRules: ?[RuleId];  
+    createdAt: Timestamp;
   };
 
   public type ContentResult = {
@@ -148,6 +169,22 @@ module {
   public type VoteCount = {
     approvedCount: Nat;
     rejectedCount: Nat;
+  };
+
+  public type Activity = {
+    vote: Vote;
+    providerId: ProviderId;
+    providerName: Text;
+    contentType: ContentType;    
+    status: ContentStatus;
+    title: ?Text;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+    voteCount: Nat;
+    minVotes: Nat;
+    minStake: Nat;    
+    reward: Nat;
+    rewardRelease: Timestamp;
   };
 
    public type Callback = shared () -> async ();

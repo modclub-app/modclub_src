@@ -6,7 +6,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 // Replace this value with the ID of your local Internet Identity canister
 const LOCAL_II_CANISTER =
-  "http://qoctq-giaaa-aaaaa-aaaea-cai.localhost:8000/#authorize";
+  "http://qaa6y-5yaaa-aaaaa-aaafa-cai.localhost:8000/#authorize";
 
 let localCanisters, prodCanisters, canisters;
 

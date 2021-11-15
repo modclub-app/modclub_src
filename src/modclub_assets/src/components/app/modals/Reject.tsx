@@ -1,6 +1,7 @@
 import { useState } from "react";
 import modalbgImg from '../../../../assets/modalbg.svg';
 import rejectImg from '../../../../assets/reject.svg';
+import { vote } from "../../../utils/api";
 
 const Modal = ({ active, platform, toggle, handleSave }) => (
   <div className={`modal ${active ? "is-active" : ""}`}>
@@ -47,14 +48,16 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
   </div>
 );
 
-export default function Approve({ platform }) {
+export default function Approve({ platform, id }) {
   const [active, setActive] = useState(false);
   const toggle = () => setActive(!active);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log("handleSave")
     // TODO pending spinner
     // TODO pass which toggled
+    const result = await vote(id, { rejected: null }, [] );
+    console.log(result);  
     toggle();
   };
 

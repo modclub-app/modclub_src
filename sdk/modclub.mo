@@ -29,7 +29,7 @@ module {
       actor "MODCLUB public principal ID" : actor {      
         registerProvider: (Text) -> async Text;
         deregisterProvider: () -> async Text;
-        addContentRules: ([Text]) -> async ();
+        addRules: ([Text]) -> async ();
         removeContentRules: ([Text]) -> async ();
         updateSettings: (ProviderSettings) -> async ();
         submitText: (Text, Text, ?Text) -> async Text;

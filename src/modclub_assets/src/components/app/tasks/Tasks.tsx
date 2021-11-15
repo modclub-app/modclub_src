@@ -20,7 +20,7 @@ export default function Tasks() {
         <div className="card mb-5" key={item.id}>
           <header className="card-header">
             <p className="card-header-title">
-              {item.appName}
+              {item.providerName}
               <span>Submitted by {item.sourceId}</span>
             </p>
             <progress className="progress" value="15" max="100"></progress>
@@ -45,8 +45,8 @@ export default function Tasks() {
             </div>
             <div>
               <Link to={`/app/tasks/${item.id}`} className="button">See More</Link>
-              <Reject platform={item.appName} />
-              <Approve platform={item.appName} />
+              <Reject platform={item.providerName} id={item.id} />
+              <Approve platform={item.providerName} id={item.id} />
             </div>
           </footer>
         </div>

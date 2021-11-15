@@ -1,6 +1,7 @@
 import React, { PropsWithChildren, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { useAuth } from "../../utils/auth";
+import dfinitylogo from "../../../assets/dfinity.svg"
 
 /*
  * The sign-in process for when a user has not yet authenticated with the
@@ -31,8 +32,9 @@ export function SignIn(props: PropsWithChildren<{}>) {
   };
 
   return (
-      <button onClick={handleLogin} id="sign-in" className="primary medium">
-        Login
+    <button onClick={handleLogin} id="sign-in"
+      className="button is-large extra mt-6">
+        Login <img src={dfinitylogo} alt="dfinity logo"  style={{ width: "33px", marginRight: "-1em", marginLeft: "0.7em" }} />
       </button>
   );
 }

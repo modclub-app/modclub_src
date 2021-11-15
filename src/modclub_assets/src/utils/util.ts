@@ -1,4 +1,4 @@
-import { unwrap } from "./api";
+import { Optional } from "./api";
 import { Profile } from "./types";
 
 export const Base64Binary = {
@@ -102,3 +102,21 @@ export function getUserFromStorage(
     return undefined;
   }
 }
+
+export function fileToImgSrc(file: number[], imgType = "png"): string {
+  const bufferBlob = [Buffer.from(new Uint8Array(file))];
+  const picBlob = new Blob(bufferBlob, { type: `image/{imgType}` });
+  const picSrc = URL.createObjectURL(picBlob);
+  return picSrc;
+}
+
+export function unwrap<T>(val: Optional<T>): T | null {
+  if (val[0] === undefined) {
+    return null;
+  } else {
+    return val[0];
+  }
+}
+
+export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
+  Array.from(new Uint8Array(file));

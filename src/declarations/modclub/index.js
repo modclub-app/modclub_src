@@ -35,4 +35,4 @@ export const canisterId = process.env.MODCLUB_CANISTER_ID;
  * A ready-to-use agent for the modclub canister
  * @type {import("@dfinity/agent").ActorSubclass<import("./modclub.did.js")._SERVICE>}
  */
-export const modclub = createActor(canisterId);
+ export const modclub = createActor(canisterId);

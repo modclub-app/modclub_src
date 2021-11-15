@@ -1,4 +1,19 @@
 import type { Principal } from '@dfinity/principal';
+export interface Activity {
+  'status' : ContentStatus,
+  'reward' : bigint,
+  'title' : [] | [string],
+  'voteCount' : bigint,
+  'contentType' : ContentType,
+  'rewardRelease' : Timestamp,
+  'minVotes' : bigint,
+  'createdAt' : Timestamp,
+  'vote' : Vote,
+  'minStake' : bigint,
+  'updatedAt' : Timestamp,
+  'providerName' : string,
+  'providerId' : ProviderId,
+}
 export type ContentId = string;
 export type ContentId__1 = string;
 export interface ContentPlus {
@@ -8,12 +23,12 @@ export interface ContentPlus {
   'voteCount' : bigint,
   'contentType' : ContentType,
   'minVotes' : bigint,
-  'appName' : string,
   'createdAt' : Timestamp,
   'text' : [] | [string],
   'sourceId' : string,
   'minStake' : bigint,
   'updatedAt' : Timestamp,
+  'providerName' : string,
   'providerId' : Principal,
 }
 export interface ContentResult { 'status' : ContentStatus, 'sourceId' : string }
@@ -28,24 +43,29 @@ export type Decision = { 'approved' : null } |
   { 'rejected' : null };
 export type Decision__1 = { 'approved' : null } |
   { 'rejected' : null };
+export interface Image { 'imageType' : string, 'data' : Array<number> }
+export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export interface ModClub {
-  'addContentRules' : (arg_0: Array<string>) => Promise<undefined>,
-  'addToWaitList' : (arg_0: string) => Promise<string>,
+  'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
+  'getActivity' : () => Promise<Array<Activity>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
-  'getContentRules' : () => Promise<Array<Rule>>,
   'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
-  'getMyVotes' : () => Promise<Array<Vote>>,
   'getProfile' : () => Promise<Profile>,
+  'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
-  'getWaitList' : () => Promise<Array<string>>,
+  'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'registerModerator' : (arg_0: string, arg_1: [] | [string]) => Promise<
       Profile
     >,
-  'registerProvider' : (arg_0: string) => Promise<string>,
-  'removeContentRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
+  'registerProvider' : (
+      arg_0: string,
+      arg_1: string,
+      arg_2: [] | [Image],
+    ) => Promise<string>,
+  'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
   'sendImage' : (arg_0: string, arg_1: Array<number>, arg_2: string) => Promise<
       string
     >,
@@ -77,6 +97,20 @@ export interface Profile {
   'picUrl' : [] | [string],
   'updatedAt' : Timestamp,
 }
+export type ProviderId = Principal;
+export interface ProviderPlus {
+  'id' : Principal,
+  'contentCount' : bigint,
+  'rewardsSpent' : bigint,
+  'name' : string,
+  'createdAt' : Timestamp,
+  'description' : string,
+  'updatedAt' : Timestamp,
+  'settings' : ProviderSettings,
+  'activeCount' : bigint,
+  'image' : [] | [Image__1],
+  'rules' : Array<Rule>,
+}
 export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
 export type Role = { 'admin' : null } |
   { 'moderator' : null } |
@@ -91,6 +125,7 @@ export interface Vote {
   'contentId' : string,
   'decision' : Decision__1,
   'userId' : UserId,
+  'createdAt' : Timestamp,
   'violatedRules' : [] | [Array<RuleId>],
 }
 export type VoteId = string;
