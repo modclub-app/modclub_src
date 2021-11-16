@@ -7,123 +7,101 @@ import Reject from "../modals/Reject";
 import Approve from "../modals/Approve";
 import { formatDistanceStrict, format } from "date-fns";
 
-
-
-
-
-
-
-
-
-
 const Sidebar = ({ providerId }: { providerId: Principal }) => {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const renderContent = async () => {
-    const content = await getProvider(providerId);
-    console.log("content", content);
-    setLoading(false);
-
-    setContent(
-      <>
-        <div className="card">
-          <div className="card-content">
-            <div className="level">
-              <h4 className="subtitle mb-0">{content.name}</h4>
-              <a href="#">+ Follow</a>
-            </div>
-
-            <table className="table is-striped has-text-left mb-6">
-              <tbody>
-                <tr>
-                  <td>Total Feeds Posted</td>
-                  <td>{Number(content.contentCount)}</td>
-                </tr>
-                <tr>
-                  <td>Active Posts</td>
-                  <td>{Number(content.activeCount)}</td>
-                </tr>
-                <tr>
-                  <td>Rewards Spent</td>
-                  <td>{Number(content.rewardsSpent)}</td>
-                </tr>
-                <tr>
-                  <td>Avg. Stakes</td>
-                  <td>100</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <label className="label has-text-white mb-4">Rules</label>
-            <ul>
-              {content.rules.map((rule) => (
-                <li key={rule.id} className="is-flex is-align-items-center">
-                  <span className="icon is-small has-text-primary mr-2">
-                    <span className="material-icons">trending_flat</span>
-                  </span>
-                  <span>{rule.description}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="columns is-multiline mt-3">
-            <div className="column is-half">
-              <div className="card has-gradient">
-                <div className="card-content">
-                  <label className="label">Rq Stake</label>
-                  <h3 className="title is-size-1">
-                    {Number(content.settings.minVotes)}
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div className="column is-half">
-              <div className="card has-gradient">
-                <div className="card-content">
-                  <label className="label">Reward</label>
-                  <h3 className="title is-size-1">
-                    5
-                    <span>MOD<span>token</span></span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div className="column is-half">
-              <div className="card has-gradient">
-                <div className="card-content">
-                  <label className="label">Partner Rewards</label>
-                  <h3 className="title is-size-1">
-                    5
-                    <span>MOD<span>token</span></span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </div>
-      </>
-    )
-  }
-
   useEffect(() => {
-    renderContent();
+    const fetchContent = async () => {
+      const content = await getProvider(providerId);
+      console.log("content", content);
+      setContent(content);
+      setLoading(false);
+    };
+    fetchContent();
   }, []);
 
   return (
-    <>
-        {loading ? (
-          <div className="card">
-            <div className="card-content">
-              <div className="loader-wrapper is-active">
-                <div className="loader is-loading"></div>
-              </div>
-            </div>
+  <>
+    <div className="card">
+      <div className="card-content">
+        <div className="level">
+          <h4 className="subtitle mb-0">
+            {loading ? <div className="loader is-loading"></div> : content.name}
+          </h4>
+          <a href="#">+ Follow</a>
+        </div>
+
+        <table className="table is-striped has-text-left mb-6">
+          <tbody>
+            <tr>
+              <td>Total Feeds Posted</td>
+              <td>{loading ? <div className="loader is-loading"></div> : Number(content.contentCount)}</td>
+            </tr>
+            <tr>
+              <td>Active Posts</td>
+              <td>{loading ? <div className="loader is-loading"></div> : Number(content.activeCount)}</td>
+            </tr>
+            <tr>
+              <td>Rewards Spent</td>
+              <td>{loading ? <div className="loader is-loading"></div> : Number(content.rewardsSpent)}</td>
+            </tr>
+            <tr>
+              <td>Avg. Stakes</td>
+              <td>100</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <label className="label has-text-white mb-4">Rules</label>
+        <ul>
+          {loading ? <div className="loader is-loading"></div> : content.rules.map((rule) => (
+            <li key={rule.id} className="is-flex is-align-items-center">
+              <span className="icon is-small has-text-primary mr-2">
+                <span className="material-icons">trending_flat</span>
+              </span>
+              <span>{rule.description}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <div className="columns is-multiline mt-3">
+      <div className="column is-half">
+        <div className="card has-gradient">
+          <div className="card-content">
+            <label className="label">Rq Stake</label>
+            <h3 className="title is-size-1">
+              {loading ? <div className="loader is-loading"></div> : Number(content.settings.minVotes)}
+            </h3>
           </div>
-        ) : content
-      }
-    </>
+        </div>
+      </div>
+      <div className="column is-half">
+        <div className="card has-gradient">
+          <div className="card-content">
+            <label className="label">Reward</label>
+            <h3 className="title is-size-1">
+              5
+              <span>MOD<span>token</span></span>
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div className="column is-half">
+        <div className="card has-gradient">
+          <div className="card-content">
+            <label className="label">Partner Rewards</label>
+            <h3 className="title is-size-1">
+              5
+              <span>MOD<span>token</span></span>
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </>
   )
 };
 
@@ -205,41 +183,6 @@ export default function Task() {
         <div className="column">
 
           <Sidebar providerId={content.providerId} /> 
-
-          {/* <div className="columns is-multiline mt-3">
-            <div className="column is-half">
-              <div className="card has-gradient">
-                <div className="card-content">
-                  <label className="label">Rq Stake</label>
-                  <h3 className="title is-size-1">
-                    1000
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div className="column is-half">
-              <div className="card has-gradient">
-                <div className="card-content">
-                  <label className="label">Reward</label>
-                  <h3 className="title is-size-1">
-                    5
-                    <span>MOD<span>token</span></span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div className="column is-half">
-              <div className="card has-gradient">
-                <div className="card-content">
-                  <label className="label">Partner Rewards</label>
-                  <h3 className="title is-size-1">
-                    5
-                    <span>MOD<span>token</span></span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </div> */}
 
         </div>
       </div>
