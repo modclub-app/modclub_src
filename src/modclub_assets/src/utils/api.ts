@@ -93,6 +93,12 @@ export async function getProvider(providerId: string): Promise<ProviderPlus> {
   return (await modclub).getProvider(Principal.fromText(providerId));
 }
 
+export async function getProviderRules(providerId: Principal): Promise<Rule[]> {
+  console.log("getProviderRules");
+  console.log(providerId);
+  return (await modclub).getRules(providerId);
+}
+
 export async function getActivity(): Promise<Activity[]> {
   return (await modclub).getActivity();
 }

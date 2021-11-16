@@ -602,6 +602,10 @@ shared ({caller = initializer}) actor class ModClub () {
   };
 
  private func validateRules(contentId: ContentId, violatedRules: [Types.RuleId]) : Bool {
+    if(violatedRules.size() == 0) {
+      return false;
+    };
+
     switch(state.content.get(contentId)){
       case(?content) {
         for(rule in violatedRules.vals()){
