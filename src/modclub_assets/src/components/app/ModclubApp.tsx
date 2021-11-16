@@ -31,11 +31,11 @@ export default function ModclubApp() {
     <>
       <section className="container columns mb-0">
         <Sidebar />
-        <div className="column is-justify-content-flex-start mt-4 ml-5 pb-6">
+        <div className="column is-justify-content-flex-start mt-5 ml-6">
 
           <section className="container" style={fullWidth}>
-            <div className="columns">
-              <div className="column">
+            <div className="columns mb-5">
+              <div className="column pb-0">
                 <div className="card" style={fullWidth}>
                   <div className="card-content is-flex">
                     <img src={walletImg} />
@@ -46,7 +46,7 @@ export default function ModclubApp() {
                   </div>
                 </div>
               </div>
-              <div className="column">
+              <div className="column pb-0">
                 <div className="card" style={fullWidth}>
                   <div className="card-content is-flex">
                     <img src={stakedImg} />
@@ -57,7 +57,7 @@ export default function ModclubApp() {
                   </div>
                 </div>
               </div>
-              <div className="column">
+              <div className="column pb-0">
                 <div className="card" style={fullWidth}>
                 <div className="card-content is-flex">
                     <img src={performanceImg} />

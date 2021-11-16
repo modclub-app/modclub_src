@@ -18,7 +18,7 @@ export default function Tasks() {
     for (const item of content) {
       console.log('item', item)
       result.push(
-        <div className="card mb-5" key={item.id}>
+        <div className="card mb-6" key={item.id}>
           <header className="card-header">
             <p className="card-header-title">
               {item.providerName}

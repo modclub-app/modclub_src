@@ -10,7 +10,7 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
     <div className="modal-card" style={{ backgroundImage: `url(${modalbgImg})`}}>
       <section className="modal-card-body">
         <img src={approveImg} />
-        <h3 className="subtitle mt-3">Approve Confirmation</h3>
+        <h3 className="subtitle mt-5">Approve Confirmation</h3>
         <p>You are confirming that this post follows {platform}'s rules.</p>
         <p>Voting incorrectly will result in some loss of staked tokens.</p>
       </section>

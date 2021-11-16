@@ -22,16 +22,15 @@ const Modal = ({
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
   
-    useEffect(() => {
-      const fetchRules = async () => {
-        const rules = await getProviderRules(providerId);
-        console.log({ rules });       
-        setRules(rules);
-        setLoading(false);
-      };
-      fetchRules();
-    }, []);
-
+  useEffect(() => {
+    const fetchRules = async () => {
+      const rules = await getProviderRules(providerId);
+      console.log({ rules });       
+      setRules(rules);
+      setLoading(false);
+    };
+    fetchRules();
+  }, []);
   
   let htmlContent = rules.map((rule) => {
     return (
@@ -58,7 +57,7 @@ const Modal = ({
       >
         <section className="modal-card-body">
           <img src={rejectImg} />
-          <h3 className="subtitle">Reject Confirmation</h3>
+          <h3 className="subtitle mt-5">Reject Confirmation</h3>
           <p className="mb-3">Select which rules were broken:</p>
           <div className="card has-background-dark">
             <div className="card-content">{htmlContent}</div>
@@ -86,10 +85,7 @@ const Modal = ({
 
 export default function Reject({ platform, id, providerId }) {
   const [active, setActive] = useState(false);
-  
-
   const toggle = () => setActive(!active);
-
 
   const handleSave = async () => {
     console.log("handleSave");

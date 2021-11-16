@@ -89,8 +89,8 @@ export async function getRules(providerId: string): Promise<Rule[]> {
   return (await modclub).getRules(Principal.fromText(providerId));
 }
 
-export async function getProvider(providerId: string): Promise<ProviderPlus> {
-  return (await modclub).getProvider(Principal.fromText(providerId));
+export async function getProvider(providerId: Principal): Promise<ProviderPlus> {
+  return (await modclub).getProvider(providerId);
 }
 
 export async function getProviderRules(providerId: Principal): Promise<Rule[]> {

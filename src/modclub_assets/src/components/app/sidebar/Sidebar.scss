@@ -1,6 +1,17 @@
+@import "../../../common.scss";
+
 aside {
   h1 {
     white-space: nowrap;
+  }
+}
+
+.user-avatar {
+  background: linear-gradient(to left, $primary, $secondary);
+  padding: 2px;
+  border-radius: 50%;
+  img {
+    border-radius: 50%;
   }
 }
 

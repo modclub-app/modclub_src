@@ -3,11 +3,21 @@
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 
 .icon {
-  // font-family: "Material Icons";
   background: -webkit-linear-gradient($primary, $secondary);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+
+  &.has-text-white {
+    -webkit-text-fill-color: $white;
+  }
+  &.has-text-primary {
+    -webkit-text-fill-color: $primary;
+  }
+
+  &.is-small .material-icons {
+    font-size: 16px;
+  }
 }
 
 body,
