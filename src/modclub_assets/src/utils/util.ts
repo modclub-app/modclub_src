@@ -1,5 +1,5 @@
 import { Optional } from "./api";
-import { Profile } from "./types";
+import { ImageData, Profile } from "./types";
 
 export const Base64Binary = {
   _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -59,13 +59,23 @@ export const Base64Binary = {
   },
 };
 
-export async function imageToUint8Array(image): Promise<number[]> {
+export async function convertImage(imageData: ImageData): Promise<number[]> {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.src = imageData.src;
+    image.onload = async () => {
+      resolve(imageToUint8Array(image, imageData.type));
+    };
+  });
+}
+
+export async function imageToUint8Array(image, imageType): Promise<number[]> {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   canvas.width = image.width;
   canvas.height = image.height;
   context.drawImage(image, 0, 0);
-  return toBlob(context.canvas, "image/png");
+  return toBlob(context.canvas, imageType);
 }
 
 function toBlob(

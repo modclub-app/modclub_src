@@ -16,11 +16,14 @@ import logoutIcon from '../../../../assets/icons/logout.svg';
 
 
 
+import { SidebarUser } from "./SidebarUser";
 import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
 
 export default function Sidebar() {
   const { user, isAuthenticated } = useAuth();
+
+  console.log({ user, isAuthenticated });
 
   return (
     <div className="column is-one-fifth has-background-black">
@@ -32,7 +35,7 @@ export default function Sidebar() {
     
         <hr />
 
-        {isAuthenticated && user ? (<p> Username: { user.userName }</p>) : <SignIn /> }
+        {isAuthenticated && user ? <SidebarUser />: <SignIn /> }
 
         <ul className="menu-list">
           <li>

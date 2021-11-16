@@ -57,9 +57,11 @@ export interface ModClub {
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
-  'registerModerator' : (arg_0: string, arg_1: [] | [string]) => Promise<
-      Profile
-    >,
+  'registerModerator' : (
+      arg_0: string,
+      arg_1: string,
+      arg_2: [] | [Image],
+    ) => Promise<Profile>,
   'registerProvider' : (
       arg_0: string,
       arg_1: string,
@@ -81,7 +83,6 @@ export interface ModClub {
       arg_2: [] | [string],
     ) => Promise<string>,
   'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
-  'updateProfile' : (arg_0: string, arg_1: [] | [string]) => Promise<Profile>,
   'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
   'vote' : (
       arg_0: ContentId,
@@ -91,10 +92,11 @@ export interface ModClub {
 }
 export interface Profile {
   'id' : UserId,
+  'pic' : [] | [Image__1],
   'userName' : string,
   'createdAt' : Timestamp,
   'role' : Role,
-  'picUrl' : [] | [string],
+  'email' : string,
   'updatedAt' : Timestamp,
 }
 export type ProviderId = Principal;

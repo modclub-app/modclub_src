@@ -24,13 +24,13 @@ export default function Tasks() {
               <span>Submitted by {item.sourceId}</span>
             </p>
             <progress className="progress" value="15" max="100"></progress>
-            <span>10/15 votes</span>
+            <span>{`${item.voteCount}/${item.minVotes} votes`}</span>
           </header>
           <div className="card-content">
             <h3 className="subtitle">{item.title}</h3>
             <p>{item.text}</p>
 
-            createdAt? {item.createdAt}
+            createdAt? {(new Date(Number(item.createdAt))).toLocaleString()}
           </div>
           <footer className="card-footer">
             <div>
