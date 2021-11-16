@@ -34,13 +34,18 @@ export default function Tasks() {
             createdAt? {(new Date(Number(item.createdAt))).toLocaleString()}
           </div>
           <footer className="card-footer">
+                
             <div>
               <a className="button is-outlined">
-                <span className="icon"></span>
+                <span className="icon is-small has-text-white ml-1 mr-2">
+                  <span className="material-icons">local_atm</span>
+                </span>
                 <span>{"Rq Stake: " + item.minStake}</span>
               </a>
               <a className="button is-outlined">
-                <span className="icon"></span>
+                <span className="icon is-small has-text-white ml-1 mr-2">
+                  <span className="material-icons">stars</span>
+                </span>
                 <span>{"Reward: "+ item.minStake }</span>
               </a>
             </div>

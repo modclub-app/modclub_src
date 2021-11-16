@@ -21,6 +21,13 @@ const Modal = ({
   }) => {
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [checked, setChecked] = useState([]);
+
+  const handleCheck = (e) => {
+    const item = e.target.name;
+    const isChecked = e.target.checked;
+    setChecked(isChecked ? [...checked, item] : [checked.filter(id => id != item)]);
+  }
   
   useEffect(() => {
     const fetchRules = async () => {
@@ -32,16 +39,14 @@ const Modal = ({
     fetchRules();
   }, []);
   
-  let htmlContent = rules.map((rule) => {
-    return (
-      <div className="field level is-relative">
-        <input type="checkbox" id={rule.id} name={rule.id} />
-        <label htmlFor={rule.id} className="is-clickable is-flex-grow-1">
-          {rule.description}
-        </label>
-      </div>
-    );
-  });
+  let htmlContent = rules.map((rule) => (
+    <div key={rule.id} className="field level is-relative" >
+      <input type="checkbox" id={rule.id} name={rule.id} onClick={handleCheck} />
+      <label htmlFor={rule.id} className="is-clickable is-flex-grow-1">
+        {rule.description}
+      </label>
+    </div>
+  ));
   if (loading) {
     htmlContent = (
       [<div className="loader-wrapper is-active">
@@ -62,6 +67,9 @@ const Modal = ({
           <div className="card has-background-dark">
             <div className="card-content">{htmlContent}</div>
           </div>
+
+          checked??? {checked}
+
         </section>
         <footer className="modal-card-foot">
           <p className="is-size-7">
@@ -73,7 +81,7 @@ const Modal = ({
             <button className="button is-dark" onClick={toggle}>
               CANCEL
             </button>
-            <button className="button is-primary ml-3" onClick={handleSave}>
+            <button className="button is-primary ml-3" onClick={handleSave} disabled={!checked.length}>
               CONFIRM
             </button>
           </div>
@@ -89,7 +97,6 @@ export default function Reject({ platform, id, providerId }) {
 
   const handleSave = async () => {
     console.log("handleSave");
-    // TODO pending spinner
     // TODO pass which toggled
     const result = await vote(id, { rejected: null }, []);
     console.log(result);
