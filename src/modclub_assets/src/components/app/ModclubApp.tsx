@@ -23,17 +23,6 @@ function Dashboard() {
 }
 
 export default function ModclubApp() {
-  const { isAuthReady, isAuthenticated, user, identity } = useAuth(); 
-  const history = useHistory();
-
-  useEffect(() => {
-    console.log({ identity, user });
-    console.log(identity?.getPrincipal().toString())
-    if (!user && isAuthenticated) {
-      history.push("/signup");
-    }
-  }, [identity, user, history]);
-
   const fullWidth = {
     width: '100%'
   };

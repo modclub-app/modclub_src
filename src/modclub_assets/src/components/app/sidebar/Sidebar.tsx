@@ -21,9 +21,9 @@ import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
 
 export default function Sidebar() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthReady, user, isAuthenticated } = useAuth();
 
-  console.log({ user, isAuthenticated });
+  console.log({ isAuthReady, user, isAuthenticated });
 
   return (
     <div className="column is-one-fifth has-background-black">

@@ -39,7 +39,9 @@ export function useProvideAuth(authClient): AuthContext {
   // Use the user from local storage if it is set so the flow doesn't have to
   // make an async query.
   const setUserFromLocalStorage = () => {
+    console.log("setUserFromLocalStorage");
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
+    console.log("lsUser", lsUser);
     if (lsUser) {
       setUser(lsUser);
       setIsAuthenticatedLocal(true);
@@ -48,6 +50,10 @@ export function useProvideAuth(authClient): AuthContext {
       // storage but the user was cleared from the backend)
       getUserFromCanister().then((user_) => !user_ && logOut());
       return () => void 0;
+    } else {
+      console.log("no lsUser, fetching and setting from backend");
+      // If there is no user in local storage, retrieve from the backend
+      getUserFromCanister().then((user_) => user_ && setUser(user_));
     }
   };
 
@@ -76,6 +82,7 @@ export function useProvideAuth(authClient): AuthContext {
   // every load. Then insure user is correctly logged in with identity service,
   // and set them to not logged in if not.
   useEffect(() => {
+    console.log(  {check:true, user })
     if (user && !getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER)) {
       localStorage.setItem(
         KEY_LOCALSTORAGE_USER,
@@ -127,6 +134,7 @@ export function useProvideAuth(authClient): AuthContext {
 
   // Clears the authClient of any cached data, and redirects user to root.
   function logOut() {
+    console.log("Logged out");
     setUser(undefined);
     setIsAuthenticatedLocal(false);
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
