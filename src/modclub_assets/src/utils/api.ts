@@ -1,4 +1,4 @@
-import { imageToUint8Array, unwrap } from "./util";
+import { convertImage, imageToUint8Array, unwrap } from "./util";
 import { actorController } from "./actor";
 import {
   ContentPlus,
@@ -9,6 +9,8 @@ import {
   Rule,
   ProviderPlus,
   Activity,
+  ImageData,
+  Image,
 } from "./types";
 import { modclub as MC } from "../../../declarations/modclub/index";
 import { Principal } from "@dfinity/principal";
@@ -16,16 +18,6 @@ import { Principal } from "@dfinity/principal";
 export type Optional<Type> = [Type] | [];
 
 const modclub = actorController.actor;
-export async function UploadImage(src: string) {
-  const image = new Image();
-  image.src = src;
-
-  image.onload = async () => {
-    const data = await imageToUint8Array(image);
-    const response = await (await modclub).sendImage("id_1", data, "image/png");
-    console.log(response);
-  };
-}
 
 export async function sendImage(imageData: number[]) {
   const response = await (
@@ -44,17 +36,31 @@ export async function getImage(imageId: string): Promise<number[]> {
   }
 }
 
-export async function registerModerator(username: string): Promise<Profile> {
-  const response = await (await modclub).registerModerator(username, []);
+export async function registerModerator(
+  username: string,
+  email: string,
+  imageData?: ImageData
+): Promise<Profile> {
+  const imgResult: Image = imageData
+    ? { data: await convertImage(imageData), imageType: imageData.type }
+    : undefined;
+  const response = await (
+    await modclub
+  ).registerModerator(username, email, imgResult ? [imgResult] : []);
   console.log(response);
   return response;
 }
 
 export async function getUserFromCanister(): Promise<Profile | null> {
-  const icUser = await (await modclub).getProfile();
-  if (icUser) {
-    return icUser;
-  } else {
+  try {
+    const icUser = await (await modclub).getProfile();
+    if (icUser) {
+      return icUser;
+    } else {
+      return null;
+    }
+  } catch (e) {
+    console.log(e);
     return null;
   }
 }
@@ -85,6 +91,12 @@ export async function getRules(providerId: string): Promise<Rule[]> {
 
 export async function getProvider(providerId: string): Promise<ProviderPlus> {
   return (await modclub).getProvider(Principal.fromText(providerId));
+}
+
+export async function getProviderRules(providerId: Principal): Promise<Rule[]> {
+  console.log("getProviderRules");
+  console.log(providerId);
+  return (await modclub).getRules(providerId);
 }
 
 export async function getActivity(): Promise<Activity[]> {

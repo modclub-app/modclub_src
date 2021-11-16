@@ -12,17 +12,6 @@ import IntegrationImg from "../../../../assets/integrate.png";
 import Faq from "./faq/Faq";
 import Footer from "../../footer/Footer";
 import DfinityLogo from "../../../../assets/dfinity.svg";
-import { getImage, UploadImage } from "../../../utils/api";
-import { fileToImgSrc } from "../../../utils/util";
-import { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
-import { SignIn } from "../../Auth/SignIn";
-
-
-
-
-
-
 import raheel from '../../../../assets/raheel.png';
 import pema from '../../../../assets/pema.png';
 import max from '../../../../assets/max.png';

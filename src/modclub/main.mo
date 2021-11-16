@@ -301,18 +301,25 @@ shared ({caller = initializer}) actor class ModClub () {
     if(unauthorized) throw Error.reject("unauthorized");
   }; 
 
-  public shared({ caller }) func registerModerator(userName: Text, picUrl: ?Text) : async Profile {
+  public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Image) : async Profile {
+      var _userName = Text.trim(userName, #text " ");
+      var _email = Text.trim(email, #text " ");
+      if(_email.size() > 320) 
+        throw Error.reject("Invalid email, too long");
+      if(_userName.size() > 64 or _userName.size() < 3) 
+        throw Error.reject("Username length must be longer than 3 and less than 64 characters");
       // Check if already registered
       switch(state.profiles.get(caller)){
         case (null) {
           switch( await checkUsernameAvailable(userName) ) {
             case(true) {
               let now = timeNow_();
-              let profile = {
+              let profile : Profile = {
                 id = caller;
-                userName = userName;
-                picUrl = picUrl;
-                role = #moderator;
+                userName = _userName;
+                pic = pic;
+                role = #moderator; 
+                email = _email;
                 createdAt = now;
                 updatedAt = now;
               };
@@ -333,29 +340,31 @@ shared ({caller = initializer}) actor class ModClub () {
       };
   };
 
-  public shared({ caller }) func updateProfile(userName: Text, picUrl: ?Text) : async Profile {
-      switch(state.profiles.get(caller)){
-        case (null) throw Error.reject("profile not found");
-        case (?result) {
-          switch( await checkUsernameAvailable(userName) ) {
-            case(true) {
-              let now = timeNow_();
-              let profile = {
-                id = caller;
-                userName = userName;
-                picUrl = picUrl;
-                role = result.role;
-                createdAt = result.createdAt;
-                updatedAt = now;
-              };
-              state.profiles.put(caller, profile);
-              return profile;
-            };
-            case(false) throw Error.reject("username already taken");
-          };
-        };
-      };
-  };
+  // Todo: Enable updating profile at a later time
+  // public shared({ caller }) func updateProfile(userName: Text, email: Text, pic: ?Image) : async Profile {
+  //     switch(state.profiles.get(caller)){
+  //       case (null) throw Error.reject("profile not found");
+  //       case (?result) {
+  //         switch( await checkUsernameAvailable(userName) ) {
+  //           case(true) {
+  //             let now = timeNow_();
+  //             let profile = {
+  //               id = caller;
+  //               userName = userName;
+  //               pic = pic;
+  //               email = email;
+  //               role = result.role;
+  //               createdAt = result.createdAt;
+  //               updatedAt = now;
+  //             };
+  //             state.profiles.put(caller, profile);
+  //             return profile;
+  //           };
+  //           case(false) throw Error.reject("username already taken");
+  //         };
+  //       };
+  //     };
+  // };
 
   public shared({ caller }) func vote(contentId: ContentId, decision: Decision, violatedRules: ?[Types.RuleId]) : async Text {
     await checkProfilePermission(caller, #vote);
@@ -593,6 +602,10 @@ shared ({caller = initializer}) actor class ModClub () {
   };
 
  private func validateRules(contentId: ContentId, violatedRules: [Types.RuleId]) : Bool {
+    if(violatedRules.size() == 0) {
+      return false;
+    };
+
     switch(state.content.get(contentId)){
       case(?content) {
         for(rule in violatedRules.vals()){

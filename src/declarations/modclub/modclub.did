@@ -46,8 +46,9 @@ type ProviderId = principal;
 type Profile = 
  record {
    createdAt: Timestamp;
+   email: text;
    id: UserId;
-   picUrl: opt text;
+   pic: opt Image__1;
    role: Role;
    updatedAt: Timestamp;
    userName: text;
@@ -65,14 +66,13 @@ type ModClub =
    getProvider: (principal) -> (ProviderPlus);
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule);
-   registerModerator: (text, opt text) -> (Profile);
+   registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    removeRules: (vec RuleId) -> () oneway;
    sendImage: (text, vec nat8, text) -> (text);
    submitImage: (text, vec nat8, text, opt text) -> (text);
    submitText: (text, text, opt text) -> (text);
    subscribe: (SubscribeMessage) -> ();
-   updateProfile: (text, opt text) -> (Profile);
    updateSettings: (ProviderSettings) -> () oneway;
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
  };

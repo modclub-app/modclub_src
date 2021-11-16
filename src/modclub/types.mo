@@ -137,8 +137,9 @@ module {
   public type Profile = {
     id: UserId;
     userName: Text;
+    email: Text;
+    pic: ?Image;
     role: Role;
-    picUrl: ?Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
   };

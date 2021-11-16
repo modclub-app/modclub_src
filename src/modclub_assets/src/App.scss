@@ -16,15 +16,15 @@ html,
   font-family: "Poppins", sans-serif;
   font-size: 14px;
   background: $dark;
+  height: 100%;
 }
 
 a {
- color: $primary;
- &:hover {
-   color: $primary-hover;
- }
+  color: $primary;
+  &:hover {
+    color: $primary-hover;
+  }
 }
-
 
 .title {
   color: #fff;
@@ -38,7 +38,8 @@ a {
   font-weight: 700;
 }
 
-.has-background-black, .hero.is-black {
+.has-background-black,
+.hero.is-black {
   background: $black !important;
 }
 
@@ -60,7 +61,7 @@ hr {
 }
 
 .button {
-  font-size: .9rem;
+  font-size: 0.9rem;
   font-weight: 700;
   background: none;
   color: #fff;
@@ -101,7 +102,7 @@ hr {
     background: linear-gradient(to left, $primary, $secondary);
     border: 0;
     &:after {
-      content: '';
+      content: "";
       position: absolute;
       background: $black;
       top: 3px;
@@ -117,7 +118,7 @@ hr {
 }
 
 .level > .button.is-flex-grow-1:first-child {
-  margin-right: .75rem;
+  margin-right: 0.75rem;
 }
 
 .card {
@@ -129,7 +130,7 @@ hr {
   }
 
   &.has-bottom-gradient::after {
-    content: '';
+    content: "";
     display: block;
     height: 1px;
     position: absolute;
@@ -152,12 +153,12 @@ hr {
       display: flex;
       align-items: center;
       white-space: nowrap;
-  
+
       span {
         font-size: 1.25rem;
         line-height: 1.25rem;
-        margin-left: .25rem;
-  
+        margin-left: 0.25rem;
+
         span {
           display: block;
           font-size: 1rem;
@@ -177,13 +178,13 @@ hr {
   .card-header-title {
     color: $white;
     padding: 0;
-    font-size: .85rem;
+    font-size: 0.85rem;
     span {
       font-weight: 400;
       color: $light;
       border-left: 1px solid $dark;
-      margin-left: .5rem;
-      padding-left: .5rem;
+      margin-left: 0.5rem;
+      padding-left: 0.5rem;
     }
   }
 
@@ -214,7 +215,6 @@ hr {
   }
 }
 
-
 .modal-card {
   background-color: $black;
   background-size: cover;
@@ -232,7 +232,7 @@ hr {
   justify-content: space-between;
   border-bottom: 2px solid;
   border-image-source: linear-gradient(to left, $primary, $secondary);
-  border-image-slice: 1;  
+  border-image-slice: 1;
 
   a {
     text-decoration: underline;
@@ -263,27 +263,27 @@ input[type="checkbox"] {
     width: 3rem;
     height: 1.5rem;
     background: $black;
-    content: '';
+    content: "";
   }
   + label:after {
     border-radius: 50%;
     display: block;
     position: absolute;
-    top: .25rem;
+    top: 0.25rem;
     right: 1.625rem;
     width: 1rem;
     height: 1rem;
     transform: translate3d(0, 0, 0);
     background: $dark;
     transition: all 0.25s ease-out;
-    content: '';
+    content: "";
   }
   &:checked {
     + label:before {
       background: linear-gradient(to left, $primary, $secondary);
     }
     + label:after {
-      right: .25rem;
+      right: 0.25rem;
       background: #fff;
     }
   }
@@ -313,8 +313,6 @@ input[type="checkbox"] {
   }
 }
 
-
-
 .table {
   width: 100%;
   background: none;
@@ -326,12 +324,14 @@ input[type="checkbox"] {
   }
 
   &:not(.has-text-left) {
-    td, th {
+    td,
+    th {
       text-align: center !important;
     }
   }
 
-  td, th {
+  td,
+  th {
     border: 0;
     vertical-align: middle;
 
@@ -350,4 +350,3 @@ input[type="checkbox"] {
     background: $dark;
   }
 }
-

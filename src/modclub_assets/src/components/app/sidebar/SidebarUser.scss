@@ -1,0 +1,30 @@
+.sidebar__user {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.5;
+  height: 100px;
+}
+
+.sidebar__user-avatar {
+  img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+}
+
+.sidebar__user-name {
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.5;
+}
+
+.sidebar__user-email {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}

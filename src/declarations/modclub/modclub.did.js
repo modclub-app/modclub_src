@@ -58,6 +58,10 @@ export const idlFactory = ({ IDL }) => {
     'providerName' : IDL.Text,
     'providerId' : IDL.Principal,
   });
+  const Image__1 = IDL.Record({
+    'imageType' : IDL.Text,
+    'data' : IDL.Vec(IDL.Nat8),
+  });
   const Role = IDL.Variant({
     'admin' : IDL.Null,
     'moderator' : IDL.Null,
@@ -65,19 +69,16 @@ export const idlFactory = ({ IDL }) => {
   });
   const Profile = IDL.Record({
     'id' : UserId,
+    'pic' : IDL.Opt(Image__1),
     'userName' : IDL.Text,
     'createdAt' : Timestamp,
     'role' : Role,
-    'picUrl' : IDL.Opt(IDL.Text),
+    'email' : IDL.Text,
     'updatedAt' : Timestamp,
   });
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,
     'minStaked' : IDL.Nat,
-  });
-  const Image__1 = IDL.Record({
-    'imageType' : IDL.Text,
-    'data' : IDL.Vec(IDL.Nat8),
   });
   const Rule = IDL.Record({ 'id' : RuleId, 'description' : IDL.Text });
   const ProviderPlus = IDL.Record({
@@ -126,7 +127,7 @@ export const idlFactory = ({ IDL }) => {
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], []),
     'registerModerator' : IDL.Func(
-        [IDL.Text, IDL.Opt(IDL.Text)],
+        [IDL.Text, IDL.Text, IDL.Opt(Image)],
         [Profile],
         [],
       ),
@@ -152,7 +153,6 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'subscribe' : IDL.Func([SubscribeMessage], [], []),
-    'updateProfile' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [Profile], []),
     'updateSettings' : IDL.Func([ProviderSettings], [], ['oneway']),
     'vote' : IDL.Func(
         [ContentId, Decision, IDL.Opt(IDL.Vec(RuleId))],
