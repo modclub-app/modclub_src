@@ -36,11 +36,11 @@ export default function Tasks() {
             <div>
               <a className="button is-outlined">
                 <span className="icon"></span>
-                <span>Rq Stake: {item.minStake}</span>
+                <span>{"Rq Stake: " + item.minStake}</span>
               </a>
               <a className="button is-outlined">
                 <span className="icon"></span>
-                <span>Reward: {item.minStake}</span>
+                <span>{"Reward: "+ item.minStake }</span>
               </a>
             </div>
             <div>
