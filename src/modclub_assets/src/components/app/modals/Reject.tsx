@@ -10,24 +10,34 @@ const Modal = ({
   active,
   platform,
   toggle,
-  handleSave,
+  id,
   providerId
 }: {
   active: boolean;
   platform: string;
   toggle: () => void;
-  handleSave: () => Promise<void>;
+  id: string,
   providerId: Principal;
   }) => {
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [checked, setChecked] = useState([]);
 
   const handleCheck = (e) => {
     const item = e.target.name;
     const isChecked = e.target.checked;
-    setChecked(isChecked ? [...checked, item] : [checked.filter(id => id != item)]);
+    setChecked(isChecked ? [...checked, item] : checked.filter(id => id != item));
   }
+
+  const handleSave = async () => {
+    console.log("handleSave", checked);
+    setSaving(true);
+    const result = await vote(id, { rejected: null }, checked);
+    console.log(result);
+    setSaving(false);
+    toggle();
+  };
   
   useEffect(() => {
     const fetchRules = async () => {
@@ -67,9 +77,6 @@ const Modal = ({
           <div className="card has-background-dark">
             <div className="card-content">{htmlContent}</div>
           </div>
-
-          checked??? {checked}
-
         </section>
         <footer className="modal-card-foot">
           <p className="is-size-7">
@@ -81,9 +88,16 @@ const Modal = ({
             <button className="button is-dark" onClick={toggle}>
               CANCEL
             </button>
+            {saving ? (
+            <button className="button is-primary ml-3" disabled>
+              <div className="loader is-loading mr-3"></div>
+              <span>SAVING...</span>
+            </button>
+            ) :
             <button className="button is-primary ml-3" onClick={handleSave} disabled={!checked.length}>
               CONFIRM
-            </button>
+            </button>}
+            
           </div>
         </footer>
       </div>
@@ -94,14 +108,6 @@ const Modal = ({
 export default function Reject({ platform, id, providerId }) {
   const [active, setActive] = useState(false);
   const toggle = () => setActive(!active);
-
-  const handleSave = async () => {
-    console.log("handleSave");
-    // TODO pass which toggled
-    const result = await vote(id, { rejected: null }, []);
-    console.log(result);
-    toggle();
-  };
 
   return (
     <>
@@ -114,7 +120,7 @@ export default function Reject({ platform, id, providerId }) {
           active={active}
           platform={platform}
           toggle={toggle}
-          handleSave={handleSave}
+          id={id}
           providerId={providerId}
         />}
     </>

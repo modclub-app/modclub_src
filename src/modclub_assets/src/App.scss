@@ -97,6 +97,9 @@ hr {
     &:hover {
       background: $primary-hover;
     }
+    &[disabled] {
+      background: $primary;
+    }
   }
 
   &.is-danger {
