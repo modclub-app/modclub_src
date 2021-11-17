@@ -102,6 +102,10 @@ hr {
     }
   }
 
+  &.is-dark {
+    background: $dark;
+  }
+
   &.is-danger {
     background: $secondary;
   }

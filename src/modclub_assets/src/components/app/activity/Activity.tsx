@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
+import Userstats from "../userstats/Userstats";
 
 export default function Tasks() {
   const [activity, setActivity] = useState(null);
@@ -19,6 +20,7 @@ export default function Tasks() {
 
   return (
     <>
+      <Userstats detailed={true} />
       <div className="card mb-5">
         <div className="card-content level">
           <h1 className="title mb-0">Recent Activity</h1>

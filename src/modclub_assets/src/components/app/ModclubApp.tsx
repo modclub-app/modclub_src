@@ -1,12 +1,10 @@
 import { Switch, Route } from "react-router-dom";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
-// import Userstats from "./userstats/Userstats";
 import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
 import Moderators from "./moderators/Moderators";
 import Activity from "./activity/Activity";
-import "./ModclubApp.scss";
 
 function Dashboard() {
   return (

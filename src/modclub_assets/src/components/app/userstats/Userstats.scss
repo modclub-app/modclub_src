@@ -1,0 +1,33 @@
+.stat-boxes {
+  .card {
+    background-image: url('../../../../assets/cardbg.svg');
+    background-size: cover;
+  }
+
+  .card-content {
+    display: flex;
+    align-items: center;
+    padding: 2.5rem 2rem;
+  }
+
+  img {
+    margin-right: 1rem;
+  }
+
+  p, h3 {
+    line-height: 1em;
+    white-space: nowrap;
+  }
+
+  span.usd {
+    font-weight: 400;
+    font-size: 1.5rem;
+    margin-left: 1rem;
+  }
+
+  .card-footer {
+    padding: 0;
+    border: 0;
+    margin-bottom: 2.5rem;
+  }
+}
