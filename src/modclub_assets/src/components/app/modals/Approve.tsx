@@ -18,7 +18,7 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
         <a href="#">View {platform}'s rules</a>
         <div>
           <button className="button is-dark" onClick={toggle}>CANCEL</button>
-          <button className="button is-primary ml-3" onClick={handleSave}>CONFIRM</button>
+          <button className="button is-primary ml-4" onClick={handleSave}>CONFIRM</button>
         </div>
       </footer>
     </div>

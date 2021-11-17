@@ -134,7 +134,7 @@ hr {
 }
 
 .level > .button.is-flex-grow-1:first-child {
-  margin-right: 0.75rem;
+  margin-right: 1rem;
 }
 
 .card {
@@ -315,17 +315,17 @@ input[type="checkbox"] {
   }
 
   &::-webkit-progress-value {
-    background: linear-gradient(to left, $primary, $secondary);
+    background: linear-gradient(to right, $primary, $secondary);
     border-radius: 4px;
   }
 
   &::-moz-progress-bar {
-    background: linear-gradient(to left, $primary, $secondary);
+    background: linear-gradient(to right, $primary, $secondary);
     border-radius: 4px;
   }
 
   &::-ms-fill {
-    background: linear-gradient(to left, $primary, $secondary);
+    background: linear-gradient(to right, $primary, $secondary);
     border-radius: 4px;
   }
 }
@@ -365,5 +365,33 @@ input[type="checkbox"] {
 
   &.is-striped tbody tr:not(.is-selected):nth-child(even) {
     background: $dark;
+  }
+}
+
+
+
+
+.loader-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+
+  .loader {
+    height: 38px;
+    width: 38px;
+  }
+
+  &.is-active {
+    opacity: 1;
+    z-index: 1;
   }
 }

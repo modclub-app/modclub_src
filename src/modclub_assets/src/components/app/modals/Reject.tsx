@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import modalbgImg from "../../../../assets/modalbg.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
-import "./Modals.scss";
 import { Rule } from "../../../utils/types";
 
 const Modal = ({
@@ -89,12 +88,12 @@ const Modal = ({
               CANCEL
             </button>
             {saving ? (
-            <button className="button is-primary ml-3" disabled>
+            <button className="button is-primary ml-4" disabled>
               <div className="loader is-loading mr-3"></div>
-              <span>SAVING...</span>
+              <span>VOTING...</span>
             </button>
             ) :
-            <button className="button is-primary ml-3" onClick={handleSave} disabled={!checked.length}>
+            <button className="button is-primary ml-4" onClick={handleSave} disabled={!checked.length}>
               CONFIRM
             </button>}
             

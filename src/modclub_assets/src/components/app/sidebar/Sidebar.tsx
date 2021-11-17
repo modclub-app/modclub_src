@@ -6,12 +6,8 @@ import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
 
 export default function Sidebar() {
-  const { isAuthReady, user, isAuthenticated, logOut } = useAuth();
+  const { isAuthReady, user, isAuthenticated } = useAuth();
   console.log({ isAuthReady, user, isAuthenticated });
-
-  const handleLogOut = async () => {
-    await logOut();
-  };
 
   return (
     <div className="column is-one-fifth has-background-black">
@@ -65,22 +61,6 @@ export default function Sidebar() {
               </span>
               <span>Support</span>
             </Link>
-          </li>
-          <li>
-            <Link to="/app/activity">
-              <span className="icon">
-                <span className="material-icons">stars</span>
-              </span>
-              <span>Activity</span>
-            </Link>
-          </li>
-          <li>
-            <a onClick={handleLogOut}>
-              <span className="icon">
-                <span className="material-icons">logout</span>
-              </span>
-              <span>Logout</span>
-            </a>
           </li>
         </ul>
 

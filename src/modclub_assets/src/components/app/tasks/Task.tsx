@@ -89,7 +89,7 @@ const Sidebar = ({ providerId }: { providerId: Principal }) => {
           </div>
         </div>
       </div>
-      <div className="column is-half">
+      {/* <div className="column is-half">
         <div className="card has-gradient">
           <div className="card-content">
             <label className="label">Partner Rewards</label>
@@ -99,7 +99,7 @@ const Sidebar = ({ providerId }: { providerId: Principal }) => {
             </h3>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   </>
   )

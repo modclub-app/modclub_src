@@ -1,14 +1,11 @@
-import { Switch, BrowserRouter, Route, useRouteMatch, Link } from "react-router-dom";
-import { useEffect } from "react";
-import { useAuth } from "../../utils/auth";
-import { useHistory } from "react-router-dom";
-import { SignIn } from "../Auth/SignIn";
+import { Switch, Route } from "react-router-dom";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
 import Moderators from "./moderators/Moderators";
 import Activity from "./activity/Activity";
+import "./ModclubApp.scss";
 
 import walletImg from '../../../assets/wallet.svg';
 import stakedImg from '../../../assets/staked.svg';
@@ -23,9 +20,6 @@ function Dashboard() {
 }
 
 export default function ModclubApp() {
-  const fullWidth = {
-    width: '100%'
-  };
 
   return (
     <>
@@ -33,37 +27,37 @@ export default function ModclubApp() {
         <Sidebar />
         <div className="column is-justify-content-flex-start mt-5 ml-6">
 
-          <section className="container" style={fullWidth}>
-            <div className="columns mb-5">
+          <section className="container">
+            <div className="stat-boxes columns mb-5">
               <div className="column pb-0">
-                <div className="card" style={fullWidth}>
-                  <div className="card-content is-flex">
+                <div className="card is-fullheight">
+                  <div className="card-content">
                     <img src={walletImg} />
-                    <div className="ml-3">
-                      <p style={{ lineHeight: 1 }}>Wallet</p>
-                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>500</h3>
+                    <div>
+                      <p>Wallet</p>
+                      <h3 className="title is-size-1">500</h3>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="column pb-0">
-                <div className="card" style={fullWidth}>
-                  <div className="card-content is-flex">
+                <div className="card is-fullheight">
+                  <div className="card-content">
                     <img src={stakedImg} />
-                    <div className="ml-3">
-                      <p style={{ lineHeight: 1 }}>Staked</p>
-                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>1000</h3>
+                    <div>
+                      <p>Staked</p>
+                      <h3 className="title is-size-1">1000</h3>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="column pb-0">
-                <div className="card" style={fullWidth}>
-                <div className="card-content is-flex">
+                <div className="card is-fullheight">
+                <div className="card-content">
                     <img src={performanceImg} />
-                    <div className="ml-3">
-                      <p style={{ lineHeight: 1 }}>Vote performance</p>
-                      <h3 className="title is-size-1" style={{ lineHeight: 1 }}>50%</h3>
+                    <div>
+                      <p>Vote performance</p>
+                      <h3 className="title is-size-1">50%</h3>
                     </div>
                   </div>
                 </div>
