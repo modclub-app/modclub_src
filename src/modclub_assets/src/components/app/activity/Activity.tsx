@@ -12,9 +12,7 @@ export default function Tasks() {
       const activity = await getActivity();
       console.log("activity", activity);
       setActivity(activity);
-
-      setTimeout(() => {setLoading(false)}, 2000);
-      // setLoading(false);
+      setLoading(false);
     };
     fetchActivity();
   }, []);
@@ -47,9 +45,11 @@ export default function Tasks() {
             </thead>
             <tbody>
               {loading ?
-                <div className="loader-wrapper is-active mt-6">
-                  <div className="loader is-loading"></div>
-                </div> : activity.map((item) => (
+                <tr>
+                  <td>
+                    <div className="loader is-loading"></div>
+                  </td>
+                </tr> : activity.map((item) => (
                 <tr key={item.vote.id}>
                   <td>{item.vote.id}</td>
                   {/* <td>1234</td> */}

@@ -1,13 +1,13 @@
-// import React, { ReactDOM } from "react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getAllContent } from "../../../utils/api";
+import Userstats from "../userstats/Userstats";
 import Reject from "../modals/Reject";
 import Approve from "../modals/Approve";
+import { formatDate } from "../../../utils/util";
 
 export default function Tasks() {
   const [content, setContent] = useState(null);
-
 
   const renderContent = async () => {
     const status = { 'new' : null };
@@ -16,13 +16,12 @@ export default function Tasks() {
     let result = [];
    
     for (const item of content) {
-      console.log('item', item)
       result.push(
         <div className="card mb-6" key={item.id}>
           <header className="card-header">
             <p className="card-header-title">
               {item.providerName}
-              <span>Submitted by {item.sourceId}</span>
+              <span>Submitted by {item.sourceId} {formatDate(item.createdAt)}</span>
             </p>
             <progress className="progress" value="15" max="100"></progress>
             <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
@@ -30,11 +29,8 @@ export default function Tasks() {
           <div className="card-content">
             <h3 className="subtitle">{item.title}</h3>
             <p>{item.text}</p>
-
-            createdAt? {(new Date(Number(item.createdAt))).toLocaleString()}
           </div>
           <footer className="card-footer">
-                
             <div>
               <a className="button is-outlined">
                 <span className="icon is-small has-text-white ml-1 mr-2">
@@ -67,6 +63,7 @@ export default function Tasks() {
   
   return (
     <>
+      <Userstats />
       {content}
     </>
   )

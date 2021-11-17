@@ -3,7 +3,7 @@ import modalbgImg from '../../../../assets/modalbg.svg';
 import approveImg from '../../../../assets/approve.svg';
 import { vote } from "../../../utils/api";
 
-const Modal = ({ active, platform, toggle, handleSave }) => (
+const Modal = ({ active, platform, toggle, handleSave, saving, message }) => (
   <div className={`modal ${active ? "is-active" : ""}`}>
     <div className="modal-background" onClick={toggle} />
     <div className="modal-card" style={{ backgroundImage: `url(${modalbgImg})`}}>
@@ -17,23 +17,42 @@ const Modal = ({ active, platform, toggle, handleSave }) => (
         <a href="#">View {platform}'s rules</a>
         <div>
           <button className="button is-dark" onClick={toggle}>CANCEL</button>
-          <button className="button is-primary ml-4" onClick={handleSave}>CONFIRM</button>
+          {saving ? (
+            <button className="button is-primary ml-4" disabled>
+              <div className="loader is-loading mr-3"></div>
+              <span>VOTING...</span>
+            </button>
+            ) :
+            <button className="button is-primary ml-4" onClick={handleSave}>
+              CONFIRM
+            </button>}
         </div>
       </footer>
     </div>
+
+    {message &&
+      <div className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"}`}>
+        {message.value}
+      </div>
+    }
   </div>
 );
 
 export default function Approve({ platform, id }) {
   const [active, setActive] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState(null);
+
   const toggle = () => setActive(!active);
 
   const handleSave = async () => {
     console.log("handleSave")
-    // TODO pending spinner
+    setSaving(true);
     const result = await vote(id, { approved: null }, []);
-    console.log(result);  
-    toggle();
+    console.log("result", result);
+    setSaving(false);
+    setMessage({ success: result === "Vote successful" ? true : false, value: result });
+    setTimeout(() => toggle(), 2000); 
   };
 
   return (
@@ -44,6 +63,8 @@ export default function Approve({ platform, id }) {
         platform={platform}
         toggle={toggle}
         handleSave={handleSave}
+        saving={saving}
+        message={message}
       />
     </>
   );

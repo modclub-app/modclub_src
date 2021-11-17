@@ -1,15 +1,12 @@
 import { Switch, Route } from "react-router-dom";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
+// import Userstats from "./userstats/Userstats";
 import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
 import Moderators from "./moderators/Moderators";
 import Activity from "./activity/Activity";
 import "./ModclubApp.scss";
-
-import walletImg from '../../../assets/wallet.svg';
-import stakedImg from '../../../assets/staked.svg';
-import performanceImg from '../../../assets/performance.svg';
 
 function Dashboard() {
   return (
@@ -28,41 +25,8 @@ export default function ModclubApp() {
         <div className="column is-justify-content-flex-start mt-5 ml-6">
 
           <section className="container">
-            <div className="stat-boxes columns mb-5">
-              <div className="column pb-0">
-                <div className="card is-fullheight">
-                  <div className="card-content">
-                    <img src={walletImg} />
-                    <div>
-                      <p>Wallet</p>
-                      <h3 className="title is-size-1">500</h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="column pb-0">
-                <div className="card is-fullheight">
-                  <div className="card-content">
-                    <img src={stakedImg} />
-                    <div>
-                      <p>Staked</p>
-                      <h3 className="title is-size-1">1000</h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="column pb-0">
-                <div className="card is-fullheight">
-                <div className="card-content">
-                    <img src={performanceImg} />
-                    <div>
-                      <p>Vote performance</p>
-                      <h3 className="title is-size-1">50%</h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
+            {/* <Userstats /> */}
 
             <Switch>
               <Route exact path="/app">

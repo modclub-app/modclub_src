@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import modalbgImg from "../../../../assets/modalbg.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
-import { Rule } from "../../../utils/types";
+// import { Rule } from "../../../utils/types";
 
 const Modal = ({
   active,

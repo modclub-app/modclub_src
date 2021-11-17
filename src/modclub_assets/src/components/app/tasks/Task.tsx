@@ -3,9 +3,9 @@ import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { getContent, getProvider } from "../../../utils/api";
+import Userstats from "../userstats/Userstats";
 import Reject from "../modals/Reject";
 import Approve from "../modals/Approve";
-import { formatDistanceStrict, format } from "date-fns";
 
 const Sidebar = ({ providerId }: { providerId: Principal }) => {
   const [content, setContent] = useState(null);
@@ -195,6 +195,7 @@ export default function Task() {
 
   return (
     <>
+      <Userstats />
       {content}
     </>
   )
