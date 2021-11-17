@@ -1,5 +1,6 @@
 import { Optional } from "./api";
 import { ImageData, Profile } from "./types";
+import { formatDistanceStrict, isSameDay, format } from "date-fns";
 
 export const Base64Binary = {
   _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -130,3 +131,11 @@ export function unwrap<T>(val: Optional<T>): T | null {
 
 export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
   Array.from(new Uint8Array(file));
+
+export function formatDate(date: bigint) {
+  const same = isSameDay(new Date, new Date(Number(date)))
+  return same ?
+    formatDistanceStrict(new Date, new Date(Number(date))) + " ago"
+    :
+    format(new Date(Number(date)), "PP")
+}

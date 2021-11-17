@@ -3,7 +3,6 @@ import modalbgImg from '../../../../assets/modalbg.svg';
 import approveImg from '../../../../assets/approve.svg';
 import { vote } from "../../../utils/api";
 
-
 const Modal = ({ active, platform, toggle, handleSave }) => (
   <div className={`modal ${active ? "is-active" : ""}`}>
     <div className="modal-background" onClick={toggle} />
@@ -32,7 +31,7 @@ export default function Approve({ platform, id }) {
   const handleSave = async () => {
     console.log("handleSave")
     // TODO pending spinner
-    const result = await vote(id, { approved: null });
+    const result = await vote(id, { approved: null }, []);
     console.log(result);  
     toggle();
   };

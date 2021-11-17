@@ -25,7 +25,7 @@ export default function Tasks() {
               <span>Submitted by {item.sourceId}</span>
             </p>
             <progress className="progress" value="15" max="100"></progress>
-            <span>{`${item.voteCount}/${item.minVotes} votes`}</span>
+            <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
           </header>
           <div className="card-content">
             <h3 className="subtitle">{item.title}</h3>

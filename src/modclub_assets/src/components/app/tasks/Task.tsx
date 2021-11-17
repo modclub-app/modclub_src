@@ -2,7 +2,7 @@ import { Principal } from "@dfinity/principal";
 // import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { getContent, getProvider, getProviderRules } from "../../../utils/api";
+import { getContent, getProvider } from "../../../utils/api";
 import Reject from "../modals/Reject";
 import Approve from "../modals/Approve";
 import { formatDistanceStrict, format } from "date-fns";
@@ -126,7 +126,7 @@ export default function Task() {
                   <span>Submitted by {content.sourceId}</span>
                 </p>
                 <progress className="progress is-primary" value="80" max="100"></progress>
-                <span>{ `${content.voteCount}/${content.minVotes} votes` }</span>
+                <span className="progress-label">{ `${content.voteCount}/${content.minVotes} votes` }</span>
               </header>
               <div className="card-content">
                 <h1 className="title">{content.title}</h1>

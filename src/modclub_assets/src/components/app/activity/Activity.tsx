@@ -1,12 +1,24 @@
 // import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { getActivity } from "../../../utils/api";
+import { formatDate } from "../../../utils/util";
 
 export default function Tasks() {
-  const [content, setContent] = useState(null);
-
-  useEffect(() => {
-  }, []);
+  const [activity, setActivity] = useState(null);
+  const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    const fetchActivity = async () => {
+      const activity = await getActivity();
+      console.log("activity", activity);
+      setActivity(activity);
+
+      setTimeout(() => {setLoading(false)}, 2000);
+      // setLoading(false);
+    };
+    fetchActivity();
+  }, []);
+
   return (
     <>
       <div className="card mb-5">
@@ -34,150 +46,27 @@ export default function Tasks() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Approved</td>
-                <td>DSCVR</td>
-                <td>Title of content</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">10/10 votes</button>
-                </td>
-                <td>10/09/2021</td>
-                <td>1 MOD</td>
-                <td>10/09/2021</td>
-              </tr>
+              {loading ?
+                <div className="loader-wrapper is-active mt-6">
+                  <div className="loader is-loading"></div>
+                </div> : activity.map((item) => (
+                <tr key={item.vote.id}>
+                  <td>{item.vote.id}</td>
+                  {/* <td>1234</td> */}
+                  <td>
+                    {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
+                  </td>
+                  <td>{item.providerName}</td>
+                  <td>{item.title}</td>
+                  <td className="is-relative">
+                    <progress className="progress mb-0" value="15" max="100"></progress>
+                    <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
+                  </td>
+                  <td>{formatDate(item.createdAt)}</td>
+                  <td>{Number(item.reward)} MOD</td>
+                  <td>{formatDate(item.rewardRelease)}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
 
