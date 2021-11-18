@@ -136,7 +136,7 @@ module Token {
       };
     };
 
-    func unstake(p: Principal, amount: Nat) : async () {
+    public func unstake(p: Principal, amount: Nat) : async () {
 
       // Todo - Add timer to unstake so that it can be unstaked after a certain time period
       switch(_tokenStakes.get(p)) {

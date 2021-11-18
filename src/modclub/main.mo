@@ -389,6 +389,16 @@ shared ({caller = initializer}) actor class ModClub () {
     switch(state.content.get(contentId)){
       case(?content) {
         if(content.status != #new) return "Content has already been reviewed";
+        
+        // Check the user has enough tokens staked
+        switch(state.providers.get(content.providerId)){
+          case(?provider) {
+              let holdings = tokens.getHoldings(caller);
+              if( holdings.stake < provider.settings.minStaked ) return "Not enough tokens staked";
+          };
+          case(_) throw Error.reject("Provider not found");
+        };
+
         var voteApproved : Nat = 0;
         var voteRejected : Nat = 0;
         var voteCount = getVoteCount(contentId);
@@ -438,38 +448,49 @@ shared ({caller = initializer}) actor class ModClub () {
         return "";         
       };
 
-  public query({ caller }) func getActivity() : async [Activity] {
+  public query({ caller }) func getActivity(isComplete: Bool) : async [Activity] {
       let buf = Buffer.Buffer<Types.Activity>(0);
-      for (vid in state.mods2votes.get0(caller).vals()) {
+      label l for (vid in state.mods2votes.get0(caller).vals()) {
         switch(state.votes.get(vid)) {
           case (?vote) {
             switch(state.content.get(vote.contentId)) {
               case (?content) {
-                let voteCount = getVoteCount(content.id);
-                let item : Activity = {
-                    vote = vote;
-                    providerId = content.providerId;
-                    providerName =  "Temp";
-                    contentType = content.contentType;    
-                    status =  content.status;
-                    title = content.title;
-                    createdAt = content.createdAt;
-                    updatedAt = content.updatedAt;
-                    voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
-                    minVotes = 10;
-                    minStake = 1000;
-                    reward = 1;
-                    rewardRelease = timeNow_();
+                // Filter out wrong results
+                if(content.status == #new and isComplete == true) {
+                  continue l;
+                } else if(content.status != #new and isComplete == false) {
+                  continue l;
                 };
-                buf.add(item);
+                switch(state.providers.get(content.providerId)) {
+                  case(?provider) {
+                    let voteCount = getVoteCount(content.id);
+                    let item : Activity = {
+                        vote = vote;
+                        providerId = content.providerId;
+                        providerName =  provider.name;
+                        contentType = content.contentType;    
+                        status =  content.status;
+                        title = content.title;
+                        createdAt = content.createdAt;
+                        updatedAt = content.updatedAt;
+                        voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+                        minVotes = 10;
+                        minStake = 1000;
+                        reward = 1;
+                        rewardRelease = timeNow_();
+                    };
+                    buf.add(item);
+                };
+                case(_) throw Error.reject("Provider does not exist");
+                };
               };
-              case(_) (); 
+              case(_) throw Error.reject("Content does not exist"); 
           };          
         };
-        case (_) ();
+        case (_) throw Error.reject("Vote does not exist");
       };    
-  };
-    buf.toArray();
+    };
+    return buf.toArray();
   };
   
   private func evaluateVotes(content: Content, aCount: Nat, rCount: Nat) : async() {
@@ -544,16 +565,26 @@ shared ({caller = initializer}) actor class ModClub () {
     getProviderRules(providerId); 
   };
 
-  // Token holdings
-  public query({ caller }) func getTokenHoldings() : async Token.Holdings {
-     tokens.getHoldings(caller);
-  };
-
   public query func checkUsernameAvailable(userName_ : Text): async Bool {
     switch (state.usernames.get(userName_)) {
       case (?_) { /* error -- ID already taken. */ false };
       case null { /* ok, not taken yet. */ true };
     }
+  };
+
+  // Token Methods
+  public query({ caller }) func getTokenHoldings() : async Token.Holdings {
+     tokens.getHoldings(caller);
+  };
+
+  public shared({ caller }) func stakeTokens(amount: Nat) : async Text {
+    await tokens.stake(caller, amount);
+    "Staked " # Nat.toText(amount) # " tokens";
+  };
+
+  public shared({ caller }) func unStakeTokens(amount: Nat) : async Text {
+    await tokens.unstake(caller, amount);
+    "Unstaked " # Nat.toText(amount) # " tokens";
   };
 
   // Helpers

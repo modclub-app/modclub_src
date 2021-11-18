@@ -119,7 +119,7 @@ export const idlFactory = ({ IDL }) => {
     'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
-    'getActivity' : IDL.Func([], [IDL.Vec(Activity)], ['query']),
+    'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAllContent' : IDL.Func(
         [ContentStatus],
         [IDL.Vec(ContentPlus)],
@@ -148,6 +148,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'submitImage' : IDL.Func(
         [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Opt(IDL.Text)],
         [IDL.Text],
@@ -159,6 +160,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'subscribe' : IDL.Func([SubscribeMessage], [], []),
+    'unStakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'updateSettings' : IDL.Func([ProviderSettings], [], ['oneway']),
     'vote' : IDL.Func(
         [ContentId, Decision, IDL.Opt(IDL.Vec(RuleId))],

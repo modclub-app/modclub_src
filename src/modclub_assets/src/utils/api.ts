@@ -100,10 +100,18 @@ export async function getProviderRules(providerId: Principal): Promise<Rule[]> {
   return (await modclub).getRules(providerId);
 }
 
-export async function getActivity(): Promise<Activity[]> {
-  return (await modclub).getActivity();
+export async function getActivity(isComplete: boolean): Promise<Activity[]> {
+  return (await modclub).getActivity(isComplete);
 }
 
 export async function getTokenHoldings(): Promise<Holdings> {
   return (await modclub).getTokenHoldings();
+}
+
+export async function stakeTokens(amount: number): Promise<string> {
+  return (await modclub).stakeTokens(BigInt(amount));
+}
+
+export async function unStakeTokens(amount: number): Promise<string> {
+  return (await modclub).unStakeTokens(BigInt(amount));
 }

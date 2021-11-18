@@ -54,7 +54,7 @@ export interface ModClub {
   'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
-  'getActivity' : () => Promise<Array<Activity>>,
+  'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
@@ -77,6 +77,7 @@ export interface ModClub {
   'sendImage' : (arg_0: string, arg_1: Array<number>, arg_2: string) => Promise<
       string
     >,
+  'stakeTokens' : (arg_0: bigint) => Promise<string>,
   'submitImage' : (
       arg_0: string,
       arg_1: Array<number>,
@@ -89,6 +90,7 @@ export interface ModClub {
       arg_2: [] | [string],
     ) => Promise<string>,
   'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
+  'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
   'vote' : (
       arg_0: ContentId,
