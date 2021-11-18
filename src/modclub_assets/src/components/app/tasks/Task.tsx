@@ -173,7 +173,7 @@ export default function Task() {
 
                 <div className="level">
                   <Reject platform={content.providerName} id={content.id} providerId={content.providerId} />
-                  <Approve platform={content.providerName} id={content.id} />
+                  <Approve platform={content.providerName} id={content.id} providerId={content.providerId} />
                 </div>
               </div>
             </div>

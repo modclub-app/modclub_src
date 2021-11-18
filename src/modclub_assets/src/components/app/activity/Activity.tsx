@@ -35,7 +35,7 @@ export default function Tasks() {
           <table className="table is-striped">
             <thead>
               <tr>
-                <th>ID</th>
+                {/* <th>ID</th> */}
                 <th>Vote</th>
                 <th>App</th>
                 <th>Title</th>
@@ -53,8 +53,7 @@ export default function Tasks() {
                   </td>
                 </tr> : activity.map((item) => (
                 <tr key={item.vote.id}>
-                  <td>{item.vote.id}</td>
-                  {/* <td>1234</td> */}
+                  {/* <td>{item.vote.id}</td> */}
                   <td>
                     {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
                   </td>
