@@ -10,9 +10,50 @@ a.navbar-item {
   }
 }
 
+.landing-page .section {
+  // border-top: 1px solid red;
+  margin-top: 6rem;
+  padding-top: 6rem;
+  padding-bottom: 0;
+  position: relative;
+
+  &:before {
+    content: '';
+    display: block;
+    background: #3e4348;
+    height: 1px;
+    width: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+  }
+}
+
 @media screen and (min-width: 769px), print {
+  .landing-divider {
+    margin: 100px;
+  }
+
   .hero.is-medium .hero-body {
     padding: 4rem 16% 0;
+  }
+
+  .roadmapLine + .column {
+    margin-right: 3rem;
+  }
+
+  section.Tokenomics .column .columns .column:first-child {
+    margin-right: 1.5rem !important;
+  }
+}
+
+.RewardsImg {
+  text-align: center;
+
+  @media screen and (min-width: 1023px), print {
+    text-align: right;
   }
 }
 

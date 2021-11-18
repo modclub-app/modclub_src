@@ -1,6 +1,38 @@
+@import "../../../common.scss";
+
 aside {
   h1 {
     white-space: nowrap;
+  }
+}
+
+.user-avatar {
+  background: linear-gradient(to left, $primary, $secondary);
+  padding: 2px;
+  border-radius: 50%;
+  min-width: 40px;
+  img {
+    border-radius: 50%;
+  }
+}
+
+.dropdown-menu {
+  margin-top: -1em;
+
+  .dropdown-content {
+    background: $dark;
+  }
+
+  a.dropdown-item {
+    display: flex;
+    color: $white;
+    &:hover {
+      background: $black;
+    }
+  }
+
+  .dropdown-divider {
+    background: $black;
   }
 }
 
