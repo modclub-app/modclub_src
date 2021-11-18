@@ -13,68 +13,59 @@ const Modal = ({
   
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
-
     const { address, amount } = values;
     setSubmitting(true);
   };
   
-
   return (
     <div className={`modal ${active ? "is-active" : ""}`}>
       <div className="modal-background" onClick={toggle} />
-      <div className="modal-card" style={{ backgroundImage: `url(${modalbgImg})`}}>
-        <section className="modal-card-body">
-          <h3 className="subtitle mt-5">Withdraw</h3>
-
-          <Form
-            onSubmit={onFormSubmit}
-            render={({ handleSubmit, form }) => (
-              <form onSubmit={handleSubmit}>
-                <div className="field">
-                  <div className="control">
-                    <Field
-                      name="address"
-                      component="input"
-                      type="text"
-                      className="input"
-                      placeholder="Wallet Address"
-                    />
-                  </div>
+      <div className="modal-card is-small" style={{ backgroundImage: `url(${modalbgImg})`}}>
+      <Form
+        onSubmit={onFormSubmit}
+        render={({ handleSubmit, pristine }) => (
+          <form onSubmit={handleSubmit}>
+            <section className="modal-card-body">
+              <h3 className="subtitle mt-5">Withdraw</h3>
+              <div className="field">
+                <div className="control">
+                  <Field
+                    name="address"
+                    component="input"
+                    type="text"
+                    className="input"
+                    placeholder="Wallet Address"
+                  />
                 </div>
-                <div className="field">
-                  <div className="control has-icons-right">
-                    <Field
-                      name="amount"
-                      component="input"
-                      type="number"
-                      className="input"
-                      value="100"
-                    />
-                    <span className="icon is-right has-text-white mr-4">AMT</span>
-                  </div>
+              </div>
+              <div className="field">
+                <div className="control has-icons-right">
+                  <Field
+                    name="amount"
+                    component="input"
+                    type="number"
+                    className="input"
+                    initialValue="100"
+                  />
+                  <span className="icon is-right has-text-white mr-4">AMT</span>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="button is-large is-primary is-fullwidth"
-                  value="Submit"
-                >
-                  {submitting ? 
-                  <>
-                    <span className="loader is-loading"></span>
-                    <span>SUBMITTING...</span>
-                  </> : "SUBMIT"}
-                </button>
-              </form>
-            )}
-          />
-        </section>
-        {/* <footer className="modal-card-foot">
-          <button className="button is-primary is-fullwidth">
-            SUBMIT
-          </button>
-        </footer> */}
+              </div>
+            </section>
+            <footer className="modal-card-foot">
+            {submitting ? 
+              <button className="button is-primary is-fullwidth" disabled>
+                <span className="icon mr-2 loader is-loading"></span>
+                <span>SUBMITTING...</span>
+              </button> 
+              :
+              <button className="button is-primary is-fullwidth" disabled={pristine}>
+                SUBMIT
+              </button>
+            }
+            </footer>
+          </form>
+        )}
+      />
       </div>
     </div>
   );

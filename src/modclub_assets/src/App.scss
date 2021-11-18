@@ -223,7 +223,6 @@ hr {
 
 .card-footer {
   border-color: $dark;
-
   margin: 0 1.5rem 1.5rem 1.5rem;
   padding: 1.5rem 0;
   justify-content: space-between;
@@ -236,6 +235,9 @@ hr {
 .modal-card {
   background-color: $black;
   background-size: cover;
+  &.is-small {
+    width: 480px;
+  }
 }
 
 .modal-card-body {

@@ -70,7 +70,7 @@ const Modal = ({
         style={{ backgroundImage: `url(${modalbgImg})` }}
       >
         <section className="modal-card-body">
-          <img src={rejectImg} />
+          <img src={rejectImg} className="mt-5" />
           <h3 className="subtitle mt-5">Reject Confirmation</h3>
           <p className="mb-3">Select which rules were broken:</p>
           <div className="card has-background-dark">
