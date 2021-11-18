@@ -94,7 +94,6 @@ const Modal = ({
             <button className="button is-primary ml-4" onClick={handleSave} disabled={!checked.length}>
               CONFIRM
             </button>}
-            
           </div>
         </footer>
       </div>

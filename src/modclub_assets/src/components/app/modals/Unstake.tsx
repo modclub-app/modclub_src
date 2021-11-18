@@ -19,18 +19,7 @@ export default function Withdraw({ toggle }) {
         render={({ handleSubmit, pristine }) => (
           <form onSubmit={handleSubmit}>
             <section className="modal-card-body">
-              <h3 className="subtitle">Withdraw</h3>
-              <div className="field">
-                <div className="control">
-                  <Field
-                    name="address"
-                    component="input"
-                    type="text"
-                    className="input"
-                    placeholder="Wallet Address"
-                  />
-                </div>
-              </div>
+              <h3 className="subtitle">Unstake</h3>
               <div className="field">
                 <div className="control has-icons-right">
                   <Field
@@ -44,14 +33,17 @@ export default function Withdraw({ toggle }) {
                 </div>
               </div>
               <div className="field level px-5 pt-5">
-                <span className="has-text-silver">Available:</span>
-                <label className="label">100</label>
+                <span className="has-text-silver">Current Stake:</span>
+                <label className="label">1000</label>
               </div>
               <div className="field level px-5">
-                <span className="has-text-silver">Available after:</span>
-                <label className="label">0</label>
+                <span className="has-text-silver">After Stake:</span>
+                <label className="label">3420</label>
               </div>
-
+              <div className="field level px-5">
+                <span className="has-text-silver">Stake will be released on:</span>
+                <label className="label">9/12/2021</label>
+              </div>
             </section>
             <footer className="modal-card-foot pt-0">
             {submitting ? 

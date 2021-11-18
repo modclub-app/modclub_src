@@ -1,11 +1,24 @@
+import { useState } from "react";
 import "./Userstats.scss";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
 import performanceImg from '../../../../assets/performance.svg';
 import Withdraw from "../modals/Withdraw";
+import Stake from "../modals/Stake";
+import Unstake from "../modals/Unstake";
 
 export default function Userstats({ detailed = false }) {
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
+
+  const [showStake, setShowStake] = useState(false);
+  const toggleStake = () => setShowStake(!showStake);
+
+  const [showUnstake, setShowUnstake] = useState(false);
+  const toggleUnstake = () => setShowUnstake(!showUnstake);
+
   return (
+    <>
     <div className="stat-boxes columns mb-5">
       <div className="column pb-0">
         <div className="card has-background-circles is-fullheight">
@@ -22,8 +35,7 @@ export default function Userstats({ detailed = false }) {
           {detailed &&
             <footer className="card-footer">
               <button className="button is-dark is-fullwidth">Deposit</button>
-              {/* <button className="button is-dark is-fullwidth">Withdraw</button> */}
-              <Withdraw />
+              <button className="button is-dark is-fullwidth" onClick={toggleWithdraw}>Withdraw</button>
             </footer>
           }
         </div>
@@ -42,8 +54,8 @@ export default function Userstats({ detailed = false }) {
           </div>
           {detailed &&
             <footer className="card-footer">
-              <button className="button is-dark is-fullwidth">Stake</button>
-              <button className="button is-dark is-fullwidth">Unstake</button>
+              <button className="button is-dark is-fullwidth" onClick={toggleStake}>Stake</button>
+              <button className="button is-dark is-fullwidth" onClick={toggleUnstake}>Unstake</button>
             </footer>
           }
         </div>
@@ -63,5 +75,16 @@ export default function Userstats({ detailed = false }) {
         </div>
       </div>
     </div>
+
+    {showWithdraw &&
+      <Withdraw toggle={toggleWithdraw} />
+    }
+    {showStake &&
+      <Stake toggle={toggleStake} />
+    }
+    {showUnstake &&
+      <Unstake toggle={toggleUnstake} />
+    }
+  </>
   )
 }
