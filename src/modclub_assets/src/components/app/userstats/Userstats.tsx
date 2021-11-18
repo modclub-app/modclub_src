@@ -8,7 +8,7 @@ export default function Userstats({ detailed = false }) {
   return (
     <div className="stat-boxes columns mb-5">
       <div className="column pb-0">
-        <div className="card is-fullheight">
+        <div className="card has-background-circles is-fullheight">
           <div className="card-content">
             <img src={walletImg} />
             <div>
@@ -29,7 +29,7 @@ export default function Userstats({ detailed = false }) {
         </div>
       </div>
       <div className="column pb-0">
-        <div className="card is-fullheight">
+        <div className="card has-background-circles is-fullheight">
           <div className="card-content">
             <img src={stakedImg} />
             <div>
@@ -49,7 +49,7 @@ export default function Userstats({ detailed = false }) {
         </div>
       </div>
       <div className="column pb-0">
-        <div className="card is-fullheight">
+        <div className="card has-background-circles is-fullheight">
           <div className="card-content">
             <img src={performanceImg} />
             <div>

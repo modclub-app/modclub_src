@@ -1,6 +1,5 @@
 import { Form, Field } from "react-final-form";
 import { useState } from "react";
-import modalbgImg from '../../../../assets/modalbg.svg';
 
 const Modal = ({
   active,
@@ -20,7 +19,7 @@ const Modal = ({
   return (
     <div className={`modal ${active ? "is-active" : ""}`}>
       <div className="modal-background" onClick={toggle} />
-      <div className="modal-card is-small" style={{ backgroundImage: `url(${modalbgImg})`}}>
+      <div className="modal-card is-small has-background-circles">
       <Form
         onSubmit={onFormSubmit}
         render={({ handleSubmit, pristine }) => (

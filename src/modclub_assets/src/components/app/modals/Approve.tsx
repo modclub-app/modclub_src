@@ -1,6 +1,5 @@
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
-import modalbgImg from '../../../../assets/modalbg.svg';
 import approveImg from '../../../../assets/approve.svg';
 import { vote, getProviderRules } from "../../../utils/api";
 
@@ -60,7 +59,7 @@ const Modal = ({
   return (
     <div className={`modal ${active ? "is-active" : ""}`}>
       <div className="modal-background" onClick={toggle} />
-      <div className="modal-card" style={{ backgroundImage: `url(${modalbgImg})`}}>
+      <div className="modal-card has-background-circles">
         <section className="modal-card-body">
           <img src={approveImg} className="mt-5" />
           <h3 className="subtitle mt-5">Approve Confirmation</h3>

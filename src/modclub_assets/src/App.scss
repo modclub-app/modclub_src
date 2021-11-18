@@ -262,6 +262,43 @@ hr {
   margin-right: 0;
 }
 
+.has-background-circles {
+  &:before {
+    content: "";
+    display: block;
+    background-image: url('../assets/card_bottom_left.svg');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: bottom left;
+    width: 25%;
+    height: 25%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+  &:after {
+    content: "";
+    display: block;
+    background-image: url('../assets/card_top_right.svg');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: top right;
+    width: 35%;
+    height: 50%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 0;
+  }
+
+  .card-content, .card-footer, .modal-card-body, .modal-card-foot {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+
+
 .label {
   color: $silver;
   line-height: 1.25rem;
