@@ -21,6 +21,7 @@ const Modal = ({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [checked, setChecked] = useState([]);
+  const [message, setMessage] = useState(null);
 
   const handleCheck = (e) => {
     const item = e.target.name;
@@ -34,7 +35,8 @@ const Modal = ({
     const result = await vote(id, { rejected: null }, checked);
     console.log(result);
     setSaving(false);
-    toggle();
+    setMessage({ success: result === "Vote successful" ? true : false, value: result });
+    setTimeout(() => toggle(), 2000); 
   };
   
   useEffect(() => {
@@ -96,13 +98,21 @@ const Modal = ({
           </div>
         </footer>
       </div>
+      {message &&
+        <div className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"}`}>
+          {message.value}
+        </div>
+      }
     </div>
   );
 };
 
 export default function Reject({ platform, id, providerId }) {
   const [active, setActive] = useState(false);
-  const toggle = () => setActive(!active);
+
+  const toggle = () => {
+    setActive(!active);
+  }
 
   return (
     <>

@@ -107,7 +107,10 @@ export default function Approve({ platform, id, providerId }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
 
-  const toggle = () => setActive(!active);
+  const toggle = () => {
+    setActive(!active);
+    setMessage(null);
+  }
 
   const handleSave = async () => {
     console.log("handleSave")
