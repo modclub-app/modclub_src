@@ -62,10 +62,11 @@ type ModClub =
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getContent: (text) -> (opt ContentPlus) query;
    getImage: (text) -> (opt vec nat8) query;
-   getProfile: () -> (Profile);
-   getProvider: (principal) -> (ProviderPlus);
+   getProfile: () -> (Profile) query;
+   getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;
-   getRules: (principal) -> (vec Rule);
+   getRules: (principal) -> (vec Rule) query;
+   getTokenHoldings: () -> (Holdings) query;
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    removeRules: (vec RuleId) -> () oneway;
@@ -85,6 +86,12 @@ type Image =
  record {
    data: vec nat8;
    imageType: text;
+ };
+type Holdings = 
+ record {
+   pendingRewards: int;
+   stake: int;
+   wallet: int;
  };
 type Decision__1 = 
  variant {

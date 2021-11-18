@@ -11,6 +11,7 @@ import {
   Activity,
   ImageData,
   Image,
+  Holdings,
 } from "./types";
 import { modclub as MC } from "../../../declarations/modclub/index";
 import { Principal } from "@dfinity/principal";
@@ -101,4 +102,8 @@ export async function getProviderRules(providerId: Principal): Promise<Rule[]> {
 
 export async function getActivity(): Promise<Activity[]> {
   return (await modclub).getActivity();
+}
+
+export async function getTokenHoldings(): Promise<Holdings> {
+  return (await modclub).getTokenHoldings();
 }

@@ -94,6 +94,11 @@ export const idlFactory = ({ IDL }) => {
     'image' : IDL.Opt(Image__1),
     'rules' : IDL.Vec(Rule),
   });
+  const Holdings = IDL.Record({
+    'pendingRewards' : IDL.Int,
+    'stake' : IDL.Int,
+    'wallet' : IDL.Int,
+  });
   const Image = IDL.Record({
     'imageType' : IDL.Text,
     'data' : IDL.Vec(IDL.Nat8),
@@ -122,10 +127,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
-    'getProfile' : IDL.Func([], [Profile], []),
-    'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], []),
+    'getProfile' : IDL.Func([], [Profile], ['query']),
+    'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
-    'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], []),
+    'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
+    'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],
         [Profile],

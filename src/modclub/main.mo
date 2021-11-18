@@ -16,6 +16,7 @@ import Option "mo:base/Option";
 import Debug "mo:base/Debug";
 import Order "mo:base/Order";
 import Rel "data_structures/Rel";
+import Token "./token";
 
 shared ({caller = initializer}) actor class ModClub () {  
 
@@ -28,6 +29,7 @@ shared ({caller = initializer}) actor class ModClub () {
   // Types
   type Content = Types.Content;
   type ContentPlus = Types.ContentPlus;
+  type ContentStatus = Types.ContentStatus;
   type TextContent = Types.TextContent;
   type MultiTextContent = Types.MultiTextContent;
   type ImageUrlContent = Types.ImageUrl;
@@ -46,10 +48,15 @@ shared ({caller = initializer}) actor class ModClub () {
 
   // Global Objects  
   var state = State.empty();
+  let tokens = Token.Tokens(
+        initializer
+  );
 
-  func checkPermission(p: Principal) : async() {
+  func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
   };
+
+
 
   // Provider functions
   // todo: Require cylces on provider registration, add provider imageURl, description 
@@ -113,9 +120,9 @@ shared ({caller = initializer}) actor class ModClub () {
     // todo: Re-evaluate all new content with votes to determine if a potential decision can be made 
   };
 
-  public func getProvider(providerId: Principal) : async ProviderPlus {
+  public query func getProvider(providerId: Principal) : async ProviderPlus {
     switch(state.providers.get(providerId)){
-      case(?provider) {
+      case(?provider) {      
       let result : ProviderPlus = {
         id = provider.id;
         name = provider.name;
@@ -124,7 +131,7 @@ shared ({caller = initializer}) actor class ModClub () {
         createdAt = provider.createdAt;
         updatedAt = provider.updatedAt;
         settings = provider.settings;
-        rules = await getRules(provider.id);
+        rules = getProviderRules(providerId);
         contentCount = state.provider2content.get0Size(provider.id); 
         activeCount = 100; // Todo calculate active content count
         rewardsSpent = 5000; // Todo calculate rewards spent           
@@ -324,6 +331,9 @@ shared ({caller = initializer}) actor class ModClub () {
                 updatedAt = now;
               };
               state.profiles.put(caller, profile);
+              // Todo: Remove this after testnet
+              // Give new users MOD points
+              await tokens.transfer(initializer, caller, 1000);
               return profile;
             };
             case(false) throw Error.reject("username already taken");
@@ -333,7 +343,7 @@ shared ({caller = initializer}) actor class ModClub () {
       }
   };
 
-  public shared({ caller }) func getProfile() : async Profile {
+  public query({ caller }) func getProfile() : async Profile {
       switch(state.profiles.get(caller)){
         case (null) throw Error.reject("profile not found");
         case (?result) return result;
@@ -465,6 +475,8 @@ shared ({caller = initializer}) actor class ModClub () {
   private func evaluateVotes(content: Content, aCount: Nat, rCount: Nat) : async() {
     var finishedVote = false;
     var status : Types.ContentStatus = #new;
+    var decision : Decision = #approved;
+
     switch(state.providers.get(content.providerId)) {
       case(?provider) {
         var minVotes = provider.settings.minVotes;
@@ -472,11 +484,13 @@ shared ({caller = initializer}) actor class ModClub () {
           // Approved
           finishedVote := true;
           status := #approved;
+          decision := #approved;
           state.contentNew.delete(content.providerId, content.id);
           state.contentApproved.put(content.providerId, content.id);
         } else if ( rCount >= minVotes) {
           // Rejected
           status := #rejected;
+          decision := #rejected;
           finishedVote := true;
           state.contentNew.delete(content.providerId, content.id);
           state.contentRejected.put(content.providerId, content.id);
@@ -485,6 +499,17 @@ shared ({caller = initializer}) actor class ModClub () {
         };
 
         if(finishedVote) {
+          // Reward / Slash voters ;                      
+            await tokens.voteFinalization(
+                initializer, 
+                decision, 
+                state.content2votes.get0(content.id), 
+                1,
+                state
+            );              
+          };
+
+          // Update content status
           state.content.put(content.id, {
                 id = content.id;
                 providerId = content.providerId;
@@ -511,30 +536,39 @@ shared ({caller = initializer}) actor class ModClub () {
               }
             };
           };
+          case(null) ();
       };
-      case(null) ();
     };
-  };
   
-  public func getRules(providerId: Principal) : async [Types.Rule] {
-    let buf = Buffer.Buffer<Types.Rule>(0);
-    for(ruleId in state.provider2rules.get0(providerId).vals()){
-      switch(state.rules.get(ruleId)){
-        case(?rule){
-          buf.add(rule);
-        };
-        case(_)();
-      };
-    };
-    buf.toArray();
+  public query func getRules(providerId: Principal) : async [Types.Rule] {
+    getProviderRules(providerId); 
   };
 
-  // Helpers
+  // Token holdings
+  public query({ caller }) func getTokenHoldings() : async Token.Holdings {
+     tokens.getHoldings(caller);
+  };
+
   public query func checkUsernameAvailable(userName_ : Text): async Bool {
     switch (state.usernames.get(userName_)) {
       case (?_) { /* error -- ID already taken. */ false };
       case null { /* ok, not taken yet. */ true };
     }
+  };
+
+  // Helpers
+  
+  private func getProviderRules(providerId: Principal) : [Rule] {
+      let buf = Buffer.Buffer<Types.Rule>(0);
+      for(ruleId in state.provider2rules.get0(providerId).vals()){
+        switch(state.rules.get(ruleId)){
+          case(?rule){
+            buf.add(rule);
+          };
+          case(_)();
+        };
+      };
+      buf.toArray();
   };
 
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {

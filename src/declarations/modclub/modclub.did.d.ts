@@ -43,6 +43,11 @@ export type Decision = { 'approved' : null } |
   { 'rejected' : null };
 export type Decision__1 = { 'approved' : null } |
   { 'rejected' : null };
+export interface Holdings {
+  'pendingRewards' : bigint,
+  'stake' : bigint,
+  'wallet' : bigint,
+}
 export interface Image { 'imageType' : string, 'data' : Array<number> }
 export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export interface ModClub {
@@ -57,6 +62,7 @@ export interface ModClub {
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
+  'getTokenHoldings' : () => Promise<Holdings>,
   'registerModerator' : (
       arg_0: string,
       arg_1: string,
