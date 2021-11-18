@@ -51,7 +51,7 @@ const Modal = ({
   saving: boolean;
   message: any;
   providerId: Principal;
-  }) => {
+}) => {
 
   const [showRules, setShowRules] = useState(false);
 

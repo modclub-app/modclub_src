@@ -241,7 +241,7 @@ hr {
 .modal-card-body {
   background: none;
   color: $white;
-  padding: 7rem 4rem 3rem;
+  padding: 3rem 4rem;
 }
 .modal-card-foot {
   background: none;
@@ -385,6 +385,46 @@ input[type="checkbox"] {
   }
 }
 
+.field:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.input {
+  background: $dark;
+  border: 0;
+  color: $white;
+  height: 3rem;
+  padding: 0 1.25rem;
+  font-weight: 700;
+}
+
+.control.has-icons-left .icon, .control.has-icons-right .icon {
+  height: 3rem;
+}
+
+.input::-webkit-input-placeholder, .textarea::-webkit-input-placeholder, .select select::-webkit-input-placeholder {
+  color: $white;
+  font-weight: 400;
+}
+
+.input:-moz-placeholder, .textarea:-moz-placeholder, .select select:-moz-placeholder {
+  color: $white;
+  font-weight: 400;
+}
+
+.input:-ms-input-placeholder, .textarea:-ms-input-placeholder, .select select:-ms-input-placeholder {
+  color: $white;
+  font-weight: 400;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
 
 .notification {
   position: absolute;

@@ -17,7 +17,7 @@ const Modal = ({
   toggle: () => void;
   id: string,
   providerId: Principal;
-  }) => {
+}) => {
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
