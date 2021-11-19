@@ -5,6 +5,8 @@ import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
 import performanceImg from '../../../../assets/performance.svg';
 import Withdraw from "../modals/Withdraw";
+import Stake from "../modals/Stake";
+import Unstake from "../modals/Unstake";
 
 export default function Userstats({ detailed = false }) {
   const [tokenHoldings, setTokenHoldings] = useState({
@@ -12,6 +14,15 @@ export default function Userstats({ detailed = false }) {
     stake : 0,
     wallet : 0,  
   });
+
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
+
+  const [showStake, setShowStake] = useState(false);
+  const toggleStake = () => setShowStake(!showStake);
+
+  const [showUnstake, setShowUnstake] = useState(false);
+  const toggleUnstake = () => setShowUnstake(!showUnstake);
 
   useEffect(() => {
     const fetchTokenHoldings = async () => {

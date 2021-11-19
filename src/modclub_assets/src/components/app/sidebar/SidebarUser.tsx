@@ -1,25 +1,20 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../utils/auth"
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import placeholder from "../../../../assets/user_placeholder.png";
 
-
 export function SidebarUser() {
-  const [active, setActive] = useState(false);  
   const { user, logOut, identity } = useAuth();
   const imgData = unwrap(user.pic);
   const pic = imgData ? fileToImgSrc(imgData.data, imgData.imageType) : placeholder;
-
-  const toggle = () => setActive(!active);
 
   const handleLogOut = async () => {
     await logOut();
   };
 
   return (
-    <div className={`dropdown ${active ? "is-active" : ""}`}>
-      <div className="dropdown-trigger level is-justify-content-flex-start is-clickable" onClick={toggle}>
+    <div className="dropdown is-hoverable">
+      <div className="dropdown-trigger level is-justify-content-flex-start is-clickable">
         <div className="user-avatar">
           <img src={pic} alt="User avatar"/>
         </div>
