@@ -1,7 +1,7 @@
 import { Form, Field } from "react-final-form";
 import { useState } from "react";
 
-export default function Withdraw({ toggle }) {
+export default function Withdraw({ toggle, tokenHoldings }) {
   const [ submitting, setSubmitting ] = useState<boolean>(false);
   
   const onFormSubmit = async (values: any) => {
@@ -16,7 +16,7 @@ export default function Withdraw({ toggle }) {
       <div className="modal-card is-small has-background-circles">
       <Form
         onSubmit={onFormSubmit}
-        render={({ handleSubmit, pristine }) => (
+        render={({ handleSubmit, values, pristine }) => (
           <form onSubmit={handleSubmit}>
             <section className="modal-card-body">
               <h3 className="subtitle">Withdraw</h3>
@@ -38,18 +38,20 @@ export default function Withdraw({ toggle }) {
                     component="input"
                     type="number"
                     className="input"
-                    initialValue="100"
+                    initialValue={100}
+                    max={tokenHoldings.wallet}
                   />
                   <span className="icon is-right has-text-white mr-4">AMT</span>
                 </div>
               </div>
+              
               <div className="field level px-5 pt-5">
                 <span className="has-text-silver">Available:</span>
-                <label className="label">100</label>
+                <label className="label">{tokenHoldings.wallet}</label>
               </div>
               <div className="field level px-5">
                 <span className="has-text-silver">Available after:</span>
-                <label className="label">0</label>
+                <label className="label">{tokenHoldings.wallet - (values.amount ? values.amount : 0)}</label>
               </div>
 
             </section>

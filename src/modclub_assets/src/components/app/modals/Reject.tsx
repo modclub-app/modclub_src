@@ -18,8 +18,8 @@ const Modal = ({
   providerId: Principal;
 }) => {
   const [rules, setRules] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
   const [checked, setChecked] = useState([]);
   const [message, setMessage] = useState(null);
 

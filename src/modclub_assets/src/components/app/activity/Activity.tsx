@@ -22,60 +22,68 @@ export default function Tasks() {
   return (
     <>
       <Userstats detailed={true} />
-      <div className="card mb-5">
-        <div className="card-content level">
-          <h1 className="title mb-0">Recent Activity</h1>
-          <div>
-            <button className="button is-primary">Completed</button>
-            <button className="button is-ghost has-text-white ml-3">In Progress</button>
+
+      {activity && activity.length ?
+      <>
+        <div className="card mb-5">
+          <div className="card-content level">
+            <h1 className="title mb-0">Recent Activity</h1>
+            <div>
+              <button className="button is-primary">Completed</button>
+              <button className="button is-ghost has-text-white ml-3">In Progress</button>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="card">
-        <div className="card-content">
-          <table className="table is-striped">
-            <thead>
-              <tr>
-                {/* <th>ID</th> */}
-                <th>Vote</th>
-                <th>App</th>
-                <th>Title</th>
-                <th>Votes</th>
-                <th>Voted on</th>
-                <th>Reward</th>
-                <th>Reward Release</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ?
+        <div className="card">
+          <div className="card-content">
+            <table className="table is-striped">
+              <thead>
                 <tr>
-                  <td>
-                    <div className="loader is-loading"></div>
-                  </td>
-                </tr> : activity.map((item) => (
-                <tr key={item.vote.id}>
-                  {/* <td>{item.vote.id}</td> */}
-                  <td>
-                    {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
-                  </td>
-                  <td>{item.providerName}</td>
-                  <td>
-                    <Snippet string={item.title[0]} truncate={20} />
-                  </td>
-                  <td className="is-relative">
-                    <progress className="progress mb-0" value="15" max="100"></progress>
-                    <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
-                  </td>
-                  <td>{formatDate(item.createdAt)}</td>
-                  <td>{Number(item.reward)} MOD</td>
-                  <td>{formatDate(item.rewardRelease)}</td>
+                  <th>Vote</th>
+                  <th>App</th>
+                  <th>Title</th>
+                  <th>Votes</th>
+                  <th>Voted on</th>
+                  <th>Reward</th>
+                  <th>Reward Release</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {loading ?
+                  <tr>
+                    <td>
+                      <div className="loader is-loading"></div>
+                    </td>
+                  </tr> : activity.map((item) => (
+                  <tr key={item.vote.id}>
+                    <td>
+                      {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
+                    </td>
+                    <td>{item.providerName}</td>
+                    <td>
+                      <Snippet string={item.title[0]} truncate={20} />
+                    </td>
+                    <td className="is-relative">
+                      <progress className="progress mb-0" value="15" max="100"></progress>
+                      <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
+                    </td>
+                    <td>{formatDate(item.createdAt)}</td>
+                    <td>{Number(item.reward)} MOD</td>
+                    <td>{formatDate(item.rewardRelease)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
+          </div>
         </div>
-      </div>
+      </> :
+        <div className="card mb-5">
+          <div className="card-content">
+            <h1 className="title mb-0">No Activity Yet</h1>
+          </div>
+        </div>
+      }
     </>
   )
 }

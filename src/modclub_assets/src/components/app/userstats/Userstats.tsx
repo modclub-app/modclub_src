@@ -92,13 +92,22 @@ export default function Userstats({ detailed = false }) {
     </div>
 
     {showWithdraw &&
-      <Withdraw toggle={toggleWithdraw} />
+      <Withdraw
+        toggle={toggleWithdraw}
+        tokenHoldings={tokenHoldings}
+      />
     }
     {showStake &&
-      <Stake toggle={toggleStake} />
+      <Stake
+        toggle={toggleStake}
+        tokenHoldings={tokenHoldings}
+      />
     }
     {showUnstake &&
-      <Unstake toggle={toggleUnstake} />
+      <Unstake
+        toggle={toggleUnstake}
+        tokenHoldings={tokenHoldings}
+      />
     }
   </>
   )
