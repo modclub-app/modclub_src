@@ -9,35 +9,6 @@ import { useEffect, useState } from "react";
 import { getAllProfiles } from '../../utils/api';
 import { Principal } from "@dfinity/principal";
 
-// function Dashboard() {
-//   const [profiles, setProfiles] = useState([]);
-//   useEffect(() => {
-//     const fetchProfiles = async () => {
-//       const profiles = await getAllProfiles();
-//       console.log('profiles', { profiles });  
-//       let userProfiles = profiles.map((p) => {
-//         return (
-//           <div>
-//             <p>ID: {p.id.toText()}</p>
-//             <p>userName: {p.userName}</p>
-//             <p>email: {p.email}</p>
-//             <p>createdAt: {p.createdAt }</p>
-//         </div>)
-//       });
-//       setProfiles(userProfiles);
-//     };
-
-//     fetchProfiles();
-//   }, []);
-
-//   return (
-//     <div>
-//       <h3>Dashboard</h3>
-//       {profiles}
-//     </div>
-//   );
-// }
-
 export default function ModclubApp() {
   const [profiles, setProfiles] = useState([]);
 
@@ -68,7 +39,7 @@ export default function ModclubApp() {
           <section className="container">
             <Switch>
               <Route exact path="/app">
-                {/* <Dashboard /> */}
+                Dashboard
               </Route>
               <Route exact path="/app/tasks">
                 <Tasks />
