@@ -60,6 +60,7 @@ type ModClub =
    deregisterProvider: () -> (text);
    getActivity: (bool) -> (vec Activity) query;
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
+   getAllProfiles: () -> (vec Profile) query;
    getContent: (text) -> (opt ContentPlus) query;
    getImage: (text) -> (opt vec nat8) query;
    getProfile: () -> (Profile) query;

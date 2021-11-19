@@ -56,6 +56,7 @@ export interface ModClub {
   'deregisterProvider' : () => Promise<string>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
+  'getAllProfiles' : () => Promise<Array<Profile>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
   'getProfile' : () => Promise<Profile>,

@@ -125,6 +125,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ContentPlus)],
         ['query'],
       ),
+    'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
     'getProfile' : IDL.Func([], [Profile], ['query']),

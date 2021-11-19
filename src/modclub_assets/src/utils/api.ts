@@ -1,4 +1,4 @@
-import { convertImage, imageToUint8Array, unwrap } from "./util";
+import { convertImage, convertObj, imageToUint8Array, unwrap } from "./util";
 import { actorController } from "./actor";
 import {
   ContentPlus,
@@ -12,23 +12,25 @@ import {
   ImageData,
   Image,
   Holdings,
+  UserHoldings,
+  _SERVICE,
 } from "./types";
-import { modclub as MC } from "../../../declarations/modclub/index";
 import { Principal } from "@dfinity/principal";
 
 export type Optional<Type> = [Type] | [];
 
-const modclub = actorController.actor;
-
+function getMC(): Promise<_SERVICE> {
+  return actorController.actor;
+}
 export async function sendImage(imageData: number[]) {
   const response = await (
-    await modclub
+    await getMC()
   ).sendImage("id_1", imageData, "image/png");
   console.log("Send Image Response " + response);
 }
 
 export async function getImage(imageId: string): Promise<number[]> {
-  const icResponse = await (await modclub).getImage(imageId);
+  const icResponse = await (await getMC()).getImage(imageId);
   const imageData = unwrap<number[]>(icResponse);
   if (imageData !== null) {
     return imageData;
@@ -46,7 +48,7 @@ export async function registerModerator(
     ? { data: await convertImage(imageData), imageType: imageData.type }
     : undefined;
   const response = await (
-    await modclub
+    await getMC()
   ).registerModerator(username, email, imgResult ? [imgResult] : []);
   console.log(response);
   return response;
@@ -54,7 +56,7 @@ export async function registerModerator(
 
 export async function getUserFromCanister(): Promise<Profile | null> {
   try {
-    const icUser = await (await modclub).getProfile();
+    const icUser = await (await getMC()).getProfile();
     if (icUser) {
       return icUser;
     } else {
@@ -69,13 +71,13 @@ export async function getUserFromCanister(): Promise<Profile | null> {
 export async function getAllContent(
   status: ContentStatus
 ): Promise<ContentPlus[]> {
-  return MC.getAllContent(status);
+  return (await getMC()).getAllContent(status);
 }
 
 export async function getContent(
   contentId: string
 ): Promise<ContentPlus | null> {
-  return unwrap<ContentPlus>(await MC.getContent(contentId));
+  return unwrap<ContentPlus>(await (await getMC()).getContent(contentId));
 }
 
 export async function vote(
@@ -83,31 +85,37 @@ export async function vote(
   decision: Decision,
   rules?: RuleId[]
 ): Promise<string> {
-  return (await modclub).vote(contentId, decision, [rules]);
+  return (await getMC()).vote(contentId, decision, [rules]);
 }
 
-export async function getProvider(providerId: Principal): Promise<ProviderPlus> {
-  return (await modclub).getProvider(providerId);
+export async function getProvider(
+  providerId: Principal
+): Promise<ProviderPlus> {
+  return (await getMC()).getProvider(providerId);
 }
 
 export async function getProviderRules(providerId: Principal): Promise<Rule[]> {
   console.log("getProviderRules");
   console.log(providerId);
-  return (await modclub).getRules(providerId);
+  return (await getMC()).getRules(providerId);
 }
 
 export async function getActivity(isComplete: boolean): Promise<Activity[]> {
-  return (await modclub).getActivity(isComplete);
+  return (await getMC()).getActivity(isComplete);
 }
 
-export async function getTokenHoldings(): Promise<Holdings> {
-  return (await modclub).getTokenHoldings();
+export async function getTokenHoldings(): Promise<UserHoldings> {
+  return convertObj(await (await getMC()).getTokenHoldings());
 }
 
 export async function stakeTokens(amount: number): Promise<string> {
-  return (await modclub).stakeTokens(BigInt(amount));
+  return (await getMC()).stakeTokens(BigInt(amount));
 }
 
 export async function unStakeTokens(amount: number): Promise<string> {
-  return (await modclub).unStakeTokens(BigInt(amount));
+  return (await getMC()).unStakeTokens(BigInt(amount));
+}
+
+export async function getAllProfiles(): Promise<Profile[]> {
+  return (await getMC()).getAllProfiles();
 }

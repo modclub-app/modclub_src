@@ -254,6 +254,13 @@ shared ({caller = initializer}) actor class ModClub () {
   // Moderator functions
 
   public query({ caller }) func getAllContent(status: Types.ContentStatus) : async [ContentPlus] {
+     switch(checkProfilePermission(caller, #getContent)){
+       case(#err(e)) {
+         throw Error.reject("Unauthorized");
+       };
+       case(_)();
+     };
+
      var contentRel : ?Rel.Rel<Principal, Types.ContentId> = null;
      let buf = Buffer.Buffer<ContentPlus>(0);
      for ( (pid, p) in state.providers.entries()){
@@ -293,19 +300,42 @@ shared ({caller = initializer}) actor class ModClub () {
     return Array.sort(buf.toArray(), compareContent);
   };
 
-  func checkProfilePermission(p: Principal, action: Types.Action) : async () {
+  func checkProfilePermission(p: Principal, action: Types.Action) : Result.Result<(), Types.Error>{
     var unauthorized = true;
+
+    // Anonymous principal 
+    if(Principal.toText(p) == "2vxsx-fae") {
+        Debug.print("Anonymous principal");
+       return #err(#Unauthorized);
+    };
     switch(state.profiles.get(p)){
       case (null) ();
       case(?result) {
         switch(action) {
           case(#vote) {
             if(result.role == #moderator) unauthorized := false;
-          }; case(_) ();
+          };
+          case(#getProfile) {
+            if(result.role == #moderator) unauthorized := false;
+          };
+          case(#getContent) {
+            if(result.role == #moderator) unauthorized := false;
+          };
+          case(#getRules) {
+            if(result.role == #moderator) unauthorized := false;
+          };
+          case(#getActivity) {
+            if(result.role == #moderator) unauthorized := false;
+          };         
+          case(_) ();
         };
       };
     };
-    if(unauthorized) throw Error.reject("unauthorized");
+    if(unauthorized) {
+      Debug.print("Unauthorized");
+      return #err(#Unauthorized);
+    };
+    #ok();
   }; 
 
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Image) : async Profile {
@@ -343,11 +373,21 @@ shared ({caller = initializer}) actor class ModClub () {
       }
   };
 
-  public query({ caller }) func getProfile() : async Profile {
+  public query({ caller }) func getProfile() : async Profile {    
+      Debug.print("getProfile for principal ID " # Principal.toText(caller) );
       switch(state.profiles.get(caller)){
         case (null) throw Error.reject("profile not found");
         case (?result) return result;
       };
+  };
+
+  public query func getAllProfiles() : async [Profile] {
+      let buf = Buffer.Buffer<Profile>(0);
+      for ( (pid, p) in state.profiles.entries()) {
+        Debug.print("getAllProfiles pid " # Principal.toText(pid) );
+        buf.add(p);                        
+      }; 
+      return buf.toArray();
   };
 
   // Todo: Enable updating profile at a later time
@@ -377,7 +417,12 @@ shared ({caller = initializer}) actor class ModClub () {
   // };
 
   public shared({ caller }) func vote(contentId: ContentId, decision: Decision, violatedRules: ?[Types.RuleId]) : async Text {
-    await checkProfilePermission(caller, #vote);
+    
+    switch (checkProfilePermission(caller, #vote)) {
+      case (#err(e)) { throw Error.reject("Unauthorized"); };
+      case (_) ();
+    };
+
     let voteId = "vote-" # Principal.toText(caller) # contentId;
     switch(state.votes.get(voteId)){
       case(?v){
@@ -449,6 +494,10 @@ shared ({caller = initializer}) actor class ModClub () {
       };
 
   public query({ caller }) func getActivity(isComplete: Bool) : async [Activity] {
+    switch (checkProfilePermission(caller, #getActivity)) {
+      case (#err(e)) { throw Error.reject("Unauthorized"); };
+      case (_) ();
+    };
       let buf = Buffer.Buffer<Types.Activity>(0);
       label l for (vid in state.mods2votes.get0(caller).vals()) {
         switch(state.votes.get(vid)) {

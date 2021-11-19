@@ -15,6 +15,13 @@ module {
     #submit;
     #vote;
     #registerRule;
+    #getProfile;
+    #getContent;
+    #getRules;
+    #getVotes;
+    #getProviders;
+    #getAllusers;
+    #getActivity;
   };
 
   public type Decision = {
