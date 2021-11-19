@@ -439,7 +439,8 @@ shared ({caller = initializer}) actor class ModClub () {
         switch(state.providers.get(content.providerId)){
           case(?provider) {
               let holdings = tokens.getHoldings(caller);
-              if( holdings.stake < provider.settings.minStaked ) return "Not enough tokens staked";
+              if( holdings.stake < provider.settings.minStaked ) 
+                throw Error.reject("Not enough tokens staked");
           };
           case(_) throw Error.reject("Provider not found");
         };

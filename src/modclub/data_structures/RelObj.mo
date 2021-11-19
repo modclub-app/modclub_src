@@ -16,6 +16,13 @@ module {
     equal : Rel.EqualPair<X, Y>)
   {
     var rel = Rel.empty<X,Y>(hash, equal);
+
+    public func getRel() : Rel.Rel<X,Y> { rel; };
+
+    public func setRel(newRel : Rel.Rel<X,Y>) {
+      rel := newRel;
+    };
+  
     public func put(x : X, y : Y) {
       rel := Rel.put(rel, (x, y))
     };
