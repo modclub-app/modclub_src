@@ -17,6 +17,8 @@ export default function NewProfile() {
   const [ submitting, setSubmitting ] = useState<boolean>(false);
   const inputFile = useRef(null);
 
+  const [message, setMessage] = useState(null);
+
   const handleFileChange = (e) => {
     const { files } = e.target;
     if (files.length > 0) {
@@ -37,17 +39,19 @@ export default function NewProfile() {
 
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
-    if (!username) {
-      console.error("Please enter a username");
-      return;
-    }
     setSubmitting(true);
+
+    setMessage({ success: true, value: "ERROR" });
+
     const imageData: ImageData = pic ? {
       src: pic,
       type: picType,
     } : undefined;
 
-    const user = await registerModerator(username, email, imageData );
+    const user = await registerModerator(username, email, imageData);
+    console.log("user", user);
+    // TODO not returning the error here!
+
     if (user) {
       setUser(user);
       history.push("/app");
@@ -58,38 +62,44 @@ export default function NewProfile() {
   };
 
   return (
+  <>
+    {message &&
+      <div className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"}`}>
+        {message.value}
+      </div>
+    }
     <div
       className="columns is-centered is-vcentered"
       style={{ height: "100%" }}
     >
       <div className="column is-half">
-        <div className="card py-5 is-flex is-justify-content-center">
-          <div className="profileSection">
-            <h1 className="title">Create your profile</h1>
+        <div className="card">
+          <div className="card-content has-text-centered">
+            <h1 className="title">
+              Create your profile
+            </h1>
             <input
-                  style={{ display: "none" }}
-                  ref={inputFile}
-                  onChange={handleFileChange}
-                  accept="image/*"
-                  type="file"
-                />
-            <div className="imageContainer">
+              style={{ display: "none" }}
+              ref={inputFile}
+              onChange={handleFileChange}
+              accept="image/*"
+              type="file"
+            />
       
-              <div className="profilePicture" onClick={() =>  inputFile.current.click()}>
-           
-                <img src={pic ? pic : placeholder} alt="profile" />
-              </div>
-          
-              <p className="is-size-6 has-text-centered	mt-2 mb-5">
-                Upload Profile Picture
-              </p>
+            <div className="profilePicture" onClick={() =>  inputFile.current.click()}>
+              <img src={pic ? pic : placeholder} alt="profile" />
             </div>
+
+            <p className="has-text-centered	mt-2 mb-5">
+              Upload Profile Picture
+            </p>
+
             <Form
               onSubmit={onFormSubmit}
-              render={({ handleSubmit, form }) => (
+              render={({ handleSubmit, pristine }) => (
                 <form onSubmit={handleSubmit}>
                   <div className="field">
-                    <div className="control has-icons-left has-icons-right">
+                    <div className="control has-icons-left">
                       <Field
                         name="username"
                         component="input"
@@ -98,12 +108,12 @@ export default function NewProfile() {
                         placeholder="Username"
                       />
                       <span className="icon is-medium is-left">
-                        <i className="fas fa-user"></i>
+                        <span className="material-icons">person</span>
                       </span>
                     </div>
                   </div>
                   <div className="field">
-                    <div className="control has-icons-left has-icons-right">
+                    <div className="control has-icons-left">
                       <Field
                         name="email"
                         component="input"
@@ -112,18 +122,17 @@ export default function NewProfile() {
                         className="input is-medium"
                       />
                       <span className="icon is-medium is-left">
-                        <i className="fas fa-envelope"></i>
+                        <span className="material-icons">email</span>
                       </span>
                     </div>
                   </div>
-                  <div className="inputField">
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className={"button is-large is-primary is-fullwidth mt-6 " + (submitting ? "is-loading" : "")}
-                      value="Submit"
-                    >Submit</button>
-                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={pristine || submitting}
+                    className={"button is-large is-primary is-fullwidth mt-6 " + (submitting ? "is-loading" : "")}
+                    value="Submit"
+                  >Submit</button>
                 </form>
               )}
             />
@@ -131,5 +140,6 @@ export default function NewProfile() {
         </div>
       </div>
     </div>
+  </>
   );
 }

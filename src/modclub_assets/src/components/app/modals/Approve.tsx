@@ -101,7 +101,6 @@ const Modal = ({
   );
 };
 
-
 export default function Approve({ platform, id, providerId }) {
   const [active, setActive] = useState(false);
   const [saving, setSaving] = useState(false);

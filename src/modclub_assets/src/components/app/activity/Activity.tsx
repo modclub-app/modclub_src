@@ -8,24 +8,6 @@ import Snippet from "../../common/Snippet";
 export default function Tasks() {
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // const snippet = (string) => {
-  //   const truncate = 20
-  //   return string.length > truncate ? (
-  //     <div className="dropdown is-hoverable">
-  //         <div className="dropdown-trigger">
-  //           {string.substring(0, truncate - 5) + '...'}
-  //         </div>
-  //         <div className="dropdown-menu" id="dropdown-menu4" role="menu">
-  //           <div className="dropdown-content">
-  //             <div className="dropdown-item has-text-white">
-  //               {string}
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
-  //   ) : string
-  // }
   
   useEffect(() => {
     const fetchActivity = async () => {
@@ -78,11 +60,7 @@ export default function Tasks() {
                   </td>
                   <td>{item.providerName}</td>
                   <td>
-
-                  {/* {snippet(item.title[0])} */}
-                  <Snippet string={item.title[0]} truncate={20} />
-                    
-
+                    <Snippet string={item.title[0]} truncate={20} />
                   </td>
                   <td className="is-relative">
                     <progress className="progress mb-0" value="15" max="100"></progress>
