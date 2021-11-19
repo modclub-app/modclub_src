@@ -94,6 +94,11 @@ export const idlFactory = ({ IDL }) => {
     'image' : IDL.Opt(Image__1),
     'rules' : IDL.Vec(Rule),
   });
+  const Holdings = IDL.Record({
+    'pendingRewards' : IDL.Int,
+    'stake' : IDL.Int,
+    'wallet' : IDL.Int,
+  });
   const Image = IDL.Record({
     'imageType' : IDL.Text,
     'data' : IDL.Vec(IDL.Nat8),
@@ -114,18 +119,20 @@ export const idlFactory = ({ IDL }) => {
     'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
-    'getActivity' : IDL.Func([], [IDL.Vec(Activity)], ['query']),
+    'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAllContent' : IDL.Func(
         [ContentStatus],
         [IDL.Vec(ContentPlus)],
         ['query'],
       ),
+    'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
-    'getProfile' : IDL.Func([], [Profile], []),
-    'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], []),
+    'getProfile' : IDL.Func([], [Profile], ['query']),
+    'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
-    'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], []),
+    'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
+    'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],
         [Profile],
@@ -142,6 +149,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'submitImage' : IDL.Func(
         [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Opt(IDL.Text)],
         [IDL.Text],
@@ -153,6 +161,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'subscribe' : IDL.Func([SubscribeMessage], [], []),
+    'unStakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'updateSettings' : IDL.Func([ProviderSettings], [], ['oneway']),
     'vote' : IDL.Func(
         [ContentId, Decision, IDL.Opt(IDL.Vec(RuleId))],

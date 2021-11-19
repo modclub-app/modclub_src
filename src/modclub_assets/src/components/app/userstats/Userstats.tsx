@@ -1,21 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getTokenHoldings } from '../../../utils/api';
 import "./Userstats.scss";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
 import performanceImg from '../../../../assets/performance.svg';
 import Withdraw from "../modals/Withdraw";
-import Stake from "../modals/Stake";
-import Unstake from "../modals/Unstake";
 
 export default function Userstats({ detailed = false }) {
-  const [showWithdraw, setShowWithdraw] = useState(false);
-  const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
+  const [tokenHoldings, setTokenHoldings] = useState({
+    pendingRewards : 0,
+    stake : 0,
+    wallet : 0,  
+  });
 
-  const [showStake, setShowStake] = useState(false);
-  const toggleStake = () => setShowStake(!showStake);
-
-  const [showUnstake, setShowUnstake] = useState(false);
-  const toggleUnstake = () => setShowUnstake(!showUnstake);
+  useEffect(() => {
+    const fetchTokenHoldings = async () => {
+      const tokenHoldings = await getTokenHoldings();
+      setTokenHoldings(tokenHoldings);
+    };
+    fetchTokenHoldings();
+  }, []);
 
   return (
     <>
@@ -27,7 +31,7 @@ export default function Userstats({ detailed = false }) {
             <div>
               <p>Wallet</p>
               <h3 className="title is-size-1">
-                500
+                {tokenHoldings.wallet}
                 {detailed && <span className="usd">$17</span>}
               </h3>
             </div>
@@ -47,7 +51,7 @@ export default function Userstats({ detailed = false }) {
             <div>
               <p>Staked</p>
               <h3 className="title is-size-1">
-                1000
+                {tokenHoldings.stake}
                 {detailed && <span className="usd">$17</span>}
               </h3>
             </div>

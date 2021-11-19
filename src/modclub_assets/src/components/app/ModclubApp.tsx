@@ -5,11 +5,35 @@ import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
 import Moderators from "./moderators/Moderators";
 import Activity from "./activity/Activity";
+import { useEffect, useState } from "react";
+import { getAllProfiles } from '../../utils/api';
+import { Principal } from "@dfinity/principal";
 
 function Dashboard() {
+  const [profiles, setProfiles] = useState([]);
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const profiles = await getAllProfiles();
+      console.log({ profiles });  
+      let userProfiles = profiles.map((p) => {
+        return (
+          <div>
+            <p>ID: {p.id.toText()}</p>
+            <p>userName: {p.userName}</p>
+            <p>email: {p.email}</p>
+            <p>createdAt: {p.createdAt }</p>
+        </div>)
+      });
+      setProfiles(userProfiles);
+    };
+
+    fetchProfiles();
+  }, []);
+
   return (
     <div>
       <h3>Dashboard</h3>
+      {profiles}
     </div>
   );
 }

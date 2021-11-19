@@ -7,7 +7,7 @@ import placeholder from "../../../../assets/user_placeholder.png";
 
 export function SidebarUser() {
   const [active, setActive] = useState(false);  
-  const { user, logOut } = useAuth();
+  const { user, logOut, identity } = useAuth();
   const imgData = unwrap(user.pic);
   const pic = imgData ? fileToImgSrc(imgData.data, imgData.imageType) : placeholder;
 

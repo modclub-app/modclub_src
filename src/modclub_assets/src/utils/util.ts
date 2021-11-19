@@ -114,6 +114,20 @@ export function getUserFromStorage(
   }
 }
 
+export function convertObj(obj: any): any {
+  console.log(obj);
+  return Object.entries(obj).reduce((acc, [k, v]) => {
+    if (typeof v === "object") {
+      acc[k] = convertObj(v);
+    } else if (typeof v === "bigint") {
+      acc[k] = Number(v);
+    } else {
+      acc[k] = v;
+    }
+    return acc;
+  }, {});
+}
+
 export function fileToImgSrc(file: number[], imgType = "png"): string {
   const bufferBlob = [Buffer.from(new Uint8Array(file))];
   const picBlob = new Blob(bufferBlob, { type: `image/{imgType}` });
@@ -133,9 +147,8 @@ export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
   Array.from(new Uint8Array(file));
 
 export function formatDate(date: bigint) {
-  const same = isSameDay(new Date, new Date(Number(date)))
-  return same ?
-    formatDistanceStrict(new Date, new Date(Number(date))) + " ago"
-    :
-    format(new Date(Number(date)), "PP")
+  const same = isSameDay(new Date(), new Date(Number(date)));
+  return same
+    ? formatDistanceStrict(new Date(), new Date(Number(date))) + " ago"
+    : format(new Date(Number(date)), "PP");
 }

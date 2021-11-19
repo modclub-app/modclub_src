@@ -41,6 +41,8 @@ class ActorController {
   }
 
   async initBaseActor(identity?: Identity) {
+    console.log("Updating anchor");
+    console.log("Authenticated " + this._isAuthenticated);
     const { agent, actor } = createActor(identity);
     // The root key only has to be fetched for local development environments
     if (isLocalEnv) {
@@ -53,6 +55,7 @@ class ActorController {
    * Get the actor instance to run commands on the canister.
    */
   get actor() {
+    console.log("Fetching Actor");
     return this._actor;
   }
 
@@ -61,6 +64,8 @@ class ActorController {
    * to create a new actor with it, so they pass their Principal to the backend.
    */
   async authenticateActor(identity: Identity) {
+    console.log("Authenticating Actor");
+    console.log(identity);
     this._actor = this.initBaseActor(identity);
     this._isAuthenticated = true;
   }

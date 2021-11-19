@@ -90,6 +90,11 @@ module {
      keyOf1(rel, p.1))
   };
 
+  public func emptyShared<X, Y>() : RelShared<X, Y> {
+    {
+      forw = Trie.empty();
+    }
+  };
   public func empty<X, Y>( hash_ : HashPair<X, Y>,
                            equal_ : EqualPair<X, Y>) : Rel<X, Y> {
     {

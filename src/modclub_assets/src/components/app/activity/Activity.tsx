@@ -11,7 +11,7 @@ export default function Tasks() {
   
   useEffect(() => {
     const fetchActivity = async () => {
-      const activity = await getActivity();
+      const activity = await getActivity(false);
       console.log("activity", activity);
       setActivity(activity);
       setLoading(false);

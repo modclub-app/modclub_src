@@ -43,20 +43,27 @@ export type Decision = { 'approved' : null } |
   { 'rejected' : null };
 export type Decision__1 = { 'approved' : null } |
   { 'rejected' : null };
+export interface Holdings {
+  'pendingRewards' : bigint,
+  'stake' : bigint,
+  'wallet' : bigint,
+}
 export interface Image { 'imageType' : string, 'data' : Array<number> }
 export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export interface ModClub {
   'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
-  'getActivity' : () => Promise<Array<Activity>>,
+  'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
+  'getAllProfiles' : () => Promise<Array<Profile>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
   'getProfile' : () => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
+  'getTokenHoldings' : () => Promise<Holdings>,
   'registerModerator' : (
       arg_0: string,
       arg_1: string,
@@ -71,6 +78,7 @@ export interface ModClub {
   'sendImage' : (arg_0: string, arg_1: Array<number>, arg_2: string) => Promise<
       string
     >,
+  'stakeTokens' : (arg_0: bigint) => Promise<string>,
   'submitImage' : (
       arg_0: string,
       arg_1: Array<number>,
@@ -83,6 +91,7 @@ export interface ModClub {
       arg_2: [] | [string],
     ) => Promise<string>,
   'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
+  'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
   'vote' : (
       arg_0: ContentId,
