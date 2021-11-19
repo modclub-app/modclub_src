@@ -3,10 +3,29 @@ import { useEffect, useState } from "react";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
 import Userstats from "../userstats/Userstats";
+import Snippet from "../../common/Snippet";
 
 export default function Tasks() {
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // const snippet = (string) => {
+  //   const truncate = 20
+  //   return string.length > truncate ? (
+  //     <div className="dropdown is-hoverable">
+  //         <div className="dropdown-trigger">
+  //           {string.substring(0, truncate - 5) + '...'}
+  //         </div>
+  //         <div className="dropdown-menu" id="dropdown-menu4" role="menu">
+  //           <div className="dropdown-content">
+  //             <div className="dropdown-item has-text-white">
+  //               {string}
+  //             </div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //   ) : string
+  // }
   
   useEffect(() => {
     const fetchActivity = async () => {
@@ -58,7 +77,13 @@ export default function Tasks() {
                     {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
                   </td>
                   <td>{item.providerName}</td>
-                  <td>{item.title}</td>
+                  <td>
+
+                  {/* {snippet(item.title[0])} */}
+                  <Snippet string={item.title[0]} truncate={20} />
+                    
+
+                  </td>
                   <td className="is-relative">
                     <progress className="progress mb-0" value="15" max="100"></progress>
                     <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
