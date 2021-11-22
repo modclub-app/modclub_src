@@ -38,7 +38,7 @@ export default function Tasks() {
           <div className="card-content">
             <h3 className="subtitle">{item.title}</h3>
             {'imageBlob' in item.contentType ?
-              (<img src={getImage(item.image)} alt="Image File" />) :
+              (<img src={getImage(item.image)} alt="Image File" style={{ display: 'block', margin: 'auto' }} />) :
               (<p>{item.text}</p>)}
      
         </div>

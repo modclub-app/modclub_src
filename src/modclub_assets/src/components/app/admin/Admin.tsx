@@ -1,20 +1,38 @@
 // import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getActivity } from "../../../utils/api";
-import { formatDate } from "../../../utils/util";
-import Userstats from "../userstats/Userstats";
-import Snippet from "../../common/Snippet";
-
+import AddTrustedIdentity from "../modals/AddTrustedIdentity";
+import EditTrustedIdentity from "../modals/EditTrustedIdentity";
+import RemoveTrustedIdentity from "../modals/RemoveTrustedIdentity";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
 
 export default function Admin() {
+  const [checked, setChecked] = useState([]);
+
+  const [showAddTrustedIdentity, setAddTrustedIdentity] = useState(false);
+  const toggleAddTrustedIdentity = () => setAddTrustedIdentity(!showAddTrustedIdentity);
+
+  const [showEditTrustedIdentity, setEditTrustedIdentity] = useState(false);
+  const toggleEditTrustedIdentity = () => setEditTrustedIdentity(!showEditTrustedIdentity);
+
+  const [showRemoveTrustedIdentity, setRemoveTrustedIdentity] = useState(false);
+  const toggleRemoveTrustedIdentity = () => setRemoveTrustedIdentity(!showRemoveTrustedIdentity);
+
+  const handleCheck = (e) => {
+    const item = e.target.name;
+    const isChecked = e.target.checked;
+    setChecked(isChecked ? [...checked, item] : checked.filter(id => id != item));
+  }
+
+  const handleCheckAll = () => {
+    setChecked(["one", "tho", "three", "four"]);
+  }
 
   return (
     <>
       <div className="columns">
         <div className="column is-two-thirds">
-          <div className="card is-fullheight">
+          <div className="card is-fullheight is-flex">
             <div className="card-content columns">
               
               <div className="column is-one-third">
@@ -100,7 +118,7 @@ export default function Admin() {
         </div>
 
         <div className="column">
-          <div className="card is-fullheight">
+          <div className="card is-fullheight has-background-circles">
             <div className="card-content is-flex is-align-items-center pb-0">
               <img src={walletImg} />
               <div className="mt-3 ml-3" style={{ whiteSpace: 'nowrap', lineHeight: .5 }}>
@@ -119,7 +137,7 @@ export default function Admin() {
         </div>
 
         <div className="column">
-          <div className="card is-fullheight">
+          <div className="card is-fullheight has-background-circles">
             <div className="card-content is-flex is-align-items-center pb-0">
               <img src={stakedImg} />
               <div className="mt-3 ml-3" style={{ whiteSpace: 'nowrap', lineHeight: .5 }}>
@@ -158,7 +176,23 @@ export default function Admin() {
                 <tr>
                   <td>
                     <label className="checkbox">
-                      <input type="checkbox" value="false" />
+                      <input type="checkbox" name="one" onClick={handleCheck} />
+                      <span className="check icon is-small">
+                        <span className="material-icons">done</span>
+                      </span>
+                    </label>
+                  </td>
+                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
+                  <td>JediMaster</td>
+                  <td className="has-text-left">
+                    <span className="is-clickable" onClick={toggleEditTrustedIdentity}>Edit</span>
+                    <span className="is-clickable ml-5" onClick={toggleRemoveTrustedIdentity}>Remove</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label className="checkbox">
+                    <input type="checkbox" name="two" onClick={handleCheck} />
                       <span className="check icon is-small">
                         <span className="material-icons">done</span>
                       </span>
@@ -174,7 +208,7 @@ export default function Admin() {
                 <tr>
                   <td>
                     <label className="checkbox">
-                      <input type="checkbox" value="false" />
+                    <input type="checkbox" name="three" onClick={handleCheck} />
                       <span className="check icon is-small">
                         <span className="material-icons">done</span>
                       </span>
@@ -190,7 +224,7 @@ export default function Admin() {
                 <tr>
                   <td>
                     <label className="checkbox">
-                      <input type="checkbox" value="false" />
+                      <input type="checkbox" name="four" onClick={handleCheck} />
                       <span className="check icon is-small">
                         <span className="material-icons">done</span>
                       </span>
@@ -206,25 +240,42 @@ export default function Admin() {
                 <tr>
                   <td>
                     <label className="checkbox">
-                      <input type="checkbox" value="false" />
+                      <input type="checkbox" name="four" onClick={handleCheckAll} />
                       <span className="check icon is-small">
                         <span className="material-icons">done</span>
                       </span>
                     </label>
                   </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span>Edit</span>
-                    <span className="ml-5">Remove</span>
-                  </td>
+                  <td className="has-text-left">Check All</td>
                 </tr>
               </tbody>
             </table>
 
+            {/* checked? {checked} */}
+
+            <button className="button is-danger" disabled={!checked.length}>
+              Remove
+            </button>
+
+            <button className="button is-primary ml-4" onClick={toggleAddTrustedIdentity}>
+              Add new
+            </button>
+
           </div>
         </div>
       </div>
+
+      {showAddTrustedIdentity &&
+        <AddTrustedIdentity toggle={toggleAddTrustedIdentity} />
+      }
+
+      {showEditTrustedIdentity &&
+        <EditTrustedIdentity toggle={toggleEditTrustedIdentity} />
+      }
+
+      {showRemoveTrustedIdentity &&
+        <RemoveTrustedIdentity toggle={toggleRemoveTrustedIdentity} />
+      }
     </>
   )
 }
