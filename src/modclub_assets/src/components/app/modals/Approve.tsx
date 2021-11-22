@@ -1,6 +1,5 @@
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
-import modalbgImg from '../../../../assets/modalbg.svg';
 import approveImg from '../../../../assets/approve.svg';
 import { vote, getProviderRules } from "../../../utils/api";
 
@@ -51,7 +50,7 @@ const Modal = ({
   saving: boolean;
   message: any;
   providerId: Principal;
-  }) => {
+}) => {
 
   const [showRules, setShowRules] = useState(false);
 
@@ -60,9 +59,9 @@ const Modal = ({
   return (
     <div className={`modal ${active ? "is-active" : ""}`}>
       <div className="modal-background" onClick={toggle} />
-      <div className="modal-card" style={{ backgroundImage: `url(${modalbgImg})`}}>
+      <div className="modal-card has-background-circles">
         <section className="modal-card-body">
-          <img src={approveImg} />
+          <img src={approveImg} className="mt-5" />
           <h3 className="subtitle mt-5">Approve Confirmation</h3>
           <p>You are confirming that this post follows {platform}'s rules.</p>
           <p>Voting incorrectly will result in some loss of staked tokens.</p>
@@ -86,7 +85,7 @@ const Modal = ({
                 <span>VOTING...</span>
               </button>
               ) :
-              <button className="button is-primary ml-4" onClick={handleSave}>
+              <button className="button is-primary ml-4" onClick={handleSave} disabled={message}>
                 CONFIRM
               </button>}
           </div>
@@ -102,13 +101,15 @@ const Modal = ({
   );
 };
 
-
 export default function Approve({ platform, id, providerId }) {
   const [active, setActive] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
 
-  const toggle = () => setActive(!active);
+  const toggle = () => {
+    setActive(!active);
+    setMessage(null);
+  }
 
   const handleSave = async () => {
     console.log("handleSave")

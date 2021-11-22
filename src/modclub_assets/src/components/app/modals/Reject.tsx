@@ -1,6 +1,5 @@
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
-import modalbgImg from "../../../../assets/modalbg.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
 // import { Rule } from "../../../utils/types";
@@ -17,11 +16,12 @@ const Modal = ({
   toggle: () => void;
   id: string,
   providerId: Principal;
-  }) => {
+}) => {
   const [rules, setRules] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
   const [checked, setChecked] = useState([]);
+  const [message, setMessage] = useState(null);
 
   const handleCheck = (e) => {
     const item = e.target.name;
@@ -35,7 +35,8 @@ const Modal = ({
     const result = await vote(id, { rejected: null }, checked);
     console.log(result);
     setSaving(false);
-    toggle();
+    setMessage({ success: result === "Vote successful" ? true : false, value: result });
+    setTimeout(() => toggle(), 2000); 
   };
   
   useEffect(() => {
@@ -65,12 +66,9 @@ const Modal = ({
   return (
     <div className={`modal ${active ? "is-active" : ""}`}>
       <div className="modal-background" onClick={toggle} />
-      <div
-        className="modal-card"
-        style={{ backgroundImage: `url(${modalbgImg})` }}
-      >
+      <div className="modal-card has-background-circles">
         <section className="modal-card-body">
-          <img src={rejectImg} />
+          <img src={rejectImg} className="mt-5" />
           <h3 className="subtitle mt-5">Reject Confirmation</h3>
           <p className="mb-3">Select which rules were broken:</p>
           <div className="card has-background-dark">
@@ -93,20 +91,27 @@ const Modal = ({
               <span>VOTING...</span>
             </button>
             ) :
-            <button className="button is-primary ml-4" onClick={handleSave} disabled={!checked.length}>
+            <button className="button is-primary ml-4" onClick={handleSave} disabled={!checked.length || message}>
               CONFIRM
             </button>}
-            
           </div>
         </footer>
       </div>
+      {message &&
+        <div className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"}`}>
+          {message.value}
+        </div>
+      }
     </div>
   );
 };
 
 export default function Reject({ platform, id, providerId }) {
   const [active, setActive] = useState(false);
-  const toggle = () => setActive(!active);
+
+  const toggle = () => {
+    setActive(!active);
+  }
 
   return (
     <>

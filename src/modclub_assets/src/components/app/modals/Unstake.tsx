@@ -1,13 +1,20 @@
 import { Form, Field } from "react-final-form";
 import { useState } from "react";
+import { unStakeTokens } from '../../../utils/api';
 
 export default function Withdraw({ toggle, tokenHoldings }) {
   const [ submitting, setSubmitting ] = useState<boolean>(false);
-  
+  const [message, setMessage] = useState(null);
+
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
-    const { address, amount } = values;
+    const { amount } = values;
     setSubmitting(true);
+    const result = await unStakeTokens(amount);
+    console.log("result", result);
+    setMessage({ success: true, value: result });
+    setSubmitting(false);
+    setTimeout(() => toggle(), 2000); 
   };
 
   return (
@@ -16,21 +23,10 @@ export default function Withdraw({ toggle, tokenHoldings }) {
       <div className="modal-card is-small has-background-circles">
       <Form
         onSubmit={onFormSubmit}
-        render={({ handleSubmit, values, pristine }) => (
+        render={({ handleSubmit, values }) => (
           <form onSubmit={handleSubmit}>
             <section className="modal-card-body">
-              <h3 className="subtitle">Withdraw</h3>
-              <div className="field">
-                <div className="control">
-                  <Field
-                    name="address"
-                    component="input"
-                    type="text"
-                    className="input"
-                    placeholder="Wallet Address"
-                  />
-                </div>
-              </div>
+              <h3 className="subtitle">Unstake</h3>
               <div className="field">
                 <div className="control has-icons-right">
                   <Field
@@ -39,21 +35,24 @@ export default function Withdraw({ toggle, tokenHoldings }) {
                     type="number"
                     className="input"
                     initialValue={100}
-                    max={tokenHoldings.wallet}
+                    max={tokenHoldings.stake}
                   />
                   <span className="icon is-right has-text-white mr-4">AMT</span>
                 </div>
               </div>
-              
+
               <div className="field level px-5 pt-5">
-                <span className="has-text-silver">Available:</span>
-                <label className="label">{tokenHoldings.wallet}</label>
+                <span className="has-text-silver">Current Stake:</span>
+                <label className="label">{tokenHoldings.stake}</label>
               </div>
               <div className="field level px-5">
-                <span className="has-text-silver">Available after:</span>
-                <label className="label">{tokenHoldings.wallet - (values.amount ? values.amount : 0)}</label>
+                <span className="has-text-silver">After Stake:</span>
+                <label className="label">{tokenHoldings.stake - (values.amount ? values.amount : 0)}</label>
               </div>
-
+              <div className="field level px-5">
+                <span className="has-text-silver">Stake will be released on:</span>
+                <label className="label">9/12/2021</label>
+              </div>
             </section>
             <footer className="modal-card-foot pt-0">
             {submitting ? 
@@ -62,7 +61,7 @@ export default function Withdraw({ toggle, tokenHoldings }) {
                 <span>SUBMITTING...</span>
               </button> 
               :
-              <button className="button is-primary is-fullwidth" disabled={pristine}>
+              <button className="button is-primary is-fullwidth" disabled={message}>
                 SUBMIT
               </button>
             }
@@ -71,6 +70,11 @@ export default function Withdraw({ toggle, tokenHoldings }) {
         )}
       />
       </div>
+      {message &&
+        <div className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"}`}>
+          {message.value}
+        </div>
+      }
     </div>
   );
 };
