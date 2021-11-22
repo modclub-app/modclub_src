@@ -45,6 +45,9 @@ export default function Tasks() {
                 <span>{"Reward: "+ item.minStake }</span>
               </a>
             </div>
+
+            {item.id}
+            
             <div>
               <Link to={`/app/tasks/${item.id}`} className="button">See More</Link>
               <Reject platform={item.providerName} id={item.id} providerId={item.providerId} />

@@ -82,7 +82,7 @@ export function useProvideAuth(authClient): AuthContext {
   // every load. Then insure user is correctly logged in with identity service,
   // and set them to not logged in if not.
   useEffect(() => {
-    // console.log({check: true, user })
+    console.log({check: true, user })
     if (user && !getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER)) {
       localStorage.setItem(
         KEY_LOCALSTORAGE_USER,
@@ -126,7 +126,7 @@ export function useProvideAuth(authClient): AuthContext {
     if (identity) {
       setIsAuthenticatedLocal(true);
       _setIdentity(identity);
-      // console.log("Logged in: " + identity.getPrincipal().toString());
+      console.log("Logged in: " + identity.getPrincipal().toString());
     } else {
       console.error("Could not get identity from internet identity");
     }
