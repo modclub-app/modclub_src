@@ -40,7 +40,7 @@ export default function Userstats({ detailed = false }) {
           <div className="card-content">
             <img src={walletImg} />
             <div>
-              <p>Wallet</p>
+              <p className="has-text-light">Wallet</p>
               <h3 className="title is-size-1">
                 {tokenHoldings.wallet}
                 {detailed && <span className="usd">$17</span>}
@@ -60,7 +60,7 @@ export default function Userstats({ detailed = false }) {
           <div className="card-content">
             <img src={stakedImg} />
             <div>
-              <p>Staked</p>
+              <p className="has-text-light">Staked</p>
               <h3 className="title is-size-1">
                 {tokenHoldings.stake}
                 {detailed && <span className="usd">$17</span>}
@@ -80,7 +80,7 @@ export default function Userstats({ detailed = false }) {
           <div className="card-content">
             <img src={performanceImg} />
             <div>
-              <p>Vote performance</p>
+              <p className="has-text-light">Vote performance</p>
               <h3 className="title is-size-1">
                 50
                 {detailed && <span className="usd">$17</span>}

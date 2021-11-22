@@ -15,7 +15,7 @@ export default function Sidebar() {
           <img src={LogoImg} style={{ height: 40, width: 40}} />
           <h1 className="title is-size-3 ml-2" style={{ fontFamily: 'sans-serif' }}>MODCLUB</h1>
         </div>
-    
+
         <hr />
 
         {isAuthenticated && user ? <SidebarUser />: <SignIn /> }
@@ -59,6 +59,14 @@ export default function Sidebar() {
                 <span className="material-icons">help_outline</span>
               </span>
               <span>Support</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/app/admin">
+              <span className="icon">
+                <span className="material-icons">admin</span>
+              </span>
+              <span>Admin</span>
             </Link>
           </li>
         </ul>

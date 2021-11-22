@@ -65,9 +65,11 @@ hr {
 .has-text-secondary {
   color: $secondary;
 }
-
 .has-text-silver {
   color: $silver;
+}
+.has-text-light {
+  color: $light !important;
 }
 
 .button {
@@ -141,13 +143,13 @@ hr {
   margin-right: 1rem;
 }
 
+.is-fullheight {
+  height: 100%;
+}
+
 .card {
   background: $black;
   color: $light;
-
-  &.is-fullheight {
-    height: 100%;
-  }
 
   &.has-bottom-gradient::after {
     content: "";

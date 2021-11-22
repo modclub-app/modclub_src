@@ -1,7 +1,7 @@
 // import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-export default function Tasks() {
+export default function Moderators() {
   const [content, setContent] = useState(null);
 
   useEffect(() => {

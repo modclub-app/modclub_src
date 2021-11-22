@@ -48,12 +48,18 @@ export function useProvideAuth(authClient): AuthContext {
       // Check to make sure your local storage user exists on the backend, and
       // log out if it doesn't (this is when you have your user stored in local
       // storage but the user was cleared from the backend)
-      getUserFromCanister().then((user_) => !user_ && logOut());
+      getUserFromCanister().then((user_) => {
+        console.log("getUserFromCanister user_", user_);
+        !user_ && logOut()
+      });
       return () => void 0;
     } else {
       console.log("no lsUser, fetching and setting from backend");
       // If there is no user in local storage, retrieve from the backend
-      getUserFromCanister().then((user_) => user_ && setUser(user_));
+      getUserFromCanister().then((user_) => {
+        console.log("getUserFromCanister user_", user_);
+        user_ && setUser(user_)
+      });
     }
   };
 
@@ -82,7 +88,7 @@ export function useProvideAuth(authClient): AuthContext {
   // every load. Then insure user is correctly logged in with identity service,
   // and set them to not logged in if not.
   useEffect(() => {
-    console.log({check: true, user })
+    // console.log({check: true, user })
     if (user && !getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER)) {
       localStorage.setItem(
         KEY_LOCALSTORAGE_USER,

@@ -5,6 +5,7 @@ import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
 import Moderators from "./moderators/Moderators";
 import Activity from "./activity/Activity";
+import Admin from "./admin/Admin";
 import { useEffect, useState } from "react";
 import { getAllProfiles } from '../../utils/api';
 import { Principal } from "@dfinity/principal";
@@ -12,26 +13,26 @@ import { Principal } from "@dfinity/principal";
 export default function ModclubApp() {
   const [profiles, setProfiles] = useState([]);
 
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      const profiles = await getAllProfiles();
-      console.log('profiles', { profiles });  
-      let userProfiles = profiles.map((p) => {
-        return (
-          <div>
-            <p>ID: {p.id.toText()}</p>
-            <p>userName: {p.userName}</p>
-            <p>email: {p.email}</p>
-            <p>createdAt: {p.createdAt }</p>
-        </div>)
-      });
-      setProfiles(userProfiles);
-    };
+  // useEffect(() => {
+  //   const fetchProfiles = async () => {
+  //     const profiles = await getAllProfiles();
+  //     console.log('profiles', { profiles });  
+  //     let userProfiles = profiles.map((p) => {
+  //       return (
+  //         <div>
+  //           <p>ID: {p.id.toText()}</p>
+  //           <p>userName: {p.userName}</p>
+  //           <p>email: {p.email}</p>
+  //           <p>createdAt: {p.createdAt }</p>
+  //       </div>)
+  //     });
+  //     setProfiles(userProfiles);
+  //   };
 
-    fetchProfiles();
-  }, []);
+  //   fetchProfiles();
+  // }, []);
 
-  return profiles.length ? (
+  return (
     <>
       <section className="container columns mb-0">
         <Sidebar />
@@ -40,6 +41,8 @@ export default function ModclubApp() {
             <Switch>
               <Route exact path="/app">
                 Dashboard
+
+                {profiles}
               </Route>
               <Route exact path="/app/tasks">
                 <Tasks />
@@ -52,15 +55,15 @@ export default function ModclubApp() {
               </Route>
               <Route exact path="/app/activity">
                 <Activity />
-              </Route>              
+              </Route>
+              <Route exact path="/app/admin">
+                <Admin />
+              </Route>
             </Switch>
           </section>
         </div>
       </section>
       <Footer />
     </>
-  ) :
-  <div className="loader-wrapper is-active">
-    <div className="loader is-loading"></div>
-  </div>
+  )
 }
