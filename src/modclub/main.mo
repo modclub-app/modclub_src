@@ -345,6 +345,15 @@ shared ({caller = initializer}) actor class ModClub () {
         throw Error.reject("Invalid email, too long");
       if(_userName.size() > 64 or _userName.size() < 3) 
         throw Error.reject("Username length must be longer than 3 and less than 64 characters");
+
+      switch(pic){
+        case(null) ();
+        case(?result) {
+            Debug.print(debug_show(result));
+        };
+      };
+
+
       // Check if already registered
       switch(state.profiles.get(caller)){
         case (null) {
@@ -707,6 +716,14 @@ shared ({caller = initializer}) actor class ModClub () {
                           switch(state.textContent.get(content.id)) {
                             case(?x) x.text;
                             case(_) "";
+                          };
+                        };
+                        image = do  ?{
+                          switch(state.imageContent.get(content.id)) {
+                            case(?x) x.image;
+                            case(null) { 
+                                { data = []; imageType = ""};
+                            };
                           };
                         };
                       };

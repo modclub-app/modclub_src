@@ -31,7 +31,7 @@ export default function ModclubApp() {
     fetchProfiles();
   }, []);
 
-  return profiles.length ? (
+  return (
     <>
       <section className="container columns mb-0">
         <Sidebar />
@@ -59,8 +59,5 @@ export default function ModclubApp() {
       </section>
       <Footer />
     </>
-  ) :
-  <div className="loader-wrapper is-active">
-    <div className="loader is-loading"></div>
-  </div>
+  )
 }

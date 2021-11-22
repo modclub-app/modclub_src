@@ -129,6 +129,7 @@ type ContentPlus =
    contentType: ContentType;
    createdAt: Timestamp;
    id: ContentId__1;
+   image: opt Image__1;
    minStake: nat;
    minVotes: nat;
    providerId: principal;
