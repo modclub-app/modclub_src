@@ -346,13 +346,9 @@ export default function Landing() {
           </div>
         </div>
 
+          
 
-
-
-
-
-
-        <div className="is-hidden-tablet-only	is-hidden-desktop-only is-hidden-widescreen-only">
+        <div className="is-hidden-tablet">
           <div className="card has-background-dark mb-6">
             <div className="card-content">
               <h4 className="subtitle">Q4 2021</h4>
