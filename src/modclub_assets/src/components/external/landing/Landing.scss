@@ -49,6 +49,12 @@ a.navbar-item {
   }
 }
 
+@media screen and (min-width: 2023px), print {
+  .hero.is-medium .hero-body {
+    padding: 9rem 4.5rem;
+  }
+}
+
 .RewardsImg {
   text-align: center;
 
