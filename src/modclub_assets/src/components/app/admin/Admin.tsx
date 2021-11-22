@@ -1,32 +1,10 @@
 // import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import AddTrustedIdentity from "../modals/AddTrustedIdentity";
-import EditTrustedIdentity from "../modals/EditTrustedIdentity";
-import RemoveTrustedIdentity from "../modals/RemoveTrustedIdentity";
+import TrustedIdentities from "../trusted_identities/TrustedIdentities";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
 
 export default function Admin() {
-  const [checked, setChecked] = useState([]);
-
-  const [showAddTrustedIdentity, setAddTrustedIdentity] = useState(false);
-  const toggleAddTrustedIdentity = () => setAddTrustedIdentity(!showAddTrustedIdentity);
-
-  const [showEditTrustedIdentity, setEditTrustedIdentity] = useState(false);
-  const toggleEditTrustedIdentity = () => setEditTrustedIdentity(!showEditTrustedIdentity);
-
-  const [showRemoveTrustedIdentity, setRemoveTrustedIdentity] = useState(false);
-  const toggleRemoveTrustedIdentity = () => setRemoveTrustedIdentity(!showRemoveTrustedIdentity);
-
-  const handleCheck = (e) => {
-    const item = e.target.name;
-    const isChecked = e.target.checked;
-    setChecked(isChecked ? [...checked, item] : checked.filter(id => id != item));
-  }
-
-  const handleCheckAll = () => {
-    setChecked(["one", "tho", "three", "four"]);
-  }
 
   return (
     <>
@@ -154,128 +132,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="card mb-6">
-        <div className="card-content">
-          <h3 className="title mb-2">
-            Trusted identities
-          </h3>
-          <p className="mb-6">Add the principal IDs for other members of your team so they can manage your Modclub account</p>
-
-          <div className="field has-background-dark p-5">
-
-            <table className="table is-striped has-text-left is-checked">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Principal ID</th>
-                  <th>Name</th>
-                  <th className="has-text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                      <input type="checkbox" name="one" onClick={handleCheck} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span className="is-clickable" onClick={toggleEditTrustedIdentity}>Edit</span>
-                    <span className="is-clickable ml-5" onClick={toggleRemoveTrustedIdentity}>Remove</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                    <input type="checkbox" name="two" onClick={handleCheck} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span>Edit</span>
-                    <span className="ml-5">Remove</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                    <input type="checkbox" name="three" onClick={handleCheck} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span>Edit</span>
-                    <span className="ml-5">Remove</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                      <input type="checkbox" name="four" onClick={handleCheck} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span>Edit</span>
-                    <span className="ml-5">Remove</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                      <input type="checkbox" name="four" onClick={handleCheckAll} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td className="has-text-left">Check All</td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* checked? {checked} */}
-
-            <button className="button is-danger" disabled={!checked.length}>
-              Remove
-            </button>
-
-            <button className="button is-primary ml-4" onClick={toggleAddTrustedIdentity}>
-              Add new
-            </button>
-
-          </div>
-        </div>
-      </div>
-
-      {showAddTrustedIdentity &&
-        <AddTrustedIdentity toggle={toggleAddTrustedIdentity} />
-      }
-
-      {showEditTrustedIdentity &&
-        <EditTrustedIdentity toggle={toggleEditTrustedIdentity} />
-      }
-
-      {showRemoveTrustedIdentity &&
-        <RemoveTrustedIdentity toggle={toggleRemoveTrustedIdentity} />
-      }
+      <TrustedIdentities />
     </>
   )
 }
