@@ -74,6 +74,7 @@ module {
     createdAt: Timestamp;
     updatedAt: Timestamp;
     text: ?Text;
+    image: ?Image;
   };
 
   public type Content = {

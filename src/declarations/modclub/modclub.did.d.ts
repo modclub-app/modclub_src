@@ -29,6 +29,7 @@ export interface ContentPlus {
   'minStake' : bigint,
   'updatedAt' : Timestamp,
   'providerName' : string,
+  'image' : [] | [Image__1],
   'providerId' : Principal,
 }
 export interface ContentResult { 'status' : ContentStatus, 'sourceId' : string }

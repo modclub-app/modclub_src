@@ -43,6 +43,10 @@ export const idlFactory = ({ IDL }) => {
     'providerId' : ProviderId,
   });
   const ContentId__1 = IDL.Text;
+  const Image__1 = IDL.Record({
+    'imageType' : IDL.Text,
+    'data' : IDL.Vec(IDL.Nat8),
+  });
   const ContentPlus = IDL.Record({
     'id' : ContentId__1,
     'status' : ContentStatus,
@@ -56,11 +60,8 @@ export const idlFactory = ({ IDL }) => {
     'minStake' : IDL.Nat,
     'updatedAt' : Timestamp,
     'providerName' : IDL.Text,
+    'image' : IDL.Opt(Image__1),
     'providerId' : IDL.Principal,
-  });
-  const Image__1 = IDL.Record({
-    'imageType' : IDL.Text,
-    'data' : IDL.Vec(IDL.Nat8),
   });
   const Role = IDL.Variant({
     'admin' : IDL.Null,

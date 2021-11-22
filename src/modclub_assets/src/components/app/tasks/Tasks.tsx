@@ -4,13 +4,22 @@ import { getAllContent } from "../../../utils/api";
 import Userstats from "../userstats/Userstats";
 import Reject from "../modals/Reject";
 import Approve from "../modals/Approve";
-import { formatDate } from "../../../utils/util";
+import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
+import { Image__1 } from "../../../utils/types";
+
+
 
 export default function Tasks() {
   const [content, setContent] = useState(null);
 
+  const getImage = (data: any) => {
+    const image = unwrap<Image__1>(data);
+    return fileToImgSrc(image.data, image.imageType);
+  }
+
   const renderContent = async () => {
-    const status = { 'new' : null };
+    const status = { 'new': null };
+    
     const content = await getAllContent(status);
     console.log('content', content)
     let result = [];
@@ -28,8 +37,11 @@ export default function Tasks() {
           </header>
           <div className="card-content">
             <h3 className="subtitle">{item.title}</h3>
-            <p>{item.text}</p>
-          </div>
+            {'imageBlob' in item.contentType ?
+              (<img src={getImage(item.image)} alt="Image File" />) :
+              (<p>{item.text}</p>)}
+     
+        </div>
           <footer className="card-footer">
             <div>
               <a className="button is-outlined">
