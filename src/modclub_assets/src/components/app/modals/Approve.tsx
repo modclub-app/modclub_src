@@ -114,10 +114,18 @@ export default function Approve({ platform, id, providerId }) {
   const handleSave = async () => {
     console.log("handleSave")
     setSaving(true);
-    const result = await vote(id, { approved: null }, []);
-    console.log("result", result);
-    setSaving(false);
-    setMessage({ success: result === "Vote successful" ? true : false, value: result });
+    const regEx = /Reject text: (.*)/g;
+    try {
+      const result = await vote(id, { approved: null }, []);
+      console.log("result", result);
+      setSaving(false);
+      setMessage({ success: result === "Vote successful" ? true : false, value: result });
+    } catch (e) {
+      let errAr = regEx.exec(e.message);  
+      setMessage({ success: false, value: errAr[1] });
+      setSaving(false);
+    }
+
     setTimeout(() => toggle(), 2000); 
   };
 
