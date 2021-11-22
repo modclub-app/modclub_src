@@ -57,6 +57,18 @@ a.navbar-item {
   }
 }
 
+section.Tokenomics .card.has-gradient {
+  width: 180px;
+  height: 170px;
+  
+  .card-content {
+    height: calc(100% - 2px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
 .roadmapLine {
   width: 1rem;
   height: 700px;
