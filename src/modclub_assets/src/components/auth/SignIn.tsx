@@ -10,7 +10,7 @@ import dfinitylogo from "../../../assets/dfinity.svg"
 export function SignIn(props: PropsWithChildren<{}>) {
   console.log("SignIn component!");
 
-  const {logIn, isAuthenticated, user} = useAuth();
+  const { logIn, isAuthenticated, user } = useAuth();
   const history = useHistory();
   // If the auth provider has a user (which could be from local storage) and
   // the user is properly authenticated with the identity provider service then

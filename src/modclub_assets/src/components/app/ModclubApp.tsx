@@ -1,4 +1,5 @@
 import { Switch, Route } from "react-router-dom";
+import { useAuth } from "../../utils/auth";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
@@ -12,6 +13,7 @@ import { Principal } from "@dfinity/principal";
 
 export default function ModclubApp() {
   const [profiles, setProfiles] = useState([]);
+  const { user } = useAuth();
 
   // useEffect(() => {
   //   const fetchProfiles = async () => {
@@ -44,12 +46,17 @@ export default function ModclubApp() {
 
                 {profiles}
               </Route>
-              <Route exact path="/app/tasks">
-                <Tasks />
-              </Route>
-              <Route path="/app/tasks/:taskId">
-                <Task /> 
-              </Route>
+
+              {user &&
+              <>
+                <Route exact path="/app/tasks">
+                  <Tasks />
+                </Route>
+                <Route path="/app/tasks/:taskId">
+                  <Task /> 
+                </Route>
+              </>
+              }
               <Route exact path="/app/moderators">
                 <Moderators />
               </Route>

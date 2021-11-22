@@ -49,7 +49,7 @@ export function useProvideAuth(authClient): AuthContext {
       // log out if it doesn't (this is when you have your user stored in local
       // storage but the user was cleared from the backend)
       getUserFromCanister().then((user_) => {
-        console.log("getUserFromCanister user_", user_);
+        // console.log("getUserFromCanister user_", user_);
         !user_ && logOut()
       });
       return () => void 0;
@@ -57,7 +57,7 @@ export function useProvideAuth(authClient): AuthContext {
       console.log("no lsUser, fetching and setting from backend");
       // If there is no user in local storage, retrieve from the backend
       getUserFromCanister().then((user_) => {
-        console.log("getUserFromCanister user_", user_);
+        // console.log("getUserFromCanister user_", user_);
         user_ && setUser(user_)
       });
     }
