@@ -409,55 +409,8 @@ export default function Landing() {
           </div>          
         </div>
       </div>
-    </section>
-
-    <section className="section">
-      <div className="container" style={{ maxWidth: 960 }}>
-        
-        <h3 className="title is-size-1 has-text-centered">Our Team</h3>
-
-        <div className="columns">
-          <div className="column">
-            <div className="card is-fullheight has-background-dark has-bottom-gradient">
-              <div className="card-content has-text-centered">
-                <img src={raheel} style={{ width: 128, height: 128 }} />
-                <h3 className="subtitle my-4">Raheel Govindji</h3>
-                <p className="has-text-silver is-size-5">CEO and Founder</p>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="card is-fullheight has-background-dark has-bottom-gradient">
-              <div className="card-content has-text-centered">
-                <img src={chris} style={{ width: 128, height: 128 }} />
-                <h3 className="subtitle my-4">Chris Porteus</h3>
-                <p className="has-text-silver is-size-5">Marketing Advisor</p>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="card is-fullheight has-background-dark has-bottom-gradient">
-              <div className="card-content has-text-centered">
-                <img src={pema} style={{ width: 128, height: 128 }} />
-                <h3 className="subtitle my-4">Pema Banigan</h3>
-                <p className="has-text-silver is-size-5">Partnership Lead</p>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="card is-fullheight has-background-dark has-bottom-gradient">
-              <div className="card-content has-text-centered">
-                <img src={max} style={{ width: 128, height: 128 }} />
-                <h3 className="subtitle my-4">Max Zidel</h3>
-                <p className="has-text-silver is-size-5">Business Advisor</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
+      </section>
+      
     <section className="section">
       <div className="container" style={{ maxWidth: 960 }}>
 

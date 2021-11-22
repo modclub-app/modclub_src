@@ -17,9 +17,6 @@ export default function Footer() {
             <a href="#tokenomics" className="is-block has-text-white">
               Tokenomics
             </a>
-            <a href="#team" className="is-block has-text-white">
-              Team
-            </a>
             <a href="#roadmap" className="is-block has-text-white">
               Roadmap
             </a>
