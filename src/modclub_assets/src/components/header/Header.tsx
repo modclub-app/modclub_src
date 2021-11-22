@@ -23,9 +23,6 @@ export default function Header() {
             <a href="#tokenomics" className="navbar-item">
               Tokenomics
             </a>
-            <a href="#team" className="navbar-item">
-              Team
-            </a>
             <a href="#roadmap" className="navbar-item">
               Roadmap
             </a>

@@ -155,7 +155,14 @@ module {
   };
 
   func invert<X, Y>(rel : Trie.Trie2D<X, Y, ()>) : Trie.Trie2D<Y, X, ()> {
-    Prelude.nyi() // to do -- for testing / upgrades sub-story
+    Prelude.nyi(); // to do -- for testing / upgrades sub-story
+    // for((key, value) in Trie.iter(rel)) {
+    //   let k = key;
+    //   let v = value;
+    //   let t = Trie.empty();
+    //   t = Trie.put2D(t, k.1, v.0, k.0, v.1, ());
+    //   return t;
+    // }
   };
 
   // helper for getRelated{0,1}

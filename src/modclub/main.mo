@@ -439,6 +439,9 @@ shared ({caller = initializer}) actor class ModClub () {
         switch(state.providers.get(content.providerId)){
           case(?provider) {
               let holdings = tokens.getHoldings(caller);
+              Debug.print("Holdings: wallet" # Int.toText(holdings.wallet) # "stake" # Int.toText(holdings.stake));
+              Debug.print("Provider: minStake" # Nat.toText(provider.settings.minStaked));
+              
               if( holdings.stake < provider.settings.minStaked ) 
                 throw Error.reject("Not enough tokens staked");
           };
@@ -778,14 +781,14 @@ shared ({caller = initializer}) actor class ModClub () {
   stable var stateShared : State.StateShared = State.emptyShared();
 
   system func preupgrade() {
-    stateShared := State.fromState(state);
     Debug.print("MODCLUB PREUPGRRADE");
+    stateShared := State.fromState(state);
+    Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
   system func postupgrade() {
-    state := State.empty();
-    state := State.toState(stateShared);
-    stateShared := State.emptyShared();
     Debug.print("MODCLUB POSTUPGRADE");
+    state := State.toState(stateShared);
+    Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 };
