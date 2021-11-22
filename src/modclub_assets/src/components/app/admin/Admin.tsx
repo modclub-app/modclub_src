@@ -15,8 +15,37 @@ export default function Admin() {
       <div className="columns">
         <div className="column is-two-thirds">
           <div className="card is-fullheight">
-            <div className="card-content">
-              dsfds
+            <div className="card-content columns">
+              
+              <div className="column is-one-third">
+                <div className="card has-gradient">
+                  <div className="card-content py-6">
+                    <h1 className="title has-text-centered">
+                      DSCVR<br/>logo
+                    </h1>
+                  </div>
+                </div>
+              </div>
+
+              <div className="column">
+                <table className="table is-label">
+                  <tbody>
+                    <tr>
+                      <td>App Name:</td>
+                      <td>DSCVR</td>
+                    </tr>
+                    <tr>
+                      <td>Description:</td>
+                      <td>DSCVR is a reddit like community that exists on the internet computer.</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <button className="button is-dark">
+                  Edit App
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
@@ -28,7 +57,7 @@ export default function Admin() {
                 Stats
               </h4>
 
-              <table className="table is-striped has-text-left mb-6">
+              <table className="table is-striped has-text-left">
                 <tbody>
                   <tr>
                     <td>Total Feeds Posted</td>
@@ -107,12 +136,93 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card mb-6">
         <div className="card-content">
           <h3 className="title mb-2">
             Trusted identities
           </h3>
-          <p>Add the principal IDs for other members of your team so they can manage your Modclub account</p>
+          <p className="mb-6">Add the principal IDs for other members of your team so they can manage your Modclub account</p>
+
+          <div className="field has-background-dark p-5">
+
+            <table className="table is-striped has-text-left is-checked">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Principal ID</th>
+                  <th>Name</th>
+                  <th className="has-text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <label className="checkbox">
+                      <input type="checkbox" value="false" />
+                      <span className="check icon is-small">
+                        <span className="material-icons">done</span>
+                      </span>
+                    </label>
+                  </td>
+                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
+                  <td>JediMaster</td>
+                  <td className="has-text-left">
+                    <span>Edit</span>
+                    <span className="ml-5">Remove</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label className="checkbox">
+                      <input type="checkbox" value="false" />
+                      <span className="check icon is-small">
+                        <span className="material-icons">done</span>
+                      </span>
+                    </label>
+                  </td>
+                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
+                  <td>JediMaster</td>
+                  <td className="has-text-left">
+                    <span>Edit</span>
+                    <span className="ml-5">Remove</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label className="checkbox">
+                      <input type="checkbox" value="false" />
+                      <span className="check icon is-small">
+                        <span className="material-icons">done</span>
+                      </span>
+                    </label>
+                  </td>
+                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
+                  <td>JediMaster</td>
+                  <td className="has-text-left">
+                    <span>Edit</span>
+                    <span className="ml-5">Remove</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label className="checkbox">
+                      <input type="checkbox" value="false" />
+                      <span className="check icon is-small">
+                        <span className="material-icons">done</span>
+                      </span>
+                    </label>
+                  </td>
+                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
+                  <td>JediMaster</td>
+                  <td className="has-text-left">
+                    <span>Edit</span>
+                    <span className="ml-5">Remove</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
         </div>
       </div>
     </>
