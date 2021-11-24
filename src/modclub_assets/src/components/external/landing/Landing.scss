@@ -18,7 +18,7 @@ a.navbar-item {
   position: relative;
 
   &:before {
-    content: '';
+    content: "";
     display: block;
     background: #3e4348;
     height: 1px;
@@ -70,8 +70,9 @@ a.navbar-item {
 }
 
 .card {
-  &.arrow-left::after, &.arrow-right:after {
-    content: '';
+  &.arrow-left::after,
+  &.arrow-right:after {
+    content: "";
     position: absolute;
     left: -15px;
     top: 15px;

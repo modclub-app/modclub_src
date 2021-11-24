@@ -9,7 +9,6 @@ import dfinitylogo from "../../../assets/dfinity.svg"
  */
 export function SignIn(props: PropsWithChildren<{}>) {
   const {logIn, isAuthenticated, user} = useAuth();
-  const history = useHistory();
   // If the auth provider has a user (which could be from local storage) and
   // the user is properly authenticated with the identity provider service then
   // send the user to their feed, as they are correctly signed in.
@@ -21,19 +20,11 @@ export function SignIn(props: PropsWithChildren<{}>) {
     if (!isAuthenticated) {
       await logIn();
     }
-    
-    if (isAuthenticated && !user) {
-      // If the user is authenticated but the user is not in the database,
-      history.push("/signup");
-    } else {
-      history.push("/app");
-    }
-
   };
 
   return (
     <button onClick={handleLogin} id="sign-in"
-      className="button is-large extra mt-6">
+      className="button is-large extra  mt-4">
         Login <img src={dfinitylogo} alt="dfinity logo"  style={{ width: "33px", marginRight: "-1em", marginLeft: "0.7em" }} />
       </button>
   );

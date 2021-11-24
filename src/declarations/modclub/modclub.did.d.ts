@@ -14,6 +14,7 @@ export interface Activity {
   'providerName' : string,
   'providerId' : ProviderId,
 }
+export interface AirdropUser { 'id' : Principal, 'createdAt' : Timestamp }
 export type ContentId = string;
 export type ContentId__1 = string;
 export interface ContentPlus {
@@ -53,9 +54,11 @@ export interface Image { 'imageType' : string, 'data' : Array<number> }
 export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export interface ModClub {
   'addRules' : (arg_0: Array<string>) => Promise<undefined>,
+  'airdropRegister' : () => Promise<AirdropUser>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
+  'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
@@ -65,6 +68,7 @@ export interface ModClub {
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'getTokenHoldings' : () => Promise<Holdings>,
+  'isAirdropRegistered' : () => Promise<AirdropUser>,
   'registerModerator' : (
       arg_0: string,
       arg_1: string,

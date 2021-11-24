@@ -56,9 +56,11 @@ type Profile =
 type ModClub = 
  service {
    addRules: (vec text) -> () oneway;
+   airdropRegister: () -> (AirdropUser);
    checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
    getActivity: (bool) -> (vec Activity) query;
+   getAirdropUsers: () -> (vec AirdropUser);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getAllProfiles: () -> (vec Profile) query;
    getContent: (text) -> (opt ContentPlus) query;
@@ -68,6 +70,7 @@ type ModClub =
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTokenHoldings: () -> (Holdings) query;
+   isAirdropRegistered: () -> (AirdropUser);
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    removeRules: (vec RuleId) -> () oneway;
@@ -143,6 +146,11 @@ type ContentPlus =
  };
 type ContentId__1 = text;
 type ContentId = text;
+type AirdropUser = 
+ record {
+   createdAt: Timestamp;
+   id: principal;
+ };
 type Activity = 
  record {
    contentType: ContentType;

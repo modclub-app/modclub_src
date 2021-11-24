@@ -1,6 +1,7 @@
 import React, { ReactDOM } from "react";
 import styled from "styled-components";
 import "./Hamburger.scss";
+import { HashLink } from "react-router-hash-link";
 
 const StyledMenu = styled.nav`
   // display: flex;
@@ -43,9 +44,9 @@ const StyledMenu = styled.nav`
 const Menu = ({ open }) => {
   return (
     <StyledMenu open={open}>
-      <a href="#developers">Developers</a>
-      <a href="#tokenomics">Tokenomics</a>
-      <a href="#roadmap">Roadmap</a>
+      <HashLink to="/#developers">Developers</HashLink>
+      <HashLink to="/#tokenomics">Tokenomics</HashLink>
+      <HashLink to="/#roadmap">Roadmap</HashLink>
       <div className="column" style={{ display:'none'}}>
         <button className="DarkButton" style={{ height: 60, width: 200, marginTop: 20, marginBottom: 10 }}>
           Login

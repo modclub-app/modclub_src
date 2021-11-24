@@ -14,10 +14,13 @@ import {
   Holdings,
   UserHoldings,
   _SERVICE,
+  AirdropUser,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
 export type Optional<Type> = [Type] | [];
+
+var actor: _SERVICE = null;
 
 function getMC(): Promise<_SERVICE> {
   return actorController.actor;
@@ -118,4 +121,16 @@ export async function unStakeTokens(amount: number): Promise<string> {
 
 export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
+}
+
+export async function airdropRegister(): Promise<AirdropUser> {
+  return (await getMC()).airdropRegister();
+}
+
+export async function isAirdropRegistered(): Promise<AirdropUser> {
+  return (await getMC()).isAirdropRegistered();
+}
+
+export async function updateMC(): Promise<void> {
+  await actorController.actor;
 }

@@ -39,9 +39,9 @@ export function useProvideAuth(authClient): AuthContext {
   // Use the user from local storage if it is set so the flow doesn't have to
   // make an async query.
   const setUserFromLocalStorage = () => {
-    // console.log("setUserFromLocalStorage");
+    console.log("setUserFromLocalStorage");
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
-    // console.log("lsUser", lsUser);
+    console.log("lsUser", lsUser);
     if (lsUser) {
       setUser(lsUser);
       setIsAuthenticatedLocal(true);
@@ -105,10 +105,12 @@ export function useProvideAuth(authClient): AuthContext {
       // The auth client isn't ready to make requests until it's completed the
       // async authenticate actor method.
       setAuthClientReady(false);
+      console.log(" setting authenticaterActor");
       actorController.authenticateActor(_identity).then(() => {
         setAuthClientReady(true);
       });
     } else {
+      console.log(" setting not authenticated");
       actorController.unauthenticateActor();
     }
   }, [_identity]);
@@ -126,7 +128,6 @@ export function useProvideAuth(authClient): AuthContext {
     if (identity) {
       setIsAuthenticatedLocal(true);
       _setIdentity(identity);
-      // console.log("Logged in: " + identity.getPrincipal().toString());
     } else {
       console.error("Could not get identity from internet identity");
     }
