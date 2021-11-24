@@ -1,7 +1,7 @@
 import { Switch, Route } from "react-router-dom";
 import { useAuth } from "../../utils/auth";
 import { useHistory } from "react-router-dom";
-import { Container, Columns } from "react-bulma-components";
+import { Columns } from "react-bulma-components";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";

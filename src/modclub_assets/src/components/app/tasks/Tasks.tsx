@@ -2,11 +2,14 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getAllContent } from "../../../utils/api";
+import { Card, Progress, Heading, Button, Icon } from "react-bulma-components";
 import Userstats from "../userstats/Userstats";
 import Reject from "../modals/Reject";
 import Approve from "../modals/Approve";
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
+
+
 
 export default function Tasks() {
   const [content, setContent] = useState(null);
@@ -26,44 +29,48 @@ export default function Tasks() {
    
     for (const item of content) {
       result.push(
-        <div className="card mb-6" key={item.id}>
-          <header className="card-header">
-            <p className="card-header-title">
+        <Card key={item.id} className="mb-6">
+          <Card.Header>
+            <Card.Header.Title>
               {item.providerName}
               <span>Submitted by {item.sourceId} {formatDate(item.createdAt)}</span>
-            </p>
-            <progress className="progress" value="15" max="100"></progress>
+            </Card.Header.Title>
+            <Progress value={15} max={100} />
             <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
-          </header>
-          <div className="card-content">
-            <h3 className="subtitle">{item.title}</h3>
+          </Card.Header>
+          <Card.Content>
+            <Heading subtitle={true}>
+              {item.title}
+            </Heading>
             {'imageBlob' in item.contentType ?
-              (<img src={getImage(item.image)} alt="Image File" style={{ display: 'block', margin: 'auto' }} />) :
-              (<p>{item.text}</p>)}
-     
-        </div>
-          <footer className="card-footer">
-            <div>
-              <a className="button is-outlined">
-                <span className="icon is-small has-text-white ml-1 mr-2">
+              <img src={getImage(item.image)} alt="Image File" style={{ display: 'block', margin: 'auto' }} />
+              :
+              <p>{item.text}</p>
+            }
+          </Card.Content>
+          <Card.Footer>
+            <Button.Group>
+              <Button className="is-outlined">
+                <Icon align="left" size="small" className="has-text-white ml-1 mr-2">
                   <span className="material-icons">local_atm</span>
-                </span>
+                </Icon>
                 <span>{"Rq Stake: " + item.minStake}</span>
-              </a>
-              <a className="button is-outlined">
-                <span className="icon is-small has-text-white ml-1 mr-2">
+              </Button>
+              <Button className="is-outlined">
+                <Icon align="left" size="small" className="has-text-white ml-1 mr-2">
                   <span className="material-icons">stars</span>
-                </span>
+                </Icon>
                 <span>{"Reward: "+ item.minStake }</span>
-              </a>
-            </div>            
-            <div>
+              </Button>
+            </Button.Group>
+
+            <Button.Group>
               <Link to={`/app/tasks/${item.id}`} className="button">See More</Link>
               <Reject platform={item.providerName} id={item.id} providerId={item.providerId} />
               <Approve platform={item.providerName} id={item.id} providerId={item.providerId} />
-            </div>
-          </footer>
-        </div>
+            </Button.Group>
+          </Card.Footer>
+        </Card>
       );
     }
     setContent(<>{result}</>); 
