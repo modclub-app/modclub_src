@@ -6,11 +6,8 @@ import TrustedIdentities from "../trusted_identities/TrustedIdentities";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
 
-
-
 const EditRulesModal = ({ rules, toggle }) => {
   const [ submitting, setSubmitting ] = useState<boolean>(false);
-
   const [newRules, setNewRules] = useState(rules);
 
   const remove = (rule) => {
@@ -18,16 +15,11 @@ const EditRulesModal = ({ rules, toggle }) => {
   }
 
   const add = (rule) => {
-    if (!rule) return
-    setNewRules([...newRules, rule]);
-    rule = "";
+    rule && setNewRules([...newRules, rule]);
   }
 
-  const onFormSubmit = async (values: any) => {
-    console.log("onFormSubmit values", values);
+  const onFormSubmit = async () => {
     console.log("onFormSubmit newRules", newRules);
-    
-    // const { amount } = values;
     setSubmitting(true);
     setSubmitting(false);
     setTimeout(() => toggle(), 2000); 
@@ -101,12 +93,109 @@ const EditRulesModal = ({ rules, toggle }) => {
 }
 
 
+const EditModeratorSettingsModal = ({ toggle }) => {
+  const [ submitting, setSubmitting ] = useState<boolean>(false);
+
+  const onFormSubmit = async (values: any) => {
+    console.log("onFormSubmit values", values);
+    setSubmitting(true);
+    setSubmitting(false);
+    setTimeout(() => toggle(), 2000); 
+  };
+
+  return (
+    <div className="modal is-active">
+      <div className="modal-background" onClick={toggle} />
+      <div className="modal-card is-small has-background-circles">
+      <Form
+        onSubmit={onFormSubmit}
+        render={({ handleSubmit }) => (
+          <form onSubmit={handleSubmit}>
+            <section className="modal-card-body">
+              <h3 className="subtitle">Edit Moderator Settings</h3>
+
+              <div className="field level">
+                <p>Number of votes required to finalize decision:</p>
+                <Field
+                  name="minVotes"
+                  component="input"
+                  type="number"
+                  className="input has-text-centered ml-3"
+                  initialValue={5}
+                  style={{ width: 70 }}
+                />
+              </div>
+
+              <div className="field level">
+                <p>Required number of staked MOD tokens to vote:</p>
+                <Field
+                  name="minTokens"
+                  component="input"
+                  type="number"
+                  className="input has-text-centered ml-3"
+                  initialValue={1000}
+                  style={{ width: 70 }}
+                />
+              </div>
+
+              <div className="field level">
+                <p>Example cost per each succesful vote (1% of stake):</p>
+                <Field
+                  name="cost"
+                  component="input"
+                  type="number"
+                  className="input has-text-centered ml-3"
+                  initialValue={1}
+                  style={{ width: 70 }}
+                />
+              </div>
+
+              <div className="field level">
+                <p>Number of your platform tokens to be distributed to the majority voters (optional):</p>
+                <Field
+                  name="tokens"
+                  component="input"
+                  type="number"
+                  className="input has-text-centered ml-3"
+                  initialValue={5}
+                  style={{ width: 70 }}
+                />
+              </div>
+
+            </section>
+            <footer className="modal-card-foot pt-0 is-justify-content-flex-end">
+              <button className="button is-dark mr-4" onClick={toggle}>
+                Cancel
+              </button>
+              {submitting ? 
+                <button className="button is-primary" disabled>
+                  <span className="icon mr-2 loader is-loading"></span>
+                  <span>SAVING...</span>
+                </button> 
+                :
+                <button className="button is-primary">
+                  SAVE
+                </button>
+              }
+            </footer>
+          </form>
+        )}
+      />
+      </div>
+    </div>
+  )
+}
+
+
 export default function Admin() {
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
 
   const [showEditRules, setShowEditRules] = useState(false);
   const toggleEditRules = () => setShowEditRules(!showEditRules);
+
+  const [showModeratorSettings, setShowModeratorSettings] = useState(false);
+  const toggleModeratorSettings = () => setShowModeratorSettings(!showModeratorSettings);
 
   const dummyRules = ["No drugs & weapsons", "No sexual content", "No racism"]
 
@@ -263,23 +352,23 @@ export default function Admin() {
 
               <div className="level mb-3">
                 <p>Number of votes required to finalize decision:</p>
-                <p className="is-size-5 has-text-white has-text-weight-bold">2</p>
+                <p className="is-size-5 has-text-white has-text-weight-bold ml-3">2</p>
               </div>
               <div className="level mb-3">
                 <p>Required number of staked MOD tokens to vote:</p>
-                <p className="is-size-5 has-text-white has-text-weight-bold">1000</p>
+                <p className="is-size-5 has-text-white has-text-weight-bold ml-3">1000</p>
               </div>
               <div className="level mb-3">
                 <p>Example cost per each succesful vote (1% of stake)</p>
-                <p className="is-size-5 has-text-white has-text-weight-bold">1</p>
+                <p className="is-size-5 has-text-white has-text-weight-bold ml-3">1</p>
               </div>
               <div className="level mb-3">
                 <p>Number of your platform tokens to be distributed to the majority voters (optional) </p>
-                <p className="is-size-5 has-text-white has-text-weight-bold">5</p>
+                <p className="is-size-5 has-text-white has-text-weight-bold ml-3">5</p>
               </div>
             </div>
             <footer className="card-footer mb-0 is-justify-content-flex-end" style={{ border: 0 }}>
-              <button className="button is-dark is">Edit Settings</button>
+              <button className="button is-dark is" onClick={toggleModeratorSettings}>Edit Settings</button>
             </footer>
           </div>
         </div>
@@ -295,6 +384,11 @@ export default function Admin() {
         <EditRulesModal
           rules={dummyRules}
           toggle={toggleEditRules}
+        />
+      }
+      {showModeratorSettings &&
+        <EditModeratorSettingsModal
+          toggle={toggleModeratorSettings}
         />
       }
     </>
