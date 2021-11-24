@@ -1,4 +1,6 @@
 import { Switch, Route } from "react-router-dom";
+import { useAuth } from "../../utils/auth";
+import { useHistory } from "react-router-dom";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
@@ -11,7 +13,18 @@ import { getAllProfiles } from '../../utils/api';
 import { Principal } from "@dfinity/principal";
 
 export default function ModclubApp() {
+  const history = useHistory();
   const [profiles, setProfiles] = useState([]);
+
+  const { logIn, isAuthenticated, user } = useAuth();
+  console.log("isAuthenticated", isAuthenticated);
+
+  useEffect(() => {
+    if (isAuthenticated && !user) {
+      console.log("push signup")
+      // history.push("/signup")
+    }
+  }, [isAuthenticated, user]);
 
   // useEffect(() => {
   //   const fetchProfiles = async () => {

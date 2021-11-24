@@ -32,26 +32,19 @@ const Modal = ({
   }
 
   const handleSave = async() => {
-    console.log("handleSave", checked);
     setSaving(true);
-    // const result = await vote(id, { rejected: null }, checked);
-    // console.log(result);
-    // setSaving(false);
-    // setMessage({ success: result === "Vote successful" ? true : false, value: result });
-    // setTimeout(() => toggle(), 2000);
-
+    const regEx = /Reject text: (.*)/g;
     try {
       const result = await vote(id, { rejected: null }, checked);
       console.log("result", result);
       setSaving(false);
       setMessage({ success: true, value: result });
-      setTimeout(() => toggle(), 2000);
-    } catch (error) {
-      // console.error("error", error);
-      setMessage({ success: false, value: error });
+    } catch (e) {
+      let errAr = regEx.exec(e.message);  
       setSaving(false);
-      setTimeout(() => toggle(), 2000);
     }
+
+    setTimeout(() => toggle(), 2000);
   };
   
   useEffect(() => {
@@ -64,20 +57,6 @@ const Modal = ({
     fetchRules();
   }, []);
   
-  let htmlContent = rules.map((rule) => (
-    <div key={rule.id} className="field level is-relative is-toggle">
-      <input type="checkbox" id={rule.id} name={rule.id} onClick={handleCheck} />
-      <label htmlFor={rule.id} className="is-clickable is-flex-grow-1">
-        {rule.description}
-      </label>
-    </div>
-  ));
-  if (loading) {
-    htmlContent = (
-      [<div className="loader-wrapper is-active">
-        <div className="loader is-loading"></div>
-      </div>])
-  }
   return (
     <div className={`modal ${active ? "is-active" : ""}`}>
       <div className="modal-background" onClick={toggle} />
@@ -87,7 +66,22 @@ const Modal = ({
           <h3 className="subtitle mt-5">Reject Confirmation</h3>
           <p className="mb-3">Select which rules were broken:</p>
           <div className="card has-background-dark">
-            <div className="card-content">{htmlContent}</div>
+            <div className="card-content">
+              {loading ?
+                <div className="loader-wrapper is-active">
+                  <div className="loader is-loading"></div>
+                </div>
+                :
+                rules.map((rule) => (
+                  <div key={rule.id} className="field level is-relative is-toggle">
+                    <input type="checkbox" id={rule.id} name={rule.id} onClick={handleCheck} />
+                    <label htmlFor={rule.id} className="is-clickable is-flex-grow-1">
+                      {rule.description}
+                    </label>
+                  </div>
+                ))
+              }
+            </div>
           </div>
         </section>
         <footer className="modal-card-foot">

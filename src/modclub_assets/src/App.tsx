@@ -2,7 +2,6 @@ import React from "react";
 import './bulma.css'
 import "./App.scss";
 
-
 import {
   HashRouter as Router,
   Switch,
@@ -12,7 +11,6 @@ import {
 
 import External from "./components/external/External";
 import ModclubApp from "./components/app/ModclubApp";
-
 
 export default function App() {
  const history = useHistory();
