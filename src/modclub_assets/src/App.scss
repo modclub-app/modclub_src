@@ -14,6 +14,12 @@
   &.has-text-primary {
     -webkit-text-fill-color: $primary;
   }
+  &.has-text-danger {
+    -webkit-text-fill-color: $secondary;
+  }
+  &.has-text-success {
+    -webkit-text-fill-color: $success;
+  }
 
   &.is-small .material-icons {
     font-size: 16px;
@@ -150,6 +156,15 @@ hr {
 .card {
   background: $black;
   color: $light;
+
+  &.is-fullheight {
+    display: flex;
+    flex-direction: column;
+    
+    .card-footer {
+      margin-top: auto;
+    }
+  }
 
   &.has-bottom-gradient::after {
     content: "";
@@ -483,13 +498,21 @@ label.checkbox {
   margin-bottom: 1rem;
 }
 
-.input {
+.input, .textarea {
   background: $dark;
   border: 0;
   color: $white;
   height: 3rem;
   padding: 0 1.25rem;
   font-weight: 700;
+}
+
+.textarea {
+  padding: .85rem 1.25rem;
+}
+.input[disabled] {
+  background: $dark;
+  color: $white;
 }
 
 .has-background-dark .input {

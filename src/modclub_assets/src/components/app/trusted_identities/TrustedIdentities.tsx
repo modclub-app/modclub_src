@@ -1,8 +1,8 @@
 // import { Link } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import { useEffect, useState } from "react";
-import EditTrustedIdentity from "../modals/EditTrustedIdentity";
-import RemoveTrustedIdentity from "../modals/RemoveTrustedIdentity";
+// import EditTrustedIdentity from "../modals/EditTrustedIdentity";
+// import RemoveTrustedIdentity from "../modals/RemoveTrustedIdentity";
 
 const AddModal = ({ toggle }) => {
   const [ submitting, setSubmitting ] = useState<boolean>(false);
@@ -90,7 +90,7 @@ const EditModal = ({ toggle }) => {
         render={({ handleSubmit }) => (
           <form onSubmit={handleSubmit}>
             <section className="modal-card-body">
-              <h3 className="subtitle">Add Trusted Identify</h3>
+              <h3 className="subtitle">Edit Trusted Identify</h3>
 
               <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
                 <div className="field">

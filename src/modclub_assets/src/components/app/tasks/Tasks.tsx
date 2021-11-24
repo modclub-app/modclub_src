@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useAuth } from "../../../utils/auth";
 import { getAllContent } from "../../../utils/api";
 import Userstats from "../userstats/Userstats";
 import Reject from "../modals/Reject";
@@ -7,10 +8,9 @@ import Approve from "../modals/Approve";
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
-
-
 export default function Tasks() {
   const [content, setContent] = useState(null);
+  const { user } = useAuth();
 
   const getImage = (data: any) => {
     const image = unwrap<Image__1>(data);
@@ -70,8 +70,8 @@ export default function Tasks() {
   }
 
   useEffect(() => {
-    renderContent();
-  }, []);
+    user && renderContent();
+  }, [user]);
   
   return (
     <>
