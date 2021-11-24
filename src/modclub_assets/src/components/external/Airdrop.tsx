@@ -11,23 +11,6 @@ import { AirdropUser } from "../../utils/types";
 import "./landing/Landing.scss";
 import styled from "styled-components";
 
-const PrincipalLabel = styled.span`
-  font-size: 14px;
-  color: #fff;
-  font-weight: 700;
-  padding: 4px;
-
-`;
-
-const PrincipalID = styled.span`
-  font-size: 14px;
-  color: #C4C4C4;
-  font-weight: 500;
-  border: 1px solid #fff;
-  border-radius: 4px;
-  padding: 4px;
-`;
-
 export default function Airdrop() {
   const { setUser, isAuthenticated, logIn, identity, isAuthReady } = useAuth();
   const [message, setMessage] = useState(null);
@@ -98,7 +81,7 @@ export default function Airdrop() {
               MODCLUB Airdrop Registration           
             </h1>
             <p className="has-text-silver is-size-4 has-text-centered mb-6">
-              Thank you for your interest in MODCLUB. To register for our airdrop please click the register button below. This will register your principal ID with the airdrop service which will be used for whitelisting access to our testnet.
+              Thank you for your interest in MODCLUB. To register for our airdrop please click the register button below. This will register your principal ID with the airdrop service which will be used for gaining access to our testnet.
             </p>
             <div className="is-flex is-justify-content-center	">
               {!isAuthReady || loading ? spinner : (
@@ -106,9 +89,13 @@ export default function Airdrop() {
                     {!isAuthenticated ? (
                       <SignIn />
                     ) : isRegistered && aidropUser ? (
-                      <div className="is-flex">
-                        <PrincipalLabel>Principal ID</PrincipalLabel>
-                        <PrincipalID>{aidropUser.id.toText()}</PrincipalID>
+                      <div className="card has-gradient">
+                      <div className="card-content">
+                        <label className="label">Principal ID</label>
+                        <p>
+                          {aidropUser.id.toText()}
+                        </p>
+                      </div>
                     </div>
                     ) : (
                       <button
