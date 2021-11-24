@@ -17,6 +17,9 @@ export function SignIn(props: PropsWithChildren<{}>) {
   // Initiates the login flow with the identity provider service, sending the
   // user to a new tab
   const handleLogin = async () => {
+    console.log("handleLogin isAuthenticated", isAuthenticated);
+    console.log("handleLogin user", user);
+
     if (!isAuthenticated) {
       await logIn();
     }

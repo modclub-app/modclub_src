@@ -231,7 +231,7 @@ export default function Landing() {
               />
             </div>
           </div>
-          <div className="column">
+          <div className="column is-flex is-align-items-center is-justify-content-center">
             <div className="columns">
               <div className="column pb-0">
                 <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>

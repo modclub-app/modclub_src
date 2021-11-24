@@ -49,11 +49,29 @@ a.navbar-item {
   }
 }
 
+@media screen and (min-width: 2023px), print {
+  .hero.is-medium .hero-body {
+    padding: 9rem 4.5rem;
+  }
+}
+
 .RewardsImg {
   text-align: center;
 
   @media screen and (min-width: 1023px), print {
     text-align: right;
+  }
+}
+
+section.Tokenomics .card.has-gradient {
+  width: 180px;
+  height: 170px;
+  
+  .card-content {
+    height: calc(100% - 2px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 }
 

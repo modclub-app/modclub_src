@@ -5,7 +5,7 @@ import { formatDate } from "../../../utils/util";
 import Userstats from "../userstats/Userstats";
 import Snippet from "../../common/Snippet";
 
-export default function Tasks() {
+export default function Activity() {
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
   

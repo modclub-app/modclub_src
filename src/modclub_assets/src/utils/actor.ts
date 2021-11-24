@@ -54,7 +54,7 @@ class ActorController {
    * Get the actor instance to run commands on the canister.
    */
   get actor() {
-    console.log("Fetching Actor");
+    // console.log("Fetching Actor");
     return this._actor;
   }
 

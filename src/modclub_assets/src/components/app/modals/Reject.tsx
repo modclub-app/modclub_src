@@ -24,19 +24,34 @@ const Modal = ({
   const [message, setMessage] = useState(null);
 
   const handleCheck = (e) => {
+    console.log("handleCheck")
+    
     const item = e.target.name;
     const isChecked = e.target.checked;
     setChecked(isChecked ? [...checked, item] : checked.filter(id => id != item));
   }
 
-  const handleSave = async () => {
+  const handleSave = async() => {
     console.log("handleSave", checked);
     setSaving(true);
-    const result = await vote(id, { rejected: null }, checked);
-    console.log(result);
-    setSaving(false);
-    setMessage({ success: result === "Vote successful" ? true : false, value: result });
-    setTimeout(() => toggle(), 2000); 
+    // const result = await vote(id, { rejected: null }, checked);
+    // console.log(result);
+    // setSaving(false);
+    // setMessage({ success: result === "Vote successful" ? true : false, value: result });
+    // setTimeout(() => toggle(), 2000);
+
+    try {
+      const result = await vote(id, { rejected: null }, checked);
+      console.log("result", result);
+      setSaving(false);
+      setMessage({ success: true, value: result });
+      setTimeout(() => toggle(), 2000);
+    } catch (error) {
+      // console.error("error", error);
+      setMessage({ success: false, value: error });
+      setSaving(false);
+      setTimeout(() => toggle(), 2000);
+    }
   };
   
   useEffect(() => {
@@ -50,7 +65,7 @@ const Modal = ({
   }, []);
   
   let htmlContent = rules.map((rule) => (
-    <div key={rule.id} className="field level is-relative" >
+    <div key={rule.id} className="field level is-relative is-toggle">
       <input type="checkbox" id={rule.id} name={rule.id} onClick={handleCheck} />
       <label htmlFor={rule.id} className="is-clickable is-flex-grow-1">
         {rule.description}
