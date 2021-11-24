@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
+import { Card, Heading } from "react-bulma-components";
 import Userstats from "../userstats/Userstats";
 import Snippet from "../../common/Snippet";
 
@@ -78,11 +79,13 @@ export default function Activity() {
           </div>
         </div>
       </> :
-        <div className="card mb-5">
-          <div className="card-content">
-            <h1 className="title mb-0">No Activity Yet</h1>
-          </div>
-        </div>
+        <Card>
+          <Card.Content>
+            <Heading>
+              No Activity Yet
+            </Heading>
+          </Card.Content>
+        </Card>
       }
     </>
   )
