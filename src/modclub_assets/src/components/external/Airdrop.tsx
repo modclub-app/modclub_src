@@ -9,6 +9,24 @@ import { SignIn } from "../Auth/SignIn";
 import { Principal } from "@dfinity/candid/lib/cjs/idl";
 import { AirdropUser } from "../../utils/types";
 import "./landing/Landing.scss";
+import styled from "styled-components";
+
+const PrincipalLabel = styled.span`
+  font-size: 14px;
+  color: #fff;
+  font-weight: 700;
+  padding: 4px;
+
+`;
+
+const PrincipalID = styled.span`
+  font-size: 14px;
+  color: #C4C4C4;
+  font-weight: 500;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  padding: 4px;
+`;
 
 export default function Airdrop() {
   const { setUser, isAuthenticated, logIn, identity, isAuthReady } = useAuth();
@@ -21,8 +39,7 @@ export default function Airdrop() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await updateMC();
-        console.log("!!!!fetching data!!!");
+        await updateMC();    
         setAirdropUser(await isAirdropRegistered());
         setIsRegistered(true);
       } catch (e) {
@@ -81,7 +98,7 @@ export default function Airdrop() {
               MODCLUB Airdrop Registration           
             </h1>
             <p className="has-text-silver is-size-4 has-text-centered mb-6">
-              Thank you for your interest in MODCLUB. To register for our airdrop please click the button below. This will register your principal ID with the airdrop service and you will be whitelisted for the testnet launch. 
+              Thank you for your interest in MODCLUB. To register for our airdrop please click the register button below. This will register your principal ID with the airdrop service which will be used for whitelisting access to our testnet.
             </p>
             <div className="is-flex is-justify-content-center	">
               {!isAuthReady || loading ? spinner : (
@@ -89,9 +106,9 @@ export default function Airdrop() {
                     {!isAuthenticated ? (
                       <SignIn />
                     ) : isRegistered && aidropUser ? (
-                      <div className="tags has-addons">
-                        <span className="tag">Principal ID</span>
-                        <span className="tag is-primary">{aidropUser.id.toText()}</span>
+                      <div className="is-flex">
+                        <PrincipalLabel>Principal ID</PrincipalLabel>
+                        <PrincipalID>{aidropUser.id.toText()}</PrincipalID>
                     </div>
                     ) : (
                       <button

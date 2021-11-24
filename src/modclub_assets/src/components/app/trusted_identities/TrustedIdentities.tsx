@@ -1,8 +1,6 @@
 // import { Link } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import { useEffect, useState } from "react";
-import EditTrustedIdentity from "../modals/EditTrustedIdentity";
-import RemoveTrustedIdentity from "../modals/RemoveTrustedIdentity";
 
 const AddModal = ({ toggle }) => {
   const [ submitting, setSubmitting ] = useState<boolean>(false);
