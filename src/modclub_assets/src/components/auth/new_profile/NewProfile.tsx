@@ -37,28 +37,46 @@ export default function NewProfile() {
     }
   };
 
+  const validateEmail = (email) => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
+
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
-    setSubmitting(true);
 
-    setMessage({ success: true, value: "ERROR" });
+    const validEmail = validateEmail(email)
+    if (!validEmail) {
+      setMessage({ success: false, value: "Email is badly formatted" });
+      setTimeout(() => setMessage(null), 2000);
+      return
+    }
+
+    setSubmitting(true);
 
     const imageData: ImageData = pic ? {
       src: pic,
       type: picType,
     } : undefined;
-
-    const user = await registerModerator(username, email, imageData);
-    console.log("user", user);
-    // TODO not returning the error here!
-
-    if (user) {
+    
+    const regEx = /Reject text: (.*)/g;
+    try {
+      const user = await registerModerator(username, email, imageData);
+      console.log("user", user);
+      // TODO not returning the error here!
       setUser(user);
-      history.push("/app");
-    } else {
+      setMessage({ success: true, value: "Sign Up Successfull!" });
+      setTimeout(() => {
+        setMessage(null);
+        history.push("/app");
+      }, 2000);
+    } catch (e) {
+      let errAr = regEx.exec(e.message);  
+      setMessage({ success: false, value: errAr[1] });
       setSubmitting(false);
-      console.error("Error creating user");
     }
+
+    setTimeout(() => setMessage(null), 2000);
   };
 
   return (
@@ -68,10 +86,7 @@ export default function NewProfile() {
         {message.value}
       </div>
     }
-    <div
-      className="columns is-centered is-vcentered"
-      style={{ height: "100%" }}
-    >
+    <div className="columns is-centered is-vcentered is-fullheight">
       <div className="column is-half">
         <div className="card">
           <div className="card-content has-text-centered">
@@ -96,7 +111,7 @@ export default function NewProfile() {
 
             <Form
               onSubmit={onFormSubmit}
-              render={({ handleSubmit, pristine }) => (
+              render={({ handleSubmit, values }) => (
                 <form onSubmit={handleSubmit}>
                   <div className="field">
                     <div className="control has-icons-left">
@@ -129,7 +144,7 @@ export default function NewProfile() {
 
                   <button
                     type="submit"
-                    disabled={pristine || submitting}
+                    disabled={!values.username || !values.email || submitting}
                     className={"button is-large is-primary is-fullwidth mt-6 " + (submitting ? "is-loading" : "")}
                     value="Submit"
                   >Submit</button>

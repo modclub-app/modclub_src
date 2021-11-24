@@ -323,8 +323,11 @@ export default function Admin() {
         <div className="column">
           <div className="card is-fullheight">
             <div className="card-content">
-              <h3 className="subtitle mb-3">
+              <h3 className="subtitle mb-3 level">
                 Rules
+                <button className="button is-dark is" onClick={toggleEditRules}>
+                  Edit Rules
+                </button>
               </h3>
               <ul>
                 {dummyRules.map((rule) => (
@@ -337,17 +340,17 @@ export default function Admin() {
                 ))}
               </ul>
             </div>
-            <footer className="card-footer mb-0 is-justify-content-flex-end" style={{ border: 0 }}>
-              <button className="button is-dark is" onClick={toggleEditRules}>Edit Rules</button>
-            </footer>
           </div>
         </div>
 
         <div className="column">
           <div className="card">
             <div className="card-content">
-              <h3 className="subtitle mb-3">
+              <h3 className="subtitle mb-3 level">
                 Moderator Settings
+                <button className="button is-dark is" onClick={toggleModeratorSettings}>
+                  Edit Settings
+                </button>
               </h3>
 
               <div className="level mb-3">
@@ -367,9 +370,6 @@ export default function Admin() {
                 <p className="is-size-5 has-text-white has-text-weight-bold ml-3">5</p>
               </div>
             </div>
-            <footer className="card-footer mb-0 is-justify-content-flex-end" style={{ border: 0 }}>
-              <button className="button is-dark is" onClick={toggleModeratorSettings}>Edit Settings</button>
-            </footer>
           </div>
         </div>
       </div>
