@@ -13,11 +13,6 @@ import { useEffect, useState } from "react";
 import { getAllProfiles } from '../../utils/api';
 import { Principal } from "@dfinity/principal";
 
-
-
-
-
-
 export default function ModclubApp() {
   const history = useHistory();
   const [profiles, setProfiles] = useState([]);
@@ -56,8 +51,7 @@ export default function ModclubApp() {
       <Columns className="container">
         <Sidebar />
 
-        <Columns.Column>
-
+        <Columns.Column className="ml-5">
           <Switch>
             <Route exact path="/app">
               Dashboard

@@ -3,9 +3,34 @@ import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { getContent, getProvider } from "../../../utils/api";
+import { Columns, Card, Progress, Level, Heading, Icon } from "react-bulma-components";
 import Userstats from "../userstats/Userstats";
 import Reject from "../modals/Reject";
 import Approve from "../modals/Approve";
+
+
+const GradientBox = ({ children, title, showToken = true }) => {
+  return (
+    <Card className="has-gradient is-fullheight">
+      <Card.Content className="is-fullheight" style={{ padding: "20% 10%" }}>
+        <Heading subtitle size={6} className="has-text-silver">
+          {title}
+        </Heading>
+        <Heading size={1} className="is-flex is-align-items-center" style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
+          {children}
+          {showToken &&
+            <span className="is-size-5 ml-1">
+              MOD
+              <span className="is-block has-text-weight-light">
+                token
+              </span>
+            </span>
+          }
+        </Heading>
+      </Card.Content>
+    </Card>
+  );
+};
 
 const Sidebar = ({ providerId }: { providerId: Principal }) => {
   const [content, setContent] = useState(null);
@@ -23,14 +48,14 @@ const Sidebar = ({ providerId }: { providerId: Principal }) => {
 
   return (
   <>
-    <div className="card">
-      <div className="card-content">
-        <div className="level">
-          <h4 className="subtitle mb-0">
+    <Card className="mb-5">
+      <Card.Content>
+        <Level>
+          <Heading subtitle className="mb-0">
             {loading ? <div className="loader is-loading"></div> : content.name}
-          </h4>
+          </Heading>
           <a href="#">+ Follow</a>
-        </div>
+        </Level>
 
         <table className="table is-striped has-text-left mb-6">
           <tbody>
@@ -53,58 +78,58 @@ const Sidebar = ({ providerId }: { providerId: Principal }) => {
           </tbody>
         </table>
 
-        <label className="label has-text-white mb-4">Rules</label>
+        <Heading subtitle size={6}>
+          Rules
+        </Heading>
         <ul>
           {loading ? <div className="loader is-loading"></div> : content.rules.map((rule) => (
             <li key={rule.id} className="is-flex is-align-items-center">
-              <span className="icon is-small has-text-primary mr-2">
+              <Icon size="small" color="primary" className="mr-2">
                 <span className="material-icons">trending_flat</span>
-              </span>
+              </Icon>
               <span>{rule.description}</span>
             </li>
           ))}
         </ul>
-      </div>
-    </div>
+      </Card.Content>
+    </Card>
 
-    <div className="columns is-multiline mt-3">
-      <div className="column is-half">
-        <div className="card has-gradient">
-          <div className="card-content">
-            <label className="label">Rq Stake</label>
-            <h3 className="title is-size-1">
-              {loading ? <div className="loader is-loading"></div> : Number(content.settings.minVotes)}
-            </h3>
-          </div>
-        </div>
-      </div>
-      <div className="column is-half">
-        <div className="card has-gradient">
-          <div className="card-content">
-            <label className="label">Reward</label>
-            <h3 className="title is-size-1">
-              5
-              <span>MOD<span>token</span></span>
-            </h3>
-          </div>
-        </div>
-      </div>
-      {/* <div className="column is-half">
-        <div className="card has-gradient">
-          <div className="card-content">
-            <label className="label">Partner Rewards</label>
-            <h3 className="title is-size-1">
-              5
-              <span>MOD<span>token</span></span>
-            </h3>
-          </div>
-        </div>
-      </div> */}
-    </div>
+    <Columns>
+      <Columns.Column size={6}>
+        <GradientBox title="Rq Stake" showToken={false}>
+          {loading ? <div className="loader is-loading"></div> : Number(content.settings.minVotes)}
+        </GradientBox>
+      </Columns.Column>
+      <Columns.Column size={6}>
+        <GradientBox title="Reward">
+          5
+        </GradientBox>
+      </Columns.Column>
+      {/* <Columns.Column size={6}>
+        <GradientBox title="Partner Rewards">
+          5
+        </GradientBox>
+      </Columns.Column> */}
+    </Columns>
   </>
   )
 };
 
+const InfoItem = ({ icon, title, info }) => {
+  return (
+    <Level>
+      <Heading size={6} className="has-text-silver is-flex is-align-items-center mb-0">
+        <Icon className="mr-2">
+          <span className="material-icons">{icon}</span>
+        </Icon>
+        <span>{title}</span>
+      </Heading>
+      <p className="has-text-silver">
+        {info}
+      </p>
+    </Level>
+  );
+};
 
 export default function Task() {
   const [content, setContent] = useState(null);
@@ -116,76 +141,64 @@ export default function Task() {
     // console.log('content', content)
 
     setContent(
-      <div className="columns">
-        <div className="column is-two-thirds">
-          <div className="card">
-            <div className="card-content">
-              <header className="card-header">
-                <p className="card-header-title">
-                  {content.providerName}
-                  <span>Submitted by {content.sourceId}</span>
-                </p>
-                <progress className="progress is-primary" value="80" max="100"></progress>
-                <span className="progress-label">{ `${content.voteCount}/${content.minVotes} votes` }</span>
-              </header>
-              <div className="card-content">
-                <h1 className="title">{content.title}</h1>
-                <p>{content.text}</p>
+      <Columns>
+        <Columns.Column>
+          <Card>
+            <Card.Header>
+              <Card.Header.Title>
+                {content.providerName}
+                <span>
+                  Submitted by {content.sourceId}
+                </span>
+              </Card.Header.Title>
+              <Progress value={15} max={100} />
+              <span className="progress-label">
+                {`${content.voteCount}/${content.minVotes} votes`}
+              </span>
+            </Card.Header>
+            <Card.Content>
+              <Heading>
+                {content.title}
+              </Heading>
+              <p>{content.text}</p>
 
-                createdAt? {content.createdAt}
+              <Card className="has-background-dark mt-5">
+                <Card.Content>
+                  <Heading subtitle>
+                    Additional Information
+                  </Heading>
 
-                <div className="card has-background-dark my-5">
-                  <div className="card-content">
-                    <h3 className="subtitle">Additional Information</h3>
+                  <InfoItem
+                    icon="assignment_ind"
+                    title="Link to Post"
+                    info="http://www.example.com/post1"
+                  />
+                  <InfoItem
+                    icon="assignment_ind"
+                    title="Category"
+                    info="Gaming"
+                  />
+                  <InfoItem
+                    icon="assignment_ind"
+                    title="Comment"
+                    info="This post looked suspicious please review as we are not sure"
+                  />
+                </Card.Content>
+              </Card>
 
-                    <div className="level mb-2">
-                      <label className="label mb-0 is-flex is-align-items-center">
-                        <span className="icon">
-                          <span className="material-icons">assignment_ind</span>
-                        </span>
-                        <span>Link to Post</span>
-                      </label>
-                      <p className="has-text-silver">http://www.example.com/post1</p>
-                    </div>
+            </Card.Content>
+            <Card.Footer className="pt-0" style={{ border: 0 }}>
+              <Reject platform={content.providerName} id={content.id} providerId={content.providerId} />
+              <Approve platform={content.providerName} id={content.id} providerId={content.providerId} />
+            </Card.Footer>
+          </Card>
 
-                    <div className="level mb-2">
-                      <label className="label mb-0 is-flex is-align-items-center">
-                        <span className="icon">
-                          <span className="material-icons">assignment_ind</span>
-                        </span>
-                        <span>Category</span>
-                      </label>
-                      <p className="has-text-silver">Gaming</p>
-                    </div>
+        </Columns.Column>
 
-                    <div className="level mb-2">
-                      <label className="label mb-0 is-flex is-align-items-center">
-                        <span className="icon">
-                          <span className="material-icons">assignment_ind</span>
-                        </span>
-                        <span>Comment</span>
-                      </label>
-                      <p className="has-text-silver">This post looked suspicious please review as we are not sure.</p>
-                    </div>
-
-                  </div>
-                </div>
-
-                <div className="level">
-                  <Reject platform={content.providerName} id={content.id} providerId={content.providerId} />
-                  <Approve platform={content.providerName} id={content.id} providerId={content.providerId} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="column">
-
+        <Columns.Column size={4}>
           <Sidebar providerId={content.providerId} /> 
-
-        </div>
-      </div>
+        </Columns.Column>
+      </Columns>
     ); 
   }
 

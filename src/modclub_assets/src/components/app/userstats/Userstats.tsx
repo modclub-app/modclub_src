@@ -31,7 +31,6 @@ const StatBox = ({ children, image, title, amount, usd, detailed }) => {
   );
 };
 
-
 export default function Userstats({ detailed = false }) {
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards : 0,

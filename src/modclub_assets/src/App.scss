@@ -78,6 +78,12 @@ hr {
   color: $light !important;
 }
 
+.buttons {
+  &:not(:last-child), &:last-child {
+    margin-bottom: 0;
+  }
+}
+
 .button {
   font-size: 0.9rem;
   font-weight: 700;
@@ -186,24 +192,24 @@ hr {
       margin: 2px;
     }
 
-    .is-size-1 {
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
+    // .is-size-1 {
+    //   display: flex;
+    //   align-items: center;
+    //   white-space: nowrap;
 
-      span {
-        font-size: 1.25rem;
-        line-height: 1.25rem;
-        margin-left: 0.25rem;
+    //   span {
+    //     font-size: 1.25rem;
+    //     line-height: 1.25rem;
+    //     margin-left: 0.25rem;
 
-        span {
-          display: block;
-          font-size: 1rem;
-          font-weight: 400;
-          margin: 0;
-        }
-      }
-    }
+    //     span {
+    //       display: block;
+    //       font-size: 1rem;
+    //       font-weight: 400;
+    //       margin: 0;
+    //     }
+    //   }
+    // }
   }
 }
 

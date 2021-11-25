@@ -9,8 +9,6 @@ import Approve from "../modals/Approve";
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
-
-
 export default function Tasks() {
   const [content, setContent] = useState(null);
   const { user } = useAuth();
@@ -39,7 +37,7 @@ export default function Tasks() {
             <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
           </Card.Header>
           <Card.Content>
-            <Heading subtitle={true}>
+            <Heading subtitle>
               {item.title}
             </Heading>
             {'imageBlob' in item.contentType ?
