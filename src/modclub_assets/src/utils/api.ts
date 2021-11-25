@@ -15,6 +15,7 @@ import {
   UserHoldings,
   _SERVICE,
   AirdropUser,
+  ProviderSettings,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -133,4 +134,19 @@ export async function isAirdropRegistered(): Promise<AirdropUser> {
 
 export async function updateMC(): Promise<void> {
   await actorController.actor;
+}
+
+// Admin API's / Need to be a provider admin to call these
+export async function addRules(rules: string[]): Promise<void> {
+  return (await getMC()).addRules(rules);
+}
+
+export async function removeRules(rules: RuleId[]): Promise<void> {
+  return (await getMC()).removeRules(rules);
+}
+
+export async function updateProviderSettings(
+  settings: ProviderSettings
+): Promise<void> {
+  return (await getMC()).updateSettings(settings);
 }

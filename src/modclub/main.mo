@@ -487,14 +487,14 @@ shared ({caller = initializer}) actor class ModClub () {
     let voteId = "vote-" # Principal.toText(caller) # contentId;
     switch(state.votes.get(voteId)){
       case(?v){
-        return "User already voted";
+        throw Error.reject("User already voted");
       };
       case(_)();
     };
 
     switch(state.content.get(contentId)){
       case(?content) {
-        if(content.status != #new) return "Content has already been reviewed";
+        if(content.status != #new) throw Error.reject("Content has already been reviewed");
         
         // Check the user has enough tokens staked
         switch(state.providers.get(content.providerId)){
@@ -553,7 +553,7 @@ shared ({caller = initializer}) actor class ModClub () {
           await evaluateVotes(content, voteApproved, voteRejected);
           return "Vote successful";
         };
-        case(_)( return "Content does not exist");
+        case(_)( throw Error.reject("Content does not exist"));
         }; 
         return "";         
       };

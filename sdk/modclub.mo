@@ -22,15 +22,20 @@ module {
     minStaked: Nat;
   };
 
+  public type Image = {
+    data: [Nat8];
+    imageType: Text;
+  };
+
   public type SubscribeMessage = { callback: shared ContentResult -> (); };
 
   // Have to hardcode principal for modclub, change it to production canister ID later
   public let ModClub =
       actor "MODCLUB public principal ID" : actor {      
-        registerProvider: (Text) -> async Text;
+        registerProvider: (Text, Text, ?Image) -> async Text;
         deregisterProvider: () -> async Text;
         addRules: ([Text]) -> async ();
-        removeContentRules: ([Text]) -> async ();
+        removeRules: ([Text]) -> async ();
         updateSettings: (ProviderSettings) -> async ();
         submitText: (Text, Text, ?Text) -> async Text;
         submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
