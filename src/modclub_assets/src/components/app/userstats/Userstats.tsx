@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getTokenHoldings } from '../../../utils/api';
-import "./Userstats.scss";
+import { useAuth } from "../../../utils/auth";
 import { Columns, Card, Heading } from "react-bulma-components";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
@@ -12,18 +12,22 @@ import Unstake from "../modals/Unstake";
 const StatBox = ({ children, image, title, amount, usd, detailed }) => {
   return (
     <Card className="has-background-circles is-fullheight">
-      <Card.Content>
-        <img src={image} />
-        <div>
+      <Card.Content className="is-flex is-align-items-center" style={{ padding: "2.5rem 2rem" }}>
+        <img src={image} className="mr-4" />
+        <div style={{ lineHeight: 1, whiteSpace: 'nowrap' }}>
           <p className="has-text-light">{title}</p>
-          <Heading size={1}>
+          <Heading size={1} style={{ lineHeight: 1 }}>
             {amount}
-            {detailed && <span className="usd">${usd}</span>}
+            {detailed &&
+              <span className="has-text-weight-normal is-size-4 ml-4">
+                ${usd}
+              </span>
+            }
           </Heading>
         </div>
       </Card.Content>
       {detailed &&
-        <Card.Footer>
+        <Card.Footer className="p-0" style={{ border: 0, marginBottom: "2.5rem" }} >
           {children}
         </Card.Footer>
       }
@@ -32,6 +36,8 @@ const StatBox = ({ children, image, title, amount, usd, detailed }) => {
 };
 
 export default function Userstats({ detailed = false }) {
+  const { user } = useAuth();
+
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards : 0,
     stake : 0,
@@ -47,17 +53,25 @@ export default function Userstats({ detailed = false }) {
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);
 
+  // useEffect(() => {
+  //   const fetchTokenHoldings = async () => {
+  //     const tokenHoldings = await getTokenHoldings();
+  //     setTokenHoldings(tokenHoldings);
+  //   };
+  //   fetchTokenHoldings();
+  // }, []);
+
   useEffect(() => {
     const fetchTokenHoldings = async () => {
       const tokenHoldings = await getTokenHoldings();
       setTokenHoldings(tokenHoldings);
     };
-    fetchTokenHoldings();
-  }, []);
+    user && fetchTokenHoldings();
+  }, [user]);
 
   return (
     <>
-    <Columns className="stat-boxes">
+    <Columns>
       <Columns.Column>
         <StatBox
           image={walletImg}

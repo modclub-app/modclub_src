@@ -10,8 +10,8 @@ import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../ut
 import { Image__1 } from "../../../utils/types";
 
 export default function Tasks() {
-  const [content, setContent] = useState(null);
   const { user } = useAuth();
+  const [content, setContent] = useState(null);
 
   const getImage = (data: any) => {
     const image = unwrap<Image__1>(data);

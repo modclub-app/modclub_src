@@ -1,5 +1,6 @@
 // import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useAuth } from "../../../utils/auth";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
 import { Card, Heading } from "react-bulma-components";
@@ -7,9 +8,11 @@ import Userstats from "../userstats/Userstats";
 import Snippet from "../../common/Snippet";
 
 export default function Activity() {
+  const { user } = useAuth();
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
   
+
   useEffect(() => {
     const fetchActivity = async () => {
       const activity = await getActivity(false);
@@ -17,8 +20,8 @@ export default function Activity() {
       setActivity(activity);
       setLoading(false);
     };
-    fetchActivity();
-  }, []);
+    user && fetchActivity();
+  }, [user]);
 
   return (
     <>

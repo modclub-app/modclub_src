@@ -1,22 +1,11 @@
-import { Form, Field } from "react-final-form";
+import { Field } from "react-final-form";
 import FormModal from "../modals/FormModal";
-import { useState } from "react";
 import { stakeTokens } from '../../../utils/api';
 
-export default function Stake({ toggle, tokenHoldings }) {
-
-  // const [ submitting, setSubmitting ] = useState<boolean>(false);
-  // const [message, setMessage] = useState(null);
-  
+export default function Stake({ toggle, tokenHoldings }) {  
   const onFormSubmit = async (values: any) => {
-    // console.log("onFormSubmit", values);
     const { amount } = values;
-    // setSubmitting(true);
     return await stakeTokens(amount);
-    // console.log("result", result);
-    // setMessage({ success: true, value: result });
-    // setSubmitting(false);
-    // setTimeout(() => toggle(), 2000); 
   };
 
   return (
