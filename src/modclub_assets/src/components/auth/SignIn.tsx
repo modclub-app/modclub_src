@@ -1,6 +1,8 @@
 import React, { PropsWithChildren, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { useAuth } from "../../utils/auth";
+import { Button, Icon } from "react-bulma-components";
+
 import dfinitylogo from "../../../assets/dfinity.svg"
 
 /*
@@ -33,13 +35,14 @@ export function SignIn(props: PropsWithChildren<{}>) {
     } else {
       history.push("/app");
     }
-
   };
 
   return (
-    <button onClick={handleLogin} id="sign-in"
-      className="button is-large extra mt-6">
-        Login <img src={dfinitylogo} alt="dfinity logo"  style={{ width: "33px", marginRight: "-1em", marginLeft: "0.7em" }} />
-      </button>
+    <Button onClick={handleLogin} className="is-gradient is-outlined is-fullwidth mb-4">
+      <span>LOGIN</span>
+      <Icon>
+        <img src={dfinitylogo} alt="dfinity logo"  style={{ width: "33px", marginRight: "-1em", marginLeft: "0.7em" }} />
+      </Icon>
+    </Button>
   );
 }

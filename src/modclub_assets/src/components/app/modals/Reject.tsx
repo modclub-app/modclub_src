@@ -75,7 +75,7 @@ const Modal = ({
                 rules.map((rule) => (
                   <div key={rule.id} className="field level is-relative is-toggle">
                     <input type="checkbox" id={rule.id} name={rule.id} onClick={handleCheck} />
-                    <label htmlFor={rule.id} className="is-clickable is-flex-grow-1">
+                    <label htmlFor={rule.id} className="is-clickable">
                       {rule.description}
                     </label>
                   </div>

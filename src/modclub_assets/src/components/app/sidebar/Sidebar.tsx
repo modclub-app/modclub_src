@@ -10,7 +10,7 @@ export default function Sidebar() {
 
   return (
     <div className="column is-one-fifth has-background-black">
-      <aside className="p-3">
+      <aside className="p-3" style={{ minHeight: "100vh" }}>
         <div className="is-flex is-align-items-center mt-3">
           <img src={LogoImg} style={{ height: 40, width: 40}} />
           <h1 className="title is-size-3 ml-2" style={{ fontFamily: 'sans-serif' }}>MODCLUB</h1>

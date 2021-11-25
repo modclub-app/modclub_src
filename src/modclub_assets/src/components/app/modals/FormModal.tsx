@@ -1,11 +1,17 @@
-// import React from "react";
+import React from "react";
 import { useState } from "react";
 import { Modal, Heading, Button, Notification } from "react-bulma-components";
 import { Form } from "react-final-form";
 
-export default function FormModal({ toggle, title, children, handleSubmit }) {
+
+// const { Provider, Consumer } = React.createContext;
+
+
+export default function FormModal({ toggle, title, children, handleSubmit, footerContent = null }) {
   const [ submitting, setSubmitting ] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
+
+  console.log('children', children)
   
   const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
@@ -14,14 +20,14 @@ export default function FormModal({ toggle, title, children, handleSubmit }) {
     try {
       const result = await handleSubmit(values)
       console.log("child result", result);
-      setSubmitting(false);
-      setMessage({ success: true, value: result });
+      // setSubmitting(false);
+      // setMessage({ success: true, value: result });
     } catch (e) {
       console.log("e", e);
-      setSubmitting(false);
-      setMessage({ success: false, value: e });
+      // setSubmitting(false);
+      // setMessage({ success: false, value: e });
     }
-    setTimeout(() => toggle(), 2000);
+    // setTimeout(() => toggle(), 2000);
   };
 
   return (
@@ -39,10 +45,23 @@ export default function FormModal({ toggle, title, children, handleSubmit }) {
 
                   {children}
 
-                  {/* {React.cloneElement(children, { values: values })} */}
+                  {/* {React.cloneElement(children[0], { values: values })} */}
+
+                  {/* <Provider values={values}>
+                    {children}
+                  </Provider> */}
+{/* 
+                  {children.map(child => 
+                    {React.cloneElement(children[0], { values: values })}
+                  )} */}
             
               </Modal.Card.Body>
               <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
+                {/* {footerContent &&
+                  <div style={{ marginRight: "auto", position: "relative" }}>
+                    {footerContent}
+                  </div>
+                } */}
                 <Button.Group>
                   <Button color="dark" onClick={toggle}>
                     Cancel

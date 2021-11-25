@@ -1,5 +1,6 @@
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
+import FormModal from "../modals/FormModal";
 import approveImg from '../../../../assets/approve.svg';
 import { vote, getProviderRules } from "../../../utils/api";
 
@@ -35,7 +36,6 @@ const RulesList = ({ providerId} : { providerId: Principal }) => {
 };
 
 const Modal = ({
-  active,
   platform,
   toggle,
   handleSave,
@@ -43,7 +43,6 @@ const Modal = ({
   message,
   providerId
 }: {
-  active: boolean;
   platform: string;
   toggle: () => void;
   handleSave: () => void;
@@ -57,7 +56,7 @@ const Modal = ({
   const toggleRules = () => setShowRules(!showRules);
 
   return (
-    <div className={`modal ${active ? "is-active" : ""}`}>
+    <div className="modal is-active">
       <div className="modal-background" onClick={toggle} />
       <div className="modal-card has-background-circles">
         <section className="modal-card-body">
@@ -101,6 +100,78 @@ const Modal = ({
   );
 };
 
+
+
+
+
+
+const Modal2 = ({
+  platform,
+  toggle,
+  id,
+  providerId
+}: {
+  platform: string;
+  toggle: () => void;
+  id : string,
+  providerId: Principal;
+}) => {
+  // const [ submitting, setSubmitting ] = useState<boolean>(false);
+  // const [message, setMessage] = useState(null);
+
+  const [showRules, setShowRules] = useState(false);
+  const toggleRules = () => setShowRules(!showRules);
+  
+  const onFormSubmit = async () => {
+
+    const regEx = /Reject text: (.*)/g;
+    try {
+      const result = await vote(id, { approved: null }, []);
+      console.log("result", result);
+      if (result != "Vote successful") {
+        console.log("throwing here...")
+        throw result
+      }
+
+      return result
+      // setSaving(false);
+      // setMessage({ success: result === "Vote successful" ? true : false, value: result });
+    } catch (e) {
+      let errAr = regEx.exec(e.message);
+      return errAr;
+      // setMessage({ success: false, value: errAr[1] });
+      // setSaving(false);
+    }
+
+    return await vote(id, { approved: null }, []);
+
+    // console.log("onFormSubmit", values);
+
+    // setSubmitting(true);
+    // return await stakeTokens(amount);
+    // console.log("result", result);
+    // setMessage({ success: true, value: result });
+    // setSubmitting(false);
+    // setTimeout(() => toggle(), 2000); 
+  };
+
+  return (
+    <FormModal
+      title="Approve Confirmation"
+      toggle={toggle}
+      handleSubmit={onFormSubmit}
+      footerContent={<RulesList providerId={providerId}/>}
+    >
+      {/* <img src={approveImg} className="mt-5" /> */}
+      <p>You are confirming that this post follows {platform}'s rules.</p>
+      <p>Voting incorrectly will result in some loss of staked tokens.</p>
+    </FormModal>
+  );
+};
+
+
+
+
 export default function Approve({ platform, id, providerId }) {
   const [active, setActive] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -108,7 +179,7 @@ export default function Approve({ platform, id, providerId }) {
 
   const toggle = () => {
     setActive(!active);
-    setMessage(null);
+    // setMessage(null);
   }
 
   const handleSave = async () => {
@@ -131,8 +202,30 @@ export default function Approve({ platform, id, providerId }) {
 
   return (
     <>
-      <button className="button is-primary is-flex-grow-1" onClick={toggle}>Approve</button>
-      <Modal
+      <button className="button is-primary" onClick={toggle}>Approve</button>
+
+      {/* {active &&
+        <Modal2
+          platform={platform}
+          toggle={toggle}
+          id={id}
+          providerId={providerId}
+        /> 
+      } */}
+
+      {active &&
+        <Modal
+          platform={platform}
+          toggle={toggle}
+          handleSave={handleSave}
+          saving={saving}
+          message={message}
+          providerId={providerId}
+        /> 
+      }
+
+
+      {/* <Modal
         active={active}
         platform={platform}
         toggle={toggle}
@@ -140,7 +233,7 @@ export default function Approve({ platform, id, providerId }) {
         saving={saving}
         message={message}
         providerId={providerId}
-      />
+      /> */}
     </>
   );
 };

@@ -15,7 +15,6 @@ const AddModal = ({ toggle }) => {
     setTimeout(() => toggle(), 2000); 
   };
 
-  
   return (
     <div className="modal is-active">
       <div className="modal-background" onClick={toggle} />

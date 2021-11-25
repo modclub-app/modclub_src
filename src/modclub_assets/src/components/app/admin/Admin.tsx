@@ -1,13 +1,49 @@
-import { Form, Field } from "react-final-form";
+import { Field } from "react-final-form";
 import { useEffect, useState } from "react";
 import { Columns, Card, Button, Level, Heading, Icon } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
-import EditApp from "../modals/EditApp";
 import TrustedIdentities from "../trusted_identities/TrustedIdentities";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
-import { Title } from "chart.js";
 
+const EditAppModal = ({ toggle }) => {  
+  const onFormSubmit = async (values: any) => {
+    console.log("onFormSubmit parent!", values)
+    const { address, amount } = values;
+    return "EditAppModal success return";
+  };
+
+  return (
+    <FormModal
+      title="Edit App"
+      toggle={toggle}
+      handleSubmit={onFormSubmit}
+    >
+      <div className="field">
+        <div className="control">
+          <Field
+            name="name"
+            component="input"
+            type="text"
+            className="input"
+            placeholder="App Name"
+          />
+        </div>
+      </div>
+
+      <div className="field">
+        <div className="control">
+          <Field
+            name="description"
+            component="textarea"
+            className="textarea"
+            placeholder="App Description"
+          />
+        </div>
+      </div>
+    </FormModal>
+  );
+};
 
 const EditRulesModal = ({ rules, toggle }) => {
   const [newRules, setNewRules] = useState(rules);
@@ -23,14 +59,14 @@ const EditRulesModal = ({ rules, toggle }) => {
   const onFormSubmit = async () => {
     console.log("parent !!! onFormSubmit newRules", newRules);
     return newRules;
-    // setSubmitting(true);
-    // setSubmitting(false);
-    // setTimeout(() => toggle(), 2000); 
   };
 
   return (
-    <FormModal title="Edit Rules" toggle={toggle} handleSubmit={onFormSubmit}>
-
+    <FormModal
+      title="Edit Rules"
+      toggle={toggle}
+      handleSubmit={onFormSubmit}
+    >
       {newRules.map((rule) => (
         <div key={rule} className="field level">
           <Field
@@ -66,183 +102,68 @@ const EditRulesModal = ({ rules, toggle }) => {
   )
 }
 
-// const EditRulesModal = ({ rules, toggle }) => {
-//   const [ submitting, setSubmitting ] = useState<boolean>(false);
-//   const [newRules, setNewRules] = useState(rules);
-
-//   const remove = (rule) => {
-//     setNewRules(newRules.filter(item => item !== rule));
-//   }
-
-//   const add = (rule) => {
-//     rule && setNewRules([...newRules, rule]);
-//   }
-
-  // const onFormSubmit = async () => {
-  //   console.log("onFormSubmit newRules", newRules);
-  //   setSubmitting(true);
-  //   setSubmitting(false);
-  //   setTimeout(() => toggle(), 2000); 
-  // };
-
-//   return (
-//     <div className="modal is-active">
-//       <div className="modal-background" onClick={toggle} />
-//       <div className="modal-card is-small has-background-circles">
-//       <Form
-//         onSubmit={onFormSubmit}
-//         render={({ handleSubmit, values }) => (
-//           <form onSubmit={handleSubmit}>
-//             <section className="modal-card-body">
-//               <h3 className="subtitle">Edit Rules</h3>
-
-//               {newRules.map((rule) => (
-//                 <div key={rule} className="field level">
-//                   <Field
-//                     name={rule}
-//                     component="input"
-//                     type="text"
-//                     className="input"
-//                     placeholder={rule}
-//                     value={rule}
-//                     disabled
-//                   />
-//                   <span className="icon has-text-danger is-clickable ml-3" onClick={() => remove(rule)}>
-//                     <span className="material-icons">remove_circle</span>
-//                   </span>
-//                 </div>
-//               ))}
-
-//               <div className="field level">
-//                 <Field
-//                   name="newRule"
-//                   component="input"
-//                   type="text"
-//                   className="input"
-//                   placeholder="Add New Restriction"
-//                 />
-                
-//                 <span className="icon has-text-success ml-3" onClick={() => [add(values.newRule), values.newRule = null]}>
-//                   {values.newRule && <span className="material-icons is-clickable">add_circle</span>}
-//                 </span>
-                
-//               </div>
-
-//             </section>
-//             <footer className="modal-card-foot pt-0 is-justify-content-flex-end">
-//               <button className="button is-dark mr-4" onClick={toggle}>
-//                 Cancel
-//               </button>
-//               {submitting ? 
-//                 <button className="button is-primary" disabled>
-//                   <span className="icon mr-2 loader is-loading"></span>
-//                   <span>SAVING...</span>
-//                 </button> 
-//                 :
-//                 <button className="button is-primary">
-//                   SAVE
-//                 </button>
-//               }
-//             </footer>
-//           </form>
-//         )}
-//       />
-//       </div>
-//     </div>
-//   )
-// }
-
-
 const EditModeratorSettingsModal = ({ toggle }) => {
-  const [ submitting, setSubmitting ] = useState<boolean>(false);
+  // const [ submitting, setSubmitting ] = useState<boolean>(false);
 
   const onFormSubmit = async (values: any) => {
-    console.log("onFormSubmit values", values);
-    setSubmitting(true);
-    setSubmitting(false);
-    setTimeout(() => toggle(), 2000); 
+    console.log("parent !!! onFormSubmit values", values);
+    return "EditModeratorSettings Success!";
   };
 
   return (
-    <div className="modal is-active">
-      <div className="modal-background" onClick={toggle} />
-      <div className="modal-card is-small has-background-circles">
-      <Form
-        onSubmit={onFormSubmit}
-        render={({ handleSubmit }) => (
-          <form onSubmit={handleSubmit}>
-            <section className="modal-card-body">
-              <h3 className="subtitle">Edit Moderator Settings</h3>
-
-              <div className="field level">
-                <p>Number of votes required to finalize decision:</p>
-                <Field
-                  name="minVotes"
-                  component="input"
-                  type="number"
-                  className="input has-text-centered ml-3"
-                  initialValue={5}
-                  style={{ width: 70 }}
-                />
-              </div>
-
-              <div className="field level">
-                <p>Required number of staked MOD tokens to vote:</p>
-                <Field
-                  name="minTokens"
-                  component="input"
-                  type="number"
-                  className="input has-text-centered ml-3"
-                  initialValue={1000}
-                  style={{ width: 70 }}
-                />
-              </div>
-
-              <div className="field level">
-                <p>Example cost per each succesful vote (1% of stake):</p>
-                <Field
-                  name="cost"
-                  component="input"
-                  type="number"
-                  className="input has-text-centered ml-3"
-                  initialValue={1}
-                  style={{ width: 70 }}
-                />
-              </div>
-
-              <div className="field level">
-                <p>Number of your platform tokens to be distributed to the majority voters (optional):</p>
-                <Field
-                  name="tokens"
-                  component="input"
-                  type="number"
-                  className="input has-text-centered ml-3"
-                  initialValue={5}
-                  style={{ width: 70 }}
-                />
-              </div>
-
-            </section>
-            <footer className="modal-card-foot pt-0 is-justify-content-flex-end">
-              <button className="button is-dark mr-4" onClick={toggle}>
-                Cancel
-              </button>
-              {submitting ? 
-                <button className="button is-primary" disabled>
-                  <span className="icon mr-2 loader is-loading"></span>
-                  <span>SAVING...</span>
-                </button> 
-                :
-                <button className="button is-primary">
-                  SAVE
-                </button>
-              }
-            </footer>
-          </form>
-        )}
-      />
+    <FormModal
+      title="Edit Moderator Settings"
+      toggle={toggle}
+      handleSubmit={onFormSubmit}
+    >
+      <div className="field level">
+        <p>Number of votes required to finalize decision:</p>
+        <Field
+          name="minVotes"
+          component="input"
+          type="number"
+          className="input has-text-centered ml-3"
+          initialValue={5}
+          style={{ width: 70 }}
+        />
       </div>
-    </div>
+
+      <div className="field level">
+        <p>Required number of staked MOD tokens to vote:</p>
+        <Field
+          name="minTokens"
+          component="input"
+          type="number"
+          className="input has-text-centered ml-3"
+          initialValue={1000}
+          style={{ width: 70 }}
+        />
+      </div>
+
+      <div className="field level">
+        <p>Example cost per each succesful vote (1% of stake):</p>
+        <Field
+          name="cost"
+          component="input"
+          type="number"
+          className="input has-text-centered ml-3"
+          initialValue={1}
+          style={{ width: 70 }}
+        />
+      </div>
+
+      <div className="field level">
+        <p>Number of your platform tokens to be distributed to the majority voters (optional):</p>
+        <Field
+          name="tokens"
+          component="input"
+          type="number"
+          className="input has-text-centered ml-3"
+          initialValue={5}
+          style={{ width: 70 }}
+        />
+      </div>
+    </FormModal>
   )
 }
 
@@ -447,7 +368,7 @@ export default function Admin() {
     <TrustedIdentities />
 
     {showEditApp &&
-      <EditApp toggle={toggleEditApp} />
+      <EditAppModal toggle={toggleEditApp} />
     }
 
     {showEditRules &&

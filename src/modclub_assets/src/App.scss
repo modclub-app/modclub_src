@@ -64,8 +64,9 @@ a {
 }
 
 hr {
-  background: $silver;
+  background: $dark;
   height: 1px;
+  margin: 2.5rem 0;
 }
 
 .has-text-secondary {
@@ -79,11 +80,13 @@ hr {
 }
 
 .buttons {
+  .button {
+    margin-bottom: 0;
+    margin-right: 1rem !important;
+    margin-left: 0 !important;
+  }
   &:not(:last-child), &:last-child {
     margin-bottom: 0;
-  }
-  .button:not(:last-child):not(.is-fullwidth) {
-    margin-right: 1rem;
   }
 }
 
