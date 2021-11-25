@@ -57,7 +57,7 @@ export default function Userstats({ detailed = false }) {
 
   return (
     <>
-    <Columns className="stat-boxes pt-5">
+    <Columns className="stat-boxes">
       <Columns.Column>
         <StatBox
           image={walletImg}

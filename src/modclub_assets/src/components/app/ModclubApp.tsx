@@ -51,7 +51,7 @@ export default function ModclubApp() {
       <Columns className="container">
         <Sidebar />
 
-        <Columns.Column className="ml-5">
+        <Columns.Column className="ml-6 mt-6">
           <Switch>
             <Route exact path="/app">
               Dashboard

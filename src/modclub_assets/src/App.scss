@@ -82,6 +82,9 @@ hr {
   &:not(:last-child), &:last-child {
     margin-bottom: 0;
   }
+  .button:not(:last-child):not(.is-fullwidth) {
+    margin-right: 1rem;
+  }
 }
 
 .button {
