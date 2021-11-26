@@ -197,43 +197,43 @@ module State {
       state.airdropUsers.put(id, airdropUser);
     };
     Debug.print("LALALALAL");
-    // state.contentApproved.setRel(
-    //   Rel.fromShare<Principal, Types.ContentId>(
-    //   stateShared.contentApproved,
-    //   (Principal.hash, Text.hash),
-    //   (Principal.equal, Text.equal))
-    // );
-    // Debug.print("FAFAFAFA");
-    // state.contentRejected.setRel(Rel.fromShare<Principal, Types.ContentId>(
-    //   stateShared.contentRejected,
-    //   (Principal.hash, Text.hash),
-    //   (Principal.equal, Text.equal))
-    // );
-    // state.contentNew.setRel(Rel.fromShare<Principal, Types.ContentId>(
-    //   stateShared.contentNew,
-    //   (Principal.hash, Text.hash),
-    //   (Principal.equal, Text.equal))
-    // );
-    // state.content2votes.setRel( Rel.fromShare<Types.ContentId, Types.VoteId>(
-    //   stateShared.content2votes,
-    //   hash,
-    //   equal
-    // ));
-    // state.mods2votes.setRel(Rel.fromShare<Types.UserId, Types.VoteId>(
-    //   stateShared.mods2votes,
-    //   (Principal.hash, Text.hash),
-    //   (Principal.equal, Text.equal)
-    // ));
-    // state.provider2content.setRel(Rel.fromShare<Principal, Types.ContentId>(
-    //   stateShared.provider2content,
-    //   (Principal.hash, Text.hash),
-    //   (Principal.equal, Text.equal)
-    // ));
-    // state.provider2rules.setRel( Rel.fromShare<Principal, Types.ContentId>(
-    //   stateShared.provider2rules,
-    //   (Principal.hash, Text.hash),
-    //   (Principal.equal, Text.equal)
-    // ));
+    state.contentApproved.setRel(
+      Rel.fromShare<Principal, Types.ContentId>(
+      stateShared.contentApproved,
+      (Principal.hash, Text.hash),
+      (Principal.equal, Text.equal))
+    );
+    Debug.print("FAFAFAFA");
+    state.contentRejected.setRel(Rel.fromShare<Principal, Types.ContentId>(
+      stateShared.contentRejected,
+      (Principal.hash, Text.hash),
+      (Principal.equal, Text.equal))
+    );
+    state.contentNew.setRel(Rel.fromShare<Principal, Types.ContentId>(
+      stateShared.contentNew,
+      (Principal.hash, Text.hash),
+      (Principal.equal, Text.equal))
+    );
+    state.content2votes.setRel( Rel.fromShare<Types.ContentId, Types.VoteId>(
+      stateShared.content2votes,
+      hash,
+      equal
+    ));
+    state.mods2votes.setRel(Rel.fromShare<Types.UserId, Types.VoteId>(
+      stateShared.mods2votes,
+      (Principal.hash, Text.hash),
+      (Principal.equal, Text.equal)
+    ));
+    state.provider2content.setRel(Rel.fromShare<Principal, Types.ContentId>(
+      stateShared.provider2content,
+      (Principal.hash, Text.hash),
+      (Principal.equal, Text.equal)
+    ));
+    state.provider2rules.setRel( Rel.fromShare<Principal, Types.ContentId>(
+      stateShared.provider2rules,
+      (Principal.hash, Text.hash),
+      (Principal.equal, Text.equal)
+    ));
     return state;
   };
 

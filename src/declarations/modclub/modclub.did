@@ -65,6 +65,7 @@ type ModClub =
    getAllProfiles: () -> (vec Profile) query;
    getContent: (text) -> (opt ContentPlus) query;
    getImage: (text) -> (opt vec nat8) query;
+   getModclubHoldings: () -> (Holdings) query;
    getProfile: () -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;
