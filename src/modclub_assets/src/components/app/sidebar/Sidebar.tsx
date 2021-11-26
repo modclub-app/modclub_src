@@ -4,10 +4,22 @@ import LogoImg from '../../../../assets/logo.png';
 import { SidebarUser } from "./SidebarUser";
 import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
+import { useHistory } from 'react-router-dom';
+import { useEffect } from "react";
 
 export default function Sidebar() {
-  const { isAuthReady, user, isAuthenticated } = useAuth();
-
+  const history = useHistory();
+  const { isAuthReady, user, isAuthenticated, requiresSignUp } = useAuth();
+  useEffect(
+    () => {
+      if (!isAuthReady) return;
+      if (!isAuthenticated) return;
+      if(!user && requiresSignUp) {
+        history.push('/signup');
+      }
+    }
+    , [isAuthReady, isAuthenticated, user]
+  )
   return (
     <div className="column is-one-fifth has-background-black">
       <aside className="p-3">

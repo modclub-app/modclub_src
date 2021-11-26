@@ -392,6 +392,12 @@ shared ({caller = initializer}) actor class ModClub () {
   }; 
 
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Image) : async Profile {
+       // Anonymous principal 
+      if(Principal.toText(caller) == "2vxsx-fae") {
+          Debug.print("Anonymous principal");
+          throw Error.reject("Unauthorized, user does not have an identity");
+      };
+
       Debug.print("Registering moderator");
       var _userName = Text.trim(userName, #text " ");
       var _email = Text.trim(email, #text " ");
