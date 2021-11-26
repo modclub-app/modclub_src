@@ -1,179 +1,97 @@
 // import { Link } from "react-router-dom";
-import { Form, Field } from "react-final-form";
 import { useEffect, useState } from "react";
-// import EditTrustedIdentity from "../modals/EditTrustedIdentity";
-// import RemoveTrustedIdentity from "../modals/RemoveTrustedIdentity";
+import { Form, Field } from "react-final-form";
+import FormModal from "../modals/FormModal";
 
 const AddModal = ({ toggle }) => {
-  const [ submitting, setSubmitting ] = useState<boolean>(false);
-
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
     const { amount } = values;
-    setSubmitting(true);
-    setSubmitting(false);
-    setTimeout(() => toggle(), 2000); 
+    return "Add Trust Identity form submitted";
   };
 
   return (
-    <div className="modal is-active">
-      <div className="modal-background" onClick={toggle} />
-      <div className="modal-card is-small has-background-circles">
-      <Form
-        onSubmit={onFormSubmit}
-        render={({ handleSubmit }) => (
-          <form onSubmit={handleSubmit}>
-            <section className="modal-card-body">
-              <h3 className="subtitle">Add Trusted Identify</h3>
-
-              <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
-                <div className="field">
-                  <Field
-                    name="id"
-                    component="input"
-                    type="text"
-                    className="input"
-                    placeholder="Principal ID"
-                  />
-                </div>
-                <div className="field">
-                  <Field
-                    name="userName"
-                    component="input"
-                    type="text"
-                    className="input"
-                    placeholder="User Name"
-                  />
-                </div>
-              </div>
-            </section>
-            <footer className="modal-card-foot pt-0 is-justify-content-flex-end">
-              <button className="button is-dark mr-4" onClick={toggle}>
-                Cancel
-              </button>
-              {submitting ? 
-                <button className="button is-primary" disabled>
-                  <span className="icon mr-2 loader is-loading"></span>
-                  <span>SUBMITTING...</span>
-                </button> 
-                :
-                <button className="button is-primary">
-                  SUBMIT
-                </button>
-              }
-            </footer>
-          </form>
-        )}
-      />
+    <FormModal
+      title="Add Trusted Identify"
+      toggle={toggle}
+      handleSubmit={onFormSubmit}
+    >
+      <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
+        <div className="field">
+          <Field
+            name="id"
+            component="input"
+            type="text"
+            className="input"
+            placeholder="Principal ID"
+          />
+        </div>
+        <div className="field">
+          <Field
+            name="userName"
+            component="input"
+            type="text"
+            className="input"
+            placeholder="User Name"
+          />
+        </div>
       </div>
-    </div>
+    </FormModal>
   )
 }
 
 const EditModal = ({ toggle }) => {
-  const [ submitting, setSubmitting ] = useState<boolean>(false);
-
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
     const { amount } = values;
-    setSubmitting(true);
-    setSubmitting(false);
-    setTimeout(() => toggle(), 2000); 
+    return "Edit Trusted Identity form submitted";
   };
 
   return (
-    <div className="modal is-active">
-      <div className="modal-background" onClick={toggle} />
-      <div className="modal-card is-small has-background-circles">
-      <Form
-        onSubmit={onFormSubmit}
-        render={({ handleSubmit }) => (
-          <form onSubmit={handleSubmit}>
-            <section className="modal-card-body">
-              <h3 className="subtitle">Edit Trusted Identify</h3>
-
-              <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
-                <div className="field">
-                  <Field
-                    name="id"
-                    component="input"
-                    type="text"
-                    className="input"
-                    placeholder="Principal ID"
-                  />
-                </div>
-                <div className="field">
-                  <Field
-                    name="userName"
-                    component="input"
-                    type="text"
-                    className="input"
-                    placeholder="User Name"
-                  />
-                </div>
-              </div>
-            </section>
-            <footer className="modal-card-foot pt-0 is-justify-content-flex-end">
-              <button className="button is-dark mr-4" onClick={toggle}>
-                Cancel
-              </button>
-              {submitting ? 
-                <button className="button is-primary" disabled>
-                  <span className="icon mr-2 loader is-loading"></span>
-                  <span>SUBMITTING...</span>
-                </button> 
-                :
-                <button className="button is-primary">
-                  SUBMIT
-                </button>
-              }
-            </footer>
-          </form>
-        )}
-      />
+    <FormModal
+      title="Edit Trusted Identify"
+      toggle={toggle}
+      handleSubmit={onFormSubmit}
+    >
+      <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
+        <div className="field">
+          <Field
+            name="id"
+            component="input"
+            type="text"
+            className="input"
+            placeholder="Principal ID"
+          />
+        </div>
+        <div className="field">
+          <Field
+            name="userName"
+            component="input"
+            type="text"
+            className="input"
+            placeholder="User Name"
+          />
+        </div>
       </div>
-    </div>
+    </FormModal>
   )
 }
 
 const RemoveModal = ({ toggle }) => {
-  const [ submitting, setSubmitting ] = useState<boolean>(false);
-
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
     const { amount } = values;
-    setSubmitting(true);
-    setSubmitting(false);
-    setTimeout(() => toggle(), 2000); 
+    return "Remove Trusted Identity form submitted";
   };
 
   return (
-    <div className="modal is-active">
-      <div className="modal-background" onClick={toggle} />
-      <div className="modal-card is-small has-background-circles">
-        <section className="modal-card-body">
-          <h3 className="subtitle">Remove Trusted Identify</h3>
-
-          <p>Are you really sure????</p>
-          
-        </section>
-        <footer className="modal-card-foot pt-0 is-justify-content-flex-end">
-          <button className="button is-dark mr-4" onClick={toggle}>
-            Cancel
-          </button>
-          {submitting ? 
-            <button className="button is-primary" disabled>
-              <span className="icon mr-2 loader is-loading"></span>
-              <span>SUBMITTING...</span>
-            </button> 
-            :
-            <button className="button is-primary">
-              SUBMIT
-            </button>
-          }
-        </footer>
-      </div>
-    </div>
+    <FormModal
+      title="Remove Trusted Identify"
+      toggle={toggle}
+      handleSubmit={onFormSubmit}
+    >
+      <p>Are you really sure?</p>
+    </FormModal>
   )
 }
 

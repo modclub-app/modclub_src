@@ -1,10 +1,24 @@
 import { Field } from "react-final-form";
+import { Level } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { useState } from "react";
 
-export default function Withdraw({ toggle, tokenHoldings }) {
-  const [ submitting, setSubmitting ] = useState<boolean>(false);
-  
+const UpdateTable = ({ wallet, amount = 0 }) => {
+  return (
+    <>
+      <Level className="has-text-silver px-5">
+        <span>Available:</span>
+        <span className="has-text-weight-bold">{wallet}</span>
+      </Level>
+      <Level className="has-text-silver px-5">
+        <span>Available after:</span>
+        <span className="has-text-weight-bold">{wallet - amount}</span>
+      </Level>
+    </>
+  )
+}
+
+export default function Withdraw({ toggle, tokenHoldings }) {  
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
     const { amount } = values;
@@ -16,6 +30,7 @@ export default function Withdraw({ toggle, tokenHoldings }) {
       title="Withdraw"
       toggle={toggle}
       handleSubmit={onFormSubmit}
+      updateTable={<UpdateTable wallet={tokenHoldings.wallet} />}
     >
       <div className="field">
         <div className="control">
@@ -40,15 +55,6 @@ export default function Withdraw({ toggle, tokenHoldings }) {
           />
           <span className="icon is-right has-text-white mr-4">AMT</span>
         </div>
-      </div>
-      
-      <div className="field level px-5 pt-5">
-        <span className="has-text-silver">Available:</span>
-        <label className="label">{tokenHoldings.wallet}</label>
-      </div>
-      <div className="field level px-5">
-        <span className="has-text-silver">Available after:</span>
-        {/* <label className="label">{tokenHoldings.wallet - (values.amount ? values.amount : 0)}</label> */}
       </div>
     </FormModal>
   );

@@ -1,29 +1,7 @@
 import React from "react";
 import { useState } from "react";
-import { Modal, Heading, Level, Button, Notification } from "react-bulma-components";
+import { Modal, Heading, Button, Notification } from "react-bulma-components";
 import { Form } from "react-final-form";
-
-
-const UpdateTable = ({ items, amount = null }) => {
-  if (!amount) return
-
-
-  console.log('the items here', items);
-  console.log('the amount here', amount);
-
-  const temp = items.proxy()
-  console.log("temp", temp);
-
-  return (<>lets see...</>)
-  // return (
-  //   items.map(item => 
-  //     <Level key={item.title} className="has-text-silver px-5">
-  //       <span>{item.title} !!!</span>
-  //       <span className="has-text-weight-bold">{item.value}</span>
-  //     </Level>
-  //   )
-  // )
-}
 
 // export default function FormModal({
 //   toggle,
@@ -46,19 +24,15 @@ export default function FormModal({
   title,
   children,
   handleSubmit,
-  footerContent = null,
   updateTable = null,
-  tableItems = null
+  footerContent = null
 }) {
   const [ submitting, setSubmitting ] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
-
-  console.log('tableItems', tableItems)
   
   const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
     setSubmitting(true);
-
     try {
       const result = await handleSubmit(values)
       console.log("child result", result);
@@ -86,13 +60,9 @@ export default function FormModal({
 
                 {children}
 
-                {/* {updateTable &&
+                {updateTable &&
                   React.cloneElement(updateTable, { amount: values.amount })
-                } */}
-
-                {tableItems &&
-                  <UpdateTable items={tableItems} amount={values.amount} />
-                }
+                }            
               </Modal.Card.Body>
               <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
                 {/* {footerContent &&

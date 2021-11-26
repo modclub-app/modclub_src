@@ -1,6 +1,30 @@
 import { Field } from "react-final-form";
+import { Level } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { stakeTokens } from '../../../utils/api';
+
+const UpdateTable = ({ wallet, stake, amount = 0 }) => {
+  return (
+    <>
+      <Level className="has-text-silver px-5">
+        <span>Available:</span>
+        <span className="has-text-weight-bold">{wallet}</span>
+      </Level>
+      <Level className="has-text-silver px-5">
+        <span>Available after:</span>
+        <span className="has-text-weight-bold">{wallet - amount}</span>
+      </Level>
+      <Level className="has-text-silver px-5">
+        <span>Current Stake:</span>
+        <span className="has-text-weight-bold">{stake}</span>
+      </Level>
+      <Level className="has-text-silver px-5">
+        <span>After Stake:</span>
+        <span className="has-text-weight-bold">{stake + Number(amount)}</span>
+      </Level>
+    </>
+  )
+}
 
 export default function Stake({ toggle, tokenHoldings }) {  
   const onFormSubmit = async (values: any) => {
@@ -13,6 +37,7 @@ export default function Stake({ toggle, tokenHoldings }) {
       title="Stake"
       toggle={toggle}
       handleSubmit={onFormSubmit}
+      updateTable={<UpdateTable wallet={tokenHoldings.wallet} stake={tokenHoldings.stake} />}
     >
       <div className="field">
         <div className="control has-icons-right">
@@ -26,23 +51,6 @@ export default function Stake({ toggle, tokenHoldings }) {
           />
           <span className="icon is-right has-text-white mr-4">AMT</span>
         </div>
-      </div>
-
-      <div className="field level px-5 pt-5">
-        <span className="has-text-silver">Available:</span>
-        <label className="label">{tokenHoldings.wallet}</label>
-      </div>
-      <div className="field level px-5">
-        <span className="has-text-silver">Available after:</span>
-        {/* <label className="label">{tokenHoldings.wallet - (values.amount ? values.amount : 0)}</label> */}
-      </div>
-      <div className="field level px-5">
-        <span className="has-text-silver">Current Stake:</span>
-        <label className="label">{tokenHoldings.stake}</label>
-      </div>
-      <div className="field level px-5">
-        <span className="has-text-silver">After Stake:</span>
-        {/* <label className="label">{tokenHoldings.stake + Number((values.amount ? values.amount : 0))}</label> */}
       </div>
     </FormModal>
   );

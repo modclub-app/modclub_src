@@ -5,9 +5,7 @@ import { useParams } from "react-router";
 import { getContent, getProvider } from "../../../utils/api";
 import { Columns, Card, Progress, Level, Heading, Icon } from "react-bulma-components";
 import Userstats from "../userstats/Userstats";
-import Reject from "../modals/Reject";
-import Approve from "../modals/Approve";
-
+import ApproveReject from "../modals/ApproveReject"
 
 const GradientBox = ({ children, title, showToken = true }) => {
   return (
@@ -188,8 +186,7 @@ export default function Task() {
 
             </Card.Content>
             <Card.Footer className="pt-0" style={{ border: 0 }}>
-              <Reject platform={content.providerName} id={content.id} providerId={content.providerId} />
-              <Approve platform={content.providerName} id={content.id} providerId={content.providerId} />
+              <ApproveReject platform={content.providerName} id={content.id} providerId={content.providerId} />
             </Card.Footer>
           </Card>
 
