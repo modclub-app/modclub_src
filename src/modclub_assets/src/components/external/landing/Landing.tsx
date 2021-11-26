@@ -155,7 +155,7 @@ export default function Landing() {
     </section>
 
     <section className="section">
-      <div className="container" style={{ maxWidth: 960 }}>
+      <div id="developers" className="container" style={{ maxWidth: 960 }}>
 
         <h3 className="title is-size-1 has-text-centered mb-6">Benefits for Developers</h3>
 
@@ -209,7 +209,7 @@ export default function Landing() {
     </section>
 
     <section className="section Tokenomics">
-      <div className="container" style={{ maxWidth: 960 }}>
+      <div id="tokenomics" className="container" style={{ maxWidth: 960 }}>
 
         <div className="columns">
           <div className="column">
@@ -274,8 +274,8 @@ export default function Landing() {
       </div>
     </section>
 
-    <section className="section">
-      <div className="container" style={{ maxWidth: 960 }}>
+      <section className="section">
+      <div id="roadmap" className="container" style={{ maxWidth: 960 }}>
 
         <h3 className="title is-size-1 has-text-centered">Roadmap</h3>
 

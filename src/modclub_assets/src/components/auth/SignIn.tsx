@@ -1,8 +1,6 @@
 import React, { PropsWithChildren, useEffect } from "react";
-import { useHistory } from "react-router-dom";
 import { useAuth } from "../../utils/auth";
 import { Button, Icon } from "react-bulma-components";
-
 import dfinitylogo from "../../../assets/dfinity.svg"
 
 /*
@@ -10,10 +8,7 @@ import dfinitylogo from "../../../assets/dfinity.svg"
  * Internet Identity Service.
  */
 export function SignIn(props: PropsWithChildren<{}>) {
-  console.log("SignIn component!");
-
-  const { logIn, isAuthenticated, user } = useAuth();
-  const history = useHistory();
+  const {logIn, isAuthenticated, user} = useAuth();
   // If the auth provider has a user (which could be from local storage) and
   // the user is properly authenticated with the identity provider service then
   // send the user to their feed, as they are correctly signed in.
@@ -27,13 +22,6 @@ export function SignIn(props: PropsWithChildren<{}>) {
 
     if (!isAuthenticated) {
       await logIn();
-    }
-
-    if (isAuthenticated && !user) {
-      // If the user is authenticated but the user is not in the database,
-      history.push("/signup");
-    } else {
-      history.push("/app");
     }
   };
 

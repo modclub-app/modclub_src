@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
-import { Card, Heading } from "react-bulma-components";
+import { Card, Heading, Button, Progress } from "react-bulma-components";
 import Userstats from "../userstats/Userstats";
 import Snippet from "../../common/Snippet";
 
@@ -11,7 +11,6 @@ export default function Activity() {
   const { user } = useAuth();
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
-  
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -29,17 +28,24 @@ export default function Activity() {
 
       {activity && activity.length ?
       <>
-        <div className="card mb-5">
-          <div className="card-content level">
-            <h1 className="title mb-0">Recent Activity</h1>
-            <div>
-              <button className="button is-primary">Completed</button>
-              <button className="button is-ghost has-text-white ml-3">In Progress</button>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-content">
+        <Card className="mb-5">
+          <Card.Content className="level">
+            <Heading className="mb-0">
+              Recent Activity
+            </Heading>
+            <Button.Group>
+              <Button color="primary">
+                Completed
+              </Button>
+              <Button color="ghost" className="has-text-white">
+                In Progress
+              </Button>
+            </Button.Group>
+          </Card.Content>
+        </Card>
+        
+        <Card>
+          <Card.Content>
             <table className="table is-striped">
               <thead>
                 <tr>
@@ -68,8 +74,10 @@ export default function Activity() {
                       <Snippet string={item.title[0]} truncate={20} />
                     </td>
                     <td className="is-relative">
-                      <progress className="progress mb-0" value="15" max="100"></progress>
-                      <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
+                      <Progress value={15} max={100} className="mb-0" />
+                      <span className="progress-label">
+                        {`${item.voteCount}/${item.minVotes} votes`}
+                      </span>
                     </td>
                     <td>{formatDate(item.createdAt)}</td>
                     <td>{Number(item.reward)} MOD</td>
@@ -78,9 +86,8 @@ export default function Activity() {
                 ))}
               </tbody>
             </table>
-
-          </div>
-        </div>
+          </Card.Content>
+        </Card>
       </> :
         <Card>
           <Card.Content>

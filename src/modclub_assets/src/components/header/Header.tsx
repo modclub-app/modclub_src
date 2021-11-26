@@ -1,5 +1,6 @@
 import LogoImg from '../../../assets/logo.png';
 import Hamburger from "./Hamburger";
+import { HashLink } from "react-router-hash-link";
 
 export default function Header() {
   return (
@@ -17,15 +18,15 @@ export default function Header() {
 
         <div id="navbarBasicExample" className="navbar-menu">
           <div className="navbar-end">
-            <a href="#developers" className="navbar-item">
+            <HashLink className="navbar-item" to="/#developers">
               Developers
-            </a>
-            <a href="#tokenomics" className="navbar-item">
+            </HashLink>
+            <HashLink className="navbar-item" to="/#tokenomics">
               Tokenomics
-            </a>
-            <a href="#roadmap" className="navbar-item">
+            </HashLink>
+            <HashLink className="navbar-item" to="/#roadmap">
               Roadmap
-            </a>
+            </HashLink>
           </div>
         </div>
       </div>

@@ -1,4 +1,9 @@
 export const idlFactory = ({ IDL }) => {
+  const Timestamp = IDL.Int;
+  const AirdropUser = IDL.Record({
+    'id' : IDL.Principal,
+    'createdAt' : Timestamp,
+  });
   const ContentStatus = IDL.Variant({
     'new' : IDL.Null,
     'approved' : IDL.Null,
@@ -10,7 +15,6 @@ export const idlFactory = ({ IDL }) => {
     'imageUrl' : IDL.Null,
     'multiText' : IDL.Null,
   });
-  const Timestamp = IDL.Int;
   const VoteId = IDL.Text;
   const Decision__1 = IDL.Variant({
     'approved' : IDL.Null,
@@ -118,9 +122,11 @@ export const idlFactory = ({ IDL }) => {
   });
   const ModClub = IDL.Service({
     'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
+    'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
+    'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
     'getAllContent' : IDL.Func(
         [ContentStatus],
         [IDL.Vec(ContentPlus)],
@@ -134,6 +140,7 @@ export const idlFactory = ({ IDL }) => {
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
+    'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],
         [Profile],

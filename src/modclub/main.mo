@@ -45,6 +45,7 @@ shared ({caller = initializer}) actor class ModClub () {
   type Image = Types.Image;
   type ProviderPlus = Types.ProviderPlus; 
   type Activity = Types.Activity;
+  type AirdropUser = Types.AirdropUser;
 
   // Global Objects  
   var state = State.empty();
@@ -56,7 +57,56 @@ shared ({caller = initializer}) actor class ModClub () {
     if( p != initializer) throw Error.reject( "unauthorized" );
   };
 
+  // Airdrop Methods
+  public shared({ caller }) func airdropRegister() : async AirdropUser {
+    Debug.print("AirdropRegister");
+    Debug.print(Principal.toText(caller));  
+    switch(state.airdropUsers.get(caller)) {
+      case(?result) {
+        throw Error.reject("User already registered for airdrop");
+      };
+      case(null) {
+        let user: AirdropUser = {
+          id = caller;
+          createdAt = timeNow_();
+        };
+        state.airdropUsers.put(caller, user);
+        return user;
+      };
+    };
+  };
 
+  public shared({ caller }) func isAirdropRegistered() : async AirdropUser {
+    Debug.print("isAirdropRegistered");
+    Debug.print(Principal.toText(caller));  
+    switch(state.airdropUsers.get(caller)) {
+      case(?result) {
+        return result;
+      };
+      case(null) {
+        throw Error.reject("User not registered");
+      };
+    };
+  };
+
+  public shared({ caller }) func getAirdropUsers() : async [AirdropUser] {
+    await onlyOwner(caller);
+    let buf = Buffer.Buffer<AirdropUser>(0);      
+      for ( (id, u) in state.airdropUsers.entries()) {        
+        buf.add(u);                        
+      }; 
+    return Array.sort(buf.toArray(), compareUsers);
+  };
+
+   private func compareUsers(a : AirdropUser, b: AirdropUser) : Order.Order {
+      if(a.createdAt > b.createdAt) {
+        #greater;
+      } else if ( a.createdAt < b.createdAt) {
+        #less;
+      } else {
+        #equal;
+      }
+    }; 
 
   // Provider functions
   // todo: Require cylces on provider registration, add provider imageURl, description 
@@ -97,6 +147,8 @@ shared ({caller = initializer}) actor class ModClub () {
        };
     };
   };
+
+
 
   public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) {
     var provider = state.providers.get(caller);
@@ -435,14 +487,14 @@ shared ({caller = initializer}) actor class ModClub () {
     let voteId = "vote-" # Principal.toText(caller) # contentId;
     switch(state.votes.get(voteId)){
       case(?v){
-        return "User already voted";
+        throw Error.reject("User already voted");
       };
       case(_)();
     };
 
     switch(state.content.get(contentId)){
       case(?content) {
-        if(content.status != #new) return "Content has already been reviewed";
+        if(content.status != #new) throw Error.reject("Content has already been reviewed");
         
         // Check the user has enough tokens staked
         switch(state.providers.get(content.providerId)){
@@ -501,7 +553,7 @@ shared ({caller = initializer}) actor class ModClub () {
           await evaluateVotes(content, voteApproved, voteRejected);
           return "Vote successful";
         };
-        case(_)( return "Content does not exist");
+        case(_)( throw Error.reject("Content does not exist"));
         }; 
         return "";         
       };

@@ -196,6 +196,11 @@ module {
     rewardRelease: Timestamp;
   };
 
+  public type AirdropUser = {
+    id: Principal;
+    createdAt: Timestamp;
+  };
+
    public type Callback = shared () -> async ();
     public func notify(callback : ?Callback) : async () {
         switch(callback) {

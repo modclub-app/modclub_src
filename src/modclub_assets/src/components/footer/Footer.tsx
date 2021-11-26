@@ -1,4 +1,5 @@
 import modclubImg from "../../../assets/logo.png";
+import { HashLink } from "react-router-hash-link";
 
 export default function Footer() {
   return (
@@ -11,15 +12,15 @@ export default function Footer() {
           </div>
           <div className="column is-one-fifth">
             <h4 className="subtitle has-text-white">Menu</h4>
-            <a href="#developers" className="is-block has-text-white">
+            <HashLink to="/#developers" className="is-block has-text-white">
               Developers
-            </a>
-            <a href="#tokenomics" className="is-block has-text-white">
+            </HashLink>
+            <HashLink to="/#tokenomics" className="is-block has-text-white">
               Tokenomics
-            </a>
-            <a href="#roadmap" className="is-block has-text-white">
+            </HashLink>
+            <HashLink to="/#roadmap" className="is-block has-text-white">
               Roadmap
-            </a>
+            </HashLink>
           </div>
           <div className="column is-one-fifth">
             <h4 className="subtitle has-text-white">Company</h4>

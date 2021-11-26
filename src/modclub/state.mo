@@ -38,6 +38,9 @@ module State {
     /// all profiles.
     profiles : Map<Types.UserId, Profile>;
 
+    /// Airdrop Registrants.
+    airdropUsers : Map<Principal, Types.AirdropUser>;
+
     /// usernames to userIds.
     usernames : Map<Text, Types.UserId>;
 
@@ -76,6 +79,7 @@ module State {
   public type StateShared = {    
     GLOBAL_ID_MAP : [(Text, Nat)];    
     providers : [(Principal, Provider)];        
+    airdropUsers : [(Principal, Types.AirdropUser)];   
     profiles : [(Types.UserId, Profile)];
     content : [(Types.ContentId, Types.Content)];
     rules: [(Types.RuleId, Types.Rule)];
@@ -100,6 +104,7 @@ module State {
       providerSubs =  HashMap.HashMap<Principal, Types.SubscribeMessage>(1, Principal.equal, Principal.hash);
       profiles = HashMap.HashMap<Types.UserId, Profile>(1, Principal.equal, Principal.hash);
       usernames = HashMap.HashMap<Text, Types.UserId>(1, Text.equal, Text.hash);
+      airdropUsers =  HashMap.HashMap<Principal, Types.AirdropUser>(1, Principal.equal, Principal.hash);
       content = HashMap.HashMap<Types.ContentId, Types.Content>(1, Text.equal, Text.hash);
       votes = HashMap.HashMap<Types.VoteId, Types.Vote>(1, Text.equal, Text.hash);
       rules = HashMap.HashMap<Types.RuleId, Types.Rule>(1, Text.equal, Text.hash);
@@ -126,6 +131,7 @@ module State {
       votes = [];
       textContent = [];
       imageContent = [];
+      airdropUsers = [];
       contentApproved = Rel.emptyShared<Principal, Text>();
       contentRejected = Rel.emptyShared<Principal, Text>();
       contentNew = Rel.emptyShared<Principal, Text>();
@@ -147,6 +153,7 @@ module State {
       votes = Iter.toArray(state.votes.entries());
       textContent = Iter.toArray(state.textContent.entries());
       imageContent = Iter.toArray(state.imageContent.entries());
+      airdropUsers = Iter.toArray(state.airdropUsers.entries());
       contentApproved = Rel.share<Principal, Types.ContentId>(state.contentApproved.getRel());
       contentRejected = Rel.share<Principal, Types.ContentId>(state.contentRejected.getRel());
       contentNew = Rel.share<Principal, Types.ContentId>(state.contentNew.getRel());
@@ -186,7 +193,9 @@ module State {
     for( (id, image) in stateShared.imageContent.vals()) {
       state.imageContent.put(id, image);
     };
-
+    for( (id, airdropUser) in stateShared.airdropUsers.vals()) {
+      state.airdropUsers.put(id, airdropUser);
+    };
     Debug.print("LALALALAL");
     // state.contentApproved.setRel(
     //   Rel.fromShare<Principal, Types.ContentId>(
