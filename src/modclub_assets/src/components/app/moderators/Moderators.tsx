@@ -28,7 +28,7 @@ export default function Moderators() {
         </Card.Content>
       </Card>
 
-      <Card>
+      <Card className="mb-5">
         <Card.Content>
           <Heading subtitle>
             Most active moderators

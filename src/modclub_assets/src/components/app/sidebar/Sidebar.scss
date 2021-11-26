@@ -1,10 +1,10 @@
 @import "../../../common.scss";
 
-aside {
-  h1 {
-    white-space: nowrap;
-  }
-}
+// aside {
+//   h1 {
+//     white-space: nowrap;
+//   }
+// }
 
 .user-avatar {
   background: linear-gradient(to left, $primary, $secondary);
@@ -17,41 +17,22 @@ aside {
   }
 }
 
-.dropdown-menu {
-  margin-top: -1em;
+// .dropdown-menu {
+//   margin-top: -1em;
 
-  .dropdown-content {
-    background: $dark;
-  }
+//   .dropdown-content {
+//     background: $dark;
+//   }
 
-  a.dropdown-item {
-    display: flex;
-    color: $white;
-    &:hover {
-      background: $black;
-    }
-  }
+//   a.dropdown-item {
+//     display: flex;
+//     color: $white;
+//     &:hover {
+//       background: $black;
+//     }
+//   }
 
-  .dropdown-divider {
-    background: $black;
-  }
-}
-
-.menu-list {
-  a {
-    color: #fff;
-    font-weight: 700;
-    line-height: 1em;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-
-    &:hover {
-      background: none;
-    }
-
-    span.icon {
-      margin-right: 1rem;
-    }
-  }
-}
+//   .dropdown-divider {
+//     background: $black;
+//   }
+// }

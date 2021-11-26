@@ -13,6 +13,7 @@ const RulesList = ({ platform, rules }) => {
       up
       label={`View ${platform}'s Rules`}
       color="ghost"
+      style={{ width: 100 }}
     >
       {rules.map((rule) => (
         <Dropdown.Item key={rule.id} value={rule.id} renderAs="a">

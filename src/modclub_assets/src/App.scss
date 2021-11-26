@@ -83,6 +83,25 @@ hr {
   color: $light !important;
 }
 
+.menu-list {
+  a {
+    color: $white;
+    font-weight: 700;
+    line-height: 1em;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      background: none;
+    }
+
+    span.icon {
+      margin-right: 1rem;
+    }
+  }
+}
+
 .buttons {
   .button {
     margin-bottom: 0;
@@ -607,4 +626,41 @@ input[type='number']::-webkit-inner-spin-button {
 
 .loader {
   margin: auto;
+}
+
+
+.dropdown {
+  width: 100%;
+  .dropdown-trigger, .button, .dropdown-menu {
+    width: 100%;
+  }
+
+  .dropdown-menu {
+    animation: fadein .25s ease-in-out;
+  }
+
+  .button {
+    &:hover {
+      text-decoration: none;
+    }
+    > span {
+      width: 100%;
+      display: flex;
+    }
+  }
+
+  .dropdown-content {
+    background: $dark;
+  }
+  .dropdown-divider {
+    background: $black;
+  }
+
+  a.dropdown-item {
+    display: flex;
+    color: $white;
+    &:hover {
+      background: $black;
+    }
+  }
 }
