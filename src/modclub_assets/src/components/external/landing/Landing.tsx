@@ -51,7 +51,7 @@ const data = {
   plugins: {
     labels: {
       render: "percentage",
-      fontColor: '#fff',
+      fontColor: "#fff",
       precision: 2
     }
   }

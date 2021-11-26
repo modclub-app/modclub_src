@@ -48,7 +48,7 @@ export default function FormModal({
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
-      <Modal.Card className="is-small has-background-circles">
+      <Modal.Card backgroundColor="circles" className="is-small">
         <Form
           onSubmit={onFormSubmit}
           render={({ handleSubmit, values }) => (

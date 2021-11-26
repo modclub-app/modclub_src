@@ -21,7 +21,7 @@ export function SidebarUser() {
         <div className="ml-3">
           <label className="label has-text-white mb-0 is-flex is-align-items-flex-end is-clickable">
             <span>{user.userName}</span>
-            <span className="icon has-text-white" style={{ marginLeft: 'auto' }}>
+            <span className="icon has-text-white" style={{ marginLeft: "auto" }}>
               <span className="material-icons">expand_more</span>
             </span>
           </label>

@@ -1,6 +1,7 @@
 // import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Form, Field } from "react-final-form";
+import { Card, Heading, Button, Icon } from "react-bulma-components";
+import { Field } from "react-final-form";
 import FormModal from "../modals/FormModal";
 
 const AddModal = ({ toggle }) => {
@@ -117,17 +118,27 @@ export default function TrustedIdentities() {
     setChecked(["one", "tho", "three", "four"]);
   }
 
+  const dummyData = [
+    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
+    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
+    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
+    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
+    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
+    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
+    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
+    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
+  ]
+
   return (
     <>
-      <div className="card mb-6">
-        <div className="card-content">
-          <h3 className="title mb-2">
+      <Card className="mb-5">
+        <Card.Content>
+          <Heading className="mb-2">
             Trusted identities
-          </h3>
+          </Heading>
           <p className="mb-6">Add the principal IDs for other members of your team so they can manage your Modclub account</p>
 
-          <div className="field has-background-dark p-5">
-
+          <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
             <table className="table is-striped has-text-left is-checked">
               <thead>
                 <tr>
@@ -138,70 +149,24 @@ export default function TrustedIdentities() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                      <input type="checkbox" name="one" onClick={handleCheck} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span className="is-clickable" onClick={toggleEdit}>Edit</span>
-                    <span className="is-clickable ml-5" onClick={toggleRemove}>Remove</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                    <input type="checkbox" name="two" onClick={handleCheck} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span>Edit</span>
-                    <span className="ml-5">Remove</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                    <input type="checkbox" name="three" onClick={handleCheck} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span>Edit</span>
-                    <span className="ml-5">Remove</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                      <input type="checkbox" name="four" onClick={handleCheck} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td>xhyfj-2jsdflkj-asjdfkj-ssdfa</td>
-                  <td>JediMaster</td>
-                  <td className="has-text-left">
-                    <span>Edit</span>
-                    <span className="ml-5">Remove</span>
-                  </td>
-                </tr>
+                {dummyData.map((item) => (
+                  <tr>
+                    <td>
+                      <label className="checkbox">
+                        <input type="checkbox" name="one" onClick={handleCheck} />
+                        <Icon size="small" className="check">
+                          <span className="material-icons">done</span>
+                        </Icon>
+                      </label>
+                    </td>
+                    <td>{item.id}</td>
+                    <td>{item.name}</td>
+                    <td className="has-text-left">
+                      <span className="is-clickable" onClick={toggleEdit}>Edit</span>
+                      <span className="is-clickable ml-5" onClick={toggleRemove}>Remove</span>
+                    </td>
+                  </tr>
+                ))}
                 <tr>
                   <td>
                     <label className="checkbox">
@@ -215,29 +180,24 @@ export default function TrustedIdentities() {
                 </tr>
               </tbody>
             </table>
-
-            {/* checked? {checked} */}
-
-            <button className="button is-danger" disabled={!checked.length}>
-              Remove
-            </button>
-
-            <button className="button is-primary ml-4" onClick={toggleAdd}>
+            <Button.Group>
+              <Button color="danger" disabled={!checked.length}>
+                Remove
+              </Button>
+              <Button color="primary" onClick={toggleAdd}>
               Add new
-            </button>
-
+              </Button>
+            </Button.Group>
           </div>
-        </div>
-      </div>
+        </Card.Content>
+      </Card>
 
       {showAdd &&
         <AddModal toggle={toggleAdd} />
       }
-
       {showEdit &&
         <EditModal toggle={toggleEdit} />
       }
-
       {showRemove &&
         <RemoveModal toggle={toggleRemove} />
       }

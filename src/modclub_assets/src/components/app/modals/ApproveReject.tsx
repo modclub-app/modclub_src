@@ -82,7 +82,7 @@ const Modal_ = ({
       }
       if (title === "Reject Confirmation") {
         setContent(
-          <Card className="has-background-dark">
+          <Card backgroundColor="dark">
             <Card.Content>
               {rules.map((rule) => (
                 <div key={rule.id} className="field level is-relative is-toggle">
@@ -109,7 +109,7 @@ const Modal_ = ({
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
-      <Modal.Card className="has-background-circles">
+      <Modal.Card backgroundColor="circles">
         <Form
           onSubmit={onFormSubmit}
           render={({ handleSubmit, values }) => (
@@ -153,7 +153,7 @@ const Modal_ = ({
         />
       </Modal.Card>
       {message &&
-        <Notification color={message.success ? "success" : "danger"} className="has-text-centered">
+        <Notification color={message.success ? "success" : "danger"} textAlign="center">
           {message.value}
         </Notification>
       }

@@ -40,7 +40,7 @@ export default function Tasks() {
               {item.title}
             </Heading>
             {'imageBlob' in item.contentType ?
-              <img src={getImage(item.image)} alt="Image File" style={{ display: 'block', margin: 'auto' }} />
+              <img src={getImage(item.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
               :
               <p>{item.text}</p>
             }

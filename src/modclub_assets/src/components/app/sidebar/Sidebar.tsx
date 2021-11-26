@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Columns, Menu, Image, Heading, Icon, Button } from "react-bulma-components";
 import "./Sidebar.scss";
 import LogoImg from '../../../../assets/logo.png';
 import { SidebarUser } from "./SidebarUser";
@@ -6,75 +7,66 @@ import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
 
 export default function Sidebar() {
-  const { isAuthReady, user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   return (
-    <div className="column is-one-fifth has-background-black">
-      <aside className="p-3" style={{ minHeight: "100vh" }}>
+    <Columns.Column size="one-fifth" backgroundColor="black" style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}>
+      <Menu className="p-3">
         <div className="is-flex is-align-items-center mt-3">
-          <img src={LogoImg} style={{ height: 40, width: 40}} />
-          <h1 className="title is-size-3 ml-2" style={{ fontFamily: 'sans-serif' }}>MODCLUB</h1>
+          <Image src={LogoImg} size={32} />
+          <Heading className="ml-2" style={{ fontFamily: "sans-serif" }}>
+            MODCLUB
+          </Heading>
         </div>
 
         <hr />
 
-        {isAuthenticated && user ? <SidebarUser />: <SignIn /> }
+        {isAuthenticated && user ? <SidebarUser /> : <SignIn />}
 
-        <ul className="menu-list">
-          <li>
-            <Link to="/app">
-              <span className="icon">
-                <span className="material-icons">dehaze</span>
-              </span>
-              <span>Dashboard</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/moderators">
-              <span className="icon">
-                <span className="material-icons">assignment_ind</span>
-              </span>
-              <span>Moderators</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/tasks">
-              <span className="icon">
-                <span className="material-icons">playlist_add_check</span>
-              </span>
-              <span>Tasks</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/verification">
-              <span className="icon">
-                <span className="material-icons">check_circle_outline</span>
-              </span>
-              <span>Human Verification</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/support">
-              <span className="icon">
-                <span className="material-icons">help_outline</span>
-              </span>
-              <span>Support</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/admin">
-              <span className="icon">
-                <span className="material-icons">admin</span>
-              </span>
-              <span>Admin</span>
-            </Link>
-          </li>
-        </ul>
+        <Menu.List>
+          <Link to="/app">
+            <Icon>
+              <span className="material-icons">dehaze</span>
+            </Icon>
+            Dashboard
+          </Link>
+          <Link to="/app/moderators">
+            <Icon>
+              <span className="material-icons">assignment_ind</span>
+            </Icon>
+            Moderators
+          </Link>
+          <Link to="/app/tasks">
+            <Icon>
+              <span className="material-icons">playlist_add_check</span>
+            </Icon>
+            Tasks
+          </Link>
+          <Link to="/app/verification">
+            <Icon>
+              <span className="material-icons">check_circle_outline</span>
+            </Icon>
+            Human Verification
+          </Link>
+          <Link to="/app/support">
+            <Icon>
+              <span className="material-icons">help_outline</span>
+            </Icon>
+            Support
+          </Link>
+          <Link to="/app/admin">
+            <Icon>
+              <span className="material-icons">assignment_ind</span>
+            </Icon>
+            Admin
+          </Link>
+        </Menu.List>
 
-        <button className="button is-large is-primary is-fullwidth mt-6">
+        <Button color="primary" fullwidth size="large" className="mt-6">
           Invite a Moderator
-        </button>
-      </aside>
-    </div>
+        </Button>
+
+      </Menu>
+    </Columns.Column>
   );
 }

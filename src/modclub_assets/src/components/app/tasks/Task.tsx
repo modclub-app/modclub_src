@@ -160,7 +160,7 @@ export default function Task() {
               </Heading>
               <p>{content.text}</p>
 
-              <Card className="has-background-dark mt-5">
+              <Card backgroundColor="dark" className="mt-5">
                 <Card.Content>
                   <Heading subtitle>
                     Additional Information

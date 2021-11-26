@@ -1,6 +1,6 @@
-import "./NewProfile.scss";
 import { Form, Field } from "react-final-form";
-import {  registerModerator } from "../../../utils/api";
+import { Notification, Columns, Card, Heading, Media, Image as BulmaImage, Button, Icon } from "react-bulma-components";
+import { registerModerator } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { useHistory } from "react-router-dom";
 import { useRef, useState } from "react";
@@ -82,17 +82,19 @@ export default function NewProfile() {
   return (
   <>
     {message &&
-      <div className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"}`}>
+      <Notification color={message.success ? "success" : "danger"} className="has-text-centered">
         {message.value}
-      </div>
+      </Notification>
     }
-    <div className="columns is-centered is-vcentered is-fullheight">
-      <div className="column is-half">
-        <div className="card">
-          <div className="card-content has-text-centered">
-            <h1 className="title">
+
+    <Columns centered vCentered className="is-fullheight">
+      <Columns.Column size={6}>
+        <Card>
+          <Card.Content>
+            <Heading textAlign="center">
               Create your profile
-            </h1>
+            </Heading>
+
             <input
               style={{ display: "none" }}
               ref={inputFile}
@@ -100,10 +102,20 @@ export default function NewProfile() {
               accept="image/*"
               type="file"
             />
-      
-            <div className="profilePicture" onClick={() =>  inputFile.current.click()}>
-              <img src={pic ? pic : placeholder} alt="profile" />
-            </div>
+
+            <Media
+              justifyContent="center"
+              onClick={() => inputFile.current.click()}
+            >
+              <BulmaImage
+                src={pic ? pic : placeholder}
+                alt="profile"
+                size={128}
+                className="is-clickable is-hover-reduced"
+                style={{ overflow: "hidden", borderRadius: "50%" }}
+                rounded
+              />
+            </Media>
 
             <p className="has-text-centered	mt-2 mb-5">
               Upload Profile Picture
@@ -113,6 +125,7 @@ export default function NewProfile() {
               onSubmit={onFormSubmit}
               render={({ handleSubmit, values }) => (
                 <form onSubmit={handleSubmit}>
+
                   <div className="field">
                     <div className="control has-icons-left">
                       <Field
@@ -122,9 +135,9 @@ export default function NewProfile() {
                         className="input is-medium"
                         placeholder="Username"
                       />
-                      <span className="icon is-medium is-left">
+                      <Icon align="left">
                         <span className="material-icons">person</span>
-                      </span>
+                      </Icon>
                     </div>
                   </div>
                   <div className="field">
@@ -136,25 +149,31 @@ export default function NewProfile() {
                         placeholder="Email"
                         className="input is-medium"
                       />
-                      <span className="icon is-medium is-left">
+                      <Icon align="left">
                         <span className="material-icons">email</span>
-                      </span>
+                      </Icon>
                     </div>
                   </div>
 
-                  <button
+                  <Button
                     type="submit"
                     disabled={!values.username || !values.email || submitting}
-                    className={"button is-large is-primary is-fullwidth mt-6 " + (submitting ? "is-loading" : "")}
-                    value="Submit"
-                  >Submit</button>
+                    size="large"
+                    color="primary"
+                    fullwidth
+                    value="submit"
+                    className={submitting ? "is-loading" : ""}
+                  >
+                    Submit
+                  </Button>
                 </form>
               )}
             />
-          </div>
-        </div>
-      </div>
-    </div>
+
+          </Card.Content>
+        </Card>
+      </Columns.Column>
+    </Columns>
   </>
   );
 }

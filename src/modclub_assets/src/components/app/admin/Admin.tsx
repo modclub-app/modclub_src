@@ -253,7 +253,7 @@ export default function Admin() {
       </Columns.Column>
 
       <Columns.Column size={4}>
-        <Card className="has-background-circles is-fullheight">
+        <Card backgroundColor="circles" className="is-fullheight">
           <Card.Content>
             <Heading className="mb-2">
               Token Reserve
@@ -264,10 +264,10 @@ export default function Admin() {
       </Columns.Column>
 
       <Columns.Column size={4}>
-        <Card className="has-background-circles is-fullheight">
+        <Card backgroundColor="circles" className="is-fullheight">
           <Card.Content className="is-flex is-align-items-center pb-0">
             <img src={walletImg} />
-            <div className="mt-3 ml-3" style={{ whiteSpace: 'nowrap', lineHeight: .5 }}>
+            <div className="mt-3 ml-3" style={{ whiteSpace: "nowrap", lineHeight: .5 }}>
               <p className="is-size-7 has-text-light">min 100000 tokens</p>
               <Heading size={1} className="level">
                 <span>55k</span>
@@ -287,10 +287,10 @@ export default function Admin() {
       </Columns.Column>
 
       <Columns.Column size={4}>
-        <Card className="has-background-circles is-fullheight">
+        <Card backgroundColor="circles" className="is-fullheight">
           <Card.Content className="is-flex is-align-items-center pb-0">
             <img src={stakedImg} />
-            <div className="mt-3 ml-3" style={{ whiteSpace: 'nowrap', lineHeight: .5 }}>
+            <div className="mt-3 ml-3" style={{ whiteSpace: "nowrap", lineHeight: .5 }}>
               <Heading size={1} className="level">
                 <span>5</span>
                 <span className="is-size-6 has-text-light has-text-weight-normal ml-3">DSCVR<br />tokens</span>

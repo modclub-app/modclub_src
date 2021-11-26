@@ -42,6 +42,10 @@ a {
   }
 }
 
+.is-hover-reduced:hover {
+  opacity: .8;
+}
+
 .title {
   color: #fff;
   font-weight: 700;

@@ -48,7 +48,7 @@ export default function ModclubApp() {
 
   return (
     <>
-      <Columns className="container">
+      <Columns className="container" marginless>
         <Sidebar />
 
         <Columns.Column className="ml-6 mt-6">
@@ -76,49 +76,8 @@ export default function ModclubApp() {
 
         </Columns.Column>
       </Columns>
-
-
-        {/* <Modal show={true}>
-          <Modal.Card>
-            <Modal.Card.Body className="has-background-circles">
-              BODY
-            </Modal.Card.Body>
-          </Modal.Card>
-        </Modal>
-      <section className="container columns mb-0">
-        <Sidebar />
-        <div className="column is-justify-content-flex-start mt-5 ml-6">
-          <section className="container">
-
-            <Switch>
-              <Route exact path="/app">
-                Dashboard
-                {profiles}
-              </Route>
-              <Route exact path="/app/tasks">
-                <Tasks />
-              </Route>
-              <Route path="/app/tasks/:taskId">
-                <Task /> 
-              </Route>
-              <Route exact path="/app/moderators">
-                <Moderators />
-              </Route>
-              <Route exact path="/app/activity">
-                <Activity />
-              </Route>
-              <Route exact path="/app/admin">
-                <Admin />
-              </Route>
-            </Switch>
-
-
-          </section>
-        </div>
-      </section>
+      
       <Footer />
-
-      */}
     </>
   )
 }

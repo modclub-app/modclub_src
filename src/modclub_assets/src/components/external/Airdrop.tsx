@@ -61,7 +61,7 @@ export default function Airdrop() {
   };
 
   const spinner = (
-    <div className="loader is-loading is-large mt-10" style={{ width: 80,height:80}}></div>
+    <div className="loader is-loading is-large mt-10" style={{ width: 80, height:80 }}></div>
   );
   return (
     <>

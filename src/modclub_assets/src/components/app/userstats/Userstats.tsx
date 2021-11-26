@@ -11,10 +11,10 @@ import Unstake from "../modals/Unstake";
 
 const StatBox = ({ children, image, title, amount, usd, detailed }) => {
   return (
-    <Card className="has-background-circles is-fullheight">
+    <Card backgroundColor="circles" className="is-fullheight">
       <Card.Content className="is-flex is-align-items-center" style={{ padding: "2.5rem 2rem" }}>
         <img src={image} className="mr-4" />
-        <div style={{ lineHeight: 1, whiteSpace: 'nowrap' }}>
+        <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
           <p className="has-text-light">{title}</p>
           <Heading size={1} style={{ lineHeight: 1 }}>
             {amount}
@@ -27,7 +27,7 @@ const StatBox = ({ children, image, title, amount, usd, detailed }) => {
         </div>
       </Card.Content>
       {detailed &&
-        <Card.Footer className="p-0" style={{ border: 0, marginBottom: "2.5rem" }} >
+        <Card.Footer paddingless style={{ border: 0, marginBottom: "2.5rem" }} >
           {children}
         </Card.Footer>
       }
@@ -52,14 +52,6 @@ export default function Userstats({ detailed = false }) {
 
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);
-
-  // useEffect(() => {
-  //   const fetchTokenHoldings = async () => {
-  //     const tokenHoldings = await getTokenHoldings();
-  //     setTokenHoldings(tokenHoldings);
-  //   };
-  //   fetchTokenHoldings();
-  // }, []);
 
   useEffect(() => {
     const fetchTokenHoldings = async () => {

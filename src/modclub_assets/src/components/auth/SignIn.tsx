@@ -8,7 +8,7 @@ import dfinitylogo from "../../../assets/dfinity.svg"
  * Internet Identity Service.
  */
 export function SignIn(props: PropsWithChildren<{}>) {
-  const {logIn, isAuthenticated, user} = useAuth();
+  const { logIn, isAuthenticated, user } = useAuth();
   // If the auth provider has a user (which could be from local storage) and
   // the user is properly authenticated with the identity provider service then
   // send the user to their feed, as they are correctly signed in.
@@ -27,9 +27,9 @@ export function SignIn(props: PropsWithChildren<{}>) {
 
   return (
     <Button onClick={handleLogin} className="is-gradient is-outlined is-fullwidth mb-4">
-      <span>LOGIN</span>
+      <span className="mr-2">LOGIN</span>
       <Icon>
-        <img src={dfinitylogo} alt="dfinity logo"  style={{ width: "33px", marginRight: "-1em", marginLeft: "0.7em" }} />
+        <img src={dfinitylogo} alt="dfinity logo" />
       </Icon>
     </Button>
   );
