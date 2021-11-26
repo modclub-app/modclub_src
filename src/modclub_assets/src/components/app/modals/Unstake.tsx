@@ -36,12 +36,31 @@ export default function Unstake({ toggle, tokenHoldings }) {
     return await unStakeTokens(amount);
   };
 
-  // const updateTable = [
+  // const amount = 0;
+  // const tableItems = [
   //   { title: "Current Stake", value: tokenHoldings.stake },
-  //   // { title: "After Stake", value: tokenHoldings.stake - (values.amount ? values.amount : 0) },
-  //   { title: "After Stake", value: 5 },
+  //   { title: "After Stake", value: tokenHoldings.stake - (amount) },
   //   { title: "Stake will be released on", value: "9/12/2021" },
   // ]
+
+  const tableItems = {
+    // proxy = (amount) => {
+    //   return [
+    //     { title: "Current Stake", value: tokenHoldings.stake },
+    //     { title: "After Stake", value: tokenHoldings.stake - (amount) },
+    //     { title: "Stake will be released on", value: "9/12/2021" },
+    //   ];
+    // }()
+
+    proxy: (amount) => {
+      return 
+       [
+        { title: "Current Stake", value: tokenHoldings.stake },
+        { title: "After Stake", value: tokenHoldings.stake - (amount) },
+        { title: "Stake will be released on", value: "9/12/2021" },
+      ]
+    }
+  };
 
   return (
     <FormModal
@@ -49,33 +68,21 @@ export default function Unstake({ toggle, tokenHoldings }) {
       toggle={toggle}
       handleSubmit={onFormSubmit}
       updateTable={<UpdateTable stake={tokenHoldings.stake} />}
+      tableItems={tableItems}
     >
       <div className="field">
         <div className="control has-icons-right">
           <Field
-          name="amount"
-          component="input"
-          type="number"
-          className="input"
-          initialValue={100}
-          max={tokenHoldings.stake}
-        />
-        <span className="icon is-right has-text-white mr-4">AMT</span>
+            name="amount"
+            component="input"
+            type="number"
+            className="input"
+            initialValue={100}
+            max={tokenHoldings.stake}
+          />
+          <span className="icon is-right has-text-white mr-4">AMT</span>
+        </div>
       </div>
-    </div>
-
-    {/* <div className="field level px-5 pt-5">
-      <span className="has-text-silver">Current Stake:</span>
-      <label className="label">{tokenHoldings.stake}</label>
-    </div>
-    <div className="field level px-5">
-      <span className="has-text-silver">After Stake:</span>
-       <label className="label">{tokenHoldings.stake - (values.amount ? values.amount : 0)}</label>
-    </div>
-    <div className="field level px-5">
-      <span className="has-text-silver">Stake will be released on:</span>
-      <label className="label">9/12/2021</label>
-    </div> */}
     </FormModal>
   );
 };
