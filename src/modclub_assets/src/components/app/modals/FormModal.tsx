@@ -33,15 +33,17 @@ export default function FormModal({
   const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
     setSubmitting(true);
+
+    // const regEx = /Reject text: (.*)/g;
     try {
       const result = await handleSubmit(values)
       console.log("child result", result);
       setSubmitting(false);
       setMessage({ success: true, value: result });
     } catch (e) {
-      console.log("e", e);
-      // setSubmitting(false);
-      // setMessage({ success: false, value: e });
+      // let errAr = regEx.exec(e.message);
+      setMessage({ success: false, value: e.message });
+      setSubmitting(false);
     }
     setTimeout(() => toggle(), 2000);
   };
@@ -74,7 +76,10 @@ export default function FormModal({
                   <Button color="dark" onClick={toggle}>
                     Cancel
                   </Button>
-                  <Button color="primary" disabled={message || submitting}>
+                  <Button color="primary" disabled={message || submitting} className={submitting && "is-loading"}>
+                    Submit
+                  </Button>
+                  {/* <Button color="primary" disabled={message || submitting}>
                     {submitting ? (
                       <>
                         <span className="icon mr-2 loader is-loading"></span>
@@ -82,7 +87,7 @@ export default function FormModal({
                       </>
                       ) : "Submit"
                     }
-                  </Button>
+                  </Button> */}
                 </Button.Group>
               </Modal.Card.Footer>
             </form>

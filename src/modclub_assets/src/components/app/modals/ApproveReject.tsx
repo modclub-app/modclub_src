@@ -60,7 +60,7 @@ const Modal_ = ({
       setSubmitting(false);
       setMessage({ success: result === "Vote successful" ? true : false, value: result });
     } catch (e) {
-      let errAr = regEx.exec(e.message);  
+      let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr[1] });
       setSubmitting(false);
     }

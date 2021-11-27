@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Columns, Menu, Image, Heading, Icon, Button } from "react-bulma-components";
-import "./Sidebar.scss";
 import LogoImg from '../../../../assets/logo.png';
 import { SidebarUser } from "./SidebarUser";
 import { useAuth } from '../../../utils/auth';

@@ -1,7 +1,9 @@
 import { Field } from "react-final-form";
 import { useEffect, useState } from "react";
-import { Columns, Card, Button, Level, Heading, Icon } from "react-bulma-components";
+import { Columns, Card, Button, Heading } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
+import { addRules, removeRules, updateProviderSettings } from '../../../utils/api';
+
 import TrustedIdentities from "../trusted_identities/TrustedIdentities";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
@@ -56,9 +58,13 @@ const EditRulesModal = ({ rules, toggle }) => {
     rule && setNewRules([...newRules, rule]);
   }
 
-  const onFormSubmit = async () => {
+  const onFormSubmit = async (values: any) => {
+    console.log('onFormSubmit values', values)
     console.log("parent !!! onFormSubmit newRules", newRules);
-    return newRules;
+
+    const { newRule } = values;
+    return await addRules(newRule);
+    // return await removeRules(newRules);
   };
 
   return (
@@ -103,11 +109,10 @@ const EditRulesModal = ({ rules, toggle }) => {
 }
 
 const EditModeratorSettingsModal = ({ toggle }) => {
-  // const [ submitting, setSubmitting ] = useState<boolean>(false);
-
   const onFormSubmit = async (values: any) => {
     console.log("parent !!! onFormSubmit values", values);
-    return "EditModeratorSettings Success!";
+
+    return await updateProviderSettings(values);
   };
 
   return (
