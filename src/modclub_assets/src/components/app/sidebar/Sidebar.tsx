@@ -4,10 +4,21 @@ import LogoImg from '../../../../assets/logo.png';
 import { SidebarUser } from "./SidebarUser";
 import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
+import { useHistory } from 'react-router-dom';
+import { useEffect } from "react";
 
 export default function Sidebar() {
-  const { user, isAuthenticated } = useAuth();
-
+  const history = useHistory();
+  const { isAuthReady, user, isAuthenticated, requiresSignUp } = useAuth();
+  useEffect(
+    () => {
+      if (!isAuthReady) return;
+      if (!isAuthenticated) return;
+      if(!user && requiresSignUp) {
+        history.push('/signup');
+      }
+    }, [isAuthReady, isAuthenticated, user]
+  )
   return (
     <Columns.Column size="one-fifth" backgroundColor="black" style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}>
       <Menu className="p-3">

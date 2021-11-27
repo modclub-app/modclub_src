@@ -49,8 +49,9 @@ shared ({caller = initializer}) actor class ModClub () {
 
   // Global Objects  
   var state = State.empty();
-  let tokens = Token.Tokens(
-        initializer
+  stable var tokensStable : Token.TokensStable = Token.emptyStable(initializer);
+  var tokens = Token.Tokens(
+        tokensStable
   );
 
   func onlyOwner(p: Principal) : async() {
@@ -391,6 +392,13 @@ shared ({caller = initializer}) actor class ModClub () {
   }; 
 
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Image) : async Profile {
+       // Anonymous principal 
+      if(Principal.toText(caller) == "2vxsx-fae") {
+          Debug.print("Anonymous principal");
+          throw Error.reject("Unauthorized, user does not have an identity");
+      };
+
+      Debug.print("Registering moderator");
       var _userName = Text.trim(userName, #text " ");
       var _email = Text.trim(email, #text " ");
       if(_email.size() > 320) 
@@ -421,10 +429,11 @@ shared ({caller = initializer}) actor class ModClub () {
                 createdAt = now;
                 updatedAt = now;
               };
-              state.profiles.put(caller, profile);
               // Todo: Remove this after testnet
               // Give new users MOD points
               await tokens.transfer(initializer, caller, 1000);
+              state.profiles.put(caller, profile);
+
               return profile;
             };
             case(false) throw Error.reject("username already taken");
@@ -588,9 +597,9 @@ shared ({caller = initializer}) actor class ModClub () {
                         createdAt = content.createdAt;
                         updatedAt = content.updatedAt;
                         voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
-                        minVotes = 10;
-                        minStake = 1000;
-                        reward = 1;
+                        minVotes = provider.settings.minVotes;
+                        minStake = provider.settings.minStaked;
+                        reward = 1; // Todo: Calculate reward
                         rewardRelease = timeNow_();
                     };
                     buf.add(item);
@@ -699,6 +708,10 @@ shared ({caller = initializer}) actor class ModClub () {
   public shared({ caller }) func unStakeTokens(amount: Nat) : async Text {
     await tokens.unstake(caller, amount);
     "Unstaked " # Nat.toText(amount) # " tokens";
+  };
+
+  public query func getModclubHoldings() : async Token.Holdings {
+    tokens.getHoldings(initializer);
   };
 
   // Helpers
@@ -848,10 +861,12 @@ shared ({caller = initializer}) actor class ModClub () {
 
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
+  
 
   system func preupgrade() {
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
+    tokensStable := tokens.getStable();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 

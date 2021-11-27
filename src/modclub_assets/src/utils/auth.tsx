@@ -12,6 +12,7 @@ export interface AuthContext {
   isAuthReady: boolean;
   hasAccount: boolean;
   identity?: Identity;
+  requiresSignUp: boolean;
   logIn: () => Promise<void>;
   logOut: () => void;
   user: Profile;
@@ -28,6 +29,7 @@ export function useProvideAuth(authClient): AuthContext {
   );
   const [_identity, _setIdentity] = useState<Identity | undefined>();
   const [isAuthClientReady, setAuthClientReady] = useState(false);
+  const [shouldSignup, setShouldSignup] = useState(false);
 
 
   // Creating the auth client is async and no auth related checks can happen
@@ -38,7 +40,7 @@ export function useProvideAuth(authClient): AuthContext {
 
   // Use the user from local storage if it is set so the flow doesn't have to
   // make an async query.
-  const setUserFromLocalStorage = () => {
+  const setUserFromLocalStorage = () => {    
     console.log("setUserFromLocalStorage");
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
     console.log("lsUser", lsUser);
@@ -57,8 +59,12 @@ export function useProvideAuth(authClient): AuthContext {
       console.log("no lsUser, fetching and setting from backend");
       // If there is no user in local storage, retrieve from the backend
       getUserFromCanister().then((user_) => {
-        // console.log("getUserFromCanister user_", user_);
-        user_ && setUser(user_)
+        // If the user doesn't exist on the backend then we need to sign up
+        if (user_) {
+          setUser(user_);
+        } else {
+          setShouldSignup(true);
+        }
       });
     }
   };
@@ -158,6 +164,7 @@ export function useProvideAuth(authClient): AuthContext {
     user,
     identity,
     setUser,
+    requiresSignUp: shouldSignup,
   };
 }
 

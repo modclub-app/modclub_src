@@ -81,6 +81,11 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'updatedAt' : Timestamp,
   });
+  const Holdings = IDL.Record({
+    'pendingRewards' : IDL.Int,
+    'stake' : IDL.Int,
+    'wallet' : IDL.Int,
+  });
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,
     'minStaked' : IDL.Nat,
@@ -98,11 +103,6 @@ export const idlFactory = ({ IDL }) => {
     'activeCount' : IDL.Nat,
     'image' : IDL.Opt(Image__1),
     'rules' : IDL.Vec(Rule),
-  });
-  const Holdings = IDL.Record({
-    'pendingRewards' : IDL.Int,
-    'stake' : IDL.Int,
-    'wallet' : IDL.Int,
   });
   const Image = IDL.Record({
     'imageType' : IDL.Text,
@@ -135,6 +135,7 @@ export const idlFactory = ({ IDL }) => {
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
+    'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),

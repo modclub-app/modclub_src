@@ -63,6 +63,7 @@ export interface ModClub {
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
+  'getModclubHoldings' : () => Promise<Holdings>,
   'getProfile' : () => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,

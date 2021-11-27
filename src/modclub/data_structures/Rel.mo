@@ -4,6 +4,7 @@ import Iter "mo:base/Iter";
 import Hash "mo:base/Hash";
 import Text "mo:base/Text";
 import Prelude "mo:base/Prelude";
+import Debug "mo:base/Debug";
 
 /// Binary relation representation.
 ///
@@ -68,11 +69,20 @@ module {
                                hash_ : HashPair<X, Y>,
                                equal_ : EqualPair<X, Y> ) : Rel<X, Y>
   {
-    { forw = rel.forw ;
-      back = invert(rel.forw);
+    let temp = { forw = rel.forw ;
+      back = Trie.empty();
       hash = hash_ ;
-      equal = equal_
-    }
+      equal = equal_;
+    };
+
+    let result = {
+      forw = temp.forw ;
+      back = invert(temp); 
+      hash = temp.hash ;
+      equal = temp.equal ;
+    };
+    
+    return result;  
   };
 
   public func keyOf0<X, Y>( rel : Rel<X, Y>,  x : X) : Trie.Key<X> {
@@ -154,15 +164,23 @@ module {
     }
   };
 
-  func invert<X, Y>(rel : Trie.Trie2D<X, Y, ()>) : Trie.Trie2D<Y, X, ()> {
-    Prelude.nyi(); // to do -- for testing / upgrades sub-story
-    // for((key, value) in Trie.iter(rel)) {
-    //   let k = key;
-    //   let v = value;
-    //   let t = Trie.empty();
-    //   t = Trie.put2D(t, k.1, v.0, k.0, v.1, ());
-    //   return t;
-    // }
+  func invert<X, Y>(rel: Rel<X,Y>) : Trie.Trie2D<Y, X, ()> {
+    var t : Trie.Trie2D<Y, X, ()>   = Trie.empty();
+    let keys = getKeys(rel.forw);       
+    for(key in keys.vals() ) {
+      for( val in getRelated0(rel, key)) {
+        let k = keyOf(rel, (key, val));        
+        t := Trie.put2D(t, k.1, rel.equal.1, k.0, rel.equal.0, ());
+      };
+    };
+    t;
+  };
+
+  func getKeys<K1,K2>(rel : Trie.Trie<K1, Trie.Trie<K2, ()>>): [K1] {
+      return Trie.toArray<K1, Trie.Trie<K2, ()>, K1>(
+          rel,
+          func (k , v) {  k  }
+      );
   };
 
   // helper for getRelated{0,1}

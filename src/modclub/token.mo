@@ -4,6 +4,8 @@ import Principal "mo:base/Principal";
 import Types "./types";
 import State "./state";
 import Error "mo:base/Error";
+import Iter "mo:base/Iter";
+import Debug "mo:base/Debug"; 
 
 module Token {
   public type Map<X, Y> = HashMap.HashMap<X, Y>;
@@ -11,6 +13,12 @@ module Token {
   public type TokenStakes = Map<Principal, Int>;
   public type TokenRewards = Map<Principal, Int>;
 
+  // Token Constants
+  public let TOKEN_MAX_SUPPLY = 1_000_000_000_000_000_000_000_000_000 ; // 1 billion * 10^18
+  public let TOKEN_NAME = "MODCLUB Token";
+  public let TOKEN_SYMBOL = "MOD";
+  public let TOKEN_DECIMALS = 18;
+  public let TOKEN_OWNER_BALANCE = TOKEN_MAX_SUPPLY;
 
   public type Holdings = {
     wallet: Int;
@@ -18,25 +26,42 @@ module Token {
     pendingRewards: Int;
   };
   
+  // Todo - Make these into objects insteda of Ints, we should hold rewards pending etc
+  public type TokensStable = {
+    tokenWallets: [(Principal, Int)];
+    tokenStakes: [(Principal, Int)];
+    tokenRewards: [(Principal, Int)];
+  };
 
-  public class Tokens(id: Principal) {
-    // Token Constants
-    let TOKEN_MAX_SUPPLY = 1_000_000_000; // 1 billion
-    let TOKEN_NAME = "MODCLUB Token";
-    let TOKEN_SYMBOL = "MOD";
-    let TOKEN_DECIMALS = 18;
-    let TOKEN_TOTAL_SUPPLY = TOKEN_MAX_SUPPLY * 10 ** TOKEN_DECIMALS;
-    let TOKEN_OWNER_BALANCE = TOKEN_TOTAL_SUPPLY;
+  public func emptyStable(initializer: Principal) : TokensStable {
+      let st = {
+        tokenWallets = [(initializer, TOKEN_OWNER_BALANCE)];
+        tokenStakes = [];
+        tokenRewards = [];
+      };
+      st;
+    };
+
+  public class Tokens(tokensStable: TokensStable) {
+
     
     let _tokenWallets: TokenWallets = HashMap.HashMap<Principal, Int>(0, Principal.equal, Principal.hash);
 
     let _tokenStakes: TokenStakes = HashMap.HashMap<Principal, Int>(0, Principal.equal, Principal.hash);
 
     let _tokenRewards: TokenRewards = HashMap.HashMap<Principal, Int>(0, Principal.equal, Principal.hash);
-    
-    _tokenWallets.put(id, TOKEN_OWNER_BALANCE);
 
-    public func mintTo(p: Principal, amount: Nat) {
+    for( (p, val) in tokensStable.tokenWallets.vals()) {
+      _tokenWallets.put(p, val);
+    };
+    for( (p, val) in tokensStable.tokenStakes.vals()) {
+      _tokenStakes.put(p, val);
+    };
+    for( (p, val) in tokensStable.tokenRewards.vals()) {
+      _tokenRewards.put(p, val);
+    };
+
+    public func mintTo(p: Principal, amount: Int) {
       switch(_tokenWallets.get(p)) {
         case (?balance) {
           _tokenWallets.put(p, balance + amount);
@@ -47,7 +72,7 @@ module Token {
       };
     };
 
-    public func burnFrom(p: Principal, amount: Nat) : async () {
+    public func burnFrom(p: Principal, amount: Int) : async () {
       switch(_tokenWallets.get(p)) {
         case (?balance) {
           if (balance >= amount) {
@@ -62,7 +87,7 @@ module Token {
       };
     };
 
-    public func burnStakeFrom(p: Principal, amount: Nat) : async () {
+    public func burnStakeFrom(p: Principal, amount: Int) : async () {
         switch(_tokenStakes.get(p)) {
           case (?balance) {
             if (balance >= amount) {
@@ -77,7 +102,7 @@ module Token {
       };
     };
 
-    public func transfer(from: Principal, to: Principal, amount: Nat) : async () {
+    public func transfer(from: Principal, to: Principal, amount: Int) : async () {
       switch(_tokenWallets.get(from)) {
         case (?balance) {
           if (balance >= amount) {
@@ -91,6 +116,7 @@ module Token {
               };
             };
           } else {
+            Debug.print("Insufficient funds: fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount));
             throw Error.reject("Insufficient funds");
           };
         };
@@ -100,7 +126,7 @@ module Token {
       };
     };
 
-    public func reward(from: Principal, to: Principal, amount: Nat) : async () {
+    public func reward(from: Principal, to: Principal, amount: Int) : async () {
       switch(_tokenWallets.get(from)) {
         case (?balance) {
           if (balance >= amount) {
@@ -124,7 +150,7 @@ module Token {
     };
     
 
-    public func stake(p: Principal, amount: Nat) : async () {
+    public func stake(p: Principal, amount: Int) : async () {
       await burnFrom(p, amount);
       switch(_tokenStakes.get(p)) {
         case (?balance) {
@@ -136,7 +162,7 @@ module Token {
       };
     };
 
-    public func unstake(p: Principal, amount: Nat) : async () {
+    public func unstake(p: Principal, amount: Int) : async () {
 
       // Todo - Add timer to unstake so that it can be unstaked after a certain time period
       switch(_tokenStakes.get(p)) {
@@ -146,11 +172,11 @@ module Token {
             _tokenStakes.put(p, balance - amount);
             mintTo(p, amount);
           } else {
-            throw Error.reject("Insufficient funds");
+            throw Error.reject(" 1111  Insufficient funds");
           };
         };
         case (null) {
-         throw Error.reject("Insufficient funds");
+         throw Error.reject(" 2222  Insufficient funds");
         };
       };
     };
@@ -222,6 +248,19 @@ module Token {
         };
       };
     };  
+
+
+
+
+
+    public func getStable() : TokensStable {
+      let st = {
+        tokenWallets = Iter.toArray(_tokenWallets.entries());
+        tokenStakes = Iter.toArray(_tokenStakes.entries());
+        tokenRewards = Iter.toArray(_tokenRewards.entries());
+      };
+      st;
+    };
 
   };
 };
