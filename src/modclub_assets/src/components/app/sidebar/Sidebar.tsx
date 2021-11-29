@@ -52,7 +52,7 @@ export default function Sidebar() {
             </Icon>
             Tasks
           </Link>
-          <Link to="/app/verification">
+          <Link to="/app/verifications">
             <Icon>
               <span className="material-icons">check_circle_outline</span>
             </Icon>

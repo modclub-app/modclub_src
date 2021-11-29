@@ -5,6 +5,8 @@ import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
+import Verifications from "./verification/Verifications";
+import Verification from "./verification/Verification";
 import Moderators from "./moderators/Moderators";
 import Activity from "./activity/Activity";
 import Admin from "./admin/Admin";
@@ -28,6 +30,12 @@ export default function ModclubApp() {
             </Route>
             <Route path="/app/tasks/:taskId">
               <Task /> 
+            </Route>
+            <Route exact path="/app/verifications">
+              <Verifications />
+            </Route>
+            <Route path="/app/verifications/:verificationId">
+              <Verification /> 
             </Route>
             <Route exact path="/app/moderators">
               <Moderators />

@@ -19,8 +19,7 @@ const RulesList = ({ platform, rules }) => {
         <Dropdown.Item key={rule.id} value={rule.id} renderAs="a" style={{ textDecoration: "none" }}>
           {rule.description}
         </Dropdown.Item>
-      ))
-      }
+      ))}
     </Dropdown>
   );
 };
@@ -111,45 +110,43 @@ const Modal_ = ({
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
       <Modal.Card backgroundColor="circles">
-        <Form
-          onSubmit={onFormSubmit}
-          render={({ handleSubmit, values }) => (
-            <form onSubmit={handleSubmit}>
-              <Modal.Card.Body>
-                <img src={image} className="my-5" />
-                <Heading subtitle>
-                  {title}
-                </Heading>
-                {content}
-              </Modal.Card.Body>
-              <Modal.Card.Footer className="pt-0">
-                {title === "Reject Confirmation" &&
-                  <p className="is-size-7">
-                    Voting incorrectly will result in some loss<br />of staked tokens.
-                  </p>
-                }
-                {title === "Approve Confirmation" &&
-                  <RulesList
-                    platform={platform}
-                    rules={rules}
-                  />
-                }
-                <Button.Group>
-                  <Button color="dark" onClick={toggle}>
-                    Cancel
-                  </Button>
-                  <Button color="primary" disabled={message || submitting}>
-                    {submitting ? (
-                      <>
-                        <span className="icon mr-2 loader is-loading"></span>
-                        <span>SUBMITTING...</span>
-                      </>
-                      ) : "Submit"
-                    }
-                  </Button>
-                </Button.Group>
-              </Modal.Card.Footer>
-            </form>
+        <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
+          <form onSubmit={handleSubmit}>
+            <Modal.Card.Body>
+              <img src={image} className="my-5" />
+              <Heading subtitle>
+                {title}
+              </Heading>
+              {content}
+            </Modal.Card.Body>
+            <Modal.Card.Footer className="pt-0">
+              {title === "Reject Confirmation" &&
+                <p className="is-size-7">
+                  Voting incorrectly will result in some loss<br />of staked tokens.
+                </p>
+              }
+              {title === "Approve Confirmation" &&
+                <RulesList
+                  platform={platform}
+                  rules={rules}
+                />
+              }
+              <Button.Group>
+                <Button color="dark" onClick={toggle}>
+                  Cancel
+                </Button>
+                <Button color="primary" disabled={message || submitting}>
+                  {submitting ? (
+                    <>
+                      <span className="icon mr-2 loader is-loading"></span>
+                      <span>SUBMITTING...</span>
+                    </>
+                    ) : "Submit"
+                  }
+                </Button>
+              </Button.Group>
+            </Modal.Card.Footer>
+          </form>
           )}
         />
       </Modal.Card>
@@ -163,7 +160,7 @@ const Modal_ = ({
 };
 
 
-export default function ApproveReject({ platform, id, providerId }) {
+export default function ApproveReject({ platform, id, providerId, fullWidth = false }) {
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
 
@@ -172,10 +169,10 @@ export default function ApproveReject({ platform, id, providerId }) {
 
   return (
     <>
-      <Button color="danger" onClick={togglReject}>
+      <Button color="danger" fullwidth={fullWidth} onClick={togglReject}>
         Reject
       </Button>
-      <Button color="primary" onClick={toggleApprove}>
+      <Button color="primary" fullwidth={fullWidth} onClick={toggleApprove}>
         Approve
       </Button>
 
