@@ -1,9 +1,23 @@
 export const idlFactory = ({ IDL }) => {
+  const ProviderError = IDL.Variant({
+    'InvalidContentType' : IDL.Null,
+    'NotFound' : IDL.Null,
+    'Unauthorized' : IDL.Null,
+    'RequiresWhitelisting' : IDL.Null,
+    'InvalidContentStatus' : IDL.Null,
+    'InvalidProvider' : IDL.Null,
+    'ProviderIsRegistered' : IDL.Null,
+  });
+  const ProviderResult = IDL.Variant({
+    'ok' : IDL.Null,
+    'err' : ProviderError,
+  });
   const Timestamp = IDL.Int;
   const AirdropUser = IDL.Record({
     'id' : IDL.Principal,
     'createdAt' : Timestamp,
   });
+  const Result = IDL.Variant({ 'ok' : IDL.Text, 'err' : ProviderError });
   const ContentStatus = IDL.Variant({
     'new' : IDL.Null,
     'approved' : IDL.Null,
@@ -104,9 +118,17 @@ export const idlFactory = ({ IDL }) => {
     'image' : IDL.Opt(Image__1),
     'rules' : IDL.Vec(Rule),
   });
+  const ProviderSettingResult = IDL.Variant({
+    'ok' : ProviderSettings,
+    'err' : ProviderError,
+  });
   const Image = IDL.Record({
     'imageType' : IDL.Text,
     'data' : IDL.Vec(IDL.Nat8),
+  });
+  const ProviderRegisterResult = IDL.Variant({
+    'ok' : IDL.Text,
+    'err' : ProviderError,
   });
   const ContentResult = IDL.Record({
     'status' : ContentStatus,
@@ -121,10 +143,15 @@ export const idlFactory = ({ IDL }) => {
     'rejected' : IDL.Null,
   });
   const ModClub = IDL.Service({
-    'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
+    'addProviderAdmin' : IDL.Func(
+        [IDL.Text, IDL.Principal, IDL.Opt(IDL.Principal)],
+        [ProviderResult],
+        [],
+      ),
+    'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [ProviderResult], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
-    'deregisterProvider' : IDL.Func([], [IDL.Text], []),
+    'deregisterProvider' : IDL.Func([], [Result], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
     'getAllContent' : IDL.Func(
@@ -134,12 +161,13 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
-    'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
     'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
+    'getProviders' : IDL.Func([], [IDL.Vec(ProviderPlus)], []),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
+    'getSettings' : IDL.Func([], [ProviderSettingResult], []),
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
     'registerModerator' : IDL.Func(
@@ -149,34 +177,30 @@ export const idlFactory = ({ IDL }) => {
       ),
     'registerProvider' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],
-        [IDL.Text],
+        [ProviderRegisterResult],
         [],
       ),
-    'removeRules' : IDL.Func([IDL.Vec(RuleId)], [], ['oneway']),
-    'sendImage' : IDL.Func(
-        [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text],
-        [IDL.Text],
-        [],
-      ),
+    'removeRules' : IDL.Func([IDL.Vec(RuleId)], [ProviderResult], []),
     'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'submitImage' : IDL.Func(
         [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Opt(IDL.Text)],
-        [IDL.Text],
+        [Result],
         [],
       ),
     'submitText' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
-        [IDL.Text],
+        [Result],
         [],
       ),
-    'subscribe' : IDL.Func([SubscribeMessage], [], []),
+    'subscribe' : IDL.Func([SubscribeMessage], [ProviderResult], []),
     'unStakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
-    'updateSettings' : IDL.Func([ProviderSettings], [], ['oneway']),
+    'updateSettings' : IDL.Func([ProviderSettings], [ProviderResult], []),
     'vote' : IDL.Func(
         [ContentId, Decision, IDL.Opt(IDL.Vec(RuleId))],
         [IDL.Text],
         [],
       ),
+    'whiteListProvider' : IDL.Func([IDL.Principal], [], []),
   });
   return ModClub;
 };

@@ -53,21 +53,27 @@ export interface Holdings {
 export interface Image { 'imageType' : string, 'data' : Array<number> }
 export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export interface ModClub {
-  'addRules' : (arg_0: Array<string>) => Promise<undefined>,
+  'addProviderAdmin' : (
+      arg_0: string,
+      arg_1: Principal,
+      arg_2: [] | [Principal],
+    ) => Promise<ProviderResult>,
+  'addRules' : (arg_0: Array<string>) => Promise<ProviderResult>,
   'airdropRegister' : () => Promise<AirdropUser>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
-  'deregisterProvider' : () => Promise<string>,
+  'deregisterProvider' : () => Promise<Result>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
-  'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
   'getModclubHoldings' : () => Promise<Holdings>,
   'getProfile' : () => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
+  'getProviders' : () => Promise<Array<ProviderPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
+  'getSettings' : () => Promise<ProviderSettingResult>,
   'getTokenHoldings' : () => Promise<Holdings>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
   'registerModerator' : (
@@ -79,31 +85,29 @@ export interface ModClub {
       arg_0: string,
       arg_1: string,
       arg_2: [] | [Image],
-    ) => Promise<string>,
-  'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
-  'sendImage' : (arg_0: string, arg_1: Array<number>, arg_2: string) => Promise<
-      string
-    >,
+    ) => Promise<ProviderRegisterResult>,
+  'removeRules' : (arg_0: Array<RuleId>) => Promise<ProviderResult>,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,
   'submitImage' : (
       arg_0: string,
       arg_1: Array<number>,
       arg_2: string,
       arg_3: [] | [string],
-    ) => Promise<string>,
+    ) => Promise<Result>,
   'submitText' : (
       arg_0: string,
       arg_1: string,
       arg_2: [] | [string],
-    ) => Promise<string>,
-  'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
+    ) => Promise<Result>,
+  'subscribe' : (arg_0: SubscribeMessage) => Promise<ProviderResult>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
-  'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
+  'updateSettings' : (arg_0: ProviderSettings) => Promise<ProviderResult>,
   'vote' : (
       arg_0: ContentId,
       arg_1: Decision,
       arg_2: [] | [Array<RuleId>],
     ) => Promise<string>,
+  'whiteListProvider' : (arg_0: Principal) => Promise<undefined>,
 }
 export interface Profile {
   'id' : UserId,
@@ -114,6 +118,13 @@ export interface Profile {
   'email' : string,
   'updatedAt' : Timestamp,
 }
+export type ProviderError = { 'InvalidContentType' : null } |
+  { 'NotFound' : null } |
+  { 'Unauthorized' : null } |
+  { 'RequiresWhitelisting' : null } |
+  { 'InvalidContentStatus' : null } |
+  { 'InvalidProvider' : null } |
+  { 'ProviderIsRegistered' : null };
 export type ProviderId = Principal;
 export interface ProviderPlus {
   'id' : Principal,
@@ -128,7 +139,15 @@ export interface ProviderPlus {
   'image' : [] | [Image__1],
   'rules' : Array<Rule>,
 }
+export type ProviderRegisterResult = { 'ok' : string } |
+  { 'err' : ProviderError };
+export type ProviderResult = { 'ok' : null } |
+  { 'err' : ProviderError };
+export type ProviderSettingResult = { 'ok' : ProviderSettings } |
+  { 'err' : ProviderError };
 export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
+export type Result = { 'ok' : string } |
+  { 'err' : ProviderError };
 export type Role = { 'admin' : null } |
   { 'moderator' : null } |
   { 'owner' : null };
