@@ -65,27 +65,17 @@ export default function FormModal({
               }            
             </Modal.Card.Body>
             <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
-              {/* {footerContent &&
-                <div style={{ marginRight: "auto", position: "relative" }}>
-                  {footerContent}
-                </div>
-              } */}
               <Button.Group>
                 <Button color="dark" onClick={toggle}>
                   Cancel
                 </Button>
-                <Button color="primary" disabled={message || submitting} className={submitting && "is-loading"}>
+                <Button
+                  color="primary"
+                  disabled={message || submitting}
+                  className={submitting && "is-loading"}
+                >
                   Submit
                 </Button>
-                {/* <Button color="primary" disabled={message || submitting}>
-                  {submitting ? (
-                    <>
-                      <span className="icon mr-2 loader is-loading"></span>
-                      <span>SUBMITTING...</span>
-                    </>
-                    ) : "Submit"
-                  }
-                </Button> */}
               </Button.Group>
             </Modal.Card.Footer>
           </form>

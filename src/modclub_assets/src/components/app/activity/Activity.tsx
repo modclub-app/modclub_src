@@ -12,6 +12,9 @@ export default function Activity() {
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [currentFilter, setCurrentFilter] = useState<string>("Completed");
+  const filters = ["Completed", "In Progress"];
+
   useEffect(() => {
     const fetchActivity = async () => {
       const activity = await getActivity(false);
@@ -34,12 +37,16 @@ export default function Activity() {
               Recent Activity
             </Heading>
             <Button.Group>
-              <Button color="primary">
-                Completed
-              </Button>
-              <Button color="ghost" className="has-text-white">
-                In Progress
-              </Button>
+              {filters.map(filter => 
+                <Button
+                  key={filter}
+                  color={currentFilter === filter ? "primary" : "ghost"}
+                  className="has-text-white mr-0"
+                  onClick={() => setCurrentFilter(filter)}
+                >
+                  {filter}
+                </Button>
+              )}
             </Button.Group>
           </Card.Content>
         </Card>
@@ -76,10 +83,10 @@ export default function Activity() {
                     </td>
                     <td className="is-relative">
                       <div>
-                      {/* <Progress value={15} max={100} className="mb-0" />
+                      <Progress value={15} max={100} className="mb-0" />
                       <span className="progress-label">
                         {`${item.voteCount}/${item.minVotes} votes`}
-                      </span> */}
+                      </span>
                       </div>
                     </td>
                     <td>{formatDate(item.createdAt)}</td>

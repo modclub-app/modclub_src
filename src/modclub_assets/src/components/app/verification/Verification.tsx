@@ -5,26 +5,27 @@ import { useParams } from "react-router";
 import { getContent, getProvider } from "../../../utils/api";
 import { Columns, Card, Button, Progress, Media, Image, Modal, Heading, Notification } from "react-bulma-components";
 import { Form, Field } from "react-final-form";
+import Toggle from "../../common/Toggle";
 import Userstats from "../userstats/Userstats";
 import Platform from "../platform/Platform";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 
-const Modal_ = ({ toggle, title, image, children }) => {
+const Modal_ = ({ toggle, title, image, children, handleSubmit }) => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   // const [content, setContent] = useState(<div className="loader is-loading"></div>);
   const [rules, setRules] = useState([]);
   const [message, setMessage] = useState(null);
 
-  const onFormSubmit = async (values: any) => {
-    console.log("FormModal values", values);
-  }
+  // const onFormSubmit = async (values: any) => {
+  //   console.log("FormModal values", values);
+  // }
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
       <Modal.Card backgroundColor="circles">
-        <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
-          <form onSubmit={handleSubmit}>
+        {/* <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
+          <form onSubmit={handleSubmit}> */}
             <Modal.Card.Body>
               <img src={image} className="my-5" />
               <Heading subtitle>
@@ -40,30 +41,23 @@ const Modal_ = ({ toggle, title, image, children }) => {
                   Voting incorrectly will result in some loss<br />of staked tokens.
                 </p>
               }
-              {/* {title === "Approve Confirmation" &&
-                <RulesList
-                  platform={platform}
-                  rules={rules}
-                />
-              } */}
               <Button.Group>
                 <Button color="dark" onClick={toggle}>
                   Cancel
                 </Button>
-                <Button color="primary" disabled={message || submitting}>
-                  {submitting ? (
-                    <>
-                      <span className="icon mr-2 loader is-loading"></span>
-                      <span>SUBMITTING...</span>
-                    </>
-                    ) : "Submit"
-                  }
+                <Button
+                  color="primary"
+                  disabled={message || submitting}
+                  className={submitting && "is-loading"}
+                  onClick={handleSubmit}
+                >
+                  Submit
                 </Button>
               </Button.Group>
             </Modal.Card.Footer>
-          </form>
+          {/* </form>
           )}
-        />
+        /> */}
       </Modal.Card>
       {message &&
         <Notification color={message.success ? "success" : "danger"} textAlign="center">
@@ -81,7 +75,6 @@ const Form_ = () => {
 
   const [showReject, setShowReject] = useState(false);
   const togglReject = () => setShowReject(!showReject);
-
 
   const onFormSubmit = (values: any) => {
     console.log("onFormSubmit values", values)
@@ -139,49 +132,9 @@ const Form_ = () => {
               </Media>
             </Card.Content>
             <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
-
-              <div className="field level is-relative is-toggle">
-                <Field
-                  name="facing"
-                  component="input"
-                  type="checkbox"
-                  value="facing"
-                  className="custom-control-input"
-                  id="facing"
-                />
-                <label htmlFor="facing" className="is-clickable" style={{ width: "90%" }}>
-                  1. In profile photo the person should be facing the camera directly
-                </label>
-              </div>
-
-              <div className="field level is-relative is-toggle">
-                <Field
-                  name="lit"
-                  component="input"
-                  type="checkbox"
-                  value="lit"
-                  className="custom-control-input"
-                  id="lit"
-                />
-                <label htmlFor="lit" className="is-clickable" style={{ width: "90%" }}>
-                  2. In the profile photo the person should be well list so you can see their face clearly
-                </label>
-              </div>
-
-              <div className="field level is-relative is-toggle">
-                <Field
-                  name="social"
-                  component="input"
-                  type="checkbox"
-                  value="social"
-                  className="custom-control-input"
-                  id="social"
-                />
-                <label htmlFor="social" className="is-clickable" style={{ width: "90%" }}>
-                  3. The users social account information should match the information the user provided. ( Name, last name, Same person )
-                </label>
-              </div>
-
+              <Toggle id="facing" label="1. In profile photo the person should be facing the camera directly" />
+              <Toggle id="lit" label="2. In the profile photo the person should be well list so you can see their face clearly" />
+              <Toggle id="social" label="3. The users social account information should match the information the user provided. ( Name, last name, Same person )" />
             </Card.Footer>
           </Card>
 
@@ -203,34 +156,8 @@ const Form_ = () => {
                 </Card.Content>
               </Card>
 
-              <div className="field level is-relative is-toggle">
-                <Field
-                  name="video"
-                  component="input"
-                  type="checkbox"
-                  value="video"
-                  className="custom-control-input"
-                  id="video"
-                />
-                <label htmlFor="video" className="is-clickable" style={{ width: "90%" }}>
-                  1. Confirm the person in the profile photo matches the person in the video.
-                </label>
-              </div>
-
-              <div className="field level is-relative is-toggle">
-                <Field
-                  name="phrase"
-                  component="input"
-                  type="checkbox"
-                  value="phrase"
-                  className="custom-control-input"
-                  id="phrase"
-                />
-                <label htmlFor="phrase" className="is-clickable" style={{ width: "90%" }}>
-                  2. Confirm that the person in the video sayes each of the words in the unique phrase.
-                </label>
-              </div>
-
+              <Toggle id="video" label="1. Confirm the person in the profile photo matches the person in the video." />
+              <Toggle id="phrase" label="2. Confirm that the person in the video sayes each of the words in the unique phrase." />
             </Card.Content>
           </Card>
         </Card.Content>
@@ -242,16 +169,13 @@ const Form_ = () => {
           <Button color="primary" fullwidth onClick={toggleApprove}>
             Approve
           </Button>
-
-          {/* <ApproveRejectVerification /> */}
-
         </Card.Footer>
-
         {showApprove &&
           <Modal_
             title="Approve Confirmation"
             image={approveImg}
             toggle={toggleApprove}
+            handleSubmit={onFormSubmit}
           >
             <p>You are confirming that this is a real human.</p>
             <p>Voting incorrectly will result in loss of some staked tokens.</p>
@@ -262,63 +186,17 @@ const Form_ = () => {
             title="Reject Confirmation"
             image={rejectImg}
             toggle={togglReject}
-          >
-            <div className="field level is-relative is-toggle">
-              <Field
-                name="reject-notsame"
-                component="input"
-                type="checkbox"
-                value="phrase"
-                className="custom-control-input"
-                id="phrase"
-              />
-              <label htmlFor="phrase" className="is-clickable">
-                Person in picture and video are not the same
-              </label>
-            </div>
-
-            <div className="field level is-relative is-toggle">
-              <Field
-                name="reject-social"
-                component="input"
-                type="checkbox"
-                value="phrase"
-                className="custom-control-input"
-                id="phrase"
-              />
-              <label htmlFor="phrase" className="is-clickable" >
-                Social accounts do not match person
-              </label>
-            </div>
-
-            <div className="field level is-relative is-toggle">
-              <Field
-                name="reject-phrase"
-                component="input"
-                type="checkbox"
-                value="phrase"
-                className="custom-control-input"
-                id="phrase"
-              />
-              <label htmlFor="phrase" className="is-clickable" >
-                Person did not say the unique phrase
-              </label>
-            </div>
-
-            <div className="field level is-relative is-toggle">
-              <Field
-                name="reject-name"
-                component="input"
-                type="checkbox"
-                value="phrase"
-                className="custom-control-input"
-                id="phrase"
-              />
-              <label htmlFor="phrase" className="is-clickable" >
-                Person did not provide first and last name
-              </label>
-            </div>
-
+            handleSubmit={onFormSubmit}
+          > 
+            <p className="mb-3">Select which rules were broken:</p>
+            <Card backgroundColor="dark">
+              <Card.Content>
+                <Toggle id="reject-notsame" label="Person in picture and video are not the same" />
+                <Toggle id="reject-social" label="Social accounts do not match person" />
+                <Toggle id="reject-phrase" label="Person did not say the unique phrase" />
+                <Toggle id="reject-name" label="Person did not provide first and last name" />
+              </Card.Content>
+            </Card>
           </Modal_>
         }
       </form>

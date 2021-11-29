@@ -10,47 +10,48 @@ import { Image__1 } from "../../../utils/types";
 
 
 const FilterBar = () => {
+  const [currentFilter, setCurrentFilter] = useState<string>("All");
+  const filters = ["All", "Newest", "Most Voted", "Less Voted"];
+  
   const apps = ["App One", "App Two", "App Three"];
 
   return (
     <Card className="mb-5">
       <Card.Content>
         <Level justifyContent="start">
-        <p className="mr-4">
-          Choose your favorite app:
-        </p>
+          <p className="mr-4">
+            Choose your favorite app:
+          </p>
 
-        <Dropdown
-          hoverable
-          label="All App's"
-          icon={
-            <Icon color="white">
-              <span className="material-icons">expand_more</span>
-            </Icon>
-          }
-          style={{ width: 100 }}
-        >
-          {apps.map((app) => (
-            <Dropdown.Item key={app} value={app} renderAs="a">
-              {app}
-            </Dropdown.Item>
-          ))}
-        </Dropdown>
+          <Dropdown
+            hoverable
+            label="All App's"
+            icon={
+              <Icon color="white">
+                <span className="material-icons">expand_more</span>
+              </Icon>
+            }
+            style={{ width: 100 }}
+          >
+            {apps.map(app => 
+              <Dropdown.Item key={app} value={app} renderAs="a">
+                {app}
+              </Dropdown.Item>
+            )}
+          </Dropdown>
 
-        <Button.Group className="ml-6">
-          <Button color="primary">
-            Completed
-          </Button>
-          <Button color="ghost" className="has-text-white">
-            Newest
-          </Button>
-          <Button color="ghost" className="has-text-white">
-            Most Voted
-          </Button>
-          <Button color="ghost" className="has-text-white">
-            Less Voted
-          </Button>
-        </Button.Group>
+          <Button.Group className="ml-4">
+            {filters.map(filter => 
+              <Button
+                key={filter}
+                color={currentFilter === filter ? "primary" : "ghost"}
+                className="has-text-white mr-0"
+                onClick={() => setCurrentFilter(filter)}
+              >
+                {filter}
+              </Button>
+            )}
+          </Button.Group>
 
         </Level>
       </Card.Content>
@@ -59,21 +60,24 @@ const FilterBar = () => {
 };
 
 const Applicant = ({ image, name, job, platform, submitted, required, reward }) => {
-
   return (
-    <Card style={{
-      background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%),
-      url(${image}) no-repeat top center`
-    }}>
+    <Link
+      to={`/app/verifications/${123}`}
+      className="card is-block"
+      style={{
+        background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%),
+        url(${image}) no-repeat top center`
+      }}
+    >
       <Card.Header>
         <Progress value={15} max={100} />
         <span className="progress-label" style={{ left: "1.5rem" }}>10/15 votes</span>
       </Card.Header>
 
       <Card.Content style={{ paddingTop: "50%" }}>
-        <Link to={`/app/verifications/${123}`} className="subtitle mb-0">
+        <Heading subtitle marginless>
           {name}
-        </Link>
+        </Heading>
         <p className="is-size-7 mt-2">
           {job}
         </p>
@@ -99,14 +103,12 @@ const Applicant = ({ image, name, job, platform, submitted, required, reward }) 
             <span>{"Reward: "+ reward}</span>
           </Button>
         </Button.Group>
-
       </Card.Footer>
-    </Card>
+    </Link>
   )
-}
+};
 
 export default function Verifications() {
-
   const applicants = [
     {
       image:"https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg",
@@ -163,7 +165,7 @@ export default function Verifications() {
 
       <Columns className="mb-5">
         {applicants.map((applicant) => (
-          <Columns.Column size={4}>
+          <Columns.Column fullhd={{ size: 4 }}>
             <Applicant
               image={applicant.image}
               name={applicant.name}

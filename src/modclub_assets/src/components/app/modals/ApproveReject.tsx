@@ -2,9 +2,11 @@ import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { Form, Field } from "react-final-form";
 import { Modal, Heading, Button, Card, Dropdown, Notification } from "react-bulma-components";
+import Toggle from "../../common/Toggle";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
+
 
 const RulesList = ({ platform, rules }) => {  
   return (
@@ -82,25 +84,16 @@ const Modal_ = ({
       }
       if (title === "Reject Confirmation") {
         setContent(
-          <Card backgroundColor="dark">
-            <Card.Content>
-              {rules.map((rule) => (
-                <div key={rule.id} className="field level is-relative is-toggle">
-                  <Field
-                    name={rule.id}
-                    component="input"
-                    type="checkbox"
-                    value={rule.id}
-                    className="custom-control-input"
-                    id={rule.id}
-                  />
-                  <label htmlFor={rule.id} className="is-clickable">
-                    {rule.description}
-                  </label>
-                </div>
-              ))}
-            </Card.Content>
-          </Card>
+          <>
+            <p className="mb-3">Select which rules were broken:</p>
+            <Card backgroundColor="dark">
+              <Card.Content>
+                {rules.map(rule => 
+                  <Toggle id={rule.id} label={rule.description} />
+                )}
+              </Card.Content>
+            </Card>
+          </>
         );
       }
     };
@@ -135,14 +128,13 @@ const Modal_ = ({
                 <Button color="dark" onClick={toggle}>
                   Cancel
                 </Button>
-                <Button color="primary" disabled={message || submitting}>
-                  {submitting ? (
-                    <>
-                      <span className="icon mr-2 loader is-loading"></span>
-                      <span>SUBMITTING...</span>
-                    </>
-                    ) : "Submit"
-                  }
+                <Button
+                  color="primary"
+                  disabled={message || submitting}
+                  className={submitting && "is-loading"}
+                  value=""
+                >
+                  Submit
                 </Button>
               </Button.Group>
             </Modal.Card.Footer>
@@ -159,7 +151,6 @@ const Modal_ = ({
   );
 };
 
-
 export default function ApproveReject({ platform, id, providerId, fullWidth = false }) {
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
@@ -172,7 +163,7 @@ export default function ApproveReject({ platform, id, providerId, fullWidth = fa
       <Button color="danger" fullwidth={fullWidth} onClick={togglReject}>
         Reject
       </Button>
-      <Button color="primary" fullwidth={fullWidth} onClick={toggleApprove}>
+      <Button color="primary" fullwidth={fullWidth} onClick={toggleApprove} className="ml-4">
         Approve
       </Button>
 

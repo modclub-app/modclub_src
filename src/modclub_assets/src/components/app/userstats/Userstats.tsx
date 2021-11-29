@@ -48,7 +48,11 @@ export default function Userstats({ detailed = false }) {
   const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
 
   const [showStake, setShowStake] = useState(false);
-  const toggleStake = () => setShowStake(!showStake);
+  const toggleStake = () => {
+    setShowStake(!showStake);
+    console.log("toggleStake tokenHoldings", tokenHoldings);
+    setTokenHoldings(tokenHoldings);
+  }
 
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);
@@ -71,13 +75,15 @@ export default function Userstats({ detailed = false }) {
           amount={tokenHoldings.wallet}
           usd={17}
           detailed={detailed}
-        > 
-          <Button color="dark" fullwidth>
-            Deposit
-          </Button>
-          <Button color="dark" fullwidth onClick={toggleWithdraw}>
-            Withdraw
-          </Button>
+        >
+          <Button.Group>
+            <Button color="dark" fullwidth>
+              Deposit
+            </Button>
+            <Button color="dark" fullwidth onClick={toggleWithdraw}>
+              Withdraw
+            </Button>
+          </Button.Group>
         </StatBox>
       </Columns.Column>
       <Columns.Column>
@@ -88,12 +94,14 @@ export default function Userstats({ detailed = false }) {
           usd={170}
           detailed={detailed}
         >
-          <Button color="dark" fullwidth onClick={toggleStake}>
-            Stake
-          </Button>
-          <Button color="dark" fullwidth onClick={toggleUnstake}>
-            Unstake
-          </Button>
+          <Button.Group>
+            <Button color="dark" fullwidth onClick={toggleStake}>
+              Stake
+            </Button>
+            <Button color="dark" fullwidth onClick={toggleUnstake}>
+              Unstake
+            </Button>
+          </Button.Group>
         </StatBox>
       </Columns.Column>
       <Columns.Column>

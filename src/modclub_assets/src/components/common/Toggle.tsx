@@ -1,20 +1,23 @@
-type Props = {
-  string?: string;
-  truncate?: number;
-};
+import { Field } from "react-final-form";
 
-export default function Snippet(props: Props) {
-  return props.string.length > props.truncate ? (
-    <div className="dropdown is-hoverable">
-      <div className="dropdown-trigger">
-        {props.string.substring(0, props.truncate - 5) + '...'}
-      </div>
-      <div className="dropdown-menu" id="dropdown-menu4" role="menu">
-        <div className="dropdown-content">
-          <div className="dropdown-item has-text-white">
-            {props.string}
-          </div>
-        </div>
-      </div>
-    </div>) : <>{props.string}</>
+// type Props = {
+//   id: string;
+// };
+
+export default function Toggle({ id, label }) {
+  return (
+    <div className="field level is-relative is-toggle">
+      <Field
+        name={id}
+        component="input"
+        type="checkbox"
+        value={id}
+        id={id}
+      />
+      <label htmlFor={id} className="is-clickable" style={{ width: "90%" }}>
+        {label}
+      </label>
+    </div>
+  )
+
 }

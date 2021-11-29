@@ -103,13 +103,19 @@ hr {
 }
 
 .buttons {
+  flex-wrap: nowrap;
+  &:last-child, &:not(:last-child) {
+    margin-bottom: 0;
+  }
+
   .button {
     margin-bottom: 0;
-    margin-right: 1rem !important;
-    margin-left: 0 !important;
-  }
-  &:not(:last-child), &:last-child {
-    margin-bottom: 0;
+    &:not(:last-child):not(.is-fullwidth) {
+      margin-right: 0;
+    }
+    &:not(:first-child) {
+      margin-left: 1rem;
+    }
   }
 }
 
@@ -182,7 +188,7 @@ hr {
   &.is-ghost {
     color: $primary;
     font-weight: 400;
-    padding: 0;
+    // padding: 0;
     font-size: 1rem;
     height: auto;
   }
@@ -287,9 +293,13 @@ hr {
   padding: 1.5rem 0;
   justify-content: space-between;
 
-  .button:not(:first-child) {
-    margin-left: 1rem;
+  .buttons:only-child {
+    width: 100%;
   }
+
+  // .button:not(:first-child) {
+  //   margin-left: 1rem;
+  // }
 }
 
 .modal-card {
