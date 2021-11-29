@@ -16,7 +16,7 @@ const RulesList = ({ platform, rules }) => {
       style={{ width: 100 }}
     >
       {rules.map((rule) => (
-        <Dropdown.Item key={rule.id} value={rule.id} renderAs="a">
+        <Dropdown.Item key={rule.id} value={rule.id} renderAs="a" style={{ textDecoration: "none" }}>
           {rule.description}
         </Dropdown.Item>
       ))

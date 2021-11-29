@@ -64,7 +64,8 @@ export default function Activity() {
                     <td>
                       <div className="loader is-loading"></div>
                     </td>
-                  </tr> : activity.map((item) => (
+                  </tr>
+                  : activity.map((item) => (
                   <tr key={item.vote.id}>
                     <td>
                       {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
@@ -74,16 +75,19 @@ export default function Activity() {
                       <Snippet string={item.title[0]} truncate={20} />
                     </td>
                     <td className="is-relative">
-                      <Progress value={15} max={100} className="mb-0" />
+                      <div>
+                      {/* <Progress value={15} max={100} className="mb-0" />
                       <span className="progress-label">
                         {`${item.voteCount}/${item.minVotes} votes`}
-                      </span>
+                      </span> */}
+                      </div>
                     </td>
                     <td>{formatDate(item.createdAt)}</td>
                     <td>{Number(item.reward)} MOD</td>
                     <td>{formatDate(item.rewardRelease)}</td>
                   </tr>
-                ))}
+                  ))
+                }
               </tbody>
             </table>
           </Card.Content>
