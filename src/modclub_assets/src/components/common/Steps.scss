@@ -1,0 +1,103 @@
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 1rem;
+  min-height: 2rem;
+
+  &:not(:last-child) {
+    margin-bottom: 1.5rem;
+  }
+ .step-item {
+    margin-top: 0;
+    position: relative;
+    flex-grow: 1;
+    flex-basis: 0;
+
+    &:not(:first-child) {
+      flex-basis: 1em;
+      flex-grow: 1;
+      flex-shrink: 1;
+      &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        height: 0.2em;
+        width: 100%;
+        bottom: 0;
+        left: -50%;
+        top: 1rem;
+      }
+    }
+  
+    &::before {
+      background: linear-gradient(to left, #dbdbdb 50%, #00d1b2 50%);
+      background-size: 200% 100%;
+      background-position: right bottom;
+    }
+
+    &.is-active .step-marker {
+      background-color: white;
+      border-color: #00d1b2;
+      color: #00d1b2;
+    }
+
+    &.is-completed .step-marker {
+      color: white;
+      background-color: #00d1b2;
+    }
+  }
+
+  .step-marker {
+    align-items: center;
+    display: flex;
+    border-radius: 50%;
+    font-weight: 700;
+    justify-content: center;
+    background: #b5b5b5;
+    color: white;
+    border: 0.2em solid #fff;
+    z-index: 1;
+  }
+
+  .step-details {
+    text-align: center;
+  }
+}
+
+
+.steps .steps-content {
+  align-items: stretch;
+  flex-basis: 100%;
+  margin: 2rem 0;
+}
+
+.steps .steps-content .step-content.is-active {
+  display: block;
+}
+
+.steps .step-item.is-active::before {
+  background-position: left bottom;
+}
+.steps .step-item.is-completed::before {
+  background-position: left bottom;
+}
+
+
+.steps .step-item .step-marker {
+  height: 2rem;
+  width: 2rem;
+  position: absolute;
+  left: calc(50% - 1rem);
+}
+
+.steps .step-item .step-details {
+  margin-top: 2rem;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  padding-top: 0.2em;
+}
+.steps .step-item .step-details .step-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}

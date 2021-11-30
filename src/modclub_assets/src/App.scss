@@ -601,13 +601,12 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .notification {
-  position: absolute;
+  position: fixed;
   top: 1em;
   left: 25%;
   right: 25%;
   z-index: 40;
 }
-
 
 .loader-wrapper {
   position: absolute;
