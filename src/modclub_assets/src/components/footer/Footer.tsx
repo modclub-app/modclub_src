@@ -24,7 +24,7 @@ export default function Footer() {
           </div>
           <div className="column is-one-fifth">
             <h4 className="subtitle has-text-white">Company</h4>
-            <a href="#contact" className="is-block has-text-white">
+            <a href="mailto:team@modclub.app" className="is-block has-text-white">
               Contact
             </a>
           </div>

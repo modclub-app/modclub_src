@@ -202,7 +202,7 @@ export default function Landing() {
         </div>
 
         <div className="has-text-centered pt-3">
-          <a className="button is-large extra is-primary">Contact Us</a>
+          <a className="button is-large extra is-primary" href="mailto:team@modclub.app">Contact Us</a>
         </div>
 
       </div>
