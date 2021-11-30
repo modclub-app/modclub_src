@@ -62,7 +62,7 @@ const FilterBar = () => {
 const Applicant = ({ image, name, job, platform, submitted, required, reward }) => {
   return (
     <Link
-      to={`/app/verifications/${123}`}
+      to={`/app/poh/${123}`}
       className="card is-block"
       style={{
         background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%),
@@ -163,7 +163,7 @@ export default function Verifications() {
 
       <FilterBar />
 
-      <Columns className="mb-5">
+      <Columns>
         {applicants.map((applicant) => (
           <Columns.Column fullhd={{ size: 4 }}>
             <Applicant

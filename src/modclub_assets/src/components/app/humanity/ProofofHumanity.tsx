@@ -163,12 +163,14 @@ const Form_ = () => {
         </Card.Content>
 
         <Card.Footer className="pt-0" style={{ border: 0 }}>
-          <Button color="danger" fullwidth onClick={togglReject}>
-            Reject
-          </Button>
-          <Button color="primary" fullwidth onClick={toggleApprove}>
-            Approve
-          </Button>
+          <Button.Group>
+            <Button color="danger" fullwidth onClick={togglReject}>
+              Reject
+            </Button>
+            <Button color="primary" fullwidth onClick={toggleApprove}>
+              Approve
+            </Button>
+          </Button.Group>
         </Card.Footer>
         {showApprove &&
           <Modal_
@@ -240,9 +242,9 @@ export default function Verification() {
 
         </Columns.Column>
 
-        <Columns.Column size={4}>
-          {/* <Platform providerId={content.providerId} />  */}
-        </Columns.Column>
+        {/* <Columns.Column size={4}>
+          <Platform providerId={content.providerId} /> 
+        </Columns.Column> */}
       </Columns>
     </>
   )

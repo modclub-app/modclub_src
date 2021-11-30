@@ -131,7 +131,7 @@ export default function TrustedIdentities() {
 
   return (
     <>
-      <Card className="mb-5">
+      <Card>
         <Card.Content>
           <Heading className="mb-2">
             Trusted identities
