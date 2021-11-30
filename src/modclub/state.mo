@@ -196,14 +196,12 @@ module State {
     for( (id, airdropUser) in stateShared.airdropUsers.vals()) {
       state.airdropUsers.put(id, airdropUser);
     };
-    Debug.print("LALALALAL");
     state.contentApproved.setRel(
       Rel.fromShare<Principal, Types.ContentId>(
       stateShared.contentApproved,
       (Principal.hash, Text.hash),
       (Principal.equal, Text.equal))
     );
-    Debug.print("FAFAFAFA");
     state.contentRejected.setRel(Rel.fromShare<Principal, Types.ContentId>(
       stateShared.contentRejected,
       (Principal.hash, Text.hash),
