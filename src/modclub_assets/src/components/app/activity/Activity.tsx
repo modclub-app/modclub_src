@@ -10,20 +10,38 @@ import Snippet from "../../common/Snippet";
 export default function Activity() {
   const { user } = useAuth();
   const [activity, setActivity] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [filteredActivity, setFilteredActivity] = useState(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const [currentFilter, setCurrentFilter] = useState<string>("Completed");
+  const [currentFilter, setCurrentFilter] = useState<string>("In Progress");
   const filters = ["Completed", "In Progress"];
+
+  const doSetFilter = (filter) => {
+    setCurrentFilter(filter)
+    // setFilteredActivity()
+  }
 
   useEffect(() => {
     const fetchActivity = async () => {
       const activity = await getActivity(false);
-      console.log("activity", activity);
+      // console.log("activity", activity);
       setActivity(activity);
       setLoading(false);
     };
     user && fetchActivity();
   }, [user]);
+
+  useEffect(() => {
+    if (!activity) return
+    console.log("currentFilter changed!", currentFilter);
+
+    const key = currentFilter === "In Progress" ? "new" : "completed"
+
+    setFilteredActivity(activity.filter(item =>
+      key in item.status)
+    );
+    console.log("filteredActivity", filteredActivity)
+  }, [currentFilter]);
 
   return (
     <>
@@ -72,7 +90,7 @@ export default function Activity() {
                       <div className="loader is-loading"></div>
                     </td>
                   </tr>
-                  : activity.map((item) => (
+                  : filteredActivity && filteredActivity.map((item) => (
                   <tr key={item.vote.id}>
                     <td>
                       {("approved" in item.vote.decision) ? "Approved" : "Rejected" }

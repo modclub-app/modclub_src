@@ -25,9 +25,9 @@ export function SidebarUser() {
       label={
         <>
         <Media style={{ background: "linear-gradient(to left, #3d52fa, #c91988", padding: 2, borderRadius: "50%" }}>
-          <Image src={pic} size={32} rounded />
+          <Image src={pic} size={48} rounded />
         </Media>
-        <div className="ml-3">
+        <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center">
           <Heading size={6} textAlign="left" marginless>
             {user.userName}
           </Heading>
