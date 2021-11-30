@@ -13,27 +13,24 @@ export default function Activity() {
   const [filteredActivity, setFilteredActivity] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [filters, setFilters] = useState([]);
-  const [currentFilter, setCurrentFilter] = useState<string>("In Progress");
+  const [currentFilter, setCurrentFilter] = useState<string>(null);
+
+  const getLabel = (label) => {
+    if (label === "new") return "In Progress"
+    if (label === "completed") return "Completed"
+  }
 
   useEffect(() => {
     const fetchActivity = async () => {
       const activity = await getActivity(false);
-      // console.log("activity", activity);
       setActivity(activity);
+      const filters = [...new Set(activity.map(item => 
+        Object.keys(item.status)[0])
+      )];
 
-      const progress = activity.find(item => "new" in item.status)
-      if (progress) {
-        setFilters([...filters, "In Progress"]);
-        setFilteredActivity(activity.filter(item => "new" in item.status));
-      }
-
-      const completed = activity.find(item => "completed" in item.status)
-      if (completed) {
-        setFilters([...filters, "Completed"]);
-        setCurrentFilter("Completed")
-        setFilteredActivity(activity.filter(item => "completed" in item.status));
-      }
-
+      setCurrentFilter(filters[0])
+      setFilteredActivity(activity.filter(item => filters[0] in item.status));
+      setFilters(filters);
       setLoading(false);
     };
     user && fetchActivity();
@@ -41,8 +38,7 @@ export default function Activity() {
 
   useEffect(() => {
     if (!activity) return
-    const key = currentFilter === "In Progress" ? "new" : "completed"
-    setFilteredActivity(activity.filter(item => key in item.status));
+    setFilteredActivity(activity.filter(item => currentFilter in item.status));
   }, [currentFilter]);
 
   return (
@@ -64,7 +60,7 @@ export default function Activity() {
                   className="has-text-white mr-0"
                   onClick={() => setCurrentFilter(filter)}
                 >
-                  {filter}
+                  {getLabel(filter)}
                 </Button>
               )}
             </Button.Group>
