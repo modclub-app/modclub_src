@@ -12,20 +12,28 @@ export default function Activity() {
   const [activity, setActivity] = useState(null);
   const [filteredActivity, setFilteredActivity] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
-
+  const [filters, setFilters] = useState([]);
   const [currentFilter, setCurrentFilter] = useState<string>("In Progress");
-  const filters = ["Completed", "In Progress"];
-
-  const doSetFilter = (filter) => {
-    setCurrentFilter(filter)
-    // setFilteredActivity()
-  }
 
   useEffect(() => {
     const fetchActivity = async () => {
       const activity = await getActivity(false);
       // console.log("activity", activity);
       setActivity(activity);
+
+      const progress = activity.find(item => "new" in item.status)
+      if (progress) {
+        setFilters([...filters, "In Progress"]);
+        setFilteredActivity(activity.filter(item => "new" in item.status));
+      }
+
+      const completed = activity.find(item => "completed" in item.status)
+      if (completed) {
+        setFilters([...filters, "Completed"]);
+        setCurrentFilter("Completed")
+        setFilteredActivity(activity.filter(item => "completed" in item.status));
+      }
+
       setLoading(false);
     };
     user && fetchActivity();
@@ -33,14 +41,8 @@ export default function Activity() {
 
   useEffect(() => {
     if (!activity) return
-    console.log("currentFilter changed!", currentFilter);
-
     const key = currentFilter === "In Progress" ? "new" : "completed"
-
-    setFilteredActivity(activity.filter(item =>
-      key in item.status)
-    );
-    console.log("filteredActivity", filteredActivity)
+    setFilteredActivity(activity.filter(item => key in item.status));
   }, [currentFilter]);
 
   return (
