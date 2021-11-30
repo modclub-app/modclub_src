@@ -1,4 +1,5 @@
 import Text "mo:base/Text";
+import Nat "mo:base/Nat";
 
 // This is the interface to modclub for providers
 module { 
@@ -15,11 +16,15 @@ module {
     status: ContentStatus;
   };
 
+  public type ProviderSettings = {
+    minVotes: Nat;
+    minStaked: Nat;
+  };
+
   public type Image = {
     data: [Nat8];
-    type: Text;
-  }
-
+    imageType: Text;
+  };
 
   public type SubscribeMessage = { callback: shared ContentResult -> (); };
 
