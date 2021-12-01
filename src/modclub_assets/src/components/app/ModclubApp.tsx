@@ -20,7 +20,7 @@ export default function ModclubApp() {
 
         <Sidebar />
 
-        <Columns.Column size="three-fifths" className="ml-6 mt-6 pb-6">
+        <Columns.Column size="three-fifths" id="main-content" className="mt-6 pb-6">
           <Switch>
             <Route exact path="/app">
               Please login to view this page  

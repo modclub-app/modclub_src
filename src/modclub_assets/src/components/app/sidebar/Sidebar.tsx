@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Columns, Menu, Image, Heading, Icon, Button } from "react-bulma-components";
 import LogoImg from '../../../../assets/logo.png';
-import { SidebarUser } from "./SidebarUser";
+import SidebarUser from "./SidebarUser";
 import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
 import { useHistory } from 'react-router-dom';
