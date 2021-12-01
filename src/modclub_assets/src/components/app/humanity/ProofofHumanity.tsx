@@ -5,7 +5,7 @@ import { useParams } from "react-router";
 import { getContent, getProvider } from "../../../utils/api";
 import { Columns, Card, Button, Progress, Media, Image, Modal, Heading, Notification } from "react-bulma-components";
 import { Form, Field } from "react-final-form";
-import Toggle from "../../common/Toggle";
+import Toggle from "../../common/toggle/Toggle";
 import Userstats from "../userstats/Userstats";
 import Platform from "../platform/Platform";
 import approveImg from '../../../../assets/approve.svg';

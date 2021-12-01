@@ -5,7 +5,7 @@ import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
 import { Card, Heading, Button, Progress } from "react-bulma-components";
 import Userstats from "../userstats/Userstats";
-import Snippet from "../../common/Snippet";
+import Snippet from "../../common/snippet/Snippet";
 
 export default function Activity() {
   const { user } = useAuth();

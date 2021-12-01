@@ -1,3 +1,4 @@
+@import "../../../common.scss";
 
 .steps {
   display: flex;
@@ -18,6 +19,7 @@
       flex-basis: 1em;
       flex-grow: 1;
       flex-shrink: 1;
+
       &::before {
         content: "";
         display: block;
@@ -31,19 +33,19 @@
     }
   
     &::before {
-      background: linear-gradient(to left, #dbdbdb 50%, #00d1b2 50%);
+      background: linear-gradient(to left, red 50%, #00d1b2 50%);
       background-size: 200% 100%;
       background-position: right bottom;
     }
 
     &.is-active .step-marker {
-      background-color: white;
+      background-color: red;
       border-color: #00d1b2;
       color: #00d1b2;
     }
 
     &.is-completed .step-marker {
-      color: white;
+      color: red;
       background-color: #00d1b2;
     }
   }

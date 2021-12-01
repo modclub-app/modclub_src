@@ -2,11 +2,10 @@ import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { Form, Field } from "react-final-form";
 import { Modal, Heading, Button, Card, Dropdown, Notification } from "react-bulma-components";
-import Toggle from "../../common/Toggle";
+import Toggle from "../../common/toggle/Toggle";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
-
 
 const RulesList = ({ platform, rules }) => {  
   return (
