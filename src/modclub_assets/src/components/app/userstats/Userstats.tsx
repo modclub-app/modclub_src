@@ -37,6 +37,7 @@ const StatBox = ({ children, image, title, amount, usd, detailed }) => {
 
 export default function Userstats({ detailed = false }) {
   const { user } = useAuth();
+  const [ holdingsUpdated, setHoldingsUpdated ] = useState(true);
 
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards : 0,
@@ -58,12 +59,14 @@ export default function Userstats({ detailed = false }) {
   const toggleUnstake = () => setShowUnstake(!showUnstake);
 
   useEffect(() => {
+    console.log({user, holdingsUpdated});
     const fetchTokenHoldings = async () => {
       const tokenHoldings = await getTokenHoldings();
       setTokenHoldings(tokenHoldings);
+      setHoldingsUpdated(false);
     };
-    user && fetchTokenHoldings();
-  }, [user]);
+    user && holdingsUpdated && fetchTokenHoldings();
+  }, [user, holdingsUpdated]);
 
   return (
     <>
@@ -123,16 +126,19 @@ export default function Userstats({ detailed = false }) {
         tokenHoldings={tokenHoldings}
       />
     }
-    {showStake &&
-      <Stake
-        toggle={toggleStake}
-        tokenHoldings={tokenHoldings}
+      {showStake &&
+        <Stake
+          toggle={toggleStake}
+          tokenHoldings={tokenHoldings}
+          onUpdate={() =>  setHoldingsUpdated(true) 
+        }
       />
     }
     {showUnstake &&
       <Unstake
         toggle={toggleUnstake}
         tokenHoldings={tokenHoldings}
+        onUpdate={() => setHoldingsUpdated(true)}
       />
     }
   </>

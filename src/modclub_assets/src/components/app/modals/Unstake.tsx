@@ -2,6 +2,7 @@ import { Field } from "react-final-form";
 import { Level } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { unStakeTokens } from '../../../utils/api';
+import { resourceUsage } from "process";
 
 
 const UpdateTable = ({ stake, amount = 0 }) => {
@@ -23,10 +24,12 @@ const UpdateTable = ({ stake, amount = 0 }) => {
   )
 }
 
-export default function Unstake({ toggle, tokenHoldings }) {  
+export default function Unstake({ toggle, tokenHoldings, onUpdate }) {  
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
-    return await unStakeTokens(amount);
+    let res = await unStakeTokens(amount);
+    onUpdate();
+    return res;
   };
 
   return (

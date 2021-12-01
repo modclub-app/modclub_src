@@ -26,10 +26,12 @@ const UpdateTable = ({ wallet, stake, amount = 0 }) => {
   )
 }
 
-export default function Stake({ toggle, tokenHoldings }) {  
+export default function Stake({ toggle, tokenHoldings, onUpdate }) {  
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
-    return await stakeTokens(amount);
+    let res = await stakeTokens(amount);
+    onUpdate();
+    return res;
   };
 
   return (
