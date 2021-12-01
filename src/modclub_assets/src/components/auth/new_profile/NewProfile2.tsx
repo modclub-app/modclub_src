@@ -134,13 +134,15 @@ const Validate = ({  }) => {
   return (
     <Card>
       <Card.Content>
+        
         <Steps activeStep={currentStepIndex}>
-          <Step id={'1'}  details="Face Id" />
-          <Step id={'2'}  details="Video" />
-          <Step id={'3'}  details="Confirm" />
+          <Step id={'1'}  details="Create Profile" />
+          <Step id={'2'}  details="Face Id" />
+          <Step id={'3'}  details="Video" />
+          <Step id={'4'}  details="Confirm" />
         </Steps>
 
-        has user now!
+        has user now! !!!
       </Card.Content>
 
       <Card.Footer>

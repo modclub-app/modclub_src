@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React from "react";
 import "./Steps.scss";
 
 const StepContext = React.createContext({});
@@ -16,7 +16,7 @@ const Step = ({ id, details }) => {
             ${context > Number(id) ? "is-completed" : ""}
           `}>
             <div className="step-marker">
-              {id}
+              <span>{id}</span>
             </div>
             {details &&
               <div className="step-details">

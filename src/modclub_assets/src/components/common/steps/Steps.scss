@@ -6,9 +6,6 @@
   font-size: 1rem;
   min-height: 2rem;
 
-  &:not(:last-child) {
-    margin-bottom: 1.5rem;
-  }
  .step-item {
     margin-top: 0;
     position: relative;
@@ -33,73 +30,65 @@
     }
   
     &::before {
-      background: linear-gradient(to left, red 50%, #00d1b2 50%);
+      background: linear-gradient(to left, $dark 50%, $primary 50%, $secondary 100%);
       background-size: 200% 100%;
       background-position: right bottom;
     }
 
-    &.is-active .step-marker {
-      background-color: red;
-      border-color: #00d1b2;
-      color: #00d1b2;
+    &.is-active {
+      &::before {
+        background-position: left bottom;
+      }
+      .step-marker {
+        background: linear-gradient(to left, $primary, $secondary);
+      }
     }
 
-    &.is-completed .step-marker {
-      color: red;
-      background-color: #00d1b2;
+    &.is-completed {
+      &::before {
+        background-position: left bottom;
+      }
+      .step-marker {
+        color: $silver;
+        background-color: $black;
+      }
     }
   }
 
   .step-marker {
-    align-items: center;
-    display: flex;
     border-radius: 50%;
-    font-weight: 700;
-    justify-content: center;
-    background: #b5b5b5;
-    color: white;
-    border: 0.2em solid #fff;
     z-index: 1;
+    height: 2rem;
+    width: 2rem;
+    position: absolute;
+    left: calc(50% - 1rem);
+    padding: 2px;
+    background: $silver;
+
+    span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: $dark;
+      height: 100%;
+      width: 100%;
+      font-weight: 700;
+    }
   }
 
   .step-details {
     text-align: center;
+    margin-top: 2rem;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    padding-top: 0.2em;
   }
-}
 
-
-.steps .steps-content {
-  align-items: stretch;
-  flex-basis: 100%;
-  margin: 2rem 0;
-}
-
-.steps .steps-content .step-content.is-active {
-  display: block;
-}
-
-.steps .step-item.is-active::before {
-  background-position: left bottom;
-}
-.steps .step-item.is-completed::before {
-  background-position: left bottom;
-}
-
-
-.steps .step-item .step-marker {
-  height: 2rem;
-  width: 2rem;
-  position: absolute;
-  left: calc(50% - 1rem);
-}
-
-.steps .step-item .step-details {
-  margin-top: 2rem;
-  margin-left: 0.5em;
-  margin-right: 0.5em;
-  padding-top: 0.2em;
-}
-.steps .step-item .step-details .step-title {
-  font-size: 1.2rem;
-  font-weight: 600;
+  .step-title {
+    margin-top: .5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $silver;
+  }
 }
