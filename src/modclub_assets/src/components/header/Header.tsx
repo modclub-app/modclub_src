@@ -16,7 +16,9 @@ export default function Header() {
               </Heading>
             </div>
           </a>
+
           <Hamburger />
+          
         </Navbar.Brand>
         <Navbar.Menu>
           <Navbar.Container align="right">

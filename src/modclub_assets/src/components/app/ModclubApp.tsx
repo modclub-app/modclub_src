@@ -5,6 +5,8 @@ import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
+import ProofofHumanityList from "./Humanity/ProofofHumanityList";
+import ProofofHumanity from "./Humanity/ProofofHumanity";
 import Moderators from "./moderators/Moderators";
 import Activity from "./activity/Activity";
 import Admin from "./admin/Admin";
@@ -18,7 +20,7 @@ export default function ModclubApp() {
 
         <Sidebar />
 
-        <Columns.Column className="ml-6 mt-6">
+        <Columns.Column size="three-fifths" id="main-content" className="mt-6 pb-6">
           <Switch>
             <Route exact path="/app">
               Please login to view this page  
@@ -28,6 +30,12 @@ export default function ModclubApp() {
             </Route>
             <Route path="/app/tasks/:taskId">
               <Task /> 
+            </Route>
+            <Route exact path="/app/poh">
+              <ProofofHumanityList />
+            </Route>
+            <Route path="/app/poh/:pohId">
+              <ProofofHumanity /> 
             </Route>
             <Route exact path="/app/moderators">
               <Moderators />

@@ -121,55 +121,51 @@ export default function NewProfile() {
               Upload Profile Picture
             </p>
 
-            <Form
-              onSubmit={onFormSubmit}
-              render={({ handleSubmit, values }) => (
-                <form onSubmit={handleSubmit}>
-
-                  <div className="field">
-                    <div className="control has-icons-left">
-                      <Field
-                        name="username"
-                        component="input"
-                        type="text"
-                        className="input is-medium"
-                        placeholder="Username"
-                      />
-                      <Icon align="left">
-                        <span className="material-icons">person</span>
-                      </Icon>
-                    </div>
+            <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
+              <form onSubmit={handleSubmit}>
+                <div className="field">
+                  <div className="control has-icons-left">
+                    <Field
+                      name="username"
+                      component="input"
+                      type="text"
+                      className="input is-medium"
+                      placeholder="Username"
+                    />
+                    <Icon align="left">
+                      <span className="material-icons">person</span>
+                    </Icon>
                   </div>
-                  <div className="field">
-                    <div className="control has-icons-left">
-                      <Field
-                        name="email"
-                        component="input"
-                        type="text"
-                        placeholder="Email"
-                        className="input is-medium"
-                      />
-                      <Icon align="left">
-                        <span className="material-icons">email</span>
-                      </Icon>
-                    </div>
+                </div>
+                <div className="field">
+                  <div className="control has-icons-left">
+                    <Field
+                      name="email"
+                      component="input"
+                      type="text"
+                      placeholder="Email"
+                      className="input is-medium"
+                    />
+                    <Icon align="left">
+                      <span className="material-icons">email</span>
+                    </Icon>
                   </div>
+                </div>
 
-                  <Button
-                    type="submit"
-                    disabled={!values.username || !values.email || submitting}
-                    size="large"
-                    color="primary"
-                    fullwidth
-                    value="submit"
-                    className={submitting ? "is-loading" : ""}
-                  >
-                    Submit
-                  </Button>
-                </form>
+                <Button
+                  type="submit"
+                  disabled={!values.username || !values.email || submitting}
+                  size="large"
+                  color="primary"
+                  fullwidth
+                  value="submit"
+                  className={submitting ? "is-loading" : ""}
+                >
+                  Submit
+                </Button>
+              </form>
               )}
-            />
-
+          />
           </Card.Content>
         </Card>
       </Columns.Column>

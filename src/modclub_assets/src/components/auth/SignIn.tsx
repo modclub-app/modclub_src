@@ -26,7 +26,7 @@ export function SignIn(props: PropsWithChildren<{}>) {
   };
 
   return (
-    <Button onClick={handleLogin} className="is-gradient is-outlined is-fullwidth mb-4">
+    <Button onClick={handleLogin} fullwidth className="is-gradient is-outlined mb-4">
       <span className="mr-2">LOGIN</span>
       <Icon>
         <img src={dfinitylogo} alt="dfinity logo" />

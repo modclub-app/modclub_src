@@ -4,7 +4,7 @@ import { useAuth } from "../../../utils/auth";
 import { getAllContent } from "../../../utils/api";
 import { Card, Progress, Heading, Button, Icon } from "react-bulma-components";
 import Userstats from "../userstats/Userstats";
-import ApproveReject from "../modals/ApproveReject"
+import ApproveReject from "../modals/ApproveReject";
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
@@ -63,7 +63,11 @@ export default function Tasks() {
 
             <Button.Group>
               <Link to={`/app/tasks/${item.id}`} className="button">See More</Link>
-              <ApproveReject platform={item.providerName} id={item.id} providerId={item.providerId} />
+              <ApproveReject
+                platform={item.providerName}
+                id={item.id}
+                providerId={item.providerId}
+              />
             </Button.Group>
           </Card.Footer>
         </Card>

@@ -4,7 +4,7 @@ import { Columns, Card, Button, Heading } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { addRules, removeRules, updateProviderSettings } from '../../../utils/api';
 
-import TrustedIdentities from "../trusted_identities/TrustedIdentities";
+import TrustedIdentities from "./TrustedIdentities";
 import walletImg from '../../../../assets/wallet.svg';
 import stakedImg from '../../../../assets/staked.svg';
 
@@ -281,10 +281,10 @@ export default function Admin() {
             </div>
           </Card.Content>
           <Card.Footer className="mb-0" style={{ border: 0 }}>
-            <Button color="dark" className="is-fullwidth">
+            <Button color="dark" fullwidth>
               Buy
             </Button>
-            <Button color="dark" className="is-fullwidth">
+            <Button color="dark" fullwidth>
               Deposit
             </Button>
           </Card.Footer>

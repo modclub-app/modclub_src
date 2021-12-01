@@ -2,6 +2,7 @@ import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { Form, Field } from "react-final-form";
 import { Modal, Heading, Button, Card, Dropdown, Notification } from "react-bulma-components";
+import Toggle from "../../common/toggle/Toggle";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
@@ -16,11 +17,10 @@ const RulesList = ({ platform, rules }) => {
       style={{ width: 100 }}
     >
       {rules.map((rule) => (
-        <Dropdown.Item key={rule.id} value={rule.id} renderAs="a">
+        <Dropdown.Item key={rule.id} value={rule.id} renderAs="a" style={{ textDecoration: "none" }}>
           {rule.description}
         </Dropdown.Item>
-      ))
-      }
+      ))}
     </Dropdown>
   );
 };
@@ -83,25 +83,16 @@ const Modal_ = ({
       }
       if (title === "Reject Confirmation") {
         setContent(
-          <Card backgroundColor="dark">
-            <Card.Content>
-              {rules.map((rule) => (
-                <div key={rule.id} className="field level is-relative is-toggle">
-                  <Field
-                    name={rule.id}
-                    component="input"
-                    type="checkbox"
-                    value={rule.id}
-                    className="custom-control-input"
-                    id={rule.id}
-                  />
-                  <label htmlFor={rule.id} className="is-clickable">
-                    {rule.description}
-                  </label>
-                </div>
-              ))}
-            </Card.Content>
-          </Card>
+          <>
+            <p className="mb-3">Select which rules were broken:</p>
+            <Card backgroundColor="dark">
+              <Card.Content>
+                {rules.map(rule => 
+                  <Toggle id={rule.id} label={rule.description} />
+                )}
+              </Card.Content>
+            </Card>
+          </>
         );
       }
     };
@@ -111,45 +102,42 @@ const Modal_ = ({
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
       <Modal.Card backgroundColor="circles">
-        <Form
-          onSubmit={onFormSubmit}
-          render={({ handleSubmit, values }) => (
-            <form onSubmit={handleSubmit}>
-              <Modal.Card.Body>
-                <img src={image} className="my-5" />
-                <Heading subtitle>
-                  {title}
-                </Heading>
-                {content}
-              </Modal.Card.Body>
-              <Modal.Card.Footer className="pt-0">
-                {title === "Reject Confirmation" &&
-                  <p className="is-size-7">
-                    Voting incorrectly will result in some loss<br />of staked tokens.
-                  </p>
-                }
-                {title === "Approve Confirmation" &&
-                  <RulesList
-                    platform={platform}
-                    rules={rules}
-                  />
-                }
-                <Button.Group>
-                  <Button color="dark" onClick={toggle}>
-                    Cancel
-                  </Button>
-                  <Button color="primary" disabled={message || submitting}>
-                    {submitting ? (
-                      <>
-                        <span className="icon mr-2 loader is-loading"></span>
-                        <span>SUBMITTING...</span>
-                      </>
-                      ) : "Submit"
-                    }
-                  </Button>
-                </Button.Group>
-              </Modal.Card.Footer>
-            </form>
+        <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
+          <form onSubmit={handleSubmit}>
+            <Modal.Card.Body>
+              <img src={image} className="my-5" />
+              <Heading subtitle>
+                {title}
+              </Heading>
+              {content}
+            </Modal.Card.Body>
+            <Modal.Card.Footer className="pt-0">
+              {title === "Reject Confirmation" &&
+                <p className="is-size-7">
+                  Voting incorrectly will result in some loss<br />of staked tokens.
+                </p>
+              }
+              {title === "Approve Confirmation" &&
+                <RulesList
+                  platform={platform}
+                  rules={rules}
+                />
+              }
+              <Button.Group>
+                <Button color="dark" onClick={toggle}>
+                  Cancel
+                </Button>
+                <Button
+                  color="primary"
+                  disabled={message || submitting}
+                  className={submitting && "is-loading"}
+                  value=""
+                >
+                  Submit
+                </Button>
+              </Button.Group>
+            </Modal.Card.Footer>
+          </form>
           )}
         />
       </Modal.Card>
@@ -162,8 +150,7 @@ const Modal_ = ({
   );
 };
 
-
-export default function ApproveReject({ platform, id, providerId }) {
+export default function ApproveReject({ platform, id, providerId, fullWidth = false }) {
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
 
@@ -172,10 +159,10 @@ export default function ApproveReject({ platform, id, providerId }) {
 
   return (
     <>
-      <Button color="danger" onClick={togglReject}>
+      <Button color="danger" fullwidth={fullWidth} onClick={togglReject}>
         Reject
       </Button>
-      <Button color="primary" onClick={toggleApprove}>
+      <Button color="primary" fullwidth={fullWidth} onClick={toggleApprove} className="ml-4">
         Approve
       </Button>
 

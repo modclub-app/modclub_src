@@ -1,0 +1,94 @@
+@import "../../../common.scss";
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 1rem;
+  min-height: 2rem;
+
+ .step-item {
+    margin-top: 0;
+    position: relative;
+    flex-grow: 1;
+    flex-basis: 0;
+
+    &:not(:first-child) {
+      flex-basis: 1em;
+      flex-grow: 1;
+      flex-shrink: 1;
+
+      &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        height: 0.2em;
+        width: 100%;
+        bottom: 0;
+        left: -50%;
+        top: 1rem;
+      }
+    }
+  
+    &::before {
+      background: linear-gradient(to left, $dark 50%, $primary 50%, $secondary 100%);
+      background-size: 200% 100%;
+      background-position: right bottom;
+    }
+
+    &.is-active {
+      &::before {
+        background-position: left bottom;
+      }
+      .step-marker {
+        background: linear-gradient(to left, $primary, $secondary);
+      }
+    }
+
+    &.is-completed {
+      &::before {
+        background-position: left bottom;
+      }
+      .step-marker {
+        color: $silver;
+        background-color: $black;
+      }
+    }
+  }
+
+  .step-marker {
+    border-radius: 50%;
+    z-index: 1;
+    height: 2rem;
+    width: 2rem;
+    position: absolute;
+    left: calc(50% - 1rem);
+    padding: 2px;
+    background: $silver;
+
+    span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: $dark;
+      height: 100%;
+      width: 100%;
+      font-weight: 700;
+    }
+  }
+
+  .step-details {
+    text-align: center;
+    margin-top: 2rem;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    padding-top: 0.2em;
+  }
+
+  .step-title {
+    margin-top: .5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $silver;
+  }
+}
