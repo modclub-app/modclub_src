@@ -580,7 +580,7 @@ label.checkbox {
   color: $white;
 }
 
-.has-background-dark .input {
+.has-background-dark .input , .has-background-dark .textarea {
   background: $black;
 }
 
