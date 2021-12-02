@@ -1,0 +1,80 @@
+@import "./common.scss";
+
+html {
+  @media screen and (min-width: 768px) {
+    font-size: 14px;
+  }
+  @media screen and (min-width: 769px) {
+    font-size: 12px;
+  }
+  @media screen and (min-width: 1024px) {
+    font-size: 14px;
+  }
+  @media screen and (min-width: 1408px) {
+    font-size: 16px;
+  }
+}
+
+.container:not(.is-max-desktop):not(.is-max-widescreen) {
+  max-width: none;
+
+  @media screen and (min-width: 769px) and (max-width: 1024px) {
+    padding-right: 1rem;
+  }
+  @media screen and (min-width: 1408px) {
+    max-width: 1344px;
+  }
+}
+
+@mixin columns($gap, $mainPadding) {
+  #main-content {
+    padding-left: $mainPadding;
+  }
+  .columns {
+    margin-left: -$gap;
+    margin-right: -$gap;
+    margin-top: -$gap;
+  
+    &:not(:last-child) {
+      margin-bottom: $gap;
+    }
+    &:last-child {
+      margin-bottom: -$gap;
+    }
+  
+    .column {
+      padding: $gap;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  @include columns($gap: 2.5%, $mainPadding: 2.5%);
+}
+@media screen and (min-width: 769px) {
+  @include columns($gap: 1.5%, $mainPadding: 4%);
+}
+// @media screen and (min-width: 1408px) {
+//   @include columns($gap: 2%);
+// }
+
+
+// .card {
+//   .card-content {
+//     padding: 8%;
+//   }
+//   .card-footer {
+//     padding: 8% 0;
+//     margin: 0 8% 8% 8%;
+//   }
+// }
+
+.level {
+  display: flex;
+}
+
+.modal-card, .modal-card.is-small {
+  @media screen and (max-width: 768px) {
+    width: 90%;
+  }
+}

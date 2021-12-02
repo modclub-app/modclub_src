@@ -11,27 +11,32 @@ import Unstake from "../modals/Unstake";
 
 const StatBox = ({ children, image, title, amount, usd, detailed }) => {
   return (
-    <Card backgroundColor="circles" className="is-fullheight">
-      <Card.Content className="is-flex is-align-items-center" style={{ padding: "2.5rem 2rem" }}>
-        <img src={image} className="mr-4" />
-        <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
-          <p className="has-text-light">{title}</p>
-          <Heading size={1} style={{ lineHeight: 1 }}>
-            {amount}
-            {detailed &&
-              <span className="has-text-weight-normal is-size-4 ml-4">
-                ${usd}
-              </span>
-            }
-          </Heading>
-        </div>
-      </Card.Content>
-      {detailed &&
-        <Card.Footer paddingless style={{ border: 0, marginBottom: "2.5rem" }} >
-          {children}
-        </Card.Footer>
-      }
-    </Card>
+    <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
+    {/* <Columns.Column > */}
+      <Card backgroundColor="circles" className="is-fullheight">
+        {/* <Card.Content className="is-flex is-align-items-center" style={{ padding: "2.5rem 2rem" }}> */}
+        <Card.Content className="is-flex is-align-items-center">
+          <img src={image} className="mr-4" />
+          <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
+            <p className="has-text-light">{title}</p>
+            <Heading size={1} style={{ lineHeight: 1 }}>
+              {amount}
+              {detailed &&
+                <span className="has-text-weight-normal is-size-4 ml-4">
+                  ${usd}
+                </span>
+              }
+            </Heading>
+          </div>
+        </Card.Content>
+        {detailed &&
+          // <Card.Footer paddingless style={{ border: 0, marginBottom: "2.5rem" }} >
+          <Card.Footer paddingless style={{ border: 0 }}>
+            {children}
+          </Card.Footer>
+        }
+      </Card>
+    </Columns.Column>
   );
 };
 
@@ -71,53 +76,46 @@ export default function Userstats({ detailed = false }) {
   return (
     <>
     <Columns>
-      <Columns.Column>
-        <StatBox
-          image={walletImg}
-          title="Wallet"
-          amount={tokenHoldings.wallet}
-          usd={17}
-          detailed={detailed}
-        >
-          <Button.Group>
-            <Button color="dark" fullwidth>
-              Deposit
-            </Button>
-            <Button color="dark" fullwidth onClick={toggleWithdraw}>
-              Withdraw
-            </Button>
-          </Button.Group>
-        </StatBox>
-      </Columns.Column>
-      <Columns.Column>
-        <StatBox
-          image={stakedImg}
-          title="Staked"
-          amount={tokenHoldings.stake}
-          usd={170}
-          detailed={detailed}
-        >
-          <Button.Group>
-            <Button color="dark" fullwidth onClick={toggleStake}>
-              Stake
-            </Button>
-            <Button color="dark" fullwidth onClick={toggleUnstake}>
-              Unstake
-            </Button>
-          </Button.Group>
-        </StatBox>
-      </Columns.Column>
-      <Columns.Column>
-        <StatBox
-          image={performanceImg}
-          title="Pending rewards"
-          amount={50}
-          usd={12}
-          detailed={detailed}
-        >
-        </StatBox>
-      </Columns.Column>
-      
+      <StatBox
+        image={walletImg}
+        title="Wallet"
+        amount={tokenHoldings.wallet}
+        usd={17}
+        detailed={detailed}
+      >
+        <Button.Group>
+          <Button color="dark" fullwidth>
+            Deposit
+          </Button>
+          <Button color="dark" fullwidth onClick={toggleWithdraw}>
+            Withdraw
+          </Button>
+        </Button.Group>
+      </StatBox>
+      <StatBox
+        image={stakedImg}
+        title="Staked"
+        amount={tokenHoldings.stake}
+        usd={170}
+        detailed={detailed}
+      >
+        <Button.Group>
+          <Button color="dark" fullwidth onClick={toggleStake}>
+            Stake
+          </Button>
+          <Button color="dark" fullwidth onClick={toggleUnstake}>
+            Unstake
+          </Button>
+        </Button.Group>
+      </StatBox>
+      <StatBox
+        image={performanceImg}
+        title="Pending rewards"
+        amount={50}
+        usd={12}
+        detailed={detailed}
+      >
+      </StatBox>
     </Columns>
 
     {showWithdraw &&

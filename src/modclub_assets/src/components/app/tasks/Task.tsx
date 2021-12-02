@@ -35,7 +35,7 @@ export default function Task() {
 
     setContent(
       <Columns>
-        <Columns.Column>
+        <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
           <Card>
             <Card.Header>
               <Card.Header.Title>
@@ -92,7 +92,7 @@ export default function Task() {
 
         </Columns.Column>
 
-        <Columns.Column size={4}>
+        <Columns.Column tablet={{ size: 12 }} desktop={{ size: 4 }}>
           <Platform providerId={content.providerId} /> 
         </Columns.Column>
       </Columns>

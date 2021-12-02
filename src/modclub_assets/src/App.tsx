@@ -1,6 +1,7 @@
 import React from "react";
 import './bulma.css'
 import "./App.scss";
+import "./Responsive.scss";
 
 import {
   HashRouter as Router,

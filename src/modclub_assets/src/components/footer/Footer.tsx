@@ -4,8 +4,9 @@ import modclubImg from "../../../assets/logo.png";
 
 export default function Footer_() {
   return (
-    <Footer backgroundColor="black" className="pb-6">
-      <Container>
+    <Footer backgroundColor="black" style={{ padding: "5rem 1.5rem" }}>
+      <Container marginless style={{ padding: "0 4rem" }}>
+      {/* <Container style={{ margin: "0 3rem" }}> */}
         <Columns>
           <Columns.Column size="one-fifth">
             <Image
@@ -31,7 +32,7 @@ export default function Footer_() {
             <Heading subtitle>
               Company
             </Heading>
-            <a href="#contact" className="is-block has-text-white">
+            <a href="mailto:team@modclub.app" className="is-block has-text-white">
               Contact
             </a>
           </Columns.Column>

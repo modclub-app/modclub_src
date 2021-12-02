@@ -13,6 +13,11 @@ const DropdownIcon = () => {
 };
 
 const DropdownLabel = ({ pic, user }) => {
+  const snippet = (string, truncate) => {
+    console.log("string.length", string.length)
+    return string.length > truncate ? string.substring(0, truncate - 3) + "..." : string;
+  }
+
   return (
     <>
       <Media style={{
@@ -29,12 +34,12 @@ const DropdownLabel = ({ pic, user }) => {
           style={{ overflow: "hidden", borderRadius: "50%" }}
         />
       </Media>
-      <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center">
-        <Heading size={6} textAlign="left" marginless>
-          {user.userName}
+      <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center has-text-left">
+        <Heading size={6}  marginless>
+          {snippet(user.userName, 15)}
         </Heading>
         <p className="has-text-white is-size-7">
-          {user.email}
+          {snippet(user.email, 18)}
         </p>
       </div>
     </>

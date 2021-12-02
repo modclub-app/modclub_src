@@ -21,10 +21,12 @@ export default function Sidebar() {
   )
   return (
     <Columns.Column size="one-fifth" backgroundColor="black" style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}>
+     {/* <Columns.Column size="one-fifth" backgroundColor="black"> */}
+
       <Menu className="p-3">
         <div className="is-flex is-align-items-center mt-3">
           <Image src={LogoImg} size={32} />
-          <Heading className="ml-2" style={{ fontFamily: "sans-serif" }}>
+          <Heading className="ml-2" style={{ fontFamily: "sans-serif", whiteSpace: "nowrap" }}>
             MODCLUB
           </Heading>
         </div>

@@ -1,6 +1,6 @@
 import { Field } from "react-final-form";
 import { useEffect, useState } from "react";
-import { Columns, Card, Button, Heading } from "react-bulma-components";
+import { Columns, Card, Button, Heading, Media, Image } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { addRules, removeRules, updateProviderSettings } from '../../../utils/api';
 
@@ -111,7 +111,6 @@ const EditRulesModal = ({ rules, toggle }) => {
 const EditModeratorSettingsModal = ({ toggle }) => {
   const onFormSubmit = async (values: any) => {
     console.log("parent !!! onFormSubmit values", values);
-
     return await updateProviderSettings(values);
   };
 
@@ -188,42 +187,40 @@ export default function Admin() {
   return (
     <>
     <Columns>
-      <Columns.Column>
+      <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
         <Card className="is-fullheight">
-          <Card.Content className="columns">
-
-            <Columns.Column>
-              <Card className="has-gradient">
-                <Card.Content className="py-6">
-                  <Heading className="has-text-centered">
-                  DSCVR<br/>logo
-                  </Heading>
-                </Card.Content>
-              </Card>
-            </Columns.Column>
-
-            <Columns.Column>
-              <table className="table is-label">
-                <tbody>
-                  <tr>
-                    <td>App Name:</td>
-                    <td>DSCVR</td>
-                  </tr>
-                  <tr>
-                    <td>Description:</td>
-                    <td>DSCVR is a reddit like community that exists on the internet computer.</td>
-                  </tr>
-                </tbody>
-              </table>
-              <Button color="dark" onClick={toggleEditApp}>
-                Edit App
-              </Button>
-            </Columns.Column>
+          <Card.Content>
+            <Media>
+              <Media.Item renderAs="figure" align="left" style={{ marginRight: "1.5rem" }}>
+                <Image
+                  size={128}
+                  src="http://bulma.io/images/placeholders/128x128.png"
+                  className="has-gradient"
+                />
+              </Media.Item>
+              <Media.Item>
+                <table className="table is-label">
+                  <tbody>
+                    <tr>
+                      <td>App Name:</td>
+                      <td>DSCVR</td>
+                    </tr>
+                    <tr>
+                      <td>Description:</td>
+                      <td>DSCVR is a reddit like community that exists on the internet computer.</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <Button color="dark" onClick={toggleEditApp}>
+                  Edit App
+                </Button>
+              </Media.Item>
+            </Media>
           </Card.Content>
         </Card>
       </Columns.Column>
 
-      <Columns.Column size={4}>
+      <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
         <Card className="is-fullheight">
           <Card.Content>
             <Heading subtitle>
@@ -257,7 +254,7 @@ export default function Admin() {
         </Card>
       </Columns.Column>
 
-      <Columns.Column size={4}>
+      <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
         <Card backgroundColor="circles" className="is-fullheight">
           <Card.Content>
             <Heading className="mb-2">
@@ -268,7 +265,7 @@ export default function Admin() {
         </Card>
       </Columns.Column>
 
-      <Columns.Column size={4}>
+      <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
         <Card backgroundColor="circles" className="is-fullheight">
           <Card.Content className="is-flex is-align-items-center pb-0">
             <img src={walletImg} />
@@ -281,17 +278,19 @@ export default function Admin() {
             </div>
           </Card.Content>
           <Card.Footer className="mb-0" style={{ border: 0 }}>
-            <Button color="dark" fullwidth>
-              Buy
-            </Button>
-            <Button color="dark" fullwidth>
-              Deposit
-            </Button>
+            <Button.Group>
+              <Button color="dark" fullwidth>
+                Buy
+              </Button>
+              <Button color="dark" fullwidth>
+                Deposit
+              </Button>
+            </Button.Group>
           </Card.Footer>
         </Card>
       </Columns.Column>
 
-      <Columns.Column size={4}>
+      <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
         <Card backgroundColor="circles" className="is-fullheight">
           <Card.Content className="is-flex is-align-items-center pb-0">
             <img src={stakedImg} />
@@ -310,7 +309,7 @@ export default function Admin() {
         </Card>
       </Columns.Column>
 
-      <Columns.Column size={6}>
+      <Columns.Column tablet={{ size: 12 }} desktop={{ size: 6 }}>
         <Card className="is-fullheight">
           <Card.Header>
             <Card.Header.Title textSize={5}>
@@ -334,7 +333,7 @@ export default function Admin() {
         </Card>
       </Columns.Column>
 
-      <Columns.Column size={6}>
+      <Columns.Column tablet={{ size: 12 }} desktop={{ size: 6 }}>
         <Card className="is-fullheight">
           <Card.Header>
             <Card.Header.Title textSize={5}>
@@ -367,7 +366,7 @@ export default function Admin() {
             </table>
           </Card.Content>
         </Card>
-      </Columns.Column>      
+      </Columns.Column>
     </Columns>
 
     <TrustedIdentities />

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
-import { Card, Heading, Button, Progress } from "react-bulma-components";
+import { Columns, Card, Heading, Button, Progress } from "react-bulma-components";
 import Userstats from "../userstats/Userstats";
 import Snippet from "../../common/snippet/Snippet";
 
@@ -36,12 +36,10 @@ const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {
                   <Snippet string={item.title[0]} truncate={20} />
                 </td>
                 <td className="is-relative">
-                  <div>
                   <Progress value={15} max={100} className="mb-0" />
                   <span className="progress-label">
                     {`${item.voteCount}/${item.minVotes} votes`}
                   </span>
-                  </div>
                 </td>
                 <td>{formatDate(item.createdAt)}</td>
                 <td>{Number(item.reward)} MOD</td>
@@ -103,38 +101,43 @@ export default function Activity() {
       <Userstats detailed={true} />
 
       {activity.length ?
-      <>
-        <Card className="mb-5">
-          <Card.Content className="level">
-            <Heading className="mb-0">
-              Recent Activity
-            </Heading>
-            <Button.Group>
-              {filters.map(filter => 
-                <Button
-                  key={filter}
-                  color={currentFilter === filter ? "primary" : "ghost"}
-                  className="has-text-white mr-0"
-                  onClick={() => setCurrentFilter(filter)}
-                >
-                  {getLabel(filter)}
-                </Button>
-              )}
-            </Button.Group>
-          </Card.Content>
-        </Card>
-        
-        <Card>
-          <Card.Content>
-            <Table
-              loading={loading}
-              filteredActivity={filteredActivity}
-              getLabel={getLabel}
-              currentFilter={currentFilter}
-            />
-          </Card.Content>
-        </Card>
-      </> :
+        <Columns>
+        <Columns.Column size={12}>
+            <Card>
+              <Card.Content className="level">
+                <Heading marginless>
+                  Recent Activity
+                </Heading>
+                <Button.Group>
+                  {filters.map(filter => 
+                    <Button
+                      key={filter}
+                      color={currentFilter === filter ? "primary" : "ghost"}
+                      className="has-text-white mr-0"
+                      onClick={() => setCurrentFilter(filter)}
+                    >
+                      {getLabel(filter)}
+                    </Button>
+                  )}
+                </Button.Group>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
+
+          <Columns.Column size={12}>
+            <Card>
+              <Card.Content>
+                <Table
+                  loading={loading}
+                  filteredActivity={filteredActivity}
+                  getLabel={getLabel}
+                  currentFilter={currentFilter}
+                />
+              </Card.Content>
+            </Card>
+          </Columns.Column>
+        </Columns>
+        :
         <Card>
           <Card.Content>
             <Heading>
