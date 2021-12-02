@@ -31,7 +31,7 @@ export default function Footer_() {
             <Heading subtitle>
               Company
             </Heading>
-            <a href="#contact" className="is-block has-text-white">
+            <a href="mailto:team@modclub.app" className="is-block has-text-white">
               Contact
             </a>
           </Columns.Column>

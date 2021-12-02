@@ -196,6 +196,11 @@ module {
     rewardRelease: Timestamp;
   };
 
+  public type ActivityResult = {
+    activity: Activity;
+    voteCount: VoteCount;
+  };
+
   public type AirdropUser = {
     id: Principal;
     createdAt: Timestamp;

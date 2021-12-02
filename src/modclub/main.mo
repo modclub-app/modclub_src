@@ -865,12 +865,14 @@ shared ({caller = initializer}) actor class ModClub () {
 
   system func preupgrade() {
     Debug.print("MODCLUB PREUPGRRADE");
+    Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
   system func postupgrade() {
+    Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
