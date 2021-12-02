@@ -8,6 +8,9 @@ import ApproveReject from "../modals/ApproveReject";
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
+import "../../../common.scss";
+
+
 export default function Tasks() {
   const { user } = useAuth();
   const [content, setContent] = useState(null);
@@ -26,7 +29,7 @@ export default function Tasks() {
    
     for (const item of content) {
       result.push(
-        <Card key={item.id} className="mb-6">
+        <Card key={item.id} style={{ marginBottom: "3%" }}>
           <Card.Header>
             <Card.Header.Title>
               {item.providerName}

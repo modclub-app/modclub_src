@@ -1,6 +1,6 @@
 import { Field } from "react-final-form";
 import { useEffect, useState } from "react";
-import { Columns, Card, Button, Heading } from "react-bulma-components";
+import { Columns, Card, Button, Heading, Media, Image } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { addRules, removeRules, updateProviderSettings } from '../../../utils/api';
 
@@ -188,37 +188,34 @@ export default function Admin() {
     <>
     <Columns>
       <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
-      {/* <Columns.Column size={8}> */}
         <Card className="is-fullheight">
-          <Card.Content className="columns">
-
-            <Columns.Column>
-              <Card className="has-gradient">
-                <Card.Content className="py-6">
-                  <Heading className="has-text-centered">
-                  DSCVR<br/>logo
-                  </Heading>
-                </Card.Content>
-              </Card>
-            </Columns.Column>
-
-            <Columns.Column>
-              <table className="table is-label">
-                <tbody>
-                  <tr>
-                    <td>App Name:</td>
-                    <td>DSCVR</td>
-                  </tr>
-                  <tr>
-                    <td>Description:</td>
-                    <td>DSCVR is a reddit like community that exists on the internet computer.</td>
-                  </tr>
-                </tbody>
-              </table>
-              <Button color="dark" onClick={toggleEditApp}>
-                Edit App
-              </Button>
-            </Columns.Column>
+          <Card.Content>
+            <Media>
+              <Media.Item renderAs="figure" align="left" style={{ marginRight: "1.5rem" }}>
+                <Image
+                  size={128}
+                  src="http://bulma.io/images/placeholders/128x128.png"
+                  className="has-gradient"
+                />
+              </Media.Item>
+              <Media.Item>
+                <table className="table is-label">
+                  <tbody>
+                    <tr>
+                      <td>App Name:</td>
+                      <td>DSCVR</td>
+                    </tr>
+                    <tr>
+                      <td>Description:</td>
+                      <td>DSCVR is a reddit like community that exists on the internet computer.</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <Button color="dark" onClick={toggleEditApp}>
+                  Edit App
+                </Button>
+              </Media.Item>
+            </Media>
           </Card.Content>
         </Card>
       </Columns.Column>
