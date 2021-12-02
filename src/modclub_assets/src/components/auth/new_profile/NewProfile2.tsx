@@ -21,6 +21,8 @@ import { Steps, Step } from "../../common/steps/Steps";
 
 import Webcam from "react-webcam";
 
+// import { FilesField } from "react-final-form-file-field";
+// import FileField from "../../common/File";
 
 
 const MAX_IMAGE_SIZE = 500000; // 500kb
@@ -141,10 +143,9 @@ const Signup = ({  }) => {
 };
 
 const FaceID = ({  }) => {
-  const [pic, setPic] = useState<string>(null);
-  const [picType, setPicType] = useState<string>(null);
+  const webcamRef = useRef(null);
   const inputFile = useRef(null);
-
+  const [imgSrc, setImgSrc] = useState(null);
 
   const handleFileChange = (e) => {
     const { files } = e.target;
@@ -157,14 +158,86 @@ const FaceID = ({  }) => {
         console.log(metadata);
         const data =
           typeof evt.target.result == "string" ? evt.target.result : null;
-        setPic(data);
-        setPicType(f.type);
+        setImgSrc(data);
+        // setPicType(f.type);
       };
       reader.readAsDataURL(f);
     }
   };
 
+  const captureWebcam = useCallback(() => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    console.log("imageSrc", imageSrc);
+    setImgSrc(imageSrc);
+  }, [webcamRef, setImgSrc]);
 
+  const clearImage = () => {
+    setImgSrc(null);
+  }
+
+  return (
+    <>
+      <input
+        style={{ display: "none" }}
+        ref={inputFile}
+        onChange={handleFileChange}
+        accept="image/*"
+        type="file"
+      />
+      {!imgSrc ? (
+        <>
+          <div className="is-relative">
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+            />
+            <Button
+              color="gradient"
+              rounded
+              style={{
+                position: "absolute",
+                bottom: "1rem",
+                left: 0,
+                right: 0,
+                margin: "auto",
+                width: "4rem",
+                height: "4rem"
+              }}
+              onClick={captureWebcam}
+            />
+          </div>
+
+          <div className="is-divider" data-content="OR"></div>
+          
+          <Button color="primary" fullwidth onClick={() => inputFile.current.click()}>
+            <Icon size="small" className="has-text-white mr-2">
+              <span className="material-icons">file_upload</span>
+            </Icon>
+            <span>Upload Photo</span>
+          </Button>
+        </>
+      ) : (
+        <>
+          <BulmaImage
+            src={imgSrc}
+          />
+          <Button.Group className="mt-4">
+            <Button color="danger" fullwidth onClick={clearImage}>
+              Retake
+            </Button>
+            <Button color="primary" fullwidth>
+              Next
+            </Button>
+          </Button.Group>
+        </>
+      )}
+    </>
+  )
+}
+
+const Video = ({  }) => {
+  // https://codepen.io/mozmorris/pen/yLYKzyp?editors=0010
 
   const webcamRef = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
@@ -175,52 +248,40 @@ const FaceID = ({  }) => {
     setImgSrc(imageSrc);
   }, [webcamRef, setImgSrc]);
 
+  const clearImage = () => {
+    setImgSrc(null);
+  }
+
+  const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"]
 
   return (
     <>
-      {!imgSrc ? (
-        <div className="is-relative">
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-          />
-          <Button
-            color="gradient"
-            rounded
-            style={{
-              position: "absolute",
-              bottom: "1rem",
-              left: 0,
-              right: 0,
-              margin: "auto",
-              width: "4rem",
-              height: "4rem"
-            }}
-            onClick={captureWebcam}
-          />
-        </div>
-      ) : (
-        <>
-          <BulmaImage
-            src={imgSrc}
-          />
-          <Level justifyContent="right" className="mt-4">
-            <Button color="primary">
-              Next
-            </Button>
-          </Level>
-        </>
-      )}   
-
-      {/* <input
-        ref={inputFile}
-        onChange={handleFileChange}
-        accept="image/*"
-        type="file"
-      /> */}
-
-
+      {phrases.map(phrase => (
+        <Button key={phrase} color="black" className="mr-4 mb-4" style={{ width: "30%" }}>
+          {phrase}
+        </Button>
+      ))}
+      <div className="is-relative">
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+        />
+        <Button
+          color="gradient"
+          rounded
+          style={{
+            position: "absolute",
+            bottom: "1rem",
+            left: 0,
+            right: 0,
+            margin: "auto",
+            width: "4rem",
+            height: "4rem"
+          }}
+          onClick={captureWebcam}
+        />
+      </div>
     </>
   )
 }
@@ -247,12 +308,14 @@ export default function NewProfile() {
 
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>
-              {currentStepIndex === 1 &&
+                {currentStepIndex === 1 &&
                   <Signup />
                 }
-
                 {currentStepIndex === 2 &&
                   <FaceID />
+                }
+                {currentStepIndex === 3 &&
+                  <Video />
                 }
               </Card.Content>
             </Card>
