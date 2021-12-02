@@ -35,13 +35,6 @@ html,
   height: 100%;
 }
 
-#main-content {
-  @media screen and (min-width: 769px) {
-    // border: 1px solid red;
-    margin-left: 3rem;
-  }
-}
-
 a {
   color: $primary;
   &:hover {

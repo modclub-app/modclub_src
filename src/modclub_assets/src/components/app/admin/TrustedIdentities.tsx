@@ -139,47 +139,49 @@ export default function TrustedIdentities() {
           <p className="mb-6">Add the principal IDs for other members of your team so they can manage your Modclub account</p>
 
           <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
-            <table className="table is-striped has-text-left is-checked">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Principal ID</th>
-                  <th>Name</th>
-                  <th className="has-text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dummyData.map((item) => (
+            <div className="table-container">
+              <table className="table is-striped has-text-left is-checked">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Principal ID</th>
+                    <th>Name</th>
+                    <th className="has-text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dummyData.map((item) => (
+                    <tr>
+                      <td>
+                        <label className="checkbox">
+                          <input type="checkbox" name="one" onClick={handleCheck} />
+                          <Icon size="small" className="check">
+                            <span className="material-icons">done</span>
+                          </Icon>
+                        </label>
+                      </td>
+                      <td>{item.id}</td>
+                      <td>{item.name}</td>
+                      <td className="has-text-left">
+                        <span className="is-clickable" onClick={toggleEdit}>Edit</span>
+                        <span className="is-clickable ml-5" onClick={toggleRemove}>Remove</span>
+                      </td>
+                    </tr>
+                  ))}
                   <tr>
                     <td>
                       <label className="checkbox">
-                        <input type="checkbox" name="one" onClick={handleCheck} />
-                        <Icon size="small" className="check">
+                        <input type="checkbox" name="four" onClick={handleCheckAll} />
+                        <span className="check icon is-small">
                           <span className="material-icons">done</span>
-                        </Icon>
+                        </span>
                       </label>
                     </td>
-                    <td>{item.id}</td>
-                    <td>{item.name}</td>
-                    <td className="has-text-left">
-                      <span className="is-clickable" onClick={toggleEdit}>Edit</span>
-                      <span className="is-clickable ml-5" onClick={toggleRemove}>Remove</span>
-                    </td>
+                    <td className="has-text-left">Check All</td>
                   </tr>
-                ))}
-                <tr>
-                  <td>
-                    <label className="checkbox">
-                      <input type="checkbox" name="four" onClick={handleCheckAll} />
-                      <span className="check icon is-small">
-                        <span className="material-icons">done</span>
-                      </span>
-                    </label>
-                  </td>
-                  <td className="has-text-left">Check All</td>
-                </tr>
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
             <Button.Group>
               <Button color="danger" disabled={!checked.length}>
                 Remove
