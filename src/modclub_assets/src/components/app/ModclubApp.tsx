@@ -16,7 +16,7 @@ export default function ModclubApp() {
 
   return (
     <>
-      <Columns className="container" marginless>
+      <Columns className="container" marginless multiline={false}>
 
         <Sidebar />
 

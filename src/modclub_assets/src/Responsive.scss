@@ -68,3 +68,13 @@ html {
 //     margin: 0 8% 8% 8%;
 //   }
 // }
+
+.level {
+  display: flex;
+}
+
+.modal-card, .modal-card.is-small {
+  @media screen and (max-width: 768px) {
+    width: 90%;
+  }
+}

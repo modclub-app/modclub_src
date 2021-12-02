@@ -8,7 +8,6 @@ import ApproveReject from "../modals/ApproveReject"
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
-
 const FilterBar = () => {
   const [currentFilter, setCurrentFilter] = useState<string>("All");
   const filters = ["All", "Newest", "Most Voted", "Less Voted"];
@@ -16,13 +15,13 @@ const FilterBar = () => {
   const apps = ["App One", "App Two", "App Three"];
 
   return (
-    <Card className="mb-5">
+    <Card style={{ overflow: "visible" }}>
       <Card.Content>
         <Level justifyContent="start">
-          <p className="mr-4">
+
+          <p className="mr-4" style={{ whiteSpace: "nowrap" }}>
             Choose your favorite app:
           </p>
-
           <Dropdown
             hoverable
             label="All App's"
@@ -39,8 +38,7 @@ const FilterBar = () => {
               </Dropdown.Item>
             )}
           </Dropdown>
-
-          <Button.Group className="ml-4">
+          <Button.Group className="ml-5">
             {filters.map(filter => 
               <Button
                 key={filter}
@@ -54,6 +52,7 @@ const FilterBar = () => {
           </Button.Group>
 
         </Level>
+
       </Card.Content>
     </Card>
   );
@@ -161,11 +160,12 @@ export default function Verifications() {
     <>
       <Userstats />
 
-      <FilterBar />
-
       <Columns>
+        <Columns.Column size={12}>
+          <FilterBar />
+        </Columns.Column>
         {applicants.map((applicant) => (
-          <Columns.Column fullhd={{ size: 4 }}>
+          <Columns.Column mobile={{ size: 12 }} fullhd={{ size: 4 }} style={{ maxWidth: 480 }}>
             <Applicant
               image={applicant.image}
               name={applicant.name}
@@ -177,7 +177,7 @@ export default function Verifications() {
             />
           </Columns.Column>
         ))}
-      </Columns>
+        </Columns>
     </>
   )
 }
