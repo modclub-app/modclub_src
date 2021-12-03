@@ -1,13 +1,28 @@
 import { Form, Field } from "react-final-form";
-import { Notification, Columns, Card, Heading, Media, Image as BulmaImage, Button, Icon } from "react-bulma-components";
+import {
+  Notification,
+  Columns,
+  Card,
+  Heading, 
+  Media,
+  Image as BulmaImage,
+  Button,
+  Icon,
+  Level
+} from "react-bulma-components";
 import { registerModerator } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { useHistory } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import placeholder from "../../../../assets/user_placeholder.png";
 import { Image, ImageData } from "../../../utils/types";
 import { Steps, Step } from "../../common/steps/Steps";
 
+
+import Webcam from "react-webcam";
+
+// import { FilesField } from "react-final-form-file-field";
+// import FileField from "../../common/File";
 
 
 const MAX_IMAGE_SIZE = 500000; // 500kb
@@ -46,128 +61,279 @@ const Signup = ({  }) => {
     setTimeout(() => setMessage(null), 2000);
   };
   return (
-    <Card>
-      <Card.Content>
-        <Heading textAlign="center">
-          Create your profile
-        </Heading>
+    <>
+      <Heading textAlign="center">
+        Create your profile
+      </Heading>
 
-        <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
-          <form onSubmit={handleSubmit}>
-            <div className="field">
-              <div className="control has-icons-left">
-                <Field
-                  name="username"
-                  component="input"
-                  type="text"
-                  className="input is-medium"
-                  placeholder="Username"
-                />
-                <Icon align="left">
-                  <span className="material-icons">person</span>
-                </Icon>
-              </div>
+      <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
+        <form onSubmit={handleSubmit}>
+          <div className="field">
+            <div className="control has-icons-left">
+              <Field
+                name="username"
+                component="input"
+                type="text"
+                className="input is-medium"
+                placeholder="Username"
+              />
+              <Icon align="left">
+                <span className="material-icons">person</span>
+              </Icon>
             </div>
+          </div>
 
-            <div className="field">
-              <div className="control has-icons-left">
-                <Field
-                  name="fullname"
-                  component="input"
-                  type="text"
-                  className="input is-medium"
-                  placeholder="Full Name"
-                />
-                <Icon align="left">
-                  <span className="material-icons">badge</span>
-                </Icon>
-              </div>
+          <div className="field">
+            <div className="control has-icons-left">
+              <Field
+                name="fullname"
+                component="input"
+                type="text"
+                className="input is-medium"
+                placeholder="Full Name"
+              />
+              <Icon align="left">
+                <span className="material-icons">badge</span>
+              </Icon>
             </div>
+          </div>
 
-            <div className="field">
-              <div className="control has-icons-left">
-                <Field
-                  name="email"
-                  component="input"
-                  type="text"
-                  placeholder="Email"
-                  className="input is-medium"
-                />
-                <Icon align="left">
-                  <span className="material-icons">email</span>
-                </Icon>
-              </div>
+          <div className="field">
+            <div className="control has-icons-left">
+              <Field
+                name="email"
+                component="input"
+                type="text"
+                placeholder="Email"
+                className="input is-medium"
+              />
+              <Icon align="left">
+                <span className="material-icons">email</span>
+              </Icon>
             </div>
+          </div>
 
-            <div className="field">
-              <div className="control">
-                <Field
-                  name="bio"
-                  component="textarea"
-                  placeholder="Tell us about yourself"
-                  className="textarea is-medium"
-                />
-              </div>
+          <div className="field">
+            <div className="control">
+              <Field
+                name="bio"
+                component="textarea"
+                placeholder="Tell us about yourself"
+                className="textarea is-medium"
+              />
             </div>
+          </div>
 
-            <Button
-              type="submit"
-              disabled={!values.username || !values.fullname || !values.email || !values.bio || submitting}
-              size="large"
-              color="primary"
-              fullwidth
-              value="submit"
-              className={submitting ? "is-loading" : ""}
-            >
-              Submit
-            </Button>
-          </form>
-          )}
+          <Button
+            type="submit"
+            disabled={!values.username || !values.fullname || !values.email || !values.bio || submitting}
+            size="large"
+            color="primary"
+            fullwidth
+            value="submit"
+            className={submitting ? "is-loading" : ""}
+          >
+            Submit
+          </Button>
+        </form>
+        )}
       />
-      </Card.Content>
-    </Card>
+    </>
+  )
+};
+
+const FaceID = ({  }) => {
+  const webcamRef = useRef(null);
+  const inputFile = useRef(null);
+  const [imgSrc, setImgSrc] = useState(null);
+
+  const handleFileChange = (e) => {
+    const { files } = e.target;
+    if (files.length > 0) {
+      const f = files[0];
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        console.log(evt.target.result);
+        const metadata = `name: ${f.name}, type: ${f.type}, size: ${f.size}, contents:`;
+        console.log(metadata);
+        const data =
+          typeof evt.target.result == "string" ? evt.target.result : null;
+        setImgSrc(data);
+        // setPicType(f.type);
+      };
+      reader.readAsDataURL(f);
+    }
+  };
+
+  const captureWebcam = useCallback(() => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    console.log("imageSrc", imageSrc);
+    setImgSrc(imageSrc);
+  }, [webcamRef, setImgSrc]);
+
+  const clearImage = () => {
+    setImgSrc(null);
+  }
+
+  return (
+    <>
+      <input
+        style={{ display: "none" }}
+        ref={inputFile}
+        onChange={handleFileChange}
+        accept="image/*"
+        type="file"
+      />
+      {!imgSrc ? (
+        <>
+          <div className="is-relative">
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+            />
+            <Button
+              color="gradient"
+              rounded
+              style={{
+                position: "absolute",
+                bottom: "1rem",
+                left: 0,
+                right: 0,
+                margin: "auto",
+                width: "4rem",
+                height: "4rem"
+              }}
+              onClick={captureWebcam}
+            />
+          </div>
+
+          <div className="is-divider" data-content="OR"></div>
+          
+          <Button color="primary" fullwidth onClick={() => inputFile.current.click()}>
+            <Icon size="small" className="has-text-white mr-2">
+              <span className="material-icons">file_upload</span>
+            </Icon>
+            <span>Upload Photo</span>
+          </Button>
+        </>
+      ) : (
+        <>
+          <BulmaImage
+            src={imgSrc}
+          />
+          <Button.Group className="mt-4">
+            <Button color="danger" fullwidth onClick={clearImage}>
+              Retake
+            </Button>
+            <Button color="primary" fullwidth>
+              Next
+            </Button>
+          </Button.Group>
+        </>
+      )}
+    </>
   )
 }
 
-const Validate = ({  }) => {
-  const [currentStepIndex, setCurrentStepIndex] = useState(1);
+const Video = ({  }) => {
+  // https://codepen.io/mozmorris/pen/yLYKzyp?editors=0010
+
+  const webcamRef = useRef(null);
+  const [imgSrc, setImgSrc] = useState(null);
+
+  const captureWebcam = useCallback(() => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    console.log("imageSrc", imageSrc);
+    setImgSrc(imageSrc);
+  }, [webcamRef, setImgSrc]);
+
+  const clearImage = () => {
+    setImgSrc(null);
+  }
+
+  const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"]
+
   return (
-    <Card>
-      <Card.Content>
-        
-        <Steps activeStep={currentStepIndex}>
-          <Step id={'1'}  details="Create Profile" />
-          <Step id={'2'}  details="Face Id" />
-          <Step id={'3'}  details="Video" />
-          <Step id={'4'}  details="Confirm" />
-        </Steps>
-
-        has user now! !!!
-      </Card.Content>
-
-      <Card.Footer>
-        <Button.Group>
-          <Button fullwidth onClick={() => setCurrentStepIndex(currentStepIndex - 1)}>
-            Cancel
-          </Button>
-          <Button fullwidth color="primary" onClick={() => setCurrentStepIndex(currentStepIndex + 1)}>
-            Next
-          </Button>
-        </Button.Group>
-      </Card.Footer>
-    </Card>
+    <>
+      {phrases.map(phrase => (
+        <Button key={phrase} color="black" className="mr-4 mb-4" style={{ width: "30%" }}>
+          {phrase}
+        </Button>
+      ))}
+      <div className="is-relative">
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+        />
+        <Button
+          color="gradient"
+          rounded
+          style={{
+            position: "absolute",
+            bottom: "1rem",
+            left: 0,
+            right: 0,
+            margin: "auto",
+            width: "4rem",
+            height: "4rem"
+          }}
+          onClick={captureWebcam}
+        />
+      </div>
+    </>
   )
 }
 
 export default function NewProfile() {
   const [hasUser, setHasUser] = useState<boolean>(true);
   const [message, setMessage] = useState(null);
+  const [currentStepIndex, setCurrentStepIndex] = useState(1);
 
   return (
   <>
     <Columns centered vCentered className="is-fullheight">
       <Columns.Column size={6}>
-        {!hasUser ? <Signup /> : <Validate />}
+        {/* {!hasUser ? <Signup /> : <Validate />} */}
+
+        <Card>
+          <Card.Content>
+            <Steps activeStep={currentStepIndex}>
+              <Step id={'1'}  details="Create Profile" />
+              <Step id={'2'}  details="Face Id" />
+              <Step id={'3'}  details="Video" />
+              <Step id={'4'}  details="Confirm" />
+            </Steps>
+
+            <Card backgroundColor="dark" className="mt-6">
+              <Card.Content>
+                {currentStepIndex === 1 &&
+                  <Signup />
+                }
+                {currentStepIndex === 2 &&
+                  <FaceID />
+                }
+                {currentStepIndex === 3 &&
+                  <Video />
+                }
+              </Card.Content>
+            </Card>
+
+            
+
+          </Card.Content>
+        </Card>
+
+        <Button.Group className="mt-3">
+          <Button fullwidth onClick={() => setCurrentStepIndex(currentStepIndex - 1)}>
+            Back
+          </Button>
+          <Button fullwidth color="primary" onClick={() => setCurrentStepIndex(currentStepIndex + 1)}>
+            Next
+          </Button>
+        </Button.Group>
+
       </Columns.Column>
     </Columns>
 

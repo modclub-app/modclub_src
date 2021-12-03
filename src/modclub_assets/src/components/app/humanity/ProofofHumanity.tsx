@@ -80,7 +80,7 @@ const Form_ = () => {
     console.log("onFormSubmit values", values)
   }
 
-  const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"]
+  const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"];
 
   return (
     <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
@@ -148,8 +148,8 @@ const Form_ = () => {
 
               <Card className="my-5">
                 <Card.Content className="pb-1">
-                  {phrases.map((phrase) => (
-                    <Button className="mr-4 mb-4" style={{ width: "22%" }}>
+                  {phrases.map(phrase => (
+                    <Button key={phrase} className="mr-4 mb-4" style={{ width: "22%" }}>
                       {phrase}
                     </Button>
                   ))}
