@@ -54,11 +54,8 @@ export default function Userstats({ detailed = false }) {
   const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
 
   const [showStake, setShowStake] = useState(false);
-  const toggleStake = () => {
-    setShowStake(!showStake);
-    console.log("toggleStake tokenHoldings", tokenHoldings);
-    setTokenHoldings(tokenHoldings);
-  }
+  const toggleStake = () => setShowStake(!showStake);
+
 
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);
