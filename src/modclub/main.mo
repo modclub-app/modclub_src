@@ -99,6 +99,24 @@ shared ({caller = initializer}) actor class ModClub () {
     return Array.sort(buf.toArray(), compareUsers);
   };
 
+  // Add principals to airdropWhitelist
+  public shared({ caller }) func addToAirdropWhitelist(pids: [Principal]) : async () {
+    await onlyOwner(caller);
+    for ( pid in pids.vals()) {
+      state.airdropWhitelist.put(pid, pid);
+    };
+  };
+
+  // Get airdropWhitelist entries
+  public shared({ caller }) func getAirdropWhitelist() : async [Principal] {
+    await onlyOwner(caller);
+    let buf = Buffer.Buffer<Principal>(0);      
+      for ( (id, u) in state.airdropWhitelist.entries()) {        
+        buf.add(u);                        
+      };
+    return buf.toArray();
+  };
+
    private func compareUsers(a : AirdropUser, b: AirdropUser) : Order.Order {
       if(a.createdAt > b.createdAt) {
         #greater;
@@ -396,6 +414,11 @@ shared ({caller = initializer}) actor class ModClub () {
       if(Principal.toText(caller) == "2vxsx-fae") {
           Debug.print("Anonymous principal");
           throw Error.reject("Unauthorized, user does not have an identity");
+      };
+
+      switch(state.airdropWhitelist.get(caller)){
+        case(null) throw Error.reject("Unauthorized");
+        case(_) ();
       };
 
       Debug.print("Registering moderator");

@@ -59,6 +59,7 @@ export function useProvideAuth(authClient): AuthContext {
       console.log("no lsUser, fetching and setting from backend");
       // If there is no user in local storage, retrieve from the backend
       getUserFromCanister().then((user_) => {
+        console.log("getUserFromCanister user_", user_);
         // If the user doesn't exist on the backend then we need to sign up
         if (user_) {
           setUser(user_);

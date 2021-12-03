@@ -12,12 +12,11 @@ export default function Sidebar() {
   const { isAuthReady, user, isAuthenticated, requiresSignUp } = useAuth();
   useEffect(
     () => {
-      if (!isAuthReady) return;
-      if (!isAuthenticated) return;
-      if(!user && requiresSignUp) {
+      console.log({ isAuthReady, user, isAuthenticated, requiresSignUp });
+      if(isAuthReady && isAuthenticated && !user && requiresSignUp) {
         history.push('/signup');
       }
-    }, [isAuthReady, isAuthenticated, user]
+    }, [isAuthReady, isAuthenticated, user, requiresSignUp]
   )
   return (
     <Columns.Column size="one-fifth" backgroundColor="black" style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}>
