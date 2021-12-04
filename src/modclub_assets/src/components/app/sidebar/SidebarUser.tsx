@@ -1,25 +1,25 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Dropdown, Heading, Media, Image, Icon } from "react-bulma-components";
 import { useAuth } from "../../../utils/auth"
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import placeholder from "../../../../assets/user_placeholder.png";
 
-const DropdownIcon = () => {
+const DropdownIcon = ({ showDropdown, toggle }) => {
   return (
-    <Icon color="white" style={{ marginLeft: "auto", width: 15 }}>
-      <span className="material-icons">expand_more</span>
+    <Icon color="white" onClick={toggle}>
+      <span className="material-icons">{showDropdown ? "expand_less" : "expand_more"}</span>
     </Icon>
   )
 };
 
-const DropdownLabel = ({ pic, user }) => {
+const DropdownLabel = ({ pic, user, toggle }) => {
   const snippet = (string, truncate) => {
-    console.log("string.length", string.length)
     return string.length > truncate ? string.substring(0, truncate - 3) + "..." : string;
   }
 
   return (
-    <>
+    <div className="is-flex" onClick={toggle}>
       <Media style={{
         display: "flex",
         alignItems: "center",
@@ -42,7 +42,7 @@ const DropdownLabel = ({ pic, user }) => {
           {snippet(user.email, 18)}
         </p>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -51,17 +51,29 @@ export default function SidebarUser() {
   const imgData = unwrap(user.pic);
   const pic = imgData ? fileToImgSrc(imgData.data, imgData.imageType) : placeholder;
 
+  const [showDropdown, setShowDropdown] = useState(false);
+  const toggle = () => {
+    console.log("toggle")
+    setShowDropdown(!showDropdown);
+  }
+
   const handleLogOut = async () => {
     await logOut();
   };
 
   return (
     <Dropdown
-      hoverable
       className="mb-5"
       color="ghost"
-      icon={<DropdownIcon />}
-      label={<DropdownLabel pic={pic} user={user} />}
+      icon={<DropdownIcon
+        showDropdown={showDropdown}
+        toggle={toggle}
+      />}
+      label={<DropdownLabel
+        pic={pic}
+        user={user}
+        toggle={toggle}
+      />}
     >
       <Link to="/app/activity" className="dropdown-item">
         <Icon size="small" className="mr-2">

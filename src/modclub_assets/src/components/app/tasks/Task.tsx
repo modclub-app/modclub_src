@@ -3,7 +3,8 @@ import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { getContent, getProvider } from "../../../utils/api";
-import { Columns, Card, Progress, Level, Heading, Icon } from "react-bulma-components";
+import { Columns, Card, Level, Heading, Icon } from "react-bulma-components";
+import Progress from "../../common/progress/Progress";
 import Userstats from "../userstats/Userstats";
 import Platform from "../platform/Platform";
 import ApproveReject from "../modals/ApproveReject";
@@ -44,10 +45,10 @@ export default function Task() {
                   Submitted by {content.sourceId}
                 </span>
               </Card.Header.Title>
-              <Progress value={15} max={100} />
-              <span className="progress-label">
-                {`${content.voteCount}/${content.minVotes} votes`}
-              </span>
+              <Progress
+                value={5}
+                min={10}
+              />
             </Card.Header>
             <Card.Content>
               <Heading>

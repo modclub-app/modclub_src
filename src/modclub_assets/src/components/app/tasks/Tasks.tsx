@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getAllContent } from "../../../utils/api";
-import { Columns, Card, Progress, Heading, Button, Icon } from "react-bulma-components";
+import { Columns, Card, Heading, Button, Icon } from "react-bulma-components";
+import Progress from "../../common/progress/Progress";
 import Userstats from "../userstats/Userstats";
 import ApproveReject from "../modals/ApproveReject";
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
@@ -33,8 +34,10 @@ export default function Tasks() {
                 {item.providerName}
                 <span>Submitted by {item.sourceId} {formatDate(item.createdAt)}</span>
               </Card.Header.Title>
-              <Progress value={15} max={100} />
-              <span className="progress-label">{`${item.voteCount}/${item.minVotes} votes`}</span>
+              <Progress
+                value={5}
+                min={10}
+              />
             </Card.Header>
             <Card.Content>
               <Heading subtitle>

@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getAllContent } from "../../../utils/api";
-import { Columns, Card, Dropdown, Level, Progress, Heading, Button, Icon } from "react-bulma-components";
+import { Columns, Card, Dropdown, Level, Heading, Button, Icon } from "react-bulma-components";
+import Progress from "../../common/progress/Progress";
 import Userstats from "../userstats/Userstats";
 import ApproveReject from "../modals/ApproveReject"
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
@@ -68,9 +69,11 @@ const Applicant = ({ image, name, job, platform, submitted, required, reward }) 
         url(${image}) no-repeat top center`
       }}
     >
-      <Card.Header>
-        <Progress value={15} max={100} />
-        <span className="progress-label" style={{ left: "1.5rem" }}>10/15 votes</span>
+      <Card.Header justifyContent="start">
+        <Progress
+          value={5}
+          min={10}
+        />
       </Card.Header>
 
       <Card.Content style={{ paddingTop: "50%" }}>

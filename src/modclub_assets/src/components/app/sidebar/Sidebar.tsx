@@ -14,7 +14,7 @@ export default function Sidebar() {
     () => {
       console.log({ isAuthReady, user, isAuthenticated, requiresSignUp });
       if(isAuthReady && isAuthenticated && !user && requiresSignUp) {
-        history.push('/signup');
+        history.push("/signup");
       }
     }, [isAuthReady, isAuthenticated, user, requiresSignUp]
   )
