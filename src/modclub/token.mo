@@ -93,7 +93,7 @@ module Token {
             if (balance >= amount) {
               _tokenStakes.put(p, balance - amount);
             } else {
-              throw Error.reject("Not enough tokens");
+              _tokenStakes.put(p, 0); // Reset the user to 0
             };
           };
           case (null) {
@@ -172,11 +172,11 @@ module Token {
             _tokenStakes.put(p, balance - amount);
             mintTo(p, amount);
           } else {
-            throw Error.reject(" 1111  Insufficient funds");
+            throw Error.reject("Insufficient funds");
           };
         };
         case (null) {
-         throw Error.reject(" 2222  Insufficient funds");
+         throw Error.reject("Insufficient funds");
         };
       };
     };
@@ -192,8 +192,10 @@ module Token {
             switch(state.votes.get(voteId)) {
               case (?vote) {
                 if(vote.decision == decision) {
+                  Debug.print("Rewarding user");
                   await reward(providerId, vote.userId, rewardAmount);
                 } else {
+                  Debug.print("Slashing user");
                   await burnStakeFrom(vote.userId, rewardAmount);
                 };
               };

@@ -671,7 +671,7 @@ shared ({caller = initializer}) actor class ModClub () {
                 initializer, 
                 decision, 
                 state.content2votes.get0(content.id), 
-                1,
+                provider.settings.minStaked, // TODO: Change this to a percentage
                 state
             );              
           };

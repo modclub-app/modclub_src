@@ -63,10 +63,12 @@ const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {
 export default function Activity() {
   const { user } = useAuth();
   const [activity, setActivity] = useState([]);
+  const [completedActivity, setCompletedActivity] = useState([]);
+  const [inProgressActivity, setInProgressActivity] = useState([]);
   const [filteredActivity, setFilteredActivity] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
   // const [filters, setFilters] = useState([]);
-  const [currentFilter, setCurrentFilter] = useState<string>(null);
+  const [currentFilter, setCurrentFilter] = useState<string>("new");
 
   const filters = ["completed", "new"];
 
@@ -75,32 +77,27 @@ export default function Activity() {
     if (label === "completed") return "Completed"
   }
 
-  useEffect(() => {
-    const fetchActivity = async () => {
-      const activity = await getActivity(false);
-      setActivity(activity);
-      const filters = [...new Set(activity.map(item => 
-        Object.keys(item.status)[0])
-      )];
+  const fetchActivity = async (filter) => {
+    setLoading(true);
+    if (currentFilter === "new") {
+      setInProgressActivity(await getActivity(false));
+    } else {
+      setCompletedActivity(await getActivity(true));
+    } 
+    setLoading(false);
+  };
 
-      setCurrentFilter(filters[0])
-      setFilteredActivity(activity.filter(item => filters[0] in item.status));
-      // setFilters(filters);
-      setLoading(false);
-    };
-    user && fetchActivity();
+  useEffect(() => {
+    user && fetchActivity(currentFilter);
   }, [user]);
 
   useEffect(() => {
-    if (!activity) return
-    setFilteredActivity(activity.filter(item => currentFilter in item.status));
+    fetchActivity(currentFilter);
   }, [currentFilter]);
 
   return (
     <>
       <Userstats detailed={true} />
-
-      {activity.length ?
         <Columns>
         <Columns.Column size={12}>
             <Card>
@@ -129,7 +126,8 @@ export default function Activity() {
               <Card.Content>
                 <Table
                   loading={loading}
-                  filteredActivity={filteredActivity}
+                  filteredActivity={
+                    currentFilter == "new" ? inProgressActivity : completedActivity}
                   getLabel={getLabel}
                   currentFilter={currentFilter}
                 />
@@ -137,15 +135,6 @@ export default function Activity() {
             </Card>
           </Columns.Column>
         </Columns>
-        :
-        <Card>
-          <Card.Content>
-            <Heading>
-              No Activity Yet
-            </Heading>
-          </Card.Content>
-        </Card>
-      }
     </>
   )
 }
