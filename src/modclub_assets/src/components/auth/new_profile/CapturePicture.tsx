@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { Image as BulmaImage, Button, Icon } from "react-bulma-components";
 import Webcam from "react-webcam";
 
@@ -82,16 +83,15 @@ export default function CapturePicture() {
           <BulmaImage
             src={imgSrc}
           />
-          <Button.Group className="mt-4">
-            <Button color="danger" fullwidth onClick={clearImage}>
-              Retake
-            </Button>
-            <Button color="primary" fullwidth>
-              Next
-            </Button>
-          </Button.Group>
+          <Button color="danger" className="mt-4" fullwidth onClick={clearImage}>
+            Retake
+          </Button>
         </>
       )}
+
+      <Link to="/signup2/3" className="button is-primary is-fullwidth mt-4" disabled={!imgSrc}>
+        Next
+      </Link>
     </>
   )
 }

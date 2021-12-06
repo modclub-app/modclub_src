@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "react-bulma-components";
 import Webcam from "react-webcam";
 
@@ -79,16 +80,25 @@ export default function CaptureVideo() {
             onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
           />
       </div>
-      {recordedChunks.length > 0 && (
-        <Button
-          color="primary"
-          fullwidth
-          className="mt-4"
-          onClick={handleDownload}
-        >
-          Download
-        </Button>
-      )}
+      {/* {recordedChunks.length > 0 && ( */}
+        <Button.Group className="mt-4">
+          <Button
+            color="primary"
+            fullwidth
+            disabled={!recordedChunks.length}
+            onClick={handleDownload}
+          >
+            Download
+          </Button>
+          <Link
+            to="/signup2/4"
+            className="button is-primary is-fullwidth"
+            disabled={!recordedChunks.length}
+          >
+            Next
+          </Link>
+        </Button.Group>
+      {/* )} */}
     </>
   );
 };

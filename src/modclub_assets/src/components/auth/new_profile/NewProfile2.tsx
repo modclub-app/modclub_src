@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useParams } from "react-router";
+import { useHistory, Link } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import {
   Notification,
@@ -14,6 +15,7 @@ import CapturePicture from "./CapturePicture";
 import CaptureVideo from "./CaptureVideo";
 
 const Signup = () => {
+  const history = useHistory();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
 
@@ -37,6 +39,7 @@ const Signup = () => {
     try {
       setTimeout(() => {
         setSubmitting(false);
+        history.push("/signup2/2")
       }, 2000);
     } catch (e) {
       setMessage({ success: false, value: "Error!" });
@@ -123,16 +126,15 @@ const Signup = () => {
         </form>
         )}
       />
+
+      {message &&
+        <Notification color={message.success ? "success" : "danger"} className="has-text-centered">
+          {message.value}
+        </Notification>
+      }
     </>
   )
 };
-
-
-
-
-
-
-
 
 const Confirmation = () => {
   return (
@@ -140,9 +142,7 @@ const Confirmation = () => {
       <Heading textAlign="center">
         Thank you for submitting.
       </Heading>
-
       <p>Your verification is in progress, please check back soon.</p>
-
       <Link to="/app" className="button is-primary mt-4">
         Back to MODCLUB
       </Link>
@@ -150,13 +150,14 @@ const Confirmation = () => {
   )
 };
 
-
-
-
 export default function NewProfile() {
   const [hasUser, setHasUser] = useState<boolean>(true);
   const [message, setMessage] = useState(null);
-  const [currentStepIndex, setCurrentStepIndex] = useState(1);
+  // const [currentStepIndex, setCurrentStepIndex] = useState(1);
+
+  const { currentStep } = useParams();
+  console.log('currentStep', currentStep);
+
 
   return (
   <>
@@ -164,41 +165,31 @@ export default function NewProfile() {
       <Columns.Column size={6}>
         <Card>
           <Card.Content>
-            <Steps activeStep={currentStepIndex}>
-              <Step id={'1'}  details="Create Profile" />
-              <Step id={'2'}  details="Face Id" />
-              <Step id={'3'}  details="Video" />
-              <Step id={'4'}  details="Confirm" />
+            <Steps activeStep={currentStep}>
+              <Step id={'1'} details="Create Profile" />
+              <Step id={'2'} details="Face Id" />
+              <Step id={'3'} details="Video" />
+              <Step id={'4'} details="Confirm" />
             </Steps>
 
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>
-                {currentStepIndex === 1 &&
+                {currentStep == 1 &&
                   <Signup />
                 }
-                {currentStepIndex === 2 &&
+                {currentStep == 2 &&
                   <CapturePicture />
                 }
-                {currentStepIndex === 3 &&
+                {currentStep == 3 &&
                   <CaptureVideo />
                 }
-                {currentStepIndex === 4 &&
+                {currentStep == 4 &&
                   <Confirmation />
                 }
               </Card.Content>
             </Card>
           </Card.Content>
         </Card>
-
-        <Button.Group className="mt-3">
-          <Button fullwidth onClick={() => setCurrentStepIndex(currentStepIndex - 1)}>
-            Back
-          </Button>
-          <Button fullwidth color="primary" onClick={() => setCurrentStepIndex(currentStepIndex + 1)}>
-            Next
-          </Button>
-        </Button.Group>
-
       </Columns.Column>
     </Columns>
 
