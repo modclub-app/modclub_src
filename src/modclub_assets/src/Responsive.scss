@@ -25,6 +25,10 @@ html {
     max-width: 1344px;
   }
 }
+.navbar > .container {
+  padding: 0 2rem;
+}
+
 
 @mixin columns($gap, $mainPadding) {
   #main-content {

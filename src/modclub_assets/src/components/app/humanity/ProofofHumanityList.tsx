@@ -20,7 +20,7 @@ const FilterBar = () => {
       <Card.Content>
         <Level justifyContent="start">
 
-          <p className="mr-4" style={{ whiteSpace: "nowrap" }}>
+          <p className="mr-4">
             Choose your favorite app:
           </p>
           <Dropdown
@@ -168,7 +168,13 @@ export default function Verifications() {
           <FilterBar />
         </Columns.Column>
         {applicants.map((applicant) => (
-          <Columns.Column mobile={{ size: 12 }} fullhd={{ size: 4 }} style={{ maxWidth: 480 }}>
+          <Columns.Column
+            key={applicant.image}
+            mobile={{ size: 12 }}
+            tablet={{ size: 6 }}
+            fullhd={{ size: 4 }}
+            style={{ maxWidth: 480 }}
+          >
             <Applicant
               image={applicant.image}
               name={applicant.name}
