@@ -76,7 +76,7 @@ export default function CapturePicture() {
           
           <Button.Group align="center">
             <Button color="black" onClick={() => inputFile.current.click()}>
-              <Icon size="small" className="has-text-white mr-2">
+              <Icon size="small" className="has-text-white">
                 <span className="material-icons">file_upload</span>
               </Icon>
               <span>Upload Photo</span>

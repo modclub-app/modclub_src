@@ -101,13 +101,13 @@ const Applicant = ({ image, name, job, platform, submitted, required, reward }) 
         </Card.Header.Title>
 
         <Button.Group className="is-flex-wrap-nowrap mt-5">
-          <Button fullwidth className="is-outlined">
+          <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
             <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">local_atm</span>
             </Icon>
             <span>{"Rq Stake: " + required}</span>
           </Button>
-          <Button fullwidth className="is-outlined">
+          <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
             <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">stars</span>
             </Icon>

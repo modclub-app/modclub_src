@@ -52,13 +52,13 @@ export default function Tasks() {
             <Card.Footer>
               <Button.Group>
                 <Button className="is-outlined">
-                  <Icon align="left" size="small" className="has-text-white ml-1 mr-2">
+                  <Icon align="left" size="small" className="has-text-white">
                     <span className="material-icons">local_atm</span>
                   </Icon>
                   <span>{"Rq Stake: " + item.minStake}</span>
                 </Button>
                 <Button className="is-outlined">
-                  <Icon align="left" size="small" className="has-text-white ml-1 mr-2">
+                  <Icon align="left" size="small" className="has-text-white">
                     <span className="material-icons">stars</span>
                   </Icon>
                   <span>{"Reward: "+ item.minStake }</span>

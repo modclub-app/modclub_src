@@ -132,7 +132,6 @@ hr {
     box-shadow: none;
   }
 
-
   &:hover {
     color: $light;
   }
@@ -203,6 +202,10 @@ hr {
     font-size: 1rem;
     height: auto;
   }
+}
+
+.button .icon:first-child:not(:last-child) {
+  margin-left: 0;
 }
 
 .level > .button.is-flex-grow-1:first-child {
