@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "react-bulma-components";
+import { Heading, Button, Card, Columns } from "react-bulma-components";
 import Webcam from "react-webcam";
 
 export default function CaptureVideo() {
@@ -55,14 +55,25 @@ export default function CaptureVideo() {
 
   return (
     <>
-      {phrases.map(phrase => (
-        <Button key={phrase} color="black" className="mr-4 mb-4" style={{ width: "30%" }}>
-          {phrase}
-        </Button>
-      ))}
+      <Heading subtitle textAlign="center">
+        Record yourself saying the following words:
+      </Heading>
+
+      <Card className="mb-4">
+        <Card.Content className="columns is-multiline">
+          {phrases.map(phrase => (
+            <Columns.Column size={4}>
+              <Button key={phrase} color="black" fullwidth>
+                {phrase}
+              </Button>
+            </Columns.Column>
+          ))}
+        </Card.Content>
+      </Card>
+
       <div className="is-relative">
         <Webcam
-          audio={true}
+          audio={false}
           ref={webcamRef}
         />
           <Button
@@ -80,25 +91,22 @@ export default function CaptureVideo() {
             onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
           />
       </div>
-      {/* {recordedChunks.length > 0 && ( */}
-        <Button.Group className="mt-4">
-          <Button
-            color="primary"
-            fullwidth
-            disabled={!recordedChunks.length}
-            onClick={handleDownload}
-          >
-            Download
-          </Button>
-          <Link
-            to="/signup2/4"
-            className="button is-primary is-fullwidth"
-            disabled={!recordedChunks.length}
-          >
-            Next
-          </Link>
-        </Button.Group>
-      {/* )} */}
+
+      <Button.Group align="right" className="mt-4">
+        <Button disabled={!recordedChunks.length} onClick={handleDownload}>
+          Download
+        </Button>
+        <Link to="/app/" className="button is-black">
+          Cancel
+        </Link>
+        <Link
+          to="/signup2/4"
+          className="button is-primary"
+          disabled={!recordedChunks.length}
+        >
+          Next
+        </Link>
+      </Button.Group>
     </>
   );
 };

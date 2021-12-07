@@ -50,7 +50,7 @@ const Signup = () => {
 
   return (
     <>
-      <Heading textAlign="center">
+      <Heading subtitle textAlign="center">
         Create your profile
       </Heading>
 
@@ -112,17 +112,18 @@ const Signup = () => {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            disabled={!values.username || !values.fullname || !values.email || !values.bio || submitting}
-            size="large"
-            color="primary"
-            fullwidth
-            value="submit"
-            className={submitting ? "is-loading" : ""}
-          >
-            Submit
-          </Button>
+          <Button.Group align="right">
+            <Button
+              type="submit"
+              disabled={!values.username || !values.fullname || !values.email || !values.bio || submitting}
+              size="large"
+              color="primary"
+              value="submit"
+              className={submitting ? "is-loading" : ""}
+            >
+              Next
+            </Button>
+          </Button.Group>
         </form>
         )}
       />
@@ -139,11 +140,11 @@ const Signup = () => {
 const Confirmation = () => {
   return (
     <div className="has-text-centered">
-      <Heading textAlign="center">
+      <Heading subtitle textAlign="center">
         Thank you for submitting.
       </Heading>
       <p>Your verification is in progress, please check back soon.</p>
-      <Link to="/app" className="button is-primary mt-4">
+      <Link to="/app" className="button is-large is-primary mt-5">
         Back to MODCLUB
       </Link>
     </div>

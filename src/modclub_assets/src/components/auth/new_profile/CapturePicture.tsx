@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Image as BulmaImage, Button, Icon } from "react-bulma-components";
+import { Heading, Image, Button, Icon, Level } from "react-bulma-components";
 import Webcam from "react-webcam";
 
 export default function CapturePicture() {
@@ -38,6 +38,9 @@ export default function CapturePicture() {
 
   return (
     <>
+      <Heading subtitle textAlign="center">
+        Submit a photo of yourself. It should be well lit and head on.
+      </Heading>
       <input
         style={{ display: "none" }}
         ref={inputFile}
@@ -54,7 +57,7 @@ export default function CapturePicture() {
               screenshotFormat="image/jpeg"
             />
             <Button
-              color="gradient"
+              color="success"
               rounded
               style={{
                 position: "absolute",
@@ -71,27 +74,34 @@ export default function CapturePicture() {
 
           <div className="is-divider" data-content="OR"></div>
           
-          <Button color="primary" fullwidth onClick={() => inputFile.current.click()}>
-            <Icon size="small" className="has-text-white mr-2">
-              <span className="material-icons">file_upload</span>
-            </Icon>
-            <span>Upload Photo</span>
-          </Button>
+          <Button.Group align="center">
+            <Button color="black" onClick={() => inputFile.current.click()}>
+              <Icon size="small" className="has-text-white mr-2">
+                <span className="material-icons">file_upload</span>
+              </Icon>
+              <span>Upload Photo</span>
+            </Button>
+          </Button.Group>
         </>
       ) : (
         <>
-          <BulmaImage
-            src={imgSrc}
-          />
-          <Button color="danger" className="mt-4" fullwidth onClick={clearImage}>
-            Retake
-          </Button>
+          <Image src={imgSrc} />
+          <Button.Group align="center">
+            <Button color="danger" className="mt-4" onClick={clearImage}>
+              Retake
+            </Button>
+          </Button.Group>
         </>
       )}
 
-      <Link to="/signup2/3" className="button is-primary is-fullwidth mt-4" disabled={!imgSrc}>
-        Next
-      </Link>
+      <Button.Group align="right" className="mt-4">
+        <Link to="/app/" className="button is-black" disabled={!imgSrc}>
+          Cancel
+        </Link>
+        <Link to="/signup2/3" className="button is-primary" disabled={!imgSrc}>
+          Next
+        </Link>
+      </Button.Group>
     </>
   )
 }
