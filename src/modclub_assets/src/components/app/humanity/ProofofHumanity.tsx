@@ -3,7 +3,17 @@ import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { getContent, getProvider } from "../../../utils/api";
-import { Columns, Card, Button, Media, Image, Modal, Heading, Notification } from "react-bulma-components";
+// import { Columns, Card, Button, Media, Image, Modal, Heading, Notification } from "react-bulma-components";
+import {
+  Heading,
+  Columns,
+  Card,
+  Button,
+  Modal,
+  Media,
+  Image,
+  Notification
+} from "react-bulma-components";
 import { Form, Field } from "react-final-form";
 import Toggle from "../../common/toggle/Toggle";
 import Progress from "../../common/progress/Progress";
@@ -230,6 +240,10 @@ export default function Verification() {
 
   return (
     <>
+      <Notification color="success" textAlign="center">
+        Proof of Humanity is just a DEMO. It is not functional. 
+      </Notification>
+
       <Userstats />
 
       <Columns>

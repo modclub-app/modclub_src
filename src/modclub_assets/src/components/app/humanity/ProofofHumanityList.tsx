@@ -2,7 +2,16 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getAllContent } from "../../../utils/api";
-import { Columns, Card, Dropdown, Level, Heading, Button, Icon } from "react-bulma-components";
+import {
+  Heading,
+  Columns,
+  Card,
+  Dropdown,
+  Level,
+  Button,
+  Icon,
+  Notification
+} from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../userstats/Userstats";
 import ApproveReject from "../modals/ApproveReject"
@@ -93,13 +102,13 @@ const Applicant = ({ image, name, job, platform, submitted, required, reward }) 
 
         <Button.Group className="is-flex-wrap-nowrap mt-5">
           <Button fullwidth className="is-outlined">
-            <Icon align="left" size="small" className="has-text-white mr-1">
+            <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">local_atm</span>
             </Icon>
             <span>{"Rq Stake: " + required}</span>
           </Button>
           <Button fullwidth className="is-outlined">
-            <Icon align="left" size="small" className="has-text-white mr-1">
+            <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">stars</span>
             </Icon>
             <span>{"Reward: "+ reward}</span>
@@ -118,8 +127,8 @@ export default function Verifications() {
       job: "Frelance Designer",
       platform: "Tumblr",
       submitted: "38 min ago",
-      required: 655,
-      reward: 5,
+      required: 4444,
+      reward: 4444,
     },
     {
       image:"https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg",
@@ -127,8 +136,8 @@ export default function Verifications() {
       job: "Frelance Designer",
       platform: "Tumblr",
       submitted: "38 min ago",
-      required: 655,
-      reward: 5,
+      required: 4444,
+      reward: 4444,
     },
     {
       image:"https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg",
@@ -136,8 +145,8 @@ export default function Verifications() {
       job: "Frelance Designer",
       platform: "Tumblr",
       submitted: "38 min ago",
-      required: 655,
-      reward: 5,
+      required: 4444,
+      reward: 4444,
     },
     {
       image:"https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg",
@@ -161,6 +170,10 @@ export default function Verifications() {
   
   return (
     <>
+      <Notification color="success" textAlign="center">
+        Proof of Humanity is just a DEMO. It is not functional. 
+      </Notification>
+
       <Userstats />
 
       <Columns>
