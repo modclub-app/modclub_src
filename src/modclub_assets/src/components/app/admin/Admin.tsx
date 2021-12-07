@@ -277,7 +277,7 @@ export default function Admin() {
               </Heading>
             </div>
           </Card.Content>
-          <Card.Footer className="mb-0" style={{ border: 0 }}>
+          <Card.Footer style={{ border: 0 }}>
             <Button.Group>
               <Button color="dark" fullwidth>
                 Buy
@@ -301,7 +301,7 @@ export default function Admin() {
               </Heading>
             </div>
           </Card.Content>
-          <Card.Footer className="mb-0" style={{ border: 0 }}>
+          <Card.Footer style={{ border: 0 }}>
             <Button color="dark" style={{ width: "50%" }}>
               Deposit
             </Button>

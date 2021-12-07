@@ -85,7 +85,7 @@ const Applicant = ({ image, name, job, platform, submitted, required, reward }) 
         </p>
       </Card.Content>
       
-      <Card.Footer className="is-block mb-0">
+      <Card.Footer className="is-block">
         <Card.Header.Title>
           {platform}
           <span>Submitted {submitted}</span>
@@ -93,13 +93,13 @@ const Applicant = ({ image, name, job, platform, submitted, required, reward }) 
 
         <Button.Group className="is-flex-wrap-nowrap mt-5">
           <Button fullwidth className="is-outlined">
-            <Icon align="left" size="small" className="has-text-white ml-1 mr-2">
+            <Icon align="left" size="small" className="has-text-white mr-1">
               <span className="material-icons">local_atm</span>
             </Icon>
             <span>{"Rq Stake: " + required}</span>
           </Button>
           <Button fullwidth className="is-outlined">
-            <Icon align="left" size="small" className="has-text-white ml-1 mr-2">
+            <Icon align="left" size="small" className="has-text-white mr-1">
               <span className="material-icons">stars</span>
             </Icon>
             <span>{"Reward: "+ reward}</span>

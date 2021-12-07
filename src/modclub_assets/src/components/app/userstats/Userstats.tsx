@@ -12,9 +12,7 @@ import Unstake from "../modals/Unstake";
 const StatBox = ({ children, image, title, amount, usd, detailed }) => {
   return (
     <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-    {/* <Columns.Column > */}
       <Card backgroundColor="circles" className="is-fullheight">
-        {/* <Card.Content className="is-flex is-align-items-center" style={{ padding: "2.5rem 2rem" }}> */}
         <Card.Content className="is-flex is-align-items-center">
           <img src={image} className="mr-4" />
           <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
@@ -30,8 +28,7 @@ const StatBox = ({ children, image, title, amount, usd, detailed }) => {
           </div>
         </Card.Content>
         {detailed &&
-          // <Card.Footer paddingless style={{ border: 0, marginBottom: "2.5rem" }} >
-          <Card.Footer paddingless style={{ border: 0 }}>
+          <Card.Footer paddingless style={{ border: 0, marginBottom: "1.5rem" }}>
             {children}
           </Card.Footer>
         }

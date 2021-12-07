@@ -133,10 +133,15 @@ const Form_ = () => {
                 </Media.Item>
               </Media>
             </Card.Content>
-            <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
+            {/* <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
               <Toggle id="facing" label="1. In profile photo the person should be facing the camera directly" />
               <Toggle id="lit" label="2. In the profile photo the person should be well list so you can see their face clearly" />
               <Toggle id="social" label="3. The users social account information should match the information the user provided. ( Name, last name, Same person )" />
+            </Card.Footer> */}
+            <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
+              <p>1. In profile photo the person should be facing the camera directly</p>
+              <p>2. In the profile photo the person should be well list so you can see their face clearly</p>
+              <p>3. The users social account information should match the information the user provided. ( Name, last name, Same person )</p>
             </Card.Footer>
           </Card>
 
@@ -148,7 +153,7 @@ const Form_ = () => {
             <Card.Content>
               <Image src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg" />
 
-              <Card className="my-5">
+              <Card className="mt-5">
                 <Card.Content className="pb-1">
                   {phrases.map(phrase => (
                     <Button key={phrase} className="mr-4 mb-4" style={{ width: "22%" }}>
@@ -157,10 +162,14 @@ const Form_ = () => {
                   ))}
                 </Card.Content>
               </Card>
-
-              <Toggle id="video" label="1. Confirm the person in the profile photo matches the person in the video." />
-              <Toggle id="phrase" label="2. Confirm that the person in the video sayes each of the words in the unique phrase." />
+              {/* <Toggle id="video" label="1. Confirm the person in the profile photo matches the person in the video." />
+              <Toggle id="phrase" label="2. Confirm that the person in the video sayes each of the words in the unique phrase." /> */}
             </Card.Content>
+            
+            <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
+              <p>1. Confirm the person in the profile photo matches the person in the video.</p>
+              <p>2. Confirm that the person in the video sayes each of the words in the unique phrase.</p>
+            </Card.Footer>
           </Card>
         </Card.Content>
 
