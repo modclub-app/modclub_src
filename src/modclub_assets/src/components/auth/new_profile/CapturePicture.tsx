@@ -50,7 +50,7 @@ export default function CapturePicture() {
       />
       {!imgSrc ? (
         <>
-          <div className="is-relative">
+          <div className="is-relative has-text-centered">
             <Webcam
               audio={false}
               ref={webcamRef}
@@ -69,7 +69,11 @@ export default function CapturePicture() {
                 height: "4rem"
               }}
               onClick={captureWebcam}
-            />
+            >
+              <Icon color="white">
+                <span className="material-icons">photo_camera</span>
+              </Icon>
+            </Button>
           </div>
 
           <div className="is-divider" data-content="OR"></div>
