@@ -75,17 +75,11 @@ export default function SidebarUser() {
         toggle={toggle}
       />}
     >
-      <Link to="/app/activity" className="dropdown-item">
+      <Link to="/app/profile" className="dropdown-item">
         <Icon size="small" className="mr-2">
-          <span className="material-icons">stars</span>
+          <span className="material-icons">assignment_ind</span>
         </Icon>
-        Activity
-      </Link>
-      <Link to="/app/settings" className="dropdown-item">
-        <Icon size="small" className="mr-2">
-          <span className="material-icons">logout</span>
-        </Icon>
-        Settings
+        Profile
       </Link>
       <Dropdown.Divider />
       <Dropdown.Item value="#" renderAs="a" onClick={handleLogOut}>
