@@ -1,5 +1,5 @@
 import { Field } from "react-final-form";
-import { Level } from "react-bulma-components";
+import { Level, Icon } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { unStakeTokens } from '../../../utils/api';
 import { resourceUsage } from "process";
@@ -49,7 +49,9 @@ export default function Unstake({ toggle, tokenHoldings, onUpdate }) {
             initialValue={100}
             max={tokenHoldings.stake}
           />
-          <span className="icon is-right has-text-white mr-4">AMT</span>
+          <Icon align="right" color="white" className="mr-4">
+            AMT
+          </Icon>
         </div>
       </div>
     </FormModal>

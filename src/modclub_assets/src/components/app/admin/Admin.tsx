@@ -1,5 +1,5 @@
 import { Field } from "react-final-form";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Columns, Card, Button, Heading, Media, Image } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { addRules, removeRules, updateProviderSettings } from '../../../utils/api';

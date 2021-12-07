@@ -1,5 +1,5 @@
 import { Field } from "react-final-form";
-import { Level } from "react-bulma-components";
+import { Level, Icon } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { stakeTokens } from '../../../utils/api';
 
@@ -43,7 +43,7 @@ export default function Stake({ toggle, tokenHoldings, onUpdate }) {
     >
       <div className="field">
         <div className="control has-icons-right">
-            <Field
+          <Field
             name="amount"
             component="input"
             type="number"
@@ -51,7 +51,9 @@ export default function Stake({ toggle, tokenHoldings, onUpdate }) {
             initialValue={100}
             max={tokenHoldings.wallet}
           />
-          <span className="icon is-right has-text-white mr-4">AMT</span>
+          <Icon align="right" color="white" className="mr-4">
+            AMT
+          </Icon>
         </div>
       </div>
     </FormModal>

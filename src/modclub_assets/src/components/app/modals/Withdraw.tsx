@@ -1,5 +1,5 @@
 import { Field } from "react-final-form";
-import { Level } from "react-bulma-components";
+import { Level, Icon } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { useState } from "react";
 
@@ -53,7 +53,9 @@ export default function Withdraw({ toggle, tokenHoldings }) {
             initialValue={100}
             max={tokenHoldings.wallet}
           />
-          <span className="icon is-right has-text-white mr-4">AMT</span>
+          <Icon align="right" color="white" className="mr-4">
+            AMT
+          </Icon>
         </div>
       </div>
     </FormModal>
