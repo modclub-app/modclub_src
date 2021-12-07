@@ -85,7 +85,7 @@ export default function Userstats({ detailed = false }) {
             Deposit
           </Button>
           <Button color="dark" fullwidth onClick={toggleWithdraw}>
-            Withdraw
+          Withdraw
           </Button>
         </Button.Group>
       </StatBox>
@@ -108,7 +108,7 @@ export default function Userstats({ detailed = false }) {
       <StatBox
         image={performanceImg}
         title="Pending rewards"
-        amount={50}
+        amount={tokenHoldings.pendingRewards}
         usd={12}
         detailed={detailed}
       >
