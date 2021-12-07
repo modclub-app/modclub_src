@@ -35,18 +35,6 @@ export default function Sidebar() {
         {isAuthenticated && user ? <SidebarUser /> : <SignIn />}
 
         <Menu.List>
-          <Link to="/app">
-            <Icon>
-              <span className="material-icons">dehaze</span>
-            </Icon>
-            Dashboard
-          </Link>
-          <Link to="/app/moderators">
-            <Icon>
-              <span className="material-icons">assignment_ind</span>
-            </Icon>
-            Moderators
-          </Link>
           <Link to="/app/tasks">
             <Icon>
               <span className="material-icons">playlist_add_check</span>
@@ -58,12 +46,6 @@ export default function Sidebar() {
               <span className="material-icons">check_circle_outline</span>
             </Icon>
             Human Verification
-          </Link>
-          <Link to="/app/support">
-            <Icon>
-              <span className="material-icons">help_outline</span>
-            </Icon>
-            Support
           </Link>
           <Link to="/app/admin">
             <Icon>
