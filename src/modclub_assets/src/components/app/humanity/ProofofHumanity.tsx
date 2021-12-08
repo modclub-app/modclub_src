@@ -18,7 +18,7 @@ import { Form, Field } from "react-final-form";
 import Toggle from "../../common/toggle/Toggle";
 import Progress from "../../common/progress/Progress";
 
-import Userstats from "../userstats/Userstats";
+import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";

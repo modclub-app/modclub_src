@@ -4,7 +4,7 @@ import { useAuth } from "../../../utils/auth";
 import { getAllContent } from "../../../utils/api";
 import { Columns, Card, Heading, Button, Icon } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
-import Userstats from "../userstats/Userstats";
+import Userstats from "../profile/Userstats";
 import ApproveReject from "../modals/ApproveReject";
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
@@ -12,6 +12,7 @@ import { Image__1 } from "../../../utils/types";
 export default function Tasks() {
   const { user } = useAuth();
   const [content, setContent] = useState(null);
+  const [voted, setVoted] = useState<boolean>(true);
 
   const getImage = (data: any) => {
     const image = unwrap<Image__1>(data);
@@ -27,7 +28,7 @@ export default function Tasks() {
    
     for (const item of content) {
       result.push(
-        <Columns.Column key={item.id}>
+        <Columns.Column key={item.id} size={12}>
           <Card>
             <Card.Header>
               <Card.Header.Title>
@@ -35,8 +36,8 @@ export default function Tasks() {
                 <span>Submitted by {item.sourceId} {formatDate(item.createdAt)}</span>
               </Card.Header.Title>
               <Progress
-                value={5}
-                min={10}
+                value={Number(item.voteCount)}
+                min={Number(item.minVotes)}
               />
             </Card.Header>
             <Card.Content>
@@ -71,6 +72,7 @@ export default function Tasks() {
                   platform={item.providerName}
                   id={item.id}
                   providerId={item.providerId}
+                  onUpdate={() => setVoted(true)}
                 />
               </Button.Group>
             </Card.Footer>
@@ -83,7 +85,8 @@ export default function Tasks() {
 
   useEffect(() => {
     user && renderContent();
-  }, [user]);
+    setVoted(false);
+  }, [user, voted]);
   
   return (
     <>

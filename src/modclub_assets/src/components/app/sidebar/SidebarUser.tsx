@@ -75,7 +75,7 @@ export default function SidebarUser() {
         toggle={toggle}
       />}
     >
-      <Link to="/app/profile" className="dropdown-item">
+      <Link to="/app/activity" className="dropdown-item">
         <Icon size="small" className="mr-2">
           <span className="material-icons">assignment_ind</span>
         </Icon>

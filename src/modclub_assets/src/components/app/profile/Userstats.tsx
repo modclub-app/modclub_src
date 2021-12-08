@@ -39,8 +39,7 @@ const StatBox = ({ children, image, title, amount, usd, detailed }) => {
 
 export default function Userstats({ detailed = false }) {
   const { user } = useAuth();
-  const [ holdingsUpdated, setHoldingsUpdated ] = useState(true);
-
+  const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards : 0,
     stake : 0,
@@ -52,7 +51,6 @@ export default function Userstats({ detailed = false }) {
 
   const [showStake, setShowStake] = useState(false);
   const toggleStake = () => setShowStake(!showStake);
-
 
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);

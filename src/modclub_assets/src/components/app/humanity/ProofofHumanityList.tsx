@@ -13,7 +13,7 @@ import {
   Notification
 } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
-import Userstats from "../userstats/Userstats";
+import Userstats from "../profile/Userstats";
 import ApproveReject from "../modals/ApproveReject"
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";

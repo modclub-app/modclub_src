@@ -1,11 +1,9 @@
-import { Principal } from "@dfinity/principal";
-// import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { getContent, getProvider } from "../../../utils/api";
+import { getContent } from "../../../utils/api";
 import { Columns, Card, Level, Heading, Icon } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
-import Userstats from "../userstats/Userstats";
+import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import ApproveReject from "../modals/ApproveReject";
 
@@ -27,12 +25,12 @@ const InfoItem = ({ icon, title, info }) => {
 
 export default function Task() {
   const [content, setContent] = useState(null);
+  const [voted, setVoted] = useState<boolean>(true);
 
   const { taskId } = useParams();
 
   const renderContent = async () => {
     const content = await getContent(taskId);
-    // console.log('content', content)
 
     setContent(
       <Columns>
@@ -46,8 +44,8 @@ export default function Task() {
                 </span>
               </Card.Header.Title>
               <Progress
-                value={5}
-                min={10}
+                value={Number(content.voteCount)}
+                min={Number(content.minVotes)}
               />
             </Card.Header>
             <Card.Content>
@@ -87,6 +85,7 @@ export default function Task() {
                 id={content.id}
                 providerId={content.providerId}
                 fullWidth={true}
+                onUpdate={() => setVoted(true)}
               />
             </Card.Footer>
           </Card>
@@ -102,7 +101,8 @@ export default function Task() {
 
   useEffect(() => {
     renderContent();
-  }, []);
+    setVoted(false);
+  }, [voted]);
 
   return (
     <>

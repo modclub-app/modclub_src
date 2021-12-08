@@ -31,7 +31,8 @@ const Modal_ = ({
   platform,
   toggle,
   id,
-  providerId
+  providerId,
+  onUpdate
 }: {
   title: string;
   image: string;
@@ -39,6 +40,7 @@ const Modal_ = ({
   toggle: () => void;
   id: string;
   providerId: Principal;
+  onUpdate: () => void;
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [content, setContent] = useState(<div className="loader is-loading"></div>);
@@ -59,6 +61,7 @@ const Modal_ = ({
       console.log("result", result);
       setSubmitting(false);
       setMessage({ success: result === "Vote successful" ? true : false, value: result });
+      onUpdate();
     } catch (e) {
       let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr[1] });
@@ -150,7 +153,7 @@ const Modal_ = ({
   );
 };
 
-export default function ApproveReject({ platform, id, providerId, fullWidth = false }) {
+export default function ApproveReject({ platform, id, providerId, fullWidth = false, onUpdate }) {
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
 
@@ -174,6 +177,7 @@ export default function ApproveReject({ platform, id, providerId, fullWidth = fa
           toggle={toggleApprove}
           id={id}
           providerId={providerId}
+          onUpdate={onUpdate}
         /> 
       }
       {showReject &&
@@ -184,6 +188,7 @@ export default function ApproveReject({ platform, id, providerId, fullWidth = fa
           toggle={togglReject}
           id={id}
           providerId={providerId}
+          onUpdate={onUpdate}
         /> 
       }
     </>

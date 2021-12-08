@@ -8,7 +8,7 @@ import Task from "./tasks/Task";
 import ProofofHumanityList from "./Humanity/ProofofHumanityList";
 import ProofofHumanity from "./Humanity/ProofofHumanity";
 import Moderators from "./moderators/Moderators";
-import Activity from "./activity/Activity";
+import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 
 export default function ModclubApp() {
