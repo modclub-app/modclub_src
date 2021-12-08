@@ -2,13 +2,14 @@ import { useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Heading, Button, Card, Columns } from "react-bulma-components";
 import Webcam from "react-webcam";
+import { CaptureButton } from "./Webcam"
 
 export default function CaptureVideo() {
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const [capturing, setCapturing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState([]);
-  const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"]
+  const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"];
 
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true);
@@ -37,6 +38,9 @@ export default function CaptureVideo() {
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
   const handleDownload = useCallback(() => {
+    console.log("recordedChunks", recordedChunks);
+    return
+
     if (recordedChunks.length) {
       const blob = new Blob(recordedChunks, {
         type: "video/webm"
@@ -62,8 +66,8 @@ export default function CaptureVideo() {
       <Card className="mb-4">
         <Card.Content className="columns is-multiline">
           {phrases.map(phrase => (
-            <Columns.Column size={4}>
-              <Button key={phrase} color="black" fullwidth>
+            <Columns.Column key={phrase} size={4}>
+              <Button color="black" fullwidth>
                 {phrase}
               </Button>
             </Columns.Column>
@@ -71,25 +75,15 @@ export default function CaptureVideo() {
         </Card.Content>
       </Card>
 
-      <div className="is-relative">
+      <div className="is-relative has-text-centered">
         <Webcam
-          audio={false}
+          audio={true}
           ref={webcamRef}
         />
-          <Button
-            color={capturing ? "danger" : "success"}
-            rounded
-            style={{
-              position: "absolute",
-              bottom: "1rem",
-              left: 0,
-              right: 0,
-              margin: "auto",
-              width: "4rem",
-              height: "4rem"
-            }}
-            onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
-          />
+        <CaptureButton
+          type={capturing ? "danger" : "success"}
+          handleClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
+        />
       </div>
 
       <Button.Group align="right" className="mt-4">

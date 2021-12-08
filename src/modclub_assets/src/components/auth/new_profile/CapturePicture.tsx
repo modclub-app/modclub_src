@@ -1,10 +1,9 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heading, Image, Button, Icon, Level } from "react-bulma-components";
-import Webcam from "react-webcam";
+import { Heading, Button, Icon } from "react-bulma-components";
+import { WebcamWrapper } from "./Webcam"
 
 export default function CapturePicture() {
-  const webcamRef = useRef(null);
   const inputFile = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
 
@@ -26,21 +25,27 @@ export default function CapturePicture() {
     }
   };
 
-  const captureWebcam = useCallback(() => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    console.log("imageSrc", imageSrc);
-    setImgSrc(imageSrc);
-  }, [webcamRef, setImgSrc]);
-
-  const clearImage = () => {
-    setImgSrc(null);
-  }
-
   return (
     <>
       <Heading subtitle textAlign="center">
         Submit a photo of yourself. It should be well lit and head on.
       </Heading>
+
+      <WebcamWrapper
+        setImgSrc={setImgSrc}
+        imgSrc={imgSrc}
+      />
+
+      <div className="is-divider" data-content="OR"></div>
+      
+      <Button.Group align="center">
+        <Button color="black" onClick={() => inputFile.current.click()}>
+          <Icon size="small" className="has-text-white">
+            <span className="material-icons">file_upload</span>
+          </Icon>
+          <span>Upload Photo</span>
+        </Button>
+      </Button.Group>
       <input
         style={{ display: "none" }}
         ref={inputFile}
@@ -48,55 +53,6 @@ export default function CapturePicture() {
         accept="image/*"
         type="file"
       />
-      {!imgSrc ? (
-        <>
-          <div className="is-relative has-text-centered">
-            <Webcam
-              audio={false}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-            />
-            <Button
-              color="success"
-              rounded
-              style={{
-                position: "absolute",
-                bottom: "1rem",
-                left: 0,
-                right: 0,
-                margin: "auto",
-                width: "4rem",
-                height: "4rem"
-              }}
-              onClick={captureWebcam}
-            >
-              <Icon color="white">
-                <span className="material-icons">photo_camera</span>
-              </Icon>
-            </Button>
-          </div>
-
-          <div className="is-divider" data-content="OR"></div>
-          
-          <Button.Group align="center">
-            <Button color="black" onClick={() => inputFile.current.click()}>
-              <Icon size="small" className="has-text-white">
-                <span className="material-icons">file_upload</span>
-              </Icon>
-              <span>Upload Photo</span>
-            </Button>
-          </Button.Group>
-        </>
-      ) : (
-        <>
-          <Image src={imgSrc} />
-          <Button.Group align="center">
-            <Button color="danger" className="mt-4" onClick={clearImage}>
-              Retake
-            </Button>
-          </Button.Group>
-        </>
-      )}
 
       <Button.Group align="right" className="mt-4">
         <Link to="/app/" className="button is-black" disabled={!imgSrc}>
