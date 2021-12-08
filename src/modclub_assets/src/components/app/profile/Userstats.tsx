@@ -9,22 +9,28 @@ import Withdraw from "../modals/Withdraw";
 import Stake from "../modals/Stake";
 import Unstake from "../modals/Unstake";
 
-const StatBox = ({ children, image, title, amount, usd, detailed }) => {
+const StatBox = ({ loading, image, title, amount, usd, detailed, children }) => {
   return (
     <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
       <Card backgroundColor="circles" className="is-fullheight">
         <Card.Content className="is-flex is-align-items-center">
           <img src={image} className="mr-4" />
           <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
-            <p className="has-text-light">{title}</p>
-            <Heading size={1} style={{ lineHeight: 1 }}>
-              {amount}
-              {detailed &&
-                <span className="has-text-weight-normal is-size-4 ml-4">
-                  ${usd}
-                </span>
-              }
-            </Heading>
+            <p className="has-text-light">
+              {title}
+            </p>
+            {loading ? (
+              <div className="loader is-loading" />
+            ) : (
+              <Heading size={1} style={{ lineHeight: 1 }}>
+                {amount}
+                {detailed &&
+                  <span className="has-text-weight-normal is-size-4 ml-4">
+                    ${usd}
+                  </span>
+                }
+              </Heading>
+            )}
           </div>
         </Card.Content>
         {detailed &&
@@ -39,6 +45,7 @@ const StatBox = ({ children, image, title, amount, usd, detailed }) => {
 
 export default function Userstats({ detailed = false }) {
   const { user } = useAuth();
+  // const [loading, setLoading] = useState<boolean>(true);
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards : 0,
@@ -61,6 +68,7 @@ export default function Userstats({ detailed = false }) {
       const tokenHoldings = await getTokenHoldings();
       setTokenHoldings(tokenHoldings);
       setHoldingsUpdated(false);
+      // setLoading(false);
     };
     user && holdingsUpdated && fetchTokenHoldings();
   }, [user, holdingsUpdated]);
@@ -69,6 +77,7 @@ export default function Userstats({ detailed = false }) {
     <>
     <Columns>
       <StatBox
+        loading={holdingsUpdated}
         image={walletImg}
         title="Wallet"
         amount={tokenHoldings.wallet}
@@ -85,6 +94,7 @@ export default function Userstats({ detailed = false }) {
         </Button.Group>
       </StatBox>
       <StatBox
+        loading={holdingsUpdated}
         image={stakedImg}
         title="Staked"
         amount={tokenHoldings.stake}
@@ -101,6 +111,7 @@ export default function Userstats({ detailed = false }) {
         </Button.Group>
       </StatBox>
       <StatBox
+        loading={holdingsUpdated}
         image={performanceImg}
         title="Pending rewards"
         amount={tokenHoldings.pendingRewards}

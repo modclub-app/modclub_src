@@ -76,10 +76,6 @@ export default function Activity() {
   }
 
   const fetchActivity = async (filter) => {
-    const temp = await getActivity(true)
-    console.log("temp", temp);
-
-
     setLoading(true);
     if (filter === "new") {
       setInProgressActivity(await getActivity(false));

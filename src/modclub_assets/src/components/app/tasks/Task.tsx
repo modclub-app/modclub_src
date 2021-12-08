@@ -24,90 +24,90 @@ const InfoItem = ({ icon, title, info }) => {
 };
 
 export default function Task() {
-  const [content, setContent] = useState(null);
+  const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
-
   const { taskId } = useParams();
 
-  const renderContent = async () => {
+  const fetchTask = async () => {
     const content = await getContent(taskId);
-
-    setContent(
-      <Columns>
-        <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
-          <Card>
-            <Card.Header>
-              <Card.Header.Title>
-                {content.providerName}
-                <span>
-                  Submitted by {content.sourceId}
-                </span>
-              </Card.Header.Title>
-              <Progress
-                value={Number(content.voteCount)}
-                min={Number(content.minVotes)}
-              />
-            </Card.Header>
-            <Card.Content>
-              <Heading>
-                {content.title}
-              </Heading>
-              <p>{content.text}</p>
-
-              <Card backgroundColor="dark" className="mt-5">
-                <Card.Content>
-                  <Heading subtitle>
-                    Additional Information
-                  </Heading>
-
-                  <InfoItem
-                    icon="assignment_ind"
-                    title="Link to Post"
-                    info="http://www.example.com/post1"
-                  />
-                  <InfoItem
-                    icon="assignment_ind"
-                    title="Category"
-                    info="Gaming"
-                  />
-                  <InfoItem
-                    icon="assignment_ind"
-                    title="Comment"
-                    info="This post looked suspicious please review as we are not sure"
-                  />
-                </Card.Content>
-              </Card>
-
-            </Card.Content>
-            <Card.Footer className="pt-0" style={{ border: 0 }}>
-              <ApproveReject
-                platform={content.providerName}
-                id={content.id}
-                providerId={content.providerId}
-                fullWidth={true}
-                onUpdate={() => setVoted(true)}
-              />
-            </Card.Footer>
-          </Card>
-
-        </Columns.Column>
-
-        <Columns.Column tablet={{ size: 12 }} desktop={{ size: 4 }}>
-          <Platform providerId={content.providerId} /> 
-        </Columns.Column>
-      </Columns>
-    ); 
+    setTask(content); 
   }
 
   useEffect(() => {
-    renderContent();
+    fetchTask();
     setVoted(false);
   }, [voted]);
 
   return (
     <>
       <Userstats />
-      {content}
+
+      {!task ? (
+        <div className="loader is-loading p-4 mt-6" />
+      ) : (
+        <Columns>
+          <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
+            <Card>
+              <Card.Header>
+                <Card.Header.Title>
+                  {task.providerName}
+                  <span>
+                    Submitted by {task.sourceId}
+                  </span>
+                </Card.Header.Title>
+                <Progress
+                  value={Number(task.voteCount)}
+                  min={Number(task.minVotes)}
+                />
+              </Card.Header>
+              <Card.Content>
+                <Heading>
+                  {task.title}
+                </Heading>
+                <p>{task.text}</p>
+
+                <Card backgroundColor="dark" className="mt-5">
+                  <Card.Content>
+                    <Heading subtitle>
+                      Additional Information
+                    </Heading>
+
+                    <InfoItem
+                      icon="assignment_ind"
+                      title="Link to Post"
+                      info="http://www.example.com/post1"
+                    />
+                    <InfoItem
+                      icon="assignment_ind"
+                      title="Category"
+                      info="Gaming"
+                    />
+                    <InfoItem
+                      icon="assignment_ind"
+                      title="Comment"
+                      info="This post looked suspicious please review as we are not sure"
+                    />
+                  </Card.Content>
+                </Card>
+
+              </Card.Content>
+              <Card.Footer className="pt-0" style={{ border: 0 }}>
+                <ApproveReject
+                  platform={task.providerName}
+                  id={task.id}
+                  providerId={task.providerId}
+                  fullWidth={true}
+                  onUpdate={() => setVoted(true)}
+                />
+              </Card.Footer>
+            </Card>
+          </Columns.Column>
+
+          <Columns.Column tablet={{ size: 12 }} desktop={{ size: 4 }}>
+            <Platform providerId={task.providerId} /> 
+          </Columns.Column>
+        </Columns>
+      )}
     </>
   )
 }
