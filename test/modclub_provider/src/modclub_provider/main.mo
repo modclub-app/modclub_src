@@ -35,6 +35,15 @@ actor {
         return registerResult # "\n " # test1 # "\n" # test2 # "\n" # test3;
     };
 
+    public func submitText(id: Text, text: Text, title: Text) : async Text  {
+        let res = await MC.submitText(id, text, ?title);
+        res;
+    };
+
+    public func submitImage(id: Text, data: [Nat8], imageType: Text, title: Text) : async Text {
+        await MC.submitImage(id, data, imageType, ?title);
+    };
+
     public func subscribe() : async() {
        await MC.subscribe({callback = voteResult;});
     };

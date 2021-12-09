@@ -11,6 +11,12 @@ export const idlFactory = ({ IDL }) => {
   return IDL.Service({
     'deregister' : IDL.Func([], [IDL.Text], []),
     'greet' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'submitImage' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
+    'submitText' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
     'subscribe' : IDL.Func([], [], []),
     'test' : IDL.Func([], [IDL.Text], []),
     'voteResult' : IDL.Func([ContentResult], [], ['oneway']),

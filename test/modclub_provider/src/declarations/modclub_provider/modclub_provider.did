@@ -12,6 +12,8 @@ type ContentResult =
 service : {
   deregister: () -> (text);
   greet: (text) -> (text);
+  submitImage: (text, vec nat8, text, text) -> (text);
+  submitText: (text, text, text) -> (text);
   subscribe: () -> ();
   test: () -> (text);
   voteResult: (ContentResult) -> () oneway;
