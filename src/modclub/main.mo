@@ -25,6 +25,7 @@ shared ({caller = initializer}) actor class ModClub () {
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
   let NANOS_PER_MILLI = 1000000;
+  let DEFAULT_TEST_TOKENS = 100;
 
   // Types
   type Content = Types.Content;
@@ -454,7 +455,7 @@ shared ({caller = initializer}) actor class ModClub () {
               };
               // Todo: Remove this after testnet
               // Give new users MOD points
-              await tokens.transfer(initializer, caller, 1000);
+              await tokens.transfer(initializer, caller, DEFAULT_TEST_TOKENS);
               state.profiles.put(caller, profile);
 
               return profile;
