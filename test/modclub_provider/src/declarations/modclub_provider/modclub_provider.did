@@ -1,3 +1,17 @@
+type ModclubProvider = 
+ service {
+   addRule: (text) -> ();
+   deregister: () -> (text);
+   greet: (text) -> (text);
+   onlyOwner: (principal) -> ();
+   register: (text, text) -> ();
+   submitImage: (text, vec nat8, text, text) -> (text);
+   submitText: (text, text, opt text) -> (text);
+   subscribe: () -> ();
+   test: () -> (text);
+   updateSettings: (nat, nat) -> ();
+   voteResult: (ContentResult) -> () oneway;
+ };
 type ContentStatus = 
  variant {
    approved;
@@ -9,12 +23,4 @@ type ContentResult =
    sourceId: text;
    status: ContentStatus;
  };
-service : {
-  deregister: () -> (text);
-  greet: (text) -> (text);
-  submitImage: (text, vec nat8, text, text) -> (text);
-  submitText: (text, text, text) -> (text);
-  subscribe: () -> ();
-  test: () -> (text);
-  voteResult: (ContentResult) -> () oneway;
-}
+service : () -> ModclubProvider

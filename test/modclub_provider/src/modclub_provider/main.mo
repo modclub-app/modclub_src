@@ -2,8 +2,10 @@ import Debug "mo:base/Debug";
 import Text "mo:base/Text";
 import ModClub "./modclub/modclub";
 import Files "./files";
+import Principal "mo:base/Principal";
+import Error "mo:base/Error";
 
-actor {
+shared ({caller = initializer}) actor class ModclubProvider () {
     type SubscribeMessage = ModClub.SubscribeMessage;
     type ContentResult = ModClub.ContentResult;
     let MC = ModClub.ModClub;
@@ -12,7 +14,12 @@ actor {
         return "Hello, " # name # "!";
     };
 
-    public func test() : async Text {
+    public func onlyOwner(p: Principal) : async() {
+        if( p != initializer) throw Error.reject( "unauthorized" );
+    };
+
+    public shared({ caller }) func test() : async Text {
+        await onlyOwner(caller);
         // Register with Modclub
         let registerResult = await MC.registerProvider("SocialApp", "The description of your application.", null);
 
@@ -35,25 +42,37 @@ actor {
         return registerResult # "\n " # test1 # "\n" # test2 # "\n" # test3;
     };
 
-    public func submitText(id: Text, text: Text, title: Text) : async Text  {
-        let res = await MC.submitText(id, text, ?title);
+    public shared({ caller }) func submitText(id: Text, text: Text, title: ?Text) : async Text  {
+        let res = await MC.submitText(id, text, title);
         res;
     };
 
-    public func submitImage(id: Text, data: [Nat8], imageType: Text, title: Text) : async Text {
+    public shared({ caller }) func submitImage(id: Text, data: [Nat8], imageType: Text, title: Text) : async Text {
         await MC.submitImage(id, data, imageType, ?title);
     };
 
+
+    public func register(name: Text, details: Text) : async () {
+        let registerResult = await MC.registerProvider("SocialApp", "The description of your application.", null);
+    };
+
+    public func updateSettings(voteNum: Nat, stakeNum: Nat) : async () {
+        await MC.updateSettings({minVotes = voteNum; minStaked = stakeNum });
+    };
+
     public func subscribe() : async() {
-       await MC.subscribe({callback = voteResult;});
+        await MC.subscribe({callback = voteResult;});
     };
 
     public func deregister() : async Text {
-        await MC.deregisterProvider();
+           await MC.deregisterProvider();
     };
     
-
     public func voteResult(result: ContentResult) {
         Debug.print(debug_show(result));
+    };
+
+    public func addRule(rule: Text) : async () {
+        await MC.addRules([rule]);
     };
 };
