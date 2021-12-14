@@ -14,7 +14,7 @@ function makeid(length) {
 }
 
 document.getElementById("uploadBtn").addEventListener("click", async () => {
-  const fileId = makeId(8);
+  const fileId = makeid(8);
   const fileTitle = document.getElementById("fileTitle").value.toString();
   await modclub_provider.submitImage(
     fileId,
@@ -54,7 +54,7 @@ document.getElementById("settingsBtn").addEventListener("click", async () => {
 });
 
 document.getElementById("contentBtn").addEventListener("click", async () => {
-  const contentId = makeId(8);
+  const contentId = makeid(8);
   const contentTitle = document.getElementById("contentTitle").value.toString();
   const content = document.getElementById("content").value.toString();
 
