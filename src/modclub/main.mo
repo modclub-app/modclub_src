@@ -48,6 +48,9 @@ shared ({caller = initializer}) actor class ModClub () {
   type Activity = Types.Activity;
   type AirdropUser = Types.AirdropUser;
 
+
+  // Airdrop Flags
+  stable var allowSubmissionFlag : Bool = true;
   // Global Objects  
   var state = State.empty();
   stable var tokensStable : Token.TokensStable = Token.emptyStable(initializer);
@@ -57,6 +60,11 @@ shared ({caller = initializer}) actor class ModClub () {
 
   func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
+  };
+
+  public shared({ caller }) func toggleAllowSubmission(allow: Bool) : async () {
+    await onlyOwner(caller);
+    allowSubmissionFlag := allow;
   };
 
   // Airdrop Methods
@@ -135,6 +143,8 @@ shared ({caller = initializer}) actor class ModClub () {
     description: Text,
     image: ?Image
     ) : async Text {
+    // Todo remove this after airdrop
+    await onlyOwner(caller);
     switch(state.providers.get(caller)){
       case (null) {
         let now = timeNow_();
@@ -170,7 +180,9 @@ shared ({caller = initializer}) actor class ModClub () {
 
 
 
-  public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) {
+  public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) : async () {
+    // Todo remove this after airdrop
+    await onlyOwner(caller);
     var provider = state.providers.get(caller);
     switch(provider) {
       case (?result) {
@@ -217,6 +229,7 @@ shared ({caller = initializer}) actor class ModClub () {
   };
 
   public shared({ caller }) func addRules(rules: [Text]) {
+    await onlyOwner(caller);
     await checkProviderPermission(caller);
     for(rule in rules.vals()) {
       var ruleId = generateId(caller, "rule");       
@@ -253,6 +266,10 @@ shared ({caller = initializer}) actor class ModClub () {
   };
 
   public shared({ caller }) func submitText(sourceId: Text, text: Text, title: ?Text ) : async Text {
+    if(allowSubmissionFlag == false) {
+      throw Error.reject("Submissions are disabled");
+    };
+
     await checkProviderPermission(caller);
     let content = createContentObj(sourceId, caller, #text, title);
     let textContent : TextContent = {
@@ -268,6 +285,9 @@ shared ({caller = initializer}) actor class ModClub () {
     };
   
     public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
+    if(allowSubmissionFlag == false) {
+      throw Error.reject("Submissions are disabled");
+    };
     await checkProviderPermission(caller);
     let content = createContentObj(sourceId, caller, #imageBlob, title);
 
@@ -284,29 +304,6 @@ shared ({caller = initializer}) actor class ModClub () {
       state.provider2content.put(caller, content.id);
       state.contentNew.put(caller, content.id);
       return content.id;
-    };
-
-    public shared({ caller }) func sendImage(sourceId: Text, image: [Nat8], imageType: Text ) : async Text {  
-
-    let imageContent : ImageContent = {
-      id = sourceId;
-      image = {
-        data = image;
-        imageType = imageType;
-      };
-    };
-
-      state.imageContent.put(sourceId, imageContent);
-      return sourceId;
-    };
-
-    public query func getImage(sourceId: Text) : async ?[Nat8] {
-      switch(state.imageContent.get(sourceId)) {
-        case(?result) {
-          return ?result.image.data;
-        };
-        case (_) null;
-      }
     };
 
   // Retreives all content for the calling Provider

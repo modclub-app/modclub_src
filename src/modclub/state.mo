@@ -77,6 +77,8 @@ module State {
     provider2content: Rel<Types.ProviderId, Types.ContentId>;
 
     provider2rules: Rel<Types.ProviderId, Types.RuleId>;
+
+    appName: Text;
   };
 
   public type StateShared = {    
@@ -97,6 +99,7 @@ module State {
     mods2votes: RelShared<Types.UserId, Types.VoteId>;
     provider2content: RelShared<Types.ProviderId, Types.ContentId>;
     provider2rules: RelShared<Types.ProviderId, Types.RuleId>;
+    appName: Text;
   };
 
   public func empty () : State {
@@ -122,6 +125,7 @@ module State {
       mods2votes = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       provider2content = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       provider2rules = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
+      appName = "MODCLUB";
     };
     st;
   };
@@ -145,6 +149,7 @@ module State {
       mods2votes = Rel.emptyShared<Principal, Text>();
       provider2content = Rel.emptyShared<Principal, Text>();
       provider2rules = Rel.emptyShared<Principal, Text>();
+      appName = "MODCLUB";
     };
     st;
   };
@@ -168,6 +173,7 @@ module State {
       mods2votes = Rel.share<Types.UserId, Types.VoteId>(state.mods2votes.getRel());
       provider2content = Rel.share<Principal, Types.ContentId>(state.provider2content.getRel());
       provider2rules = Rel.share<Principal, Types.ContentId>(state.provider2rules.getRel());
+      appName = state.appName;
     };
     st;
   };
@@ -244,6 +250,7 @@ module State {
       (Principal.hash, Text.hash),
       (Principal.equal, Text.equal)
     ));
+
     return state;
   };
 
