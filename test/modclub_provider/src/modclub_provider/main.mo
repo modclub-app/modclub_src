@@ -53,7 +53,7 @@ shared ({caller = initializer}) actor class ModclubProvider () {
 
 
     public func register(name: Text, details: Text) : async () {
-        let registerResult = await MC.registerProvider("SocialApp", "The description of your application.", null);
+        let registerResult = await MC.registerProvider(name, details, null);
     };
 
     public func updateSettings(voteNum: Nat, stakeNum: Nat) : async () {

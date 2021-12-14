@@ -1,8 +1,20 @@
 import { modclub_provider } from "../../declarations/modclub_provider";
 
 var imageData, imageType;
+
+function makeid(length) {
+  var result = "";
+  var characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 document.getElementById("uploadBtn").addEventListener("click", async () => {
-  const fileId = document.getElementById("fileId").value.toString();
+  const fileId = makeId(8);
   const fileTitle = document.getElementById("fileTitle").value.toString();
   await modclub_provider.submitImage(
     fileId,
@@ -10,17 +22,24 @@ document.getElementById("uploadBtn").addEventListener("click", async () => {
     imageType,
     fileTitle
   );
+  alert("File uploaded successfully");
+  document.getElementById("fileTitle").value = "";
 });
 
 document.getElementById("registerBtn").addEventListener("click", async () => {
   const appName = document.getElementById("appName").value.toString();
   const appDesc = document.getElementById("appDesc").value.toString();
   await modclub_provider.register(appName, appDesc);
+  alert("App registered successfully");
+  document.getElementById("appName").value = "";
+  document.getElementById("appDesc").value = "";
 });
 
 document.getElementById("ruleBtn").addEventListener("click", async () => {
   const rule = document.getElementById("rule").value.toString();
   await modclub_provider.addRule(rule);
+  alert("Rule added successfully");
+  document.getElementById("rule").value = "";
 });
 
 document.getElementById("settingsBtn").addEventListener("click", async () => {
@@ -29,10 +48,13 @@ document.getElementById("settingsBtn").addEventListener("click", async () => {
     document.getElementById("minStaked").value.toString()
   );
   await modclub_provider.updateSettings(minVotes, minStaked);
+  alert("Settings updated successfully");
+  document.getElementById("minVotes").value = "";
+  document.getElementById("minStaked").value = "";
 });
 
 document.getElementById("contentBtn").addEventListener("click", async () => {
-  const contentId = document.getElementById("contentId").value.toString();
+  const contentId = makeId(8);
   const contentTitle = document.getElementById("contentTitle").value.toString();
   const content = document.getElementById("content").value.toString();
 
