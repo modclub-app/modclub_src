@@ -115,11 +115,27 @@ export default function NewProfile() {
                 style={{ overflow: "hidden", borderRadius: "50%" }}
                 rounded
               />
+              {!pic &&
+                <div style={{
+                  position: "absolute",
+                  backgroundColor: "rgba(0, 0, 0, .5)",
+                  width: 128,
+                  height: 128,
+                  borderRadius: "50%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  cursor: "pointer"
+                }}>
+                  <Icon color="white">
+                    <span className="material-icons">backup</span>
+                  </Icon>
+                  <p>Click to add profile photo</p>
+                </div>
+              }
             </Media>
-
-            <p className="has-text-centered	mt-2 mb-5">
-              Upload Profile Picture
-            </p>
 
             <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
               <form onSubmit={handleSubmit}>

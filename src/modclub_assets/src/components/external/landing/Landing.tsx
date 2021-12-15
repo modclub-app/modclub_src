@@ -237,7 +237,7 @@ export default function Landing() {
                 <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
                   <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
                     <label className="label has-text-white mt-3">Initial Max Supply</label>
-                    <p className="has-text-silver is-size-4 mb-3">1,000,000,000</p>
+                    <p className="has-text-silver is-size-4 mb-3" style={{ fontSize: 20 }}>1,000,000,000</p>
                   </div>
                 </div>
                 <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
