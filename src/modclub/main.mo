@@ -182,7 +182,7 @@ shared ({caller = initializer}) actor class ModClub () {
 
   public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) : async () {
     // Todo remove this after airdrop
-    await onlyOwner(caller);
+    // await onlyOwner(caller);
     var provider = state.providers.get(caller);
     switch(provider) {
       case (?result) {
@@ -332,38 +332,50 @@ shared ({caller = initializer}) actor class ModClub () {
 
      var contentRel : ?Rel.Rel<Principal, Types.ContentId> = null;
      let buf = Buffer.Buffer<ContentPlus>(0);
+     var count = 0;
      for ( (pid, p) in state.providers.entries()){
-       switch(status){
-         case(#new){
-          for(cid in state.contentNew.get0(pid).vals()){
-            switch(getContentPlus((cid))) {
-              case (?result) {
-                buf.add(result);
+       if( count < 11) {
+        switch(status){
+          case(#new){
+            for(cid in state.contentNew.get0(pid).vals()){
+              if( count < 11) {
+              switch(getContentPlus((cid))) {
+                case (?result) {
+                  buf.add(result);
+                  count := count + 1;
+                };
+                case (_) ();
+                };
               };
-              case (_) ();
-              };
+            };
           };
-         };
-         case(#approved){
-          for(cid in state.contentApproved.get0(pid).vals()){
-            switch(getContentPlus((cid))) {
-              case (?result) {
-                buf.add(result);
+          case(#approved){
+            for(cid in state.contentApproved.get0(pid).vals()){
+              if( count < 11) {
+              switch(getContentPlus((cid))) {
+                case (?result) {
+                  buf.add(result);
+                  count := count + 1;
+                };
+                case (_) ();
+                };
               };
-              case (_) ();
-              };
+            };
           };
-         };
-         case(#rejected){
-          for(cid in state.contentRejected.get0(pid).vals()){
-            switch(getContentPlus((cid))) {
-              case (?result) {
-                buf.add(result);
+          case(#rejected){
+            for(cid in state.contentRejected.get0(pid).vals()){
+              if( count < 11) {
+              switch(getContentPlus((cid))) {
+                case (?result) {
+                  buf.add(result);
+                  count := count + 1;
+                };
+                case (_) ();
+                };
               };
-              case (_) ();
-              };
+            };
           };
-         };
+        };
        };
      };
     return Array.sort(buf.toArray(), compareContent);
