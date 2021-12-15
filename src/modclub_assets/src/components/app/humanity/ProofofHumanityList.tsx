@@ -48,7 +48,26 @@ const FilterBar = () => {
               </Dropdown.Item>
             )}
           </Dropdown>
-          <Button.Group className="ml-5">
+
+          <Dropdown
+            className="ml-5 is-hidden-desktop"
+            hoverable
+            label="Filter"
+            icon={
+              <Icon color="white">
+                <span className="material-icons">expand_more</span>
+              </Icon>
+            }
+            style={{ width: 100 }}
+          >
+            {filters.map(filter => 
+              <Dropdown.Item key={filter} value={filter} renderAs="a">
+                {filter}
+              </Dropdown.Item>
+            )}
+          </Dropdown>
+
+          <Button.Group className="ml-5 is-hidden-mobile is-hidden-tablet-only">
             {filters.map(filter => 
               <Button
                 key={filter}
