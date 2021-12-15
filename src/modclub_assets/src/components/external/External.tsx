@@ -12,7 +12,7 @@ export default function External() {
       <Switch>
         <Route exact path="/" component={Home} />
         <Route path="/signup" component={NewProfile} />
-        <Route path="/signup2" component={NewProfile2} />
+        <Route path="/signup2/:currentStep" component={NewProfile2} />
         <Route path="/terms" component={Home} />
         <Route path="/airdrop" component={Airdrop} />
       </Switch>

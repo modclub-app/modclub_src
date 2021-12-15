@@ -1,6 +1,6 @@
 import { Field } from "react-final-form";
-import { useEffect, useState } from "react";
-import { Columns, Card, Button, Heading, Media, Image } from "react-bulma-components";
+import { useState } from "react";
+import { Columns, Card, Button, Heading, Media, Image, Notification } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { addRules, removeRules, updateProviderSettings } from '../../../utils/api';
 
@@ -186,6 +186,9 @@ export default function Admin() {
 
   return (
     <>
+      <Notification color="danger" textAlign="center">
+        Administrator Dashboard DEMO
+      </Notification>
     <Columns>
       <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
         <Card className="is-fullheight">
@@ -277,7 +280,7 @@ export default function Admin() {
               </Heading>
             </div>
           </Card.Content>
-          <Card.Footer className="mb-0" style={{ border: 0 }}>
+          <Card.Footer style={{ border: 0 }}>
             <Button.Group>
               <Button color="dark" fullwidth>
                 Buy
@@ -301,7 +304,7 @@ export default function Admin() {
               </Heading>
             </div>
           </Card.Content>
-          <Card.Footer className="mb-0" style={{ border: 0 }}>
+          <Card.Footer style={{ border: 0 }}>
             <Button color="dark" style={{ width: "50%" }}>
               Deposit
             </Button>

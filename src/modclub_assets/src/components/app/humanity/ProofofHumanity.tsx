@@ -3,10 +3,22 @@ import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { getContent, getProvider } from "../../../utils/api";
-import { Columns, Card, Button, Progress, Media, Image, Modal, Heading, Notification } from "react-bulma-components";
+// import { Columns, Card, Button, Media, Image, Modal, Heading, Notification } from "react-bulma-components";
+import {
+  Heading,
+  Columns,
+  Card,
+  Button,
+  Modal,
+  Media,
+  Image,
+  Notification
+} from "react-bulma-components";
 import { Form, Field } from "react-final-form";
 import Toggle from "../../common/toggle/Toggle";
-import Userstats from "../userstats/Userstats";
+import Progress from "../../common/progress/Progress";
+
+import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
@@ -131,10 +143,15 @@ const Form_ = () => {
                 </Media.Item>
               </Media>
             </Card.Content>
-            <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
+            {/* <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
               <Toggle id="facing" label="1. In profile photo the person should be facing the camera directly" />
               <Toggle id="lit" label="2. In the profile photo the person should be well list so you can see their face clearly" />
               <Toggle id="social" label="3. The users social account information should match the information the user provided. ( Name, last name, Same person )" />
+            </Card.Footer> */}
+            <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
+              <p>1. In profile photo the person should be facing the camera directly</p>
+              <p>2. In the profile photo the person should be well list so you can see their face clearly</p>
+              <p>3. The users social account information should match the information the user provided. ( Name, last name, Same person )</p>
             </Card.Footer>
           </Card>
 
@@ -146,7 +163,7 @@ const Form_ = () => {
             <Card.Content>
               <Image src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg" />
 
-              <Card className="my-5">
+              <Card className="mt-5">
                 <Card.Content className="pb-1">
                   {phrases.map(phrase => (
                     <Button key={phrase} className="mr-4 mb-4" style={{ width: "22%" }}>
@@ -155,10 +172,14 @@ const Form_ = () => {
                   ))}
                 </Card.Content>
               </Card>
-
-              <Toggle id="video" label="1. Confirm the person in the profile photo matches the person in the video." />
-              <Toggle id="phrase" label="2. Confirm that the person in the video sayes each of the words in the unique phrase." />
+              {/* <Toggle id="video" label="1. Confirm the person in the profile photo matches the person in the video." />
+              <Toggle id="phrase" label="2. Confirm that the person in the video sayes each of the words in the unique phrase." /> */}
             </Card.Content>
+            
+            <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
+              <p>1. Confirm the person in the profile photo matches the person in the video.</p>
+              <p>2. Confirm that the person in the video sayes each of the words in the unique phrase.</p>
+            </Card.Footer>
           </Card>
         </Card.Content>
 
@@ -219,6 +240,10 @@ export default function Verification() {
 
   return (
     <>
+      <Notification color="danger" textAlign="center">
+        Proof of Humanity DEMO 
+      </Notification>
+
       <Userstats />
 
       <Columns>
@@ -231,10 +256,10 @@ export default function Verification() {
                   Submitted by sourceId 38 min ago
                 </span>
               </Card.Header.Title>
-              <Progress value={15} max={100} />
-              <span className="progress-label">
-                {`${5}/${10} votes`}
-              </span>
+              <Progress
+                value={5}
+                min={10}
+              />
             </Card.Header>
 
             <Form_ />

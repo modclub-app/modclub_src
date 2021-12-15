@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
-import { Columns, Card, Heading, Button, Progress } from "react-bulma-components";
-import Userstats from "../userstats/Userstats";
+import { Columns, Card, Heading, Button } from "react-bulma-components";
+import Userstats from "../profile/Userstats";
 import Snippet from "../../common/snippet/Snippet";
+import Progress from "../../common/progress/Progress";
 
 const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {  
   return loading ? (
@@ -35,11 +36,11 @@ const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {
                 <td>
                   <Snippet string={item.title[0]} truncate={20} />
                 </td>
-                <td className="is-relative">
-                  <Progress value={15} max={100} className="mb-0" />
-                  <span className="progress-label">
-                    {`${item.voteCount}/${item.minVotes} votes`}
-                  </span>
+                <td>
+                  <Progress
+                    value={Number(item.voteCount)}
+                    min={Number(item.minVotes)}
+                  />
                 </td>
                 <td>{formatDate(item.createdAt)}</td>
                 <td>{Number(item.reward)} MOD</td>
@@ -62,12 +63,9 @@ const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {
 
 export default function Activity() {
   const { user } = useAuth();
-  const [activity, setActivity] = useState([]);
   const [completedActivity, setCompletedActivity] = useState([]);
   const [inProgressActivity, setInProgressActivity] = useState([]);
-  const [filteredActivity, setFilteredActivity] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
-  // const [filters, setFilters] = useState([]);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
 
   const filters = ["completed", "new"];
@@ -79,7 +77,7 @@ export default function Activity() {
 
   const fetchActivity = async (filter) => {
     setLoading(true);
-    if (currentFilter === "new") {
+    if (filter === "new") {
       setInProgressActivity(await getActivity(false));
     } else {
       setCompletedActivity(await getActivity(true));

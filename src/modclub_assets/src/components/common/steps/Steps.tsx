@@ -12,7 +12,7 @@ const Step = ({ id, details }) => {
       {context => {
         return (
           <li className={`step-item
-            ${context === Number(id) ? "is-active" : ""}
+            ${context == Number(id) ? "is-active" : ""}
             ${context > Number(id) ? "is-completed" : ""}
           `}>
             <div className="step-marker">

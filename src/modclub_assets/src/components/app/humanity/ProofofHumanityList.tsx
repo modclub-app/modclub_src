@@ -2,8 +2,18 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getAllContent } from "../../../utils/api";
-import { Columns, Card, Dropdown, Level, Progress, Heading, Button, Icon } from "react-bulma-components";
-import Userstats from "../userstats/Userstats";
+import {
+  Heading,
+  Columns,
+  Card,
+  Dropdown,
+  Level,
+  Button,
+  Icon,
+  Notification
+} from "react-bulma-components";
+import Progress from "../../common/progress/Progress";
+import Userstats from "../profile/Userstats";
 import ApproveReject from "../modals/ApproveReject"
 import { fileToImgSrc, formatDate, imageToUint8Array, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
@@ -19,7 +29,7 @@ const FilterBar = () => {
       <Card.Content>
         <Level justifyContent="start">
 
-          <p className="mr-4" style={{ whiteSpace: "nowrap" }}>
+          <p className="mr-4">
             Choose your favorite app:
           </p>
           <Dropdown
@@ -68,9 +78,11 @@ const Applicant = ({ image, name, job, platform, submitted, required, reward }) 
         url(${image}) no-repeat top center`
       }}
     >
-      <Card.Header>
-        <Progress value={15} max={100} />
-        <span className="progress-label" style={{ left: "1.5rem" }}>10/15 votes</span>
+      <Card.Header justifyContent="start">
+        <Progress
+          value={5}
+          min={10}
+        />
       </Card.Header>
 
       <Card.Content style={{ paddingTop: "50%" }}>
@@ -82,21 +94,21 @@ const Applicant = ({ image, name, job, platform, submitted, required, reward }) 
         </p>
       </Card.Content>
       
-      <Card.Footer className="is-block mb-0">
+      <Card.Footer className="is-block">
         <Card.Header.Title>
           {platform}
           <span>Submitted {submitted}</span>
         </Card.Header.Title>
 
         <Button.Group className="is-flex-wrap-nowrap mt-5">
-          <Button fullwidth className="is-outlined">
-            <Icon align="left" size="small" className="has-text-white ml-1 mr-2">
+          <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
+            <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">local_atm</span>
             </Icon>
             <span>{"Rq Stake: " + required}</span>
           </Button>
-          <Button fullwidth className="is-outlined">
-            <Icon align="left" size="small" className="has-text-white ml-1 mr-2">
+          <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
+            <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">stars</span>
             </Icon>
             <span>{"Reward: "+ reward}</span>
@@ -115,8 +127,8 @@ export default function Verifications() {
       job: "Frelance Designer",
       platform: "Tumblr",
       submitted: "38 min ago",
-      required: 655,
-      reward: 5,
+      required: 4444,
+      reward: 4444,
     },
     {
       image:"https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg",
@@ -124,8 +136,8 @@ export default function Verifications() {
       job: "Frelance Designer",
       platform: "Tumblr",
       submitted: "38 min ago",
-      required: 655,
-      reward: 5,
+      required: 4444,
+      reward: 4444,
     },
     {
       image:"https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg",
@@ -133,8 +145,8 @@ export default function Verifications() {
       job: "Frelance Designer",
       platform: "Tumblr",
       submitted: "38 min ago",
-      required: 655,
-      reward: 5,
+      required: 4444,
+      reward: 4444,
     },
     {
       image:"https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg",
@@ -158,6 +170,10 @@ export default function Verifications() {
   
   return (
     <>
+      <Notification color="danger" textAlign="center">
+        Proof of Humanity DEMO
+      </Notification>
+
       <Userstats />
 
       <Columns>
@@ -165,7 +181,13 @@ export default function Verifications() {
           <FilterBar />
         </Columns.Column>
         {applicants.map((applicant) => (
-          <Columns.Column mobile={{ size: 12 }} fullhd={{ size: 4 }} style={{ maxWidth: 480 }}>
+          <Columns.Column
+            key={applicant.image}
+            mobile={{ size: 12 }}
+            tablet={{ size: 6 }}
+            fullhd={{ size: 4 }}
+            style={{ maxWidth: 480 }}
+          >
             <Applicant
               image={applicant.image}
               name={applicant.name}

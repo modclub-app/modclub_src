@@ -1,33 +1,21 @@
+import { useParams } from "react-router";
+import { useHistory, Link } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import {
   Notification,
   Columns,
   Card,
   Heading, 
-  Media,
-  Image as BulmaImage,
   Button,
   Icon,
-  Level
 } from "react-bulma-components";
-import { registerModerator } from "../../../utils/api";
-import { useAuth } from "../../../utils/auth";
-import { useHistory } from "react-router-dom";
-import { useRef, useState, useCallback } from "react";
-import placeholder from "../../../../assets/user_placeholder.png";
-import { Image, ImageData } from "../../../utils/types";
+import { useRef, useState } from "react";
 import { Steps, Step } from "../../common/steps/Steps";
+import CapturePicture from "./CapturePicture";
+import CaptureVideo from "./CaptureVideo";
 
-
-import Webcam from "react-webcam";
-
-// import { FilesField } from "react-final-form-file-field";
-// import FileField from "../../common/File";
-
-
-const MAX_IMAGE_SIZE = 500000; // 500kb
-
-const Signup = ({  }) => {
+const Signup = () => {
+  const history = useHistory();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
 
@@ -38,7 +26,6 @@ const Signup = ({  }) => {
 
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit!!!!")
-
     const { username, fullname, email, bio } = values;
 
     const validEmail = validateEmail(email)
@@ -52,17 +39,18 @@ const Signup = ({  }) => {
     try {
       setTimeout(() => {
         setSubmitting(false);
+        history.push("/signup2/2")
       }, 2000);
     } catch (e) {
       setMessage({ success: false, value: "Error!" });
       setSubmitting(false);
     }
-
     setTimeout(() => setMessage(null), 2000);
   };
+
   return (
     <>
-      <Heading textAlign="center">
+      <Heading subtitle textAlign="center">
         Create your profile
       </Heading>
 
@@ -124,216 +112,85 @@ const Signup = ({  }) => {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            disabled={!values.username || !values.fullname || !values.email || !values.bio || submitting}
-            size="large"
-            color="primary"
-            fullwidth
-            value="submit"
-            className={submitting ? "is-loading" : ""}
-          >
-            Submit
-          </Button>
+          <Button.Group align="right">
+            <Button
+              type="submit"
+              disabled={!values.username || !values.fullname || !values.email || !values.bio || submitting}
+              size="large"
+              color="primary"
+              value="submit"
+              className={submitting ? "is-loading" : ""}
+            >
+              Next
+            </Button>
+          </Button.Group>
         </form>
         )}
       />
+
+      {message &&
+        <Notification color={message.success ? "success" : "danger"} className="has-text-centered">
+          {message.value}
+        </Notification>
+      }
     </>
   )
 };
 
-const FaceID = ({  }) => {
-  const webcamRef = useRef(null);
-  const inputFile = useRef(null);
-  const [imgSrc, setImgSrc] = useState(null);
-
-  const handleFileChange = (e) => {
-    const { files } = e.target;
-    if (files.length > 0) {
-      const f = files[0];
-      const reader = new FileReader();
-      reader.onload = function (evt) {
-        console.log(evt.target.result);
-        const metadata = `name: ${f.name}, type: ${f.type}, size: ${f.size}, contents:`;
-        console.log(metadata);
-        const data =
-          typeof evt.target.result == "string" ? evt.target.result : null;
-        setImgSrc(data);
-        // setPicType(f.type);
-      };
-      reader.readAsDataURL(f);
-    }
-  };
-
-  const captureWebcam = useCallback(() => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    console.log("imageSrc", imageSrc);
-    setImgSrc(imageSrc);
-  }, [webcamRef, setImgSrc]);
-
-  const clearImage = () => {
-    setImgSrc(null);
-  }
-
+const Confirmation = () => {
   return (
-    <>
-      <input
-        style={{ display: "none" }}
-        ref={inputFile}
-        onChange={handleFileChange}
-        accept="image/*"
-        type="file"
-      />
-      {!imgSrc ? (
-        <>
-          <div className="is-relative">
-            <Webcam
-              audio={false}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-            />
-            <Button
-              color="gradient"
-              rounded
-              style={{
-                position: "absolute",
-                bottom: "1rem",
-                left: 0,
-                right: 0,
-                margin: "auto",
-                width: "4rem",
-                height: "4rem"
-              }}
-              onClick={captureWebcam}
-            />
-          </div>
-
-          <div className="is-divider" data-content="OR"></div>
-          
-          <Button color="primary" fullwidth onClick={() => inputFile.current.click()}>
-            <Icon size="small" className="has-text-white mr-2">
-              <span className="material-icons">file_upload</span>
-            </Icon>
-            <span>Upload Photo</span>
-          </Button>
-        </>
-      ) : (
-        <>
-          <BulmaImage
-            src={imgSrc}
-          />
-          <Button.Group className="mt-4">
-            <Button color="danger" fullwidth onClick={clearImage}>
-              Retake
-            </Button>
-            <Button color="primary" fullwidth>
-              Next
-            </Button>
-          </Button.Group>
-        </>
-      )}
-    </>
+    <div className="has-text-centered">
+      <Heading subtitle textAlign="center">
+        Thank you for submitting.
+      </Heading>
+      <p>Your verification is in progress, please check back soon.</p>
+      <Link to="/app" className="button is-large is-primary mt-5">
+        Back to MODCLUB
+      </Link>
+    </div>
   )
-}
-
-const Video = ({  }) => {
-  // https://codepen.io/mozmorris/pen/yLYKzyp?editors=0010
-
-  const webcamRef = useRef(null);
-  const [imgSrc, setImgSrc] = useState(null);
-
-  const captureWebcam = useCallback(() => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    console.log("imageSrc", imageSrc);
-    setImgSrc(imageSrc);
-  }, [webcamRef, setImgSrc]);
-
-  const clearImage = () => {
-    setImgSrc(null);
-  }
-
-  const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"]
-
-  return (
-    <>
-      {phrases.map(phrase => (
-        <Button key={phrase} color="black" className="mr-4 mb-4" style={{ width: "30%" }}>
-          {phrase}
-        </Button>
-      ))}
-      <div className="is-relative">
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-        />
-        <Button
-          color="gradient"
-          rounded
-          style={{
-            position: "absolute",
-            bottom: "1rem",
-            left: 0,
-            right: 0,
-            margin: "auto",
-            width: "4rem",
-            height: "4rem"
-          }}
-          onClick={captureWebcam}
-        />
-      </div>
-    </>
-  )
-}
+};
 
 export default function NewProfile() {
   const [hasUser, setHasUser] = useState<boolean>(true);
   const [message, setMessage] = useState(null);
-  const [currentStepIndex, setCurrentStepIndex] = useState(1);
+  // const [currentStepIndex, setCurrentStepIndex] = useState(1);
+
+  const { currentStep } = useParams();
+  console.log('currentStep', currentStep);
+
 
   return (
   <>
-    <Columns centered vCentered className="is-fullheight">
+    <Columns centered vCentered className="is-fullheight mt-6">
       <Columns.Column size={6}>
-        {/* {!hasUser ? <Signup /> : <Validate />} */}
-
         <Card>
           <Card.Content>
-            <Steps activeStep={currentStepIndex}>
-              <Step id={'1'}  details="Create Profile" />
-              <Step id={'2'}  details="Face Id" />
-              <Step id={'3'}  details="Video" />
-              <Step id={'4'}  details="Confirm" />
+            <Steps activeStep={currentStep}>
+              <Step id={'1'} details="Create Profile" />
+              <Step id={'2'} details="Face Id" />
+              <Step id={'3'} details="Video" />
+              <Step id={'4'} details="Confirm" />
             </Steps>
 
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>
-                {currentStepIndex === 1 &&
+                {currentStep == 1 &&
                   <Signup />
                 }
-                {currentStepIndex === 2 &&
-                  <FaceID />
+                {currentStep == 2 &&
+                  <CapturePicture />
                 }
-                {currentStepIndex === 3 &&
-                  <Video />
+                {currentStep == 3 &&
+                  <CaptureVideo />
+                }
+                {currentStep == 4 &&
+                  <Confirmation />
                 }
               </Card.Content>
             </Card>
-
-            
-
           </Card.Content>
         </Card>
-
-        <Button.Group className="mt-3">
-          <Button fullwidth onClick={() => setCurrentStepIndex(currentStepIndex - 1)}>
-            Back
-          </Button>
-          <Button fullwidth color="primary" onClick={() => setCurrentStepIndex(currentStepIndex + 1)}>
-            Next
-          </Button>
-        </Button.Group>
-
       </Columns.Column>
     </Columns>
 
