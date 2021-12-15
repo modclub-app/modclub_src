@@ -170,8 +170,8 @@ export default function Verifications() {
   
   return (
     <>
-      <Notification color="success" textAlign="center">
-        Proof of Humanity is just a DEMO. It is not functional. 
+      <Notification color="danger" textAlign="center">
+        Proof of Humanity DEMO
       </Notification>
 
       <Userstats />

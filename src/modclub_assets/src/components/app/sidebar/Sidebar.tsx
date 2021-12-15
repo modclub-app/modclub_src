@@ -20,7 +20,7 @@ const InviteModerator = ({ toggle }) => {
 
   console.log("window", window)
 
-  const link = `${window.location.origin}/referral=${Date.now()}`
+  const link = 'Coming Soon';//`${window.location.origin}/referral=${Date.now()}`
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>

@@ -10,7 +10,7 @@ import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
 export default function Tasks() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [tasks, setTasks] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
 
@@ -29,7 +29,7 @@ export default function Tasks() {
     user && fetchTasks();
     setVoted(false);
   }, [user, voted]);
-  
+  if(!isAuthenticated) return (<div>You need to be logged in to view this page</div>);
   return (
     <>
       <Userstats />
