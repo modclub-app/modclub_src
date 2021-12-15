@@ -61,13 +61,15 @@ const Modal_ = ({
       console.log("result", result);
       setSubmitting(false);
       setMessage({ success: result === "Vote successful" ? true : false, value: result });
-      onUpdate();
     } catch (e) {
       let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr[1] });
       setSubmitting(false);
     }
-    setTimeout(() => toggle(), 2000);
+    setTimeout(() => {
+      toggle();
+      onUpdate();
+    }, 2000);
   }
 
   useEffect(() => {
