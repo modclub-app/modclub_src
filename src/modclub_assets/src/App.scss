@@ -104,7 +104,7 @@ hr {
 
 .buttons {
   flex-wrap: nowrap;
-  overflow-x: scroll;
+  // overflow-x: scroll;
 
   &:last-child, &:not(:last-child) {
     margin-bottom: 0;
