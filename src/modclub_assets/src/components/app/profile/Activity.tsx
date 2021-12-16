@@ -4,7 +4,7 @@ import { useAuth } from "../../../utils/auth";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
 import { Columns, Card, Heading, Button } from "react-bulma-components";
-import Userstats from "../profile/Userstats";
+import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
 

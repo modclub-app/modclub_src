@@ -53,7 +53,6 @@ export default function SidebarUser() {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const toggle = () => {
-    console.log("toggle")
     setShowDropdown(!showDropdown);
   }
 
@@ -82,7 +81,7 @@ export default function SidebarUser() {
         Profile
       </Link>
       <Dropdown.Divider />
-      <Dropdown.Item value="#" renderAs="a" onClick={handleLogOut}>
+      <Dropdown.Item value="#" renderAs="a" onMouseDown={handleLogOut}>
         <Icon size="small" className="mr-2">
           <span className="material-icons">logout</span>
         </Icon>

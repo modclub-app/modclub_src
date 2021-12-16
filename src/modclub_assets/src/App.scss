@@ -660,7 +660,7 @@ input[type='number']::-webkit-inner-spin-button {
   }
 
   &.is-active .dropdown-menu, &.is-hoverable:hover .dropdown-menu {
-    max-height: 10rem;
+    max-height: 20rem;
   }
 
   &.is-up .dropdown-menu {
