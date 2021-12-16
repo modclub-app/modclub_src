@@ -53,7 +53,6 @@ export default function SidebarUser() {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const toggle = () => {
-    console.log("toggle")
     setShowDropdown(!showDropdown);
   }
 

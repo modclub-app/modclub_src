@@ -1,27 +1,35 @@
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { Form, Field } from "react-final-form";
-import { Modal, Heading, Button, Card, Dropdown, Notification } from "react-bulma-components";
+import { Modal, Heading, Button, Card, Icon, Notification } from "react-bulma-components";
 import Toggle from "../../common/toggle/Toggle";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
 
-const RulesList = ({ platform, rules }) => {  
+const RulesList = ({ platform, rules }) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const toggle = () => {
+    setShowDropdown(!showDropdown);
+  }
+  
   return (
-    <Dropdown
-      hoverable
-      up
-      label={`View ${platform}'s Rules`}
-      color="ghost"
-      style={{ width: 100 }}
-    >
-      {rules.map((rule) => (
-        <Dropdown.Item key={rule.id} value={rule.id} renderAs="a" style={{ textDecoration: "none" }}>
-          {rule.description}
-        </Dropdown.Item>
-      ))}
-    </Dropdown>
+    <div className={`dropdown is-up ${showDropdown && "is-active"}`} style={{ width: "auto" }}>
+      <div className="dropdown-trigger">
+        <a className="button is-ghost" aria-haspopup="true" onClick={toggle}>
+          {`View ${platform}'s Rules`}
+        </a>
+      </div>
+      <div className="dropdown-menu" role="menu">
+        <div className="dropdown-content">
+          {rules.map((rule) => (
+            <a href="#" key={rule.id} className="dropdown-item" style={{ textDecoration: "none" }}>
+              {rule.description}
+            </a>
+          ))}          
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -47,7 +55,8 @@ const Modal_ = ({
   const [rules, setRules] = useState([]);
   const [message, setMessage] = useState(null);
 
-  const onFormSubmit = async (values: any) => {
+  const onFormSubmit = async (e, values: any) => {
+    console.log("e", e);
     console.log("FormModal values", values);
     const checked = []
     for (const key in values) {
