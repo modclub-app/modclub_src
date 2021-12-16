@@ -6,11 +6,13 @@ import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import ApproveReject from "../modals/ApproveReject";
+import { fileToImgSrc, unwrap } from "../../../utils/util";
+import { Image__1 } from "../../../utils/types";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
     <Level>
-      <Heading size={6} className="has-text-silver is-flex is-align-items-center mb-0">
+      <Heading size={6} className="has-text-silver is-flex is-align-items-center mb-0" style={{ minWidth: 120 }}>
         <Icon className="mr-2">
           <span className="material-icons">{icon}</span>
         </Icon>
@@ -27,6 +29,11 @@ export default function Task() {
   const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
   const { taskId } = useParams();
+
+  const getImage = (data: any) => {
+    const image = unwrap<Image__1>(data);
+    return fileToImgSrc(image.data, image.imageType);
+  }
 
   const fetchTask = async () => {
     const content = await getContent(taskId);
@@ -64,7 +71,13 @@ export default function Task() {
                 <Heading>
                   {task.title}
                 </Heading>
-                <p>{task.text}</p>
+                {/* <p>{task.text}</p> */}
+
+                {'imageBlob' in task.contentType ?
+                  <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
+                  :
+                  <p>{task.text}</p>
+                }
 
                 <Card backgroundColor="dark" className="mt-5">
                   <Card.Content>
