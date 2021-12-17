@@ -1,7 +1,7 @@
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
-import { Form, Field } from "react-final-form";
-import { Modal, Heading, Button, Card, Icon, Notification } from "react-bulma-components";
+import { Form } from "react-final-form";
+import { Modal, Heading, Button, Card, Notification } from "react-bulma-components";
 import Toggle from "../../common/toggle/Toggle";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
@@ -55,8 +55,13 @@ const Modal_ = ({
   const [rules, setRules] = useState([]);
   const [message, setMessage] = useState(null);
 
-  const onFormSubmit = async (e, values: any) => {
-    console.log("e", e);
+  const isDisabled = (values: any) => {
+    if (message || submitting) return true
+    if (title === "Reject Confirmation" && !Object.keys(values).length) return true
+    return false
+  } 
+
+  const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
     const checked = []
     for (const key in values) {
@@ -102,7 +107,7 @@ const Modal_ = ({
             <Card backgroundColor="dark">
               <Card.Content>
                 {rules.map(rule => 
-                  <Toggle id={rule.id} label={rule.description} />
+                  <Toggle key={rule.id} id={rule.id} label={rule.description} />
                 )}
               </Card.Content>
             </Card>
@@ -116,7 +121,7 @@ const Modal_ = ({
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
       <Modal.Card backgroundColor="circles">
-        <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
+        <Form onSubmit={onFormSubmit} render={({ handleSubmit, values, pristine }) => (
           <form onSubmit={handleSubmit}>
             <Modal.Card.Body>
               <img src={image} className="my-5" />
@@ -137,13 +142,14 @@ const Modal_ = ({
                   rules={rules}
                 />
               }
+
               <Button.Group>
                 <Button color="dark" onClick={toggle}>
                   Cancel
                 </Button>
                 <Button
                   color="primary"
-                  disabled={message || submitting}
+                  disabled={isDisabled(values)}
                   className={submitting && "is-loading"}
                   value=""
                 >
