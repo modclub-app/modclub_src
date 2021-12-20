@@ -77,8 +77,32 @@ html {
   display: flex;
 }
 
+.card {
+  @media screen and (max-width: 768px) {
+    .card-footer {
+      flex-wrap: wrap;
+      border: 1px solid red;
+      gap: 1rem;
+    }
+  }
+}
+
 .modal-card, .modal-card.is-small {
   @media screen and (max-width: 768px) {
     width: 90%;
+
+    .modal-card-body {
+      padding: 1.5rem;
+    }
+    .modal-card-foot {
+      padding: .5rem 1.5rem 1.5rem;
+      flex-wrap: wrap;
+
+      & * + .buttons {
+        width: 100%;
+        margin-top: 1rem;
+        justify-content: flex-end;
+      }
+    }
   }
 }
