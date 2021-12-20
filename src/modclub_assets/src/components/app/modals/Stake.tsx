@@ -34,6 +34,12 @@ export default function Stake({ toggle, tokenHoldings, onUpdate }) {
     return res;
   };
 
+  const preventMax = (e) => {
+    if (parseInt(e.target.value) > tokenHoldings.wallet) {
+      e.target.value = tokenHoldings.wallet; 
+    }
+  }
+
   return (
     <FormModal
       title="Stake"
@@ -49,7 +55,7 @@ export default function Stake({ toggle, tokenHoldings, onUpdate }) {
             type="number"
             className="input"
             initialValue={100}
-            max={tokenHoldings.wallet}
+            onInput={preventMax}
           />
           <Icon align="right" color="white" className="mr-4">
             AMT
