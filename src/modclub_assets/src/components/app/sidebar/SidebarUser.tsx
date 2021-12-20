@@ -5,14 +5,6 @@ import { useAuth } from "../../../utils/auth"
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import placeholder from "../../../../assets/user_placeholder.png";
 
-const DropdownIcon = ({ showDropdown, toggle }) => {
-  return (
-    <Icon color="white" onClick={toggle}>
-      <span className="material-icons">{showDropdown ? "expand_less" : "expand_more"}</span>
-    </Icon>
-  )
-};
-
 const DropdownLabel = ({ pic, user, toggle }) => {
   const snippet = (string, truncate) => {
     return string.length > truncate ? string.substring(0, truncate - 3) + "..." : string;
@@ -64,10 +56,11 @@ export default function SidebarUser() {
     <Dropdown
       className="mb-5"
       color="ghost"
-      icon={<DropdownIcon
-        showDropdown={showDropdown}
-        toggle={toggle}
-      />}
+      icon={
+        <Icon color="white">
+          <span className="material-icons">expand_more</span>
+        </Icon>
+      }
       label={<DropdownLabel
         pic={pic}
         user={user}

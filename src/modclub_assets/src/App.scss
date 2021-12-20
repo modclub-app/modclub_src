@@ -219,7 +219,7 @@ hr {
 .card {
   background: $black;
   color: $light;
-  overflow: hidden;
+  // overflow: hidden;
 
   &.is-fullheight {
     display: flex;
@@ -527,10 +527,6 @@ label.checkbox {
         background-color: $black;
       }
     }
-
-    .dropdown .dropdown-content {
-      background: $black;
-    }
   }
   &.is-striped tbody tr:not(.is-selected):nth-child(even) {
     background: $black;
@@ -661,11 +657,7 @@ input[type='number']::-webkit-inner-spin-button {
     transition: max-height 0.3s;
     max-height: 0;
     overflow: hidden;
-  }
-
-  &.is-active .dropdown-menu, &.is-hoverable:hover .dropdown-menu {
-    max-height: 20rem;
-  }
+  }  
 
   &.is-up .dropdown-menu {
     padding-bottom: 0;
@@ -679,6 +671,9 @@ input[type='number']::-webkit-inner-spin-button {
     > span {
       width: 100%;
       display: flex;
+      &.icon {
+        width: auto;
+      }
     }
   }
 
@@ -696,6 +691,16 @@ input[type='number']::-webkit-inner-spin-button {
 
     &:hover {
       background: $black;
+    }
+  }
+
+  &.is-active, &.is-hoverable:hover {
+    .dropdown-trigger .icon {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
+      max-height: 20rem;
     }
   }
 }
