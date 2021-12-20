@@ -105,3 +105,24 @@ html {
     }
   }
 }
+
+footer.footer {
+  @media screen and (min-width: 769px) {
+    padding: 5rem 1.5rem;
+
+    .container {
+      padding: 0 4rem;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .columns {
+      display: flex;
+
+      .column:first-child {
+        width: 100%;
+        flex: none;
+      }
+    }
+  }
+}
