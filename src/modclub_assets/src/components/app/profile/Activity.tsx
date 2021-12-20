@@ -34,7 +34,7 @@ const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {
                 </td>
                 <td>{item.providerName}</td>
                 <td>
-                  <Snippet string={item.title[0]} truncate={20} />
+                  <Snippet string={item.title[0]} truncate={15} />
                 </td>
                 <td>
                   <Progress
@@ -124,8 +124,7 @@ export default function Activity() {
               <Card.Content>
                 <Table
                   loading={loading}
-                  filteredActivity={
-                    currentFilter == "new" ? inProgressActivity : completedActivity}
+                  filteredActivity={currentFilter == "new" ? inProgressActivity : completedActivity}
                   getLabel={getLabel}
                   currentFilter={currentFilter}
                 />
