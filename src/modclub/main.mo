@@ -145,7 +145,7 @@ shared ({caller = initializer}) actor class ModClub () {
     image: ?Image
     ) : async Text {
     // Todo remove this after airdrop
-    await onlyOwner(caller);
+    // await onlyOwner(caller);
     switch(state.providers.get(caller)){
       case (null) {
         let now = timeNow_();
