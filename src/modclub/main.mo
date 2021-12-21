@@ -22,6 +22,7 @@ import Rel "data_structures/Rel";
 import Token "./token";
 import Buckets "./data_canister/buckets";
 import IC "./remote_canisters/IC";
+import BucketState "./data_canister/bucketState";
 
 shared ({caller = initializer}) actor class ModClub () = this {  
 
@@ -30,7 +31,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
   let NANOS_PER_MILLI = 1000000;
-  private let threshold = 2147483648; //  ~2GB
+  let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
   let DEFAULT_TEST_TOKENS = 100;
 
   // Types
@@ -64,6 +65,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
   var tokens = Token.Tokens(
         tokensStable
   );
+  var bucketState = BucketState.empty();
+  stable var bucketStateStable  = BucketState.emptyShared();
+
 
   func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
@@ -313,21 +317,21 @@ shared ({caller = initializer}) actor class ModClub () = this {
       return content.id;
     };
 
-    public func getBlob(contentId: ContentId, bucketId: Types.DataCanisterId, chunkNum:Nat): async ?Blob {
-      let b : ?Bucket = state.dataCanisters.get(bucketId);
+    public func getBlob(contentId: ContentId, bucketId: Types.DataCanisterId, offset:Nat): async ?Blob {
+      let b : ?Bucket = bucketState.dataCanisters.get(bucketId);
       let bucket: Bucket = switch (b) {
         case null { throw Error.reject("Content doesn't exist") };
         case (?s) { s }
       };
-      await bucket.getChunks(contentId, chunkNum);
+      await bucket.getChunks(contentId, offset);
 
     };
 
     // persist chunks in bucket
-    public func putBlobsInDataCanister(contentId: ContentId, chunkData : Blob, chunkNum: Nat, numOfChunks: Nat, contentType: Text) : async (Principal, Nat) {
+    public func putBlobsInDataCanister(contentId: ContentId, chunkData : Blob, offset: Nat, numOfChunks: Nat, contentType: Text) : async Principal {
       let b : Bucket = await getEmptyBucket(?chunkData.size());
-      let a = await b.putChunks(contentId, chunkNum, chunkData, numOfChunks, contentType);
-      (Principal.fromActor(b), chunkNum)
+      let a = await b.putChunks(contentId, offset, chunkData, numOfChunks, contentType);
+       Principal.fromActor(b)
     };
 
     // check if there's an empty bucket we can use
@@ -338,9 +342,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
         case (?s) { s }
       };
 
-      for((pId, bucket) in state.dataCanisters.entries()) {
+      for((pId, bucket) in bucketState.dataCanisters.entries()) {
         let size = await bucket.getSize();
-        if(size + fs < threshold) {
+        if(size + fs < DATA_CANISTER_MAX_STORAGE_LIMIT) {
           return bucket;
         }
       };
@@ -358,7 +362,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       //     bucket = b;
       //     var size = s;
       // };
-      state.dataCanisters.put(Principal.fromActor(b), b);
+      bucketState.dataCanisters.put(Principal.fromActor(b), b);
       return b;
     };
 
@@ -979,6 +983,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
+    bucketStateStable := BucketState.fromState(bucketState);
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -986,6 +991,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
+    bucketState := BucketState.toState(bucketStateStable);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 

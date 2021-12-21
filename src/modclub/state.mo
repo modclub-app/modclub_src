@@ -14,14 +14,12 @@ import Rel "data_structures/Rel";
 import RelObj "data_structures/RelObj";
 import Debug "mo:base/Debug";
 
-import Buckets "./data_canister/buckets";
 import Types "./types";
 
 module State {
   type Profile = Types.Profile;
   type Content = Types.Content;
   type Provider = Types.Provider;
-  type Bucket = Buckets.Bucket;
   type Rel<X, Y> = RelObj.RelObj<X, Y>;
   public type RelShared<X, Y> = Rel.RelShared<X, Y>;
   public type MapShared<X, Y> = Trie.Trie<X, Y>;
@@ -80,8 +78,6 @@ module State {
 
     provider2rules: Rel<Types.ProviderId, Types.RuleId>;
 
-    // data canisters to hold data and data canister's size
-    dataCanisters: Map<Types.DataCanisterId, Bucket>;
     appName: Text;
   };
 
@@ -103,7 +99,6 @@ module State {
     mods2votes: RelShared<Types.UserId, Types.VoteId>;
     provider2content: RelShared<Types.ProviderId, Types.ContentId>;
     provider2rules: RelShared<Types.ProviderId, Types.RuleId>;
-    dataCanisters: [(Types.DataCanisterId, Bucket)];
     appName: Text;
   };
 
@@ -130,7 +125,6 @@ module State {
       mods2votes = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       provider2content = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       provider2rules = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
-      dataCanisters = HashMap.HashMap<Types.DataCanisterId, Bucket> (1, Principal.equal, Principal.hash);
       appName = "MODCLUB";
     };
     st;
@@ -155,7 +149,6 @@ module State {
       mods2votes = Rel.emptyShared<Principal, Text>();
       provider2content = Rel.emptyShared<Principal, Text>();
       provider2rules = Rel.emptyShared<Principal, Text>();
-      dataCanisters = [];
       appName = "MODCLUB";
     };
     st;
@@ -180,7 +173,6 @@ module State {
       mods2votes = Rel.share<Types.UserId, Types.VoteId>(state.mods2votes.getRel());
       provider2content = Rel.share<Principal, Types.ContentId>(state.provider2content.getRel());
       provider2rules = Rel.share<Principal, Types.ContentId>(state.provider2rules.getRel());
-      dataCanisters = Iter.toArray(state.dataCanisters.entries());
       appName = state.appName;
     };
     st;
@@ -258,10 +250,6 @@ module State {
       (Principal.hash, Text.hash),
       (Principal.equal, Text.equal)
     ));
-    for( (id, pid) in stateShared.dataCanisters.vals()) {
-      state.dataCanisters.put(id, pid);
-    };
-
     return state;
   };
 

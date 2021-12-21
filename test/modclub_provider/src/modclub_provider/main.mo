@@ -92,10 +92,7 @@ shared ({caller = initializer}) actor class ModclubProvider () {
         //Image Dumping
         let test4 = await MC.putBlobsInDataCanister("id_4", Blob.fromArray(file.SoccerBall), 1, 1, "image/jpeg");
 
-        var len = 0;
-        for(pixel in file.SoccerBall.vals()) {
-            len:=len+1;
-        };
+        var len = file.SoccerBall.size();
         var partitionSize = len / 3;
 
         var startIndex = 0;
@@ -111,7 +108,7 @@ shared ({caller = initializer}) actor class ModclubProvider () {
         };
         (test1.0, test4.0, imagePrincipal);
     };
-    
+
     public func addRule(rule: Text) : async () {
         await MC.addRules([rule]);
     };
