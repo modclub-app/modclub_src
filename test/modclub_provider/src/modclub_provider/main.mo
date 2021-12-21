@@ -19,7 +19,7 @@ shared ({caller = initializer}) actor class ModclubProvider () {
     };
 
     public shared({ caller }) func test() : async Text {
-        await onlyOwner(caller);
+        // await onlyOwner(caller);
         // Register with Modclub
         let registerResult = await MC.registerProvider("SocialApp", "The description of your application.", null);
 
