@@ -11,7 +11,7 @@ import {
 import LogoImg from '../../../../assets/logo.png';
 import SidebarUser from "./SidebarUser";
 import { useAuth } from '../../../utils/auth';
-import { SignIn } from '../../Auth/SignIn';
+import { SignIn } from '../../auth/SignIn';
 import { useHistory } from 'react-router-dom';
 import { useEffect, useState } from "react";
 import FormModal from "../modals/FormModal";

@@ -37,7 +37,7 @@ export default function Task() {
 
   const fetchTask = async () => {
     const content = await getContent(taskId);
-    setTask(content); 
+    setTask(content);
   }
 
   useEffect(() => {
@@ -110,6 +110,7 @@ export default function Task() {
                   id={task.id}
                   providerId={task.providerId}
                   fullWidth={true}
+                  voted={!!task.hasVoted[0]}
                   onUpdate={() => setVoted(true)}
                 />
               </Card.Footer>
@@ -117,7 +118,7 @@ export default function Task() {
           </Columns.Column>
 
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 4 }}>
-            <Platform providerId={task.providerId} /> 
+            <Platform providerId={task.providerId} />
           </Columns.Column>
         </Columns>
       )}

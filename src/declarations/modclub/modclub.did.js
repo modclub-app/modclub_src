@@ -65,6 +65,7 @@ export const idlFactory = ({ IDL }) => {
     'updatedAt' : Timestamp,
     'providerName' : IDL.Text,
     'image' : IDL.Opt(Image__1),
+    'hasVoted' : IDL.Opt(IDL.Bool),
     'providerId' : IDL.Principal,
   });
   const Role = IDL.Variant({
@@ -122,11 +123,13 @@ export const idlFactory = ({ IDL }) => {
   });
   const ModClub = IDL.Service({
     'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
+    'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
+    'getAirdropWhitelist' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
     'getAllContent' : IDL.Func(
         [ContentStatus],
         [IDL.Vec(ContentPlus)],
@@ -134,7 +137,6 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
-    'getImage' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(IDL.Nat8))], ['query']),
     'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
@@ -153,11 +155,6 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'removeRules' : IDL.Func([IDL.Vec(RuleId)], [], ['oneway']),
-    'sendImage' : IDL.Func(
-        [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text],
-        [IDL.Text],
-        [],
-      ),
     'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'submitImage' : IDL.Func(
         [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Opt(IDL.Text)],
@@ -170,8 +167,9 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'subscribe' : IDL.Func([SubscribeMessage], [], []),
+    'toggleAllowSubmission' : IDL.Func([IDL.Bool], [], []),
     'unStakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
-    'updateSettings' : IDL.Func([ProviderSettings], [], ['oneway']),
+    'updateSettings' : IDL.Func([ProviderSettings], [], []),
     'vote' : IDL.Func(
         [ContentId, Decision, IDL.Opt(IDL.Vec(RuleId))],
         [IDL.Text],

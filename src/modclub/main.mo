@@ -7,6 +7,7 @@ import Nat "mo:base/Nat";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Bool "mo:base/Bool";
 import State "./state";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
@@ -255,7 +256,7 @@ shared ({caller = initializer}) actor class ModClub () {
   };
 
   public query({caller}) func getContent(id: Text) : async ?ContentPlus {
-      return getContentPlus(id);  
+      return getContentPlus(id, ?caller);  
   };
 
   func checkProviderPermission(p: Principal) : async () {
@@ -310,7 +311,7 @@ shared ({caller = initializer}) actor class ModClub () {
   public query({ caller }) func getProviderContent() : async [ContentPlus] {
       let buf = Buffer.Buffer<ContentPlus>(0);
       for (cid in state.provider2content.get0(caller).vals()) {
-        switch(getContentPlus((cid))) {
+        switch(getContentPlus((cid), ?caller)) {
           case (?result) {
             buf.add(result);
           };
@@ -339,7 +340,7 @@ shared ({caller = initializer}) actor class ModClub () {
           case(#new){
             for(cid in state.contentNew.get0(pid).vals()){
               if( count < 11) {
-              switch(getContentPlus((cid))) {
+              switch(getContentPlus((cid), ?caller)) {
                 case (?result) {
                   buf.add(result);
                   count := count + 1;
@@ -352,7 +353,7 @@ shared ({caller = initializer}) actor class ModClub () {
           case(#approved){
             for(cid in state.contentApproved.get0(pid).vals()){
               if( count < 11) {
-              switch(getContentPlus((cid))) {
+              switch(getContentPlus((cid), ?caller)) {
                 case (?result) {
                   buf.add(result);
                   count := count + 1;
@@ -365,7 +366,7 @@ shared ({caller = initializer}) actor class ModClub () {
           case(#rejected){
             for(cid in state.contentRejected.get0(pid).vals()){
               if( count < 11) {
-              switch(getContentPlus((cid))) {
+              switch(getContentPlus((cid), ?caller)) {
                 case (?result) {
                   buf.add(result);
                   count := count + 1;
@@ -553,7 +554,7 @@ shared ({caller = initializer}) actor class ModClub () {
 
         var voteApproved : Nat = 0;
         var voteRejected : Nat = 0;
-        var voteCount = getVoteCount(contentId);
+        var voteCount = getVoteCount(contentId, ?caller);
         voteApproved := voteApproved + voteCount.approvedCount;
         voteRejected := voteRejected + voteCount.rejectedCount;
 
@@ -619,7 +620,7 @@ shared ({caller = initializer}) actor class ModClub () {
                 };
                 switch(state.providers.get(content.providerId)) {
                   case(?provider) {
-                    let voteCount = getVoteCount(content.id);
+                    let voteCount = getVoteCount(content.id, ?caller);
                     let item : Activity = {
                         vote = vote;
                         providerId = content.providerId;
@@ -791,10 +792,10 @@ shared ({caller = initializer}) actor class ModClub () {
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
-  private func getContentPlus(contentId: ContentId) : ?ContentPlus {
+  private func getContentPlus(contentId: ContentId, caller: ?Principal) : ?ContentPlus {
     switch(state.content.get(contentId)) {
           case (?content) {
-            let voteCount = getVoteCount(contentId);
+            let voteCount = getVoteCount(contentId, caller);
             switch (state.providers.get(content.providerId)){
               case(?provider) {
                 let result : ContentPlus = {
@@ -803,6 +804,7 @@ shared ({caller = initializer}) actor class ModClub () {
                         minStake = provider.settings.minStaked;
                         minVotes = provider.settings.minVotes;
                         voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+                        hasVoted = ?voteCount.hasVoted;
                         providerId = content.providerId;
                         contentType = content.contentType;
                         status = content.status;
@@ -856,9 +858,10 @@ shared ({caller = initializer}) actor class ModClub () {
     return true;
  };
 
- private func getVoteCount(contentId: ContentId) : Types.VoteCount {
+ private func getVoteCount(contentId: ContentId, caller: ?Principal) : Types.VoteCount {
    var voteApproved : Nat = 0;
    var voteRejected : Nat  = 0;
+   var hasVoted : Bool = false;
     for(vid in state.content2votes.get0(contentId).vals()){
       switch(state.votes.get(vid)){
         case(?v){
@@ -867,6 +870,9 @@ shared ({caller = initializer}) actor class ModClub () {
           } else {
             voteRejected += 1;
           };
+          if (?v.userId == caller) {
+            hasVoted := true;
+          }
         }; 
         case(_) ();
       };
@@ -875,6 +881,7 @@ shared ({caller = initializer}) actor class ModClub () {
   return {
     approvedCount = voteApproved;
     rejectedCount = voteRejected;
+    hasVoted = hasVoted;
   };
  };
 
