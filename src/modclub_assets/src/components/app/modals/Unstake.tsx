@@ -4,7 +4,6 @@ import FormModal from "../modals/FormModal";
 import { unStakeTokens } from '../../../utils/api';
 import { resourceUsage } from "process";
 
-
 const UpdateTable = ({ stake, amount = 0 }) => {
   return (
     <>
@@ -32,6 +31,12 @@ export default function Unstake({ toggle, tokenHoldings, onUpdate }) {
     return res;
   };
 
+  const preventMax = (e) => {
+    if (parseInt(e.target.value) > tokenHoldings.stake) {
+      e.target.value = tokenHoldings.stake; 
+    }
+  }
+
   return (
     <FormModal
       title="Unstake"
@@ -47,7 +52,7 @@ export default function Unstake({ toggle, tokenHoldings, onUpdate }) {
             type="number"
             className="input"
             initialValue={100}
-            max={tokenHoldings.stake}
+            onInput={preventMax}
           />
           <Icon align="right" color="white" className="mr-4">
             AMT

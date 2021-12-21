@@ -25,6 +25,12 @@ export default function Withdraw({ toggle, tokenHoldings }) {
     // return await unStakeTokens(amount);
   };
 
+  const preventMax = (e) => {
+    if (parseInt(e.target.value) > tokenHoldings.wallet) {
+      e.target.value = tokenHoldings.wallet; 
+    }
+  }
+
   return (
     <FormModal
       title="Withdraw"
@@ -51,7 +57,7 @@ export default function Withdraw({ toggle, tokenHoldings }) {
             type="number"
             className="input"
             initialValue={100}
-            max={tokenHoldings.wallet}
+            onInput={preventMax}
           />
           <Icon align="right" color="white" className="mr-4">
             AMT
