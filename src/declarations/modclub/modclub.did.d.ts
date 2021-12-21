@@ -31,6 +31,7 @@ export interface ContentPlus {
   'updatedAt' : Timestamp,
   'providerName' : string,
   'image' : [] | [Image__1],
+  'hasVoted' : [] | [boolean],
   'providerId' : Principal,
 }
 export interface ContentResult { 'status' : ContentStatus, 'sourceId' : string }
@@ -54,15 +55,16 @@ export interface Image { 'imageType' : string, 'data' : Array<number> }
 export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export interface ModClub {
   'addRules' : (arg_0: Array<string>) => Promise<undefined>,
+  'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
   'airdropRegister' : () => Promise<AirdropUser>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
+  'getAirdropWhitelist' : () => Promise<Array<Principal>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
-  'getImage' : (arg_0: string) => Promise<[] | [Array<number>]>,
   'getModclubHoldings' : () => Promise<Holdings>,
   'getProfile' : () => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
@@ -81,9 +83,6 @@ export interface ModClub {
       arg_2: [] | [Image],
     ) => Promise<string>,
   'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
-  'sendImage' : (arg_0: string, arg_1: Array<number>, arg_2: string) => Promise<
-      string
-    >,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,
   'submitImage' : (
       arg_0: string,
@@ -97,6 +96,7 @@ export interface ModClub {
       arg_2: [] | [string],
     ) => Promise<string>,
   'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
+  'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
   'vote' : (
