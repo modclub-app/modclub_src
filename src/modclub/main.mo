@@ -15,16 +15,22 @@ import Types "./types";
 import Option "mo:base/Option";
 import Debug "mo:base/Debug";
 import Order "mo:base/Order";
+import Blob "mo:base/Blob";
+import Cycles "mo:base/ExperimentalCycles";
+
 import Rel "data_structures/Rel";
 import Token "./token";
+import Buckets "./data_canister/buckets";
+import IC "./remote_canisters/IC";
 
-shared ({caller = initializer}) actor class ModClub () {  
+shared ({caller = initializer}) actor class ModClub () = this {  
 
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
   let NANOS_PER_MILLI = 1000000;
+  private let threshold = 2147483648; //  ~2GB
 
   // Types
   type Content = Types.Content;
@@ -46,6 +52,7 @@ shared ({caller = initializer}) actor class ModClub () {
   type ProviderPlus = Types.ProviderPlus; 
   type Activity = Types.Activity;
   type AirdropUser = Types.AirdropUser;
+  type Bucket = Buckets.Bucket;
 
   // Global Objects  
   var state = State.empty();
@@ -266,23 +273,103 @@ shared ({caller = initializer}) actor class ModClub () {
       return content.id;
     };
   
-    public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
-    await checkProviderPermission(caller);
-    let content = createContentObj(sourceId, caller, #imageBlob, title);
+    public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text) : async Text {
+      await checkProviderPermission(caller);
+      let content = createContentObj(sourceId, caller, #imageBlob, title);
 
-    let imageContent : ImageContent = {
-      id = content.id;
-      image  = {
-        data = image;
-        imageType = imageType;
+      let imageContent : ImageContent = {
+        id = content.id;
+        image  = {
+          data = image;
+          imageType = imageType;
+        };
       };
-    };
       // Store and update relationships
       state.content.put(content.id, content);
       state.imageContent.put(content.id, imageContent);
       state.provider2content.put(caller, content.id);
       state.contentNew.put(caller, content.id);
       return content.id;
+    };
+
+    public func getText(contentId: ContentId, bucketId: Types.DataCanisterId, chunkNum:Nat) : async ?Text {
+      let blob = await getBlob(contentId, bucketId, chunkNum);
+      let blobValue: Blob = switch (blob) {
+        case null { throw Error.reject("Content doesn't exist") };
+        case (?s) { s }
+      };
+      Text.decodeUtf8(blobValue);
+    };
+
+    public func getBlob(contentId: ContentId, bucketId: Types.DataCanisterId, chunkNum:Nat): async ?Blob {
+      let b : ?Bucket = state.dataCanisters.get(bucketId);
+      let bucket: Bucket = switch (b) {
+        case null { throw Error.reject("Content doesn't exist") };
+        case (?s) { s }
+      };
+      await bucket.getChunks(contentId, chunkNum);
+
+    };
+
+    // persist chunks in bucket
+    public func putBlobsInDataCanister(contentId: ContentId, chunkData : Blob, chunkNum: Nat, numOfChunks: Nat, contentType: Text) : async (Principal, Nat) {
+      let b : Bucket = await getEmptyBucket(?chunkData.size());
+      let a = await b.putChunks(contentId, chunkNum, chunkData, numOfChunks, contentType);
+      (Principal.fromActor(b), chunkNum)
+    };
+
+    // check if there's an empty bucket we can use
+    // create a new one in case none's available or have enough space 
+    private func getEmptyBucket(s : ?Nat): async Bucket {
+      let fs: Nat = switch (s) {
+        case null { 0 };
+        case (?s) { s }
+      };
+
+      for((pId, bucket) in state.dataCanisters.entries()) {
+        let size = await bucket.getSize();
+        if(size + fs < threshold) {
+          return bucket;
+        }
+      };
+      await newEmptyBucket();
+    };
+
+    // dynamically install a new Bucket
+    private func newEmptyBucket(): async Bucket {
+      let b = await Buckets.Bucket();
+      let _ = await updateCanister(b); // update canister permissions and settings
+      let s = await b.getSize();
+      Debug.print("new canister principal is " # debug_show(Principal.toText(Principal.fromActor(b))) );
+      Debug.print("initial size is " # debug_show(s));
+      // var newCanisterState : CanisterState<Bucket, Nat> = {
+      //     bucket = b;
+      //     var size = s;
+      // };
+      state.dataCanisters.put(Principal.fromActor(b), b);
+      return b;
+    };
+
+    // canister memory is set to 4GB and compute allocation to 5 as the purpose 
+    // of this canisters is mostly storage
+    // set canister owners to the wallet canister and the container canister ie: this
+    private func updateCanister(a: actor {}) : async () {
+      Debug.print("balance before: " # Nat.toText(Cycles.balance()));
+      // Cycles.add(Cycles.balance()/2);
+      let cid = { canister_id = Principal.fromActor(a)};
+      Debug.print("IC status..."  # debug_show(await IC.IC.canister_status(cid)));
+      // let cid = await IC.create_canister(  {
+      //    settings = ?{controllers = [?(owner)]; compute_allocation = null; memory_allocation = ?(4294967296); freezing_threshold = null; } } );
+      
+      await (IC.IC.update_settings( {
+        canister_id = cid.canister_id; 
+        settings = { 
+          controllers = ?[initializer, Principal.fromActor(this)]; 
+          compute_allocation = null;
+          //  memory_allocation = ?4_294_967_296; // 4GB
+          memory_allocation = null; // 4GB
+          freezing_threshold = ?31_540_000} })
+      );
     };
 
     public shared({ caller }) func sendImage(sourceId: Text, image: [Nat8], imageType: Text ) : async Text {  
@@ -900,4 +987,5 @@ shared ({caller = initializer}) actor class ModClub () {
     state := State.toState(stateShared);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
+
 };
