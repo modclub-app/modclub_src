@@ -384,29 +384,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
       );
     };
 
-    public shared({ caller }) func sendImage(sourceId: Text, image: [Nat8], imageType: Text ) : async Text {  
-
-    let imageContent : ImageContent = {
-      id = sourceId;
-      image = {
-        data = image;
-        imageType = imageType;
-      };
-    };
-
-      state.imageContent.put(sourceId, imageContent);
-      return sourceId;
-    };
-
-    public query func getImage(sourceId: Text) : async ?[Nat8] {
-      switch(state.imageContent.get(sourceId)) {
-        case(?result) {
-          return ?result.image.data;
-        };
-        case (_) null;
-      }
-    };
-
   // Retreives all content for the calling Provider
   public query({ caller }) func getProviderContent() : async [ContentPlus] {
       let buf = Buffer.Buffer<ContentPlus>(0);
