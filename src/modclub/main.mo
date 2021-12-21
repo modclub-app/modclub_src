@@ -31,6 +31,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   let DEFAULT_MIN_STAKED = 0;
   let NANOS_PER_MILLI = 1000000;
   private let threshold = 2147483648; //  ~2GB
+  let DEFAULT_TEST_TOKENS = 100;
 
   // Types
   type Content = Types.Content;
@@ -54,6 +55,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
   type AirdropUser = Types.AirdropUser;
   type Bucket = Buckets.Bucket;
 
+
+  // Airdrop Flags
+  stable var allowSubmissionFlag : Bool = true;
   // Global Objects  
   var state = State.empty();
   stable var tokensStable : Token.TokensStable = Token.emptyStable(initializer);
@@ -63,6 +67,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
+  };
+
+  public shared({ caller }) func toggleAllowSubmission(allow: Bool) : async () {
+    await onlyOwner(caller);
+    allowSubmissionFlag := allow;
   };
 
   // Airdrop Methods
@@ -141,6 +150,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
     description: Text,
     image: ?Image
     ) : async Text {
+    // Todo remove this after airdrop
+    await onlyOwner(caller);
     switch(state.providers.get(caller)){
       case (null) {
         let now = timeNow_();
@@ -176,7 +187,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
 
 
-  public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) {
+  public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) : async () {
+    // Todo remove this after airdrop
+    // await onlyOwner(caller);
     var provider = state.providers.get(caller);
     switch(provider) {
       case (?result) {
@@ -223,6 +236,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func addRules(rules: [Text]) {
+    await onlyOwner(caller);
     await checkProviderPermission(caller);
     for(rule in rules.vals()) {
       var ruleId = generateId(caller, "rule");       
@@ -259,6 +273,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func submitText(sourceId: Text, text: Text, title: ?Text ) : async Text {
+    if(allowSubmissionFlag == false) {
+      throw Error.reject("Submissions are disabled");
+    };
+
     await checkProviderPermission(caller);
     let content = createContentObj(sourceId, caller, #text, title);
     let textContent : TextContent = {
@@ -273,7 +291,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
       return content.id;
     };
   
-    public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text) : async Text {
+    public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
+      if(allowSubmissionFlag == false) {
+        throw Error.reject("Submissions are disabled");
+      };
       await checkProviderPermission(caller);
       let content = createContentObj(sourceId, caller, #imageBlob, title);
 
@@ -282,7 +303,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
         image  = {
           data = image;
           imageType = imageType;
-        };
+        }
       };
       // Store and update relationships
       state.content.put(content.id, content);
@@ -421,38 +442,50 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
      var contentRel : ?Rel.Rel<Principal, Types.ContentId> = null;
      let buf = Buffer.Buffer<ContentPlus>(0);
+     var count = 0;
      for ( (pid, p) in state.providers.entries()){
-       switch(status){
-         case(#new){
-          for(cid in state.contentNew.get0(pid).vals()){
-            switch(getContentPlus((cid))) {
-              case (?result) {
-                buf.add(result);
+       if( count < 11) {
+        switch(status){
+          case(#new){
+            for(cid in state.contentNew.get0(pid).vals()){
+              if( count < 11) {
+              switch(getContentPlus((cid))) {
+                case (?result) {
+                  buf.add(result);
+                  count := count + 1;
+                };
+                case (_) ();
+                };
               };
-              case (_) ();
-              };
+            };
           };
-         };
-         case(#approved){
-          for(cid in state.contentApproved.get0(pid).vals()){
-            switch(getContentPlus((cid))) {
-              case (?result) {
-                buf.add(result);
+          case(#approved){
+            for(cid in state.contentApproved.get0(pid).vals()){
+              if( count < 11) {
+              switch(getContentPlus((cid))) {
+                case (?result) {
+                  buf.add(result);
+                  count := count + 1;
+                };
+                case (_) ();
+                };
               };
-              case (_) ();
-              };
+            };
           };
-         };
-         case(#rejected){
-          for(cid in state.contentRejected.get0(pid).vals()){
-            switch(getContentPlus((cid))) {
-              case (?result) {
-                buf.add(result);
+          case(#rejected){
+            for(cid in state.contentRejected.get0(pid).vals()){
+              if( count < 11) {
+              switch(getContentPlus((cid))) {
+                case (?result) {
+                  buf.add(result);
+                  count := count + 1;
+                };
+                case (_) ();
+                };
               };
-              case (_) ();
-              };
+            };
           };
-         };
+        };
        };
      };
     return Array.sort(buf.toArray(), compareContent);
@@ -541,7 +574,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
               };
               // Todo: Remove this after testnet
               // Give new users MOD points
-              await tokens.transfer(initializer, caller, 1000);
+              await tokens.transfer(initializer, caller, DEFAULT_TEST_TOKENS);
               state.profiles.put(caller, profile);
 
               return profile;

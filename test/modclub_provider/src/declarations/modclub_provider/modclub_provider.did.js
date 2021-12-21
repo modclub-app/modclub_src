@@ -8,18 +8,27 @@ export const idlFactory = ({ IDL }) => {
     'status' : ContentStatus,
     'sourceId' : IDL.Text,
   });
-  return IDL.Service({
+  const ModclubProvider = IDL.Service({
+    'addRule' : IDL.Func([IDL.Text], [], []),
     'deregister' : IDL.Func([], [IDL.Text], []),
     'greet' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'onlyOwner' : IDL.Func([IDL.Principal], [], []),
+    'register' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'submitImage' : IDL.Func(
         [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Text],
         [IDL.Text],
         [],
       ),
-    'submitText' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
+    'submitText' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+        [IDL.Text],
+        [],
+      ),
     'subscribe' : IDL.Func([], [], []),
     'test' : IDL.Func([], [IDL.Text], []),
+    'updateSettings' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'voteResult' : IDL.Func([ContentResult], [], ['oneway']),
   });
+  return ModclubProvider;
 };
 export const init = ({ IDL }) => { return []; };

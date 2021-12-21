@@ -1,20 +1,77 @@
 import { Link } from "react-router-dom";
-import { Columns, Menu, Image, Heading, Icon, Button } from "react-bulma-components";
+import {
+  Columns,
+  Menu,
+  Image,
+  Heading,
+  Icon,
+  Button,
+  Modal
+} from "react-bulma-components";
 import LogoImg from '../../../../assets/logo.png';
 import SidebarUser from "./SidebarUser";
 import { useAuth } from '../../../utils/auth';
 import { SignIn } from '../../Auth/SignIn';
 import { useHistory } from 'react-router-dom';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import FormModal from "../modals/FormModal";
+
+const InviteModerator = ({ toggle }) => {
+
+  console.log("window", window)
+
+  const link = 'Coming Soon';//`${window.location.origin}/referral=${Date.now()}`
+
+  return (
+    <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
+      <Modal.Card backgroundColor="circles" className="is-small">
+        <Modal.Card.Body>
+
+          <Heading subtitle>
+            Invite a Moderator
+          </Heading>
+          <p>
+            Invite moderators to earn MOD tokens. For every invited moderator that registers with MODCLUB, you will earn <span className="has-text-weight-bold">5 mod tokens</span>
+          </p>
+
+          <div className="field mt-6">
+            <label className="label has-text-white">Referral Link:</label>
+            <div className="control has-icons-right">
+              <input className="input"
+                placeholder={link}
+                style={{ zIndex: -1 }}
+              />
+              <Icon align="right" color="white" className="is-clickable" onClick={() => {navigator.clipboard.writeText(link)}}>
+                <span className="material-icons">file_copy</span>
+              </Icon>
+            </div>
+          </div>
+
+        </Modal.Card.Body>
+        <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
+          <Button.Group>
+            <Button color="primary" onClick={toggle}>
+              Close
+            </Button>
+          </Button.Group>
+        </Modal.Card.Footer>
+      </Modal.Card>
+    </Modal>
+  )
+}
 
 export default function Sidebar() {
   const history = useHistory();
   const { isAuthReady, user, isAuthenticated, requiresSignUp } = useAuth();
+
+  const [showModal, setShowModal] = useState(false);
+  const toggleModal = () => setShowModal(!showModal);
+
   useEffect(
     () => {
       console.log({ isAuthReady, user, isAuthenticated, requiresSignUp });
       if(isAuthReady && isAuthenticated && !user && requiresSignUp) {
-        history.push('/signup');
+        history.push("/signup");
       }
     }, [isAuthReady, isAuthenticated, user, requiresSignUp]
   )
@@ -35,18 +92,6 @@ export default function Sidebar() {
         {isAuthenticated && user ? <SidebarUser /> : <SignIn />}
 
         <Menu.List>
-          <Link to="/app">
-            <Icon>
-              <span className="material-icons">dehaze</span>
-            </Icon>
-            Dashboard
-          </Link>
-          <Link to="/app/moderators">
-            <Icon>
-              <span className="material-icons">assignment_ind</span>
-            </Icon>
-            Moderators
-          </Link>
           <Link to="/app/tasks">
             <Icon>
               <span className="material-icons">playlist_add_check</span>
@@ -59,12 +104,6 @@ export default function Sidebar() {
             </Icon>
             Human Verification
           </Link>
-          <Link to="/app/support">
-            <Icon>
-              <span className="material-icons">help_outline</span>
-            </Icon>
-            Support
-          </Link>
           <Link to="/app/admin">
             <Icon>
               <span className="material-icons">assignment_ind</span>
@@ -73,11 +112,15 @@ export default function Sidebar() {
           </Link>
         </Menu.List>
 
-        <Button color="primary" fullwidth size="large" className="mt-6">
+        <Button color="primary" fullwidth size="large" className="mt-6" onClick={toggleModal}>
           Invite a Moderator
         </Button>
 
       </Menu>
+
+      {showModal && (
+        <InviteModerator toggle={toggleModal} />
+      )}
     </Columns.Column>
   );
 }

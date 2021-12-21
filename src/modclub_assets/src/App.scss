@@ -104,7 +104,7 @@ hr {
 
 .buttons {
   flex-wrap: nowrap;
-  overflow-x: scroll;
+  // overflow-x: scroll;
 
   &:last-child, &:not(:last-child) {
     margin-bottom: 0;
@@ -127,6 +127,10 @@ hr {
   background: none;
   color: $white;
   border-color: $dark;
+
+  &:focus:not(:active) {
+    box-shadow: none;
+  }
 
   &:hover {
     color: $light;
@@ -198,6 +202,10 @@ hr {
     font-size: 1rem;
     height: auto;
   }
+}
+
+.button .icon:first-child:not(:last-child) {
+  margin-left: 0;
 }
 
 .level > .button.is-flex-grow-1:first-child {
@@ -280,29 +288,21 @@ hr {
   padding: 1.5rem 1.5rem 0;
   align-items: center;
   position: relative;
-
-  .progress {
-    width: 100px;
-    margin: 0;
-
-    + .progress-label {
-      width: 100px;
-      position: absolute;
-      top: 1.75rem;
-      right: 1.5rem;
-    }
-  }
 }
 
 .card-footer {
   border-color: $dark;
   margin: 0 1.5rem 1.5rem 1.5rem;
-  // margin: 0 1.5rem;
+  margin: 0 1.5rem;
   padding: 1.5rem 0;
   justify-content: space-between;
 
   .buttons:only-child {
     width: 100%;
+  }
+
+  p:not(:last-child) {
+    margin-bottom: 1rem;
   }
 
   // .button:not(:first-child) {
@@ -456,17 +456,8 @@ label.checkbox {
   }
 }
 
+
 .progress {
-  height: 1.5rem;
-  border-radius: 4px;
-
-  + .progress-label {
-    color: $white;
-    // width: 100px;
-    font-size: 11px;
-    text-align: center;
-  }
-
   &::-webkit-progress-bar {
     background-color: $dark;
   }
@@ -524,17 +515,18 @@ label.checkbox {
     }
   }
 
-  .progress {
-    width: 100px;
-
-    + .progress-label {
-      display: block;
-      margin-top: -1.65em;
-    }
+  .progress-wrap {
+    margin: auto;
   }
 
   &.is-striped tbody tr:not(.is-selected):nth-child(odd) {
     background: $dark;
+
+    .progress {
+      &::-webkit-progress-bar {
+        background-color: $black;
+      }
+    }
   }
   &.is-striped tbody tr:not(.is-selected):nth-child(even) {
     background: $black;
@@ -620,30 +612,30 @@ input[type='number']::-webkit-inner-spin-button {
   z-index: 40;
 }
 
-.loader-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  opacity: 0;
-  z-index: -1;
-  transition: opacity 0.3s;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 6px;
+// .loader-wrapper {
+//   position: absolute;
+//   top: 0;
+//   left: 0;
+//   height: 100%;
+//   width: 100%;
+//   opacity: 0;
+//   z-index: -1;
+//   transition: opacity 0.3s;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   border-radius: 6px;
 
-  .loader {
-    height: 38px;
-    width: 38px;
-  }
+//   .loader {
+//     height: 38px;
+//     width: 38px;
+//   }
 
-  &.is-active {
-    opacity: 1;
-    z-index: 1;
-  }
-}
+//   &.is-active {
+//     opacity: 1;
+//     z-index: 1;
+//   }
+// }
 
 .loader {
   margin: auto;
@@ -661,7 +653,19 @@ input[type='number']::-webkit-inner-spin-button {
   }
 
   .dropdown-menu {
-    animation: fadein .25s ease-in-out;
+    display: block;
+    transition: max-height 0.3s;
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  &.is-active .dropdown-menu, &.is-hoverable:hover .dropdown-menu {
+    max-height: 20rem;
+  }
+
+  &.is-up .dropdown-menu {
+    padding-bottom: 0;
+    margin-bottom: 4px;
   }
 
   .button {

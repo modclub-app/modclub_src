@@ -9,29 +9,32 @@ import Withdraw from "../modals/Withdraw";
 import Stake from "../modals/Stake";
 import Unstake from "../modals/Unstake";
 
-const StatBox = ({ children, image, title, amount, usd, detailed }) => {
+const StatBox = ({ loading, image, title, amount, usd, detailed, children }) => {
   return (
     <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-    {/* <Columns.Column > */}
       <Card backgroundColor="circles" className="is-fullheight">
-        {/* <Card.Content className="is-flex is-align-items-center" style={{ padding: "2.5rem 2rem" }}> */}
         <Card.Content className="is-flex is-align-items-center">
           <img src={image} className="mr-4" />
           <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
-            <p className="has-text-light">{title}</p>
-            <Heading size={1} style={{ lineHeight: 1 }}>
-              {amount}
-              {detailed &&
-                <span className="has-text-weight-normal is-size-4 ml-4">
-                  ${usd}
-                </span>
-              }
-            </Heading>
+            <p className="has-text-light">
+              {title}
+            </p>
+            {loading ? (
+              <div className="loader is-loading" />
+            ) : (
+              <Heading size={1} style={{ lineHeight: 1 }}>
+                {amount}
+                {detailed &&
+                  <span className="has-text-weight-normal is-size-4 ml-4">
+                    ${usd}
+                  </span>
+                }
+              </Heading>
+            )}
           </div>
         </Card.Content>
         {detailed &&
-          // <Card.Footer paddingless style={{ border: 0, marginBottom: "2.5rem" }} >
-          <Card.Footer paddingless style={{ border: 0 }}>
+          <Card.Footer paddingless style={{ border: 0, marginBottom: "1.5rem" }}>
             {children}
           </Card.Footer>
         }
@@ -42,8 +45,8 @@ const StatBox = ({ children, image, title, amount, usd, detailed }) => {
 
 export default function Userstats({ detailed = false }) {
   const { user } = useAuth();
-  const [ holdingsUpdated, setHoldingsUpdated ] = useState(true);
-
+  // const [loading, setLoading] = useState<boolean>(true);
+  const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards : 0,
     stake : 0,
@@ -56,7 +59,6 @@ export default function Userstats({ detailed = false }) {
   const [showStake, setShowStake] = useState(false);
   const toggleStake = () => setShowStake(!showStake);
 
-
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);
 
@@ -66,6 +68,7 @@ export default function Userstats({ detailed = false }) {
       const tokenHoldings = await getTokenHoldings();
       setTokenHoldings(tokenHoldings);
       setHoldingsUpdated(false);
+      // setLoading(false);
     };
     user && holdingsUpdated && fetchTokenHoldings();
   }, [user, holdingsUpdated]);
@@ -74,6 +77,7 @@ export default function Userstats({ detailed = false }) {
     <>
     <Columns>
       <StatBox
+        loading={holdingsUpdated}
         image={walletImg}
         title="Wallet"
         amount={tokenHoldings.wallet}
@@ -90,6 +94,7 @@ export default function Userstats({ detailed = false }) {
         </Button.Group>
       </StatBox>
       <StatBox
+        loading={holdingsUpdated}
         image={stakedImg}
         title="Staked"
         amount={tokenHoldings.stake}
@@ -106,6 +111,7 @@ export default function Userstats({ detailed = false }) {
         </Button.Group>
       </StatBox>
       <StatBox
+        loading={holdingsUpdated}
         image={performanceImg}
         title="Pending rewards"
         amount={tokenHoldings.pendingRewards}

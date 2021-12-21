@@ -20,6 +20,7 @@ import twitterImg from '../../../../assets/twitter.png';
 import discordImg from '../../../../assets/discord.jpeg';
 import dscvrImg from '../../../../assets/dscvr.jpeg';
 import mediumImg from '../../../../assets/medium.png';
+import { useHistory } from "react-router-dom";
 
 const data = {
   labels: [
@@ -58,6 +59,7 @@ const data = {
 };
 
 export default function Landing() {
+  const history = useHistory(); 
   return (
   <div className="landing-page has-background-black">
     <section className="hero is-black is-medium">
@@ -70,7 +72,7 @@ export default function Landing() {
           MODCLUB is a decentralized content moderation platform, it simplifies the moderation process by connecting our community to dApps that need UGC moderation.
         </p>
         <div>
-          <a className="button is-large extra mt-6">Coming Soon</a>
+          <a className="button is-large extra mt-6" onClick={() => history.push('/app')}>Beta 1.0</a>
         </div>
       </div>
     </section>
@@ -147,7 +149,7 @@ export default function Landing() {
             <p className="has-text-silver is-size-4 mb-5">
               Moderators earn reward tokens for actively moderating and participating on the platform.
             </p>
-            <a className="button is-large extra">Coming Soon</a>
+            <a className="button is-large extra" onClick={()=> history.push('/app')}>Beta 1.0</a>
           </div>
         </div>
 
@@ -237,7 +239,7 @@ export default function Landing() {
                 <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
                   <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
                     <label className="label has-text-white mt-3">Initial Max Supply</label>
-                    <p className="has-text-silver is-size-4 mb-3">1,000,000,000</p>
+                    <p className="has-text-silver is-size-4 mb-3" style={{ fontSize: 20 }}>1,000,000,000</p>
                   </div>
                 </div>
                 <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>

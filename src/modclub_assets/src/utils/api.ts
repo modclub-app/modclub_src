@@ -26,22 +26,6 @@ var actor: _SERVICE = null;
 function getMC(): Promise<_SERVICE> {
   return actorController.actor;
 }
-export async function sendImage(imageData: number[]) {
-  const response = await (
-    await getMC()
-  ).sendImage("id_1", imageData, "image/png");
-  console.log("Send Image Response " + response);
-}
-
-export async function getImage(imageId: string): Promise<number[]> {
-  const icResponse = await (await getMC()).getImage(imageId);
-  const imageData = unwrap<number[]>(icResponse);
-  if (imageData !== null) {
-    return imageData;
-  } else {
-    throw new Error("Image data does not exist");
-  }
-}
 
 export async function registerModerator(
   username: string,

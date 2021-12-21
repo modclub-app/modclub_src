@@ -82,6 +82,7 @@ module State {
 
     // data canisters to hold data and data canister's size
     dataCanisters: Map<Types.DataCanisterId, Bucket>;
+    appName: Text;
   };
 
   public type StateShared = {    
@@ -103,6 +104,7 @@ module State {
     provider2content: RelShared<Types.ProviderId, Types.ContentId>;
     provider2rules: RelShared<Types.ProviderId, Types.RuleId>;
     dataCanisters: [(Types.DataCanisterId, Bucket)];
+    appName: Text;
   };
 
   public func empty () : State {
@@ -129,6 +131,7 @@ module State {
       provider2content = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       provider2rules = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       dataCanisters = HashMap.HashMap<Types.DataCanisterId, Bucket> (1, Principal.equal, Principal.hash);
+      appName = "MODCLUB";
     };
     st;
   };
@@ -153,6 +156,7 @@ module State {
       provider2content = Rel.emptyShared<Principal, Text>();
       provider2rules = Rel.emptyShared<Principal, Text>();
       dataCanisters = [];
+      appName = "MODCLUB";
     };
     st;
   };
@@ -177,6 +181,7 @@ module State {
       provider2content = Rel.share<Principal, Types.ContentId>(state.provider2content.getRel());
       provider2rules = Rel.share<Principal, Types.ContentId>(state.provider2rules.getRel());
       dataCanisters = Iter.toArray(state.dataCanisters.entries());
+      appName = state.appName;
     };
     st;
   };
@@ -256,6 +261,7 @@ module State {
     for( (id, pid) in stateShared.dataCanisters.vals()) {
       state.dataCanisters.put(id, pid);
     };
+
     return state;
   };
 
