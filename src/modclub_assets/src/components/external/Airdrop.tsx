@@ -5,7 +5,7 @@ import {
 } from "../../utils/api";
 import { useAuth } from "../../utils/auth";
 import { useEffect, useRef, useState } from "react";
-import { SignIn } from "../Auth/SignIn";
+import { SignIn } from "../auth/SignIn";
 import { Principal } from "@dfinity/candid/lib/cjs/idl";
 import { AirdropUser } from "../../utils/types";
 import "./landing/Landing.scss";

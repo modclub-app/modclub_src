@@ -75,6 +75,7 @@ module {
     updatedAt: Timestamp;
     text: ?Text;
     image: ?Image;
+    hasVoted: ?Bool;
   };
 
   public type Content = {
@@ -178,6 +179,7 @@ module {
   public type VoteCount = {
     approvedCount: Nat;
     rejectedCount: Nat;
+    hasVoted: Bool;
   };
 
   public type Activity = {

@@ -56,15 +56,16 @@ type Profile =
 type ModClub = 
  service {
    addRules: (vec text) -> () oneway;
+   addToAirdropWhitelist: (vec principal) -> ();
    airdropRegister: () -> (AirdropUser);
    checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
    getActivity: (bool) -> (vec Activity) query;
    getAirdropUsers: () -> (vec AirdropUser);
+   getAirdropWhitelist: () -> (vec principal);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getAllProfiles: () -> (vec Profile) query;
    getContent: (text) -> (opt ContentPlus) query;
-   getImage: (text) -> (opt vec nat8) query;
    getModclubHoldings: () -> (Holdings) query;
    getProfile: () -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
@@ -75,13 +76,13 @@ type ModClub =
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    removeRules: (vec RuleId) -> () oneway;
-   sendImage: (text, vec nat8, text) -> (text);
    stakeTokens: (nat) -> (text);
    submitImage: (text, vec nat8, text, opt text) -> (text);
    submitText: (text, text, opt text) -> (text);
    subscribe: (SubscribeMessage) -> ();
+   toggleAllowSubmission: (bool) -> ();
    unStakeTokens: (nat) -> (text);
-   updateSettings: (ProviderSettings) -> () oneway;
+   updateSettings: (ProviderSettings) -> ();
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
  };
 type Image__1 = 
@@ -132,6 +133,7 @@ type ContentPlus =
  record {
    contentType: ContentType;
    createdAt: Timestamp;
+   hasVoted: opt bool;
    id: ContentId__1;
    image: opt Image__1;
    minStake: nat;

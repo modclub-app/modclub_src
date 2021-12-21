@@ -90,7 +90,7 @@ const Modal_ = ({
     const fetchRules = async () => {
       setSubmitting(true);
       const rules = await getProviderRules(providerId);
-      console.log({ rules });       
+      console.log({ rules });
       setRules(rules);
       setSubmitting(false);
 
@@ -158,7 +158,7 @@ const Modal_ = ({
               </Button.Group>
             </Modal.Card.Footer>
           </form>
-          )}
+        )}
         />
       </Modal.Card>
       {message &&
@@ -170,7 +170,7 @@ const Modal_ = ({
   );
 };
 
-export default function ApproveReject({ platform, id, providerId, fullWidth = false, onUpdate }) {
+export default function ApproveReject({ platform, id, providerId, fullWidth = false, onUpdate, voted }) {
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
 
@@ -179,10 +179,10 @@ export default function ApproveReject({ platform, id, providerId, fullWidth = fa
 
   return (
     <>
-      <Button color="danger" fullwidth={fullWidth} onClick={togglReject}>
+      <Button color="danger" fullwidth={fullWidth} onClick={togglReject} disabled={voted}>
         Reject
       </Button>
-      <Button color="primary" fullwidth={fullWidth} onClick={toggleApprove} className="ml-4">
+      <Button color="primary" fullwidth={fullWidth} onClick={toggleApprove} className="ml-4" disabled={voted}>
         Approve
       </Button>
 
@@ -195,7 +195,7 @@ export default function ApproveReject({ platform, id, providerId, fullWidth = fa
           id={id}
           providerId={providerId}
           onUpdate={onUpdate}
-        /> 
+        />
       }
       {showReject &&
         <Modal_
@@ -206,7 +206,7 @@ export default function ApproveReject({ platform, id, providerId, fullWidth = fa
           id={id}
           providerId={providerId}
           onUpdate={onUpdate}
-        /> 
+        />
       }
     </>
   );

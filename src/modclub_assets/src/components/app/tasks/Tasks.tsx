@@ -22,14 +22,14 @@ export default function Tasks() {
   const fetchTasks = async () => {
     const status = { "new": null };
     const content = await getAllContent(status);
-    setTasks(content); 
+    setTasks(content);
   }
 
   useEffect(() => {
     user && fetchTasks();
     setVoted(false);
   }, [user, voted]);
-  if(!isAuthenticated) return (<div>You need to be logged in to view this page</div>);
+  if (!isAuthenticated) return (<div>You need to be logged in to view this page</div>);
   return (
     <>
       <Userstats />
@@ -38,7 +38,7 @@ export default function Tasks() {
         {!tasks ? (
           <div className="loader is-loading p-4 mt-6" />
         ) : tasks.map((task) => (
-            <Columns.Column key={task.id} size={12}>
+          <Columns.Column key={task.id} size={12}>
             <Card>
               <Card.Header>
                 <Card.Header.Title>
@@ -72,7 +72,7 @@ export default function Tasks() {
                     <Icon align="left" size="small" className="has-text-white">
                       <span className="material-icons">stars</span>
                     </Icon>
-                    <span>{"Reward: "+ task.minStake }</span>
+                    <span>{"Reward: " + task.minStake}</span>
                   </Button>
                 </Button.Group>
 
@@ -83,6 +83,7 @@ export default function Tasks() {
                     id={task.id}
                     providerId={task.providerId}
                     onUpdate={() => setVoted(true)}
+                    voted={!!task.hasVoted[0]}
                   />
                 </Button.Group>
               </Card.Footer>
