@@ -870,9 +870,14 @@ shared ({caller = initializer}) actor class ModClub () {
           } else {
             voteRejected += 1;
           };
-          if (?v.userId == caller) {
-            hasVoted := true;
-          }
+          switch (caller) {
+            case(?x){
+              if (v.userId == x) {
+                hasVoted := true;
+              };
+            };
+            case(_) ();
+          };
         }; 
         case(_) ();
       };
