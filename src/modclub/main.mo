@@ -313,15 +313,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
       return content.id;
     };
 
-    public func getText(contentId: ContentId, bucketId: Types.DataCanisterId, chunkNum:Nat) : async ?Text {
-      let blob = await getBlob(contentId, bucketId, chunkNum);
-      let blobValue: Blob = switch (blob) {
-        case null { throw Error.reject("Content doesn't exist") };
-        case (?s) { s }
-      };
-      Text.decodeUtf8(blobValue);
-    };
-
     public func getBlob(contentId: ContentId, bucketId: Types.DataCanisterId, chunkNum:Nat): async ?Blob {
       let b : ?Bucket = state.dataCanisters.get(bucketId);
       let bucket: Bucket = switch (b) {
