@@ -3,7 +3,14 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
-import { Columns, Card, Heading, Button } from "react-bulma-components";
+import {
+  Columns,
+  Card,
+  Heading,
+  Button,
+  Dropdown,
+  Icon
+} from "react-bulma-components";
 import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
@@ -34,7 +41,7 @@ const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {
                 </td>
                 <td>{item.providerName}</td>
                 <td>
-                  <Snippet string={item.title[0]} truncate={20} />
+                  <Snippet string={item.title[0]} truncate={15} />
                 </td>
                 <td>
                   <Progress
@@ -93,6 +100,10 @@ export default function Activity() {
     fetchActivity(currentFilter);
   }, [currentFilter]);
 
+  const tempClick = () => {
+    console.log("tempClick");
+  }
+
   return (
     <>
       <Userstats detailed={true} />
@@ -103,7 +114,32 @@ export default function Activity() {
                 <Heading marginless>
                   Recent Activity
                 </Heading>
-                <Button.Group>
+
+                <Dropdown
+                  className="is-hidden-tablet"
+                  right
+                  label="Filter"
+                  icon={
+                    <Icon color="white">
+                      <span className="material-icons">expand_more</span>
+                    </Icon>
+                  }
+                  style={{ width: 100 }}
+                >
+                  {filters.map(filter => 
+                    <Dropdown.Item
+                      key={filter}
+                      value={filter}
+                      renderAs="a"
+                      className={currentFilter === filter && "is-active"}
+                      onMouseDown={() => setCurrentFilter(filter)}
+                    >
+                      {getLabel(filter)}
+                    </Dropdown.Item>
+                  )}
+                </Dropdown>
+
+                <Button.Group className="is-hidden-mobile">
                   {filters.map(filter => 
                     <Button
                       key={filter}
@@ -124,8 +160,7 @@ export default function Activity() {
               <Card.Content>
                 <Table
                   loading={loading}
-                  filteredActivity={
-                    currentFilter == "new" ? inProgressActivity : completedActivity}
+                  filteredActivity={currentFilter == "new" ? inProgressActivity : completedActivity}
                   getLabel={getLabel}
                   currentFilter={currentFilter}
                 />

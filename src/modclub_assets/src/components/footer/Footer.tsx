@@ -4,9 +4,8 @@ import modclubImg from "../../../assets/logo.png";
 
 export default function Footer_() {
   return (
-    <Footer backgroundColor="black" style={{ padding: "5rem 1.5rem" }}>
-      <Container marginless style={{ padding: "0 4rem" }}>
-      {/* <Container style={{ margin: "0 3rem" }}> */}
+    <Footer backgroundColor="black">
+      <Container marginless>
         <Columns>
           <Columns.Column size="one-fifth">
             <Image
