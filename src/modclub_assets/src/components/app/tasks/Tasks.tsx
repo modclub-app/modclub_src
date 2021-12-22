@@ -60,7 +60,12 @@ export default function Tasks() {
                   <p>{task.text}</p>
                 }
               </Card.Content>
+
+              <Link to={`/app/tasks/${task.id}`} className="button is-hidden-tablet is-block" style={{ width: 100, margin: "0 auto 1rem" }}>
+                See More
+              </Link>
               <Card.Footer>
+
                 <Button.Group>
                   <Button className="is-outlined">
                     <Icon align="left" size="small" className="has-text-white">
@@ -77,7 +82,7 @@ export default function Tasks() {
                 </Button.Group>
 
                 <Button.Group>
-                  <Link to={`/app/tasks/${task.id}`} className="button">See More</Link>
+                  <Link to={`/app/tasks/${task.id}`} className="button is-hidden-mobile">See More</Link>
                   <ApproveReject
                     platform={task.providerName}
                     id={task.id}
