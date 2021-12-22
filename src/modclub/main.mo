@@ -230,7 +230,7 @@ shared ({caller = initializer}) actor class ModClub () {
   };
 
   public shared({ caller }) func addRules(rules: [Text]) {
-    await onlyOwner(caller);
+    // await onlyOwner(caller);
     await checkProviderPermission(caller);
     for(rule in rules.vals()) {
       var ruleId = generateId(caller, "rule");       
