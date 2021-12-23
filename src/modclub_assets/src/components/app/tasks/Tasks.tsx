@@ -77,7 +77,7 @@ const Task = ({ task, setVoted }) => {
           </Button.Group>
 
           <Button.Group style={{ flexWrap: "wrap" }}>
-            <div className="mb-2" style={{ width: "100%" }}>
+            <div className="mb-4 mt-1" style={{ width: "100%" }}>
               <RulesList
                 platform={task.providerName}
                 rules={rules}
