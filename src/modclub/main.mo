@@ -16,16 +16,23 @@ import Types "./types";
 import Option "mo:base/Option";
 import Debug "mo:base/Debug";
 import Order "mo:base/Order";
+import Blob "mo:base/Blob";
+import Cycles "mo:base/ExperimentalCycles";
+
 import Rel "data_structures/Rel";
 import Token "./token";
+import Buckets "./data_canister/buckets";
+import IC "./remote_canisters/IC";
+import BucketState "./data_canister/bucketState";
 
-shared ({caller = initializer}) actor class ModClub () {  
+shared ({caller = initializer}) actor class ModClub () = this {  
 
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
   let NANOS_PER_MILLI = 1000000;
+  let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
   let DEFAULT_TEST_TOKENS = 100;
 
   // Types
@@ -48,6 +55,7 @@ shared ({caller = initializer}) actor class ModClub () {
   type ProviderPlus = Types.ProviderPlus; 
   type Activity = Types.Activity;
   type AirdropUser = Types.AirdropUser;
+  type Bucket = Buckets.Bucket;
 
 
   // Airdrop Flags
@@ -58,6 +66,9 @@ shared ({caller = initializer}) actor class ModClub () {
   var tokens = Token.Tokens(
         tokensStable
   );
+  var bucketState = BucketState.empty();
+  stable var bucketStateStable  = BucketState.emptyShared();
+
 
   func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
@@ -286,25 +297,96 @@ shared ({caller = initializer}) actor class ModClub () {
     };
   
     public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
-    if(allowSubmissionFlag == false) {
-      throw Error.reject("Submissions are disabled");
-    };
-    await checkProviderPermission(caller);
-    let content = createContentObj(sourceId, caller, #imageBlob, title);
-
-    let imageContent : ImageContent = {
-      id = content.id;
-      image  = {
-        data = image;
-        imageType = imageType;
+      if(allowSubmissionFlag == false) {
+        throw Error.reject("Submissions are disabled");
       };
-    };
+      await checkProviderPermission(caller);
+      let content = createContentObj(sourceId, caller, #imageBlob, title);
+
+      let imageContent : ImageContent = {
+        id = content.id;
+        image  = {
+          data = image;
+          imageType = imageType;
+        }
+      };
       // Store and update relationships
       state.content.put(content.id, content);
       state.imageContent.put(content.id, imageContent);
       state.provider2content.put(caller, content.id);
       state.contentNew.put(caller, content.id);
       return content.id;
+    };
+
+    public func getBlob(contentId: ContentId, bucketId: Types.DataCanisterId, offset:Nat): async ?Blob {
+      let b : ?Bucket = bucketState.dataCanisters.get(bucketId);
+      let bucket: Bucket = switch (b) {
+        case null { throw Error.reject("Content doesn't exist") };
+        case (?s) { s }
+      };
+      await bucket.getChunks(contentId, offset);
+
+    };
+
+    // persist chunks in bucket
+    public func putBlobsInDataCanister(contentId: ContentId, chunkData : Blob, offset: Nat, numOfChunks: Nat, contentType: Text) : async Principal {
+      let b : Bucket = await getEmptyBucket(?chunkData.size());
+      let a = await b.putChunks(contentId, offset, chunkData, numOfChunks, contentType);
+       Principal.fromActor(b)
+    };
+
+    // check if there's an empty bucket we can use
+    // create a new one in case none's available or have enough space 
+    private func getEmptyBucket(s : ?Nat): async Bucket {
+      let fs: Nat = switch (s) {
+        case null { 0 };
+        case (?s) { s }
+      };
+
+      for((pId, bucket) in bucketState.dataCanisters.entries()) {
+        let size = await bucket.getSize();
+        if(size + fs < DATA_CANISTER_MAX_STORAGE_LIMIT) {
+          return bucket;
+        }
+      };
+      await newEmptyBucket();
+    };
+
+    // dynamically install a new Bucket
+    private func newEmptyBucket(): async Bucket {
+      let b = await Buckets.Bucket();
+      let _ = await updateCanister(b); // update canister permissions and settings
+      let s = await b.getSize();
+      Debug.print("new canister principal is " # debug_show(Principal.toText(Principal.fromActor(b))) );
+      Debug.print("initial size is " # debug_show(s));
+      // var newCanisterState : CanisterState<Bucket, Nat> = {
+      //     bucket = b;
+      //     var size = s;
+      // };
+      bucketState.dataCanisters.put(Principal.fromActor(b), b);
+      return b;
+    };
+
+    // canister memory is set to 4GB and compute allocation to 5 as the purpose 
+    // of this canisters is mostly storage
+    // set canister owners to the wallet canister and the container canister ie: this
+    private func updateCanister(a: actor {}) : async () {
+      Debug.print("balance before: " # Nat.toText(Cycles.balance()));
+      // Cycles.add(Cycles.balance()/2);
+      let cid = { canister_id = Principal.fromActor(a)};
+      Debug.print("IC status..."  # debug_show(await IC.IC.canister_status(cid)));
+      // let cid = await IC.create_canister(  {
+      //    settings = ?{controllers = [?(owner)]; compute_allocation = null; memory_allocation = ?(4294967296); freezing_threshold = null; } } );
+      
+      await (IC.IC.update_settings( {
+        canister_id = cid.canister_id; 
+        settings = { 
+          controllers = ?[initializer, Principal.fromActor(this)]; 
+          compute_allocation = null;
+          //  memory_allocation = ?4_294_967_296; // 4GB
+          memory_allocation = null; // 4GB
+          freezing_threshold = ?31_540_000} })
+      );
     };
 
   // Retreives all content for the calling Provider
@@ -913,6 +995,7 @@ shared ({caller = initializer}) actor class ModClub () {
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
+    bucketStateStable := BucketState.fromState(bucketState);
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -920,6 +1003,8 @@ shared ({caller = initializer}) actor class ModClub () {
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
+    bucketState := BucketState.toState(bucketStateStable);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
+
 };
