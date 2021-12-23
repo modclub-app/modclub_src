@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { getContent } from "../../../utils/api";
-import { Columns, Card, Level, Heading, Icon } from "react-bulma-components";
+import { Columns, Card, Level, Heading, Icon, Button } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
@@ -105,14 +105,16 @@ export default function Task() {
 
               </Card.Content>
               <Card.Footer className="pt-0" style={{ border: 0 }}>
-                <ApproveReject
-                  platform={task.providerName}
-                  id={task.id}
-                  providerId={task.providerId}
-                  fullWidth={true}
-                  voted={!!task.hasVoted[0]}
-                  onUpdate={() => setVoted(true)}
-                />
+                <Button.Group>
+                  <ApproveReject
+                    platform={task.providerName}
+                    id={task.id}
+                    providerId={task.providerId}
+                    fullWidth={true}
+                    voted={!!task.hasVoted[0]}
+                    onUpdate={() => setVoted(true)}
+                  />
+                </Button.Group>
               </Card.Footer>
             </Card>
           </Columns.Column>
