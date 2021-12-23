@@ -92,7 +92,7 @@ export default function Sidebar() {
         {isAuthenticated && user ? <SidebarUser /> : <SignIn />}
 
         <Menu.List>
-          <Link to="/app/tasks">
+          <Link to="/app">
             <Icon>
               <span className="material-icons">playlist_add_check</span>
             </Icon>
