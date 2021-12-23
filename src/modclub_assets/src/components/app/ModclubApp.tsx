@@ -12,7 +12,6 @@ import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 
 export default function ModclubApp() {
-  const { user } = useAuth();
 
   return (
     <>
@@ -20,13 +19,12 @@ export default function ModclubApp() {
 
         <Sidebar />
 
-        {/* <Columns.Column size="four-fifths" id="main-content" className="mt-6 pb-6"> */}
         <Columns.Column id="main-content" className="mt-6 pb-6">
           <Switch>
-            <Route exact path="/app">
+            {/* <Route exact path="/app">
               Please login to view this page  
-            </Route>
-            <Route exact path="/app/tasks">
+            </Route> */}
+            <Route exact path="/app">
               <Tasks />
             </Route>
             <Route path="/app/tasks/:taskId">
