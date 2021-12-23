@@ -2,6 +2,7 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Hash "mo:base/Hash";
 import Nat "mo:base/Nat";
+import HashMap "mo:base/HashMap";
 
 module {
   public type Timestamp = Int; // See mo:base/Time and Time.now()
@@ -234,4 +235,7 @@ module {
         #Immutable;
     };
 
+    public type DataCanisterId = Principal;
+    public type ChunkData = Blob;
+    public type ChunkId = Text;
 };

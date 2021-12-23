@@ -19,7 +19,7 @@ import Types "./types";
 module State {
   type Profile = Types.Profile;
   type Content = Types.Content;
-  type Provider = Types.Provider;  
+  type Provider = Types.Provider;
   type Rel<X, Y> = RelObj.RelObj<X, Y>;
   public type RelShared<X, Y> = Rel.RelShared<X, Y>;
   public type MapShared<X, Y> = Trie.Trie<X, Y>;
@@ -250,8 +250,8 @@ module State {
       (Principal.hash, Text.hash),
       (Principal.equal, Text.equal)
     ));
-
     return state;
   };
+
 
 };

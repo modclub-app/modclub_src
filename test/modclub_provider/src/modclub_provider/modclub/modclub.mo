@@ -1,5 +1,6 @@
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
+import Principal "mo:base/Principal";
 
 // This is the interface to modclub for providers
 module { 
@@ -39,5 +40,7 @@ module {
         submitText: (Text, Text, ?Text) -> async Text;
         submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
         subscribe: (SubscribeMessage) -> async ();
+        putBlobsInDataCanister: (Text, Blob, Nat, Nat, Text) -> async (Principal, Nat);
+        getBlob: (Text, Principal, Nat) -> async ?Blob 
       };
 };
