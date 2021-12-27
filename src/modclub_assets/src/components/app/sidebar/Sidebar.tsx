@@ -17,9 +17,6 @@ import { useEffect, useState } from "react";
 import FormModal from "../modals/FormModal";
 
 const InviteModerator = ({ toggle }) => {
-
-  console.log("window", window)
-
   const link = 'Coming Soon';//`${window.location.origin}/referral=${Date.now()}`
 
   return (
@@ -48,7 +45,7 @@ const InviteModerator = ({ toggle }) => {
           </div>
 
         </Modal.Card.Body>
-        <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
+        <Modal.Card.Footer justifyContent="flex-end" className="pt-0">
           <Button.Group>
             <Button color="primary" onClick={toggle}>
               Close
@@ -67,9 +64,7 @@ export default function Sidebar() {
   const [showModal, setShowModal] = useState(false);
   const toggleModal = () => setShowModal(!showModal);
 
-  useEffect(
-    () => {
-      console.log({ isAuthReady, user, isAuthenticated, requiresSignUp });
+  useEffect(() => {
       if(isAuthReady && isAuthenticated && !user && requiresSignUp) {
         history.push("/signup");
       }
@@ -77,8 +72,6 @@ export default function Sidebar() {
   )
   return (
     <Columns.Column size="one-fifth" backgroundColor="black" style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}>
-     {/* <Columns.Column size="one-fifth" backgroundColor="black"> */}
-
       <Menu className="p-3">
         <div className="is-flex is-align-items-center mt-3">
           <Image src={LogoImg} size={32} />
