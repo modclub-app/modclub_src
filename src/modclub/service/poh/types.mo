@@ -1,73 +1,101 @@
 import Int "mo:base/Int";
 import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
-import Types "./types";
-import State "./state";
-import Error "mo:base/Error";
-import Iter "mo:base/Iter";
-import Debug "mo:base/Debug"; 
+import Buffer "mo:base/Buffer";
 
 module {
 
     //POH Users Ref Data
-    public type PohUsers {
+    public type PohUsers = {
         userId: Principal;
         createdAt: Int;
         updatedAt: Int;
     };
+    
     // Challeneges Ref Data
-    public type PohChallenges {
-        challengeId: Nat;
+    public type PohChallenges =  {
+        challengeId: Text;
         challengeName: Text;
         challengeDescription: Text;
         // assuming there will be no transitive dependencies. else graph needs to be used
-        dependentChallengeId: Buffer.Buffer<Nat>;
+        dependentChallengeId: Buffer.Buffer<Text>;
+        challengeType: PohChallengeType;
         createdAt: Int;
         updatedAt: Int;
+    };
+
+    public type PohChallengeType =  {
+        #ssn; #dl; #selfImage; #videoChallenge;
+    };
+
+    public type PohUniqueToken =  {
+        token: Text;
+    };
+
+    public type PohUserProviderData = {
+        token: Text;
+        providerUserId: Principal;
+        providerId: Principal;
     };
 
     // Type representing Challenge attempt
-    public type PohChallengesAttempt {
-        attemptId: Nat;
-        challengeId: Nat;
+    public type PohChallengesAttempt = {
+        attemptId: ?Text;
+        challengeId: Text;
+        challengeName: Text;
+        challengeDescription: Text;
+        challengeType: PohChallengeType;
         userId: Principal;
-        status : {#pending; #verified;};
+        status: PohChallengeStatus;
         createdAt: Int;
         updatedAt: Int;
+        completedOn: Int;
     };
 
     // type representing request for verificaiton
-    public type PohVerificationRequest {
+    public type PohVerificationRequest = {
         // We will generate request Id for each request, provider won't provide us. Hence it's mutable and optional
-        requestId: var ?Nat;
-        userId: Principal;
-        challengeIds: [Nat];
+        requestId: ?Text;
+        providerUserId: Principal;
         providerId: Principal;
-        requestedOn: Int;
-        expiresOn: Int;
     };
 
     // Response sent to provider for verificaitio request
-    public type PohVerificationResponse {
-        requestId: Nat;
-        userId: Principal;
+    public type PohVerificationResponse = {
+        requestId: Text;
+        providerUserId: Principal;
         // status at each challenge level
-        challenges: [{challengeId: Nat, status : {#notSubmitted; #pending; #verified; #rejected;}}];
-        // overall status 
-        status : {#notFound; #pending; #verified; #rejected;}
+        challenges: ?[ChallengeResponse];
         providerId: Principal;
         requestedOn: Int;
-        expiresOn: Int;
     };
 
+    public type ChallengeResponse = {
+        challengeId: Text; 
+        status : PohChallengeStatus;
+        completedOn : ?Int;
+    };
+
+    public type PohChallengeStatus = {#notSubmitted; #pending; #verified; #rejected; #expired;};
+
     // type our UI will use to submit data for a challenge along with offset
-    public type PohChallengeSubmissionRequest {
-        challengeId: Nat;
+    public type PohChallengeSubmissionRequest = {
+        challengeId: Text;
         // response to challenge can be text or image or video
         challengeText: ?Text;
         challengeImage: ?[Nat8];
         challengeVideo: ?[Nat8];
         offset: Nat;
+    };
+
+    public type PohContent = {
+        id: Text;
+        text: Text;
+    };
+
+    public type PohError = {
+        #invalidToken;
+        #challengeNotPendingForSubmission;
     };
 
 };

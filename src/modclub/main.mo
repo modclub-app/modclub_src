@@ -25,6 +25,8 @@ import Buckets "./data_canister/buckets";
 import IC "./remote_canisters/IC";
 import BucketState "./data_canister/bucketState";
 
+import POH "./service/poh/poh"
+
 shared ({caller = initializer}) actor class ModClub () = this {  
 
   // Constants
