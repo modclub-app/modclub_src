@@ -14,10 +14,9 @@ import {
   Image,
   Notification
 } from "react-bulma-components";
-import { Form, Field } from "react-final-form";
+import { Form } from "react-final-form";
 import Toggle from "../../common/toggle/Toggle";
 import Progress from "../../common/progress/Progress";
-
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import approveImg from '../../../../assets/approve.svg';

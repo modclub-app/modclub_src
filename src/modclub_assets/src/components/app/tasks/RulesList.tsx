@@ -8,7 +8,12 @@ export default function RulesList({ platform, rules }) {
   }
   
   return (
-    <div className={`dropdown is-up ${showDropdown && "is-active"}`} style={{ width: "auto" }}>
+    <div
+      className={`dropdown is-up ${showDropdown && "is-active"}`}
+      style={{ width: "auto" }}
+      onBlur={() => toggle()}
+      tabIndex={0}
+    >
       <div className="dropdown-trigger">
         <a className="button is-ghost" aria-haspopup="true" onClick={toggle}>
           {`View ${platform}'s Rules`}
@@ -17,7 +22,7 @@ export default function RulesList({ platform, rules }) {
       <div className="dropdown-menu" role="menu">
         <div className="dropdown-content">
           {rules.map((rule) => (
-            <a href="#" key={rule.id} className="dropdown-item" style={{ textDecoration: "none" }}>
+            <a key={rule.id} className="dropdown-item" style={{ textDecoration: "none" }}>
               {rule.description}
             </a>
           ))}
