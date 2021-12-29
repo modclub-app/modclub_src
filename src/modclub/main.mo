@@ -494,6 +494,58 @@ shared ({caller = initializer}) actor class ModClub () {
       return buf.toArray();
   };
 
+  public query func getModeratorLeaderboard() : async [ModeratorLeaderboard] {
+      let buf = Buffer.Buffer<ModeratorLeaderboard>(0);
+      for ( (pid, p) in state.profiles.entries()) {
+        Debug.print("getModeratorLeaderboard pid " # Principal.toText(pid) );
+        let item : ModeratorLeaderboard = {
+            id = p.id;
+            userName = p.userName;
+            pic = p.pic;
+            votedAmount = 0;
+            rewardsEarned = 0; // Todo: Calculate reward
+            performance = 0;
+        };
+        label l for (vid in state.mods2votes.get0(p.id).vals()) {
+          switch(state.votes.get(vid)) {
+            case (?vote) {
+              switch(state.content.get(vote.contentId)) {
+                case (?content) {
+                  // Filter out wrong results
+                  if(content.status == #new and isComplete == true) {
+                    continue l;
+                  } else if(content.status != #new and isComplete == false) {
+                    continue l;
+                  };
+                  item.votedAmount += 1;
+                  item.rewardsEarned += 1; // Todo: Calculate reward sum
+                  switch (item.lastVoted) {
+                    case(?lastVoted) {
+                      if (item.lastVoted < vote.createdAt) {
+                        item.lastVoted = ?vote.createdAt;
+                      };
+                    };
+                    case(null) { item.lastVoted = ?vote.createdAt; };
+                  };
+                  let voteCount = getVoteCount(content.id, ?p.id);
+                  if (voteCount.approvedCount >= voteCount.rejectedCount and item.decision == #approved) {
+                    item.performance += 1;
+                  };
+                  if (voteCount.approvedCount < voteCount.rejectedCount and item.decision == #rejected) {
+                    item.performance += 1;
+                  };
+                };
+                case(_) throw Error.reject("Content does not exist"); 
+              };          
+            };
+            case (_) throw Error.reject("Vote does not exist");
+          };
+        };
+        buf.add(item);                        
+      }; 
+      return buf.toArray();
+  };
+
   // Todo: Enable updating profile at a later time
   // public shared({ caller }) func updateProfile(userName: Text, email: Text, pic: ?Image) : async Profile {
   //     switch(state.profiles.get(caller)){

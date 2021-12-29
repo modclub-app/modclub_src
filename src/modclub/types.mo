@@ -153,6 +153,16 @@ module {
     updatedAt: Timestamp;
   };
 
+  public type ModeratorLeaderboard = {
+    id: UserId;
+    userName: Text;
+    pic: ?Image;
+    votedAmount: Nat;
+    rewardsEarned: Nat;
+    performance: Nat;
+    lastVoted?: Timestamp;
+  };
+
   public type Vote = {
     id: VoteId;
     contentId: Text;
