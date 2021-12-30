@@ -10,76 +10,117 @@ import PohState "./state";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Option "mo:base/Option";
 
-module Poh {
+import Source "mo:uuid/async/SourceV4";
+import UUID "mo:uuid/UUID";
 
-    public class Poh() {
+module PohModule {
+
+    public class PohEngine(stableState : PohState.PohStableState) {
 
         var state:PohState.PohState = PohState.emptyState();
+        
+        for( (p, val) in stableState.pohUsers.vals()) {
+            state.pohUsers.put(p, val);
+        };
+        for( (p, val) in stableState.pohChallenges.vals()) {
+            state.pohChallenges.put(p, val);
+        };
+
+        for( (userId, challenges) in stableState.pohUserChallengeAttempts.vals()) {
+            let attemptsByChallengeIdMap = HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttempt>>(5, Text.equal, Text.hash);
+            for((challengeId, attempts) in challenges.vals()) {
+                let attemptsBuffer = Buffer.Buffer<PohTypes.PohChallengesAttempt>(attempts.size());
+                for(attempt in attempts.vals()) {
+                    attemptsBuffer.add(attempt);
+                };
+                attemptsByChallengeIdMap.put(challengeId, attemptsBuffer);
+            };
+            state.pohUserChallengeAttempts.put(userId, attemptsByChallengeIdMap);
+        };
+
+        for( (p, val) in stableState.pohProviderUserData.vals()) {
+            state.pohProviderUserData.put(p, val);
+        };
+        for( (p, val) in stableState.providerToModclubUser.vals()) {
+            state.providerToModclubUser.put(p, val);
+        };
+
+
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
 
-        public func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) : PohTypes.PohVerificationResponse {
-            switch(state.pohUsers.get(pohVerificationRequest.providerUserId)){
-                case(null) 
+        public func generateUUID() : Text {
+            // let g = Source.Source();
+            // return UUID.toText(await g.new());
+            return "";
+        };
+
+        public func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
+        : PohTypes.PohVerificationResponse {
+
+            let modClubUserIdOption = do? {state.providerToModclubUser.get(pohVerificationRequest.providerUserId)!};
+            if(modClubUserIdOption == null) {
+                // No user in our record, Hence we can't comment on his humanity. 
                 return
-                {
-                    requestId = "";
-                    providerUserId = pohVerificationRequest.providerUserId;
-                    challenges = null;
-                    providerId = pohVerificationRequest.providerId;
-                    requestedOn = Time.now();
-                };
-                case(?pohUser) {
-                    let userId = switch(state.providerToModclubUser.get(pohUser.userId)) {
-                        case(null) pohUser.userId; //it's a modclub user
-                        case(?modclubUserId) modclubUserId;
+                    {
+                        requestId = generateUUID();
+                        providerUserId = pohVerificationRequest.providerUserId;
+                        challenges = null;
+                        providerId = pohVerificationRequest.providerId;
+                        requestedOn = Time.now();
                     };
-                    
-                    switch(state.pohUserChallengeAttempts.get(userId)) {
-                        case(null) 
-                            return
-                            {
-                                requestId = "";
-                                providerUserId = pohVerificationRequest.providerUserId;
-                                challenges = null;
-                                providerId = pohVerificationRequest.providerId;
-                                requestedOn = Time.now();
+            };
+
+            // if execution is here, modClubUserIdOption
+            // second parameter can be ignored here. It's just to unwrap this option
+            let modClubUserId = Option.get(modClubUserIdOption, pohVerificationRequest.providerUserId);
+
+            switch(state.pohUserChallengeAttempts.get(modClubUserId)) {
+                case(null) 
+                    // If user is in record, but no attempt is not possible in our flow
+                    // Extra cautious and sending zero challenges attempted array
+                    return
+                    {
+                        requestId = generateUUID();
+                        providerUserId = pohVerificationRequest.providerUserId;
+                        challenges = null;
+                        providerId = pohVerificationRequest.providerId;
+                        requestedOn = Time.now();
+                    };
+                case(?attemptsByChallenges) {
+                    let challenges = Buffer.Buffer<PohTypes.ChallengeResponse>(configuredChallengeIds.size());
+                    for(challengeId in configuredChallengeIds.vals()) {
+                        switch(attemptsByChallenges.get(challengeId)) {
+                            case(null) {
+                                challenges.add({
+                                    challengeId = challengeId;
+                                    status = #notSubmitted;
+                                    completedOn = null;
+                                });
                             };
-                        case(?attemptsByChallenges) {
-                            let challenges = Buffer.Buffer<PohTypes.ChallengeResponse>(configuredChallengeIds.size());
-                            for(challengeId in configuredChallengeIds.vals()) {
-                                switch(attemptsByChallenges.get(challengeId)) {
-                                    case(null) {
-                                        challenges.add({
-                                            challengeId = challengeId;
-                                            status = #notSubmitted;
-                                            completedOn = null;
-                                        });
-                                    };
-                                    case(?attempts) {
-                                        var status: PohTypes.PohChallengeStatus = #notSubmitted;
-                                        var completedOn: ?Int = null;
-                                        if(attempts.size() != 0) {
-                                            let statusAndDate = findChallengeStatus(attempts, validForDays, attempts.size() - 1);
-                                            status := statusAndDate.0;
-                                            completedOn := statusAndDate.1;
-                                        };
-                                        challenges.add({
-                                            challengeId = challengeId;
-                                            status = status;
-                                            completedOn = completedOn;
-                                        });
-                                    };
+                            case(?attempts) {
+                                var status: PohTypes.PohChallengeStatus = #notSubmitted;
+                                var completedOn: ?Int = null;
+                                if(attempts.size() != 0) {
+                                    let statusAndDate = findChallengeStatus(attempts, validForDays, attempts.size() - 1);
+                                    status := statusAndDate.0;
+                                    completedOn := statusAndDate.1;
                                 };
-                            };
-                            {
-                                requestId = "";
-                                providerUserId = pohVerificationRequest.providerUserId;
-                                challenges = ?challenges.toArray();
-                                providerId = pohVerificationRequest.providerId;
-                                requestedOn = Time.now();
+                                challenges.add({
+                                    challengeId = challengeId;
+                                    status = status;
+                                    completedOn = completedOn;
+                                });
                             };
                         };
+                    };
+                    {
+                        requestId = generateUUID();
+                        providerUserId = pohVerificationRequest.providerUserId;
+                        challenges = ?challenges.toArray();
+                        providerId = pohVerificationRequest.providerId;
+                        requestedOn = Time.now();
                     };
                 };
             };
@@ -103,7 +144,8 @@ module Poh {
 
         //Pre Step 4 Generate token
         public func generateUniqueToken(providerUserId: Principal, providerId: Principal) : PohTypes.PohUniqueToken {
-            let uuid:Text =  ""; //generate uuid code here. We can use hash here instead.
+            // Sha256.sha256()
+            let uuid:Text =  generateUUID(); //generate uuid code here. We can use hash here instead.
             let providerUser:PohTypes.PohUserProviderData = {
                 token = uuid;
                 providerUserId = providerUserId;
@@ -119,11 +161,23 @@ module Poh {
         // Modclub UI will ask for all the challenge for a user to show
         // ResponseType of this function is yet to be designed.
         public func retrieveChallengesForUser(userId: Principal, token: Text, challengeIds: [Text]) : Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-            let providerUser  =  state.pohProviderUserData.get(token);
-            switch(providerUser) {
+            // populate provider to userId mapping
+            switch(state.pohProviderUserData.get(token)) {
                 case(null) return #err(#invalidToken);
                 case(?pUser)
                     state.providerToModclubUser.put(pUser.providerUserId, userId);
+            };
+
+            // populate pohUsers but with their modclub user id
+            switch(state.pohUsers.get(userId)) {
+                case(null) {
+                    state.pohUsers.put(userId, {
+                        userId = userId;
+                        createdAt = Time.now();
+                        updatedAt = Time.now();
+                    });
+                };
+                case(_)();
             };
 
             switch(state.pohUserChallengeAttempts.get(userId)) {
@@ -144,7 +198,7 @@ module Poh {
                     let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
                     if(attempts.size() == 0) {
                         let newAttempt = {
-                                                attemptId = ?"";
+                                                attemptId = ?generateUUID(); //TODO attemptID
                                                 challengeId = challengeId;
                                                 userId = userId;
                                                 challengeName = state.pohChallenges.get(challengeId)!.challengeName;
@@ -168,31 +222,45 @@ module Poh {
         // Step 5 The user provides all POH evidence that the dApp requested.
         // one challenege =  PohChallengeSubmissionRequest. Hence using array here
         // User can come in multiple times and submit one challenge a time. Array will allow that
-        public func submitChallengeData(pohDataRequests : [PohTypes.PohChallengeSubmissionRequest], userId: Principal) : Result.Result<Text, PohTypes.PohError> {
-            // Todo validateSubmissionData();
+        public func submitChallengeData(pohDataRequests : [PohTypes.PohChallengeSubmissionRequest], userId: Principal) : [PohTypes.PohChallengeSubmissionResponse] {
+            let  response = Buffer.Buffer<PohTypes.PohChallengeSubmissionResponse>(pohDataRequests.size());
             for(challengeData in pohDataRequests.vals()) {
-                // switch(state.pohUserChallengeAttempts.get(userId)) {
-                //     case(null)
-                //         return #err(#challengeNotPendingForSubmission);
-                //     case(?challengeAttempts) {
-                //         switch(challengeAttempts.get(challengeData.challengeId)) {
-                //             case(null)
-                //                 return #err(#challengeNotPendingForSubmission);
-                //             case(?attempts) {
-                //                 if(attempts.size() == 0) {
-                //                     return #err(#challengeNotPendingForSubmission);
-                //                 }
-                //             }
-                //         };
-                //     };
-                // };
+                let submissionStatus = validateChallengeSubmission(challengeData, userId);
                 changeChallengeTaskStatus(challengeData.challengeId, userId, #pending);
+                response.add({
+                    challengeId=challengeData.challengeId;
+                    submissionStatus = submissionStatus
+                });
 
                 // let pohContent = createPohContent(challengeData.);
                 // Send for moderation
-            
             };
-            #ok("Done");
+            response.toArray();
+        };
+
+        func validateChallengeSubmission(challengeData : PohTypes.PohChallengeSubmissionRequest, userId: Principal) : PohTypes.PohChallengeSubmissionStatus {
+            switch(state.pohUserChallengeAttempts.get(userId)) {
+                case(null)
+                    return #notPendingForSubmission;
+                case(?challengeAttempts) {
+                    switch(challengeAttempts.get(challengeData.challengeId)) {
+                        case(null)
+                            return #notPendingForSubmission;
+                        case(?attempts) {
+                            if(attempts.size() == 0) {
+                                return #notPendingForSubmission;
+                            };
+                            if(attempts.get(attempts.size() -1 ).status == #verified) {
+                                return #alreadyApproved;
+                            };
+                            if(attempts.get(attempts.size() -1 ).status == #rejected) {
+                                return #alreadyRejected;
+                            };
+                            return #ok;
+                        }
+                    };
+                };
+            };
         };
 
         // Step 6 MODCLUB mods verify that user data and approve the user. The 

@@ -88,6 +88,13 @@ module {
         offset: Nat;
     };
 
+    public type PohChallengeSubmissionStatus = {#ok; #notPendingForSubmission; #alreadyRejected; #alreadyApproved;};
+
+    public type PohChallengeSubmissionResponse = {
+        challengeId: Text;
+        submissionStatus: PohChallengeSubmissionStatus;
+    };
+
     public type PohContent = {
         id: Text;
         text: Text;

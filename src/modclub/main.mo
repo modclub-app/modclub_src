@@ -1,4 +1,5 @@
 import Array "mo:base/Array";
+
 import Buffer "mo:base/Buffer";
 import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
@@ -24,10 +25,15 @@ import Token "./token";
 import Buckets "./data_canister/buckets";
 import IC "./remote_canisters/IC";
 import BucketState "./data_canister/bucketState";
+import POH "./service/poh/poh";
+import PohTypes "./service/poh/types";
+import PohState "./service/poh/state";
 
-import POH "./service/poh/poh"
+
 
 shared ({caller = initializer}) actor class ModClub () = this {  
+
+  
 
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
@@ -70,6 +76,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
   );
   var bucketState = BucketState.empty();
   stable var bucketStateStable  = BucketState.emptyShared();
+
+  var pohState = PohState.emptyStableState();
+  var pohEngine = POH.PohEngine(pohState);
 
 
   func onlyOwner(p: Principal) : async() {
@@ -830,6 +839,28 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   public query func getModclubHoldings() : async Token.Holdings {
     tokens.getHoldings(initializer);
+  };
+
+  // POH Methods
+  // Method called by provider
+  public shared({ caller }) func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest) : async PohTypes.PohVerificationResponse {
+    // validity and rules needs to come from admin dashboard here
+    return pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["1", "2", "3"]);
+  };
+  
+  // Method called by provider
+  public shared({ caller }) func generateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
+    return pohEngine.generateUniqueToken(providerUserId, caller);
+  };
+
+  // Method called by user on UI
+  public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+    return pohEngine.retrieveChallengesForUser(caller, token, ["1", "2", "3"]);
+  };
+
+  // Method called by user on UI
+  public shared({ caller }) func submitChallengeData(pohDataRequests : [PohTypes.PohChallengeSubmissionRequest]) : async [PohTypes.PohChallengeSubmissionResponse] {
+    return pohEngine.submitChallengeData(pohDataRequests, caller);
   };
 
   // Helpers
