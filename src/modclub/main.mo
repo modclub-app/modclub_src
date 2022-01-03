@@ -48,6 +48,7 @@ shared ({caller = initializer}) actor class ModClub () {
   type ProviderPlus = Types.ProviderPlus; 
   type Activity = Types.Activity;
   type AirdropUser = Types.AirdropUser;
+  type ModeratorLeaderboard = Types.ModeratorLeaderboard;
 
 
   // Airdrop Flags
@@ -498,41 +499,31 @@ shared ({caller = initializer}) actor class ModClub () {
       let buf = Buffer.Buffer<ModeratorLeaderboard>(0);
       for ( (pid, p) in state.profiles.entries()) {
         Debug.print("getModeratorLeaderboard pid " # Principal.toText(pid) );
-        let item : ModeratorLeaderboard = {
-            id = p.id;
-            userName = p.userName;
-            pic = p.pic;
-            votedAmount = 0;
-            rewardsEarned = 0; // Todo: Calculate reward
-            performance = 0;
-        };
-        label l for (vid in state.mods2votes.get0(p.id).vals()) {
+        let performance = 0;
+        let rewardsEarned = 0; // Todo: Calculate reward
+        let votedAmount = 0;
+        let lastVoted = null;
+        for (vid in state.mods2votes.get0(p.id).vals()) {
           switch(state.votes.get(vid)) {
             case (?vote) {
               switch(state.content.get(vote.contentId)) {
                 case (?content) {
-                  // Filter out wrong results
-                  if(content.status == #new and isComplete == true) {
-                    continue l;
-                  } else if(content.status != #new and isComplete == false) {
-                    continue l;
-                  };
-                  item.votedAmount += 1;
-                  item.rewardsEarned += 1; // Todo: Calculate reward sum
-                  switch (item.lastVoted) {
-                    case(?lastVoted) {
-                      if (lastVoted < vote.createdAt) {
-                        item.lastVoted = vote.createdAt;
-                      };
-                    };
-                    case(null) { item.lastVoted = vote.createdAt; };
-                  };
+                  votedAmount := votedAmount + 1;
+                  rewardsEarned := rewardsEarned + 1; // Todo: Calculate reward sum
+                  // switch (lastVoted) {
+                  //   case(?l) {
+                  //     if (l < vote.createdAt) {
+                  //       lastVoted = ?vote.createdAt;
+                  //     };
+                  //   };
+                  //   case(null) { item.lastVoted = vote.createdAt; };
+                  // };
                   let voteCount = getVoteCount(content.id, ?p.id);
-                  if (voteCount.approvedCount >= voteCount.rejectedCount and item.decision == #approved) {
-                    item.performance += 1;
+                  if (voteCount.approvedCount >= voteCount.rejectedCount and vote.decision == #approved) {
+                    performance := performance + 1;
                   };
-                  if (voteCount.approvedCount < voteCount.rejectedCount and item.decision == #rejected) {
-                    item.performance += 1;
+                  if (voteCount.approvedCount < voteCount.rejectedCount and vote.decision == #rejected) {
+                    performance := performance + 1;
                   };
                 };
                 case(_) throw Error.reject("Content does not exist"); 
@@ -540,6 +531,15 @@ shared ({caller = initializer}) actor class ModClub () {
             };
             case (_) throw Error.reject("Vote does not exist");
           };
+        };
+        let item : ModeratorLeaderboard = {
+            id = p.id;
+            userName = p.userName;
+            pic = p.pic;
+            votedAmount = votedAmount;
+            rewardsEarned = rewardsEarned;
+            performance = performance;
+            lastVoted = lastVoted;
         };
         buf.add(item);                        
       }; 
