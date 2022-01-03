@@ -521,11 +521,11 @@ shared ({caller = initializer}) actor class ModClub () {
                   item.rewardsEarned += 1; // Todo: Calculate reward sum
                   switch (item.lastVoted) {
                     case(?lastVoted) {
-                      if (item.lastVoted < vote.createdAt) {
-                        item.lastVoted = ?vote.createdAt;
+                      if (lastVoted < vote.createdAt) {
+                        item.lastVoted = vote.createdAt;
                       };
                     };
-                    case(null) { item.lastVoted = ?vote.createdAt; };
+                    case(null) { item.lastVoted = vote.createdAt; };
                   };
                   let voteCount = getVoteCount(content.id, ?p.id);
                   if (voteCount.approvedCount >= voteCount.rejectedCount and item.decision == #approved) {
