@@ -160,7 +160,7 @@ module {
     votedAmount: Nat;
     rewardsEarned: Nat;
     performance: Nat;
-    lastVoted?: Timestamp;
+    lastVoted: ?Timestamp;
   };
 
   public type Vote = {
