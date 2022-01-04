@@ -96,7 +96,7 @@ export const idlFactory = ({ IDL }) => {
     'userName' : IDL.Text,
     'rewardsEarned' : IDL.Int,
     'lastVoted' : IDL.Opt(Timestamp),
-    'performance' : IDL.Int,
+    'performance' : IDL.Float64,
   });
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,

@@ -2,6 +2,7 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Hash "mo:base/Hash";
 import Nat "mo:base/Nat";
+import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 
 module {
@@ -160,7 +161,7 @@ module {
     pic: ?Image;
     completedVoteCount: Int;
     rewardsEarned: Int;
-    performance: Int;
+    performance: Float;
     lastVoted: ?Timestamp;
   };
 

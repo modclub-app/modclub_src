@@ -126,7 +126,7 @@ export interface ModeratorLeaderboard {
   'userName' : string,
   'rewardsEarned' : bigint,
   'lastVoted' : [] | [Timestamp],
-  'performance' : bigint,
+  'performance' : number,
 }
 export interface Profile {
   'id' : UserId,

@@ -4,6 +4,7 @@ import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
+import Float "mo:base/Float";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
@@ -605,9 +606,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
             case (_) throw Error.reject("Vote does not exist");
           };
         };
-        var performance : Int = 0;
+        var performance : Float = 0;
         if (completedVoteCount != 0) {
-          performance := correctVoteCount / completedVoteCount;
+          performance := Float.fromInt(correctVoteCount) / Float.fromInt(completedVoteCount);
         };
         let holdings = tokens.getHoldings(p.id);
         

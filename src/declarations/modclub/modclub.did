@@ -58,7 +58,7 @@ type ModeratorLeaderboard =
    completedVoteCount: int;
    id: UserId;
    lastVoted: opt Timestamp;
-   performance: int;
+   performance: float64;
    pic: opt Image__1;
    rewardsEarned: int;
    userName: text;
