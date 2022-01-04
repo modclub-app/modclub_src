@@ -13,9 +13,30 @@ import { useRef, useState } from "react";
 import { Steps, Step } from "../../common/steps/Steps";
 import CapturePicture from "./CapturePicture";
 import CaptureVideo from "./CaptureVideo";
+import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
 
 const Signup = () => {
   const history = useHistory();
+
+  const initialCall = async () => {
+    const verified = await verifyUserHumanity();
+    console.log("verified", verified)
+    const [status] = Object.keys(verified[0]);
+    console.log("status", status);
+
+    if (status === "verified") {
+      history.push("/app");
+      return
+    }
+
+    const token = verified[1][0].token;
+    if (!token) return
+
+    const challenges = await retrieveChallengesForUser(token);
+    console.log("challenges", challenges);
+  }
+  initialCall()
+
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
 

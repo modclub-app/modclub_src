@@ -16,6 +16,11 @@ import {
   _SERVICE,
   AirdropUser,
   ProviderSettings,
+  PohChallengeStatus,
+  PohUniqueToken,
+  PohChallengeSubmissionRequest,
+  PohChallengeSubmissionResponse,
+  Result,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -134,3 +139,16 @@ export async function updateProviderSettings(
 ): Promise<void> {
   return (await getMC()).updateSettings(settings);
 }
+
+// POH Methods
+export async function verifyUserHumanity(): Promise<[PohChallengeStatus, [] | [PohUniqueToken]]> {
+  return (await getMC()).verifyUserHumanity();
+}
+
+export async function retrieveChallengesForUser(token: string): Promise<Result> {
+  return (await getMC()).retrieveChallengesForUser(token);
+}
+
+// export async function submitChallengeData(pohDataRequest: PohChallengeSubmissionRequest): Promise<PohChallengeSubmissionResponse> {
+//   return (await getMC()).submitChallengeData(pohDataRequest);
+// }
