@@ -58,20 +58,6 @@ html {
 @media screen and (min-width: 769px) {
   @include columns($gap: 1.5%, $mainPadding: 4%);
 }
-// @media screen and (min-width: 1408px) {
-//   @include columns($gap: 2%);
-// }
-
-
-// .card {
-//   .card-content {
-//     padding: 8%;
-//   }
-//   .card-footer {
-//     padding: 8% 0;
-//     margin: 0 8% 8% 8%;
-//   }
-// }
 
 .level {
   display: flex;
@@ -82,7 +68,21 @@ html {
     .card-footer {
       flex-wrap: wrap;
       gap: 1rem;
+      justify-content: center;
     }
+  }
+}
+
+.tasks-footer .buttons + .buttons {
+  @media screen and (max-width: 768px) {
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+  }
+  @media screen and (min-width: 769px) {
+    justify-content: flex-end;
+    margin-top: -1rem;
+    text-align: right;
   }
 }
 

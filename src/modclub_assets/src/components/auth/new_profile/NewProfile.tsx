@@ -14,15 +14,20 @@ export default function NewProfile() {
   const { setUser } = useAuth();
   const [pic, setPic] = useState<string>(null);
   const [picType, setPicType] = useState<string>(null);
-  const [ submitting, setSubmitting ] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const inputFile = useRef(null);
-
   const [message, setMessage] = useState(null);
 
   const handleFileChange = (e) => {
     const { files } = e.target;
     if (files.length > 0) {
       const f = files[0];
+      if (f.size > 800000) {
+        setMessage({ success: false, value: "Maximum file size is 800KB" });
+        setTimeout(() => setMessage(null), 2000);
+        return
+      }
+
       const reader = new FileReader();
       reader.onload = function (evt) {
         console.log(evt.target.result);
