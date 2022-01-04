@@ -13,6 +13,7 @@
 # frontend code
 node_modules/
 dist/
+.vessel/
 
 .vessel/uuid/v0.2.0/vessel.dhall
 .vessel/uuid/v0.2.0/src/UUID.mo

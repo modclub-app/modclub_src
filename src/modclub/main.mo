@@ -780,7 +780,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
         providerId = caller;
     };
     // validity and rules needs to come from admin dashboard here
-    await pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["1", "2", "3"]);
+    await pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"]);
   };
   
   // Method called by provider
@@ -790,7 +790,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Method called by user on UI
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await pohEngine.retrieveChallengesForUser(caller, token, ["1", "2", "3"]);
+    await pohEngine.retrieveChallengesForUser(caller, token, ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"]);
   };
 
   // Method called by user on UI
