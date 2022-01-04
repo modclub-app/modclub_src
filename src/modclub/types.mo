@@ -235,7 +235,5 @@ module {
         #Immutable;
     };
 
-    public type DataCanisterId = Principal;
-    public type ChunkData = Blob;
-    public type ChunkId = Text;
+   
 };

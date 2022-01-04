@@ -14,30 +14,26 @@ import Text "mo:base/Text";
 import Iter "mo:base/Iter";
 
 
-import Types "../types"
+import Types "./types"
 
 
 actor class Bucket () = this {
 
-  type ContentInfo = {
-    contentId: Types.ContentId;
-    numOfChunks: Nat;
-    contentType: Text;
-  };
+  
 
   public type DataCanisterState = {
-      contentInfo : HashMap.HashMap<Types.ContentId, ContentInfo>;
+      contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
       chunks : HashMap.HashMap<Types.ChunkId, Types.ChunkData>;
   };
 
   public type DataCanisterSharedState = {
-      contentInfo: [(Types.ContentId, ContentInfo)];
+      contentInfo: [(Text, Types.ContentInfo)];
       chunks : [(Types.ChunkId, Types.ChunkData)];
   };
 
   private func emptyStateForDataCanister () : DataCanisterState {
     var st : DataCanisterState = {
-        contentInfo = HashMap.HashMap<Types.ContentId, ContentInfo>(10, Text.equal, Text.hash);
+        contentInfo = HashMap.HashMap<Text, Types.ContentInfo>(10, Text.equal, Text.hash);
         chunks = HashMap.HashMap<Types.ChunkId, Types.ChunkData>(10, Text.equal, Text.hash);
     };
     st;
@@ -52,13 +48,13 @@ actor class Bucket () = this {
     Prim.rts_memory_size();
   };
 
-  func chunkId(fileId : Types.ContentId, chunkNum : Nat) : Types.ChunkId {
-      fileId # "-" # (Nat.toText(chunkNum))
+  func chunkId(contentId : Text, chunkNum : Nat) : Types.ChunkId {
+      contentId # "-" # (Nat.toText(chunkNum))
   };
 
   // add chunks 
   // the structure for storing blob chunks is to unse name + chunk num eg: 123a1, 123a2 etc
-  public func putChunks(contentId : Types.ContentId, chunkNum : Nat, chunkData : Blob,
+  public func putChunks(contentId : Text, chunkNum : Nat, chunkData : Blob,
           numOfChunks: Nat, contentType: Text) : async ?() {
     do ? {
       Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
@@ -73,7 +69,7 @@ actor class Bucket () = this {
     }
   };
 
-  func getFileInfoData(contentId : Types.ContentId) : async ?ContentInfo {
+  func getFileInfoData(contentId : Text) : async ? Types.ContentInfo {
       do ? {
           let v = state.contentInfo.get(contentId)!;
             {
@@ -84,7 +80,7 @@ actor class Bucket () = this {
       }
   };
 
-  public query func getChunks(fileId : Types.ContentId, chunkNum: Nat) : async ?Blob {
+  public query func getChunks(fileId : Text, chunkNum: Nat) : async ?Blob {
       state.chunks.get(chunkId(fileId, chunkNum))
   };
 
@@ -168,7 +164,7 @@ actor class Bucket () = this {
     let _ = do ? {
       let storageParams:Text = Text.stripStart(req.url, #text("/storage?"))!;
       let fields:Iter.Iter<Text> = Text.split(storageParams, #text("&"));
-      var contentId: ?Types.ContentId=null;
+      var contentId: ?Text=null;
       var chunkNum:Nat=1;
       for (field:Text in fields){
         let kv:[Text] = Iter.toArray<Text>(Text.split(field,#text("=")));
@@ -178,7 +174,7 @@ actor class Bucket () = this {
       };
 
       _body := state.chunks.get(chunkId(contentId!, chunkNum))!;
-      let info: ?ContentInfo = state.contentInfo.get(contentId!);
+      let info: ?Types.ContentInfo = state.contentInfo.get(contentId!);
       _headers := [
         // ("Content-Type", "text/plain"),
         ("Content-Type", info!.contentType),

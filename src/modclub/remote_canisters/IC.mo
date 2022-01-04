@@ -22,6 +22,7 @@ public type canister_id = Principal;
   public type user_id = Principal;
   public type wasm_module = [Nat8];
 
+
   public let IC = actor "aaaaa-aa" : actor {
     canister_status : shared { canister_id : canister_id } -> async {
       status : { #stopped; #stopping; #running };

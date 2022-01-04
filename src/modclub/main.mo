@@ -22,16 +22,17 @@ import Cycles "mo:base/ExperimentalCycles";
 
 import Rel "data_structures/Rel";
 import Token "./token";
-import Buckets "./data_canister/buckets";
 import IC "./remote_canisters/IC";
-import BucketState "./data_canister/bucketState";
+import StorageState "./service/storage/storageState";
 import POH "./service/poh/poh";
 import PohTypes "./service/poh/types";
 import PohState "./service/poh/state";
 
+import storageSolution "./service/storage/storage";
 
 
-shared ({caller = initializer}) actor class ModClub () = this {  
+
+shared ({caller = initializer}) actor class ModClub () = this {
 
   
 
@@ -40,7 +41,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
   let NANOS_PER_MILLI = 1000000;
-  let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
   let DEFAULT_TEST_TOKENS = 100;
 
   // Types
@@ -63,7 +63,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   type ProviderPlus = Types.ProviderPlus; 
   type Activity = Types.Activity;
   type AirdropUser = Types.AirdropUser;
-  type Bucket = Buckets.Bucket;
 
 
   // Airdrop Flags
@@ -74,8 +73,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
   var tokens = Token.Tokens(
         tokensStable
   );
-  var bucketState = BucketState.empty();
-  stable var bucketStateStable  = BucketState.emptyShared();
+  var bucketState = StorageState.empty();
+  stable var bucketStateStable  = StorageState.emptyShared();
 
   var pohState = PohState.emptyStableState();
   var pohEngine = POH.PohEngine(pohState);
@@ -305,7 +304,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       state.provider2content.put(caller, content.id);
       state.contentNew.put(caller, content.id);
       return content.id;
-    };
+  };
   
     public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
       if(allowSubmissionFlag == false) {
@@ -329,76 +328,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       return content.id;
     };
 
-    public func getBlob(contentId: ContentId, bucketId: Types.DataCanisterId, offset:Nat): async ?Blob {
-      let b : ?Bucket = bucketState.dataCanisters.get(bucketId);
-      let bucket: Bucket = switch (b) {
-        case null { throw Error.reject("Content doesn't exist") };
-        case (?s) { s }
-      };
-      await bucket.getChunks(contentId, offset);
-
-    };
-
-    // persist chunks in bucket
-    public func putBlobsInDataCanister(contentId: ContentId, chunkData : Blob, offset: Nat, numOfChunks: Nat, contentType: Text) : async Principal {
-      let b : Bucket = await getEmptyBucket(?chunkData.size());
-      let a = await b.putChunks(contentId, offset, chunkData, numOfChunks, contentType);
-       Principal.fromActor(b)
-    };
-
-    // check if there's an empty bucket we can use
-    // create a new one in case none's available or have enough space 
-    private func getEmptyBucket(s : ?Nat): async Bucket {
-      let fs: Nat = switch (s) {
-        case null { 0 };
-        case (?s) { s }
-      };
-
-      for((pId, bucket) in bucketState.dataCanisters.entries()) {
-        let size = await bucket.getSize();
-        if(size + fs < DATA_CANISTER_MAX_STORAGE_LIMIT) {
-          return bucket;
-        }
-      };
-      await newEmptyBucket();
-    };
-
-    // dynamically install a new Bucket
-    private func newEmptyBucket(): async Bucket {
-      let b = await Buckets.Bucket();
-      let _ = await updateCanister(b); // update canister permissions and settings
-      let s = await b.getSize();
-      Debug.print("new canister principal is " # debug_show(Principal.toText(Principal.fromActor(b))) );
-      Debug.print("initial size is " # debug_show(s));
-      // var newCanisterState : CanisterState<Bucket, Nat> = {
-      //     bucket = b;
-      //     var size = s;
-      // };
-      bucketState.dataCanisters.put(Principal.fromActor(b), b);
-      return b;
-    };
-
-    // canister memory is set to 4GB and compute allocation to 5 as the purpose 
-    // of this canisters is mostly storage
-    // set canister owners to the wallet canister and the container canister ie: this
-    private func updateCanister(a: actor {}) : async () {
-      Debug.print("balance before: " # Nat.toText(Cycles.balance()));
-      // Cycles.add(Cycles.balance()/2);
-      let cid = { canister_id = Principal.fromActor(a)};
-      Debug.print("IC status..."  # debug_show(await IC.IC.canister_status(cid)));
-      // let cid = await IC.create_canister(  {
-      //    settings = ?{controllers = [?(owner)]; compute_allocation = null; memory_allocation = ?(4294967296); freezing_threshold = null; } } );
-      
-      await (IC.IC.update_settings( {
-        canister_id = cid.canister_id; 
-        settings = { 
-          controllers = ?[initializer, Principal.fromActor(this)]; 
-          compute_allocation = null;
-          //  memory_allocation = ?4_294_967_296; // 4GB
-          memory_allocation = null; // 4GB
-          freezing_threshold = ?31_540_000} })
-      );
-    };
+    
 
   // Retreives all content for the calling Provider
   public query({ caller }) func getProviderContent() : async [ContentPlus] {
@@ -843,24 +773,54 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // POH Methods
   // Method called by provider
-  public shared({ caller }) func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest) : async PohTypes.PohVerificationResponse {
+  public shared({ caller }) func verifyForHumanity(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
+    let pohVerificationRequest: PohTypes.PohVerificationRequest = {
+        requestId = (await pohEngine.generateUUID());
+        providerUserId = providerUserId;
+        providerId = caller;
+    };
     // validity and rules needs to come from admin dashboard here
-    return pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["1", "2", "3"]);
+    await pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["1", "2", "3"]);
   };
   
   // Method called by provider
   public shared({ caller }) func generateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
-    return pohEngine.generateUniqueToken(providerUserId, caller);
+    await pohEngine.generateUniqueToken(providerUserId, caller);
   };
 
   // Method called by user on UI
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    return pohEngine.retrieveChallengesForUser(caller, token, ["1", "2", "3"]);
+    await pohEngine.retrieveChallengesForUser(caller, token, ["1", "2", "3"]);
   };
 
   // Method called by user on UI
-  public shared({ caller }) func submitChallengeData(pohDataRequests : [PohTypes.PohChallengeSubmissionRequest]) : async [PohTypes.PohChallengeSubmissionResponse] {
-    return pohEngine.submitChallengeData(pohDataRequests, caller);
+  public shared({ caller }) func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest) : async PohTypes.PohChallengeSubmissionResponse {
+    let response = pohEngine.submitChallengeData(pohDataRequest, caller);
+    return response;
+  };
+
+  // Method called by user on UI
+  public shared({ caller }) func verifyUserHumanity() : async (PohTypes.PohChallengeStatus, ?PohTypes.PohUniqueToken)  {
+    let response =  await verifyForHumanity(caller);
+    if(response.challenges.size() == 0 ) {
+      return (#notSubmitted, ?(await generateUniqueToken(caller)));
+    };
+
+    for(challenge in response.challenges.vals()) {
+      if(challenge.status == #pending) {
+        return (#pending, ?(await generateUniqueToken(caller)));
+      } else if(challenge.status == #rejected) {
+        return (#rejected, ?(await generateUniqueToken(caller)));
+      } else if(challenge.status == #expired) {
+        return (#expired, ?(await generateUniqueToken(caller)));
+      }
+    };
+
+    return (#verified, null);
+  };
+
+  public shared({ caller }) func populateChallenges() : async () {
+    pohEngine.populateChallenges();
   };
 
   // Helpers
@@ -1028,7 +988,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
-    bucketStateStable := BucketState.fromState(bucketState);
+    bucketStateStable := StorageState.fromState(bucketState);
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -1036,7 +996,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
-    bucketState := BucketState.toState(bucketStateStable);
+    bucketState := StorageState.toState(bucketStateStable);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 

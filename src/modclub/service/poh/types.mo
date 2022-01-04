@@ -8,6 +8,9 @@ module {
     //POH Users Ref Data
     public type PohUsers = {
         userId: Principal;
+        userName: ?Text;
+        email: ?Text;
+        fullName: ?Text;
         createdAt: Int;
         updatedAt: Int;
     };
@@ -18,14 +21,17 @@ module {
         challengeName: Text;
         challengeDescription: Text;
         // assuming there will be no transitive dependencies. else graph needs to be used
-        dependentChallengeId: Buffer.Buffer<Text>;
+        dependentChallengeId: ?Buffer.Buffer<Text>;
+        requiredField: PohChallengeRequiredField;
         challengeType: PohChallengeType;
         createdAt: Int;
         updatedAt: Int;
     };
 
+    public type PohChallengeRequiredField =  {#textBlob; #imageBlob; #videoBlob; #profileFieldBlobs;};
+
     public type PohChallengeType =  {
-        #ssn; #dl; #selfImage; #videoChallenge;
+        #ssn; #dl; #selfPic; #selfVideo; #fullName; #userName; #email;
     };
 
     public type PohUniqueToken =  {
@@ -55,7 +61,7 @@ module {
     // type representing request for verificaiton
     public type PohVerificationRequest = {
         // We will generate request Id for each request, provider won't provide us. Hence it's mutable and optional
-        requestId: ?Text;
+        requestId: Text;
         providerUserId: Principal;
         providerId: Principal;
     };
@@ -65,13 +71,13 @@ module {
         requestId: Text;
         providerUserId: Principal;
         // status at each challenge level
-        challenges: ?[ChallengeResponse];
+        challenges: [ChallengeResponse];
         providerId: Principal;
         requestedOn: Int;
     };
 
     public type ChallengeResponse = {
-        challengeId: Text; 
+        challengeId: Text;
         status : PohChallengeStatus;
         completedOn : ?Int;
     };
@@ -82,13 +88,17 @@ module {
     public type PohChallengeSubmissionRequest = {
         challengeId: Text;
         // response to challenge can be text or image or video
-        challengeText: ?Text;
-        challengeImage: ?[Nat8];
-        challengeVideo: ?[Nat8];
+        challengeTextBlob: ?Blob;
+        challengeImageBlob: ?Blob;
+        challengeVideoBlob: ?Blob;
+        userNameBlob: ?Blob;
+        emailBlob: ?Blob;
+        fullNameBlob: ?Blob;
         offset: Nat;
+        isLast: Bool;
     };
 
-    public type PohChallengeSubmissionStatus = {#ok; #notPendingForSubmission; #alreadyRejected; #alreadyApproved;};
+    public type PohChallengeSubmissionStatus = {#ok; #notPendingForSubmission; #alreadySubmitted; #alreadyRejected; #alreadyApproved; #inputDataMissing; #incorrectChallenge;};
 
     public type PohChallengeSubmissionResponse = {
         challengeId: Text;

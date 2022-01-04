@@ -59,4 +59,15 @@ module State {
         };
     };
 
+    public func getStableState(state: PohState): PohStableState {
+        let stableState = emptyStableState();
+        return {
+            pohUsers = [];
+            pohChallenges = [];
+            pohUserChallengeAttempts = [];
+            pohProviderUserData = [];
+            providerToModclubUser = [];
+        };
+    };
+
 };
