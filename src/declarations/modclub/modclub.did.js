@@ -90,11 +90,11 @@ export const idlFactory = ({ IDL }) => {
   const ModeratorLeaderboard = IDL.Record({
     'id' : UserId,
     'pic' : IDL.Opt(Image__1),
-    'completedVoteCount' : IDL.Nat,
+    'completedVoteCount' : IDL.Int,
     'userName' : IDL.Text,
-    'rewardsEarned' : IDL.Nat,
+    'rewardsEarned' : IDL.Int,
     'lastVoted' : IDL.Opt(Timestamp),
-    'performance' : IDL.Nat,
+    'performance' : IDL.Int,
   });
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,
