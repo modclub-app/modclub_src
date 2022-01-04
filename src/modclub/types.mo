@@ -157,9 +157,9 @@ module {
     id: UserId;
     userName: Text;
     pic: ?Image;
-    votedAmount: Nat;
-    rewardsEarned: Nat;
-    performance: Nat;
+    completedVoteCount: Int;
+    rewardsEarned: Int;
+    performance: Int;
     lastVoted: ?Timestamp;
   };
 

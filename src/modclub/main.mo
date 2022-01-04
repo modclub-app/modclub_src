@@ -499,31 +499,22 @@ shared ({caller = initializer}) actor class ModClub () {
       let buf = Buffer.Buffer<ModeratorLeaderboard>(0);
       for ( (pid, p) in state.profiles.entries()) {
         Debug.print("getModeratorLeaderboard pid " # Principal.toText(pid) );
-        let performance = 0;
-        let rewardsEarned = 0; // Todo: Calculate reward
-        let votedAmount = 0;
-        let lastVoted = null;
+        var correctVoteCount : Int = 0;
+        var completedVoteCount : Int = 0;
+        var lastVoted : Timestamp = 0;
         for (vid in state.mods2votes.get0(p.id).vals()) {
           switch(state.votes.get(vid)) {
             case (?vote) {
               switch(state.content.get(vote.contentId)) {
                 case (?content) {
-                  votedAmount := votedAmount + 1;
-                  rewardsEarned := rewardsEarned + 1; // Todo: Calculate reward sum
-                  // switch (lastVoted) {
-                  //   case(?l) {
-                  //     if (l < vote.createdAt) {
-                  //       lastVoted = ?vote.createdAt;
-                  //     };
-                  //   };
-                  //   case(null) { item.lastVoted = vote.createdAt; };
-                  // };
-                  let voteCount = getVoteCount(content.id, ?p.id);
-                  if (voteCount.approvedCount >= voteCount.rejectedCount and vote.decision == #approved) {
-                    performance := performance + 1;
-                  };
-                  if (voteCount.approvedCount < voteCount.rejectedCount and vote.decision == #rejected) {
-                    performance := performance + 1;
+                  if (content.status != #new) {
+                    completedVoteCount := completedVoteCount + 1;
+                    if (lastVoted == 0 or lastVoted < vote.createdAt) {
+                      lastVoted := vote.createdAt;
+                    };
+                    if (vote.decision == content.status) {
+                      correctVoteCount := correctVoteCount + 1;
+                    };
                   };
                 };
                 case(_) throw Error.reject("Content does not exist"); 
@@ -532,14 +523,20 @@ shared ({caller = initializer}) actor class ModClub () {
             case (_) throw Error.reject("Vote does not exist");
           };
         };
+        var performance : Int = 0;
+        if (completedVoteCount != 0) {
+          performance := correctVoteCount / completedVoteCount;
+        };
+        let holdings = tokens.getHoldings(p.id);
+        
         let item : ModeratorLeaderboard = {
             id = p.id;
             userName = p.userName;
             pic = p.pic;
-            votedAmount = votedAmount;
-            rewardsEarned = rewardsEarned;
+            completedVoteCount = completedVoteCount;
+            rewardsEarned = holdings.pendingRewards;
             performance = performance;
-            lastVoted = lastVoted;
+            lastVoted = ?lastVoted;
         };
         buf.add(item);                        
       }; 

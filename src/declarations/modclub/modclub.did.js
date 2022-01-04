@@ -87,6 +87,15 @@ export const idlFactory = ({ IDL }) => {
     'stake' : IDL.Int,
     'wallet' : IDL.Int,
   });
+  const ModeratorLeaderboard = IDL.Record({
+    'id' : UserId,
+    'pic' : IDL.Opt(Image__1),
+    'completedVoteCount' : IDL.Nat,
+    'userName' : IDL.Text,
+    'rewardsEarned' : IDL.Nat,
+    'lastVoted' : IDL.Opt(Timestamp),
+    'performance' : IDL.Nat,
+  });
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,
     'minStaked' : IDL.Nat,
@@ -138,6 +147,11 @@ export const idlFactory = ({ IDL }) => {
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
+    'getModeratorLeaderboard' : IDL.Func(
+        [],
+        [IDL.Vec(ModeratorLeaderboard)],
+        ['query'],
+      ),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),

@@ -53,6 +53,16 @@ type Profile =
    updatedAt: Timestamp;
    userName: text;
  };
+type ModeratorLeaderboard = 
+ record {
+   completedVoteCount: nat;
+   id: UserId;
+   lastVoted: opt Timestamp;
+   performance: nat;
+   pic: opt Image__1;
+   rewardsEarned: nat;
+   userName: text;
+ };
 type ModClub = 
  service {
    addRules: (vec text) -> () oneway;
@@ -67,6 +77,7 @@ type ModClub =
    getAllProfiles: () -> (vec Profile) query;
    getContent: (text) -> (opt ContentPlus) query;
    getModclubHoldings: () -> (Holdings) query;
+   getModeratorLeaderboard: () -> (vec ModeratorLeaderboard) query;
    getProfile: () -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;

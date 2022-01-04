@@ -66,6 +66,7 @@ export interface ModClub {
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getModclubHoldings' : () => Promise<Holdings>,
+  'getModeratorLeaderboard' : () => Promise<Array<ModeratorLeaderboard>>,
   'getProfile' : () => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
@@ -104,6 +105,15 @@ export interface ModClub {
       arg_1: Decision,
       arg_2: [] | [Array<RuleId>],
     ) => Promise<string>,
+}
+export interface ModeratorLeaderboard {
+  'id' : UserId,
+  'pic' : [] | [Image__1],
+  'completedVoteCount' : bigint,
+  'userName' : string,
+  'rewardsEarned' : bigint,
+  'lastVoted' : [] | [Timestamp],
+  'performance' : bigint,
 }
 export interface Profile {
   'id' : UserId,
