@@ -813,6 +813,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
         return (#rejected, ?(await generateUniqueToken(caller)));
       } else if(challenge.status == #expired) {
         return (#expired, ?(await generateUniqueToken(caller)));
+      } else if(challenge.status == #notSubmitted) {
+        return (#notSubmitted, ?(await generateUniqueToken(caller)));
       }
     };
 
