@@ -106,8 +106,7 @@ export default function Leaderboard() {
                   {content
                     .sort(
                       (a, b) =>
-                        Number(a.rewardsEarned) -
-                        Number(b.rewardsEarned)
+                        Number(a.rewardsEarned) - Number(b.rewardsEarned)
                     )
                     .slice(0, page * PAGE_SIZE)
                     .map((item, index) => (
@@ -123,7 +122,7 @@ export default function Leaderboard() {
                         <td>{Number(item.rewardsEarned)} MOD</td>
                         <td>{Number(item.performance).toFixed(1)}%</td>
                         <td>
-                          {item.lastVoted.length
+                          {item.lastVoted?.[0]
                             ? new Date(Number(item.lastVoted[0]))
                                 .toISOString()
                                 .slice(0, 10)

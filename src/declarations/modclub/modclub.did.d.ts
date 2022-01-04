@@ -42,6 +42,7 @@ export type ContentType = { 'imageBlob' : null } |
   { 'text' : null } |
   { 'imageUrl' : null } |
   { 'multiText' : null };
+export type DataCanisterId = Principal;
 export type Decision = { 'approved' : null } |
   { 'rejected' : null };
 export type Decision__1 = { 'approved' : null } |
@@ -64,6 +65,11 @@ export interface ModClub {
   'getAirdropWhitelist' : () => Promise<Array<Principal>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
+  'getBlob' : (
+      arg_0: ContentId,
+      arg_1: DataCanisterId,
+      arg_2: bigint,
+    ) => Promise<[] | [Array<number>]>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getModclubHoldings' : () => Promise<Holdings>,
   'getModeratorLeaderboard' : () => Promise<Array<ModeratorLeaderboard>>,
@@ -73,6 +79,13 @@ export interface ModClub {
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'getTokenHoldings' : () => Promise<Holdings>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
+  'putBlobsInDataCanister' : (
+      arg_0: ContentId,
+      arg_1: Array<number>,
+      arg_2: bigint,
+      arg_3: bigint,
+      arg_4: string,
+    ) => Promise<Principal>,
   'registerModerator' : (
       arg_0: string,
       arg_1: string,
