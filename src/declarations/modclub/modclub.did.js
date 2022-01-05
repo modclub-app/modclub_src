@@ -82,10 +82,21 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'updatedAt' : Timestamp,
   });
+  const ContentId = IDL.Text;
+  const DataCanisterId = IDL.Principal;
   const Holdings = IDL.Record({
     'pendingRewards' : IDL.Int,
     'stake' : IDL.Int,
     'wallet' : IDL.Int,
+  });
+  const ModeratorLeaderboard = IDL.Record({
+    'id' : UserId,
+    'pic' : IDL.Opt(Image__1),
+    'completedVoteCount' : IDL.Int,
+    'userName' : IDL.Text,
+    'rewardsEarned' : IDL.Int,
+    'lastVoted' : IDL.Opt(Timestamp),
+    'performance' : IDL.Float64,
   });
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,
@@ -116,7 +127,6 @@ export const idlFactory = ({ IDL }) => {
   const SubscribeMessage = IDL.Record({
     'callback' : IDL.Func([ContentResult], [], ['oneway']),
   });
-  const ContentId = IDL.Text;
   const Decision = IDL.Variant({
     'approved' : IDL.Null,
     'rejected' : IDL.Null,
@@ -136,14 +146,29 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
+    'getBlob' : IDL.Func(
+        [ContentId, DataCanisterId, IDL.Nat],
+        [IDL.Opt(IDL.Vec(IDL.Nat8))],
+        [],
+      ),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
+    'getModeratorLeaderboard' : IDL.Func(
+        [IDL.Nat, IDL.Nat],
+        [IDL.Vec(ModeratorLeaderboard)],
+        ['query'],
+      ),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
+    'putBlobsInDataCanister' : IDL.Func(
+        [ContentId, IDL.Vec(IDL.Nat8), IDL.Nat, IDL.Nat, IDL.Text],
+        [IDL.Principal],
+        [],
+      ),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],
         [Profile],

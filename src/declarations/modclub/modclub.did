@@ -53,6 +53,16 @@ type Profile =
    updatedAt: Timestamp;
    userName: text;
  };
+type ModeratorLeaderboard = 
+ record {
+   completedVoteCount: int;
+   id: UserId;
+   lastVoted: opt Timestamp;
+   performance: float64;
+   pic: opt Image__1;
+   rewardsEarned: int;
+   userName: text;
+ };
 type ModClub = 
  service {
    addRules: (vec text) -> () oneway;
@@ -65,14 +75,17 @@ type ModClub =
    getAirdropWhitelist: () -> (vec principal);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getAllProfiles: () -> (vec Profile) query;
+   getBlob: (ContentId, DataCanisterId, nat) -> (opt blob);
    getContent: (text) -> (opt ContentPlus) query;
    getModclubHoldings: () -> (Holdings) query;
+   getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
    getProfile: () -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTokenHoldings: () -> (Holdings) query;
    isAirdropRegistered: () -> (AirdropUser);
+   putBlobsInDataCanister: (ContentId, blob, nat, nat, text) -> (principal);
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    removeRules: (vec RuleId) -> () oneway;
@@ -111,6 +124,7 @@ type Decision =
    approved;
    rejected;
  };
+type DataCanisterId = principal;
 type ContentType = 
  variant {
    imageBlob;

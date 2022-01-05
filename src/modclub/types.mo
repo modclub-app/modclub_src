@@ -2,6 +2,7 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Hash "mo:base/Hash";
 import Nat "mo:base/Nat";
+import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 
 module {
@@ -152,6 +153,21 @@ module {
     role: Role;
     createdAt: Timestamp;
     updatedAt: Timestamp;
+  };
+
+  public type ModeratorLeaderboard = {
+    id: UserId;
+    userName: Text;
+    pic: ?Image;
+    completedVoteCount: Int;
+    rewardsEarned: Int;
+    performance: Float;
+    lastVoted: ?Timestamp;
+  };
+
+  public type RewardsEarnedMap = {
+    rewardsEarned: Int;
+    userId: Principal;
   };
 
   public type Vote = {

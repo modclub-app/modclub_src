@@ -16,6 +16,7 @@ import {
   _SERVICE,
   AirdropUser,
   ProviderSettings,
+  ModeratorLeaderboard,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -106,6 +107,10 @@ export async function unStakeTokens(amount: number): Promise<string> {
 
 export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
+}
+
+export async function getModeratorLeaderboard(pageSize: number, page: number): Promise<ModeratorLeaderboard[]> {
+  return (await getMC()).getModeratorLeaderboard(BigInt((page - 1) * pageSize), BigInt(page * pageSize));
 }
 
 export async function airdropRegister(): Promise<AirdropUser> {

@@ -97,6 +97,12 @@ export default function Sidebar() {
             </Icon>
             Human Verification
           </Link>
+          <Link to="/app/leaderboard">
+            <Icon>
+              <span className="material-icons">stars</span>
+            </Icon>
+            Leaderboard
+          </Link>
           <Link to="/app/admin">
             <Icon>
               <span className="material-icons">assignment_ind</span>
