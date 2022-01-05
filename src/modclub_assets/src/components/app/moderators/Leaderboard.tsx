@@ -67,13 +67,12 @@ export default function Leaderboard() {
 
   useEffect(() => {
     const getData = async () => {
-      const profiles = await getModeratorLeaderboard();
-      console.log(profiles);
-      setContent(profiles);
+      const newProfiles = await getModeratorLeaderboard(PAGE_SIZE, page);
+      setContent([...content, ...newProfiles]);
     };
 
     getData();
-  }, []);
+  }, [page]);
 
   return (
     <Columns>

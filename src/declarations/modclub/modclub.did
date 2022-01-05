@@ -78,7 +78,7 @@ type ModClub =
    getBlob: (ContentId, DataCanisterId, nat) -> (opt blob);
    getContent: (text) -> (opt ContentPlus) query;
    getModclubHoldings: () -> (Holdings) query;
-   getModeratorLeaderboard: () -> (vec ModeratorLeaderboard) query;
+   getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
    getProfile: () -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;

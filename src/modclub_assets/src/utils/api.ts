@@ -109,8 +109,8 @@ export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
 }
 
-export async function getModeratorLeaderboard(): Promise<ModeratorLeaderboard[]> {
-  return (await getMC()).getModeratorLeaderboard();
+export async function getModeratorLeaderboard(pageSize: number, page: number): Promise<ModeratorLeaderboard[]> {
+  return (await getMC()).getModeratorLeaderboard(BigInt((page - 1) * pageSize), BigInt(page * pageSize));
 }
 
 export async function airdropRegister(): Promise<AirdropUser> {

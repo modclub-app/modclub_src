@@ -154,7 +154,7 @@ export const idlFactory = ({ IDL }) => {
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
     'getModeratorLeaderboard' : IDL.Func(
-        [],
+        [IDL.Nat, IDL.Nat],
         [IDL.Vec(ModeratorLeaderboard)],
         ['query'],
       ),

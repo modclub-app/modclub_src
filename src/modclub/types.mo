@@ -165,6 +165,11 @@ module {
     lastVoted: ?Timestamp;
   };
 
+  public type RewardsEarnedMap = {
+    rewardsEarned: Int;
+    userId: Principal;
+  };
+
   public type Vote = {
     id: VoteId;
     contentId: Text;

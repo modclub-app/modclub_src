@@ -1,30 +1,30 @@
 import Array "mo:base/Array";
-import Buffer "mo:base/Buffer";
-import Error "mo:base/Error";
-import HashMap "mo:base/HashMap";
-import Int "mo:base/Int";
-import Nat "mo:base/Nat";
-import Float "mo:base/Float";
-import Iter "mo:base/Iter";
-import Principal "mo:base/Principal";
-import Result "mo:base/Result";
+import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
+import BucketState "./data_canister/bucketState";
+import Buckets "./data_canister/buckets";
+import Buffer "mo:base/Buffer";
+import Cycles "mo:base/ExperimentalCycles";
+import Debug "mo:base/Debug";
+import Error "mo:base/Error";
+import Float "mo:base/Float";
+import HashMap "mo:base/HashMap";
+import IC "./remote_canisters/IC";
+import Int "mo:base/Int";
+import Iter "mo:base/Iter";
+import Nat "mo:base/Nat";
+import Option "mo:base/Option";
+import Order "mo:base/Order";
+import Principal "mo:base/Principal";
+import Rel "data_structures/Rel";
+import Result "mo:base/Result";
 import State "./state";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Token "./token";
+import Trie "mo:base/Array";
 import TrieSet "mo:base/TrieSet";
 import Types "./types";
-import Option "mo:base/Option";
-import Debug "mo:base/Debug";
-import Order "mo:base/Order";
-import Blob "mo:base/Blob";
-import Cycles "mo:base/ExperimentalCycles";
-
-import Rel "data_structures/Rel";
-import Token "./token";
-import Buckets "./data_canister/buckets";
-import IC "./remote_canisters/IC";
-import BucketState "./data_canister/bucketState";
 
 shared ({caller = initializer}) actor class ModClub () = this {  
 
@@ -57,6 +57,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   type Activity = Types.Activity;
   type AirdropUser = Types.AirdropUser;
   type ModeratorLeaderboard = Types.ModeratorLeaderboard;
+  type RewardsEarnedMap = Types.RewardsEarnedMap;
   type Bucket = Buckets.Bucket;
 
 
@@ -578,50 +579,75 @@ shared ({caller = initializer}) actor class ModClub () = this {
       return buf.toArray();
   };
 
-  public query func getModeratorLeaderboard() : async [ModeratorLeaderboard] {
-      let buf = Buffer.Buffer<ModeratorLeaderboard>(0);
+  public query func getModeratorLeaderboard(start: Nat, end: Nat) : async [ModeratorLeaderboard] {
+      let rewardsEarnedBuffer = Buffer.Buffer<RewardsEarnedMap>(0);
       for ( (pid, p) in state.profiles.entries()) {
-        Debug.print("getModeratorLeaderboard pid " # Principal.toText(pid) );
-        var correctVoteCount : Int = 0;
-        var completedVoteCount : Int = 0;
-        var lastVoted : Timestamp = 0;
-        for (vid in state.mods2votes.get0(p.id).vals()) {
-          switch(state.votes.get(vid)) {
-            case (?vote) {
-              switch(state.content.get(vote.contentId)) {
-                case (?content) {
-                  if (content.status != #new) {
-                    completedVoteCount := completedVoteCount + 1;
-                    if (lastVoted == 0 or lastVoted < vote.createdAt) {
-                      lastVoted := vote.createdAt;
-                    };
-                    if (vote.decision == content.status) {
-                      correctVoteCount := correctVoteCount + 1;
-                    };
-                  };
-                };
-                case(_) throw Error.reject("Content does not exist"); 
-              };          
-            };
-            case (_) throw Error.reject("Vote does not exist");
-          };
-        };
-        var performance : Float = 0;
-        if (completedVoteCount != 0) {
-          performance := Float.fromInt(correctVoteCount) / Float.fromInt(completedVoteCount);
-        };
         let holdings = tokens.getHoldings(p.id);
-        
-        let item : ModeratorLeaderboard = {
-            id = p.id;
-            userName = p.userName;
-            pic = p.pic;
-            completedVoteCount = completedVoteCount;
-            rewardsEarned = holdings.pendingRewards;
-            performance = performance;
-            lastVoted = ?lastVoted;
+        rewardsEarnedBuffer.add({
+          rewardsEarned = holdings.pendingRewards;
+          userId = p.id;
+        });
+      };
+      let sortedArray = Array.sort(
+        rewardsEarnedBuffer.toArray(), 
+        func (a: RewardsEarnedMap, b: RewardsEarnedMap) : { #less; #equal; #greater } {
+          if (a.rewardsEarned < b.rewardsEarned) { #less }
+          else if (a.rewardsEarned == b.rewardsEarned) { #equal }
+          else { #greater }
+        }
+      );
+
+      let buf = Buffer.Buffer<ModeratorLeaderboard>(0);
+      for (i in Iter.range(start, end)) {
+        let pid = sortedArray[i].userId;
+        let rewardsEarned = sortedArray[i].rewardsEarned;
+        let profile = state.profiles.get(pid);
+
+        switch (profile) {
+          case (?p) {
+            Debug.print("getModeratorLeaderboard pid " # Principal.toText(pid) );
+            var correctVoteCount : Int = 0;
+            var completedVoteCount : Int = 0;
+            var lastVoted : Timestamp = 0;
+            for (vid in state.mods2votes.get0(pid).vals()) {
+              switch(state.votes.get(vid)) {
+                case (?vote) {
+                  switch(state.content.get(vote.contentId)) {
+                    case (?content) {
+                      if (content.status != #new) {
+                        completedVoteCount := completedVoteCount + 1;
+                        if (lastVoted == 0 or lastVoted < vote.createdAt) {
+                          lastVoted := vote.createdAt;
+                        };
+                        if (vote.decision == content.status) {
+                          correctVoteCount := correctVoteCount + 1;
+                        };
+                      };
+                    };
+                    case(_) throw Error.reject("Content does not exist"); 
+                  };          
+                };
+                case (_) throw Error.reject("Vote does not exist");
+              };
+            };
+            var performance : Float = 0;
+            if (completedVoteCount != 0) {
+              performance := Float.fromInt(correctVoteCount) / Float.fromInt(completedVoteCount);
+            };
+            
+            let item : ModeratorLeaderboard = {
+                id = pid;
+                userName = p.userName;
+                pic = p.pic;
+                completedVoteCount = completedVoteCount;
+                rewardsEarned = rewardsEarned;
+                performance = performance;
+                lastVoted = ?lastVoted;
+            };
+            buf.add(item);
+          };
+          case (_) ();
         };
-        buf.add(item);                        
       }; 
       return buf.toArray();
   };

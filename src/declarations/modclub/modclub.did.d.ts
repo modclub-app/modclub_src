@@ -72,7 +72,9 @@ export interface ModClub {
     ) => Promise<[] | [Array<number>]>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getModclubHoldings' : () => Promise<Holdings>,
-  'getModeratorLeaderboard' : () => Promise<Array<ModeratorLeaderboard>>,
+  'getModeratorLeaderboard' : (arg_0: bigint, arg_1: bigint) => Promise<
+      Array<ModeratorLeaderboard>
+    >,
   'getProfile' : () => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
