@@ -8,38 +8,46 @@ export default function CapturePicture() {
   const history = useHistory();
   const inputFile = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
-  // const [imgData, setImgData] = useState(null);
 
   const handleFileChange = (e) => {
     const { files } = e.target;
     if (files.length > 0) {
       const f = files[0];
-      console.log("file", f);
       const reader = new FileReader();
       reader.onload = function (evt) {
         console.log("evt", evt)
-        const metadata = `name: ${f.name}, type: ${f.type}, size: ${f.size}, contents:`;
         const data = typeof evt.target.result == "string" ? evt.target.result : null;
-        // setImgSrc(data);
-        // setPicType(f.type);
+        setImgSrc(data);
       };
       reader.readAsDataURL(f);
     }
   };
 
+  const dataURLtoBlob = (dataurl) => {
+    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--){
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type:mime});
+  }
+
   const submit = async () => {
-    console.log("submit", imgSrc)
+    const blob = dataURLtoBlob(imgSrc)
+    console.log("submit blob", blob)
+
     const res = await submitChallengeData({
       challengeId: "challenge-profile-pic",
-      challengeDataBlob : imgSrc,
+      // challengeDataBlob: blob,
+      challengeDataBlob: imgSrc,
       userName: null,
       email: null,
       fullName: null,
       aboutUser: null,
       offset: BigInt(1),
       numOfChunks: BigInt(1),
-      mimeType: "Text",
-      dataSize: BigInt(1),
+      mimeType: blob.type,
+      dataSize: BigInt(blob.size),
   });
     console.log("res", res);
     // history.push("/signup2/3")

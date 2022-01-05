@@ -157,12 +157,8 @@ export default function NewProfile() {
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentStep } = useParams();
-  const [steps, setSteps] = useState([
-    { id: "challenge-profile-details", number: 1, details: "Create Profile" },
-    { id: "challenge-profile-pic", number: 2, details: "Face Id" },
-    { id: "challenge-user-video", number: 3, details: "Video" },
-    { id: "confirm", number: 4, details: "Confirm" }
-  ]);
+  console.log("currentStep", currentStep)
+  const [steps, setSteps] = useState(null)
 
   const initialCall = async () => {
     const verified = await verifyUserHumanity();
@@ -177,48 +173,49 @@ export default function NewProfile() {
     if (!token) return
 
     const challenges = await retrieveChallengesForUser(token);
+    console.log("challenges", challenges)
     setLoading(false);
-    const filteredSteps = steps.filter(step => 
-      !challenges["ok"].find(challenge => challenge.challengeId === step.id)
-    )
-    setSteps(filteredSteps);
-    history.push(`/signup2/${filteredSteps[0].number}`)
+    setSteps(challenges["ok"]);
+    history.push(`/signup2/${challenges["ok"][0].challengeId}`)
   }
 
-  // useEffect(() => {
-  //   initialCall();
-  // }, []);
+  useEffect(() => {
+    initialCall();
+  }, []);
 
   return (
   <>
-    {/* {loading &&
+    {loading &&
       <Modal show={true} showClose={false}>
         <div className="loader is-loading p-5"></div>
       </Modal>
-    } */}
+    }
       
     <Columns centered vCentered className="is-fullheight mt-6">
       <Columns.Column size={6}>
         <Card>
           <Card.Content>
-            <Steps activeStep={currentStep}>
-              {steps.map((step) => (
-                <Step key={step.id} id={step.number} details={step.details} />
-              ))}
-            </Steps>
+            {steps &&
+              <Steps activeStep={currentStep}>
+                {steps.map((step, index) => (
+                  <Step key={step.challengeId} id={index + 1} details={step.challengeName} />
+                ))}
+                <Step id={steps.length + 1} details="Confirm" />
+              </Steps>
+            }
 
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>
-                {currentStep == 1 &&
+                {currentStep == "challenge-profile-details" &&
                   <Signup />
                 }
-                {currentStep == 2 &&
+                {currentStep == "challenge-profile-pic" &&
                   <CapturePicture />
                 }
-                {currentStep == 3 &&
+                {currentStep == "challenge-user-video" &&
                   <CaptureVideo />
                 }
-                {currentStep == 4 &&
+                {currentStep == "confirm" &&
                   <Confirmation />
                 }
               </Card.Content>
