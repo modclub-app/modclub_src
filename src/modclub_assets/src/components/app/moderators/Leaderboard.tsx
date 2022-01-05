@@ -142,7 +142,7 @@ export default function Leaderboard() {
               color="primary"
               onClick={() => setPage(page + 1)}
               className="ml-4 px-7 py-3"
-              disabled={page * PAGE_SIZE >= content.length}
+              disabled={page * PAGE_SIZE > content.length}
             >
               See more
             </Button>
