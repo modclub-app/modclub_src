@@ -11,6 +11,7 @@ module {
         userName: ?Text;
         email: ?Text;
         fullName: ?Text;
+        aboutUser: ?Text;
         createdAt: Int;
         updatedAt: Int;
     };
@@ -56,6 +57,7 @@ module {
         createdAt: Int;
         updatedAt: Int;
         completedOn: Int;
+        contentId: ?Text;
     };
 
     // type representing request for verificaiton
@@ -88,14 +90,15 @@ module {
     public type PohChallengeSubmissionRequest = {
         challengeId: Text;
         // response to challenge can be text or image or video
-        challengeTextBlob: ?Blob;
-        challengeImageBlob: ?Blob;
-        challengeVideoBlob: ?Blob;
-        userNameBlob: ?Blob;
-        emailBlob: ?Blob;
-        fullNameBlob: ?Blob;
+        challengeDataBlob : ?Blob;
+        userName: ?Text;
+        email: ?Text;
+        fullName: ?Text;
+        aboutUser: ?Text;
         offset: Nat;
-        isLast: Bool;
+        numOfChunks: Nat;
+        mimeType: Text;
+        dataSize: Nat;
     };
 
     public type PohChallengeSubmissionStatus = {#ok; #notPendingForSubmission; #alreadySubmitted; #alreadyRejected; #alreadyApproved; #inputDataMissing; #incorrectChallenge;};

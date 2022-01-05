@@ -19,8 +19,6 @@ import Types "./types"
 
 actor class Bucket () = this {
 
-  
-
   public type DataCanisterState = {
       contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
       chunks : HashMap.HashMap<Types.ChunkId, Types.ChunkData>;

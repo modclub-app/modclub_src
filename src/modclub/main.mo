@@ -28,7 +28,7 @@ import POH "./service/poh/poh";
 import PohTypes "./service/poh/types";
 import PohState "./service/poh/state";
 
-import storageSolution "./service/storage/storage";
+import StorageSolution "./service/storage/storage";
 
 
 
@@ -73,11 +73,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
   var tokens = Token.Tokens(
         tokensStable
   );
-  var bucketState = StorageState.empty();
-  stable var bucketStateStable  = StorageState.emptyShared();
+  
+  var storageState = StorageState.empty();
+  stable var storageStateStable  = StorageState.emptyShared();
+  // Will be updated with this in postupgrade. Motoko not allowing to use "this" here
+  var storageSolution = StorageSolution.StorageSolution(storageState, initializer, initializer);
+
 
   var pohState = PohState.emptyStableState();
   var pohEngine = POH.PohEngine(pohState);
+
+
 
 
   func onlyOwner(p: Principal) : async() {
@@ -795,8 +801,26 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Method called by user on UI
   public shared({ caller }) func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest) : async PohTypes.PohChallengeSubmissionResponse {
-    let response = pohEngine.submitChallengeData(pohDataRequest, caller);
-    return response;
+    let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, Principal.fromText("2vxsx-fae"));
+    if(isValid == #ok) {
+      let _ = do ? {
+        let contentId = pohEngine.getContentId(pohDataRequest.challengeId, Principal.fromText("2vxsx-fae"), generateId);
+        if(pohDataRequest.challengeDataBlob != null) {
+          await storageSolution.putBlobsInDataCanister(contentId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset, 
+                  pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
+          if(pohDataRequest.offset == pohDataRequest.numOfChunks) //last Chunk coming in
+            pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, Principal.fromText("2vxsx-fae"), #pending);
+        } else {
+          // It's a username, email task
+          pohEngine.updatePohUserObject(Principal.fromText("2vxsx-fae"), pohDataRequest.fullName!, pohDataRequest.email!, pohDataRequest.userName!, pohDataRequest.aboutUser!);
+          pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, Principal.fromText("2vxsx-fae"), #pending);
+        };
+      };
+    };
+    return {
+      challengeId = pohDataRequest.challengeId;
+      submissionStatus = isValid;
+    };
   };
 
   // Method called by user on UI
@@ -826,7 +850,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   // Helpers
-  
   private func getProviderRules(providerId: Principal) : [Rule] {
       let buf = Buffer.Buffer<Types.Rule>(0);
       for(ruleId in state.provider2rules.get0(providerId).vals()){
@@ -990,7 +1013,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
-    bucketStateStable := StorageState.fromState(bucketState);
+    storageStateStable := StorageState.fromState(storageState);
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -998,8 +1021,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
-    bucketState := StorageState.toState(bucketStateStable);
+    storageState := StorageState.toState(storageStateStable);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
+    storageSolution := StorageSolution.StorageSolution(storageState, initializer, Principal.fromActor(this));
+
   };
 
 };

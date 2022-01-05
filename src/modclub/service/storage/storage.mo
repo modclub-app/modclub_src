@@ -15,19 +15,20 @@ public class StorageSolution(storageState : StorageState.DataCanisterState, main
     let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
 
 
-    public func getBlob(contentId: Text, bucketId: StorageTypes.DataCanisterId, offset:Nat): async ?Blob {
-      let b : ?Bucket.Bucket = storageState.dataCanisters.get(bucketId);
+    public func getBlob(contentId: Text, offset:Nat): async ?Blob {
       do? {
-          (await b!.getChunks(contentId, offset))!;
+        let contentCanisterId = storageState.contentIdToCanisterId.get(contentId)!;
+        let b : ?Bucket.Bucket = storageState.dataCanisters.get(contentCanisterId);
+        (await b!.getChunks(contentId, offset))!;
       };
     };
 
     // persist chunks in bucket
-    public func putBlobsInDataCanister(contentId: Text, chunkData : Blob, offset: Nat, numOfChunks: Nat, mimeType: Text) : async () {
+    public func putBlobsInDataCanister(contentId: Text, chunkData : Blob, offset: Nat, numOfChunks: Nat, mimeType: Text, dataSize: Nat) : async () {
       let contentCanisterId = storageState.contentIdToCanisterId.get(contentId);
       switch(contentCanisterId) {
         case(null) {
-          let b : Bucket.Bucket = await getEmptyBucket(?chunkData.size());
+          let b : Bucket.Bucket = await getEmptyBucket(?dataSize);
           let a = await b.putChunks(contentId, offset, chunkData, numOfChunks, mimeType);
           storageState.contentIdToCanisterId.put(contentId, Principal.fromActor(b));
         };
@@ -44,10 +45,6 @@ public class StorageSolution(storageState : StorageState.DataCanisterState, main
           }
         };
       };
-      // let b : Bucket.Bucket = await getEmptyBucket(?chunkData.size());
-      // let a = await b.putChunks(contentId, offset, chunkData, numOfChunks, mimeType);
-      // storageState.contentIdToCanisterId.put(contentId, Principal.fromActor(b));
-      // Principal.fromActor(b);
     };
 
     // check if there's an empty bucket we can use
