@@ -29,7 +29,6 @@ import PohTypes "./service/poh/types";
 import PohState "./service/poh/state";
 
 import StorageSolution "./service/storage/storage";
-import File "./files";
 
 
 
