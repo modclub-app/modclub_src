@@ -126,15 +126,16 @@ export type PohChallengeStatus = { 'notSubmitted' : null } |
   { 'pending' : null } |
   { 'rejected' : null };
 export interface PohChallengeSubmissionRequest {
-  'challengeImageBlob' : [] | [Array<number>],
-  'challengeVideoBlob' : [] | [Array<number>],
-  'fullNameBlob' : [] | [Array<number>],
+  'userName' : [] | [string],
+  'numOfChunks' : bigint,
+  'mimeType' : string,
+  'fullName' : [] | [string],
   'offset' : bigint,
-  'isLast' : boolean,
+  'email' : [] | [string],
   'challengeId' : string,
-  'challengeTextBlob' : [] | [Array<number>],
-  'emailBlob' : [] | [Array<number>],
-  'userNameBlob' : [] | [Array<number>],
+  'dataSize' : bigint,
+  'aboutUser' : [] | [string],
+  'challengeDataBlob' : [] | [Array<number>],
 }
 export interface PohChallengeSubmissionResponse {
   'submissionStatus' : PohChallengeSubmissionStatus,
@@ -157,6 +158,7 @@ export type PohChallengeType = { 'dl' : null } |
 export interface PohChallengesAttempt {
   'status' : PohChallengeStatus,
   'completedOn' : bigint,
+  'contentId' : [] | [string],
   'attemptId' : [] | [string],
   'userId' : Principal,
   'createdAt' : bigint,

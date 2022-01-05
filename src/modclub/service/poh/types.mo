@@ -95,10 +95,10 @@ module {
         email: ?Text;
         fullName: ?Text;
         aboutUser: ?Text;
-        offset: Nat;
-        numOfChunks: Nat;
-        mimeType: Text;
-        dataSize: Nat;
+        offset: Nat; // default 1
+        numOfChunks: Nat; // default 1
+        mimeType: Text; // 
+        dataSize: Nat; // whole size of blob
     };
 
     public type PohChallengeSubmissionStatus = {#ok; #notPendingForSubmission; #alreadySubmitted; #alreadyRejected; #alreadyApproved; #inputDataMissing; #incorrectChallenge;};

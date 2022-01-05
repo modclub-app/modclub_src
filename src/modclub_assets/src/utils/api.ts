@@ -149,6 +149,7 @@ export async function retrieveChallengesForUser(token: string): Promise<Result> 
   return (await getMC()).retrieveChallengesForUser(token);
 }
 
-// export async function submitChallengeData(pohDataRequest: PohChallengeSubmissionRequest): Promise<PohChallengeSubmissionResponse> {
-//   return (await getMC()).submitChallengeData(pohDataRequest);
-// }
+export async function submitChallengeData(pohDataRequest: PohChallengeSubmissionRequest): Promise<PohChallengeSubmissionResponse> {
+  console.log("pohDataRequest", pohDataRequest);
+  return (await getMC()).submitChallengeData(pohDataRequest);
+}

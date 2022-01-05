@@ -185,17 +185,17 @@ export default function NewProfile() {
     history.push(`/signup2/${filteredSteps[0].number}`)
   }
 
-  useEffect(() => {
-    initialCall();
-  }, []);
+  // useEffect(() => {
+  //   initialCall();
+  // }, []);
 
   return (
   <>
-    {loading &&
+    {/* {loading &&
       <Modal show={true} showClose={false}>
         <div className="loader is-loading p-5"></div>
       </Modal>
-    }
+    } */}
       
     <Columns centered vCentered className="is-fullheight mt-6">
       <Columns.Column size={6}>

@@ -80,6 +80,7 @@ type PohChallengesAttempt =
    challengeName: text;
    challengeType: PohChallengeType;
    completedOn: int;
+   contentId: opt text;
    createdAt: int;
    status: PohChallengeStatus;
    updatedAt: int;
@@ -112,15 +113,16 @@ type PohChallengeSubmissionResponse =
  };
 type PohChallengeSubmissionRequest = 
  record {
+   aboutUser: opt text;
+   challengeDataBlob: opt blob;
    challengeId: text;
-   challengeImageBlob: opt blob;
-   challengeTextBlob: opt blob;
-   challengeVideoBlob: opt blob;
-   emailBlob: opt blob;
-   fullNameBlob: opt blob;
-   isLast: bool;
+   dataSize: nat;
+   email: opt text;
+   fullName: opt text;
+   mimeType: text;
+   numOfChunks: nat;
    offset: nat;
-   userNameBlob: opt blob;
+   userName: opt text;
  };
 type PohChallengeStatus = 
  variant {

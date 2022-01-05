@@ -1,29 +1,49 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import { Heading, Button, Icon } from "react-bulma-components";
 import { WebcamWrapper } from "./Webcam"
+import { submitChallengeData } from '../../../utils/api';
 
 export default function CapturePicture() {
+  const history = useHistory();
   const inputFile = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
+  // const [imgData, setImgData] = useState(null);
 
   const handleFileChange = (e) => {
     const { files } = e.target;
     if (files.length > 0) {
       const f = files[0];
+      console.log("file", f);
       const reader = new FileReader();
       reader.onload = function (evt) {
-        console.log(evt.target.result);
+        console.log("evt", evt)
         const metadata = `name: ${f.name}, type: ${f.type}, size: ${f.size}, contents:`;
-        console.log(metadata);
-        const data =
-          typeof evt.target.result == "string" ? evt.target.result : null;
-        setImgSrc(data);
+        const data = typeof evt.target.result == "string" ? evt.target.result : null;
+        // setImgSrc(data);
         // setPicType(f.type);
       };
       reader.readAsDataURL(f);
     }
   };
+
+  const submit = async () => {
+    console.log("submit", imgSrc)
+    const res = await submitChallengeData({
+      challengeId: "challenge-profile-pic",
+      challengeDataBlob : imgSrc,
+      userName: null,
+      email: null,
+      fullName: null,
+      aboutUser: null,
+      offset: BigInt(1),
+      numOfChunks: BigInt(1),
+      mimeType: "Text",
+      dataSize: BigInt(1),
+  });
+    console.log("res", res);
+    // history.push("/signup2/3")
+  }
 
   return (
     <>
@@ -58,9 +78,9 @@ export default function CapturePicture() {
         <Link to="/app/" className="button is-black" disabled={!imgSrc}>
           Cancel
         </Link>
-        <Link to="/signup2/3" className="button is-primary" disabled={!imgSrc}>
+        <Button color="primary" disabled={!imgSrc} onClick={submit}>
           Next
-        </Link>
+        </Button>
       </Button.Group>
     </>
   )

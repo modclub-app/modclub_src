@@ -129,6 +129,7 @@ export const idlFactory = ({ IDL }) => {
   const PohChallengesAttempt = IDL.Record({
     'status' : PohChallengeStatus,
     'completedOn' : IDL.Int,
+    'contentId' : IDL.Opt(IDL.Text),
     'attemptId' : IDL.Opt(IDL.Text),
     'userId' : IDL.Principal,
     'createdAt' : IDL.Int,
@@ -147,15 +148,16 @@ export const idlFactory = ({ IDL }) => {
     'err' : PohError,
   });
   const PohChallengeSubmissionRequest = IDL.Record({
-    'challengeImageBlob' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'challengeVideoBlob' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'fullNameBlob' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'userName' : IDL.Opt(IDL.Text),
+    'numOfChunks' : IDL.Nat,
+    'mimeType' : IDL.Text,
+    'fullName' : IDL.Opt(IDL.Text),
     'offset' : IDL.Nat,
-    'isLast' : IDL.Bool,
+    'email' : IDL.Opt(IDL.Text),
     'challengeId' : IDL.Text,
-    'challengeTextBlob' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'emailBlob' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'userNameBlob' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'dataSize' : IDL.Nat,
+    'aboutUser' : IDL.Opt(IDL.Text),
+    'challengeDataBlob' : IDL.Opt(IDL.Vec(IDL.Nat8)),
   });
   const PohChallengeSubmissionStatus = IDL.Variant({
     'ok' : IDL.Null,
