@@ -3,6 +3,7 @@ import Time "mo:base/Time";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
+import Func "mo:base/Func";
 
 import Text "mo:base/Text";
 
@@ -181,6 +182,7 @@ module PohModule {
                         userName = null;
                         fullName = null;
                         email = null;
+                        aboutUser = null;
                         createdAt = Time.now();
                         updatedAt = Time.now();
                     });
@@ -222,6 +224,7 @@ module PohModule {
                                                 challengeDescription = state.pohChallenges.get(challengeId)!.challengeDescription;
                                                 challengeType = state.pohChallenges.get(challengeId)!.challengeType;
                                                 status = #notSubmitted;
+                                                contentId = null;
                                                 createdAt = Time.now();
                                                 updatedAt = Time.now();
                                                 completedOn = -1; // -1 means not completed
@@ -244,58 +247,53 @@ module PohModule {
         // Step 5 The user provides all POH evidence that the dApp requested.
         // one challenege =  PohChallengeSubmissionRequest. Hence using array here
         // User can come in multiple times and submit one challenge a time. Array will allow that
-        public func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest, userId: Principal) : PohTypes.PohChallengeSubmissionResponse {
-            let submissionStatus = validateChallengeSubmission(pohDataRequest, userId);
-            if(submissionStatus == #ok) {
-                if(pohDataRequest.isLast == true)
-                    changeChallengeTaskStatus(pohDataRequest.challengeId, userId, #pending);
-            };
-            return {
-                challengeId=pohDataRequest.challengeId;
-                submissionStatus = submissionStatus
-            };
-        };
+        // public func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest, userId: Principal) : PohTypes.PohChallengeSubmissionResponse {
+        //     let submissionStatus = validateChallengeSubmission(pohDataRequest, userId);
+        //     if(submissionStatus == #ok) {
+        //         if(pohDataRequest.offset == pohDataRequest.numOfChunks)
+        //             changeChallengeTaskStatus(pohDataRequest.challengeId, userId, #pending);
+        //     };
+        //     return {
+        //         challengeId=pohDataRequest.challengeId;
+        //         submissionStatus = submissionStatus
+        //     };
+        // };
 
-        func validateChallengeSubmission(challengeData : PohTypes.PohChallengeSubmissionRequest, userId: Principal) : PohTypes.PohChallengeSubmissionStatus {
-
+        public func validateChallengeSubmission(challengeData : PohTypes.PohChallengeSubmissionRequest, userId: Principal) : PohTypes.PohChallengeSubmissionStatus {
+            Debug.print(Principal.toText(userId));
             switch(state.pohChallenges.get(challengeData.challengeId)) {
                 case(null)
                     return #incorrectChallenge;
                 case(?pohChallenge){
-                    if(pohChallenge.requiredField == #textBlob and challengeData.challengeTextBlob == null) {
-                        return #inputDataMissing;
-                    };
-                    if(pohChallenge.requiredField == #imageBlob and challengeData.challengeImageBlob == null) {
-                        return #inputDataMissing;
-                    };
-                    if(pohChallenge.requiredField == #videoBlob and challengeData.challengeVideoBlob == null) {
-                        return #inputDataMissing;
-                    };
                     if(pohChallenge.requiredField == #profileFieldBlobs 
-                            and (challengeData.userNameBlob == null or challengeData.emailBlob == null or challengeData.fullNameBlob == null)) {
+                            and (challengeData.userName == null or challengeData.email == null or challengeData.fullName == null or challengeData.aboutUser == null)) {
+                        return #inputDataMissing;
+                    } else if(pohChallenge.requiredField != #profileFieldBlobs and challengeData.challengeDataBlob == null) {
                         return #inputDataMissing;
                     };
                 }
             };
             
             switch(state.pohUserChallengeAttempts.get(userId)) {
-                case(null)
+                case(null) {
+                    Debug.print("Empty null");
                     return #notPendingForSubmission;
+                };
                 case(?challengeAttempts) {
                     switch(challengeAttempts.get(challengeData.challengeId)) {
-                        case(null)
+                        case(null) {
+                            Debug.print("It's a null");
                             return #notPendingForSubmission;
+                        };
                         case(?attempts) {
+                            Debug.print(Nat.toText(attempts.size()));
                             if(attempts.size() == 0) {
                                 return #notPendingForSubmission;
-                            };
-                            if(attempts.get(attempts.size() -1 ).status == #pending) {
+                            } else if(attempts.get(attempts.size() -1 ).status == #pending) {
                                 return #alreadySubmitted;
-                            };
-                            if(attempts.get(attempts.size() -1 ).status == #verified) {
+                            } else if(attempts.get(attempts.size() -1 ).status == #verified) {
                                 return #alreadyApproved;
-                            };
-                            if(attempts.get(attempts.size() -1 ).status == #rejected) {
+                            } else if(attempts.get(attempts.size() -1 ).status == #rejected) {
                                 return #alreadyRejected;
                             };
                             return #ok;
@@ -323,6 +321,7 @@ module PohModule {
                     challengeType = attempt.challengeType;
                     userId = attempt.userId;
                     status =  status;
+                    contentId = attempt.contentId;
                     createdAt = attempt.createdAt;
                     updatedAt = Time.now();
                     completedOn = completedOn;
@@ -331,6 +330,51 @@ module PohModule {
             };
         };
 
+        public func getContentId(challengeId: Text, userId: Principal, defaultIdGenerator: (Principal, Text) -> Text) : Text {
+            var contentId = "";
+            let _ = do ? {
+                let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
+                let attempt = attempts.get(attempts.size() - 1);
+                if(attempt.contentId != null) {
+                    contentId := attempt.contentId!;
+                } else {
+                    contentId := defaultIdGenerator(userId, "poh-content");
+                    Debug.print("contentId: " # contentId);
+                    let updatedAttempt = {
+                        attemptId = attempt.attemptId;
+                        challengeId = attempt.challengeId;
+                        challengeName = attempt.challengeName;
+                        challengeDescription = attempt.challengeDescription;
+                        challengeType = attempt.challengeType;
+                        userId = attempt.userId;
+                        status =  attempt.status;
+                        contentId = ?contentId;
+                        createdAt = attempt.createdAt;
+                        updatedAt = Time.now();
+                        completedOn = attempt.completedOn;
+                    };
+                    attempts.put(attempts.size() - 1, updatedAttempt);
+                }
+            };
+            return contentId; 
+        };
+
+        public func updatePohUserObject(userId:Principal, fullName:Text, email:Text, userName:Text, aboutUser : Text) : () {
+            switch(state.pohUsers.get(userId)) {
+                case(null) ();
+                case(?user) {
+                    state.pohUsers.put(userId, {
+                        userId = user.userId;
+                        userName = ?userName;
+                        email = ?email;
+                        fullName = ?fullName;
+                        aboutUser = ?aboutUser;
+                        createdAt = user.createdAt;
+                        updatedAt = Time.now();
+                    });
+                };
+            };
+        };
 
         public func prepareChallengePackageIfApplicable(userId: Principal, challengeIds: [Text]) : ?Text {
             do? {
