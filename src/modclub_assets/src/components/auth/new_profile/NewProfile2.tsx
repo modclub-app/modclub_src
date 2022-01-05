@@ -20,33 +20,6 @@ const Signup = () => {
   const history = useHistory();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-
-  const initialCall = async () => {
-    console.log("initialCall");
-    if (!loading) return
-    const verified = await verifyUserHumanity();
-    console.log("verified", verified)
-    const [status] = Object.keys(verified[0]);
-    console.log("status", status);
-    setLoading(false);
-
-    if (status === "verified") {
-      history.push("/app");
-      return
-    }
-
-    const token = verified[1][0].token;
-    if (!token) return
-
-    const challenges = await retrieveChallengesForUser(token);
-    console.log("challenges", challenges);
-  }
-
-  useEffect(() => {
-    initialCall();
-  }, []);
 
   const validateEmail = (email) => {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -79,12 +52,6 @@ const Signup = () => {
 
   return (
     <>
-      {loading &&
-        <Modal show={true} showClose={false}>
-          <div className="loader is-loading p-5"></div>
-        </Modal>
-      }
-
       <Heading subtitle textAlign="center">
         Create your profile
       </Heading>
@@ -187,25 +154,57 @@ const Confirmation = () => {
 };
 
 export default function NewProfile() {
-  const [hasUser, setHasUser] = useState<boolean>(true);
-  const [message, setMessage] = useState(null);
-  // const [currentStepIndex, setCurrentStepIndex] = useState(1);
-
+  const history = useHistory();
+  const [loading, setLoading] = useState<boolean>(true);
   const { currentStep } = useParams();
-  console.log('currentStep', currentStep);
+  const [steps, setSteps] = useState([
+    { id: "challenge-profile-details", number: 1, details: "Create Profile" },
+    { id: "challenge-profile-pic", number: 2, details: "Face Id" },
+    { id: "challenge-user-video", number: 3, details: "Video" },
+    { id: "confirm", number: 4, details: "Confirm" }
+  ]);
 
+  const initialCall = async () => {
+    const verified = await verifyUserHumanity();
+    const [status] = Object.keys(verified[0]);
+    console.log("status", status);
+    if (status === "verified") {
+      history.push("/app");
+      return
+    }
+
+    const token = verified[1][0].token;
+    if (!token) return
+
+    const challenges = await retrieveChallengesForUser(token);
+    setLoading(false);
+    const filteredSteps = steps.filter(step => 
+      !challenges["ok"].find(challenge => challenge.challengeId === step.id)
+    )
+    setSteps(filteredSteps);
+    history.push(`/signup2/${filteredSteps[0].number}`)
+  }
+
+  useEffect(() => {
+    initialCall();
+  }, []);
 
   return (
   <>
+    {loading &&
+      <Modal show={true} showClose={false}>
+        <div className="loader is-loading p-5"></div>
+      </Modal>
+    }
+      
     <Columns centered vCentered className="is-fullheight mt-6">
       <Columns.Column size={6}>
         <Card>
           <Card.Content>
             <Steps activeStep={currentStep}>
-              <Step id={'1'} details="Create Profile" />
-              <Step id={'2'} details="Face Id" />
-              <Step id={'3'} details="Video" />
-              <Step id={'4'} details="Confirm" />
+              {steps.map((step) => (
+                <Step key={step.id} id={step.number} details={step.details} />
+              ))}
             </Steps>
 
             <Card backgroundColor="dark" className="mt-6">
@@ -228,12 +227,6 @@ export default function NewProfile() {
         </Card>
       </Columns.Column>
     </Columns>
-
-    {message &&
-      <Notification color={message.success ? "success" : "danger"} className="has-text-centered">
-        {message.value}
-      </Notification>
-    }
   </>
   );
 }
