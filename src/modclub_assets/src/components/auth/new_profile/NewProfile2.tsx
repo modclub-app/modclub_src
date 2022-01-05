@@ -2,6 +2,7 @@ import { useParams } from "react-router";
 import { useHistory, Link } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import {
+  Modal,
   Notification,
   Columns,
   Card,
@@ -9,7 +10,7 @@ import {
   Button,
   Icon,
 } from "react-bulma-components";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Steps, Step } from "../../common/steps/Steps";
 import CapturePicture from "./CapturePicture";
 import CaptureVideo from "./CaptureVideo";
@@ -17,12 +18,19 @@ import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/ap
 
 const Signup = () => {
   const history = useHistory();
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [message, setMessage] = useState(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
 
   const initialCall = async () => {
+    console.log("initialCall");
+    if (!loading) return
     const verified = await verifyUserHumanity();
     console.log("verified", verified)
     const [status] = Object.keys(verified[0]);
     console.log("status", status);
+    setLoading(false);
 
     if (status === "verified") {
       history.push("/app");
@@ -35,10 +43,10 @@ const Signup = () => {
     const challenges = await retrieveChallengesForUser(token);
     console.log("challenges", challenges);
   }
-  initialCall()
 
-  const [submitting, setSubmitting] = useState<boolean>(false);
-  const [message, setMessage] = useState(null);
+  useEffect(() => {
+    initialCall();
+  }, []);
 
   const validateEmail = (email) => {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -71,6 +79,12 @@ const Signup = () => {
 
   return (
     <>
+      {loading &&
+        <Modal show={true} showClose={false}>
+          <div className="loader is-loading p-5"></div>
+        </Modal>
+      }
+
       <Heading subtitle textAlign="center">
         Create your profile
       </Heading>

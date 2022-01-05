@@ -15,6 +15,11 @@ export interface Activity {
   'providerId' : ProviderId,
 }
 export interface AirdropUser { 'id' : Principal, 'createdAt' : Timestamp }
+export interface ChallengeResponse {
+  'status' : PohChallengeStatus,
+  'completedOn' : [] | [bigint],
+  'challengeId' : string,
+}
 export type ContentId = string;
 export type ContentId__1 = string;
 export interface ContentPlus {
@@ -59,6 +64,7 @@ export interface ModClub {
   'airdropRegister' : () => Promise<AirdropUser>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
+  'generateUniqueToken' : (arg_0: Principal) => Promise<PohUniqueToken>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
   'getAirdropWhitelist' : () => Promise<Array<Principal>>,
@@ -72,6 +78,7 @@ export interface ModClub {
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'getTokenHoldings' : () => Promise<Holdings>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
+  'populateChallenges' : () => Promise<undefined>,
   'registerModerator' : (
       arg_0: string,
       arg_1: string,
@@ -83,7 +90,11 @@ export interface ModClub {
       arg_2: [] | [Image],
     ) => Promise<string>,
   'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
+  'retrieveChallengesForUser' : (arg_0: string) => Promise<Result>,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,
+  'submitChallengeData' : (arg_0: PohChallengeSubmissionRequest) => Promise<
+      PohChallengeSubmissionResponse
+    >,
   'submitImage' : (
       arg_0: string,
       arg_1: Array<number>,
@@ -99,11 +110,71 @@ export interface ModClub {
   'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
+  'verifyForHumanity' : (arg_0: Principal) => Promise<PohVerificationResponse>,
+  'verifyUserHumanity' : () => Promise<
+      [PohChallengeStatus, [] | [PohUniqueToken]]
+    >,
   'vote' : (
       arg_0: ContentId,
       arg_1: Decision,
       arg_2: [] | [Array<RuleId>],
     ) => Promise<string>,
+}
+export type PohChallengeStatus = { 'notSubmitted' : null } |
+  { 'verified' : null } |
+  { 'expired' : null } |
+  { 'pending' : null } |
+  { 'rejected' : null };
+export interface PohChallengeSubmissionRequest {
+  'challengeImageBlob' : [] | [Array<number>],
+  'challengeVideoBlob' : [] | [Array<number>],
+  'fullNameBlob' : [] | [Array<number>],
+  'offset' : bigint,
+  'isLast' : boolean,
+  'challengeId' : string,
+  'challengeTextBlob' : [] | [Array<number>],
+  'emailBlob' : [] | [Array<number>],
+  'userNameBlob' : [] | [Array<number>],
+}
+export interface PohChallengeSubmissionResponse {
+  'submissionStatus' : PohChallengeSubmissionStatus,
+  'challengeId' : string,
+}
+export type PohChallengeSubmissionStatus = { 'ok' : null } |
+  { 'notPendingForSubmission' : null } |
+  { 'alreadySubmitted' : null } |
+  { 'alreadyApproved' : null } |
+  { 'alreadyRejected' : null } |
+  { 'inputDataMissing' : null } |
+  { 'incorrectChallenge' : null };
+export type PohChallengeType = { 'dl' : null } |
+  { 'ssn' : null } |
+  { 'userName' : null } |
+  { 'fullName' : null } |
+  { 'email' : null } |
+  { 'selfVideo' : null } |
+  { 'selfPic' : null };
+export interface PohChallengesAttempt {
+  'status' : PohChallengeStatus,
+  'completedOn' : bigint,
+  'attemptId' : [] | [string],
+  'userId' : Principal,
+  'createdAt' : bigint,
+  'updatedAt' : bigint,
+  'challengeId' : string,
+  'challengeDescription' : string,
+  'challengeName' : string,
+  'challengeType' : PohChallengeType,
+}
+export type PohError = { 'challengeNotPendingForSubmission' : null } |
+  { 'invalidToken' : null };
+export interface PohUniqueToken { 'token' : string }
+export interface PohVerificationResponse {
+  'requestId' : string,
+  'providerId' : Principal,
+  'challenges' : Array<ChallengeResponse>,
+  'requestedOn' : bigint,
+  'providerUserId' : Principal,
 }
 export interface Profile {
   'id' : UserId,
@@ -129,6 +200,8 @@ export interface ProviderPlus {
   'rules' : Array<Rule>,
 }
 export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
+export type Result = { 'ok' : Array<PohChallengesAttempt> } |
+  { 'err' : PohError };
 export type Role = { 'admin' : null } |
   { 'moderator' : null } |
   { 'owner' : null };
