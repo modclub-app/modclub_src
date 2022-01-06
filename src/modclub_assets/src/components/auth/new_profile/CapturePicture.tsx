@@ -38,17 +38,17 @@ export default function CapturePicture() {
 
     const res = await submitChallengeData({
       challengeId: "challenge-profile-pic",
-      // challengeDataBlob: blob,
-      challengeDataBlob: imgSrc,
-      userName: null,
-      email: null,
-      fullName: null,
-      aboutUser: null,
+      // challengeDataBlob: [blob],
+      challengeDataBlob: [imgSrc],
+      userName: [],
+      email: [],
+      fullName: [],
+      aboutUser: [],
       offset: BigInt(1),
       numOfChunks: BigInt(1),
       mimeType: blob.type,
       dataSize: BigInt(blob.size),
-  });
+    });
     console.log("res", res);
     // history.push("/signup2/3")
   }

@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { Steps, Step } from "../../common/steps/Steps";
 import CapturePicture from "./CapturePicture";
 import CaptureVideo from "./CaptureVideo";
-import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
+import { verifyUserHumanity, retrieveChallengesForUser, submitChallengeData } from '../../../utils/api';
 
 const Signup = () => {
   const history = useHistory();
@@ -39,11 +39,29 @@ const Signup = () => {
 
     setSubmitting(true);
     try {
-      setTimeout(() => {
-        setSubmitting(false);
-        history.push("/signup2/2")
-      }, 2000);
+      const res = await submitChallengeData({
+        challengeId: "challenge-profile-details",
+        challengeDataBlob: [],
+        userName: [username],
+        email: [email],
+        fullName: [fullname],
+        aboutUser: [bio],
+        offset: BigInt(1),
+        numOfChunks: BigInt(1),
+        mimeType: "profile",
+        dataSize: BigInt(1)
+      });
+      console.log("res", res);
+
+      const [submissionStatus] = Object.keys(res[0]);
+      console.log("submissionStatus", submissionStatus)
+
+      // setTimeout(() => {
+      //   setSubmitting(false);
+      //   history.push("/signup2/2")
+      // }, 2000);
     } catch (e) {
+      console.log("error", e);
       setMessage({ success: false, value: "Error!" });
       setSubmitting(false);
     }
@@ -157,7 +175,6 @@ export default function NewProfile() {
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentStep } = useParams();
-  console.log("currentStep", currentStep)
   const [steps, setSteps] = useState(null)
 
   const initialCall = async () => {
@@ -176,7 +193,13 @@ export default function NewProfile() {
     console.log("challenges", challenges)
     setLoading(false);
     setSteps(challenges["ok"]);
-    history.push(`/signup2/${challenges["ok"][0].challengeId}`)
+
+    const uncompleted = challenges["ok"].find(challenge => {
+      const status = Object.keys(challenge.status)[0];
+      return status === "notSubmitted"
+    })
+
+    history.push(`/signup2/${uncompleted.challengeId}`)
   }
 
   useEffect(() => {
