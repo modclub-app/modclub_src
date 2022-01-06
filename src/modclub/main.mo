@@ -598,7 +598,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
       );
 
       let buf = Buffer.Buffer<ModeratorLeaderboard>(0);
-      for (i in Iter.range(start, end)) {
+      var i: Nat = start;
+      while (i < end and i < sortedArray.size()) {
         let pid = sortedArray[i].userId;
         let rewardsEarned = sortedArray[i].rewardsEarned;
         let profile = state.profiles.get(pid);
@@ -648,6 +649,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
           };
           case (_) ();
         };
+
+        i := i + 1;
       }; 
       return buf.toArray();
   };
