@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback } from "react";
 import { Image, Button, Icon } from "react-bulma-components";
 import Webcam from "react-webcam";
+import { b64toBlob } from "../../../utils/util";
 
 export function CaptureButton({ type, handleClick}) {
   return (
@@ -27,22 +28,36 @@ export function CaptureButton({ type, handleClick}) {
   )
 }
 
-export function WebcamWrapper({ setImgSrc, imgSrc }) {
+export function WebcamWrapper({ setFile, file }) {
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
 
   const captureWebcam = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
     console.log("imageSrc", imageSrc);
-    setImgSrc(imageSrc);
-  }, [webcamRef, setImgSrc]);
+
+    let encoded = imageSrc.toString().replace(/^data:(.*,)?/, '');
+    if ((encoded.length % 4) > 0) {
+      encoded += '='.repeat(4 - (encoded.length % 4));
+    }
+    const blob = b64toBlob(encoded, "image/jpeg");
+
+    const fileInfo = {
+      type: blob.type,
+      size: blob.size,
+      blob: blob,
+      data: imageSrc
+    };
+    console.log("fileInfo", fileInfo);
+    setFile(fileInfo);
+  }, [webcamRef, setFile]);
 
   const clearImage = () => {
     setLoading(true);
-    setImgSrc(null);
+    setFile(null);
   }
 
-  return !imgSrc ? (
+  return !file.data ? (
     <div className="is-relative has-text-centered">
       <Webcam
         audio={false}
@@ -63,7 +78,7 @@ export function WebcamWrapper({ setImgSrc, imgSrc }) {
   ) : (
     <div className="is-relative has-text-centered">
       <Image
-        src={imgSrc}
+        src={file.data}
         style={{ maxWidth: 640, maxHeight: 480, margin: "auto" }}
       />
       <CaptureButton

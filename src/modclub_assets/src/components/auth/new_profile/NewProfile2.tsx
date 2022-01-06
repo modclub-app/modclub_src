@@ -199,7 +199,7 @@ export default function NewProfile() {
       return status === "notSubmitted"
     })
 
-    // history.push(`/signup2/${uncompleted.challengeId}`)
+    history.push(`/signup2/${uncompleted.challengeId}`)
   }
 
   useEffect(() => {
@@ -208,11 +208,11 @@ export default function NewProfile() {
 
   return (
   <>
-    {/* {loading &&
+    {loading &&
       <Modal show={true} showClose={false}>
         <div className="loader is-loading p-5"></div>
       </Modal>
-    } */}
+    }
       
     <Columns centered vCentered className="is-fullheight mt-6">
       <Columns.Column size={6}>

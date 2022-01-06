@@ -1,10 +1,13 @@
 import { useRef, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import { Heading, Button, Card, Columns } from "react-bulma-components";
 import Webcam from "react-webcam";
 import { CaptureButton } from "./Webcam"
+import { processAndUploadChunk } from "../../../utils/util";
+const MAX_CHUNK_SIZE = 1024 * 500;
 
 export default function CaptureVideo() {
+  const history = useHistory();
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const [capturing, setCapturing] = useState(false);
@@ -37,25 +40,22 @@ export default function CaptureVideo() {
     setCapturing(false);
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
-  const handleDownload = useCallback(() => {
-    console.log("recordedChunks", recordedChunks);
-    return
+  const submit = async () => {
+    const blob = new Blob(recordedChunks, {
+      type: "video/webm"
+    });
 
-    if (recordedChunks.length) {
-      const blob = new Blob(recordedChunks, {
-        type: "video/webm"
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      document.body.appendChild(a);
-      // a.style = "display: none";
-      a.href = url;
-      a.download = "react-webcam-stream-capture.webm";
-      a.click();
-      window.URL.revokeObjectURL(url);
-      setRecordedChunks([]);
+    const putChunkPromises: Promise<undefined>[] = [];
+    let chunk = 1;
+    for (let byteStart = 0; byteStart < blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
+      putChunkPromises.push(
+        processAndUploadChunk("challenge-user-video", MAX_CHUNK_SIZE, blob, byteStart, chunk, blob.size, blob.type)
+      );
     }
-  }, [recordedChunks]);
+    
+    await Promise.all(putChunkPromises);
+    history.push("/signup2/confirm");
+  }
 
   return (
     <>
@@ -87,19 +87,12 @@ export default function CaptureVideo() {
       </div>
 
       <Button.Group align="right" className="mt-4">
-        <Button disabled={!recordedChunks.length} onClick={handleDownload}>
-          Download
-        </Button>
         <Link to="/app/" className="button is-black">
           Cancel
         </Link>
-        <Link
-          to="/signup2/4"
-          className="button is-primary"
-          disabled={!recordedChunks.length}
-        >
+        <Button color="primary" disabled={!recordedChunks.length} onClick={submit}>
           Next
-        </Link>
+        </Button>
       </Button.Group>
     </>
   );

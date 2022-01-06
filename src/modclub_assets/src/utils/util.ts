@@ -81,10 +81,9 @@ export function b64toBlob(b64Data: string, contentType = '', sliceSize = 512) {
   return blob;
 }
 
-const MAX_CHUNK_SIZE = 1024 * 500;
-
 export async function processAndUploadChunk(
   challengeId: string,
+  MAX_CHUNK_SIZE: number,
   blob: Blob,
   byteStart: number,
   chunk: number,
