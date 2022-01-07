@@ -599,7 +599,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       let sortedArray = Array.sort(
         rewardsEarnedBuffer.toArray(), 
         func (a: RewardsEarnedMap, b: RewardsEarnedMap) : { #less; #equal; #greater } {
-          if (a.rewardsEarned < b.rewardsEarned) { #less }
+          if (a.rewardsEarned > b.rewardsEarned) { #less }
           else if (a.rewardsEarned == b.rewardsEarned) { #equal }
           else { #greater }
         }
