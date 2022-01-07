@@ -109,6 +109,10 @@ export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
 }
 
+export async function getProfileById(userId: Principal): Promise<Profile> {
+  return (await getMC()).getProfileById(userId);
+}
+
 export async function getModeratorLeaderboard(pageSize: number, page: number): Promise<ModeratorLeaderboard[]> {
   return (await getMC()).getModeratorLeaderboard(BigInt((page - 1) * pageSize), BigInt(page * pageSize));
 }

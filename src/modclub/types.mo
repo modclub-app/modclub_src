@@ -158,7 +158,6 @@ module {
   public type ModeratorLeaderboard = {
     id: UserId;
     userName: Text;
-    pic: ?Image;
     completedVoteCount: Int;
     rewardsEarned: Int;
     performance: Float;
