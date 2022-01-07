@@ -570,6 +570,14 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
   };
 
+  public query func getProfileById(pid: Principal) : async Profile {    
+      Debug.print("getProfile for principal ID " # Principal.toText(pid) );
+      switch(state.profiles.get(pid)){
+        case (null) throw Error.reject("profile not found");
+        case (?result) return result;
+      };
+  };
+
   public query func getAllProfiles() : async [Profile] {
       let buf = Buffer.Buffer<Profile>(0);
       for ( (pid, p) in state.profiles.entries()) {
@@ -639,7 +647,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
             let item : ModeratorLeaderboard = {
                 id = pid;
                 userName = p.userName;
-                pic = p.pic;
                 completedVoteCount = completedVoteCount;
                 rewardsEarned = rewardsEarned;
                 performance = performance;

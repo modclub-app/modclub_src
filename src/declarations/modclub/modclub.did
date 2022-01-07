@@ -59,7 +59,6 @@ type ModeratorLeaderboard =
    id: UserId;
    lastVoted: opt Timestamp;
    performance: float64;
-   pic: opt Image__1;
    rewardsEarned: int;
    userName: text;
  };
@@ -80,6 +79,7 @@ type ModClub =
    getModclubHoldings: () -> (Holdings) query;
    getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
    getProfile: () -> (Profile) query;
+   getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;

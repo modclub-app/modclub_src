@@ -8,10 +8,10 @@ import {
   Media,
   Image,
 } from "react-bulma-components";
-import { getModeratorLeaderboard } from "../../../utils/api";
+import { getModeratorLeaderboard, getProfileById } from "../../../utils/api";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import placeholder from "../../../../assets/user_placeholder.png";
-import { Image__1, ModeratorLeaderboard } from "../../../utils/types";
+import { Image__1, ModeratorLeaderboard, Profile } from "../../../utils/types";
 
 const PAGE_SIZE = 30;
 
@@ -61,6 +61,42 @@ const ModeratorProfile = ({
   );
 };
 
+const ModeratorItem = ({ rank, item }: { rank: number, item: ModeratorLeaderboard }) => {
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      const result = await getProfileById(item.id);
+      setProfile(result);
+    };
+
+    if (item.id.toString()) {
+      getProfile()
+    }
+  }, [item.id]);
+
+  return (
+    <tr>
+      <td>{rank}</td>
+      <td>
+        <ModeratorProfile
+          pic={profile?.pic || []}
+          name={item.userName}
+        />
+      </td>
+      <td>{Number(item.completedVoteCount)}</td>
+      <td>{Number(item.rewardsEarned)} MOD</td>
+      <td>{Number(item.performance).toFixed(1)}%</td>
+      <td>
+        {item.lastVoted?.[0]
+          ? new Date(Number(item.lastVoted[0]))
+            .toISOString()
+            .slice(0, 10)
+          : "-"}
+      </td>
+    </tr>)
+}
+
 export default function Leaderboard() {
   const [content, setContent] = useState<ModeratorLeaderboard[]>([]);
   const [page, setPage] = useState(1);
@@ -109,25 +145,7 @@ export default function Leaderboard() {
                     )
                     .slice(0, page * PAGE_SIZE)
                     .map((item, index) => (
-                      <tr>
-                        <td>{index + 1}</td>
-                        <td>
-                          <ModeratorProfile
-                            pic={item.pic || []}
-                            name={item.userName}
-                          />
-                        </td>
-                        <td>{Number(item.completedVoteCount)}</td>
-                        <td>{Number(item.rewardsEarned)} MOD</td>
-                        <td>{Number(item.performance).toFixed(1)}%</td>
-                        <td>
-                          {item.lastVoted?.[0]
-                            ? new Date(Number(item.lastVoted[0]))
-                                .toISOString()
-                                .slice(0, 10)
-                            : "-"}
-                        </td>
-                      </tr>
+                      <ModeratorItem key={index} rank={index + 1} item={item} />
                     ))}
                 </tbody>
               </table>

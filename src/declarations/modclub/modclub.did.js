@@ -91,7 +91,6 @@ export const idlFactory = ({ IDL }) => {
   });
   const ModeratorLeaderboard = IDL.Record({
     'id' : UserId,
-    'pic' : IDL.Opt(Image__1),
     'completedVoteCount' : IDL.Int,
     'userName' : IDL.Text,
     'rewardsEarned' : IDL.Int,
@@ -159,6 +158,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getProfile' : IDL.Func([], [Profile], ['query']),
+    'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
