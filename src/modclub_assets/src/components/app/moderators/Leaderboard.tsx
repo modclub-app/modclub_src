@@ -88,7 +88,7 @@ const ModeratorItem = ({ rank, item }: { rank: number, item: ModeratorLeaderboar
       </td>
       <td>{Number(item.completedVoteCount)}</td>
       <td>{Number(item.rewardsEarned)} MOD</td>
-      <td>{Number(item.performance).toFixed(1)}%</td>
+      <td>{(Number(item.performance) * 100).toFixed(0)}%</td>
       <td>
         {item.lastVoted?.[0]
           ? new Date(Number(item.lastVoted[0]))
@@ -141,11 +141,6 @@ export default function Leaderboard() {
                 </thead>
                 <tbody>
                   {content
-                    .sort(
-                      (a, b) =>
-                        Number(a.rewardsEarned) - Number(b.rewardsEarned)
-                    )
-                    .slice(0, page * PAGE_SIZE)
                     .map((item, index) => (
                       <ModeratorItem key={index} rank={index + 1} item={item} />
                     ))}
