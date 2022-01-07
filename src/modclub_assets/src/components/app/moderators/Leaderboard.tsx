@@ -34,7 +34,7 @@ const ModeratorProfile = ({
   };
 
   return (
-    <div className="is-flex">
+    <div className="is-flex is-align-items-center">
       <Media
         style={{
           display: "flex",
@@ -43,6 +43,8 @@ const ModeratorProfile = ({
           padding: 2,
           borderRadius: "50%",
           marginBottom: 0,
+          width: 36,
+          height: 36
         }}
       >
         <Image
@@ -77,7 +79,7 @@ const ModeratorItem = ({ rank, item }: { rank: number, item: ModeratorLeaderboar
 
   return (
     <tr>
-      <td>{rank}</td>
+      <td style={{ fontWeight: 'bold' }}>{rank}</td>
       <td>
         <ModeratorProfile
           pic={profile?.pic || []}
