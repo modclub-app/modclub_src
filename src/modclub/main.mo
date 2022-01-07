@@ -513,7 +513,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
 
       switch(state.airdropWhitelist.get(caller)){
-        case(null) throw Error.reject("Unauthorized");
+        case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
         case(_) ();
       };
 
