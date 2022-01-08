@@ -34,7 +34,7 @@ const ModeratorProfile = ({
   };
 
   return (
-    <div className="is-flex is-align-items-center">
+    <div className="is-flex is-align-items-center" style={{minWidth: 150}}>
       <Media
         style={{
           display: "flex",
