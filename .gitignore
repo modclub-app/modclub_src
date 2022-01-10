@@ -47,3 +47,4 @@ dist/
 .vessel/array/v0.1.1/LICENSE
 .vessel/array/v0.1.1/.github/workflows/test.yml
 .vessel/array/v0.1.1/.github/workflows/src.yml
+*.cjs

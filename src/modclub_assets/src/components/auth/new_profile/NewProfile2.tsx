@@ -199,7 +199,11 @@ export default function NewProfile() {
       return status === "notSubmitted"
     })
 
-    history.push(`/signup2/${uncompleted.challengeId}`)
+    if (!uncompleted) {
+      history.push("/app");
+    } else {
+      history.push(`/signup2/${uncompleted.challengeId}`)
+    }
   }
 
   useEffect(() => {

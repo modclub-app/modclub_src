@@ -1,4 +1,4 @@
-import { convertImage, imageToUint8Array, convertObj, unwrap } from "./util";
+import { /* convertImage, */ convertObj, unwrap } from "./util";
 import { actorController } from "./actor";
 import {
   ContentPlus,
@@ -37,9 +37,11 @@ export async function registerModerator(
   email: string,
   imageData?: ImageData
 ): Promise<Profile> {
-  const imgResult: Image = imageData
-    ? { data: await convertImage(imageData), imageType: imageData.type }
-    : undefined;
+  // const imgResult: Image = imageData
+  //   ? { data: await convertImage(imageData), imageType: imageData.type }
+  //   : undefined;
+
+  const imgResult = null;
   const response = await (
     await getMC()
   ).registerModerator(username, email, imgResult ? [imgResult] : []);

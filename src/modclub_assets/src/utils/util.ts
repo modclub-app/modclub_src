@@ -121,42 +121,45 @@ export async function processAndUploadChunk(
 
 
 
-export async function convertImage(imageData: ImageData): Promise<number[]> {
-  return new Promise((resolve) => {
-    const image = new Image();
-    image.src = imageData.src;
-    image.onload = async () => {
-      resolve(imageToUint8Array(image, imageData.type));
-    };
-  });
-}
+// export async function convertImage(imageData: ImageData): Promise<number[]> {
+//   return new Promise((resolve) => {
+//     const image = new Image();
+//     image.src = imageData.src;
+//     image.onload = async () => {
+//       resolve(imageToUint8Array(image, imageData.type));
+//     };
+//   });
+// }
 
-export async function imageToUint8Array(image, imageType): Promise<number[]> {
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  canvas.width = image.width;
-  canvas.height = image.height;
-  context.drawImage(image, 0, 0);
-  return toBlob(context.canvas, imageType);
-}
+// export async function imageToUint8Array(image, imageType): Promise<number[]> {
+//   const canvas = document.createElement("canvas");
+//   const context = canvas.getContext("2d");
+//   canvas.width = image.width;
+//   canvas.height = image.height;
+//   context.drawImage(image, 0, 0);
+//   return toBlob(context.canvas, imageType);
+// }
 
-function toBlob(
-  canvas: HTMLCanvasElement,
-  type: string = "image/png",
-  quality: number = 1
-): Promise<number[]> {
-  return new Promise((resolve) =>
-    canvas.toBlob(
-      (canvasBlob) => {
-        canvasBlob!.arrayBuffer().then((arrayBuffer) => {
-          resolve([...new Uint8Array(arrayBuffer)]);
-        });
-      },
-      type,
-      quality
-    )
-  );
-}
+// function toBlob(
+//   canvas: HTMLCanvasElement,
+//   type: string = "image/png",
+//   quality: number = 1
+// ): Promise<number[]> {
+//   return new Promise((resolve) =>
+//     canvas.toBlob(
+//       (canvasBlob) => {
+//         canvasBlob!.arrayBuffer().then((arrayBuffer) => {
+//           resolve([...new Uint8Array(arrayBuffer)]);
+//         });
+//       },
+//       type,
+//       quality
+//     )
+//   );
+// }
+
+
+
 
 export function getUserFromStorage(
   storage = window.localStorage,
