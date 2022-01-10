@@ -1,6 +1,5 @@
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
-import Func "mo:base/Func";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
@@ -55,11 +54,13 @@ module PohModule {
             let g = Source.Source();
             let uuid = await g.new();
             return UUID.toText(await g.new());
-            // return "";
         };
 
         public func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
         : async PohTypes.PohVerificationResponse {
+            // request audit
+            state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
+            state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
 
             let modClubUserIdOption = do? {state.providerToModclubUser.get(pohVerificationRequest.providerUserId)!};
             if(modClubUserIdOption == null) {
@@ -194,7 +195,6 @@ module PohModule {
             let challengesCurrent = Buffer.Buffer<PohTypes.PohChallengesAttempt>(challengeIds.size());
 
             let _ = do ? {
-                let wordList = state.wordList.toArray();
                 for(challengeId in challengeIds.vals()) {
                     switch((state.pohUserChallengeAttempts.get(userId))!.get(challengeId)) {
                         case(null) {
@@ -219,9 +219,9 @@ module PohModule {
                                                 createdAt = Time.now();
                                                 updatedAt = Time.now();
                                                 completedOn = -1; // -1 means not completed
-                                                wordList = do ?{ 
+                                                wordList = do ?{
                                                     switch(state.pohChallenges.get(challengeId)!.challengeType) {
-                                                        case(#selfVideo) wordList;
+                                                        case(#selfVideo) generateRandomWordList(5);
                                                         case(_) [];
                                                     };
                                                 };
@@ -387,15 +387,6 @@ module PohModule {
             };
         };
 
-         
-
-        // This function will be called from changeChallengeTaskStatus function when all challenges are complete
-        // And this function will provide a callback to provider about the status completion of a user.
-        func completeUserPoh(challengeId: Text, userId: Principal, status: PohTypes.PohChallengeStatus) {
-            changeChallengeTaskStatus(challengeId, userId, status);
-            // Todo notify providers code here
-        };
-
         public func populateChallenges() : () {
             state.pohChallenges.put("challenge-profile-details", {
                 challengeId = "challenge-profile-details";
@@ -437,50 +428,76 @@ module PohModule {
             state.wordList.add("safe");
             state.wordList.add("basket");
             state.wordList.add("inaugurate");
-            // state.wordList.add("skate");
-            // state.wordList.add("need");
-            // state.wordList.add("guess");
-            // state.wordList.add("embarrassed");
-            // state.wordList.add("song");
-            // state.wordList.add("birth");
-            // state.wordList.add("owl");
-            // state.wordList.add("slam");
-            // state.wordList.add("implant");
-            // state.wordList.add("nutty");
-            // state.wordList.add("fanatical");
-            // state.wordList.add("delicate");
-            // state.wordList.add("doll");
-            // state.wordList.add("groovy");
-            // state.wordList.add("bulb");
-            // state.wordList.add("addition");
-            // state.wordList.add("arrest");
-            // state.wordList.add("guiltless");
-            // state.wordList.add("guess");
-            // state.wordList.add("roll");
-            // state.wordList.add("cause");
-            // state.wordList.add("alleged");
-            // state.wordList.add("aware");
-            // state.wordList.add("copy");
-            // state.wordList.add("knock");
-            // state.wordList.add("offer");
-            // state.wordList.add("onerous");
-            // state.wordList.add("mountain");
-            // state.wordList.add("panoramic");
-            // state.wordList.add("school");
-            // state.wordList.add("tasty");
-            // state.wordList.add("sand");
-            // state.wordList.add("turkey");
-            // state.wordList.add("heave");
-            // state.wordList.add("adamant");
-            // state.wordList.add("disgusting");
-            // state.wordList.add("salt");
-            // state.wordList.add("mushy");
-            // state.wordList.add("party");
-            // state.wordList.add("possible");
-            // state.wordList.add("print");
-            // state.wordList.add("bless");
-            // state.wordList.add("cakes");
+            state.wordList.add("skate");
+            state.wordList.add("need");
+            state.wordList.add("guess");
+            state.wordList.add("embarrassed");
+            state.wordList.add("song");
+            state.wordList.add("birth");
+            state.wordList.add("owl");
+            state.wordList.add("slam");
+            state.wordList.add("implant");
+            state.wordList.add("nutty");
+            state.wordList.add("fanatical");
+            state.wordList.add("delicate");
+            state.wordList.add("doll");
+            state.wordList.add("groovy");
+            state.wordList.add("bulb");
+            state.wordList.add("addition");
+            state.wordList.add("arrest");
+            state.wordList.add("guiltless");
+            state.wordList.add("guess");
+            state.wordList.add("roll");
+            state.wordList.add("cause");
+            state.wordList.add("alleged");
+            state.wordList.add("aware");
+            state.wordList.add("copy");
+            state.wordList.add("knock");
+            state.wordList.add("offer");
+            state.wordList.add("onerous");
+            state.wordList.add("mountain");
+            state.wordList.add("panoramic");
+            state.wordList.add("school");
+            state.wordList.add("tasty");
+            state.wordList.add("sand");
+            state.wordList.add("turkey");
+            state.wordList.add("heave");
+            state.wordList.add("adamant");
+            state.wordList.add("disgusting");
+            state.wordList.add("salt");
+            state.wordList.add("mushy");
+            state.wordList.add("party");
+            state.wordList.add("possible");
+            state.wordList.add("print");
+            state.wordList.add("bless");
+            state.wordList.add("cakes");
         };
+
+        // range should always be greater than 3 for this implementation
+        func psuedoRandom(seed: Nat, range: Nat) : Nat {
+            // Every third number, first number decided by seed
+            return (seed + 3) % range;
+        };
+
+        func generateRandomWordList(size: Nat) : [Text] {
+            let randomWords = Buffer.Buffer<Text>(size);
+
+            // using hashmap since hashset is not available
+            let allAvailableWordIndices  = HashMap.HashMap<Int, Nat>(1, Int.equal, Int.hash);
+            for(i in Iter.range(0, state.wordList.size() - 1)) {
+                allAvailableWordIndices.put(i, 1); //value is useless here
+            };
+            // using abs to convert Int to Nat
+            var seed = Int.abs(Time.now());
+            var wordListLength = state.wordList.size();
+            while(randomWords.size() < size) {
+                seed := psuedoRandom(seed, allAvailableWordIndices.size());
+                // same word index shouldn't be chosen again
+                allAvailableWordIndices.delete(seed);
+                randomWords.add(state.wordList.get(seed));
+            };
+            randomWords.toArray();
+        }
     };
 
 };

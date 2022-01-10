@@ -22,6 +22,8 @@ module State {
         providerToModclubUser: HashMap.HashMap<Principal, Principal>;
         pohChallengePackages: HashMap.HashMap<Text, PohTypes.PohChallengePackage>;
         wordList: Buffer.Buffer<Text>;
+        provider2PohVerificationRequests: HashMap.HashMap<Principal, Text>;
+        pohVerificationRequests: HashMap.HashMap<Text, PohTypes.PohVerificationRequest>;
     };
 
     public type PohStableState = {
@@ -39,7 +41,9 @@ module State {
         //mapping providerUserId to our userId
         providerToModclubUser: [(Principal, Principal)];
         pohChallengePackages : [(Text, PohTypes.PohChallengePackage)];
-        wordList: [Text]
+        wordList: [Text];
+        provider2PohVerificationRequests: [(Principal, Text)];
+        pohVerificationRequests: [(Text, PohTypes.PohVerificationRequest)];
     };
 
     public func emptyState(): PohState {
@@ -52,6 +56,8 @@ module State {
             providerToModclubUser = HashMap.HashMap<Principal, Principal>(1, Principal.equal, Principal.hash);
             pohChallengePackages = HashMap.HashMap<Text, PohTypes.PohChallengePackage>(1, Text.equal, Text.hash);
             wordList = Buffer.Buffer<Text>(1);
+            provider2PohVerificationRequests = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
+            pohVerificationRequests = HashMap.HashMap<Text, PohTypes.PohVerificationRequest>(1, Text.equal, Text.hash);
         };
     };
 
@@ -64,6 +70,8 @@ module State {
             providerToModclubUser = [];
             pohChallengePackages = [];
             wordList = [];
+            provider2PohVerificationRequests =  [];
+            pohVerificationRequests = [];
         };
     };
 

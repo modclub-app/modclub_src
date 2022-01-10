@@ -6,6 +6,8 @@ import StorageTypes "./types";
 import Bucket "./buckets";
 import StorageState "./storageState";
 import IC "../../remote_canisters/IC";
+import Types "./types";
+
 
 module StorageModule {
 
@@ -21,6 +23,10 @@ public class StorageSolution(storageState : StorageState.DataCanisterState, main
         let b : ?Bucket.Bucket = storageState.dataCanisters.get(contentCanisterId);
         (await b!.getChunks(contentId, offset))!;
       };
+    };
+
+    public func dataCanisterId(contentId: Text): async ?Types.DataCanisterId {
+      storageState.contentIdToCanisterId.get(contentId);
     };
 
     // persist chunks in bucket
