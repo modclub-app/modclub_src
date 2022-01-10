@@ -789,6 +789,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
                 switch(state.providers.get(content.providerId)) {
                   case(?provider) {
                     let voteCount = getVoteCount(content.id, ?caller);
+
                     let item : Activity = {
                         vote = vote;
                         providerId = content.providerId;
@@ -801,7 +802,21 @@ shared ({caller = initializer}) actor class ModClub () = this {
                         voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
                         minVotes = provider.settings.minVotes;
                         minStake = provider.settings.minStaked;
-                        reward = 1; // Todo: Calculate reward
+                        reward = do  {
+                          switch(isComplete == true) {
+                            case(true) {
+                              switch(vote.decision == content.status) {
+                                case(true) {
+                                  return provider.settings.minStaked;
+                                };
+                                case(false) {
+                                  return -1 * provider.settings.minStaked;
+                                };
+                              };
+                            };
+                            case(false) 0;
+                          };
+                        }; 
                         rewardRelease = timeNow_();
                     };
                     buf.add(item);

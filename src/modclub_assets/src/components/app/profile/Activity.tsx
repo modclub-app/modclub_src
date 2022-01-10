@@ -46,7 +46,7 @@ const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {
                 <td>
                   <Progress
                     value={Number(item.voteCount)}
-                    min={Number(item.minVotes)}
+                    min={Number(item.voteCount)}
                   />
                 </td>
                 <td>{formatDate(item.createdAt)}</td>
