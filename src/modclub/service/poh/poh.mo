@@ -1,21 +1,18 @@
+import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
-import Time "mo:base/Time";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
-import Nat "mo:base/Nat";
-import Func "mo:base/Func";
-
-import Text "mo:base/Text";
-
 import Iter "mo:base/Iter";
-import Buffer "mo:base/Buffer";
+import Nat "mo:base/Nat";
+import Option "mo:base/Option";
 import PohState "./state";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
-import Option "mo:base/Option";
-
 import Source "mo:uuid/async/SourceV4";
+import Text "mo:base/Text";
+import Time "mo:base/Time";
+import Types "../../types";
 import UUID "mo:uuid/UUID";
 
 module PohModule {
@@ -57,11 +54,13 @@ module PohModule {
             let g = Source.Source();
             let uuid = await g.new();
             return UUID.toText(await g.new());
-            // return "";
         };
 
         public func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
         : async PohTypes.PohVerificationResponse {
+            // request audit
+            state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
+            state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
 
             let modClubUserIdOption = do? {state.providerToModclubUser.get(pohVerificationRequest.providerUserId)!};
             if(modClubUserIdOption == null) {
@@ -170,9 +169,6 @@ module PohModule {
                 case(?pUser)
                     state.providerToModclubUser.put(pUser.providerUserId, userId);
             };
-            Debug.print("userId:" # Principal.toText(userId));
-            // Debug.print("userId:" # Principal.toText(providerUserId));
-
 
             // populate pohUsers but with their modclub user id
             switch(state.pohUsers.get(userId)) {
@@ -189,7 +185,6 @@ module PohModule {
                 };
                 case(_)();
             };
-            
 
             switch(state.pohUserChallengeAttempts.get(userId)) {
                 case(null)
@@ -198,7 +193,6 @@ module PohModule {
             };
 
             let challengesCurrent = Buffer.Buffer<PohTypes.PohChallengesAttempt>(challengeIds.size());
-            Debug.print("Intial Size:" # Nat.toText(challengesCurrent.size()));
 
             let _ = do ? {
                 for(challengeId in challengeIds.vals()) {
@@ -211,11 +205,8 @@ module PohModule {
                     
 
                     let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
-                    Debug.print("Challenge:" # challengeId);
-                    Debug.print("Attempts size:" # Nat.toText(attempts.size()));
 
                     if(attempts.size() == 0) {
-                        Debug.print("Attempts sizex:" # Nat.toText(attempts.size()));
                         let newAttempt = {
                                                 attemptId = ?(await generateUUID());
                                                 challengeId = challengeId;
@@ -228,36 +219,22 @@ module PohModule {
                                                 createdAt = Time.now();
                                                 updatedAt = Time.now();
                                                 completedOn = -1; // -1 means not completed
+                                                wordList = do ?{
+                                                    switch(state.pohChallenges.get(challengeId)!.challengeType) {
+                                                        case(#selfVideo) generateRandomWordList(5);
+                                                        case(_) [];
+                                                    };
+                                                };
                                         };
                         state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!.add(newAttempt);
-                        Debug.print("Attempts size2:" # Nat.toText(attempts.size()));
-
                         challengesCurrent.add(newAttempt);
                     } else {
-                        Debug.print("Attempts size3:" # Nat.toText(attempts.size()));
-
                         challengesCurrent.add(attempts.get(attempts.size() - 1));
                     };
                 };
             };
-            Debug.print("Attempts size end:" # Nat.toText(1));
             #ok(challengesCurrent.toArray());
         };
-
-        // Step 5 The user provides all POH evidence that the dApp requested.
-        // one challenege =  PohChallengeSubmissionRequest. Hence using array here
-        // User can come in multiple times and submit one challenge a time. Array will allow that
-        // public func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest, userId: Principal) : PohTypes.PohChallengeSubmissionResponse {
-        //     let submissionStatus = validateChallengeSubmission(pohDataRequest, userId);
-        //     if(submissionStatus == #ok) {
-        //         if(pohDataRequest.offset == pohDataRequest.numOfChunks)
-        //             changeChallengeTaskStatus(pohDataRequest.challengeId, userId, #pending);
-        //     };
-        //     return {
-        //         challengeId=pohDataRequest.challengeId;
-        //         submissionStatus = submissionStatus
-        //     };
-        // };
 
         public func validateChallengeSubmission(challengeData : PohTypes.PohChallengeSubmissionRequest, userId: Principal) : PohTypes.PohChallengeSubmissionStatus {
             Debug.print(Principal.toText(userId));
@@ -325,6 +302,7 @@ module PohModule {
                     createdAt = attempt.createdAt;
                     updatedAt = Time.now();
                     completedOn = completedOn;
+                    wordList = attempt.wordList;
                 };
                 attempts.put(attempts.size() - 1, updatedAttempt);
             };
@@ -352,6 +330,7 @@ module PohModule {
                         createdAt = attempt.createdAt;
                         updatedAt = Time.now();
                         completedOn = attempt.completedOn;
+                        wordList = attempt.wordList;
                     };
                     attempts.put(attempts.size() - 1, updatedAttempt);
                 }
@@ -376,20 +355,36 @@ module PohModule {
             };
         };
 
-        public func prepareChallengePackageIfApplicable(userId: Principal, challengeIds: [Text]) : ?Text {
+        public func createChallengePackageForVoting(userId: Principal, challengeIds: [Text], generateId: (Principal, Text) -> Text) : ?PohTypes.PohChallengePackage {
             do? {
-                let attempts = state.pohUserChallengeAttempts.get(userId)!;
-
-                return null;
-
+                let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
+                var allChallengeSubmitted = true;
+                for(id in challengeIds.vals()) {
+                    let attempts = challengeAttempts.get(id)!;
+                    if(attempts.size() == 0) {
+                        return null;
+                    };
+                    if(attempts.get(attempts.size() - 1).status != #pending) {
+                        allChallengeSubmitted:=false;
+                    }
+                };
+                if(allChallengeSubmitted == false) {
+                    return null;
+                };
+                let pohPackage = {
+                    id = generateId(userId, "content");
+                    challengeIds =  challengeIds;
+                    // providerId = ;
+                    contentType = #pohPackage : Types.ContentType;
+                    // sourceId: Text;
+                    status = #new : Types.ContentStatus; 
+                    title = ?("POH Content for User: " # Principal.toText(userId));
+                    createdAt =  Time.now();
+                    updatedAt = Time.now();
+                };
+                state.pohChallengePackages.put(pohPackage.id, pohPackage);
+                return ?pohPackage;
             };
-        };
-
-        // This function will be called from changeChallengeTaskStatus function when all challenges are complete
-        // And this function will provide a callback to provider about the status completion of a user.
-        func completeUserPoh(challengeId: Text, userId: Principal, status: PohTypes.PohChallengeStatus) {
-            changeChallengeTaskStatus(challengeId, userId, status);
-            // Todo notify providers code here
         };
 
         public func populateChallenges() : () {
@@ -426,7 +421,83 @@ module PohModule {
                 createdAt = Time.now();
                 updatedAt = Time.now();
             });
+            state.wordList.add("sentence");
+            state.wordList.add("free");
+            state.wordList.add("crowd");
+            state.wordList.add("drawer");
+            state.wordList.add("safe");
+            state.wordList.add("basket");
+            state.wordList.add("inaugurate");
+            state.wordList.add("skate");
+            state.wordList.add("need");
+            state.wordList.add("guess");
+            state.wordList.add("embarrassed");
+            state.wordList.add("song");
+            state.wordList.add("birth");
+            state.wordList.add("owl");
+            state.wordList.add("slam");
+            state.wordList.add("implant");
+            state.wordList.add("nutty");
+            state.wordList.add("fanatical");
+            state.wordList.add("delicate");
+            state.wordList.add("doll");
+            state.wordList.add("groovy");
+            state.wordList.add("bulb");
+            state.wordList.add("addition");
+            state.wordList.add("arrest");
+            state.wordList.add("guiltless");
+            state.wordList.add("guess");
+            state.wordList.add("roll");
+            state.wordList.add("cause");
+            state.wordList.add("alleged");
+            state.wordList.add("aware");
+            state.wordList.add("copy");
+            state.wordList.add("knock");
+            state.wordList.add("offer");
+            state.wordList.add("onerous");
+            state.wordList.add("mountain");
+            state.wordList.add("panoramic");
+            state.wordList.add("school");
+            state.wordList.add("tasty");
+            state.wordList.add("sand");
+            state.wordList.add("turkey");
+            state.wordList.add("heave");
+            state.wordList.add("adamant");
+            state.wordList.add("disgusting");
+            state.wordList.add("salt");
+            state.wordList.add("mushy");
+            state.wordList.add("party");
+            state.wordList.add("possible");
+            state.wordList.add("print");
+            state.wordList.add("bless");
+            state.wordList.add("cakes");
         };
+
+        // range should always be greater than 3 for this implementation
+        func psuedoRandom(seed: Nat, range: Nat) : Nat {
+            // Every third number, first number decided by seed
+            return (seed + 3) % range;
+        };
+
+        func generateRandomWordList(size: Nat) : [Text] {
+            let randomWords = Buffer.Buffer<Text>(size);
+
+            // using hashmap since hashset is not available
+            let allAvailableWordIndices  = HashMap.HashMap<Int, Nat>(1, Int.equal, Int.hash);
+            for(i in Iter.range(0, state.wordList.size() - 1)) {
+                allAvailableWordIndices.put(i, 1); //value is useless here
+            };
+            // using abs to convert Int to Nat
+            var seed = Int.abs(Time.now());
+            var wordListLength = state.wordList.size();
+            while(randomWords.size() < size) {
+                seed := psuedoRandom(seed, allAvailableWordIndices.size());
+                // same word index shouldn't be chosen again
+                allAvailableWordIndices.delete(seed);
+                randomWords.add(state.wordList.get(seed));
+            };
+            randomWords.toArray();
+        }
     };
 
 };

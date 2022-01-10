@@ -45,6 +45,8 @@ module {
     #imageUrl;
     // Image Data
     #imageBlob;
+    // Poh Content Package
+    #pohPackage
   };
 
   public type Role = {

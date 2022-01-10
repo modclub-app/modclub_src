@@ -801,19 +801,35 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Method called by user on UI
   public shared({ caller }) func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest) : async PohTypes.PohChallengeSubmissionResponse {
-    let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, Principal.fromText("2vxsx-fae"));
+    let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, caller);
     if(isValid == #ok) {
       let _ = do ? {
-        let contentId = pohEngine.getContentId(pohDataRequest.challengeId, Principal.fromText("2vxsx-fae"), generateId);
+        let contentId = pohEngine.getContentId(pohDataRequest.challengeId, caller, generateId);
         if(pohDataRequest.challengeDataBlob != null) {
           await storageSolution.putBlobsInDataCanister(contentId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset, 
                   pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
           if(pohDataRequest.offset == pohDataRequest.numOfChunks) //last Chunk coming in
-            pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, Principal.fromText("2vxsx-fae"), #pending);
+            pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
         } else {
           // It's a username, email task
-          pohEngine.updatePohUserObject(Principal.fromText("2vxsx-fae"), pohDataRequest.fullName!, pohDataRequest.email!, pohDataRequest.userName!, pohDataRequest.aboutUser!);
-          pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, Principal.fromText("2vxsx-fae"), #pending);
+          pohEngine.updatePohUserObject(caller, pohDataRequest.fullName!, pohDataRequest.email!, pohDataRequest.userName!, pohDataRequest.aboutUser!);
+          pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
+        };
+      };
+      // TODO dynamic list will be fetched from admin dashboard state
+      let providerChallenges = ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"];
+      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId);
+      switch(challengePackage) {
+        // Not all challenge submitted, nothing ready for voting so do nothing
+        case(null) ();
+        case(?package) {
+          //Flow in submitText method
+      //      state.content.put(content.id, content);
+      // state.textContent.put(content.id, textContent);
+      // state.provider2content.put(caller, content.id);
+      // state.contentNew.put(caller, content.id);
+          // TODO caller is not provider here.
+          state.contentNew.put(caller, package.id);
         };
       };
     };

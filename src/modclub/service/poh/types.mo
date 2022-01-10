@@ -3,6 +3,8 @@ import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
 import Buffer "mo:base/Buffer";
 
+import Types "../../types";
+
 module {
 
     //POH Users Ref Data
@@ -58,6 +60,7 @@ module {
         updatedAt: Int;
         completedOn: Int;
         contentId: ?Text;
+        wordList: ?[Text];
     };
 
     // type representing request for verificaiton
@@ -108,9 +111,16 @@ module {
         submissionStatus: PohChallengeSubmissionStatus;
     };
 
-    public type PohContent = {
+    public type PohChallengePackage = {
         id: Text;
-        text: Text;
+        challengeIds: [Text];
+        // providerId: Principal;
+        contentType: Types.ContentType;
+        // sourceId: Text;
+        status: Types.ContentStatus; 
+        title: ?Text;
+        createdAt: Int;
+        updatedAt: Int;
     };
 
     public type PohError = {
