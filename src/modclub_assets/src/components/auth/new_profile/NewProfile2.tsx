@@ -27,7 +27,6 @@ const Signup = () => {
   }
 
   const onFormSubmit = async (values: any) => {
-    console.log("onFormSubmit!!!!")
     const { username, fullname, email, bio } = values;
 
     const validEmail = validateEmail(email)
@@ -52,14 +51,15 @@ const Signup = () => {
         dataSize: BigInt(1)
       });
       console.log("res", res);
+      console.log("innder", res.submissionStatus);
 
       const [submissionStatus] = Object.keys(res[0]);
       console.log("submissionStatus", submissionStatus)
 
-      // setTimeout(() => {
-      //   setSubmitting(false);
-      //   history.push("/signup2/2")
-      // }, 2000);
+      setTimeout(() => {
+        setSubmitting(false);
+        history.push("/signup2/challenge-profile-pic")
+      }, 2000);
     } catch (e) {
       console.log("error", e);
       setMessage({ success: false, value: "Error!" });
@@ -240,7 +240,7 @@ export default function NewProfile() {
                   <CapturePicture />
                 }
                 {currentStep == "challenge-user-video" &&
-                  <CaptureVideo />
+                  <CaptureVideo steps={steps} />
                 }
                 {currentStep == "confirm" &&
                   <Confirmation />

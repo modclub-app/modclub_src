@@ -1,9 +1,6 @@
 import { Principal } from "@dfinity/principal";
-// import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { getContent, getProvider } from "../../../utils/api";
-// import { Columns, Card, Button, Media, Image, Modal, Heading, Notification } from "react-bulma-components";
 import {
   Heading,
   Columns,
@@ -14,10 +11,9 @@ import {
   Image,
   Notification
 } from "react-bulma-components";
-import { Form, Field } from "react-final-form";
+import { Form } from "react-final-form";
 import Toggle from "../../common/toggle/Toggle";
 import Progress from "../../common/progress/Progress";
-
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import approveImg from '../../../../assets/approve.svg';

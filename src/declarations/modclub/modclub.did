@@ -85,6 +85,7 @@ type PohChallengesAttempt =
    status: PohChallengeStatus;
    updatedAt: int;
    userId: principal;
+   wordList: opt vec text;
  };
 type PohChallengeType = 
  variant {
@@ -202,6 +203,7 @@ type ContentType =
    imageBlob;
    imageUrl;
    multiText;
+   pohPackage;
    "text";
  };
 type ContentStatus = 

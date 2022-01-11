@@ -15,6 +15,7 @@ export const idlFactory = ({ IDL }) => {
     'text' : IDL.Null,
     'imageUrl' : IDL.Null,
     'multiText' : IDL.Null,
+    'pohPackage' : IDL.Null,
   });
   const VoteId = IDL.Text;
   const Decision__1 = IDL.Variant({
@@ -138,6 +139,7 @@ export const idlFactory = ({ IDL }) => {
     'challengeDescription' : IDL.Text,
     'challengeName' : IDL.Text,
     'challengeType' : PohChallengeType,
+    'wordList' : IDL.Opt(IDL.Vec(IDL.Text)),
   });
   const PohError = IDL.Variant({
     'challengeNotPendingForSubmission' : IDL.Null,

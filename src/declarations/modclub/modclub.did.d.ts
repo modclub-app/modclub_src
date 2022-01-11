@@ -46,7 +46,8 @@ export type ContentStatus = { 'new' : null } |
 export type ContentType = { 'imageBlob' : null } |
   { 'text' : null } |
   { 'imageUrl' : null } |
-  { 'multiText' : null };
+  { 'multiText' : null } |
+  { 'pohPackage' : null };
 export type Decision = { 'approved' : null } |
   { 'rejected' : null };
 export type Decision__1 = { 'approved' : null } |
@@ -167,6 +168,7 @@ export interface PohChallengesAttempt {
   'challengeDescription' : string,
   'challengeName' : string,
   'challengeType' : PohChallengeType,
+  'wordList' : [] | [Array<string>],
 }
 export type PohError = { 'challengeNotPendingForSubmission' : null } |
   { 'invalidToken' : null };
