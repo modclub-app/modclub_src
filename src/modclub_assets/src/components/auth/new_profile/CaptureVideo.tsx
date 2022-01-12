@@ -74,19 +74,16 @@ export default function CaptureVideo({ steps }) {
 
       <Card className="mb-4">
         <Card.Content className="columns is-multiline">
-          {phrases.map((phrase, index) => {
-            console.log('index', index + 1)
-            return (
+          {phrases.map((phrase, index) => (
             <Columns.Column key={phrase} size={4}>
               <Button color="gradient" fullwidth isStatic style={{ color: '#fff' }}>
                 {index + 1}
-                <span className="ml-3">
+                <span className="ml-2">
                   {phrase}
                 </span>
               </Button>
             </Columns.Column>
-          )}
-          )}
+          ))}
         </Card.Content>
       </Card>
 

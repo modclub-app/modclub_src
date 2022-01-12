@@ -1,5 +1,4 @@
 import { Switch, Route } from "react-router-dom";
-import { useParams } from "react-router";
 import { useHistory, Link } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import {
@@ -175,8 +174,8 @@ const Confirmation = () => {
 export default function NewProfile({ match }) {
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
-  const { currentStep } = useParams();
   const [steps, setSteps] = useState(null)
+  const [currentStep, setCurrentStep] = useState<string>('')
 
   const initialCall = async () => {
     const verified = await verifyUserHumanity();
@@ -213,6 +212,14 @@ export default function NewProfile({ match }) {
     initialCall();
   }, []);
 
+  useEffect(() => {
+    return history.listen((location) => { 
+      const result = /[^/]*$/.exec(location.pathname)[0];
+      console.log("result", result);
+      setCurrentStep(result);
+    })
+  },[history]) 
+
   return (
   <>
     {loading &&
@@ -220,7 +227,7 @@ export default function NewProfile({ match }) {
         <div className="loader is-loading p-5"></div>
       </Modal>
     }
-      
+
     <Columns centered vCentered className="is-fullheight mt-6">
       <Columns.Column size={6}>
         <Card>
@@ -230,7 +237,7 @@ export default function NewProfile({ match }) {
                 {steps.map((step, index) => (
                   <Step key={step.challengeId} id={index + 1} details={step.challengeName} />
                 ))}
-                <Step id={steps.length + 1} details="Confirm" />
+                <Step key='confirm' id={steps.length + 1} details="Confirm" />
               </Steps>
             }
 
