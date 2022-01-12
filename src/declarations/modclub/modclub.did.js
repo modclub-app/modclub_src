@@ -33,7 +33,7 @@ export const idlFactory = ({ IDL }) => {
   const ProviderId = IDL.Principal;
   const Activity = IDL.Record({
     'status' : ContentStatus,
-    'reward' : IDL.Nat,
+    'reward' : IDL.Float64,
     'title' : IDL.Opt(IDL.Text),
     'voteCount' : IDL.Nat,
     'contentType' : ContentType,

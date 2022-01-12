@@ -64,6 +64,7 @@ module.exports = {
       stream: require.resolve("stream-browserify/"),
       util: require.resolve("util/"),
     },
+    symlinks: false,
   },
   output: {
     filename: "index.js",
@@ -74,6 +75,7 @@ module.exports = {
       { test: /\.(js|ts)x?$/, loader: "ts-loader" },
       {
         test: /\.(sa|sc|c)ss$/,
+        include: path.resolve(__dirname, "src/modclub_assets/src"),
         use: [
           // Creates `style` nodes from JS strings
           "style-loader",
@@ -86,6 +88,7 @@ module.exports = {
       },
       {
         test: /\.(png|jpe?g|gif|ico|svg|woff|woff2|eot|ttf)$/i,
+        include: path.resolve(__dirname, "src/modclub_assets/assets"),
         use: [
           {
             loader: "file-loader",
@@ -94,6 +97,7 @@ module.exports = {
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        include: path.resolve(__dirname, "src/modclub_assets/src"),
         type: "asset/resource",
       },
     ],
@@ -124,6 +128,7 @@ module.exports = {
   ],
   // proxy /api to port 8000 during development
   devServer: {
+    port: "9000",
     proxy: {
       "/api": {
         target: "http://localhost:8000",

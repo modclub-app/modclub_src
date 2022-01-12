@@ -1,7 +1,7 @@
 import type { Principal } from '@dfinity/principal';
 export interface Activity {
   'status' : ContentStatus,
-  'reward' : bigint,
+  'reward' : number,
   'title' : [] | [string],
   'voteCount' : bigint,
   'contentType' : ContentType,

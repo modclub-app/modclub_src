@@ -806,12 +806,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
                           switch(isComplete == true) {
                             case(true) {
                               switch(vote.decision == content.status) {
-                                case(true) {
-                                  return provider.settings.minStaked;
-                                };
-                                case(false) {
-                                  return -1 * provider.settings.minStaked;
-                                };
+                                case(true) Float.fromInt(provider.settings.minStaked);
+                                case(false) -1 * Float.fromInt(provider.settings.minStaked);
                               };
                             };
                             case(false) 0;

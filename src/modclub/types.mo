@@ -210,7 +210,7 @@ module {
     voteCount: Nat;
     minVotes: Nat;
     minStake: Nat;    
-    reward: Nat;
+    reward: Float;
     rewardRelease: Timestamp;
   };
 

@@ -176,7 +176,7 @@ type Activity =
    minVotes: nat;
    providerId: ProviderId;
    providerName: text;
-   reward: nat;
+   reward: float64;
    rewardRelease: Timestamp;
    status: ContentStatus;
    title: opt text;

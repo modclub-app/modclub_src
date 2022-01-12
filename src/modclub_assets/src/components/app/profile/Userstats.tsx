@@ -26,7 +26,7 @@ const StatBox = ({ loading, image, title, amount, usd, detailed, children }) => 
                 {amount}
                 {detailed &&
                   <span className="has-text-weight-normal is-size-4 ml-4">
-                    ${usd}
+          
                   </span>
                 }
               </Heading>
