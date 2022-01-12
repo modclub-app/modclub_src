@@ -1,3 +1,4 @@
+import { Switch, Route } from "react-router-dom";
 import { useParams } from "react-router";
 import { useHistory, Link } from "react-router-dom";
 import { Form, Field } from "react-final-form";
@@ -171,7 +172,7 @@ const Confirmation = () => {
   )
 };
 
-export default function NewProfile() {
+export default function NewProfile({ match }) {
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentStep } = useParams();
@@ -199,8 +200,10 @@ export default function NewProfile() {
       return status === "notSubmitted"
     })
 
+    console.log('uncompleted', uncompleted)
+
     if (!uncompleted) {
-      history.push("/app");
+      // history.push("/app");
     } else {
       history.push(`/signup2/${uncompleted.challengeId}`)
     }
@@ -233,18 +236,15 @@ export default function NewProfile() {
 
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>
-                {currentStep == "challenge-profile-details" &&
-                  <Signup />
-                }
-                {currentStep == "challenge-profile-pic" &&
-                  <CapturePicture />
-                }
-                {currentStep == "challenge-user-video" &&
-                  <CaptureVideo steps={steps} />
-                }
-                {currentStep == "confirm" &&
-                  <Confirmation />
-                }
+                <Switch>
+                  <Route path={`${match.path}/:challenge-profile-details`} component={Signup}/>
+                  <Route path={`${match.path}/:challenge-profile-pic`} component={CapturePicture}/>
+                  <Route
+                    path={`${match.path}/:challenge-user-video`}
+                    render={() => (<CaptureVideo steps={steps} />)}
+                  />
+                  <Route path={`${match.path}/:confirm`} component={Confirmation}/>
+                </Switch>
               </Card.Content>
             </Card>
           </Card.Content>
