@@ -55,7 +55,7 @@ const Table = (
                     {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
                   </td>
                   <td>
-                    {("new" in item.status) ? "-" : item.status }
+                    {("new" in item.status) ? "-" : "approved" in item.status ? "Approved" : "Rejected" }
                   </td>
                   <td>{item.providerName}</td>
                   <td>
