@@ -229,6 +229,11 @@ module {
         };
     };
 
+    public type PohRulesViolated = {
+      challengeId: Text;
+      ruleId: Text;
+    };
+
     public type Error = {
         #Unauthorized;
         #NotFound;

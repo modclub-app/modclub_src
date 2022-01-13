@@ -17,6 +17,11 @@ module {
         createdAt: Int;
         updatedAt: Int;
     };
+
+     public type ViolatedRules =  {
+         ruleId: Text;
+         ruleDesc: Text;
+     };
     
     // Challeneges Ref Data
     public type PohChallenges =  {
@@ -27,6 +32,7 @@ module {
         dependentChallengeId: ?Buffer.Buffer<Text>;
         requiredField: PohChallengeRequiredField;
         challengeType: PohChallengeType;
+        allowedViolationRules: HashMap.HashMap<Text, ViolatedRules>;
         createdAt: Int;
         updatedAt: Int;
     };
@@ -59,7 +65,8 @@ module {
         createdAt: Int;
         updatedAt: Int;
         completedOn: Int;
-        contentId: ?Text;
+        // contentId: ?Text;
+        dataCanisterId: ?Principal;
         wordList: ?[Text];
     };
 
@@ -114,13 +121,43 @@ module {
     public type PohChallengePackage = {
         id: Text;
         challengeIds: [Text];
-        // providerId: Principal;
-        contentType: Types.ContentType;
-        // sourceId: Text;
-        status: Types.ContentStatus; 
+        userId: Principal;
+        // contentType: Types.ContentType;
+        // status: Types.ContentStatus; 
         title: ?Text;
         createdAt: Int;
         updatedAt: Int;
+    };
+
+    public type PohTaskData = {
+        challengeId: Text;
+        challengeType: PohChallengeType;
+        userId: Principal;
+        status: PohChallengeStatus;
+        userName: ?Text;
+        email: ?Text;
+        fullName: ?Text;
+        aboutUser: ?Text;
+        contentId: ?Text;
+        dataCanisterId: ?Principal;
+        createdAt: Int;
+        updatedAt: Int;
+    };
+
+    public type PohTaskDataWrapper = {
+        packageId: Text;
+        pohTaskData: [PohTaskData];
+    };
+
+    public type PohTaskPlus = {
+        packageId: Text;
+        pohTaskData: [PohTaskData];
+        status: Types.ContentStatus;
+        voteCount: Nat;
+        minVotes: Nat;
+        minStake: Nat; 
+        title: ?Text;
+        hasVoted: ?Bool;
     };
 
     public type PohError = {

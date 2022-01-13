@@ -30,7 +30,7 @@ public class StorageSolution(storageState : StorageState.DataCanisterState, main
     };
 
     // persist chunks in bucket
-    public func putBlobsInDataCanister(contentId: Text, chunkData : Blob, offset: Nat, numOfChunks: Nat, mimeType: Text, dataSize: Nat) : async () {
+    public func putBlobsInDataCanister(contentId: Text, chunkData : Blob, offset: Nat, numOfChunks: Nat, mimeType: Text, dataSize: Nat) : async ?Principal {
       let contentCanisterId = storageState.contentIdToCanisterId.get(contentId);
       switch(contentCanisterId) {
         case(null) {
@@ -46,11 +46,13 @@ public class StorageSolution(storageState : StorageState.DataCanisterState, main
                 let a = await bucket.putChunks(contentId, offset, chunkData, numOfChunks, mimeType);
               } else {
                 // Todo Chunk Migration into new bucket
+                // Once done change the return statement accordingly
               }
             };
           }
         };
       };
+      return storageState.contentIdToCanisterId.get(contentId);
     };
 
     // check if there's an empty bucket we can use
