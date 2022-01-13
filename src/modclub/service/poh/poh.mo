@@ -216,6 +216,7 @@ module PohModule {
                                                 challengeType = state.pohChallenges.get(challengeId)!.challengeType;
                                                 status = #notSubmitted;
                                                 contentId = null;
+                                                dataCanisterId = null;
                                                 createdAt = Time.now();
                                                 updatedAt = Time.now();
                                                 completedOn = -1; // -1 means not completed
@@ -298,7 +299,8 @@ module PohModule {
                     challengeType = attempt.challengeType;
                     userId = attempt.userId;
                     status =  status;
-                    contentId = attempt.contentId;
+                    // contentId = attempt.contentId;
+                    dataCanisterId = attempt.dataCanisterId;
                     createdAt = attempt.createdAt;
                     updatedAt = Time.now();
                     completedOn = completedOn;
@@ -308,32 +310,35 @@ module PohModule {
             };
         };
 
-        public func getContentId(challengeId: Text, userId: Principal, defaultIdGenerator: (Principal, Text) -> Text) : Text {
+        public func updateDataCanisterId(challengeId: Text, userId: Principal, dataCanisterId: ?Principal) {
+            let _    = do ?{
+                let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
+                let attempt = attempts.get(attempts.size() - 1);
+                let updatedAttempt = {
+                    attemptId = attempt.attemptId;
+                    challengeId = attempt.challengeId;
+                    challengeName = attempt.challengeName;
+                    challengeDescription = attempt.challengeDescription;
+                    challengeType = attempt.challengeType;
+                    userId = attempt.userId;
+                    status =  attempt.status;
+                    // contentId = attempt.contentId;
+                    dataCanisterId = dataCanisterId;
+                    createdAt = attempt.createdAt;
+                    updatedAt = Time.now();
+                    completedOn = attempt.completedOn;
+                    wordList = attempt.wordList;
+                };
+                attempts.put(attempts.size() - 1, updatedAttempt);
+            };
+        };
+
+        public func getAttemptId(challengeId: Text, userId: Principal) : Text {
             var contentId = "";
             let _ = do ? {
                 let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
                 let attempt = attempts.get(attempts.size() - 1);
-                if(attempt.contentId != null) {
-                    contentId := attempt.contentId!;
-                } else {
-                    contentId := defaultIdGenerator(userId, "poh-content");
-                    Debug.print("contentId: " # contentId);
-                    let updatedAttempt = {
-                        attemptId = attempt.attemptId;
-                        challengeId = attempt.challengeId;
-                        challengeName = attempt.challengeName;
-                        challengeDescription = attempt.challengeDescription;
-                        challengeType = attempt.challengeType;
-                        userId = attempt.userId;
-                        status =  attempt.status;
-                        contentId = ?contentId;
-                        createdAt = attempt.createdAt;
-                        updatedAt = Time.now();
-                        completedOn = attempt.completedOn;
-                        wordList = attempt.wordList;
-                    };
-                    attempts.put(attempts.size() - 1, updatedAttempt);
-                }
+                contentId := attempt.attemptId!;
             };
             return contentId; 
         };
@@ -372,12 +377,11 @@ module PohModule {
                     return null;
                 };
                 let pohPackage = {
-                    id = generateId(userId, "content");
+                    id = generateId(userId, "poh-content");
                     challengeIds =  challengeIds;
-                    // providerId = ;
-                    contentType = #pohPackage : Types.ContentType;
-                    // sourceId: Text;
-                    status = #new : Types.ContentStatus; 
+                    userId =  userId;
+                    contentType = #pohPackage;
+                    status = #new;
                     title = ?("POH Content for User: " # Principal.toText(userId));
                     createdAt =  Time.now();
                     updatedAt = Time.now();
@@ -385,6 +389,70 @@ module PohModule {
                 state.pohChallengePackages.put(pohPackage.id, pohPackage);
                 return ?pohPackage;
             };
+        };
+
+        public func getPohTasks(taskIds: [Text]) : [PohTypes.PohTaskDataWrapper] {
+            let pohTasks = Buffer.Buffer<PohTypes.PohTaskDataWrapper>(taskIds.size());
+
+            for(id in taskIds.vals()) {
+                let pohChallengePackage = state.pohChallengePackages.get(id);
+                let taskData = Buffer.Buffer<PohTypes.PohTaskData>(taskIds.size());
+                switch(pohChallengePackage) {
+                    case(null)();
+                    case(?package) {
+                        for(challengeId in package.challengeIds.vals()) {
+                            let attempt = do ? {
+                                let attempts = state.pohUserChallengeAttempts.get(package.userId)!.get(challengeId)!;
+                                attempts.get(attempts.size() - 1);
+                            };
+                            switch(attempt) {
+                                case(null)();
+                                case(?att){
+                                    let pohTaskData = {
+                                        challengeId = challengeId;
+                                        challengeType  = att.challengeType;
+                                        userId = package.userId;
+                                        status = att.status;
+                                        userName = do ?{state.pohUsers.get(package.userId)!.userName!};
+                                        email = do ?{state.pohUsers.get(package.userId)!.email!};
+                                        fullName = do ?{state.pohUsers.get(package.userId)!.fullName!};
+                                        aboutUser = do ?{state.pohUsers.get(package.userId)!.aboutUser!};
+                                        contentId = att.attemptId; //attemptId is contentId for a challenge
+                                        dataCanisterId = att.dataCanisterId;
+                                        createdAt =  att.createdAt;
+                                        updatedAt = att.updatedAt;
+                                    };
+                                    taskData.add(pohTaskData);
+                                };
+                            };
+                        };
+                        pohTasks.add({
+                            packageId = id;
+                            pohTaskData = taskData.toArray();
+                            // status = package.status;
+                            // contentType = package.contentType;
+                        });
+                    };
+                };
+                
+            };
+            return pohTasks.toArray();
+        };
+
+        public func validateRules(violatedRules: [Types.PohRulesViolated]) : Bool {
+            var violated = false;
+            for(vRule in violatedRules.vals()) {
+                let _ = do ?{
+                    let challenge = state.pohChallenges.get(vRule.challengeId)!;
+                    switch(challenge.allowedViolationRules.get(vRule.ruleId)){
+                        case(null) {
+                            violated := true;
+                        };
+                        case(_)();
+                    };
+                };
+            };
+            return violated;
         };
 
         public func populateChallenges() : () {
@@ -396,6 +464,7 @@ module PohModule {
                 requiredField = #profileFieldBlobs;
                 dependentChallengeId = null;
                 challengeType =  #userName;
+                allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
                 createdAt = Time.now();
                 updatedAt = Time.now();
             });
@@ -407,6 +476,7 @@ module PohModule {
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 dependentChallengeId = null;
                 challengeType =  #selfPic;
+                allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
                 createdAt = Time.now();
                 updatedAt = Time.now();
             });
@@ -418,6 +488,7 @@ module PohModule {
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 dependentChallengeId = null;
                 challengeType =  #selfVideo;
+                allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
                 createdAt = Time.now();
                 updatedAt = Time.now();
             });

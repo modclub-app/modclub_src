@@ -21,6 +21,9 @@ module State {
         //mapping providerUserId to our userId
         providerToModclubUser: HashMap.HashMap<Principal, Principal>;
         pohChallengePackages: HashMap.HashMap<Text, PohTypes.PohChallengePackage>;
+        newPohPackages: Buffer.Buffer<Text>;
+        approvedPohPackages: Buffer.Buffer<Text>;
+        rejectedPohPackages: Buffer.Buffer<Text>;
         wordList: Buffer.Buffer<Text>;
         provider2PohVerificationRequests: HashMap.HashMap<Principal, Text>;
         pohVerificationRequests: HashMap.HashMap<Text, PohTypes.PohVerificationRequest>;
@@ -34,13 +37,15 @@ module State {
         // Challenges attempted by each user
         // inner hashmap is for every challenge, how many times challenge user attempted and details
         pohUserChallengeAttempts: [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])];
-        // Verificaion requests coming from provider
-        // pohVerificationRequests: [(Principal, [(Text, PohTypes.PohChallengesAttempt)])];
+
         // POH User data by unique token
         pohProviderUserData: [(Text, PohTypes.PohUserProviderData)];
         //mapping providerUserId to our userId
         providerToModclubUser: [(Principal, Principal)];
         pohChallengePackages : [(Text, PohTypes.PohChallengePackage)];
+        newPohPackages: [Text];
+        approvedPohPackages: [Text];
+        rejectedPohPackages: [Text];
         wordList: [Text];
         provider2PohVerificationRequests: [(Principal, Text)];
         pohVerificationRequests: [(Text, PohTypes.PohVerificationRequest)];
@@ -55,6 +60,9 @@ module State {
             pohProviderUserData = HashMap.HashMap<Text, PohTypes.PohUserProviderData>(1, Text.equal, Text.hash);
             providerToModclubUser = HashMap.HashMap<Principal, Principal>(1, Principal.equal, Principal.hash);
             pohChallengePackages = HashMap.HashMap<Text, PohTypes.PohChallengePackage>(1, Text.equal, Text.hash);
+            newPohPackages = Buffer.Buffer<Text>(1);
+            approvedPohPackages = Buffer.Buffer<Text>(1);
+            rejectedPohPackages = Buffer.Buffer<Text>(1);
             wordList = Buffer.Buffer<Text>(1);
             provider2PohVerificationRequests = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
             pohVerificationRequests = HashMap.HashMap<Text, PohTypes.PohVerificationRequest>(1, Text.equal, Text.hash);
@@ -69,6 +77,9 @@ module State {
             pohProviderUserData = [];
             providerToModclubUser = [];
             pohChallengePackages = [];
+            newPohPackages = [];
+            approvedPohPackages = [];
+            rejectedPohPackages = [];
             wordList = [];
             provider2PohVerificationRequests =  [];
             pohVerificationRequests = [];

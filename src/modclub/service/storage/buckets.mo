@@ -174,7 +174,6 @@ actor class Bucket () = this {
       _body := state.chunks.get(chunkId(contentId!, chunkNum))!;
       let info: ?Types.ContentInfo = state.contentInfo.get(contentId!);
       _headers := [
-        // ("Content-Type", "text/plain"),
         ("Content-Type", info!.contentType),
         ("Transfer-Encoding", "chunked"),
         ("Content-Disposition", "inline")

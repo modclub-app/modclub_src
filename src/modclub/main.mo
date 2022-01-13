@@ -1,34 +1,35 @@
 import Array "mo:base/Array";
-
+import Blob "mo:base/Blob";
+import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
+import Cycles "mo:base/ExperimentalCycles";
+import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
+import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
-import Nat "mo:base/Nat";
 import Iter "mo:base/Iter";
+import ModClubParam "service/parameters/params";
+import ModClubParams "./service/parameters/params";
+import Nat "mo:base/Nat";
+import Option "mo:base/Option";
+import Order "mo:base/Order";
+import POH "./service/poh/poh";
+import PohState "./service/poh/state";
+import PohTypes "./service/poh/types";
 import Principal "mo:base/Principal";
+import Rel "data_structures/Rel";
 import Result "mo:base/Result";
-import Bool "mo:base/Bool";
 import State "./state";
+import StorageSolution "./service/storage/storage";
+import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Token "./token";
 import TrieSet "mo:base/TrieSet";
 import Types "./types";
-import Option "mo:base/Option";
-import Debug "mo:base/Debug";
-import Order "mo:base/Order";
-import Blob "mo:base/Blob";
-import Cycles "mo:base/ExperimentalCycles";
-
-import Rel "data_structures/Rel";
-import Token "./token";
-import IC "./remote_canisters/IC";
-import StorageState "./service/storage/storageState";
-import POH "./service/poh/poh";
-import PohTypes "./service/poh/types";
-import PohState "./service/poh/state";
-
-import StorageSolution "./service/storage/storage";
+import VoteManager "./service/vote/vote";
+import VoteState "./service/vote/state";
 
 
 
@@ -83,8 +84,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
   var pohState = PohState.emptyStableState();
   var pohEngine = POH.PohEngine(pohState);
 
-
-
+  stable var pohVoteState = VoteState.emptyStableState();
+  var voteManager = VoteManager.VoteManager(pohVoteState);
 
   func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
@@ -801,15 +802,18 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Method called by user on UI
   public shared({ caller }) func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest) : async PohTypes.PohChallengeSubmissionResponse {
+    // let caller = Principal.fromText("2vxsx-fae");
     let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, caller);
     if(isValid == #ok) {
       let _ = do ? {
-        let contentId = pohEngine.getContentId(pohDataRequest.challengeId, caller, generateId);
         if(pohDataRequest.challengeDataBlob != null) {
-          await storageSolution.putBlobsInDataCanister(contentId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset, 
+          let attemptId = pohEngine.getAttemptId(pohDataRequest.challengeId, caller);
+          let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset, 
                   pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
-          if(pohDataRequest.offset == pohDataRequest.numOfChunks) //last Chunk coming in
+          if(pohDataRequest.offset == pohDataRequest.numOfChunks) {//last Chunk coming in
             pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
+            pohEngine.updateDataCanisterId(pohDataRequest.challengeId, caller, dataCanisterId);
+          };
         } else {
           // It's a username, email task
           pohEngine.updatePohUserObject(caller, pohDataRequest.fullName!, pohDataRequest.email!, pohDataRequest.userName!, pohDataRequest.aboutUser!);
@@ -820,18 +824,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
       let providerChallenges = ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"];
       let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId);
       switch(challengePackage) {
-        // Not all challenge submitted, nothing ready for voting so do nothing
-        case(null) ();
+        case(null)();
         case(?package) {
-          //Flow in submitText method
-      //      state.content.put(content.id, content);
-      // state.textContent.put(content.id, textContent);
-      // state.provider2content.put(caller, content.id);
-      // state.contentNew.put(caller, content.id);
-          // TODO caller is not provider here.
-          state.contentNew.put(caller, package.id);
+          voteManager.initiateVotingPoh(package.id);
         };
-      };
+      }
     };
     return {
       challengeId = pohDataRequest.challengeId;
@@ -863,6 +860,59 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   public shared({ caller }) func populateChallenges() : async () {
     pohEngine.populateChallenges();
+  };
+
+  public shared({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+    let pohTasks = pohEngine.getPohTasks(voteManager.getTasksId(status, 10));
+    let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTasks.size());
+    for(task in pohTasks.vals()) {
+      let voteCount = voteManager.getVoteCountForPoh(caller, task.packageId);
+      let taskPlus = {
+          packageId = task.packageId;
+          pohTaskData = task.pohTaskData;
+          status = voteManager.getContentStatus(task.packageId);
+          // TODO: change these vote settings
+          voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+          minVotes = ModClubParam.MIN_VOTE_POH;
+          minStake = ModClubParam.MIN_STAKE_POH; 
+          title = null;
+          hasVoted = ?voteCount.hasVoted;
+      };
+      tasks.add(taskPlus);
+    };
+    return tasks.toArray();
+  };
+
+  public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
+    let holdings = tokens.getHoldings(caller);
+    if( holdings.stake < ModClubParams.MIN_STAKE_POH) { 
+      throw Error.reject("Not enough tokens staked");
+    };
+
+    if(voteManager.getContentStatus(packageId) != #new) {
+      throw Error.reject("User has already voted.");
+    };
+
+    if(pohEngine.validateRules(violatedRules) == false) {
+      throw Error.reject("Valid rules not provided.");
+    };
+
+    let result = voteManager.votePohContent(caller, packageId, decision, violatedRules);
+    // TODO: From whose account we need to reward users
+    // switch(result) {
+    //   case(#ok(votingFinished)) {
+    //     if(votingFinished == true) {
+    //       await tokens.voteFinalization(
+    //           initializer, 
+    //           decision, 
+    //           state.content2votes.get0(content.id), 
+    //           ModClubParam.MIN_STAKE_POH, // TODO: Change this to a percentage
+    //           state
+    //       );
+    //     };
+    //   };
+    //   case(_)();
+    // };
   };
 
   // Helpers
