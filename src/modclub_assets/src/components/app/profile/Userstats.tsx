@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getTokenHoldings } from '../../../utils/api';
+import { getTokenHoldings, getPerformance } from '../../../utils/api';
 import { useAuth } from "../../../utils/auth";
 import { Columns, Card, Heading, Button } from "react-bulma-components";
 import walletImg from '../../../../assets/wallet.svg';
@@ -51,6 +51,7 @@ export default function Userstats({ detailed = false }) {
     stake : 0,
     wallet : 0,  
   });
+  const [performance, setPerformance] = useState<number>(0);
 
   const [showWithdraw, setShowWithdraw] = useState(false);
   const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
@@ -64,6 +65,8 @@ export default function Userstats({ detailed = false }) {
   useEffect(() => {
     const fetchTokenHoldings = async () => {
       const tokenHoldings = await getTokenHoldings();
+      const performance = await getPerformance();
+      setPerformance(performance);
       setTokenHoldings(tokenHoldings);
       setHoldingsUpdated(false);
     };
@@ -110,8 +113,8 @@ export default function Userstats({ detailed = false }) {
       <StatBox
         loading={holdingsUpdated}
         image={performanceImg}
-        title="Pending rewards"
-        amount={tokenHoldings.pendingRewards}
+        title="Performance"
+        amount={(performance * 100).toFixed(0) + "%"}
         usd={12}
         detailed={detailed}
       >

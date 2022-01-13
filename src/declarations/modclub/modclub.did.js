@@ -163,6 +163,7 @@ export const idlFactory = ({ IDL }) => {
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
+    'getVotePerformance' : IDL.Func([], [IDL.Float64], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
     'putBlobsInDataCanister' : IDL.Func(
         [ContentId, IDL.Vec(IDL.Nat8), IDL.Nat, IDL.Nat, IDL.Text],

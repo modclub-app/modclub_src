@@ -662,6 +662,34 @@ shared ({caller = initializer}) actor class ModClub () = this {
       return buf.toArray();
   };
 
+  public query({ caller }) func getVotePerformance() : async Float {
+    var correctVoteCount : Int = 0;
+    var completedVoteCount : Int = 0;
+    for (vid in state.mods2votes.get0(caller).vals()) {
+      switch(state.votes.get(vid)) {
+        case (?vote) {
+          switch(state.content.get(vote.contentId)) {
+            case (?content) {
+              if (content.status != #new) {
+                completedVoteCount := completedVoteCount + 1;
+                if (vote.decision == content.status) {
+                  correctVoteCount := correctVoteCount + 1;
+                };
+              };
+            };
+            case(_) throw Error.reject("Content does not exist"); 
+          };          
+        };
+        case (_) throw Error.reject("Vote does not exist");
+      };
+    };
+    var performance : Float = 0;
+    if (completedVoteCount != 0) {
+      performance := Float.fromInt(correctVoteCount) / Float.fromInt(completedVoteCount);
+    };
+    return performance;
+  };
+
   // Todo: Enable updating profile at a later time
   // public shared({ caller }) func updateProfile(userName: Text, email: Text, pic: ?Image) : async Profile {
   //     switch(state.profiles.get(caller)){

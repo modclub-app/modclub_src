@@ -113,8 +113,14 @@ export async function getProfileById(userId: Principal): Promise<Profile> {
   return (await getMC()).getProfileById(userId);
 }
 
-export async function getModeratorLeaderboard(pageSize: number, page: number): Promise<ModeratorLeaderboard[]> {
-  return (await getMC()).getModeratorLeaderboard(BigInt((page - 1) * pageSize), BigInt(page * pageSize));
+export async function getModeratorLeaderboard(
+  pageSize: number,
+  page: number
+): Promise<ModeratorLeaderboard[]> {
+  return (await getMC()).getModeratorLeaderboard(
+    BigInt((page - 1) * pageSize),
+    BigInt(page * pageSize)
+  );
 }
 
 export async function airdropRegister(): Promise<AirdropUser> {
@@ -142,4 +148,8 @@ export async function updateProviderSettings(
   settings: ProviderSettings
 ): Promise<void> {
   return (await getMC()).updateSettings(settings);
+}
+
+export async function getPerformance(): Promise<number> {
+  return (await getMC()).getVotePerformance();
 }

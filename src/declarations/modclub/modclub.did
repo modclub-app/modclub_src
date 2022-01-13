@@ -84,6 +84,7 @@ type ModClub =
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTokenHoldings: () -> (Holdings) query;
+   getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
    putBlobsInDataCanister: (ContentId, blob, nat, nat, text) -> (principal);
    registerModerator: (text, text, opt Image) -> (Profile);

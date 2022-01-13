@@ -81,6 +81,7 @@ export interface ModClub {
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'getTokenHoldings' : () => Promise<Holdings>,
+  'getVotePerformance' : () => Promise<number>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
   'putBlobsInDataCanister' : (
       arg_0: ContentId,
