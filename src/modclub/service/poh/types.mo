@@ -163,6 +163,7 @@ module {
     public type PohError = {
         #invalidToken;
         #challengeNotPendingForSubmission;
+        #invalidPackageId;
     };
 
 };

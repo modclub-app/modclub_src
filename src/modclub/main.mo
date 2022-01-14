@@ -883,6 +883,14 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return tasks.toArray();
   };
 
+  public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<[PohTypes.PohTaskData], PohTypes.PohError> {
+    let pohTasks = pohEngine.getPohTasks([packageId]);
+    if(pohTasks.size() == 0) {
+      return #err(#invalidPackageId);
+    };
+    return #ok(pohTasks[0].pohTaskData);
+  };
+
   public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
     let holdings = tokens.getHoldings(caller);
     if( holdings.stake < ModClubParams.MIN_STAKE_POH) { 
