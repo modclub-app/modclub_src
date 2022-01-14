@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { formatDate } from "../../../utils/util";
 import {
   Heading,
   Columns,
@@ -9,6 +8,7 @@ import {
 } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
+import { formatDate } from "../../../utils/util";
 
 const ApplicantSnippet = ({ applicant }) => {
   console.log("applicant", applicant);
