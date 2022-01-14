@@ -13,7 +13,7 @@ import Userstats from "../profile/Userstats";
 const ApplicantSnippet = ({ applicant }) => {
   console.log("applicant", applicant);
   const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant.pohTaskData[1];
-  const imageUrl = `http://localhost:8000/storage?canisterId=${dataCanisterId}&contentId=${contentId[0]}`
+  const imageUrl = `http://localhost:8000/storage?canisterId=${dataCanisterId}&contentId=${contentId[0]}`;
 
   return (
     <Link

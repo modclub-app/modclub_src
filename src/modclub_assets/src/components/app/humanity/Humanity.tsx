@@ -7,13 +7,13 @@ import Applicant from "./Applicant";
 
 export default function Humanity() {
   const [loading, setLoading] = useState<boolean>(true);
-  const [tasks, setTasks] = useState<Array<object>>([])
+  const [applicants, setApplicants] = useState<Array<object>>([])
   // todo create type
 
   const initialCall = async () => {
     const status = { "new": null };
-    const tasks = await getPohTasks(status);
-    setTasks(tasks);
+    const applicants = await getPohTasks(status);
+    setApplicants(applicants);
     setLoading(false);
   }
 
@@ -30,10 +30,10 @@ export default function Humanity() {
       }
       <Switch>
         <Route exact path="/app/poh">
-          <ApplicantList applicants={tasks} />
+          <ApplicantList applicants={applicants} />
         </Route>
         <Route path="/app/poh/:packageId">
-          <Applicant data={tasks} />
+          <Applicant applicants={applicants} />
         </Route>
       </Switch>
     </>
