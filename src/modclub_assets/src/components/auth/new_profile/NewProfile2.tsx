@@ -171,7 +171,7 @@ const Confirmation = () => {
   )
 };
 
-export default function NewProfile({ match }) {
+export default function NewProfile2({ match }) {
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)

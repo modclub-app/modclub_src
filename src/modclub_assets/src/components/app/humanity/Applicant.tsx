@@ -225,19 +225,21 @@ const Form_ = () => {
   );
 };
 
-export default function Verification() {
+export default function Verification({ data }) {
   const [tasks, setTasks] = useState(null);
   const { verificationId } = useParams();
 
-  const initialCall = async () => {
-    const status = { "new": null };
-    const tasks = await getPohTasks(status);
-    setTasks(tasks);
-  }
+  console.log("Verification data", data);
 
-  useEffect(() => {
-    initialCall();
-  }, []);
+  // const initialCall = async () => {
+  //   const status = { "new": null };
+  //   const tasks = await getPohTasks(status);
+  //   setTasks(tasks);
+  // }
+
+  // useEffect(() => {
+  //   initialCall();
+  // }, []);
 
   return (
     <>

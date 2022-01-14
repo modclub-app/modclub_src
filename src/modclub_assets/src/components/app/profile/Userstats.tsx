@@ -63,7 +63,6 @@ export default function Userstats({ detailed = false }) {
   const toggleUnstake = () => setShowUnstake(!showUnstake);
 
   useEffect(() => {
-    console.log({user, holdingsUpdated});
     const fetchTokenHoldings = async () => {
       const tokenHoldings = await getTokenHoldings();
       setTokenHoldings(tokenHoldings);

@@ -1,21 +1,16 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useAuth } from "../../../utils/auth";
-import { getPohTasks } from '../../../utils/api';
 import { formatDate } from "../../../utils/util";
 import {
   Heading,
   Columns,
   Card,
-  Dropdown,
-  Level,
   Button,
   Icon
 } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 
-const Applicant = ({ applicant }) => {
+const ApplicantSnippet = ({ applicant }) => {
   console.log("applicant", applicant);
   const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant.pohTaskData[1];
   const imageUrl = `http://localhost:8000/storage?canisterId=${dataCanisterId}&contentId=${contentId[0]}`
@@ -71,27 +66,13 @@ const Applicant = ({ applicant }) => {
   )
 };
 
-export default function Verifications() {
-  const { user } = useAuth();
-  const [tasks, setTasks] = useState<Array<object>>([])
-  // todo create type
-
-  const initialCall = async () => {
-    const status = { "new": null };
-    const tasks = await getPohTasks(status);
-    setTasks(tasks);
-  }
-
-  useEffect(() => {
-    user && initialCall();
-  }, [user]);
-  
+export default function ApplicantList({ applicants }) {
   return (
     <>
       <Userstats />
 
       <Columns>
-        {tasks.map((applicant, index) => (
+        {applicants.map((applicant, index) => (
           <Columns.Column
             key={index}
             mobile={{ size: 12 }}
@@ -99,16 +80,7 @@ export default function Verifications() {
             fullhd={{ size: 4 }}
             style={{ maxWidth: 480 }}
           >
-            <Applicant
-              applicant={applicant}
-              // image={applicant.image}
-              // name={applicant.name}
-              // job={applicant.job}
-              // platform={applicant.platform}
-              // submitted={applicant.submitted}
-              // required={applicant.required}
-              // reward={applicant.reward}
-            />
+            <ApplicantSnippet applicant={applicant} />
           </Columns.Column>
         ))}
         </Columns>
