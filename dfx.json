@@ -11,6 +11,18 @@
       },
       "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
       "type": "assets"
+    },
+    "modclub_staging": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko"
+    },
+    "modclub_staging_assets": {
+      "dependencies": ["modclub_staging"],
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
+      "type": "assets"
     }
   },
   "defaults": {
