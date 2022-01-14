@@ -21,6 +21,8 @@ import {
   PohChallengeSubmissionRequest,
   PohChallengeSubmissionResponse,
   Result,
+  PohTaskPlus,
+  PohRulesViolated
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -147,11 +149,30 @@ export async function verifyUserHumanity(): Promise<[PohChallengeStatus, [] | [P
   return (await getMC()).verifyUserHumanity();
 }
 
-export async function retrieveChallengesForUser(token: string): Promise<Result> {
+export async function retrieveChallengesForUser(
+  token: string
+): Promise<Result> {
   return (await getMC()).retrieveChallengesForUser(token);
 }
 
-export async function submitChallengeData(pohDataRequest: PohChallengeSubmissionRequest): Promise<PohChallengeSubmissionResponse> {
+export async function submitChallengeData(
+  pohDataRequest: PohChallengeSubmissionRequest
+): Promise<PohChallengeSubmissionResponse> {
   console.log("pohDataRequest", pohDataRequest);
   return (await getMC()).submitChallengeData(pohDataRequest);
+}
+
+export async function getPohTasks(
+  status: ContentStatus
+): Promise<PohTaskPlus[]> {
+  return (await getMC()).getPohTasks(status);
+}
+
+export async function votePohContent(
+  packageId: string,
+  decision: Decision,
+  violatedRules: [PohRulesViolated]
+): Promise<void> {
+  console.log("votePohContent")
+  return (await getMC()).votePohContent(packageId, decision, violatedRules);
 }

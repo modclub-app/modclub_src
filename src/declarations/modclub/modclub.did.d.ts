@@ -73,6 +73,7 @@ export interface ModClub {
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getModclubHoldings' : () => Promise<Holdings>,
+  'getPohTasks' : (arg_0: ContentStatus) => Promise<Array<PohTaskPlus>>,
   'getProfile' : () => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
@@ -120,6 +121,11 @@ export interface ModClub {
       arg_1: Decision,
       arg_2: [] | [Array<RuleId>],
     ) => Promise<string>,
+  'votePohContent' : (
+      arg_0: string,
+      arg_1: Decision,
+      arg_2: Array<PohRulesViolated>,
+    ) => Promise<undefined>,
 }
 export type PohChallengeStatus = { 'notSubmitted' : null } |
   { 'verified' : null } |
@@ -157,9 +163,9 @@ export type PohChallengeType = { 'dl' : null } |
   { 'selfVideo' : null } |
   { 'selfPic' : null };
 export interface PohChallengesAttempt {
+  'dataCanisterId' : [] | [Principal],
   'status' : PohChallengeStatus,
   'completedOn' : bigint,
-  'contentId' : [] | [string],
   'attemptId' : [] | [string],
   'userId' : Principal,
   'createdAt' : bigint,
@@ -172,6 +178,31 @@ export interface PohChallengesAttempt {
 }
 export type PohError = { 'challengeNotPendingForSubmission' : null } |
   { 'invalidToken' : null };
+export interface PohRulesViolated { 'ruleId' : string, 'challengeId' : string }
+export interface PohTaskData {
+  'dataCanisterId' : [] | [Principal],
+  'status' : PohChallengeStatus,
+  'userName' : [] | [string],
+  'contentId' : [] | [string],
+  'userId' : Principal,
+  'createdAt' : bigint,
+  'fullName' : [] | [string],
+  'email' : [] | [string],
+  'updatedAt' : bigint,
+  'challengeId' : string,
+  'challengeType' : PohChallengeType,
+  'aboutUser' : [] | [string],
+}
+export interface PohTaskPlus {
+  'status' : ContentStatus,
+  'title' : [] | [string],
+  'voteCount' : bigint,
+  'minVotes' : bigint,
+  'minStake' : bigint,
+  'pohTaskData' : Array<PohTaskData>,
+  'hasVoted' : [] | [boolean],
+  'packageId' : string,
+}
 export interface PohUniqueToken { 'token' : string }
 export interface PohVerificationResponse {
   'requestId' : string,

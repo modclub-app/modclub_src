@@ -1,6 +1,6 @@
 import { Optional } from "./api";
 import { ImageData, Profile } from "./types";
-import { formatDistanceStrict, isSameDay, format } from "date-fns";
+import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
 
 import { submitChallengeData } from "./api";
 
@@ -210,9 +210,11 @@ export function unwrap<T>(val: Optional<T>): T | null {
 export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
   Array.from(new Uint8Array(file));
 
-export function formatDate(date: bigint) {
-  const same = isSameDay(new Date(), new Date(Number(date)));
+export function formatDate(integer: bigint) {
+  const date = new Date(Number(integer));
+  if (!isValid(date)) return "invalid date";
+  const same = isSameDay(new Date(), date);
   return same
-    ? formatDistanceStrict(new Date(), new Date(Number(date))) + " ago"
-    : format(new Date(Number(date)), "PP");
+    ? formatDistanceStrict(new Date(), date) + " ago"
+    : format(date, "PP");
 }

@@ -33,9 +33,9 @@ export default function ModclubApp() {
             <Route exact path="/app/poh">
               <ProofofHumanityList />
             </Route>
-            <Route path="/app/poh/:pohId">
+            {/* <Route path="/app/poh/:pohId">
               <ProofofHumanity /> 
-            </Route>
+            </Route> */}
             <Route exact path="/app/moderators">
               <Moderators />
             </Route>

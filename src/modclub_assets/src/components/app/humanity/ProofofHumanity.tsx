@@ -1,6 +1,7 @@
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { getPohTasks, votePohContent } from '../../../utils/api';
 import {
   Heading,
   Columns,
@@ -225,21 +226,21 @@ const Form_ = () => {
 };
 
 export default function Verification() {
-  const [content, setContent] = useState(null);
+  const [tasks, setTasks] = useState(null);
   const { verificationId } = useParams();
 
-  const renderContent = async () => {}
+  const initialCall = async () => {
+    const status = { "new": null };
+    const tasks = await getPohTasks(status);
+    setTasks(tasks);
+  }
 
   useEffect(() => {
-    // renderContent();
+    initialCall();
   }, []);
 
   return (
     <>
-      <Notification color="danger" textAlign="center">
-        Proof of Humanity DEMO 
-      </Notification>
-
       <Userstats />
 
       <Columns>

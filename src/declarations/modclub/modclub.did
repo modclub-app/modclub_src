@@ -67,6 +67,37 @@ type PohVerificationResponse =
    requestedOn: int;
  };
 type PohUniqueToken = record {token: text;};
+type PohTaskPlus = 
+ record {
+   hasVoted: opt bool;
+   minStake: nat;
+   minVotes: nat;
+   packageId: text;
+   pohTaskData: vec PohTaskData;
+   status: ContentStatus;
+   title: opt text;
+   voteCount: nat;
+ };
+type PohTaskData = 
+ record {
+   aboutUser: opt text;
+   challengeId: text;
+   challengeType: PohChallengeType;
+   contentId: opt text;
+   createdAt: int;
+   dataCanisterId: opt principal;
+   email: opt text;
+   fullName: opt text;
+   status: PohChallengeStatus;
+   updatedAt: int;
+   userId: principal;
+   userName: opt text;
+ };
+type PohRulesViolated = 
+ record {
+   challengeId: text;
+   ruleId: text;
+ };
 type PohError = 
  variant {
    challengeNotPendingForSubmission;
@@ -80,8 +111,8 @@ type PohChallengesAttempt =
    challengeName: text;
    challengeType: PohChallengeType;
    completedOn: int;
-   contentId: opt text;
    createdAt: int;
+   dataCanisterId: opt principal;
    status: PohChallengeStatus;
    updatedAt: int;
    userId: principal;
@@ -148,6 +179,7 @@ type ModClub =
    getAllProfiles: () -> (vec Profile) query;
    getContent: (text) -> (opt ContentPlus) query;
    getModclubHoldings: () -> (Holdings) query;
+   getPohTasks: (ContentStatus) -> (vec PohTaskPlus);
    getProfile: () -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;
@@ -171,6 +203,7 @@ type ModClub =
    verifyForHumanity: (principal) -> (PohVerificationResponse);
    verifyUserHumanity: () -> (PohChallengeStatus, opt PohUniqueToken);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
+   votePohContent: (text, Decision, vec PohRulesViolated) -> ();
  };
 type Image__1 = 
  record {
