@@ -14,6 +14,7 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
 import UUID "mo:uuid/UUID";
+import Helpers "../../helpers";
 
 module PohModule {
 
@@ -71,7 +72,7 @@ module PohModule {
                         providerUserId = pohVerificationRequest.providerUserId;
                         challenges = [];
                         providerId = pohVerificationRequest.providerId;
-                        requestedOn = Time.now();
+                        requestedOn = Helpers.timeNow();
                     };
             };
 
@@ -88,7 +89,7 @@ module PohModule {
                         providerUserId = pohVerificationRequest.providerUserId;
                         challenges = [];
                         providerId = pohVerificationRequest.providerId;
-                        requestedOn = Time.now();
+                        requestedOn = Helpers.timeNow();
                     };
                 case(?attemptsByChallenges) {
                     let challenges = Buffer.Buffer<PohTypes.ChallengeResponse>(configuredChallengeIds.size());
@@ -122,7 +123,7 @@ module PohModule {
                         providerUserId = pohVerificationRequest.providerUserId;
                         challenges = challenges.toArray();
                         providerId = pohVerificationRequest.providerId;
-                        requestedOn = Time.now();
+                        requestedOn = Helpers.timeNow();
                     };
                 };
             };
@@ -133,7 +134,7 @@ module PohModule {
         (PohTypes.PohChallengeStatus, ?Int) {
             if(attempts.get(index).status == #rejected) {
                 return (#rejected, ?attempts.get(index).completedOn);
-            } else if(Time.now() - attempts.get(index).completedOn >= validForDays * MILLI_SECONDS_DAY and attempts.get(index).status == #verified) {
+            } else if(Helpers.timeNow() - attempts.get(index).completedOn >= validForDays * MILLI_SECONDS_DAY and attempts.get(index).status == #verified) {
                 return (#expired, ?attempts.get(index).completedOn);
             } else if(attempts.get(index).status == #verified) {
                 return (#verified, ?attempts.get(index).completedOn);
@@ -179,8 +180,8 @@ module PohModule {
                         fullName = null;
                         email = null;
                         aboutUser = null;
-                        createdAt = Time.now();
-                        updatedAt = Time.now();
+                        createdAt = Helpers.timeNow();
+                        updatedAt = Helpers.timeNow();
                     });
                 };
                 case(_)();
@@ -217,8 +218,8 @@ module PohModule {
                                                 status = #notSubmitted;
                                                 contentId = null;
                                                 dataCanisterId = null;
-                                                createdAt = Time.now();
-                                                updatedAt = Time.now();
+                                                createdAt = Helpers.timeNow();
+                                                updatedAt = Helpers.timeNow();
                                                 completedOn = -1; // -1 means not completed
                                                 wordList = do ?{
                                                     switch(state.pohChallenges.get(challengeId)!.challengeType) {
@@ -287,7 +288,7 @@ module PohModule {
             let _ = do ?{
                 var completedOn = -1;
                 if(status == #verified or status == #rejected) {
-                    completedOn := Time.now();
+                    completedOn := Helpers.timeNow();
                 };
                 let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
                 let attempt = attempts.get(attempts.size() - 1);
@@ -302,7 +303,7 @@ module PohModule {
                     // contentId = attempt.contentId;
                     dataCanisterId = attempt.dataCanisterId;
                     createdAt = attempt.createdAt;
-                    updatedAt = Time.now();
+                    updatedAt = Helpers.timeNow();
                     completedOn = completedOn;
                     wordList = attempt.wordList;
                 };
@@ -325,7 +326,7 @@ module PohModule {
                     // contentId = attempt.contentId;
                     dataCanisterId = dataCanisterId;
                     createdAt = attempt.createdAt;
-                    updatedAt = Time.now();
+                    updatedAt = Helpers.timeNow();
                     completedOn = attempt.completedOn;
                     wordList = attempt.wordList;
                 };
@@ -383,8 +384,8 @@ module PohModule {
                     contentType = #pohPackage;
                     status = #new;
                     title = ?("POH Content for User: " # Principal.toText(userId));
-                    createdAt =  Time.now();
-                    updatedAt = Time.now();
+                    createdAt =  Helpers.timeNow();
+                    updatedAt = Helpers.timeNow();
                 };
                 state.pohChallengePackages.put(pohPackage.id, pohPackage);
                 return ?pohPackage;
@@ -465,8 +466,8 @@ module PohModule {
                 dependentChallengeId = null;
                 challengeType =  #userName;
                 allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
-                createdAt = Time.now();
-                updatedAt = Time.now();
+                createdAt = Helpers.timeNow();
+                updatedAt = Helpers.timeNow();
             });
             state.pohChallenges.put("challenge-profile-pic", {
                 challengeId = "challenge-profile-pic";
@@ -477,8 +478,8 @@ module PohModule {
                 dependentChallengeId = null;
                 challengeType =  #selfPic;
                 allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
-                createdAt = Time.now();
-                updatedAt = Time.now();
+                createdAt = Helpers.timeNow();
+                updatedAt = Helpers.timeNow();
             });
             state.pohChallenges.put("challenge-user-video", {
                 challengeId = "challenge-user-video";
@@ -489,8 +490,8 @@ module PohModule {
                 dependentChallengeId = null;
                 challengeType =  #selfVideo;
                 allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
-                createdAt = Time.now();
-                updatedAt = Time.now();
+                createdAt = Helpers.timeNow();
+                updatedAt = Helpers.timeNow();
             });
             state.wordList.add("sentence");
             state.wordList.add("free");
