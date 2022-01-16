@@ -53,13 +53,15 @@ const Signup = () => {
       console.log("res", res);
       console.log("innder", res.submissionStatus);
 
-      const [submissionStatus] = Object.keys(res[0]);
-      console.log("submissionStatus", submissionStatus)
-
-      setTimeout(() => {
-        setSubmitting(false);
-        history.push("/signup2/challenge-profile-pic")
-      }, 2000);
+      // If the submission was successful
+      if (res && "ok" in res.submissionStatus) {
+        setTimeout(() => {
+          setSubmitting(false);
+          history.push("/signup2/challenge-profile-pic")
+        }, 2000); // Do we need a 2 second delay?
+      } else {
+        throw Error("Failed to submit challenge data");
+      }
     } catch (e) {
       console.log("error", e);
       setMessage({ success: false, value: "Error!" });

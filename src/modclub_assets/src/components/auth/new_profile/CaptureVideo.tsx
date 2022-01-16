@@ -90,6 +90,7 @@ export default function CaptureVideo({ steps }) {
       <div className="is-relative has-text-centered">
         <Webcam
           audio={true}
+          muted={true}
           ref={webcamRef}
         />
         <CaptureButton
