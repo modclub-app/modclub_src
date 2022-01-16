@@ -9,11 +9,10 @@ import PohState "./state";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
-import Source "mo:uuid/async/SourceV4";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
-import UUID "mo:uuid/UUID";
+
 import Helpers "../../helpers";
 
 module PohModule {
@@ -50,12 +49,6 @@ module PohModule {
 
 
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
-
-        public func generateUUID() : async  Text {
-            let g = Source.Source();
-            let uuid = await g.new();
-            return UUID.toText(await g.new());
-        };
 
         public func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
         : async PohTypes.PohVerificationResponse {
@@ -147,16 +140,17 @@ module PohModule {
 
         //Pre Step 4 Generate token
         public func generateUniqueToken(providerUserId: Principal, providerId: Principal) : async PohTypes.PohUniqueToken {
-            // Sha256.sha256()
-            let uuid:Text =  await generateUUID(); //generate uuid code here. We can use hash here instead.
+            //using token: as salt instead of time here to keep behavior deterministic for us
+            let hash: Text = Helpers.generateHash("token:" # Principal.toText(providerUserId) # Principal.toText(providerId));
+            // let uuid:Text =  await Helpers.generateUUID(); //generate uuid code here. We can use hash here instead.
             let providerUser:PohTypes.PohUserProviderData = {
-                token = uuid;
+                token = hash;
                 providerUserId = providerUserId;
                 providerId = providerId;
             };
-            state.pohProviderUserData.put(uuid, providerUser);
+            state.pohProviderUserData.put(hash, providerUser);
             {
-                token = uuid;
+                token = hash;
             };
         };
 
@@ -209,7 +203,7 @@ module PohModule {
 
                     if(attempts.size() == 0) {
                         let newAttempt = {
-                                                attemptId = ?(await generateUUID());
+                                                attemptId = ?Helpers.generateHash(Principal.toText(userId) # Nat.toText(Int.abs(Helpers.timeNow())));
                                                 challengeId = challengeId;
                                                 userId = userId;
                                                 challengeName = state.pohChallenges.get(challengeId)!.challengeName;
@@ -406,6 +400,8 @@ module PohModule {
                                 let attempts = state.pohUserChallengeAttempts.get(package.userId)!.get(challengeId)!;
                                 attempts.get(attempts.size() - 1);
                             };
+                            let challenge = state.pohChallenges.get(challengeId);
+
                             switch(attempt) {
                                 case(null)();
                                 case(?att){
@@ -420,6 +416,17 @@ module PohModule {
                                         aboutUser = do ?{state.pohUsers.get(package.userId)!.aboutUser!};
                                         contentId = att.attemptId; //attemptId is contentId for a challenge
                                         dataCanisterId = att.dataCanisterId;
+                                        wordList = att.wordList;
+                                        allowedViolationRules = switch(challenge) {
+                                            case(?c) {
+                                                let vRules = Buffer.Buffer<PohTypes.ViolatedRules>(c.allowedViolationRules.size());
+                                                for(ruleEntry in c.allowedViolationRules.entries()) {
+                                                    vRules.add(ruleEntry.1);
+                                                };
+                                                vRules.toArray();
+                                            };
+                                            case(null) {[]};
+                                        };
                                         createdAt =  att.createdAt;
                                         updatedAt = att.updatedAt;
                                     };
@@ -430,14 +437,16 @@ module PohModule {
                         pohTasks.add({
                             packageId = id;
                             pohTaskData = taskData.toArray();
-                            // status = package.status;
-                            // contentType = package.contentType;
                         });
                     };
                 };
                 
             };
             return pohTasks.toArray();
+        };
+
+        public func getPohChallengePackage(packageId: Text) : ?PohTypes.PohChallengePackage {
+            return state.pohChallengePackages.get(packageId);
         };
 
         public func validateRules(violatedRules: [Types.PohRulesViolated]) : Bool {
@@ -457,6 +466,15 @@ module PohModule {
         };
 
         public func populateChallenges() : () {
+            let allowedViolationRules1 = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
+            allowedViolationRules1.put("1", {
+                ruleId= "1";
+                ruleDesc = "Rule 1";
+            }); 
+            allowedViolationRules1.put("2", {
+                ruleId= "2";
+                ruleDesc = "Rule 2";
+            });
             state.pohChallenges.put("challenge-profile-details", {
                 challengeId = "challenge-profile-details";
                 challengeName = "Please create a username";
@@ -465,9 +483,23 @@ module PohModule {
                 requiredField = #profileFieldBlobs;
                 dependentChallengeId = null;
                 challengeType =  #userName;
-                allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
+                allowedViolationRules = allowedViolationRules1;
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
+            });
+
+            let allowedViolationRules2 = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
+            allowedViolationRules2.put("1", {
+                ruleId= "1";
+                ruleDesc = "Rule 1";
+            }); 
+            allowedViolationRules2.put("2", {
+                ruleId= "2";
+                ruleDesc = "Rule 2";
+            });
+            allowedViolationRules2.put("3", {
+                ruleId= "3";
+                ruleDesc = "Rule 3";
             });
             state.pohChallenges.put("challenge-profile-pic", {
                 challengeId = "challenge-profile-pic";
@@ -477,9 +509,27 @@ module PohModule {
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 dependentChallengeId = null;
                 challengeType =  #selfPic;
-                allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
+                allowedViolationRules = allowedViolationRules2;
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
+            });
+
+            let allowedViolationRules3 = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
+            allowedViolationRules3.put("1", {
+                ruleId= "1";
+                ruleDesc = "Rule 1";
+            }); 
+            allowedViolationRules3.put("2", {
+                ruleId= "2";
+                ruleDesc = "Rule 2";
+            });
+            allowedViolationRules3.put("3", {
+                ruleId= "3";
+                ruleDesc = "Rule 3";
+            });
+            allowedViolationRules3.put("4", {
+                ruleId= "4";
+                ruleDesc = "Rule 4";
             });
             state.pohChallenges.put("challenge-user-video", {
                 challengeId = "challenge-user-video";
@@ -489,7 +539,7 @@ module PohModule {
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 dependentChallengeId = null;
                 challengeType =  #selfVideo;
-                allowedViolationRules = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
+                allowedViolationRules = allowedViolationRules3;
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
             });

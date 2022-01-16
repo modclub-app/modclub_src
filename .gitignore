@@ -9,42 +9,8 @@
 
 # dfx temporary files
 .dfx/
-.vessel/
+
 
 # frontend code
 node_modules/
 dist/
-.vessel/
-
-.vessel/uuid/v0.2.0/vessel.dhall
-.vessel/uuid/v0.2.0/src/UUID.mo
-.vessel/uuid/v0.2.0/src/Source.mo
-.vessel/uuid/v0.2.0/src/async/SourceV4.mo
-.vessel/uuid/v0.2.0/README.md
-.vessel/uuid/v0.2.0/package-set.dhall
-.vessel/uuid/v0.2.0/LICENSE
-.vessel/uuid/v0.2.0/example/vessel.dhall
-.vessel/uuid/v0.2.0/example/test.sh
-.vessel/uuid/v0.2.0/example/src/example/main.mo
-.vessel/uuid/v0.2.0/example/package-set.dhall
-.vessel/uuid/v0.2.0/example/dfx.json
-.vessel/uuid/v0.2.0/.github/workflows/src.yml
-.vessel/uuid/v0.2.0/.github/FUNDING.yml
-.vessel/encoding/v0.3.1/vessel.dhall
-.vessel/encoding/v0.3.1/test/Hex.mo
-.vessel/encoding/v0.3.1/test/Binary.mo
-.vessel/encoding/v0.3.1/test/Base32.mo
-.vessel/encoding/v0.3.1/src/Hex.mo
-.vessel/encoding/v0.3.1/src/Binary.mo
-.vessel/encoding/v0.3.1/src/Base32.mo
-.vessel/encoding/v0.3.1/README.md
-.vessel/encoding/v0.3.1/package-set.dhall
-.vessel/encoding/v0.3.1/LICENSE
-.vessel/encoding/v0.3.1/.github/workflows/test.yml
-.vessel/array/v0.1.1/test/Array.mo
-.vessel/array/v0.1.1/src/Array.mo
-.vessel/array/v0.1.1/README.md
-.vessel/array/v0.1.1/LICENSE
-.vessel/array/v0.1.1/.github/workflows/test.yml
-.vessel/array/v0.1.1/.github/workflows/src.yml
-*.cjs
