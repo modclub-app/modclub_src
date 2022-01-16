@@ -459,7 +459,7 @@ module PohModule {
         public func populateChallenges() : () {
             state.pohChallenges.put("challenge-profile-details", {
                 challengeId = "challenge-profile-details";
-                challengeName = "Please create a username";
+                challengeName = "Create your profile";
                 challengeDescription = "Please create a username";
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 requiredField = #profileFieldBlobs;
@@ -471,7 +471,7 @@ module PohModule {
             });
             state.pohChallenges.put("challenge-profile-pic", {
                 challengeId = "challenge-profile-pic";
-                challengeName = "Please provide your picture";
+                challengeName = "Upload your picture";
                 challengeDescription = "Please provide your picture";
                 requiredField = #imageBlob;
                 // assuming there will be no transitive dependencies. else graph needs to be used
@@ -483,7 +483,7 @@ module PohModule {
             });
             state.pohChallenges.put("challenge-user-video", {
                 challengeId = "challenge-user-video";
-                challengeName = "Please record your video saying these words";
+                challengeName = "Record secret phrase";
                 challengeDescription = "Please record your video saying these words";
                 requiredField = #videoBlob;
                 // assuming there will be no transitive dependencies. else graph needs to be used
