@@ -1,7 +1,8 @@
-import { useParams } from "react-router";
+import { Switch, Route } from "react-router-dom";
 import { useHistory, Link } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import {
+  Modal,
   Notification,
   Columns,
   Card,
@@ -9,10 +10,11 @@ import {
   Button,
   Icon,
 } from "react-bulma-components";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Steps, Step } from "../../common/steps/Steps";
 import CapturePicture from "./CapturePicture";
 import CaptureVideo from "./CaptureVideo";
+import { verifyUserHumanity, retrieveChallengesForUser, submitChallengeData } from '../../../utils/api';
 
 const Signup = () => {
   const history = useHistory();
@@ -25,7 +27,6 @@ const Signup = () => {
   }
 
   const onFormSubmit = async (values: any) => {
-    console.log("onFormSubmit!!!!")
     const { username, fullname, email, bio } = values;
 
     const validEmail = validateEmail(email)
@@ -37,11 +38,32 @@ const Signup = () => {
 
     setSubmitting(true);
     try {
-      setTimeout(() => {
-        setSubmitting(false);
-        history.push("/signup2/2")
-      }, 2000);
+      const res = await submitChallengeData({
+        challengeId: "challenge-profile-details",
+        challengeDataBlob: [],
+        userName: [username],
+        email: [email],
+        fullName: [fullname],
+        aboutUser: [bio],
+        offset: BigInt(1),
+        numOfChunks: BigInt(1),
+        mimeType: "profile",
+        dataSize: BigInt(1)
+      });
+      console.log("res", res);
+      console.log("innder", res.submissionStatus);
+
+      // If the submission was successful
+      if (res && "ok" in res.submissionStatus) {
+        setTimeout(() => {
+          setSubmitting(false);
+          history.push("/signup2/challenge-profile-pic")
+        }, 2000); // Do we need a 2 second delay?
+      } else {
+        throw Error("Failed to submit challenge data");
+      }
     } catch (e) {
+      console.log("error", e);
       setMessage({ success: false, value: "Error!" });
       setSubmitting(false);
     }
@@ -151,54 +173,93 @@ const Confirmation = () => {
   )
 };
 
-export default function NewProfile() {
-  const [hasUser, setHasUser] = useState<boolean>(true);
-  const [message, setMessage] = useState(null);
-  // const [currentStepIndex, setCurrentStepIndex] = useState(1);
+export default function NewProfile2({ match }) {
+  const history = useHistory();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [steps, setSteps] = useState(null)
+  const [currentStep, setCurrentStep] = useState<string>('')
 
-  const { currentStep } = useParams();
-  console.log('currentStep', currentStep);
+  const initialCall = async () => {
+    const verified = await verifyUserHumanity();
+    const [status] = Object.keys(verified[0]);
+    console.log("status", status);
+    if (status === "verified") {
+      history.push("/app");
+      return
+    }
 
+    const token = verified[1][0].token;
+    if (!token) return
+
+    const challenges = await retrieveChallengesForUser(token);
+    console.log("challenges", challenges)
+    setLoading(false);
+    setSteps(challenges["ok"]);
+
+    const uncompleted = challenges["ok"].find(challenge => {
+      const status = Object.keys(challenge.status)[0];
+      return status === "notSubmitted"
+    })
+
+    console.log('uncompleted', uncompleted)
+
+    if (!uncompleted) {
+      // history.push("/app");
+    } else {
+      history.push(`/signup2/${uncompleted.challengeId}`)
+    }
+  }
+
+  useEffect(() => {
+    initialCall();
+  }, []);
+
+  useEffect(() => {
+    return history.listen((location) => { 
+      const result = /[^/]*$/.exec(location.pathname)[0];
+      console.log("result", result);
+      setCurrentStep(result);
+    })
+  },[history]) 
 
   return (
   <>
+    {loading &&
+      <Modal show={true} showClose={false}>
+        <div className="loader is-loading p-5"></div>
+      </Modal>
+    }
+
     <Columns centered vCentered className="is-fullheight mt-6">
       <Columns.Column size={6}>
         <Card>
           <Card.Content>
-            <Steps activeStep={currentStep}>
-              <Step id={'1'} details="Create Profile" />
-              <Step id={'2'} details="Face Id" />
-              <Step id={'3'} details="Video" />
-              <Step id={'4'} details="Confirm" />
-            </Steps>
+            {steps &&
+              <Steps activeStep={currentStep}>
+                {steps.map((step, index) => (
+                  <Step key={step.challengeId} id={index + 1} details={step.challengeName} />
+                ))}
+                <Step key='confirm' id={steps.length + 1} details="Confirm" />
+              </Steps>
+            }
 
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>
-                {currentStep == 1 &&
-                  <Signup />
-                }
-                {currentStep == 2 &&
-                  <CapturePicture />
-                }
-                {currentStep == 3 &&
-                  <CaptureVideo />
-                }
-                {currentStep == 4 &&
-                  <Confirmation />
-                }
+                <Switch>
+                  <Route path={`${match.path}/:challenge-profile-details`} component={Signup}/>
+                  <Route path={`${match.path}/:challenge-profile-pic`} component={CapturePicture}/>
+                  <Route
+                    path={`${match.path}/:challenge-user-video`}
+                    render={() => (<CaptureVideo steps={steps} />)}
+                  />
+                  <Route path={`${match.path}/:confirm`} component={Confirmation}/>
+                </Switch>
               </Card.Content>
             </Card>
           </Card.Content>
         </Card>
       </Columns.Column>
     </Columns>
-
-    {message &&
-      <Notification color={message.success ? "success" : "danger"} className="has-text-centered">
-        {message.value}
-      </Notification>
-    }
   </>
   );
 }

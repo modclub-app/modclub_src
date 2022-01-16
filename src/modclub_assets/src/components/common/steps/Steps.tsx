@@ -6,10 +6,12 @@ const StepContext = React.createContext({});
 const StepProvider = StepContext.Provider;
 const StepConsumer = StepContext.Consumer;
 
-const Step = ({ id, details }) => {  
+const Step = ({ id, details }) => {
   return (
     <StepConsumer>
       {context => {
+        // console.log("context", context);
+
         return (
           <li className={`step-item
             ${context == Number(id) ? "is-active" : ""}
@@ -30,9 +32,12 @@ const Step = ({ id, details }) => {
   )
 };
 
-const Steps = ({ activeStep, children }) => {  
+const Steps = ({ activeStep, children }) => {
+  const ids = [].concat.apply([], children).map(child => child.key);
+  const index = ids.indexOf(activeStep) + 1;
+
   return (
-    <StepProvider value={activeStep}>
+    <StepProvider value={index}>
       <ul className="steps">
         {children}
       </ul>

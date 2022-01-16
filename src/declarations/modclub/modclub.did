@@ -23,6 +23,11 @@ type Role =
    moderator;
    owner;
  };
+type Result = 
+ variant {
+   err: PohError;
+   ok: vec PohChallengesAttempt;
+ };
 type ProviderSettings = 
  record {
    minStaked: nat;
@@ -53,6 +58,112 @@ type Profile =
    updatedAt: Timestamp;
    userName: text;
  };
+type PohVerificationResponse = 
+ record {
+   challenges: vec ChallengeResponse;
+   providerId: principal;
+   providerUserId: principal;
+   requestId: text;
+   requestedOn: int;
+ };
+type PohUniqueToken = record {token: text;};
+type PohTaskPlus = 
+ record {
+   hasVoted: opt bool;
+   minStake: nat;
+   minVotes: nat;
+   packageId: text;
+   pohTaskData: vec PohTaskData;
+   status: ContentStatus;
+   title: opt text;
+   voteCount: nat;
+ };
+type PohTaskData = 
+ record {
+   aboutUser: opt text;
+   challengeId: text;
+   challengeType: PohChallengeType;
+   contentId: opt text;
+   createdAt: int;
+   dataCanisterId: opt principal;
+   email: opt text;
+   fullName: opt text;
+   status: PohChallengeStatus;
+   updatedAt: int;
+   userId: principal;
+   userName: opt text;
+ };
+type PohRulesViolated = 
+ record {
+   challengeId: text;
+   ruleId: text;
+ };
+type PohError = 
+ variant {
+   challengeNotPendingForSubmission;
+   invalidToken;
+ };
+type PohChallengesAttempt = 
+ record {
+   attemptId: opt text;
+   challengeDescription: text;
+   challengeId: text;
+   challengeName: text;
+   challengeType: PohChallengeType;
+   completedOn: int;
+   createdAt: int;
+   dataCanisterId: opt principal;
+   status: PohChallengeStatus;
+   updatedAt: int;
+   userId: principal;
+   wordList: opt vec text;
+ };
+type PohChallengeType = 
+ variant {
+   dl;
+   email;
+   fullName;
+   selfPic;
+   selfVideo;
+   ssn;
+   userName;
+ };
+type PohChallengeSubmissionStatus = 
+ variant {
+   alreadyApproved;
+   alreadyRejected;
+   alreadySubmitted;
+   incorrectChallenge;
+   inputDataMissing;
+   notPendingForSubmission;
+   ok;
+ };
+type PohChallengeSubmissionResponse = 
+ record {
+   challengeId: text;
+   submissionStatus: PohChallengeSubmissionStatus;
+ };
+type PohChallengeSubmissionRequest = 
+ record {
+   aboutUser: opt text;
+   challengeDataBlob: opt blob;
+   challengeId: text;
+   dataSize: nat;
+   email: opt text;
+   fullName: opt text;
+   mimeType: text;
+   numOfChunks: nat;
+   offset: nat;
+   userName: opt text;
+ };
+type PohChallengeStatus = 
+ variant {
+   expired;
+   notSubmitted;
+   pending;
+   rejected;
+   verified;
+ };
 type ModClub = 
  service {
    addRules: (vec text) -> () oneway;
@@ -60,6 +171,7 @@ type ModClub =
    airdropRegister: () -> (AirdropUser);
    checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
+   generateUniqueToken: (principal) -> (PohUniqueToken);
    getActivity: (bool) -> (vec Activity) query;
    getAirdropUsers: () -> (vec AirdropUser);
    getAirdropWhitelist: () -> (vec principal);
@@ -67,23 +179,31 @@ type ModClub =
    getAllProfiles: () -> (vec Profile) query;
    getContent: (text) -> (opt ContentPlus) query;
    getModclubHoldings: () -> (Holdings) query;
+   getPohTasks: (ContentStatus) -> (vec PohTaskPlus);
    getProfile: () -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTokenHoldings: () -> (Holdings) query;
    isAirdropRegistered: () -> (AirdropUser);
+   populateChallenges: () -> ();
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    removeRules: (vec RuleId) -> () oneway;
+   retrieveChallengesForUser: (text) -> (Result);
    stakeTokens: (nat) -> (text);
+   submitChallengeData: (PohChallengeSubmissionRequest) ->
+    (PohChallengeSubmissionResponse);
    submitImage: (text, vec nat8, text, opt text) -> (text);
    submitText: (text, text, opt text) -> (text);
    subscribe: (SubscribeMessage) -> ();
    toggleAllowSubmission: (bool) -> ();
    unStakeTokens: (nat) -> (text);
    updateSettings: (ProviderSettings) -> ();
+   verifyForHumanity: (principal) -> (PohVerificationResponse);
+   verifyUserHumanity: () -> (PohChallengeStatus, opt PohUniqueToken);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
+   votePohContent: (text, Decision, vec PohRulesViolated) -> ();
  };
 type Image__1 = 
  record {
@@ -116,6 +236,7 @@ type ContentType =
    imageBlob;
    imageUrl;
    multiText;
+   pohPackage;
    "text";
  };
 type ContentStatus = 
@@ -149,6 +270,12 @@ type ContentPlus =
  };
 type ContentId__1 = text;
 type ContentId = text;
+type ChallengeResponse = 
+ record {
+   challengeId: text;
+   completedOn: opt int;
+   status: PohChallengeStatus;
+ };
 type AirdropUser = 
  record {
    createdAt: Timestamp;

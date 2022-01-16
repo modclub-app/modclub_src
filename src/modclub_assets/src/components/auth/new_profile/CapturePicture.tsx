@@ -1,29 +1,57 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import { Heading, Button, Icon } from "react-bulma-components";
 import { WebcamWrapper } from "./Webcam"
+import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
+const MAX_CHUNK_SIZE = 1024 * 500;
 
 export default function CapturePicture() {
+  const history = useHistory();
   const inputFile = useRef(null);
-  const [imgSrc, setImgSrc] = useState(null);
+  const [file, setFile] = useState({
+    type: '',
+    size: 0,
+    blob: new Blob(),
+    data: null
+  });
 
-  const handleFileChange = (e) => {
-    const { files } = e.target;
-    if (files.length > 0) {
-      const f = files[0];
-      const reader = new FileReader();
-      reader.onload = function (evt) {
-        console.log(evt.target.result);
-        const metadata = `name: ${f.name}, type: ${f.type}, size: ${f.size}, contents:`;
-        console.log(metadata);
-        const data =
-          typeof evt.target.result == "string" ? evt.target.result : null;
-        setImgSrc(data);
-        // setPicType(f.type);
+  const handleFileChange = (event: React.FormEvent<HTMLInputElement>) => {
+    // @ts-ignore
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      if (reader.result === null) {
+        throw new Error('file empty...');
+      }
+      const data = typeof reader.result == "string" ? reader.result : null;
+      let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
+      if ((encoded.length % 4) > 0) {
+        encoded += '='.repeat(4 - (encoded.length % 4));
+      }
+      const blob = b64toBlob(encoded, file.type);
+      const fileInfo = {
+        type: file.type,
+        size: file.size,
+        blob: blob,
+        data: data
       };
-      reader.readAsDataURL(f);
+      console.log("fileInfo", fileInfo);
+      setFile(fileInfo);
     }
-  };
+  }
+
+  const submit = async () => {
+    const putChunkPromises: Promise<undefined>[] = [];
+    let chunk = 1;
+    for (let byteStart = 0; byteStart < file.blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
+      putChunkPromises.push(
+        processAndUploadChunk("challenge-profile-pic", MAX_CHUNK_SIZE, file.blob, byteStart, chunk, file.size, file.type)
+      );
+    }
+    await Promise.all(putChunkPromises);
+    history.push("/signup2/challenge-user-video");
+  }
 
   return (
     <>
@@ -32,8 +60,8 @@ export default function CapturePicture() {
       </Heading>
 
       <WebcamWrapper
-        setImgSrc={setImgSrc}
-        imgSrc={imgSrc}
+        setFile={setFile}
+        file={file}
       />
 
       <div className="is-divider" data-content="OR"></div>
@@ -55,12 +83,12 @@ export default function CapturePicture() {
       />
 
       <Button.Group align="right" className="mt-4">
-        <Link to="/app/" className="button is-black" disabled={!imgSrc}>
+        <Link to="/app/" className="button is-black" disabled={!file}>
           Cancel
         </Link>
-        <Link to="/signup2/3" className="button is-primary" disabled={!imgSrc}>
+        <Button color="primary" disabled={!file} onClick={submit}>
           Next
-        </Link>
+        </Button>
       </Button.Group>
     </>
   )
