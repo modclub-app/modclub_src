@@ -30,6 +30,7 @@ import TrieSet "mo:base/TrieSet";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
+import Helpers "./helpers";
 
 
 
@@ -41,7 +42,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
-  let NANOS_PER_MILLI = 1000000;
   let DEFAULT_TEST_TOKENS = 100;
 
   // Types
@@ -107,7 +107,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       case(null) {
         let user: AirdropUser = {
           id = caller;
-          createdAt = timeNow_();
+          createdAt = Helpers.timeNow();
         };
         state.airdropUsers.put(caller, user);
         return user;
@@ -176,7 +176,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     // await onlyOwner(caller);
     switch(state.providers.get(caller)){
       case (null) {
-        let now = timeNow_();
+        let now = Helpers.timeNow();
         state.providers.put(caller, {
           id = caller;
           name = name;
@@ -215,7 +215,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     var provider = state.providers.get(caller);
     switch(provider) {
       case (?result) {
-        let now = timeNow_();
+        let now = Helpers.timeNow();
         // Update the providers settings
         state.providers.put(caller, {
               id = caller;
@@ -483,7 +483,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
         case (null) {
           switch( await checkUsernameAvailable(userName) ) {
             case(true) {
-              let now = timeNow_();
+              let now = Helpers.timeNow();
               let profile : Profile = {
                 id = caller;
                 userName = _userName;
@@ -531,7 +531,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   //       case (?result) {
   //         switch( await checkUsernameAvailable(userName) ) {
   //           case(true) {
-  //             let now = timeNow_();
+  //             let now = Helpers.timeNow();
   //             let profile = {
   //               id = caller;
   //               userName = userName;
@@ -606,7 +606,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
               userId = caller;
               decision = decision; 
               violatedRules = violatedRules;
-              createdAt = timeNow_();
+              createdAt = Helpers.timeNow();
           };
           switch(decision){
             case(#approved) {
@@ -664,7 +664,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
                         minVotes = provider.settings.minVotes;
                         minStake = provider.settings.minStaked;
                         reward = 1; // Todo: Calculate reward
-                        rewardRelease = timeNow_();
+                        rewardRelease = Helpers.timeNow();
                     };
                     buf.add(item);
                 };
@@ -726,7 +726,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
                 sourceId = content.sourceId;
                 title = content.title;
                 createdAt = content.createdAt;
-                updatedAt = timeNow_();
+                updatedAt = Helpers.timeNow();
           });
 
             // Call the providers callback
@@ -938,7 +938,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {
-    let now = timeNow_();
+    let now = Helpers.timeNow();
     let content : Content  = {
         id = generateId(caller, "content");
         providerId = caller;
@@ -1073,11 +1073,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
         #equal;
       }
     };
-
- private func timeNow_() : Timestamp {
-      Time.now()  / NANOS_PER_MILLI; // Convert to milliseconds
-  };
-
+    
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
   

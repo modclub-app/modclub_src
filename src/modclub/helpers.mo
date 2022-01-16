@@ -1,13 +1,10 @@
+import Types "./types";
+import Time "mo:base/Time";
+
 module Helpers {
-   public func addToWaitList(email : Text) : async Text {
-      if(waitList.size() > maxWaitListSize) {
-        return "Sorry, the waitlist is full";
-      };
-      switch (waitList.get(email)) {        
-        case (?result) return "The email address " # email # " has already joined the waitlist";
-        case (_) waitList.put(email, email);
-      };
-      return "Thank you for joining the waitlist";
+    let NANOS_PER_MILLI = 1000000;
+    public func timeNow() : Types.Timestamp {
+      Time.now()  / NANOS_PER_MILLI; // Convert to milliseconds
     };
     
 }
