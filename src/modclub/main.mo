@@ -26,6 +26,7 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Float "mo:base/Float";
 import Token "./token";
 import TrieSet "mo:base/TrieSet";
 import Types "./types";
@@ -907,7 +908,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   // Method called by provider
   public shared({ caller }) func verifyForHumanity(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
     let pohVerificationRequest: PohTypes.PohVerificationRequest = {
-        requestId = (await pohEngine.generateUUID());
+        requestId = generateId(caller, "pohRequest");
         providerUserId = providerUserId;
         providerId = caller;
     };
@@ -988,22 +989,31 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
-    let pohTasks = pohEngine.getPohTasks(voteManager.getTasksId(status, 10));
-    let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTasks.size());
-    for(task in pohTasks.vals()) {
-      let voteCount = voteManager.getVoteCountForPoh(caller, task.packageId);
-      let taskPlus = {
-          packageId = task.packageId;
-          pohTaskData = task.pohTaskData;
-          status = voteManager.getContentStatus(task.packageId);
-          // TODO: change these vote settings
-          voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
-          minVotes = ModClubParam.MIN_VOTE_POH;
-          minStake = ModClubParam.MIN_STAKE_POH; 
-          title = null;
-          hasVoted = ?voteCount.hasVoted;
-      };
-      tasks.add(taskPlus);
+    let pohTaskIds = voteManager.getTasksId(status, 10);
+    let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
+    for(id in pohTaskIds.vals()) {
+      let voteCount = voteManager.getVoteCountForPoh(caller, id);
+      let pohPackage = pohEngine.getPohChallengePackage(id);
+      switch(pohPackage) {
+        case(null)();
+        case(?package) {
+          let taskPlus = {
+            packageId = id;
+            status = voteManager.getContentStatus(id);
+            // TODO: change these vote settings
+            voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+            minVotes = ModClubParam.MIN_VOTE_POH;
+            minStake = ModClubParam.MIN_STAKE_POH; 
+            title = null;
+            hasVoted = ?voteCount.hasVoted;
+            reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
+            createdAt = package.createdAt;
+            updatedAt = package.updatedAt;
+          };
+          tasks.add(taskPlus);
+        };
+      }
+      
     };
     return tasks.toArray();
   };
@@ -1031,21 +1041,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
 
     let result = voteManager.votePohContent(caller, packageId, decision, violatedRules);
-    // TODO: From whose account we need to reward users
-    // switch(result) {
-    //   case(#ok(votingFinished)) {
-    //     if(votingFinished == true) {
-    //       await tokens.voteFinalization(
-    //           initializer, 
-    //           decision, 
-    //           state.content2votes.get0(content.id), 
-    //           ModClubParam.MIN_STAKE_POH, // TODO: Change this to a percentage
-    //           state
-    //       );
-    //     };
-    //   };
-    //   case(_)();
-    // };
   };
 
   // Helpers

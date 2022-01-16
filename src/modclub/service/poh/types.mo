@@ -65,14 +65,12 @@ module {
         createdAt: Int;
         updatedAt: Int;
         completedOn: Int;
-        // contentId: ?Text;
         dataCanisterId: ?Principal;
         wordList: ?[Text];
     };
 
     // type representing request for verificaiton
     public type PohVerificationRequest = {
-        // We will generate request Id for each request, provider won't provide us. Hence it's mutable and optional
         requestId: Text;
         providerUserId: Principal;
         providerId: Principal;
@@ -122,8 +120,6 @@ module {
         id: Text;
         challengeIds: [Text];
         userId: Principal;
-        // contentType: Types.ContentType;
-        // status: Types.ContentStatus; 
         title: ?Text;
         createdAt: Int;
         updatedAt: Int;
@@ -140,6 +136,8 @@ module {
         aboutUser: ?Text;
         contentId: ?Text;
         dataCanisterId: ?Principal;
+        wordList: ?[Text];
+        allowedViolationRules: [ViolatedRules];
         createdAt: Int;
         updatedAt: Int;
     };
@@ -151,13 +149,15 @@ module {
 
     public type PohTaskPlus = {
         packageId: Text;
-        pohTaskData: [PohTaskData];
         status: Types.ContentStatus;
         voteCount: Nat;
-        minVotes: Nat;
-        minStake: Nat; 
+        minVotes: Int;
+        minStake: Int; 
         title: ?Text;
         hasVoted: ?Bool;
+        reward: Float;
+        createdAt: Int;
+        updatedAt: Int;
     };
 
     public type PohError = {
