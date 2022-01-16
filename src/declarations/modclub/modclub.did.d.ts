@@ -1,7 +1,7 @@
 import type { Principal } from '@dfinity/principal';
 export interface Activity {
   'status' : ContentStatus,
-  'reward' : bigint,
+  'reward' : number,
   'title' : [] | [string],
   'voteCount' : bigint,
   'contentType' : ContentType,
@@ -48,6 +48,8 @@ export type ContentType = { 'imageBlob' : null } |
   { 'imageUrl' : null } |
   { 'multiText' : null } |
   { 'pohPackage' : null };
+  { 'multiText' : null };
+export type DataCanisterId = Principal;
 export type Decision = { 'approved' : null } |
   { 'rejected' : null };
 export type Decision__1 = { 'approved' : null } |
@@ -71,16 +73,33 @@ export interface ModClub {
   'getAirdropWhitelist' : () => Promise<Array<Principal>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
+  'getBlob' : (
+      arg_0: ContentId,
+      arg_1: DataCanisterId,
+      arg_2: bigint,
+    ) => Promise<[] | [Array<number>]>,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getModclubHoldings' : () => Promise<Holdings>,
   'getPohTasks' : (arg_0: ContentStatus) => Promise<Array<PohTaskPlus>>,
+  'getModeratorLeaderboard' : (arg_0: bigint, arg_1: bigint) => Promise<
+      Array<ModeratorLeaderboard>
+    >,
   'getProfile' : () => Promise<Profile>,
+  'getProfileById' : (arg_0: Principal) => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'getTokenHoldings' : () => Promise<Holdings>,
+  'getVotePerformance' : () => Promise<number>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
   'populateChallenges' : () => Promise<undefined>,
+  'putBlobsInDataCanister' : (
+      arg_0: ContentId,
+      arg_1: Array<number>,
+      arg_2: bigint,
+      arg_3: bigint,
+      arg_4: string,
+    ) => Promise<Principal>,
   'registerModerator' : (
       arg_0: string,
       arg_1: string,
@@ -210,6 +229,14 @@ export interface PohVerificationResponse {
   'challenges' : Array<ChallengeResponse>,
   'requestedOn' : bigint,
   'providerUserId' : Principal,
+}
+export interface ModeratorLeaderboard {
+  'id' : UserId,
+  'completedVoteCount' : bigint,
+  'userName' : string,
+  'rewardsEarned' : bigint,
+  'lastVoted' : [] | [Timestamp],
+  'performance' : number,
 }
 export interface Profile {
   'id' : UserId,

@@ -163,6 +163,14 @@ type PohChallengeStatus =
    pending;
    rejected;
    verified;
+type ModeratorLeaderboard = 
+ record {
+   completedVoteCount: int;
+   id: UserId;
+   lastVoted: opt Timestamp;
+   performance: float64;
+   rewardsEarned: int;
+   userName: text;
  };
 type ModClub = 
  service {
@@ -177,16 +185,21 @@ type ModClub =
    getAirdropWhitelist: () -> (vec principal);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getAllProfiles: () -> (vec Profile) query;
+   getBlob: (ContentId, DataCanisterId, nat) -> (opt blob);
    getContent: (text) -> (opt ContentPlus) query;
    getModclubHoldings: () -> (Holdings) query;
    getPohTasks: (ContentStatus) -> (vec PohTaskPlus);
+   getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
    getProfile: () -> (Profile) query;
+   getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTokenHoldings: () -> (Holdings) query;
+   getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
    populateChallenges: () -> ();
+   putBlobsInDataCanister: (ContentId, blob, nat, nat, text) -> (principal);
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    removeRules: (vec RuleId) -> () oneway;
@@ -231,6 +244,7 @@ type Decision =
    approved;
    rejected;
  };
+type DataCanisterId = principal;
 type ContentType = 
  variant {
    imageBlob;
@@ -289,7 +303,7 @@ type Activity =
    minVotes: nat;
    providerId: ProviderId;
    providerName: text;
-   reward: nat;
+   reward: float64;
    rewardRelease: Timestamp;
    status: ContentStatus;
    title: opt text;

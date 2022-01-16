@@ -12,7 +12,8 @@
   "scripts": {
     "build": "webpack",
     "start": "webpack serve --mode development --env development",
-    "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations"
+    "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
+    "deploy_staging": "dfx deploy --network ic modclub_staging;dfx deploy --network ic modclub_staging_assets"
   },
   "devDependencies": {
     "@dfinity/agent": "^0.10.1",

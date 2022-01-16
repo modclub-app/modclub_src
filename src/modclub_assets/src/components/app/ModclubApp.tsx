@@ -7,6 +7,7 @@ import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
 import Humanity from "./humanity/Humanity";
 import Moderators from "./moderators/Moderators";
+import Leaderboard from "./moderators/Leaderboard";
 import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 
@@ -37,6 +38,9 @@ export default function ModclubApp() {
             </Route>
             <Route exact path="/app/activity">
               <Activity />
+            </Route>
+            <Route exact path="/app/leaderboard">
+              <Leaderboard />
             </Route>
             <Route exact path="/app/admin">
               <Admin />

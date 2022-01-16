@@ -22,7 +22,8 @@ import {
   PohChallengeSubmissionResponse,
   Result,
   PohTaskPlus,
-  PohRulesViolated
+  PohRulesViolated,
+  ModeratorLeaderboard,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -117,6 +118,20 @@ export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
 }
 
+export async function getProfileById(userId: Principal): Promise<Profile> {
+  return (await getMC()).getProfileById(userId);
+}
+
+export async function getModeratorLeaderboard(
+  pageSize: number,
+  page: number
+): Promise<ModeratorLeaderboard[]> {
+  return (await getMC()).getModeratorLeaderboard(
+    BigInt((page - 1) * pageSize),
+    BigInt(page * pageSize)
+  );
+}
+
 export async function airdropRegister(): Promise<AirdropUser> {
   return (await getMC()).airdropRegister();
 }
@@ -145,7 +160,9 @@ export async function updateProviderSettings(
 }
 
 // POH Methods
-export async function verifyUserHumanity(): Promise<[PohChallengeStatus, [] | [PohUniqueToken]]> {
+export async function verifyUserHumanity(): Promise<
+  [PohChallengeStatus, [] | [PohUniqueToken]]
+> {
   return (await getMC()).verifyUserHumanity();
 }
 
@@ -173,6 +190,9 @@ export async function votePohContent(
   decision: Decision,
   violatedRules: [PohRulesViolated]
 ): Promise<void> {
-  console.log("votePohContent")
+  console.log("votePohContent");
   return (await getMC()).votePohContent(packageId, decision, violatedRules);
+}
+export async function getPerformance(): Promise<number> {
+  return (await getMC()).getVotePerformance();
 }

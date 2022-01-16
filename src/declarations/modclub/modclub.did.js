@@ -35,7 +35,7 @@ export const idlFactory = ({ IDL }) => {
   const ProviderId = IDL.Principal;
   const Activity = IDL.Record({
     'status' : ContentStatus,
-    'reward' : IDL.Nat,
+    'reward' : IDL.Float64,
     'title' : IDL.Opt(IDL.Text),
     'voteCount' : IDL.Nat,
     'contentType' : ContentType,
@@ -84,11 +84,14 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'updatedAt' : Timestamp,
   });
+  const ContentId = IDL.Text;
+  const DataCanisterId = IDL.Principal;
   const Holdings = IDL.Record({
     'pendingRewards' : IDL.Int,
     'stake' : IDL.Int,
     'wallet' : IDL.Int,
   });
+<<<<<<< HEAD
   const PohChallengeStatus = IDL.Variant({
     'notSubmitted' : IDL.Null,
     'verified' : IDL.Null,
@@ -128,6 +131,15 @@ export const idlFactory = ({ IDL }) => {
     'pohTaskData' : IDL.Vec(PohTaskData),
     'hasVoted' : IDL.Opt(IDL.Bool),
     'packageId' : IDL.Text,
+=======
+  const ModeratorLeaderboard = IDL.Record({
+    'id' : UserId,
+    'completedVoteCount' : IDL.Int,
+    'userName' : IDL.Text,
+    'rewardsEarned' : IDL.Int,
+    'lastVoted' : IDL.Opt(Timestamp),
+    'performance' : IDL.Float64,
+>>>>>>> main
   });
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,
@@ -205,6 +217,7 @@ export const idlFactory = ({ IDL }) => {
   const SubscribeMessage = IDL.Record({
     'callback' : IDL.Func([ContentResult], [], ['oneway']),
   });
+<<<<<<< HEAD
   const ChallengeResponse = IDL.Record({
     'status' : PohChallengeStatus,
     'completedOn' : IDL.Opt(IDL.Int),
@@ -218,6 +231,8 @@ export const idlFactory = ({ IDL }) => {
     'providerUserId' : IDL.Principal,
   });
   const ContentId = IDL.Text;
+=======
+>>>>>>> main
   const Decision = IDL.Variant({
     'approved' : IDL.Null,
     'rejected' : IDL.Null,
@@ -242,16 +257,39 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
+    'getBlob' : IDL.Func(
+        [ContentId, DataCanisterId, IDL.Nat],
+        [IDL.Opt(IDL.Vec(IDL.Nat8))],
+        [],
+      ),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
+<<<<<<< HEAD
     'getPohTasks' : IDL.Func([ContentStatus], [IDL.Vec(PohTaskPlus)], []),
+=======
+    'getModeratorLeaderboard' : IDL.Func(
+        [IDL.Nat, IDL.Nat],
+        [IDL.Vec(ModeratorLeaderboard)],
+        ['query'],
+      ),
+>>>>>>> main
     'getProfile' : IDL.Func([], [Profile], ['query']),
+    'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
+    'getVotePerformance' : IDL.Func([], [IDL.Float64], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
+<<<<<<< HEAD
     'populateChallenges' : IDL.Func([], [], []),
+=======
+    'putBlobsInDataCanister' : IDL.Func(
+        [ContentId, IDL.Vec(IDL.Nat8), IDL.Nat, IDL.Nat, IDL.Text],
+        [IDL.Principal],
+        [],
+      ),
+>>>>>>> main
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],
         [Profile],
