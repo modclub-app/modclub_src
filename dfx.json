@@ -12,12 +12,12 @@
       "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
       "type": "assets"
     },
-    "modclub_staging": {
+    "modclub_dev": {
       "main": "src/modclub/main.mo",
       "type": "motoko"
     },
-    "modclub_staging_assets": {
-      "dependencies": ["modclub_staging"],
+    "modclub_dev_assets": {
+      "dependencies": ["modclub_dev"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
