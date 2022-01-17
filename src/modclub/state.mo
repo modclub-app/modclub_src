@@ -252,6 +252,4 @@ module State {
     ));
     return state;
   };
-
-
 };

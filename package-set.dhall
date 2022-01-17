@@ -20,6 +20,11 @@ let
       , version = "v0.3.1"
       , dependencies = [ "array", "base" ]
       },
+      { name = "crypto"
+      , repo = "https://github.com/aviate-labs/crypto.mo"
+      , version = "v0.1.0"
+      , dependencies = ["base"]
+      },
   ] : List Package
 
 let
