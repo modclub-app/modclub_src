@@ -4,6 +4,7 @@ import { getPohTaskData } from '../../../utils/api';
 import {
   Heading,
   Card,
+  Columns,
   Button,
   Modal,
   Notification
@@ -96,8 +97,6 @@ const ProfileDetails = ({ data }) => {
 };
 
 const ProfilePic = ({ data }) => {
-  console.log("profilepic data", data);
-
   const imageUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
 
   return (
@@ -110,7 +109,9 @@ const ProfilePic = ({ data }) => {
 const UserVideo = ({ data }) => {
   console.log("UserVideo", data);
   const videoUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
-  const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"];
+  // const phrases = ["Theta", "Gama", "Zaba", "Unicorn", "Santa", "Moon", "Chalk", "Pillow"];
+
+  const phrases = data.wordList[0]
 
   return (
     <Card.Content>
@@ -120,11 +121,13 @@ const UserVideo = ({ data }) => {
       </video>
 
       <Card className="mt-5">
-        <Card.Content className="pb-1">
-          {phrases.map(phrase => (
-            <Button key={phrase} className="mr-4 mb-4" style={{ width: "22%" }}>
-              {phrase}
-            </Button>
+        <Card.Content className="columns is-multiline">
+          {phrases.map((phrase, index) => (
+            <Columns.Column key={phrase} size={4}>
+              <Button fullwidth isStatic>
+                {index + 1} <span className="ml-2">{phrase}</span>
+              </Button>
+            </Columns.Column>
           ))}
         </Card.Content>
       </Card>
@@ -206,7 +209,7 @@ export default function Applicant() {
                 <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
                   {task.allowedViolationRules.map((rule, index) => (
                     <p key={rule.ruleId}>
-                      {index} {rule.ruleDesc}
+                      {index + 1}. {rule.ruleDesc}
                     </p>
                   ))}
                 </Card.Footer>

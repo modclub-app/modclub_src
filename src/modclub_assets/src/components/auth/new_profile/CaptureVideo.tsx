@@ -77,10 +77,7 @@ export default function CaptureVideo({ steps }) {
           {phrases.map((phrase, index) => (
             <Columns.Column key={phrase} size={4}>
               <Button color="gradient" fullwidth isStatic style={{ color: '#fff' }}>
-                {index + 1}
-                <span className="ml-2">
-                  {phrase}
-                </span>
+                {index + 1} <span className="ml-2">{phrase}</span>
               </Button>
             </Columns.Column>
           ))}
