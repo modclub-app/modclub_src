@@ -17,6 +17,10 @@ import Helpers "../../helpers";
 
 module PohModule {
 
+    public let CHALLENGE_PROFILE_DETAILS_ID = "challenge-profile-details";
+    public let CHALLENGE_PROFILE_PIC_ID = "challenge-profile-pic";
+    public let CHALLENGE_USER_VIDEO_ID = "challenge-user-video";
+
     public class PohEngine(stableState : PohState.PohStableState) {
 
         var state:PohState.PohState = PohState.emptyState();
@@ -475,9 +479,9 @@ module PohModule {
                 ruleId= "2";
                 ruleDesc = "Rule 2";
             });
-            state.pohChallenges.put("challenge-profile-details", {
-                challengeId = "challenge-profile-details";
-                challengeName = "Create your profile";
+            state.pohChallenges.put(CHALLENGE_PROFILE_DETAILS_ID, {
+                challengeId = CHALLENGE_PROFILE_DETAILS_ID;
+                challengeName = "Please create a username";
                 challengeDescription = "Please create a username";
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 requiredField = #profileFieldBlobs;
@@ -501,9 +505,9 @@ module PohModule {
                 ruleId= "3";
                 ruleDesc = "Rule 3";
             });
-            state.pohChallenges.put("challenge-profile-pic", {
-                challengeId = "challenge-profile-pic";
-                challengeName = "Upload your picture";
+            state.pohChallenges.put(CHALLENGE_PROFILE_PIC_ID, {
+                challengeId = CHALLENGE_PROFILE_PIC_ID;
+                challengeName = "Please provide your picture";
                 challengeDescription = "Please provide your picture";
                 requiredField = #imageBlob;
                 // assuming there will be no transitive dependencies. else graph needs to be used
@@ -531,9 +535,9 @@ module PohModule {
                 ruleId= "4";
                 ruleDesc = "Rule 4";
             });
-            state.pohChallenges.put("challenge-user-video", {
-                challengeId = "challenge-user-video";
-                challengeName = "Record secret phrase";
+            state.pohChallenges.put(CHALLENGE_USER_VIDEO_ID, {
+                challengeId = CHALLENGE_USER_VIDEO_ID;
+                challengeName = "Please record your video saying these words";
                 challengeDescription = "Please record your video saying these words";
                 requiredField = #videoBlob;
                 // assuming there will be no transitive dependencies. else graph needs to be used

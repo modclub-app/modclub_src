@@ -151,6 +151,11 @@ module {
         packageId: Text;
         status: Types.ContentStatus;
         voteCount: Nat;
+        userName: ?Text;
+        email: ?Text;
+        fullName: ?Text;
+        aboutUser: ?Text;
+        profileImageUrlSuffix: ?Text;
         minVotes: Int;
         minStake: Int; 
         title: ?Text;
