@@ -1,9 +1,15 @@
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { Form } from "react-final-form";
-import { Modal, Heading, Button, Card, Notification } from "react-bulma-components";
-import RulesList from "../tasks/RulesList";
+import {
+  Modal,
+  Heading,
+  Button,
+  Card, 
+  Notification
+} from "react-bulma-components";
 import Toggle from "../../common/toggle/Toggle";
+import Confirm from "../../common/confirm/Confirm";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
@@ -31,8 +37,9 @@ const Modal_ = ({
   const [message, setMessage] = useState(null);
 
   const isDisabled = (values: any) => {
-    if (message || submitting) return true
-    if (title === "Reject Confirmation" && !Object.keys(values).length) return true
+    if (!Object.keys(values).length) return true
+    if (!values["voteIncorrectlyConfirmation"]) return true
+    if (!values["voteIncorrectlyConfirmation"].length) return true
     return false
   } 
 
@@ -73,25 +80,55 @@ const Modal_ = ({
         setContent(<>
           <p>You are confirming that this post follows {platform}'s rules.</p>
           <p>Voting incorrectly will result in some loss of staked tokens.</p>
+
+          <Card backgroundColor="dark" className="mt-5">
+            <Card.Content>
+              <Heading subtitle className="mb-3">
+                {platform}'s Rules
+              </Heading>
+
+              <ul style={{ listStyle: "disc", paddingLeft: "2rem", color: "#fff" }}>
+                {rules.map(rule => 
+                  <li key={rule.id}>{rule.description}</li>
+                )}
+              </ul>
+            </Card.Content>
+          </Card>
+
+          <Confirm
+            color="#C91988"
+            id="voteRulesConfirmation"
+            label="I confirm that this content does not break any rules above"
+          />          
+          <Confirm
+            color="#cc0f35"
+            id="voteIncorrectlyConfirmation"
+            label="I understand I will lose -20 MOD if I vote incorrectly"
+          />
         </>);
       }
       if (title === "Reject Confirmation") {
-        setContent(
-          <>
-            <p className="mb-3">Select which rules were broken:</p>
-            <Card backgroundColor="dark">
-              <Card.Content>
-                {rules.map(rule => 
-                  <Toggle key={rule.id} id={rule.id} label={rule.description} />
-                )}
-              </Card.Content>
-            </Card>
-          </>
-        );
+        setContent(<>
+          <p className="mb-3">Select which rules were broken:</p>
+          <Card backgroundColor="dark">
+            <Card.Content>
+              {rules.map(rule => 
+                <Toggle key={rule.id} id={rule.id} label={rule.description} />
+              )}
+            </Card.Content>
+          </Card>
+
+          <Confirm
+            color="#cc0f35"
+            id="voteIncorrectlyConfirmation"
+            label="I understand I will lose -20 MOD if I vote incorrectly"
+          />
+        </>);
       }
     };
     fetchRules();
   }, []);
+
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
@@ -105,19 +142,7 @@ const Modal_ = ({
               </Heading>
               {content}
             </Modal.Card.Body>
-            <Modal.Card.Footer className="pt-0">
-              {title === "Reject Confirmation" &&
-                <p className="is-size-7">
-                  Voting incorrectly will result in some loss<br />of staked tokens.
-                </p>
-              }
-              {title === "Approve Confirmation" &&
-                <RulesList
-                  platform={platform}
-                  rules={rules}
-                />
-              }
-
+            <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
               <Button.Group>
                 <Button color="dark" onClick={toggle}>
                   Cancel
