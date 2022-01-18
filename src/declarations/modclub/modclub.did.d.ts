@@ -213,12 +213,17 @@ export interface PohTaskData {
 export interface PohTaskPlus {
   'status' : ContentStatus,
   'reward' : number,
+  'userName' : [] | [string],
   'title' : [] | [string],
+  'profileImageUrlSuffix' : [] | [string],
   'voteCount' : bigint,
   'minVotes' : bigint,
   'createdAt' : bigint,
+  'fullName' : [] | [string],
+  'email' : [] | [string],
   'minStake' : bigint,
   'updatedAt' : bigint,
+  'aboutUser' : [] | [string],
   'hasVoted' : [] | [boolean],
   'packageId' : string,
 }
