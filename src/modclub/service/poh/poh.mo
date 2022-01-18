@@ -207,7 +207,7 @@ module PohModule {
 
                     if(attempts.size() == 0) {
                         let newAttempt = {
-                                                attemptId = ?Helpers.generateHash(Principal.toText(userId) # Nat.toText(Int.abs(Helpers.timeNow())));
+                                                attemptId = ?Helpers.generateHash(Principal.toText(userId) # challengeId # Nat.toText(attempts.size()));
                                                 challengeId = challengeId;
                                                 userId = userId;
                                                 challengeName = state.pohChallenges.get(challengeId)!.challengeName;
