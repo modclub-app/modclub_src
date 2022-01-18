@@ -18,7 +18,7 @@ const PAGE_SIZE = 30;
 const ModeratorProfile = ({
   pic,
   name,
-}: {
+} : {
   pic: [] | [Image__1];
   name: string;
 }) => {

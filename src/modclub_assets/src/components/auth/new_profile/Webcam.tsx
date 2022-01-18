@@ -3,7 +3,15 @@ import { Image, Button, Icon } from "react-bulma-components";
 import Webcam from "react-webcam";
 import { b64toBlob } from "../../../utils/util";
 
-export function CaptureButton({ type, handleClick}) {
+export function CaptureButton({
+  type,
+  icon,
+  handleClick,
+} : {
+  type: string,
+  icon: string,
+  handleClick: React.MouseEventHandler<HTMLButtonElement>,
+}) {
   return (
     <Button
       color={type}
@@ -21,7 +29,7 @@ export function CaptureButton({ type, handleClick}) {
     >
       <Icon color="white">
         <span className="material-icons">
-          {type === "success" ? "photo_camera" : "clear"}
+          {icon}
         </span>
       </Icon>
     </Button>
@@ -54,7 +62,12 @@ export function WebcamWrapper({ setFile, file }) {
 
   const clearImage = () => {
     setLoading(true);
-    setFile(null);
+    setFile({
+      type: '',
+      size: 0,
+      blob: new Blob(),
+      data: null
+    });
   }
 
   return !file.data ? (
@@ -71,6 +84,7 @@ export function WebcamWrapper({ setFile, file }) {
       ) : (
         <CaptureButton
           type="success"
+          icon="photo_camera"
           handleClick={captureWebcam}
         />
       )}
@@ -83,6 +97,7 @@ export function WebcamWrapper({ setFile, file }) {
       />
       <CaptureButton
         type="danger"
+        icon="clear"
         handleClick={clearImage}
       />
     </div>
