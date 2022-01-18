@@ -992,6 +992,28 @@ shared ({caller = initializer}) actor class ModClub () = this {
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);
+      let taskDataWrapper = pohEngine.getPohTasks([id]);
+      var userName :?Text = null;
+      var email:?Text = null;
+      var fullName :?Text = null;
+      var aboutUser:?Text = null;
+      var profileImageUrlSuffix :?Text = null;
+      for(wrapper in taskDataWrapper.vals()) {
+        for(data in wrapper.pohTaskData.vals()) {
+          if(data.challengeId == POH.CHALLENGE_PROFILE_DETAILS_ID) {
+            userName := data.userName;
+            email := data.email;
+            fullName := data.fullName;
+            aboutUser := data.aboutUser;
+          };
+          
+          if(data.challengeId == POH.CHALLENGE_PROFILE_PIC_ID) {
+            profileImageUrlSuffix := do ? {
+              ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
+            };
+          };
+        }
+      };
       let pohPackage = pohEngine.getPohChallengePackage(id);
       switch(pohPackage) {
         case(null)();
@@ -999,6 +1021,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
           let taskPlus = {
             packageId = id;
             status = voteManager.getContentStatus(id);
+            userName = userName;
+            email = email;
+            fullName = fullName;
+            aboutUser = aboutUser;
+            profileImageUrlSuffix = profileImageUrlSuffix;
             // TODO: change these vote settings
             voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
             minVotes = ModClubParam.MIN_VOTE_POH;
