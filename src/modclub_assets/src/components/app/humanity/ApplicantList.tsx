@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getPohTasks } from '../../../utils/api';
 import {
+  Modal,
   Heading,
   Columns,
   Card,
@@ -7,37 +10,22 @@ import {
   Icon
 } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
-import Userstats from "../profile/Userstats";
 import { formatDate } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
-
-// export interface PohTaskPlus {
-//   'status' : ContentStatus,
-//   'title' : [] | [string],
-//   'voteCount' : bigint,
-//   'minVotes' : bigint,
-//   'minStake' : bigint,
-//   'pohTaskData' : Array<PohTaskData>,
-//   'hasVoted' : [] | [boolean],
-//   'packageId' : string,
-// }
-
+// const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 const ApplicantSnippet = ({ applicant }) => {
-  console.log("ApplicantSnippet", applicant);
-  // const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant.pohTaskData[1];
-  const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant;
+    console.log("ApplicantSnippet", applicant);
 
-  // const imageUrl = `http://localhost:8000/storage?canisterId=${dataCanisterId}&contentId=${contentId[0]}`;
-  const imageUrl = '';
+  const { fullName, aboutUser, profileImageUrlSuffix, createdAt } = applicant;
+  const imageUrl = 'http://localhost:8000/storage?' + profileImageUrlSuffix;
   
   return (
     <Link
       to={`/app/poh/${applicant.packageId}`}
       className="card is-block"
       style={{
-        background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%),
-        url(${imageUrl}) no-repeat top center`
+        background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%), url(${imageUrl}) no-repeat top center`
       }}
     >
       <Card.Header justifyContent="start">
@@ -74,7 +62,7 @@ const ApplicantSnippet = ({ applicant }) => {
             <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">stars</span>
             </Icon>
-            <span>{"Reward: " + applicant.minStake}</span>
+            <span>{"Reward: " + applicant.reward}</span>
           </Button>
         </Button.Group>
       </Card.Footer>
@@ -82,25 +70,38 @@ const ApplicantSnippet = ({ applicant }) => {
   )
 };
 
-// export default function ApplicantList({ applicants } : { applicants: PohTaskPlus[] }) {
-export default function ApplicantList({ applicants }) {
-  return (
-    <>
-      <Userstats />
+export default function ApplicantList() {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [applicants, setApplicants] = useState<Array<object>>([])
 
-      <Columns>
-        {applicants.map((applicant, index) => (
-          <Columns.Column
-            key={index}
-            mobile={{ size: 12 }}
-            tablet={{ size: 6 }}
-            fullhd={{ size: 4 }}
-            style={{ maxWidth: 480 }}
-          >
-            <ApplicantSnippet applicant={applicant} />
-          </Columns.Column>
-        ))}
-        </Columns>
-    </>
-  )
+  const getApplicants = async () => {
+    const status = { "new": null };
+    const applicants = await getPohTasks(status);
+    console.log("getPohTasks res", applicants);
+    setApplicants(applicants);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    getApplicants();
+  }, []);
+
+  return loading ?
+    <Modal show={true} showClose={false}>
+      <div className="loader is-loading p-5"></div>
+    </Modal>
+    :
+    <Columns>
+      {applicants.map((applicant, index) => (
+        <Columns.Column
+          key={index}
+          mobile={{ size: 12 }}
+          tablet={{ size: 6 }}
+          fullhd={{ size: 4 }}
+          style={{ maxWidth: 480 }}
+        >
+          <ApplicantSnippet applicant={applicant} />
+        </Columns.Column>
+      ))}
+    </Columns>
 }

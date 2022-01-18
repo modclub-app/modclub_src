@@ -79,15 +79,20 @@ type PohVerificationResponse =
 type PohUniqueToken = record {token: text;};
 type PohTaskPlus = 
  record {
+   aboutUser: opt text;
    createdAt: int;
+   email: opt text;
+   fullName: opt text;
    hasVoted: opt bool;
    minStake: int;
    minVotes: int;
    packageId: text;
+   profileImageUrlSuffix: opt text;
    reward: float64;
    status: ContentStatus;
    title: opt text;
    updatedAt: int;
+   userName: opt text;
    voteCount: nat;
  };
 type PohTaskData = 

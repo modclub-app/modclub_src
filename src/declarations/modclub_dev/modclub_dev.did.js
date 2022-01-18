@@ -145,12 +145,17 @@ export const idlFactory = ({ IDL }) => {
   const PohTaskPlus = IDL.Record({
     'status' : ContentStatus,
     'reward' : IDL.Float64,
+    'userName' : IDL.Opt(IDL.Text),
     'title' : IDL.Opt(IDL.Text),
+    'profileImageUrlSuffix' : IDL.Opt(IDL.Text),
     'voteCount' : IDL.Nat,
     'minVotes' : IDL.Int,
     'createdAt' : IDL.Int,
+    'fullName' : IDL.Opt(IDL.Text),
+    'email' : IDL.Opt(IDL.Text),
     'minStake' : IDL.Int,
     'updatedAt' : IDL.Int,
+    'aboutUser' : IDL.Opt(IDL.Text),
     'hasVoted' : IDL.Opt(IDL.Bool),
     'packageId' : IDL.Text,
   });
