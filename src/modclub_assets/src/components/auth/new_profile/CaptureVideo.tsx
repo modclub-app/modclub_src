@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useHistory, Link } from "react-router-dom";
-import { Heading, Button, Card, Columns } from "react-bulma-components";
+import {
+  Modal,
+  Heading,
+  Button,
+  Card,
+  Columns
+} from "react-bulma-components";
 import Webcam from "react-webcam";
 import { CaptureButton } from "./Webcam"
 import { processAndUploadChunk } from "../../../utils/util";
@@ -10,9 +16,10 @@ export default function CaptureVideo({ steps }) {
   const history = useHistory();
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
-  const [capturing, setCapturing] = useState(false);
+  const [capturing, setCapturing] = useState<boolean>(false);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [phrases, setPhrases] = useState([]);
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true);
@@ -41,6 +48,7 @@ export default function CaptureVideo({ steps }) {
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
   const submit = async () => {
+    setSubmitting(true);
     const blob = new Blob(recordedChunks, {
       type: "video/webm"
     });
@@ -54,6 +62,7 @@ export default function CaptureVideo({ steps }) {
     }
     
     await Promise.all(putChunkPromises);
+    setSubmitting(false);
     history.push("/signup2/confirm");
   }
 
@@ -68,24 +77,14 @@ export default function CaptureVideo({ steps }) {
 
   return (
     <>
+      {submitting &&
+        <Modal show={true} showClose={false}>
+          <div className="loader is-loading p-5"></div>
+        </Modal>
+      }
       <Heading subtitle>
         Record yourself saying the following<br /> words in order:
       </Heading>
-
-      <Card className="mb-4">
-        <Card.Content className="columns is-multiline">
-          {phrases.map((phrase, index) => (
-            <Columns.Column key={phrase} size={4}>
-              <Button color="gradient" fullwidth isStatic style={{ color: '#fff' }}>
-                {index + 1}
-                <span className="ml-2">
-                  {phrase}
-                </span>
-              </Button>
-            </Columns.Column>
-          ))}
-        </Card.Content>
-      </Card>
 
       <div className="is-relative has-text-centered">
         <Webcam
@@ -95,11 +94,27 @@ export default function CaptureVideo({ steps }) {
         />
         <CaptureButton
           type={capturing ? "danger" : "success"}
+          icon="videocam"
           handleClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
         />
       </div>
 
-      <Button.Group align="right" className="mt-4">
+      <Card className="mt-4 mb-5">
+        <Card.Content className="columns is-multiline">
+          {phrases.map((phrase, index) => (
+            <Columns.Column key={phrase} size={4}>
+              <Button fullwidth isStatic>
+                {index + 1}
+                <span className="ml-2" style={{ width: 40 }}>
+                  {phrase}
+                </span>
+              </Button>
+            </Columns.Column>
+          ))}
+        </Card.Content>
+      </Card>
+
+      <Button.Group align="right">
         <Link to="/app/" className="button is-black">
           Cancel
         </Link>

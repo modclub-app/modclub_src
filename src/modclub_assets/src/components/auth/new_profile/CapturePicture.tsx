@@ -1,6 +1,11 @@
 import { useRef, useState } from "react";
 import { useHistory, Link } from "react-router-dom";
-import { Heading, Button, Icon } from "react-bulma-components";
+import {
+  Modal,
+  Heading,
+  Button,
+  Icon
+} from "react-bulma-components";
 import { WebcamWrapper } from "./Webcam"
 import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
 const MAX_CHUNK_SIZE = 1024 * 500;
@@ -14,6 +19,7 @@ export default function CapturePicture() {
     blob: new Blob(),
     data: null
   });
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   const handleFileChange = (event: React.FormEvent<HTMLInputElement>) => {
     // @ts-ignore
@@ -42,6 +48,7 @@ export default function CapturePicture() {
   }
 
   const submit = async () => {
+    setSubmitting(true);
     const putChunkPromises: Promise<undefined>[] = [];
     let chunk = 1;
     for (let byteStart = 0; byteStart < file.blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
@@ -50,11 +57,17 @@ export default function CapturePicture() {
       );
     }
     await Promise.all(putChunkPromises);
+    setSubmitting(false);
     history.push("/signup2/challenge-user-video");
   }
 
   return (
     <>
+      {submitting &&
+        <Modal show={true} showClose={false}>
+          <div className="loader is-loading p-5"></div>
+        </Modal>
+      }
       <Heading subtitle textAlign="center">
         Submit a photo of yourself. It should be well lit and head on.
       </Heading>
@@ -83,10 +96,10 @@ export default function CapturePicture() {
       />
 
       <Button.Group align="right" className="mt-4">
-        <Link to="/app/" className="button is-black" disabled={!file}>
+        <Link to="/app/" className="button is-black" disabled={!file.data}>
           Cancel
         </Link>
-        <Button color="primary" disabled={!file} onClick={submit}>
+        <Button color="primary" disabled={!file.data} onClick={submit}>
           Next
         </Button>
       </Button.Group>
