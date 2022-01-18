@@ -10,7 +10,6 @@ export default function Humanity() {
 
       <Switch>
         <Route exact path="/app/poh">
-          {/* <ApplicantList applicants={applicants} /> */}
           <ApplicantList />
         </Route>
         <Route path="/app/poh/:packageId">
