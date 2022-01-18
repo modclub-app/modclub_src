@@ -26,7 +26,6 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Float "mo:base/Float";
 import Token "./token";
 import TrieSet "mo:base/TrieSet";
 import Types "./types";
