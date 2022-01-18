@@ -11,11 +11,26 @@ import Userstats from "../profile/Userstats";
 import { formatDate } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
-const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus}) => {
-  console.log("applicant", applicant);
-  const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant;
-  const imageUrl = `http://localhost:8000/storage?canisterId=${dataCanisterId}&contentId=${contentId[0]}`;
 
+// export interface PohTaskPlus {
+//   'status' : ContentStatus,
+//   'title' : [] | [string],
+//   'voteCount' : bigint,
+//   'minVotes' : bigint,
+//   'minStake' : bigint,
+//   'pohTaskData' : Array<PohTaskData>,
+//   'hasVoted' : [] | [boolean],
+//   'packageId' : string,
+// }
+
+const ApplicantSnippet = ({ applicant }) => {
+  console.log("ApplicantSnippet", applicant);
+  // const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant.pohTaskData[1];
+  const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant;
+
+  // const imageUrl = `http://localhost:8000/storage?canisterId=${dataCanisterId}&contentId=${contentId[0]}`;
+  const imageUrl = '';
+  
   return (
     <Link
       to={`/app/poh/${applicant.packageId}`}
@@ -67,7 +82,8 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus}) => {
   )
 };
 
-export default function ApplicantList({ applicants } : { applicants: PohTaskPlus[] }) {
+// export default function ApplicantList({ applicants } : { applicants: PohTaskPlus[] }) {
+export default function ApplicantList({ applicants }) {
   return (
     <>
       <Userstats />

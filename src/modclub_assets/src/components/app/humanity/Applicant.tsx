@@ -155,9 +155,10 @@ const UserVideo = ({ data }) => {
   )
 };
 
-export default function Applicant({ applicants }) {
-  const [content, setContent] = useState(null);
+export default function Applicant() {
   const { packageId } = useParams();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [content, setContent] = useState(null);
 
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
@@ -176,11 +177,24 @@ export default function Applicant({ applicants }) {
     console.log("onFormSubmit values", values)
   }
 
+  // useEffect(() => {
+  //   const data = applicants.find(applicant => applicant.packageId === packageId);
+  //   console.log("content", data);
+  //   setContent(data);
+  // }, [applicants]);
+
+  const getApplicant = async () => {
+    console.log("getApplicant packageId", packageId);
+    // const status = { "new": null };
+    // const applicant = await getPohTasks(status);
+    // console.log("res", applicant);
+    // setContent(applicant);
+    // setLoading(false);
+  }
+
   useEffect(() => {
-    const data = applicants.find(applicant => applicant.packageId === packageId);
-    console.log("content", data);
-    setContent(data);
-  }, [applicants]);
+    getApplicant();
+  }, []);
 
   return (
     <>

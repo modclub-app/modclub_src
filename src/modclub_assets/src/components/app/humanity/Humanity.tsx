@@ -13,6 +13,7 @@ export default function Humanity() {
   const initialCall = async () => {
     const status = { "new": null };
     const applicants = await getPohTasks(status);
+    console.log("getPohTasks res", applicants);
     setApplicants(applicants);
     setLoading(false);
   }
@@ -33,7 +34,7 @@ export default function Humanity() {
           <ApplicantList applicants={applicants} />
         </Route>
         <Route path="/app/poh/:packageId">
-          <Applicant applicants={applicants} />
+          <Applicant />
         </Route>
       </Switch>
     </>
