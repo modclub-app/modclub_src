@@ -13,11 +13,9 @@ import Progress from "../../common/progress/Progress";
 import { formatDate } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
-// const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
-const ApplicantSnippet = ({ applicant }) => {
-    console.log("ApplicantSnippet", applicant);
-
-  const { fullName, aboutUser, profileImageUrlSuffix, createdAt } = applicant;
+const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
+  console.log("ApplicantSnippet", applicant);
+  const { fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
   const imageUrl = 'http://localhost:8000/storage?' + profileImageUrlSuffix;
   
   return (
@@ -62,7 +60,7 @@ const ApplicantSnippet = ({ applicant }) => {
             <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">stars</span>
             </Icon>
-            <span>{"Reward: " + applicant.reward}</span>
+            <span>{"Reward: " + reward}</span>
           </Button>
         </Button.Group>
       </Card.Footer>
@@ -72,7 +70,7 @@ const ApplicantSnippet = ({ applicant }) => {
 
 export default function ApplicantList() {
   const [loading, setLoading] = useState<boolean>(true);
-  const [applicants, setApplicants] = useState<Array<object>>([])
+  const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
 
   const getApplicants = async () => {
     const status = { "new": null };
