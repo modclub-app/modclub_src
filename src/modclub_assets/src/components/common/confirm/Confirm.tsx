@@ -3,16 +3,16 @@ import { Field } from "react-final-form";
 import "./Confirm.scss";
 
 export default function Confirm({
-  color,
+  type,
   id,
   label
 } : {
-  color: string,
+  type: string,
   id: string,
   label: string
 }) {
   return (
-    <Card className="confirm mt-5" style={{ backgroundColor: color }}>
+    <Card className="confirm mt-5" backgroundColor={type}>
       <Card.Content>
         <Field
           name={id}

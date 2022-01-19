@@ -36,11 +36,23 @@ const Modal_ = ({
   const [rules, setRules] = useState([]);
   const [message, setMessage] = useState(null);
 
+  // TODO get points
+  const points = -5;
+
   const isDisabled = (values: any) => {
-    if (!Object.keys(values).length) return true
-    if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true
-    if (title === "Approve Confirmation" && !values["voteRulesConfirmation"] || !values["voteRulesConfirmation"].length) return true
-    return false
+    if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true;
+    if (title === "Approve Confirmation") {
+      if (!values["voteRulesConfirmation"] || !values["voteRulesConfirmation"].length) return true;
+    }
+    if (title === "Reject Confirmation") {
+      let checked = 0
+      for (const key in values) {
+        console.log('values[key]', values[key])
+        values[key].length && checked ++
+      }
+      if (checked < 2) return true;
+    }
+    return false;
   } 
 
   const onFormSubmit = async (values: any) => {
@@ -86,7 +98,6 @@ const Modal_ = ({
               <Heading subtitle className="mb-3">
                 {platform}'s Rules
               </Heading>
-
               <ul style={{ listStyle: "disc", paddingLeft: "2rem", color: "#fff" }}>
                 {rules.map(rule => 
                   <li key={rule.id}>{rule.description}</li>
@@ -96,14 +107,9 @@ const Modal_ = ({
           </Card>
 
           <Confirm
-            color="#C91988"
+            type="warning"
             id="voteRulesConfirmation"
             label="I confirm that this content does not break any rules above"
-          />          
-          <Confirm
-            color="#cc0f35"
-            id="voteIncorrectlyConfirmation"
-            label="I understand I will lose -20 MOD if I vote incorrectly"
           />
         </>);
       }
@@ -117,12 +123,6 @@ const Modal_ = ({
               )}
             </Card.Content>
           </Card>
-
-          <Confirm
-            color="#cc0f35"
-            id="voteIncorrectlyConfirmation"
-            label="I understand I will lose -20 MOD if I vote incorrectly"
-          />
         </>);
       }
     };
@@ -140,7 +140,14 @@ const Modal_ = ({
               <Heading subtitle>
                 {title}
               </Heading>
+
               {content}
+
+              <Confirm
+                type="danger"
+                id="voteIncorrectlyConfirmation"
+                label={`I understand I will lose ${points} MOD if I vote incorrectly`}
+              />
             </Modal.Card.Body>
             <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
               <Button.Group>
