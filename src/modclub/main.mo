@@ -5,6 +5,7 @@ import Buffer "mo:base/Buffer";
 import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
+import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
@@ -65,6 +66,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
   type ProviderPlus = Types.ProviderPlus; 
   type Activity = Types.Activity;
   type AirdropUser = Types.AirdropUser;
+  type ModeratorLeaderboard = Types.ModeratorLeaderboard;
+  type RewardsEarnedMap = Types.RewardsEarnedMap;
 
 
   // Airdrop Flags
@@ -459,7 +462,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
 
       switch(state.airdropWhitelist.get(caller)){
-        case(null) throw Error.reject("Unauthorized");
+        case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
         case(_) ();
       };
 
@@ -516,6 +519,14 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
   };
 
+  public query func getProfileById(pid: Principal) : async Profile {    
+      Debug.print("getProfile for principal ID " # Principal.toText(pid) );
+      switch(state.profiles.get(pid)){
+        case (null) throw Error.reject("profile not found");
+        case (?result) return result;
+      };
+  };
+
   public query func getAllProfiles() : async [Profile] {
       let buf = Buffer.Buffer<Profile>(0);
       for ( (pid, p) in state.profiles.entries()) {
@@ -523,6 +534,109 @@ shared ({caller = initializer}) actor class ModClub () = this {
         buf.add(p);                        
       }; 
       return buf.toArray();
+  };
+
+  public query func getModeratorLeaderboard(start: Nat, end: Nat) : async [ModeratorLeaderboard] {
+      let rewardsEarnedBuffer = Buffer.Buffer<RewardsEarnedMap>(0);
+      for ( (pid, p) in state.profiles.entries()) {
+        let holdings = tokens.getHoldings(p.id);
+        rewardsEarnedBuffer.add({
+          rewardsEarned = holdings.pendingRewards;
+          userId = p.id;
+        });
+      };
+      let sortedArray = Array.sort(
+        rewardsEarnedBuffer.toArray(), 
+        func (a: RewardsEarnedMap, b: RewardsEarnedMap) : { #less; #equal; #greater } {
+          if (a.rewardsEarned > b.rewardsEarned) { #less }
+          else if (a.rewardsEarned == b.rewardsEarned) { #equal }
+          else { #greater }
+        }
+      );
+
+      let buf = Buffer.Buffer<ModeratorLeaderboard>(0);
+      var i: Nat = start;
+      while (i < end and i < sortedArray.size()) {
+        let pid = sortedArray[i].userId;
+        let rewardsEarned = sortedArray[i].rewardsEarned;
+        let profile = state.profiles.get(pid);
+
+        switch (profile) {
+          case (?p) {
+            Debug.print("getModeratorLeaderboard pid " # Principal.toText(pid) );
+            var correctVoteCount : Int = 0;
+            var completedVoteCount : Int = 0;
+            var lastVoted : Timestamp = 0;
+            for (vid in state.mods2votes.get0(pid).vals()) {
+              switch(state.votes.get(vid)) {
+                case (?vote) {
+                  switch(state.content.get(vote.contentId)) {
+                    case (?content) {
+                      if (content.status != #new) {
+                        completedVoteCount := completedVoteCount + 1;
+                        if (lastVoted == 0 or lastVoted < vote.createdAt) {
+                          lastVoted := vote.createdAt;
+                        };
+                        if (vote.decision == content.status) {
+                          correctVoteCount := correctVoteCount + 1;
+                        };
+                      };
+                    };
+                    case(_) throw Error.reject("Content does not exist"); 
+                  };          
+                };
+                case (_) throw Error.reject("Vote does not exist");
+              };
+            };
+            var performance : Float = 0;
+            if (completedVoteCount != 0) {
+              performance := Float.fromInt(correctVoteCount) / Float.fromInt(completedVoteCount);
+            };
+            
+            let item : ModeratorLeaderboard = {
+                id = pid;
+                userName = p.userName;
+                completedVoteCount = completedVoteCount;
+                rewardsEarned = rewardsEarned;
+                performance = performance;
+                lastVoted = ?lastVoted;
+            };
+            buf.add(item);
+          };
+          case (_) ();
+        };
+
+        i := i + 1;
+      }; 
+      return buf.toArray();
+  };
+
+  public query({ caller }) func getVotePerformance() : async Float {
+    var correctVoteCount : Int = 0;
+    var completedVoteCount : Int = 0;
+    for (vid in state.mods2votes.get0(caller).vals()) {
+      switch(state.votes.get(vid)) {
+        case (?vote) {
+          switch(state.content.get(vote.contentId)) {
+            case (?content) {
+              if (content.status != #new) {
+                completedVoteCount := completedVoteCount + 1;
+                if (vote.decision == content.status) {
+                  correctVoteCount := correctVoteCount + 1;
+                };
+              };
+            };
+            case(_) throw Error.reject("Content does not exist"); 
+          };          
+        };
+        case (_) throw Error.reject("Vote does not exist");
+      };
+    };
+    var performance : Float = 0;
+    if (completedVoteCount != 0) {
+      performance := Float.fromInt(correctVoteCount) / Float.fromInt(completedVoteCount);
+    };
+    return performance;
   };
 
   // Todo: Enable updating profile at a later time
@@ -652,6 +766,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
                 switch(state.providers.get(content.providerId)) {
                   case(?provider) {
                     let voteCount = getVoteCount(content.id, ?caller);
+
                     let item : Activity = {
                         vote = vote;
                         providerId = content.providerId;
@@ -664,8 +779,18 @@ shared ({caller = initializer}) actor class ModClub () = this {
                         voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
                         minVotes = provider.settings.minVotes;
                         minStake = provider.settings.minStaked;
-                        reward = 1; // Todo: Calculate reward
                         rewardRelease = Helpers.timeNow();
+                        reward = do  {
+                          switch(isComplete == true) {
+                            case(true) {
+                              switch(vote.decision == content.status) {
+                                case(true) Float.fromInt(provider.settings.minStaked);
+                                case(false) -1 * Float.fromInt(provider.settings.minStaked);
+                              };
+                            };
+                            case(false) 0;
+                          };
+                        }; 
                     };
                     buf.add(item);
                 };

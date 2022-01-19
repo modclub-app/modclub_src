@@ -122,6 +122,7 @@ export default function Tasks() {
           <div className="loader is-loading p-4 mt-6" />
         ) : tasks.map((task) => (
           <Task
+            key={task.id}
             task={task}
             setVoted={setVoted}
           />

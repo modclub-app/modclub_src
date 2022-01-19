@@ -14,70 +14,90 @@ import {
 import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
+import { Activity } from "../../../utils/types";
 
-const Table = ({ loading, filteredActivity, getLabel, currentFilter }) => {  
-  return loading ? (
-    <div className="loader is-loading"></div>
-  ) : (
-    <div className="table-container">
-      <table className="table is-striped">
-        <thead>
-          <tr>
-            <th>Vote</th>
-            <th>App</th>
-            <th>Title</th>
-            <th>Votes</th>
-            <th>Voted on</th>
-            <th>Reward</th>
-            <th>Reward Release</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredActivity.length ? (
-            filteredActivity.map(item => (
-              <tr key={item.vote.id}>
-                <td>
-                  {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
-                </td>
-                <td>{item.providerName}</td>
-                <td>
-                  <Snippet string={item.title[0]} truncate={15} />
-                </td>
-                <td>
-                  <Progress
-                    value={Number(item.voteCount)}
-                    min={Number(item.minVotes)}
-                  />
-                </td>
-                <td>{formatDate(item.createdAt)}</td>
-                <td>{Number(item.reward)} MOD</td>
-                <td>{formatDate(item.rewardRelease)}</td>
-              </tr>
+const Table = (
+  {
+    loading,
+    filteredActivity,
+    getLabel,
+    currentFilter
+  }: {
+      loading: Boolean
+      filteredActivity: Activity[]
+      getLabel: (activity: string) => string
+      currentFilter: string
+    }
+) => {  
+  if (loading) {
+    return (<div className="loader is-loading"></div>);
+  } else {
+    return (
+      <div className="table-container">
+        <table className="table is-striped">
+          <thead>
+            <tr>
+              <th>Your Vote</th>
+              <th>Final Vote</th>
+              <th>App</th>
+              <th>Title</th>
+              <th>Votes</th>
+              <th>Voted on</th>
+              <th>Reward</th>
+              <th>Reward Release</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredActivity.length ? (
+              filteredActivity.map(item => (
+                <tr key={item.vote.id}>
+                  <td>
+                    {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
+                  </td>
+                  <td>
+                    {("new" in item.status) ? "-" : "approved" in item.status ? "Approved" : "Rejected" }
+                  </td>
+                  <td>{item.providerName}</td>
+                  <td>
+                    <Snippet string={item.title[0]} truncate={15} />
+                  </td>
+                  <td>
+                    <Progress
+                      value={Number(item.voteCount)}
+                      min={Number(("new" in item.status) ? item.minVotes : item.voteCount)}
+                    />
+                  </td>
+                  <td>{formatDate(item.createdAt)}</td>
+                  <td>{("new" in item.status) ? "-" : Number(item.reward)}</td>
+                  <td>{("new" in item.status) ? "-" : formatDate(item.rewardRelease)}</td>
+                </tr>
+              )
             )
-          )
-        ) : (
-          <tr className="is-relative">
-            <td colSpan={7}>
-              No {getLabel(currentFilter)} Activity
-            </td>
-          </tr>
-        )}
-        </tbody>
-      </table>
-    </div>
-  )
+          ) : (
+            <tr className="is-relative">
+              <td colSpan={8}>
+                No {getLabel(currentFilter)} Activity
+              </td>
+            </tr>
+          )}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+  
 }
 
 export default function Activity() {
   const { user } = useAuth();
-  const [completedActivity, setCompletedActivity] = useState([]);
-  const [inProgressActivity, setInProgressActivity] = useState([]);
+  const [completedActivity, setCompletedActivity] = useState<Activity[]>([]);
+  const [inProgressActivity, setInProgressActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
 
   const filters = ["completed", "new"];
 
-  const getLabel = (label) => {
+  const getLabel = (label: string) => {
     if (label === "new") return "In Progress"
     if (label === "completed") return "Completed"
   }

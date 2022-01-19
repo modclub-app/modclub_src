@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getTokenHoldings } from '../../../utils/api';
+import { getTokenHoldings, getPerformance } from '../../../utils/api';
 import { useAuth } from "../../../utils/auth";
 import { Columns, Card, Heading, Button } from "react-bulma-components";
 import walletImg from '../../../../assets/wallet.svg';
@@ -26,7 +26,7 @@ const StatBox = ({ loading, image, title, amount, usd, detailed, children }) => 
                 {amount}
                 {detailed &&
                   <span className="has-text-weight-normal is-size-4 ml-4">
-                    ${usd}
+          
                   </span>
                 }
               </Heading>
@@ -45,13 +45,13 @@ const StatBox = ({ loading, image, title, amount, usd, detailed, children }) => 
 
 export default function Userstats({ detailed = false }) {
   const { user } = useAuth();
-  // const [loading, setLoading] = useState<boolean>(true);
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards : 0,
     stake : 0,
     wallet : 0,  
   });
+  const [performance, setPerformance] = useState<number>(0);
 
   const [showWithdraw, setShowWithdraw] = useState(false);
   const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
@@ -65,9 +65,10 @@ export default function Userstats({ detailed = false }) {
   useEffect(() => {
     const fetchTokenHoldings = async () => {
       const tokenHoldings = await getTokenHoldings();
+      const performance = await getPerformance();
+      setPerformance(performance);
       setTokenHoldings(tokenHoldings);
       setHoldingsUpdated(false);
-      // setLoading(false);
     };
     user && holdingsUpdated && fetchTokenHoldings();
   }, [user, holdingsUpdated]);
@@ -112,8 +113,8 @@ export default function Userstats({ detailed = false }) {
       <StatBox
         loading={holdingsUpdated}
         image={performanceImg}
-        title="Pending rewards"
-        amount={tokenHoldings.pendingRewards}
+        title="Performance"
+        amount={(performance * 100).toFixed(0) + "%"}
         usd={12}
         detailed={detailed}
       >
