@@ -51,7 +51,6 @@ const Signup = () => {
         dataSize: BigInt(1)
       });
       console.log("res", res);
-      console.log("innder", res.submissionStatus);
 
       // If the submission was successful
       if (res && "ok" in res.submissionStatus) {
@@ -72,6 +71,11 @@ const Signup = () => {
 
   return (
     <>
+      {submitting &&
+        <Modal show={true} showClose={false}>
+          <div className="loader is-loading p-5"></div>
+        </Modal>
+      }
       <Heading subtitle textAlign="center">
         Create your profile
       </Heading>
@@ -178,6 +182,7 @@ export default function NewProfile2({ match }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)
   const [currentStep, setCurrentStep] = useState<string>('')
+  const [completed, setCompleted] = useState<string>('')
 
   const initialCall = async () => {
     const verified = await verifyUserHumanity();
@@ -201,10 +206,11 @@ export default function NewProfile2({ match }) {
       return status === "notSubmitted"
     })
 
-    console.log('uncompleted', uncompleted)
+    console.log("uncompleted", uncompleted)
 
     if (!uncompleted) {
       // history.push("/app");
+      setCompleted("You have already submitted your application")
     } else {
       history.push(`/signup2/${uncompleted.challengeId}`)
     }
@@ -228,6 +234,11 @@ export default function NewProfile2({ match }) {
       <Modal show={true} showClose={false}>
         <div className="loader is-loading p-5"></div>
       </Modal>
+    }
+    {completed &&
+      <Notification color="success" className="has-text-centered">
+        {completed}
+      </Notification>
     }
 
     <Columns centered vCentered className="is-fullheight mt-6">

@@ -479,7 +479,6 @@ module PohModule {
                 ruleId= "2";
                 ruleDesc = "Rule 2";
             });
-            
             state.pohChallenges.put(CHALLENGE_PROFILE_DETAILS_ID, {
                 challengeId = CHALLENGE_PROFILE_DETAILS_ID;
                 challengeName = "Please create a username";
@@ -506,7 +505,6 @@ module PohModule {
                 ruleId= "3";
                 ruleDesc = "Rule 3";
             });
-
             state.pohChallenges.put(CHALLENGE_PROFILE_PIC_ID, {
                 challengeId = CHALLENGE_PROFILE_PIC_ID;
                 challengeName = "Please provide your picture";
@@ -537,7 +535,6 @@ module PohModule {
                 ruleId= "4";
                 ruleDesc = "Rule 4";
             });
-
             state.pohChallenges.put(CHALLENGE_USER_VIDEO_ID, {
                 challengeId = CHALLENGE_USER_VIDEO_ID;
                 challengeName = "Please record your video saying these words";

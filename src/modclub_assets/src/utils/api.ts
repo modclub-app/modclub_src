@@ -185,6 +185,12 @@ export async function getPohTasks(
   return (await getMC()).getPohTasks(status);
 }
 
+export async function getPohTaskData(
+  packageId: string
+): Promise<any> {
+  return (await getMC()).getPohTaskData(packageId);
+}
+
 export async function votePohContent(
   packageId: string,
   decision: Decision,
