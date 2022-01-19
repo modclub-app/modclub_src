@@ -19,5 +19,4 @@ export default function Toggle({ id, label }) {
       </label>
     </div>
   )
-
 }

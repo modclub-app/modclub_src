@@ -82,11 +82,8 @@ const Task = ({ task, setVoted }) => {
               />
             </div>
             <ApproveReject
-              platform={task.providerName}
-              id={task.id}
-              providerId={task.providerId}
+              task={task}
               onUpdate={() => setVoted(true)}
-              voted={!!task.hasVoted[0]}
             />
           </Button.Group>
         </Card.Footer>
