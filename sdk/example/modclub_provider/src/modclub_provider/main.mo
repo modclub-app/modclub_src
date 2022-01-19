@@ -56,32 +56,12 @@ actor {
         // userId to check if it's a human
         let userId = Principal.fromText("2vxsx-fae");
         // call to check humanity
-        let response =  await MC.verifyForHumanity(userId);
+       let response =  await MC.verifyForHumanity(userId);
 
-        // User never tried to attempt humanity challenge
-        if(response.challenges.size() == 0 ) {
-            // submit user's userid specific to your application to ModClub
-            let token = await MC.generateUniqueToken(userId);
-            // Let the UI client know that user didn't attempt any challenge
-            return (#notAttempted, ?token.token);
+        if(response.status != #verified) {
+            return (response.status, ?(await MC.generateUniqueToken(userId)).token);
         };
-
-        // if user has attempted challenge, iterate to find that all challenges
-        // are not pending/rejected/expired or notSubmitted.
-        // Provider can use any custom logic based on what user's individial challenge status is
-        for(challenge in response.challenges.vals()) {
-            if(challenge.status == #pending) {
-                return (#pending, ?((await MC.generateUniqueToken(userId)).token));
-            } else if(challenge.status == #rejected) {
-                return (#rejected, ?((await MC.generateUniqueToken(userId)).token));
-            } else if(challenge.status == #expired) {
-                return (#expired, ?((await MC.generateUniqueToken(userId)).token));
-            } else if(challenge.status == #notSubmitted) {
-                return (#notSubmitted, ?((await MC.generateUniqueToken(userId)).token));
-            };
-        };
-        // if status is not verified, then UI can start with POH workflow using token in the response
-        return (#verified, null);
+        return (response.status, null);
     };
    
 };

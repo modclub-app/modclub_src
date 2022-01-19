@@ -32,6 +32,7 @@ module {
   public type PohVerificationResponse = {
     requestId: Text;
     providerUserId: Principal;
+    status : PohChallengeStatus;
     // status at each challenge level
     challenges: [ChallengeResponse];
     providerId: Principal;
