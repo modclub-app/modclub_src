@@ -47,7 +47,6 @@ actor {
     public func deregister() : async Text {
         await MC.deregisterProvider();
     };
-    
 
     public func voteResult(result: ContentResult) {
         Debug.print(debug_show(result));

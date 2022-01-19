@@ -69,6 +69,7 @@ module PohModule {
                     {
                         requestId = pohVerificationRequest.requestId;
                         providerUserId = pohVerificationRequest.providerUserId;
+                        status = #notSubmitted;
                         challenges = [];
                         providerId = pohVerificationRequest.providerId;
                         requestedOn = Time.now();
@@ -86,15 +87,19 @@ module PohModule {
                     {
                         requestId = pohVerificationRequest.requestId;
                         providerUserId = pohVerificationRequest.providerUserId;
+                        status = #notSubmitted;
                         challenges = [];
                         providerId = pohVerificationRequest.providerId;
                         requestedOn = Time.now();
                     };
                 case(?attemptsByChallenges) {
                     let challenges = Buffer.Buffer<PohTypes.ChallengeResponse>(configuredChallengeIds.size());
+                    var overAllStatus: ?PohTypes.PohChallengeStatus = null;
+
                     for(challengeId in configuredChallengeIds.vals()) {
                         switch(attemptsByChallenges.get(challengeId)) {
                             case(null) {
+                                overAllStatus := ?#notSubmitted;
                                 challenges.add({
                                     challengeId = challengeId;
                                     status = #notSubmitted;
@@ -114,12 +119,31 @@ module PohModule {
                                     status = status;
                                     completedOn = completedOn;
                                 });
+
+                                // if any of the challenge is rejected, then overall status is rejected
+                                if(status == #rejected) {
+                                    overAllStatus := ?#rejected;
+                                } else if(overAllStatus != ?#rejected and status == #expired) {
+                                // if any of the challenge is expired and none is rejected, then overall status is expired
+                                    overAllStatus := ?#expired;
+                                };
+
+                                // so that rejected or expired overallstatus can't be overidden
+                                if(overAllStatus != ?#rejected and overAllStatus != ?#expired) {
+                                    // if any of the challenge is not submitted then it's not submitted.
+                                    if(status == #notSubmitted) {
+                                        overAllStatus := ?#notSubmitted;
+                                    } else if(overAllStatus != ?#notSubmitted and status == #pending) {
+                                        overAllStatus := ?#pending;
+                                    };
+                                };
                             };
                         };
                     };
                     {
                         requestId = pohVerificationRequest.requestId;
                         providerUserId = pohVerificationRequest.providerUserId;
+                        status = Option.get(overAllStatus, #verified);
                         challenges = challenges.toArray();
                         providerId = pohVerificationRequest.providerId;
                         requestedOn = Time.now();
