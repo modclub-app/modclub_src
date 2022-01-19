@@ -9,10 +9,11 @@ import {
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import { formatDate } from "../../../utils/util";
+import { PohTaskPlus } from "../../../utils/types";
 
-const ApplicantSnippet = ({ applicant }) => {
+const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus}) => {
   console.log("applicant", applicant);
-  const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant.pohTaskData[1];
+  const { fullName, aboutUser, dataCanisterId, contentId, createdAt } = applicant;
   const imageUrl = `http://localhost:8000/storage?canisterId=${dataCanisterId}&contentId=${contentId[0]}`;
 
   return (
@@ -66,7 +67,7 @@ const ApplicantSnippet = ({ applicant }) => {
   )
 };
 
-export default function ApplicantList({ applicants }) {
+export default function ApplicantList({ applicants } : { applicants: PohTaskPlus[] }) {
   return (
     <>
       <Userstats />
