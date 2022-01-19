@@ -13,31 +13,25 @@ import Confirm from "../../common/confirm/Confirm";
 import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
+import { ContentPlus } from "../../../utils/types";
 
 const Modal_ = ({
   title,
   image,
-  platform,
+  task,
   toggle,
-  id,
-  providerId,
   onUpdate
 }: {
   title: string;
   image: string;
-  platform: string;
+  task: ContentPlus;
   toggle: () => void;
-  id: string;
-  providerId: Principal;
   onUpdate: () => void;
 }) => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [content, setContent] = useState(<div className="loader is-loading"></div>);
   const [rules, setRules] = useState([]);
   const [message, setMessage] = useState(null);
-
-  // TODO get points
-  const points = -5;
 
   const isDisabled = (values: any) => {
     if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true;
@@ -65,7 +59,7 @@ const Modal_ = ({
     setSubmitting(true);
     const regEx = /Reject text: (.*)/g;
     try {
-      const result = await vote(id, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, checked);
+      const result = await vote(task.id, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, checked);
       console.log("result", result);
       setSubmitting(false);
       setMessage({ success: result === "Vote successful" ? true : false, value: result });
@@ -83,20 +77,20 @@ const Modal_ = ({
   useEffect(() => {
     const fetchRules = async () => {
       setSubmitting(true);
-      const rules = await getProviderRules(providerId);
+      const rules = await getProviderRules(task.providerId);
       console.log({ rules });
       setRules(rules);
       setSubmitting(false);
 
       if (title === "Approve Confirmation") {
         setContent(<>
-          <p>You are confirming that this post follows {platform}'s rules.</p>
+          <p>You are confirming that this post follows {task.providerName}'s rules.</p>
           <p>Voting incorrectly will result in some loss of staked tokens.</p>
 
           <Card backgroundColor="dark" className="mt-5">
             <Card.Content>
               <Heading subtitle className="mb-3">
-                {platform}'s Rules
+                {task.providerName}'s Rules
               </Heading>
               <ul style={{ listStyle: "disc", paddingLeft: "2rem", color: "#fff" }}>
                 {rules.map(rule => 
@@ -146,7 +140,7 @@ const Modal_ = ({
               <Confirm
                 type="danger"
                 id="voteIncorrectlyConfirmation"
-                label={`I understand I will lose ${points} MOD if I vote incorrectly`}
+                label={`I understand I will lose ${task.minStake} MOD if I vote incorrectly`}
               />
             </Modal.Card.Body>
             <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
@@ -182,7 +176,7 @@ export default function ApproveReject({
   fullWidth = false,
   onUpdate,
 } : {
-  task: any;
+  task: ContentPlus;
   fullWidth?: boolean;
   onUpdate: () => void;
 }) {
@@ -216,10 +210,8 @@ export default function ApproveReject({
         <Modal_
           title="Approve Confirmation"
           image={approveImg}
-          platform={task.platform}
+          task={task}
           toggle={toggleApprove}
-          id={task.id}
-          providerId={task.providerId}
           onUpdate={onUpdate}
         />
       }
@@ -227,10 +219,8 @@ export default function ApproveReject({
         <Modal_
           title="Reject Confirmation"
           image={rejectImg}
-          platform={task.platform}
+          task={task}
           toggle={togglReject}
-          id={task.id}
-          providerId={task.providerId}
           onUpdate={onUpdate}
         />
       }
