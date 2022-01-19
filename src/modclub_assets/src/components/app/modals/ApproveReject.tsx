@@ -38,8 +38,8 @@ const Modal_ = ({
 
   const isDisabled = (values: any) => {
     if (!Object.keys(values).length) return true
-    if (!values["voteIncorrectlyConfirmation"]) return true
-    if (!values["voteIncorrectlyConfirmation"].length) return true
+    if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true
+    if (title === "Approve Confirmation" && !values["voteRulesConfirmation"] || !values["voteRulesConfirmation"].length) return true
     return false
   } 
 

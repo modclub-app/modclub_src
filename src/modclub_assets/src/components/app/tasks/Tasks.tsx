@@ -7,8 +7,7 @@ import {
   Card,
   Heading,
   Button,
-  Icon,
-  Level
+  Icon
 } from "react-bulma-components";
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
@@ -28,7 +27,6 @@ const Task = ({ task, setVoted }) => {
   useEffect(() => {
     const fetchRules = async () => {
       const rules = await getProviderRules(task.providerId);
-      console.log({ rules });
       setRules(rules);
     };
     fetchRules();
