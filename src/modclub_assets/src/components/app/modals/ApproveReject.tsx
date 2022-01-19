@@ -178,19 +178,13 @@ const Modal_ = ({
 };
 
 export default function ApproveReject({
-  platform,
-  id,
-  providerId,
+  task,
   fullWidth = false,
   onUpdate,
-  voted
 } : {
-  platform: string;
-  id: string;
-  providerId: Principal;
+  task: any;
   fullWidth?: boolean;
   onUpdate: () => void;
-  voted: boolean;
 }) {
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
@@ -200,10 +194,21 @@ export default function ApproveReject({
 
   return (
     <>
-      <Button color="danger" fullwidth={fullWidth} onClick={togglReject} disabled={voted}>
+      <Button
+        color="danger"
+        fullwidth={fullWidth}
+        onClick={togglReject}
+        disabled={!!task.hasVoted[0]}
+      >
         Reject
       </Button>
-      <Button color="primary" fullwidth={fullWidth} onClick={toggleApprove} className="ml-4" disabled={voted}>
+      <Button
+        color="primary"
+        fullwidth={fullWidth}
+        onClick={toggleApprove}
+        className="ml-4"
+        disabled={!!task.hasVoted[0]}
+      >
         Approve
       </Button>
 
@@ -211,10 +216,10 @@ export default function ApproveReject({
         <Modal_
           title="Approve Confirmation"
           image={approveImg}
-          platform={platform}
+          platform={task.platform}
           toggle={toggleApprove}
-          id={id}
-          providerId={providerId}
+          id={task.id}
+          providerId={task.providerId}
           onUpdate={onUpdate}
         />
       }
@@ -222,10 +227,10 @@ export default function ApproveReject({
         <Modal_
           title="Reject Confirmation"
           image={rejectImg}
-          platform={platform}
+          platform={task.platform}
           toggle={togglReject}
-          id={id}
-          providerId={providerId}
+          id={task.id}
+          providerId={task.providerId}
           onUpdate={onUpdate}
         />
       }

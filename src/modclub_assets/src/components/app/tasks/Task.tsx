@@ -107,11 +107,8 @@ export default function Task() {
               <Card.Footer className="pt-0" style={{ border: 0 }}>
                 <Button.Group>
                   <ApproveReject
-                    platform={task.providerName}
-                    id={task.id}
-                    providerId={task.providerId}
+                    task={task}
                     fullWidth={true}
-                    voted={!!task.hasVoted[0]}
                     onUpdate={() => setVoted(true)}
                   />
                 </Button.Group>
