@@ -177,7 +177,21 @@ const Modal_ = ({
   );
 };
 
-export default function ApproveReject({ platform, id, providerId, fullWidth = false, onUpdate, voted }) {
+export default function ApproveReject({
+  platform,
+  id,
+  providerId,
+  fullWidth = false,
+  onUpdate,
+  voted
+} : {
+  platform: string;
+  id: string;
+  providerId: Principal;
+  fullWidth?: boolean;
+  onUpdate: () => void;
+  voted: boolean;
+}) {
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
 
