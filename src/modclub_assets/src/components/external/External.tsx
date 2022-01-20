@@ -2,7 +2,7 @@ import Header from "../header/Header";
 import { Route, Switch } from 'react-router-dom';
 import Home from "./Home";
 import NewProfile from "../auth/new_profile/NewProfile";
-import NewProfile2 from "../auth/new_profile/NewProfile2";
+import NewPohProfile from "../auth/poh/NewPohProfile";
 import Airdrop from "./Airdrop";
 
 export default function External() {
@@ -12,7 +12,7 @@ export default function External() {
       <Switch>
         <Route exact path="/" component={Home} />
         <Route path="/signup" component={NewProfile} />
-        <Route path="/signup2" component={NewProfile2} />
+        <Route path="/new-poh-profile" component={NewPohProfile} />
         <Route path="/terms" component={Home} />
         <Route path="/airdrop" component={Airdrop} />
       </Switch>

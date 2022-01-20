@@ -1,22 +1,16 @@
-import { Switch, Route } from "react-router-dom";
-import { useHistory, Link } from "react-router-dom";
+import { useState } from "react";
+import { useHistory } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import {
   Modal,
-  Notification,
-  Columns,
-  Card,
-  Heading, 
+  Heading,
   Button,
   Icon,
+  Notification
 } from "react-bulma-components";
-import { useEffect, useState } from "react";
-import { Steps, Step } from "../../common/steps/Steps";
-import CapturePicture from "./CapturePicture";
-import CaptureVideo from "./CaptureVideo";
-import { verifyUserHumanity, retrieveChallengesForUser, submitChallengeData } from '../../../utils/api';
+import { submitChallengeData } from '../../../utils/api';
 
-const Signup = () => {
+export default function ProfileDetails() {
   const history = useHistory();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
@@ -56,7 +50,7 @@ const Signup = () => {
       if (res && "ok" in res.submissionStatus) {
         setTimeout(() => {
           setSubmitting(false);
-          history.push("/signup2/challenge-profile-pic")
+          history.push("/new-poh-profile/challenge-profile-pic")
         }, 2000); // Do we need a 2 second delay?
       } else {
         throw Error("Failed to submit challenge data");
@@ -161,116 +155,4 @@ const Signup = () => {
       }
     </>
   )
-};
-
-const Confirmation = () => {
-  return (
-    <div className="has-text-centered">
-      <Heading subtitle textAlign="center">
-        Thank you for submitting.
-      </Heading>
-      <p>Your verification is in progress, please check back soon.</p>
-      <Link to="/app" className="button is-large is-primary mt-5">
-        Back to MODCLUB
-      </Link>
-    </div>
-  )
-};
-
-export default function NewProfile2({ match }) {
-  const history = useHistory();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [steps, setSteps] = useState(null)
-  const [currentStep, setCurrentStep] = useState<string>('')
-  const [completed, setCompleted] = useState<string>('')
-
-  const initialCall = async () => {
-    const verified = await verifyUserHumanity();
-    const [status] = Object.keys(verified[0]);
-    console.log("status", status);
-    if (status === "verified") {
-      history.push("/app");
-      return
-    }
-
-    const token = verified[1][0].token;
-    if (!token) return
-
-    const challenges = await retrieveChallengesForUser(token);
-    console.log("challenges", challenges)
-    setLoading(false);
-    setSteps(challenges["ok"]);
-
-    const uncompleted = challenges["ok"].find(challenge => {
-      const status = Object.keys(challenge.status)[0];
-      return status === "notSubmitted"
-    })
-
-    console.log("uncompleted", uncompleted)
-
-    if (!uncompleted) {
-      // history.push("/app");
-      setCompleted("You have already submitted your application")
-    } else {
-      history.push(`/signup2/${uncompleted.challengeId}`)
-    }
-  }
-
-  useEffect(() => {
-    initialCall();
-  }, []);
-
-  useEffect(() => {
-    return history.listen((location) => { 
-      const result = /[^/]*$/.exec(location.pathname)[0];
-      console.log("result", result);
-      setCurrentStep(result);
-    })
-  },[history]) 
-
-  return (
-  <>
-    {loading &&
-      <Modal show={true} showClose={false}>
-        <div className="loader is-loading p-5"></div>
-      </Modal>
-    }
-    {completed &&
-      <Notification color="success" className="has-text-centered">
-        {completed}
-      </Notification>
-    }
-
-    <Columns centered vCentered className="is-fullheight mt-6">
-      <Columns.Column size={6}>
-        <Card>
-          <Card.Content>
-            {steps &&
-              <Steps activeStep={currentStep}>
-                {steps.map((step, index) => (
-                  <Step key={step.challengeId} id={index + 1} details={step.challengeName} />
-                ))}
-                <Step key='confirm' id={steps.length + 1} details="Confirm" />
-              </Steps>
-            }
-
-            <Card backgroundColor="dark" className="mt-6">
-              <Card.Content>
-                <Switch>
-                  <Route path={`${match.path}/:challenge-profile-details`} component={Signup}/>
-                  <Route path={`${match.path}/:challenge-profile-pic`} component={CapturePicture}/>
-                  <Route
-                    path={`${match.path}/:challenge-user-video`}
-                    render={() => (<CaptureVideo steps={steps} />)}
-                  />
-                  <Route path={`${match.path}/:confirm`} component={Confirmation}/>
-                </Switch>
-              </Card.Content>
-            </Card>
-          </Card.Content>
-        </Card>
-      </Columns.Column>
-    </Columns>
-  </>
-  );
 }

@@ -10,7 +10,7 @@ import { WebcamWrapper } from "./Webcam"
 import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
 const MAX_CHUNK_SIZE = 1024 * 500;
 
-export default function CapturePicture() {
+export default function ProfilePic({ match }) {
   const history = useHistory();
   const inputFile = useRef(null);
   const [file, setFile] = useState({
@@ -58,7 +58,7 @@ export default function CapturePicture() {
     }
     await Promise.all(putChunkPromises);
     setSubmitting(false);
-    history.push("/signup2/challenge-user-video");
+    history.push(`${match.path}/challenge-user-video`);
   }
 
   return (
