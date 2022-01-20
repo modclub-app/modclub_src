@@ -35,8 +35,8 @@ export default function NewPohProfile({ match }) {
 
   const initialCall = async () => {
     const verified = await verifyUserHumanity();
-    const [status] = Object.keys(verified[0]);
 
+    const [status] = Object.keys(verified[0]);
     if (status === "verified") {
       history.push("/app");
       return

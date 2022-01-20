@@ -8,6 +8,7 @@ import {
   Button,
   Icon
 } from "react-bulma-components";
+import Userstats from "../profile/Userstats";
 import Progress from "../../common/progress/Progress";
 import { getPohTasks } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
@@ -68,7 +69,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
   )
 };
 
-export default function ApplicantList() {
+export default function PohApplicantList() {
   const [loading, setLoading] = useState<boolean>(true);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
 
@@ -89,17 +90,21 @@ export default function ApplicantList() {
       <div className="loader is-loading p-5"></div>
     </Modal>
     :
-    <Columns>
-      {applicants.map((applicant, index) => (
-        <Columns.Column
-          key={index}
-          mobile={{ size: 12 }}
-          tablet={{ size: 6 }}
-          fullhd={{ size: 4 }}
-          style={{ maxWidth: 480 }}
-        >
-          <ApplicantSnippet applicant={applicant} />
-        </Columns.Column>
-      ))}
-    </Columns>
+    <>
+      <Userstats />
+
+      <Columns>
+        {applicants.map((applicant, index) => (
+          <Columns.Column
+            key={index}
+            mobile={{ size: 12 }}
+            tablet={{ size: 6 }}
+            fullhd={{ size: 4 }}
+            style={{ maxWidth: 480 }}
+          >
+            <ApplicantSnippet applicant={applicant} />
+          </Columns.Column>
+        ))}
+      </Columns>
+    </>
 }
