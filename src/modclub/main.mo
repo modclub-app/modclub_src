@@ -964,23 +964,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
   // Method called by user on UI
   public shared({ caller }) func verifyUserHumanity() : async (PohTypes.PohChallengeStatus, ?PohTypes.PohUniqueToken)  {
     let response =  await verifyForHumanity(caller);
-    if(response.challenges.size() == 0 ) {
-      return (#notSubmitted, ?(await generateUniqueToken(caller)));
+    if(response.status != #verified) {
+      return (response.status, ?(await generateUniqueToken(caller)));
     };
-
-    for(challenge in response.challenges.vals()) {
-      if(challenge.status == #pending) {
-        return (#pending, ?(await generateUniqueToken(caller)));
-      } else if(challenge.status == #rejected) {
-        return (#rejected, ?(await generateUniqueToken(caller)));
-      } else if(challenge.status == #expired) {
-        return (#expired, ?(await generateUniqueToken(caller)));
-      } else if(challenge.status == #notSubmitted) {
-        return (#notSubmitted, ?(await generateUniqueToken(caller)));
-      }
-    };
-
-    return (#verified, null);
+    return (response.status, null);
   };
 
   public shared({ caller }) func populateChallenges() : async () {
