@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getPohTasks } from '../../../utils/api';
 import {
   Modal,
   Heading,
@@ -10,6 +9,7 @@ import {
   Icon
 } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
+import { getPohTasks } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 

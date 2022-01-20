@@ -8,17 +8,13 @@ import {
   Icon,
   Notification
 } from "react-bulma-components";
-import { submitChallengeData } from '../../../utils/api';
+import { validateEmail } from "../../../utils/util";
+import { submitChallengeData } from "../../../utils/api";
 
 export default function ProfileDetails() {
   const history = useHistory();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
-
-  const validateEmail = (email) => {
-    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-  }
 
   const onFormSubmit = async (values: any) => {
     const { username, fullname, email, bio } = values;
@@ -30,8 +26,8 @@ export default function ProfileDetails() {
       return
     }
 
-    setSubmitting(true);
     try {
+      setSubmitting(true);
       const res = await submitChallengeData({
         challengeId: "challenge-profile-details",
         challengeDataBlob: [],

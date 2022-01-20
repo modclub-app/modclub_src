@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { getPohTaskData } from '../../../utils/api';
+import { getPohTaskData } from "../../../utils/api";
 import {
   Heading,
   Card,
@@ -12,7 +12,7 @@ import {
 import { Form } from "react-final-form";
 import Toggle from "../../common/toggle/Toggle";
 import Progress from "../../common/progress/Progress";
-import approveImg from '../../../../assets/approve.svg';
+import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { formatDate } from "../../../utils/util";
 

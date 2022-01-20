@@ -5,7 +5,7 @@ import { actorController } from "./actor";
 import { Identity } from "@dfinity/agent";
 import { getUserFromStorage } from "./util";
 import { Profile } from "./types";
-import { getUserFromCanister } from './api';
+import { getUserFromCanister } from "./api";
 
 export interface AuthContext {
   isAuthenticated: boolean;
