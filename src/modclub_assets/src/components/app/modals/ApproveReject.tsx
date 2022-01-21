@@ -55,14 +55,14 @@ const Modal_ = ({
       if (values[key][0]) checked.push(values[key][0])
     }
 
-    setSubmitting(true);
-    const regEx = /Reject text: (.*)/g;
     try {
+      setSubmitting(true);
       const result = await vote(task.id, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, checked);
       console.log("result", result);
       setSubmitting(false);
       setMessage({ success: result === "Vote successful" ? true : false, value: result });
     } catch (e) {
+      const regEx = /Reject text: (.*)/g;
       let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr[1] });
       setSubmitting(false);
