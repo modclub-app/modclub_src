@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { getPohTaskData } from "../../../utils/api";
+import { getPohTaskData, votePohContent } from "../../../utils/api";
 import {
   Heading,
   Card,
@@ -35,7 +35,9 @@ const Modal_ = ({ toggle, title, image, children, handleSubmit, values }) => {
       if (checked < 2) return true;
     }
     return false;
-  } 
+  }
+
+  const type = title === "Approve Confirmation" ? "approved" : "rejected";
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
@@ -64,7 +66,7 @@ const Modal_ = ({ toggle, title, image, children, handleSubmit, values }) => {
               color="primary"
               disabled={isDisabled(values)}
               className={submitting && "is-loading"}
-              onClick={() => handleSubmit(values)}
+              onClick={() => handleSubmit(type, values)}
             >
               Submit
             </Button>
@@ -149,6 +151,7 @@ export default function PohApplicant() {
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [content, setContent] = useState(null);
+  const [submitting, setSubmitting] = useState(null);
 
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
@@ -174,15 +177,26 @@ export default function PohApplicant() {
     return challengeId;
   }
 
-  const onFormSubmit = (values: any) => {
+  const onFormSubmit = async (decision: string, values: any) => {
     console.log("onFormSubmit values !!!", values)
-  }
 
-  const tempRules = [
-    { ruleId: "jh4j2423j4h2", ruleDesc: "do not do djhjdghdfjkg" },
-    { ruleId: "werwerwerewrw", ruleDesc: "do not do vxvxcv" },
-    { ruleId: "wheoweir", ruleDesc: "do not do wewe" },
-  ]
+
+
+    try {
+
+      setSubmitting(true);
+      // @ts-ignore
+      const result = await votePohContent(packageId, { [decision]: null }, values);
+      console.log("result", result);
+      setSubmitting(false);
+
+    } catch (e) {
+
+      console.log("error", e);
+      setSubmitting(false);
+
+    }
+  }
 
   return loading ?
     <Modal show={true} showClose={false}>
@@ -225,8 +239,8 @@ export default function PohApplicant() {
                   }
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
-                  {tempRules.map(rule => (
-                    <Toggle key={rule.ruleId} id={rule.ruleId} label={rule.ruleDesc} />
+                  {task.allowedViolationRules.map(rule => (
+                    <Toggle key={rule.ruleId} id={`${task.challengeId}-${rule.ruleId}`} label={rule.ruleDesc} />
                   ))}
                 </Card.Footer>
               </Card.Content>
