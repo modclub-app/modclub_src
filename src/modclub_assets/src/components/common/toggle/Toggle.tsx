@@ -1,9 +1,5 @@
 import { Field } from "react-final-form";
 
-// type Props = {
-//   id: string;
-// };
-
 export default function Toggle({ id, label }) {
   return (
     <div className="field level is-relative is-toggle">

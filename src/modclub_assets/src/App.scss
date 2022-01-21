@@ -456,6 +456,15 @@ label.checkbox {
   }
 }
 
+// .is-toggle.is-light input[type="checkbox"] {
+//   + label:before {
+//     background: $dark;
+//   }
+//   + label:after {
+//     background: $black;
+//   }
+// }
+
 
 .progress {
   &::-webkit-progress-bar {

@@ -41,7 +41,6 @@ const Modal_ = ({
     if (title === "Reject Confirmation") {
       let checked = 0
       for (const key in values) {
-        console.log('values[key]', values[key])
         values[key].length && checked ++
       }
       if (checked < 2) return true;

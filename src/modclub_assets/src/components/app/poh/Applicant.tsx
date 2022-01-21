@@ -12,18 +12,30 @@ import {
 import { Form } from "react-final-form";
 import Userstats from "../profile/Userstats";
 import Toggle from "../../common/toggle/Toggle";
+import Confirm from "../../common/confirm/Confirm";
 import Progress from "../../common/progress/Progress";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { formatDate } from "../../../utils/util";
 
-const Modal_ = ({ toggle, title, image, children, handleSubmit }) => {
+const Modal_ = ({ toggle, title, image, children, handleSubmit, values }) => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
 
-  // const onFormSubmit = async (values: any) => {
-  //   console.log("FormModal values", values);
-  // }
+  const isDisabled = (values: any) => {
+    if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true;
+    if (title === "Approve Confirmation") {
+      if (!values["voteRulesConfirmation"] || !values["voteRulesConfirmation"].length) return true;
+    }
+    if (title === "Reject Confirmation") {
+      let checked = 0
+      for (const key in values) {
+        values[key].length && checked ++
+      }
+      if (checked < 2) return true;
+    }
+    return false;
+  } 
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
@@ -36,22 +48,23 @@ const Modal_ = ({ toggle, title, image, children, handleSubmit }) => {
           
           {children}
 
+          <Confirm
+            type="danger"
+            id="voteIncorrectlyConfirmation"
+            label={`I understand I will lose 5 MOD if I vote incorrectly`}
+          />
+
         </Modal.Card.Body>
-        <Modal.Card.Footer className="pt-0">
-          {title === "Reject Confirmation" &&
-            <p className="is-size-7">
-              Voting incorrectly will result in some loss<br />of staked tokens.
-            </p>
-          }
+        <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
           <Button.Group>
             <Button color="dark" onClick={toggle}>
               Cancel
             </Button>
             <Button
               color="primary"
-              disabled={message || submitting}
+              disabled={isDisabled(values)}
               className={submitting && "is-loading"}
-              onClick={handleSubmit}
+              onClick={() => handleSubmit(values)}
             >
               Submit
             </Button>
@@ -106,7 +119,6 @@ const ProfilePic = ({ data }) => {
 };
 
 const UserVideo = ({ data }) => {
-  console.log("UserVideo", data);
   const videoUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
   const phrases = data.wordList[0]
 
@@ -144,17 +156,6 @@ export default function PohApplicant() {
   const [showReject, setShowReject] = useState(false);
   const togglReject = () => setShowReject(!showReject);
 
-  const formatTitle = (challengeId) => {
-    if (challengeId === "challenge-profile-details") return "Challenge: Profile Details";
-    if (challengeId === "challenge-profile-pic") return "Challenge: Profile Picture";
-    if (challengeId === "challenge-user-video") return "Challenge: Video";
-    return challengeId;
-  }
-
-  const onFormSubmit = (values: any) => {
-    console.log("onFormSubmit values", values)
-  }
-
   const getApplicant = async () => {
     const applicant = await getPohTaskData(packageId);
     console.log("getPohTaskData res", applicant);
@@ -166,6 +167,23 @@ export default function PohApplicant() {
     getApplicant();
   }, []);
 
+  const formatTitle = (challengeId) => {
+    if (challengeId === "challenge-profile-details") return "Challenge: Profile Details";
+    if (challengeId === "challenge-profile-pic") return "Challenge: Profile Picture";
+    if (challengeId === "challenge-user-video") return "Challenge: Video";
+    return challengeId;
+  }
+
+  const onFormSubmit = (values: any) => {
+    console.log("onFormSubmit values !!!", values)
+  }
+
+  const tempRules = [
+    { ruleId: "jh4j2423j4h2", ruleDesc: "do not do djhjdghdfjkg" },
+    { ruleId: "werwerwerewrw", ruleDesc: "do not do vxvxcv" },
+    { ruleId: "wheoweir", ruleDesc: "do not do wewe" },
+  ]
+
   return loading ?
     <Modal show={true} showClose={false}>
       <div className="loader is-loading p-5"></div>
@@ -173,24 +191,23 @@ export default function PohApplicant() {
     :
     <>
       <Userstats />
+      
+      <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
+        <form onSubmit={handleSubmit}>
+          <Card>
+            <Card.Header>
+              <Card.Header.Title>
+                <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
+                  {/* Submitted {formatDate(createdAt)} */}
+                  Submitted todo Date()
+                </span>
+              </Card.Header.Title>
+              <Progress
+                value={5}
+                min={10}
+              />
+            </Card.Header>
 
-      <Card>
-        <Card.Header>
-          <Card.Header.Title>
-            <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-              {/* Submitted {formatDate(createdAt)} */}
-              Submitted todo Date()
-            </span>
-          </Card.Header.Title>
-          <Progress
-            value={5}
-            min={10}
-          />
-        </Card.Header>
-
-        <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
-          <form onSubmit={handleSubmit}>
-            
             {content.ok.map((task) => (
               <Card.Content key={task.challengeId}>
                 <Heading subtitle className="mb-3">
@@ -206,23 +223,21 @@ export default function PohApplicant() {
                   {task.challengeId == "challenge-user-video" &&
                     <UserVideo data={task} />
                   }
-                  <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
-                    {task.allowedViolationRules.map((rule, index) => (
-                      <p key={rule.ruleId}>
-                        {index + 1}. {rule.ruleDesc}
-                      </p>
-                    ))}
-                  </Card.Footer>
                 </Card>
+                <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
+                  {tempRules.map(rule => (
+                    <Toggle key={rule.ruleId} id={rule.ruleId} label={rule.ruleDesc} />
+                  ))}
+                </Card.Footer>
               </Card.Content>
             ))}
 
             <Card.Footer className="pt-0" style={{ border: 0 }}>
               <Button.Group>
-                <Button color="danger" fullwidth onClick={togglReject}>
+                <Button color="danger" fullwidth onClick={togglReject} renderAs="a">
                   Reject
                 </Button>
-                <Button color="primary" fullwidth onClick={toggleApprove}>
+                <Button color="primary" fullwidth onClick={toggleApprove} renderAs="a">
                   Approve
                 </Button>
               </Button.Group>
@@ -234,9 +249,16 @@ export default function PohApplicant() {
                 image={approveImg}
                 toggle={toggleApprove}
                 handleSubmit={onFormSubmit}
+                values={values}
               >
                 <p>You are confirming that this is a real human.</p>
                 <p>Voting incorrectly will result in loss of some staked tokens.</p>
+
+                <Confirm
+                  type="warning"
+                  id="voteRulesConfirmation"
+                  label="I confirm that this is a real person"
+                />
               </Modal_>
             }
 
@@ -246,22 +268,27 @@ export default function PohApplicant() {
                 image={rejectImg}
                 toggle={togglReject}
                 handleSubmit={onFormSubmit}
+                values={values}
               > 
-                <p className="mb-3">Select which rules were broken:</p>
+                <p className="mb-3">You have selected the following rules:</p>
                 <Card backgroundColor="dark">
                   <Card.Content>
-                    <Toggle id="reject-notsame" label="Person in picture and video are not the same" />
-                    <Toggle id="reject-social" label="Social accounts do not match person" />
-                    <Toggle id="reject-phrase" label="Person did not say the unique phrase" />
-                    <Toggle id="reject-name" label="Person did not provide first and last name" />
+                    <ul>
+                      {Object.keys(values).map((key, i) => (
+                        values[key].length > 0 && values[key][0] != "voteIncorrectlyConfirmation" &&
+                          <li key={i}>
+                            {i + 1}. {values[key]}
+                          </li>
+                        )
+                      )}
+                    </ul>
                   </Card.Content>
                 </Card>
               </Modal_>
             }
-
-            </form>
-          )}
-        />
-      </Card>
-    </>
+          </Card>
+        </form>
+      )}
+    />
+  </>
 };
