@@ -177,10 +177,12 @@ export default function PohApplicant() {
     return challengeId;
   }
 
+  const showModal = (type: string, values: any) => {
+    console.log("showModal", values);
+  }
+
   const onFormSubmit = async (decision: string, values: any) => {
     console.log("onFormSubmit values !!!", values)
-
-
 
     try {
 
@@ -248,10 +250,21 @@ export default function PohApplicant() {
 
             <Card.Footer className="pt-0" style={{ border: 0 }}>
               <Button.Group>
-                <Button color="danger" fullwidth onClick={togglReject} renderAs="a">
+                <Button
+                  color="danger"
+                  fullwidth
+                  // onClick={togglReject}
+                  onClick={() => showModal("reject", values)}
+                  renderAs="a"
+                >
                   Reject
                 </Button>
-                <Button color="primary" fullwidth onClick={toggleApprove} renderAs="a">
+                <Button
+                  color="primary"
+                  fullwidth
+                  onClick={() => showModal("approve", values)}
+                  renderAs="a"
+                >
                   Approve
                 </Button>
               </Button.Group>
