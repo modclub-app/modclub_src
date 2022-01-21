@@ -20,7 +20,7 @@ module StorageState {
 
   };
 
-  public func empty () : DataCanisterState {
+  public func emptyState() : DataCanisterState {
     var st : DataCanisterState = {
       dataCanisters = HashMap.HashMap<Types.DataCanisterId, Bucket> (1, Principal.equal, Principal.hash);
       contentIdToCanisterId = HashMap.HashMap<Text, Types.DataCanisterId> (1, Text.equal, Text.hash);
@@ -28,7 +28,7 @@ module StorageState {
     st;
   };
 
-  public func emptyShared(): DataCanisterStateStable {
+  public func emptyStableState(): DataCanisterStateStable {
     var st : DataCanisterStateStable = {
       dataCanisters = [];
       contentIdToCanisterId = [];
@@ -36,7 +36,7 @@ module StorageState {
     st;
   };
 
-  public func fromState(state: DataCanisterState) : DataCanisterStateStable {
+  public func getStableState(state: DataCanisterState) : DataCanisterStateStable {
     let st : DataCanisterStateStable = {
       dataCanisters = Iter.toArray(state.dataCanisters.entries());
       contentIdToCanisterId = Iter.toArray(state.contentIdToCanisterId.entries());
@@ -44,8 +44,8 @@ module StorageState {
     st;
   };
 
-  public func toState(stateShared: DataCanisterStateStable) : DataCanisterState {
-    let state = empty();
+  public func getState(stateShared: DataCanisterStateStable) : DataCanisterState {
+    let state = emptyState();
     for( (id, pid) in stateShared.dataCanisters.vals()) {
       state.dataCanisters.put(id, pid);
     };

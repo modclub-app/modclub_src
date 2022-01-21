@@ -29,10 +29,10 @@ module {
         challengeName: Text;
         challengeDescription: Text;
         // assuming there will be no transitive dependencies. else graph needs to be used
-        dependentChallengeId: ?Buffer.Buffer<Text>;
+        dependentChallengeId: ?[Text];
         requiredField: PohChallengeRequiredField;
         challengeType: PohChallengeType;
-        allowedViolationRules: HashMap.HashMap<Text, ViolatedRules>;
+        allowedViolationRules:  [ViolatedRules];
         createdAt: Int;
         updatedAt: Int;
     };
