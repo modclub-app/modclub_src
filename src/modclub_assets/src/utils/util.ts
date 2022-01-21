@@ -114,3 +114,14 @@ export function validateEmail(email: string) {
   const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 }
+
+export function getChecked(values: any) {
+  const checked = []
+  for (const key in values) {
+    const value = values[key][0]
+    if (value && value != "voteIncorrectlyConfirmation" && value != "voteRulesConfirmation") {
+      checked.push(values[key][0])
+    }
+  }
+  return checked;
+}
