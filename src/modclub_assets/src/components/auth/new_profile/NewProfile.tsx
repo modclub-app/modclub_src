@@ -1,12 +1,13 @@
 import * as React from 'react'
 import { Form, Field } from "react-final-form";
-import { Notification, Columns, Card, Heading, Media, Image as BulmaImage, Button, Icon } from "react-bulma-components";
+import { Notification, Columns, Card, Heading, Media, Image, Button, Icon } from "react-bulma-components";
 import { registerModerator } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { useHistory } from "react-router-dom";
 import { useRef, useState } from "react";
 import placeholder from "../../../../assets/user_placeholder.png";
-import { Image, ImageData } from "../../../utils/types";
+import { ImageData } from "../../../utils/types";
+import { validateEmail } from "../../../utils/util";
 
 const MAX_IMAGE_SIZE = 500000; // 500kb
 
@@ -43,11 +44,6 @@ export default function NewProfile() {
     }
   };
 
-  const validateEmail = (email) => {
-    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-  }
-
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
 
@@ -58,8 +54,6 @@ export default function NewProfile() {
       return
     }
 
-    setSubmitting(true);
-
     const imageData: ImageData = pic ? {
       src: pic,
       type: picType,
@@ -67,6 +61,7 @@ export default function NewProfile() {
     
     const regEx = /Reject text: (.*)/g;
     try {
+      setSubmitting(true);
       const user = await registerModerator(username, email, imageData);
       console.log("user", user);
       // TODO not returning the error here!
@@ -113,7 +108,7 @@ export default function NewProfile() {
               justifyContent="center"
               onClick={() => inputFile.current.click()}
             >
-              <BulmaImage
+              <Image
                 src={pic ? pic : placeholder}
                 alt="profile"
                 size={128}

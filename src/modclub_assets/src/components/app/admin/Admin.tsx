@@ -3,10 +3,10 @@ import { Field } from "react-final-form";
 import { useState } from "react";
 import { Columns, Card, Button, Heading, Media, Image, Notification } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
-import { addRules, removeRules, updateProviderSettings } from '../../../utils/api';
+import { addRules, removeRules, updateProviderSettings } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
-import walletImg from '../../../../assets/wallet.svg';
-import stakedImg from '../../../../assets/staked.svg';
+import walletImg from "../../../../assets/wallet.svg";
+import stakedImg from "../../../../assets/staked.svg";
 
 const EditAppModal = ({ toggle }) => {  
   const onFormSubmit = async (values: any) => {

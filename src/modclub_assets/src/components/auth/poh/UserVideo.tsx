@@ -13,7 +13,7 @@ import { CaptureButton } from "./Webcam"
 import { processAndUploadChunk } from "../../../utils/util";
 const MAX_CHUNK_SIZE = 1024 * 500;
 
-export default function CaptureVideo({ steps }) {
+export default function UserVideo({ steps }) {
   const history = useHistory();
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -64,7 +64,7 @@ export default function CaptureVideo({ steps }) {
     
     await Promise.all(putChunkPromises);
     setSubmitting(false);
-    history.push("/signup2/confirm");
+    history.push("/new-poh-profile/confirm");
   }
 
   const formatPhrases = () => {
@@ -73,7 +73,7 @@ export default function CaptureVideo({ steps }) {
   }
 
   useEffect(() => {
-    steps && formatPhrases()
+    steps && steps.length && formatPhrases();
   }, [steps]);
 
   return (

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { HashLink } from "react-router-hash-link";
 import { Navbar, Container, Image, Heading } from "react-bulma-components";
-import LogoImg from '../../../assets/logo.png';
+import LogoImg from "../../../assets/logo.png";
 import Hamburger from "./Hamburger";
 
 export default function Header() {

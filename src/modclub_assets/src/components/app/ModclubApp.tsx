@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { Switch, Route } from "react-router-dom";
-import { useAuth } from "../../utils/auth";
 import { Columns } from "react-bulma-components";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
-import Humanity from "./humanity/Humanity";
+import PohApplicantList from "./poh/ApplicantList";
+import PohApplicant from "./poh/Applicant";
 import Moderators from "./moderators/Moderators";
 import Leaderboard from "./moderators/Leaderboard";
 import Activity from "./profile/Activity";
@@ -22,17 +22,17 @@ export default function ModclubApp() {
 
         <Columns.Column id="main-content" className="mt-6 pb-6">
           <Switch>
-            {/* <Route exact path="/app">
-              Please login to view this page  
-            </Route> */}
             <Route exact path="/app">
               <Tasks />
             </Route>
             <Route path="/app/tasks/:taskId">
               <Task /> 
             </Route>
-            <Route path="/app/poh">
-              <Humanity />
+            <Route exact path="/app/poh">
+              <PohApplicantList />
+            </Route>
+            <Route exact path="/app/poh/:packageId">
+              <PohApplicant />
             </Route>
             <Route exact path="/app/moderators">
               <Moderators />
