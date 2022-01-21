@@ -14,6 +14,7 @@ import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
 import { ContentPlus } from "../../../utils/types";
+import { getChecked } from "../../../utils/util";
 
 const Modal_ = ({
   title,
@@ -50,10 +51,7 @@ const Modal_ = ({
 
   const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
-    const checked = []
-    for (const key in values) {
-      if (values[key][0]) checked.push(values[key][0])
-    }
+    const checked = getChecked(values);
 
     try {
       setSubmitting(true);

@@ -20,8 +20,6 @@ import rejectImg from "../../../../assets/reject.svg";
 import { formatDate } from "../../../utils/util";
 
 const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
-  const type = title === "Approve Confirmation" ? "approved" : "rejected";
-
   const [submitting, setSubmitting] = useState(null);
   const [message, setMessage] = useState(null);
 
@@ -40,7 +38,7 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
     return false;
   }
 
-  const onFormSubmit = async (decision: string, values: any) => {
+  const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit values !!!", values)
     const checked = getChecked(values);
 
@@ -48,17 +46,14 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
 
       setSubmitting(true);
       // @ts-ignore
-      const result = await votePohContent(packageId, { [decision]: null }, checked);
+      const result = await votePohContent(packageId, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, checked);
       console.log("result", result);
       setSubmitting(false);
 
     } catch (e) {
-      console.log("e", e);
-
       const regEx = /Reject text: (.*)/g;
       let errAr = regEx.exec(e.message);
-      console.log("errAr", errAr);
-      setMessage({ success: false, value: errAr[1] });
+      errAr ? setMessage({ success: false, value: errAr[1] }) : setMessage({ success: false, value: e })
       setSubmitting(false);
     }
   }
@@ -90,7 +85,7 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
               color="primary"
               disabled={isDisabled(values)}
               className={submitting && "is-loading"}
-              onClick={() => onFormSubmit(type, values)}
+              onClick={() => onFormSubmit(values)}
             >
               Submit
             </Button>
@@ -175,13 +170,12 @@ export default function PohApplicant() {
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [content, setContent] = useState(null);
-  const [message, setMessage] = useState(null);
 
   const [showApprove, setShowApprove] = useState(false);
   const toggleApprove = () => setShowApprove(!showApprove);
 
   const [showReject, setShowReject] = useState(false);
-  const togglReject = () => setShowReject(!showReject);
+  const toggleReject = () => setShowReject(!showReject);
 
   const getApplicant = async () => {
     const applicant = await getPohTaskData(packageId);
@@ -201,28 +195,9 @@ export default function PohApplicant() {
     return challengeId;
   }
 
-  const showModal = (type: string, values: any) => {
+  const isDisabled = (values: any) => {
     const checked = getChecked(values);
-
-    if (type === "approve") {
-      if (checked.length) {
-        setMessage({ success: false, value: "You can not approve with any rules checked." });
-      } else {
-        toggleApprove();
-      }
-    }
-
-    if (type === "reject") {
-      if (!checked.length) {
-        setMessage({ success: false, value: "You can not reject without any rules checked." });
-      } else {
-        togglReject();
-      }
-    }
-
-    setTimeout(() => {
-      setMessage(null);
-    }, 2000);
+    return checked.length ? true : false
   }
 
   const parentSubmit = () => {}
@@ -280,7 +255,8 @@ export default function PohApplicant() {
                 <Button
                   color="danger"
                   fullwidth
-                  onClick={() => showModal("reject", values)}
+                  onClick={toggleReject}
+                  disabled={!isDisabled(values)}
                   renderAs="a"
                 >
                   Reject
@@ -288,7 +264,8 @@ export default function PohApplicant() {
                 <Button
                   color="primary"
                   fullwidth
-                  onClick={() => showModal("approve", values)}
+                  onClick={toggleApprove}
+                  disabled={isDisabled(values)}
                   renderAs="a"
                 >
                   Approve
@@ -306,7 +283,6 @@ export default function PohApplicant() {
               >
                 <p>You are confirming that this is a real human.</p>
                 <p>Voting incorrectly will result in loss of some staked tokens.</p>
-
                 <Confirm
                   type="warning"
                   id="voteRulesConfirmation"
@@ -319,7 +295,7 @@ export default function PohApplicant() {
               <Modal_
                 title="Reject Confirmation"
                 image={rejectImg}
-                toggle={togglReject}
+                toggle={toggleReject}
                 packageId={packageId}
                 values={values}
               > 
@@ -327,10 +303,10 @@ export default function PohApplicant() {
                 <Card backgroundColor="dark">
                   <Card.Content>
                     <ul>
-                      {Object.keys(values).map((key, i) => (
+                      {Object.keys(values).map((key, index) => (
                         values[key].length > 0 && values[key][0] != "voteIncorrectlyConfirmation" &&
-                          <li key={i}>
-                            {i + 1}. {values[key]}
+                          <li key={index}>
+                            {index + 1}. {values[key]}
                           </li>
                         )
                       )}
@@ -343,11 +319,5 @@ export default function PohApplicant() {
         </form>
       )}
     />
-
-    {message &&
-      <Notification color={message.success ? "success" : "danger"} textAlign="center">
-        {message.value}
-      </Notification>
-    }
   </>
 };
