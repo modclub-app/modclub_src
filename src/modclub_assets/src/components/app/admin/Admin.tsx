@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { Field } from "react-final-form";
 import { useState } from "react";
 import { Columns, Card, Button, Heading, Media, Image, Notification } from "react-bulma-components";

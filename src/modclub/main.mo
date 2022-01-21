@@ -37,8 +37,6 @@ import Helpers "./helpers";
 
 shared ({caller = initializer}) actor class ModClub () = this {
 
-  
-
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
   let DEFAULT_MIN_VOTES = 2;
@@ -78,17 +76,15 @@ shared ({caller = initializer}) actor class ModClub () = this {
         tokensStable
   );
   
-  var storageState = StorageState.empty();
-  stable var storageStateStable  = StorageState.emptyShared();
+  stable var storageStateStable  = StorageState.emptyStableState();
   // Will be updated with this in postupgrade. Motoko not allowing to use "this" here
-  var storageSolution = StorageSolution.StorageSolution(storageState, initializer, initializer);
+  var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer);
 
+  stable var pohStableState = PohState.emptyStableState();
+  var pohEngine = POH.PohEngine(pohStableState);
 
-  var pohState = PohState.emptyStableState();
-  var pohEngine = POH.PohEngine(pohState);
-
-  stable var pohVoteState = VoteState.emptyStableState();
-  var voteManager = VoteManager.VoteManager(pohVoteState);
+  stable var pohVoteStableState = VoteState.emptyStableState();
+  var voteManager = VoteManager.VoteManager(pohVoteStableState);
 
   func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
@@ -970,6 +966,15 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return (response.status, null);
   };
 
+  // Method called by user on UI
+  public shared({ caller }) func verifyUserHumanityAPI() : async {status: PohTypes.PohChallengeStatus; token: ?PohTypes.PohUniqueToken} {
+    let response =  await verifyForHumanity(caller);
+    if(response.status != #verified) {
+      return {status = response.status; token =  ?(await generateUniqueToken(caller))};
+    };
+    return {status = response.status; token =  null};
+  };
+
   public shared({ caller }) func populateChallenges() : async () {
     pohEngine.populateChallenges();
   };
@@ -1216,18 +1221,27 @@ shared ({caller = initializer}) actor class ModClub () = this {
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
-    storageStateStable := StorageState.fromState(storageState);
+
+    storageStateStable := storageSolution.getStableState();
+    pohStableState := pohEngine.getStableState();
+    pohVoteStableState := voteManager.getStableState();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
   system func postupgrade() {
+    // Reinitializing storage Solution to add this actor as a controller
+    storageSolution := StorageSolution.StorageSolution(storageStateStable, initializer, Principal.fromActor(this));
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
-    storageState := StorageState.toState(storageStateStable);
-    Debug.print("MODCLUB POSTUPGRADE FINISHED");
-    storageSolution := StorageSolution.StorageSolution(storageState, initializer, Principal.fromActor(this));
 
+    // Reducing memory footprint by assigning empty stable state
+    stateShared := State.emptyShared();
+    tokensStable := Token.emptyStable(initializer);
+    storageStateStable := StorageState.emptyStableState();
+    pohStableState := PohState.emptyStableState();
+    pohVoteStableState := VoteState.emptyStableState();
+    Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 
 };

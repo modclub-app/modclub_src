@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { Progress } from "react-bulma-components";
 
 export default function Progress_({ value, min }) {

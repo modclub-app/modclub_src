@@ -1,3 +1,4 @@
+import * as React from 'react'
 import Landing from "./landing/Landing";
 
 export default function Home() {

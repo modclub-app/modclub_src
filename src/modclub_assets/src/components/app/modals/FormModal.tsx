@@ -1,3 +1,4 @@
+import * as React from 'react'
 import React from "react";
 import { useState } from "react";
 import { Modal, Heading, Button, Notification } from "react-bulma-components";

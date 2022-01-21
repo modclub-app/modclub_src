@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { Form, Field } from "react-final-form";
 import { Notification, Columns, Card, Heading, Media, Image, Button, Icon } from "react-bulma-components";
 import { registerModerator } from "../../../utils/api";

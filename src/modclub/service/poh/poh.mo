@@ -23,34 +23,7 @@ module PohModule {
 
     public class PohEngine(stableState : PohState.PohStableState) {
 
-        var state:PohState.PohState = PohState.emptyState();
-        
-        for( (p, val) in stableState.pohUsers.vals()) {
-            state.pohUsers.put(p, val);
-        };
-        for( (p, val) in stableState.pohChallenges.vals()) {
-            state.pohChallenges.put(p, val);
-        };
-
-        for( (userId, challenges) in stableState.pohUserChallengeAttempts.vals()) {
-            let attemptsByChallengeIdMap = HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttempt>>(5, Text.equal, Text.hash);
-            for((challengeId, attempts) in challenges.vals()) {
-                let attemptsBuffer = Buffer.Buffer<PohTypes.PohChallengesAttempt>(attempts.size());
-                for(attempt in attempts.vals()) {
-                    attemptsBuffer.add(attempt);
-                };
-                attemptsByChallengeIdMap.put(challengeId, attemptsBuffer);
-            };
-            state.pohUserChallengeAttempts.put(userId, attemptsByChallengeIdMap);
-        };
-
-        for( (p, val) in stableState.pohProviderUserData.vals()) {
-            state.pohProviderUserData.put(p, val);
-        };
-        for( (p, val) in stableState.providerToModclubUser.vals()) {
-            state.providerToModclubUser.put(p, val);
-        };
-
+        let state = PohState.getState(stableState);
 
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
 
@@ -447,11 +420,7 @@ module PohModule {
                                         wordList = att.wordList;
                                         allowedViolationRules = switch(challenge) {
                                             case(?c) {
-                                                let vRules = Buffer.Buffer<PohTypes.ViolatedRules>(c.allowedViolationRules.size());
-                                                for(ruleEntry in c.allowedViolationRules.entries()) {
-                                                    vRules.add(ruleEntry.1);
-                                                };
-                                                vRules.toArray();
+                                                c.allowedViolationRules;
                                             };
                                             case(null) {[]};
                                         };
@@ -478,28 +447,31 @@ module PohModule {
         };
 
         public func validateRules(violatedRules: [Types.PohRulesViolated]) : Bool {
-            var violated = false;
-            for(vRule in violatedRules.vals()) {
-                let _ = do ?{
+            let validRules : ?Bool = do ?{
+                for(vRule in violatedRules.vals()) {
                     let challenge = state.pohChallenges.get(vRule.challengeId)!;
-                    switch(challenge.allowedViolationRules.get(vRule.ruleId)){
-                        case(null) {
-                            violated := true;
+                        var found = false;
+                        for(aVRule in challenge.allowedViolationRules.vals()) {
+                            if(aVRule.ruleId == vRule.ruleId) {
+                                found := true;
+                            };
                         };
-                        case(_)();
-                    };
+                        if(found == false) {
+                            return false;
+                        };
                 };
+                return true;
             };
-            return violated;
+            return Option.get(validRules, false);
         };
 
         public func populateChallenges() : () {
-            let allowedViolationRules1 = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
-            allowedViolationRules1.put("1", {
+            let allowedViolationRules1 = Buffer.Buffer<PohTypes.ViolatedRules>(2);
+            allowedViolationRules1.add( {
                 ruleId= "1";
                 ruleDesc = "Rule 1";
             }); 
-            allowedViolationRules1.put("2", {
+            allowedViolationRules1.add( {
                 ruleId= "2";
                 ruleDesc = "Rule 2";
             });
@@ -511,21 +483,21 @@ module PohModule {
                 requiredField = #profileFieldBlobs;
                 dependentChallengeId = null;
                 challengeType =  #userName;
-                allowedViolationRules = allowedViolationRules1;
+                allowedViolationRules = allowedViolationRules1.toArray();
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
             });
 
-            let allowedViolationRules2 = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
-            allowedViolationRules2.put("1", {
+            let allowedViolationRules2 = Buffer.Buffer<PohTypes.ViolatedRules>(3);
+            allowedViolationRules2.add({
                 ruleId= "1";
                 ruleDesc = "Rule 1";
             }); 
-            allowedViolationRules2.put("2", {
+            allowedViolationRules2.add( {
                 ruleId= "2";
                 ruleDesc = "Rule 2";
             });
-            allowedViolationRules2.put("3", {
+            allowedViolationRules2.add( {
                 ruleId= "3";
                 ruleDesc = "Rule 3";
             });
@@ -537,25 +509,25 @@ module PohModule {
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 dependentChallengeId = null;
                 challengeType =  #selfPic;
-                allowedViolationRules = allowedViolationRules2;
+                allowedViolationRules = allowedViolationRules2.toArray();
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
             });
 
-            let allowedViolationRules3 = HashMap.HashMap<Text, PohTypes.ViolatedRules>(1, Text.equal, Text.hash);
-            allowedViolationRules3.put("1", {
+            let allowedViolationRules3 = Buffer.Buffer<PohTypes.ViolatedRules>(4);
+            allowedViolationRules3.add( {
                 ruleId= "1";
                 ruleDesc = "Rule 1";
             }); 
-            allowedViolationRules3.put("2", {
+            allowedViolationRules3.add( {
                 ruleId= "2";
                 ruleDesc = "Rule 2";
             });
-            allowedViolationRules3.put("3", {
+            allowedViolationRules3.add( {
                 ruleId= "3";
                 ruleDesc = "Rule 3";
             });
-            allowedViolationRules3.put("4", {
+            allowedViolationRules3.add( {
                 ruleId= "4";
                 ruleDesc = "Rule 4";
             });
@@ -567,7 +539,7 @@ module PohModule {
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 dependentChallengeId = null;
                 challengeType =  #selfVideo;
-                allowedViolationRules = allowedViolationRules3;
+                allowedViolationRules = allowedViolationRules3.toArray();
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
             });
@@ -647,7 +619,11 @@ module PohModule {
                 randomWords.add(state.wordList.get(seed));
             };
             randomWords.toArray();
-        }
+        };
+
+        public func getStableState() : PohState.PohStableState {
+            return PohState.getStableState(state);
+        };
     };
 
 };

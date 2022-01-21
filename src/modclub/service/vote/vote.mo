@@ -3,6 +3,7 @@ import Buffer "mo:base/Buffer";
 import Iter "mo:base/Iter";
 import List "mo:base/Array";
 import ModClubParam "../parameters/params";
+import PohState "state";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Time "mo:base/Time";
@@ -14,7 +15,7 @@ module VoteModule {
 
     public class VoteManager(stableState : VoteState.PohVoteStableState) {
 
-        var state:VoteState.PohVoteState = VoteState.emptyState();
+        var state:VoteState.PohVoteState = VoteState.getState(stableState);
 
         public func initiateVotingPoh(challengePackageId: Text) : () {
             state.package2Status.put(challengePackageId, #new);
@@ -166,6 +167,10 @@ module VoteModule {
             };
             return newBuffer;
         };
+
+        public func getStableState() : VoteState.PohVoteStableState {
+            return VoteState.getStableState(state);
+        }
 
     };
 };

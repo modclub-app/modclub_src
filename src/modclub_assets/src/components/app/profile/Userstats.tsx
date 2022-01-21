@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { useEffect, useState } from "react";
 import { getTokenHoldings, getPerformance } from '../../../utils/api';
 import { useAuth } from "../../../utils/auth";

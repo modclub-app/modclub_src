@@ -2,6 +2,7 @@ import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
+import Iter "mo:base/Iter";
 import Types "../../types";
 import VoteTypes "./types";
 
@@ -56,8 +57,50 @@ module State {
         };
     };
 
-    public func getStableState(state: PohVoteState): PohVoteStableState {
-        let stableState = emptyStableState();
+    public func getState(stableState: PohVoteStableState): PohVoteState {
+        let state = emptyState();
+        for(package in stableState.newPohPackages.vals()) {
+            state.newPohPackages.add(package);
+        };
+        for(package in stableState.approvedPohPackages.vals()) {
+            state.approvedPohPackages.add(package);
+        };
+        for(package in stableState.rejectedPohPackages.vals()) {
+            state.rejectedPohPackages.add(package);
+        };
+        for( (pkg, status) in stableState.package2Status.vals()) {
+            state.package2Status.put(pkg, status);
+        };
+        for( (pkg, votes) in stableState.pohVotes.vals()) {
+            state.pohVotes.put(pkg, votes);
+        };
+        for( (pkg, votes) in stableState.pohVotes.vals()) {
+            state.pohVotes.put(pkg, votes);
+        };
+
+        state.pohContent2votes.setRel(
+                Rel.fromShare<Text, Text>(stableState.pohContent2votes, (Text.hash, Text.hash), (Text.equal, Text.equal))
+        );
+
+        state.mods2Pohvotes.setRel(
+                Rel.fromShare<Principal, Text>(stableState.mods2Pohvotes, (Principal.hash, Text.hash), (Principal.equal, Text.equal))
+        );
+
+        return state;
     };
 
-};
+
+    public func getStableState(state: PohVoteState): PohVoteStableState {
+        let stableState : PohVoteStableState = {
+            newPohPackages = state.newPohPackages.toArray();
+            approvedPohPackages = state.approvedPohPackages.toArray();
+            rejectedPohPackages = state.rejectedPohPackages.toArray();
+            package2Status = Iter.toArray(state.package2Status.entries());
+            pohVotes = Iter.toArray(state.pohVotes.entries());
+            pohContent2votes = Rel.share<Text, Text>(state.pohContent2votes.getRel());
+            mods2Pohvotes = Rel.share<Principal, Text>(state.mods2Pohvotes.getRel());
+        };
+        return stableState;
+    };
+
+};  

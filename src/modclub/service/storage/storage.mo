@@ -12,9 +12,11 @@ import Types "./types";
 module StorageModule {
 
 
-public class StorageSolution(storageState : StorageState.DataCanisterState, mainCanisterInitializer: Principal, mainCanisterActorPrincipal: Principal) {
+public class StorageSolution(storageStableState : StorageState.DataCanisterStateStable, mainCanisterInitializer: Principal, mainCanisterActorPrincipal: Principal) {
 
     let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
+
+    let storageState = StorageState.getState(storageStableState);
 
 
     public func getBlob(contentId: Text, offset:Nat): async ?Blob {
@@ -107,6 +109,10 @@ public class StorageSolution(storageState : StorageState.DataCanisterState, main
           memory_allocation = null; // 4GB
           freezing_threshold = ?31_540_000} })
       );
+    };
+
+    public func getStableState() : StorageState.DataCanisterStateStable {
+      return StorageState.getStableState(storageState);
     };
 
 };

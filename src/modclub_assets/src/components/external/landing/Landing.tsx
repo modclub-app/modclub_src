@@ -1,3 +1,4 @@
+import * as React from 'react'
 import "./Landing.scss";
 import { Doughnut } from "react-chartjs-2";
 import HowTo1 from "../../../../assets/network.png";
@@ -12,10 +13,6 @@ import IntegrationImg from "../../../../assets/integrate.png";
 import Faq from "./faq/Faq";
 import Footer from "../../footer/Footer";
 import DfinityLogo from "../../../../assets/dfinity.svg";
-import raheel from '../../../../assets/raheel.png';
-import pema from '../../../../assets/pema.png';
-import max from '../../../../assets/max.png';
-import chris from '../../../../assets/chris.png';
 import twitterImg from '../../../../assets/twitter.png';
 import discordImg from '../../../../assets/discord.jpeg';
 import dscvrImg from '../../../../assets/dscvr.jpeg';

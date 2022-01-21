@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from 'react'
 import './bulma.css'
 import "./App.scss";
 import "./Responsive.scss";

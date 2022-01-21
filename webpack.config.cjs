@@ -72,7 +72,14 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.(js|ts)x?$/, loader: "ts-loader" },
+      {
+        test: /\.(js|ts)x?$/,
+        loader: "esbuild-loader",
+        options: {
+          loader: "tsx", // Or 'ts' if you don't need tsx
+          target: "es2015",
+        },
+      },
       {
         test: /\.(sa|sc|c)ss$/,
         include: path.resolve(__dirname, "src/modclub_assets/src"),
