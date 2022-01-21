@@ -25,6 +25,7 @@
     "buffer": "6.0.3",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^4.3.0",
+    "esbuild-loader": "^2.18.0",
     "events": "3.3.0",
     "file-loader": "^6.1.1",
     "html-webpack-plugin": "5.3.1",

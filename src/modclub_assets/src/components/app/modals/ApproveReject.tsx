@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { Form } from "react-final-form";

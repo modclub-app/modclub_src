@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { Switch, Route } from "react-router-dom";
 import { useAuth } from "../../utils/auth";
 import { Columns } from "react-bulma-components";

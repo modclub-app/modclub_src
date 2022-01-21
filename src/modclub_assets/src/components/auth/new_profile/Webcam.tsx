@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { useRef, useState, useCallback } from "react";
 import { Image, Button, Icon } from "react-bulma-components";
 import Webcam from "react-webcam";

@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { HashLink } from "react-router-hash-link";
 import { Footer, Container, Columns, Image, Heading, Level } from "react-bulma-components";
 import modclubImg from "../../../assets/logo.png";
