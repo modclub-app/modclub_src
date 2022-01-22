@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { Card, Icon } from "react-bulma-components";
 import { Field } from "react-final-form";
 import "./Confirm.scss";

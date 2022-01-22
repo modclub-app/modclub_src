@@ -43,10 +43,16 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
     console.log("onFormSubmit values !!!", values)
     const checked = getChecked(values);
 
+    // export interface PohRulesViolated { 'ruleId' : string, 'challengeId' : string }
+    // TODO! format the array of rules when I get real rule id's returned..
+    const rules = checked.map(rule => {
+      return { ruleId: rule.slice(-1), challengeId: rule.substring(0, rule.length - 2) }
+    });
+
     try {
       setSubmitting(true);
       // @ts-ignore
-      const result = await votePohContent(packageId, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, checked);
+      const result = await votePohContent(packageId, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, rules);
       console.log("result", result);
       setSubmitting(false);
     } catch (e) {
