@@ -17,7 +17,7 @@ import Iter "mo:base/Iter";
 import Types "./types"
 
 
-actor class Bucket () = this {
+actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
 
   public type DataCanisterState = {
       contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
@@ -43,6 +43,10 @@ actor class Bucket () = this {
   var state: DataCanisterState = emptyStateForDataCanister();
 
   let limit = 20_000_000_000_000;
+
+  for((modId, mId) in moderatorsId.vals()) {
+    state.moderators.put(modId, modId);
+  };
 
   public func getSize(): async Nat {
     Debug.print("canister balance: " # Nat.toText(Cycles.balance()));
@@ -153,7 +157,7 @@ actor class Bucket () = this {
     };
   };
 
-  public func registerModerators(moderatorIds: [Principal]): async () {
+  public func registerModerators(moderatorIds: [Principal]):  () {
     for(moderatorId in moderatorIds.vals()) {
       state.moderators.put(moderatorId, moderatorId);
     };

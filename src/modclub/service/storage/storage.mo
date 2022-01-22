@@ -2,6 +2,7 @@ import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Cycles "mo:base/ExperimentalCycles";
+import Iter "mo:base/Iter";
 import StorageTypes "./types";
 import Bucket "./buckets";
 import StorageState "./storageState";
@@ -32,7 +33,7 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
     public func registerModerators(moderatorIds: [Principal]): async () {
       for((bucketId, bucket) in storageState.dataCanisters.entries()) {
-        ignore bucket.registerModerators(moderatorIds);
+        bucket.registerModerators(moderatorIds);
       };
     };
 
@@ -87,7 +88,7 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
     // dynamically install a new Bucket
     private func newEmptyBucket(): async Bucket.Bucket {
-      let b = await Bucket.Bucket();
+      let b = await Bucket.Bucket(Iter.toArray(storageState.moderatorsId.entries()));
       let _ = await updateCanister(b); // update canister permissions and settings
       let s = await b.getSize();
       Debug.print("new canister principal is " # debug_show(Principal.toText(Principal.fromActor(b))) );
