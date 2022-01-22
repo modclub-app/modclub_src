@@ -18,7 +18,6 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
     let storageState = StorageState.getState(storageStableState);
 
-
     public func getBlob(contentId: Text, offset:Nat): async ?Blob {
       do? {
         let contentCanisterId = storageState.contentIdToCanisterId.get(contentId)!;
@@ -29,6 +28,18 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
     public func dataCanisterId(contentId: Text): async ?Types.DataCanisterId {
       storageState.contentIdToCanisterId.get(contentId);
+    };
+
+    public func registerModerators(moderatorIds: [Principal]): async () {
+      for((bucketId, bucket) in storageState.dataCanisters.entries()) {
+        ignore bucket.registerModerators(moderatorIds);
+      };
+    };
+
+    public func deRegisterModerators(moderatorIds: [Principal]): async () {
+      for((bucketId, bucket) in storageState.dataCanisters.entries()) {
+        bucket.deRegisterModerators(moderatorIds);
+      };
     };
 
     // persist chunks in bucket
@@ -81,10 +92,6 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
       let s = await b.getSize();
       Debug.print("new canister principal is " # debug_show(Principal.toText(Principal.fromActor(b))) );
       Debug.print("initial size is " # debug_show(s));
-      // var newCanisterState : CanisterState<Bucket, Nat> = {
-      //     bucket = b;
-      //     var size = s;
-      // };
       storageState.dataCanisters.put(Principal.fromActor(b), b);
       return b;
     };

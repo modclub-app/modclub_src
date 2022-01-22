@@ -32,6 +32,7 @@ module StorageState {
     var st : DataCanisterStateStable = {
       dataCanisters = [];
       contentIdToCanisterId = [];
+      moderators = [];
     };
     st;
   };

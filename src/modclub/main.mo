@@ -34,7 +34,6 @@ import VoteState "./service/vote/state";
 import Helpers "./helpers";
 
 
-
 shared ({caller = initializer}) actor class ModClub () = this {
 
   // Constants
@@ -452,7 +451,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Image) : async Profile {
        // Anonymous principal 
       if(Principal.toText(caller) == "2vxsx-fae") {
-          Debug.print("Anonymous principal");
           throw Error.reject("Unauthorized, user does not have an identity");
       };
 
@@ -496,7 +494,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
               // Give new users MOD points
               await tokens.transfer(initializer, caller, DEFAULT_TEST_TOKENS);
               state.profiles.put(caller, profile);
-
+              await storageSolution.registerModerators([caller]);
               return profile;
             };
             case(false) throw Error.reject("username already taken");
@@ -1242,6 +1240,25 @@ shared ({caller = initializer}) actor class ModClub () = this {
     pohStableState := PohState.emptyStableState();
     pohVoteStableState := VoteState.emptyStableState();
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
+  };
+
+  var moderatorsPermissioned = false;
+  func permissionModeratorInBuckets() : async () {
+    let moderatorIds = Buffer.Buffer<Principal>(1);
+    for((id, profile) in state.profiles.entries()) {
+      if(profile.role == #moderator) {
+        moderatorIds.add(id);
+      };
+    };
+    await storageSolution.registerModerators(moderatorIds.toArray());
+  };
+
+  system func heartbeat() : async () {
+    if(moderatorsPermissioned == false) {
+      await permissionModeratorInBuckets();
+      await populateChallenges();
+      moderatorsPermissioned := true;
+    };
   };
 
 };
