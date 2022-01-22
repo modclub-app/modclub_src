@@ -5,6 +5,7 @@ import {
   Modal,
   Heading,
   Button,
+  Icon,
   Card,
   Columns
 } from "react-bulma-components";
@@ -15,12 +16,14 @@ const MAX_CHUNK_SIZE = 1024 * 500;
 
 export default function UserVideo({ steps }) {
   const history = useHistory();
+  const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const [capturing, setCapturing] = useState<boolean>(false);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [phrases, setPhrases] = useState([]);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [video, setVideo] = useState(null);
 
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true);
@@ -47,6 +50,28 @@ export default function UserVideo({ steps }) {
     mediaRecorderRef.current.stop();
     setCapturing(false);
   }, [mediaRecorderRef, webcamRef, setCapturing]);
+
+  const saveVideo = useCallback(() => {
+    mediaRecorderRef.current.stop();
+    setCapturing(false);
+
+    const blob = new Blob(recordedChunks, {
+      type: "video/webm"
+    });
+
+    const url = URL.createObjectURL(blob);
+    console.log("webcamRef", webcamRef);
+
+    console.log("recordedChunks", recordedChunks);
+    console.log("blob", blob);
+    console.log("url", url);
+
+    setVideo(blob)
+
+  }, [mediaRecorderRef, webcamRef, setCapturing]);
+
+
+
 
   const submit = async () => {
     setSubmitting(true);
@@ -84,29 +109,85 @@ export default function UserVideo({ steps }) {
         </Modal>
       }
 
-      {/* <div className="is-relative has-text-centered"> */}
-      <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
-        <Webcam
-          audio={true}
-          muted={true}
-          ref={webcamRef}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: "100%",
-            objectFit: "fill",
-          }}
-        />
-        {/* {!loading && */}
-          <CaptureButton
-            icon="videocam"
-            handleClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
+      {!video ? (
+        <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
+          <Webcam
+            audio={true}
+            muted={true}
+            ref={webcamRef}
+            onUserMedia={() => setLoading(false)}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: "100%",
+              objectFit: "fill",
+            }}
           />
-        {/* } */}
-      </div>
+          {!loading && !capturing &&
+            <div
+              style={{
+                borderRadius: "3rem",
+                position: "absolute",
+                bottom: "1rem",
+                left: 0,
+                right: 0,
+                margin: "auto",
+                width: "2.75rem",
+                height: "2.75rem",
+                background: "#f03",
+                padding: 3,
+                border: "3px solid #64686B",
+                backgroundClip: "content-box",
+                cursor: "pointer"
+              }}
+              onClick={handleStartCaptureClick}
+            />
+          }
+          {!loading && capturing && (
+            <>
+            <CaptureButton
+              icon="pause"
+              handleClick={handleStopCaptureClick}
+            />
+            <div
+              style={{
+                borderRadius: "3rem",
+                position: "absolute",
+                bottom: "1rem",
+                right: "calc(50% + 2.5rem)",
+                margin: "auto",
+                width: "2.75rem",
+                height: "2.75rem",
+                padding: 3,
+                border: "3px solid #64686B",
+                backgroundClip: "content-box",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+              onClick={saveVideo}
+            >
+              <div
+                style={{
+                  borderRadius: 4,
+                  background: "#f03",
+                  width: "1.5rem",
+                  height: "1.5rem"
+                }}
+              />
+            </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
+          hellllo
+        </div>
+      )}
 
       <Card className="mt-4 mb-5">
         <Card.Content className="columns is-multiline">
