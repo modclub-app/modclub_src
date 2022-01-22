@@ -3,6 +3,23 @@ import { Profile } from "./types";
 import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
 import { submitChallengeData } from "./api";
 
+export function getFileExtension(type: string): any | null {
+  switch(type) {
+    case 'image/jpeg':
+      return 'jpeg'
+    case 'image/gif':
+      return 'gif'
+    case 'image/jpg':
+      return 'jpg'
+    case 'image/png':
+      return 'png'
+    case 'image/svg':
+      return 'svg'
+    default :
+    return null;
+  }
+};
+
 export function b64toBlob(b64Data: string, contentType = '', sliceSize = 512) {
   const byteCharacters = atob(b64Data);
   const byteArrays = [];

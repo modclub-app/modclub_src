@@ -8,6 +8,8 @@ import {
   Heading,
 } from "react-bulma-components";
 import { useEffect, useState } from "react";
+import { useAuth } from "../../../utils/auth";
+import { SignIn } from '../../auth/SignIn';
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
@@ -29,6 +31,7 @@ const Confirmation = () => {
 };
 
 export default function NewPohProfile({ match }) {
+  const { isAuthenticated } = useAuth();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)
@@ -67,7 +70,22 @@ export default function NewPohProfile({ match }) {
       const result = /[^/]*$/.exec(location.pathname)[0];
       setCurrentStep(result);
     })
-  }, [history]) 
+  }, [history])
+
+  if (!isAuthenticated) return (
+    <Columns centered vCentered className="mt-6">
+      <Columns.Column size={6}>
+        <Card>
+          <Card.Content className="has-text-centered">
+            <p className="my-6">You need to be logged in to view this page</p>
+            <div style={{ width: 200, margin: "auto" }}>
+              <SignIn />
+            </div>
+          </Card.Content>
+        </Card>
+      </Columns.Column>
+    </Columns>
+  );
 
   return (
   <>
@@ -91,7 +109,7 @@ export default function NewPohProfile({ match }) {
             }
 
             <Card backgroundColor="dark" className="mt-6">
-              <Card.Content>
+              <Card.Content>                
                 <Switch>
                   <Route path={`${match.path}/:challenge-profile-details`} component={ProfileDetails}/>
                   <Route path={`${match.path}/:challenge-profile-pic`} component={ProfilePic}/>

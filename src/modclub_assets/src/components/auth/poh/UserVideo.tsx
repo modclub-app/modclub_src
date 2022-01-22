@@ -83,25 +83,36 @@ export default function UserVideo({ steps }) {
           <div className="loader is-loading p-5"></div>
         </Modal>
       }
-      <Heading subtitle>
-        Record yourself saying the following<br /> words in order:
-      </Heading>
 
-      <div className="is-relative has-text-centered">
+      {/* <div className="is-relative has-text-centered"> */}
+      <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
         <Webcam
           audio={true}
           muted={true}
           ref={webcamRef}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: "100%",
+            objectFit: "fill",
+          }}
         />
-        <CaptureButton
-          type={capturing ? "danger" : "success"}
-          icon="videocam"
-          handleClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
-        />
+        {/* {!loading && */}
+          <CaptureButton
+            icon="videocam"
+            handleClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
+          />
+        {/* } */}
       </div>
 
       <Card className="mt-4 mb-5">
         <Card.Content className="columns is-multiline">
+          <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
+            Record yourself saying the following<br /> words in order:
+          </Heading>
           {phrases.map((phrase, index) => (
             <Columns.Column key={phrase} size={4}>
               <Button fullwidth isStatic>
