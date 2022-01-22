@@ -63,7 +63,7 @@ const Modal_ = ({
     } catch (e) {
       const regEx = /Reject text: (.*)/g;
       let errAr = regEx.exec(e.message);
-      setMessage({ success: false, value: errAr[1] });
+      errAr ? setMessage({ success: false, value: errAr[1] }) : setMessage({ success: false, value: e });
       setSubmitting(false);
     }
     setTimeout(() => {

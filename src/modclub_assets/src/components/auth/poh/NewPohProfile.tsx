@@ -55,7 +55,7 @@ export default function NewPohProfile({ match }) {
       return status === "notSubmitted"
     })
 
-    // history.push(`${match.path}/${ uncompleted ? uncompleted.challengeId : "confirm" }`);
+    history.push(`${match.path}/${ uncompleted ? uncompleted.challengeId : "confirm" }`);
   }
 
   useEffect(() => {

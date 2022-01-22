@@ -44,17 +44,15 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
     const checked = getChecked(values);
 
     try {
-
       setSubmitting(true);
       // @ts-ignore
       const result = await votePohContent(packageId, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, checked);
       console.log("result", result);
       setSubmitting(false);
-
     } catch (e) {
       const regEx = /Reject text: (.*)/g;
       let errAr = regEx.exec(e.message);
-      errAr ? setMessage({ success: false, value: errAr[1] }) : setMessage({ success: false, value: e })
+      errAr ? setMessage({ success: false, value: errAr[1] }) : setMessage({ success: false, value: e });
       setSubmitting(false);
     }
   }
