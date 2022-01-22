@@ -23,7 +23,7 @@ export default function UserVideo({ steps }) {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [phrases, setPhrases] = useState([]);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [video, setVideo] = useState(null);
+  const [videoUrl, setVideoUrl] = useState(null);
 
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true);
@@ -51,27 +51,38 @@ export default function UserVideo({ steps }) {
     setCapturing(false);
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
-  const saveVideo = useCallback(() => {
-    mediaRecorderRef.current.stop();
-    setCapturing(false);
+  // const saveVideo = useCallback(() => {
+  //   mediaRecorderRef.current.stop();
+  //   setCapturing(false);
 
+  //   const blob = new Blob(recordedChunks, {
+  //     type: "video/webm"
+  //   });
+
+  //   const url = URL.createObjectURL(blob);
+  //   console.log("webcamRef", webcamRef);
+
+  //   console.log("recordedChunks", recordedChunks);
+  //   console.log("blob", blob);
+  //   console.log("url", url);
+
+  //   setVideo(url)
+
+  // }, [mediaRecorderRef, webcamRef, setCapturing]);
+
+  const saveVideo = useCallback(() => {
+    if (!recordedChunks.length) return
     const blob = new Blob(recordedChunks, {
       type: "video/webm"
     });
-
     const url = URL.createObjectURL(blob);
-    console.log("webcamRef", webcamRef);
+    setVideoUrl(url);
+  }, [recordedChunks]);
 
-    console.log("recordedChunks", recordedChunks);
-    console.log("blob", blob);
-    console.log("url", url);
-
-    setVideo(blob)
-
-  }, [mediaRecorderRef, webcamRef, setCapturing]);
-
-
-
+  const resetVideo = () => {
+    setRecordedChunks([]);
+    setVideoUrl(null);
+  }
 
   const submit = async () => {
     setSubmitting(true);
@@ -109,7 +120,7 @@ export default function UserVideo({ steps }) {
         </Modal>
       }
 
-      {!video ? (
+      {!videoUrl ? (
         <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
           <Webcam
             audio={true}
@@ -126,66 +137,50 @@ export default function UserVideo({ steps }) {
               objectFit: "fill",
             }}
           />
-          {!loading && !capturing &&
-            <div
-              style={{
-                borderRadius: "3rem",
-                position: "absolute",
-                bottom: "1rem",
-                left: 0,
-                right: 0,
-                margin: "auto",
-                width: "2.75rem",
-                height: "2.75rem",
-                background: "#f03",
-                padding: 3,
-                border: "3px solid #64686B",
-                backgroundClip: "content-box",
-                cursor: "pointer"
-              }}
-              onClick={handleStartCaptureClick}
+          {!loading && !capturing &&  (<>
+            <CaptureButton
+              icon="play_arrow"
+              handleClick={handleStartCaptureClick}
             />
-          }
-          {!loading && capturing && (
-            <>
+            {recordedChunks.length && 
+              <Button
+                rounded
+                size="large"
+                color="light"
+                style={{
+                  position: "absolute",
+                  bottom: "1rem",
+                  right: "calc(50% + 2.5rem)",
+                  height: "3rem"
+                }}
+                onClick={saveVideo}
+              >
+                <span>Preview</span>
+                <Icon color="success">
+                  <span className="material-icons">
+                    videocam
+                  </span>
+                </Icon>
+              </Button>
+            }
+          </>)}
+          {!loading && capturing &&
             <CaptureButton
               icon="pause"
               handleClick={handleStopCaptureClick}
             />
-            <div
-              style={{
-                borderRadius: "3rem",
-                position: "absolute",
-                bottom: "1rem",
-                right: "calc(50% + 2.5rem)",
-                margin: "auto",
-                width: "2.75rem",
-                height: "2.75rem",
-                padding: 3,
-                border: "3px solid #64686B",
-                backgroundClip: "content-box",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-              onClick={saveVideo}
-            >
-              <div
-                style={{
-                  borderRadius: 4,
-                  background: "#f03",
-                  width: "1.5rem",
-                  height: "1.5rem"
-                }}
-              />
-            </div>
-            </>
-          )}
+          }
         </div>
       ) : (
         <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
-          hellllo
+          <video width="100%" height="auto" autoPlay style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}>
+            <source src={videoUrl} />
+            Your browser does not support the video tag.
+          </video>
+          <CaptureButton
+              icon="delete"
+              handleClick={resetVideo}
+            />
         </div>
       )}
 
