@@ -16,7 +16,7 @@ import Toggle from "../../common/toggle/Toggle";
 import Progress from "../../common/progress/Progress";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
-import { formatDate } from "../../../utils/util";
+import { formatDate, getAppUrl } from "../../../utils/util";
 
 const Modal_ = ({ toggle, title, image, children, handleSubmit }) => {
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -97,7 +97,7 @@ const ProfileDetails = ({ data }) => {
 };
 
 const ProfilePic = ({ data }) => {
-  const imageUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
+  const imageUrl = `${getAppUrl()}/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
 
   return (
     <Card.Content>
@@ -108,7 +108,7 @@ const ProfilePic = ({ data }) => {
 
 const UserVideo = ({ data }) => {
   console.log("UserVideo", data);
-  const videoUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
+  const videoUrl = `${getAppUrl()}/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
   const phrases = data.wordList[0]
 
   return (

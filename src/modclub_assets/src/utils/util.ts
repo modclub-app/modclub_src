@@ -4,23 +4,23 @@ import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
 import { submitChallengeData } from "./api";
 
 export function getFileExtension(type: string): any | null {
-  switch(type) {
-    case 'image/jpeg':
-      return 'jpeg'
-    case 'image/gif':
-      return 'gif'
-    case 'image/jpg':
-      return 'jpg'
-    case 'image/png':
-      return 'png'
-    case 'image/svg':
-      return 'svg'
-    default :
-    return null;
+  switch (type) {
+    case "image/jpeg":
+      return "jpeg";
+    case "image/gif":
+      return "gif";
+    case "image/jpg":
+      return "jpg";
+    case "image/png":
+      return "png";
+    case "image/svg":
+      return "svg";
+    default:
+      return null;
   }
-};
+}
 
-export function b64toBlob(b64Data: string, contentType = '', sliceSize = 512) {
+export function b64toBlob(b64Data: string, contentType = "", sliceSize = 512) {
   const byteCharacters = atob(b64Data);
   const byteArrays = [];
 
@@ -32,7 +32,7 @@ export function b64toBlob(b64Data: string, contentType = '', sliceSize = 512) {
     }
     byteArrays.push(new Uint8Array(byteNumbers));
   }
-  const blob = new Blob(byteArrays, { type: contentType } );
+  const blob = new Blob(byteArrays, { type: contentType });
   return blob;
 }
 
@@ -44,13 +44,13 @@ export async function processAndUploadChunk(
   chunk: number,
   fileSize: number,
   fileExtension: string
-) : Promise<any> {
+): Promise<any> {
   const blobSlice = blob.slice(
     byteStart,
     Math.min(Number(fileSize), byteStart + MAX_CHUNK_SIZE),
-    blob.type,
+    blob.type
   );
- 
+
   const bsf = await blobSlice.arrayBuffer();
 
   const res = await submitChallengeData({
@@ -65,9 +65,8 @@ export async function processAndUploadChunk(
     mimeType: fileExtension,
     dataSize: BigInt(fileSize),
   });
-  console.log("res", res)
+  console.log("res", res);
 }
-
 
 export function getUserFromStorage(
   storage = window.localStorage,
@@ -128,6 +127,19 @@ export function formatDate(integer: bigint) {
 }
 
 export function validateEmail(email: string) {
-  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const re =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
+}
+
+export function getAppUrl() {
+  if (window.location.hostname.includes("localhost")) {
+    return "http://" + window.location.hostname;
+  } else {
+    const canisterId =
+      process.env.DEV_ENV == "dev"
+        ? process.env.MODCLUB_DEV_CANISTER_ID
+        : process.env.MODCLUB_CANISTER_ID;
+    return "https://" + canisterId + "ic0.app";
+  }
 }
