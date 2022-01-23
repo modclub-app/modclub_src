@@ -140,6 +140,6 @@ export function getAppUrl() {
       process.env.DEV_ENV == "dev"
         ? process.env.MODCLUB_DEV_CANISTER_ID
         : process.env.MODCLUB_CANISTER_ID;
-    return "https://" + canisterId + "ic0.app";
+    return "https://" + canisterId + ".ic0.app";
   }
 }
