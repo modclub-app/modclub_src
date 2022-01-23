@@ -109,7 +109,7 @@ export function WebcamWrapper({ setFile, file }) {
   }
 
   return !file.data ? (
-    <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
+    <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%", margin: "auto" }}>
       <Webcam
         audio={false}
         ref={webcamRef}

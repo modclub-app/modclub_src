@@ -1,4 +1,5 @@
 import * as React from 'react'
+import styled from "styled-components";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useHistory, Link } from "react-router-dom";
 import {
@@ -13,6 +14,41 @@ import Webcam from "react-webcam";
 import { CaptureButton } from "./Webcam"
 import { processAndUploadChunk } from "../../../utils/util";
 const MAX_CHUNK_SIZE = 1024 * 500;
+
+const RecordButton = styled.div`
+  cursor: pointer;
+  border-radius: 50%;
+  min-width: 46px;
+  height: 46px;
+  box-sizing: border-box;
+  transition: all .2s;
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+
+  i {
+    font-size: 0;
+    display: block;
+    padding: 0;
+    background-color: #f03;
+    box-sizing: border-box;
+    transition: all .2s;
+    transform-origin: center center;
+    transform: translate(-50%,-50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 20%);
+    border-radius: ${({ capturing }) => (capturing ? "5px" : "50%")};
+    width: ${({ capturing }) => (capturing ? "20px" : "28px")};
+    height: ${({ capturing }) => (capturing ? "20px" : "28px")};
+
+    &: hover {
+      transform: translate(-50%, -50%) scale(1.2, 1.2);
+    }
+  }
+`;
 
 export default function UserVideo({ steps }) {
   const history = useHistory();
@@ -50,25 +86,6 @@ export default function UserVideo({ steps }) {
     mediaRecorderRef.current.stop();
     setCapturing(false);
   }, [mediaRecorderRef, webcamRef, setCapturing]);
-
-  // const saveVideo = useCallback(() => {
-  //   mediaRecorderRef.current.stop();
-  //   setCapturing(false);
-
-  //   const blob = new Blob(recordedChunks, {
-  //     type: "video/webm"
-  //   });
-
-  //   const url = URL.createObjectURL(blob);
-  //   console.log("webcamRef", webcamRef);
-
-  //   console.log("recordedChunks", recordedChunks);
-  //   console.log("blob", blob);
-  //   console.log("url", url);
-
-  //   setVideo(url)
-
-  // }, [mediaRecorderRef, webcamRef, setCapturing]);
 
   const saveVideo = useCallback(() => {
     if (!recordedChunks.length) return
@@ -121,7 +138,7 @@ export default function UserVideo({ steps }) {
       }
 
       {!videoUrl ? (
-        <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
+        <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%", margin: "auto" }}>
           <Webcam
             audio={true}
             muted={true}
@@ -137,42 +154,41 @@ export default function UserVideo({ steps }) {
               objectFit: "fill",
             }}
           />
-          {!loading && !capturing &&  (<>
-            <CaptureButton
-              icon="play_arrow"
-              handleClick={handleStartCaptureClick}
-            />
-            {recordedChunks.length && 
-              <Button
-                rounded
-                size="large"
-                color="light"
-                style={{
-                  position: "absolute",
-                  bottom: "1rem",
-                  right: "calc(50% + 2.5rem)",
-                  height: "3rem"
-                }}
-                onClick={saveVideo}
-              >
-                <span>Preview</span>
-                <Icon color="success">
-                  <span className="material-icons">
-                    videocam
-                  </span>
-                </Icon>
-              </Button>
-            }
-          </>)}
-          {!loading && capturing &&
-            <CaptureButton
-              icon="pause"
-              handleClick={handleStopCaptureClick}
-            />
+
+          <RecordButton
+            capturing={capturing}
+            onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
+          >
+            <svg width="46" height="46" className="btn-record-timer">
+              <defs> <mask id="cirleMask"> <rect height="46" width="46" fill="white"></rect> <circle r="18" cx="23" cy="23" fill="black"></circle> </mask> </defs> <circle r="23" cx="23" cy="23" fill="#64686B" mask="url(#cirleMask)"></circle> <path id="timerArc" fill="#ffffff" strokeWidth="0" mask="url(#cirleMask)" d="M 23 23 L 22.999999999999996 0 A 23 23 0 0 0 22.999999999999996 0 L 23 23"></path>
+            </svg>
+            <i />
+          </RecordButton>
+
+          {recordedChunks.length && 
+            <Button
+              rounded
+              size="large"
+              color="light"
+              style={{
+                position: "absolute",
+                bottom: "1rem",
+                right: "calc(50% + 2.5rem)",
+                height: "3rem"
+              }}
+              onClick={saveVideo}
+            >
+              <span>Preview</span>
+              <Icon color="success">
+                <span className="material-icons">
+                  videocam
+                </span>
+              </Icon>
+            </Button>
           }
         </div>
       ) : (
-        <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%" }}>
+        <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%", margin: "auto" }}>
           <video width="100%" height="auto" autoPlay style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}>
             <source src={videoUrl} />
             Your browser does not support the video tag.
