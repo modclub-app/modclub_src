@@ -113,6 +113,7 @@ export function WebcamWrapper({ setFile, file }) {
       <Webcam
         audio={false}
         ref={webcamRef}
+        mirrored={true}
         screenshotFormat="image/jpeg"
         onUserMedia={() => setLoading(false)}
         style={{

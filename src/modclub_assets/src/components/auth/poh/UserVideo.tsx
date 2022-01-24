@@ -142,6 +142,7 @@ export default function UserVideo({ steps }) {
           <Webcam
             audio={true}
             muted={true}
+            mirrored={true}
             ref={webcamRef}
             onUserMedia={() => setLoading(false)}
             style={{
