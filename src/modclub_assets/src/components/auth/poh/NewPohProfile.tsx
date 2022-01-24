@@ -63,7 +63,7 @@ export default function NewPohProfile({ match }) {
 
   useEffect(() => {
     initialCall();
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     return history.listen((location) => { 
