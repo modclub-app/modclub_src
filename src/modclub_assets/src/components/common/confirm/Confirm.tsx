@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Card, Icon } from "react-bulma-components";
 import { Field } from "react-final-form";
-import "./Confirm.scss";
 
 export default function Confirm({
   type,
@@ -15,20 +14,18 @@ export default function Confirm({
   return (
     <Card className="confirm mt-5" backgroundColor={type}>
       <Card.Content>
-        <Field
-          name={id}
-          component="input"
-          type="checkbox"
-          value={id}
-          id={id}
-        />
-        <span className="check">
-          <Icon>
+        <label className="checkbox is-large level" style={{ color: "#fff", fontWeight: 600, width: "100%" }}>
+          {label}
+          <Field
+            name={id}
+            component="input"
+            type="checkbox"
+            value={id}
+            id={id}
+          />
+          <Icon className="check">
             <span className="material-icons">done</span>
           </Icon>
-        </span>
-        <label htmlFor={id} className="is-clickable" style={{ color: "#fff", fontWeight: 600 }}>
-          {label}
         </label>
       </Card.Content>
     </Card>
