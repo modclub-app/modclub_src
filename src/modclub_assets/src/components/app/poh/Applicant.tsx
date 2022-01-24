@@ -18,7 +18,7 @@ import Confirm from "../../common/confirm/Confirm";
 import Progress from "../../common/progress/Progress";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
-import { formatDate } from "../../../utils/util";
+import { formatDate, getUrlForData } from "../../../utils/util";
 
 const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
   const [submitting, setSubmitting] = useState(null);
@@ -135,7 +135,7 @@ const ProfileDetails = ({ data }) => {
 };
 
 const ProfilePic = ({ data }) => {
-  const imageUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
+  const imageUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
 
   return (
     <Card.Content>
@@ -145,7 +145,8 @@ const ProfilePic = ({ data }) => {
 };
 
 const UserVideo = ({ data }) => {
-  const videoUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
+  console.log("UserVideo", data);
+  const videoUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
   const phrases = data.wordList[0]
 
   return (

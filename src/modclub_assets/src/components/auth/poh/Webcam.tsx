@@ -2,20 +2,25 @@ import * as React from 'react'
 import { useRef, useState, useCallback } from "react";
 import { Image, Button, Icon } from "react-bulma-components";
 import Webcam from "react-webcam";
-import { b64toBlob } from "../../../utils/util";
+import { b64toBlob, getFileExtension } from "../../../utils/util";
 
 export function CaptureButton({
-  type,
   icon,
   handleClick,
 } : {
-  type: string,
   icon: string,
   handleClick: React.MouseEventHandler<HTMLButtonElement>,
 }) {
   return (
+
+  //   .video-recorder .bottom-menu .btn-photo:hover {
+  //     background-color: #2e3136;
+  // }
+  // .video-recorder .bottom-menu .btn-photo:hover #cameraIcon {
+  //     transform: scale(1.03, 1.03);
+  // }
+
     <Button
-      color={type}
       rounded
       style={{
         position: "absolute",
@@ -23,14 +28,46 @@ export function CaptureButton({
         left: 0,
         right: 0,
         margin: "auto",
-        width: "4rem",
-        height: "4rem"
+        width: "3rem",
+        height: "3rem",
+        background: "rgba(46, 49, 54, 0.6)",
+        border: 0
       }}
       onClick={handleClick}
     >
       <Icon color="white">
         <span className="material-icons">
           {icon}
+        </span>
+      </Icon>
+    </Button>
+  )
+}
+
+export function SaveButton({ file }) {
+  const downloadUrl = URL.createObjectURL(file.blob);
+  const type = getFileExtension(file.type);
+
+  return (
+    <Button
+      renderAs="a"
+      href={downloadUrl}
+      download={`${file.size}.${type}`}
+      target="_blank"
+      rounded
+      size="large"
+      color="light"
+      style={{
+        position: "absolute",
+        bottom: "1rem",
+        right: "calc(50% + 2.5rem)",
+        height: "3rem"
+      }}
+    >
+      <span>Save</span>
+      <Icon color="success">
+        <span className="material-icons">
+          get_app
         </span>
       </Icon>
     </Button>
@@ -72,23 +109,29 @@ export function WebcamWrapper({ setFile, file }) {
   }
 
   return !file.data ? (
-    <div className="is-relative has-text-centered">
+    <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%", margin: "auto" }}>
       <Webcam
         audio={false}
         ref={webcamRef}
+        mirrored={true}
         screenshotFormat="image/jpeg"
         onUserMedia={() => setLoading(false)}
-        style={{ display: loading ? "none" : "inline" }}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: "100%",
+          objectFit: "fill",
+        }}
       />
-      {loading ? (
-        <div className="loader is-loading"></div>
-      ) : (
+      {!loading &&
         <CaptureButton
-          type="success"
           icon="photo_camera"
           handleClick={captureWebcam}
         />
-      )}
+      }
     </div>
   ) : (
     <div className="is-relative has-text-centered">
@@ -96,9 +139,9 @@ export function WebcamWrapper({ setFile, file }) {
         src={file.data}
         style={{ maxWidth: 640, maxHeight: 480, margin: "auto" }}
       />
+      <SaveButton file={file} />
       <CaptureButton
-        type="danger"
-        icon="clear"
+        icon="delete"
         handleClick={clearImage}
       />
     </div>

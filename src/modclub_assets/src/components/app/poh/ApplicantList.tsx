@@ -12,13 +12,15 @@ import {
 import Userstats from "../profile/Userstats";
 import Progress from "../../common/progress/Progress";
 import { getPohTasks } from "../../../utils/api";
-import { formatDate } from "../../../utils/util";
+import { formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
   console.log("ApplicantSnippet", applicant);
   const { fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
-  const imageUrl = 'http://localhost:8000/storage?' + profileImageUrlSuffix;
+  const regEx = /canisterId=(.*)&contentId=(.*)/g;
+  const match = regEx.exec(applicant.profileImageUrlSuffix[0]);
+  const imageUrl = getUrlForData(match[1], match[2]);
   
   return (
     <Link

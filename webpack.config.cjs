@@ -125,8 +125,10 @@ module.exports = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       MODCLUB_CANISTER_ID: canisters["modclub"],
+      MODCLUB_DEV_CANISTER_ID: canisters["modclub_dev"],
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
+      DEV_ENV: process.env.DEV_ENV || "production",
     }),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],
