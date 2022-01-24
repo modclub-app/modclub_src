@@ -10,6 +10,7 @@ import {
   Button,
   Modal,
   Notification,
+  Icon
 } from "react-bulma-components";
 import { Form, Field } from "react-final-form";
 import Userstats from "../profile/Userstats";
@@ -172,10 +173,10 @@ const UserVideo = ({ data }) => {
 
 const CheckBox = ({ id, label, values }) => {
   return (
-    <fieldset className="level mb-1">    
+    <fieldset className="level mb-3">    
       <p>{label}</p>
       <div className="control">
-        <label className="radio">
+        <label className="checkbox is-large">
           <Field
             name={id}
             component="input"
@@ -184,9 +185,12 @@ const CheckBox = ({ id, label, values }) => {
             id={id}
             checked={values[id] === "true"}
           />
-          <span className="ml-2 mr-4">Yes</span>
+          <Icon className="check">
+            <span className="material-icons">done</span>
+          </Icon>
+          <p>Yes</p>
         </label>
-        <label className="radio">
+        <label className="checkbox is-large">
           <Field
             name={id}
             component="input"
@@ -195,7 +199,10 @@ const CheckBox = ({ id, label, values }) => {
             id={id}
             checked={values[id] === "false"}
           />
-          <span className="ml-2">No</span>
+          <Icon className="check">
+            <span className="material-icons">done</span>
+          </Icon>
+          <p>No</p>
         </label>
       </div>      
     </fieldset>

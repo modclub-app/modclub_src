@@ -412,6 +412,33 @@ label.checkbox {
       opacity: 1;
     }
   }
+
+  &.is-large {
+    margin-top: -.85rem;
+
+    input + .check {
+      background: $white;
+      border: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+
+      span {
+        -webkit-text-fill-color: $dark;
+      }
+    }
+    p {
+      color: $white;
+      position: absolute;
+      top: 1.65rem;
+      font-size: .85rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    & + label.checkbox {
+      margin-left: 2rem;
+    }
+  }
 }
 
 .is-toggle input[type="checkbox"] {
@@ -464,6 +491,9 @@ label.checkbox {
 //     background: $black;
 //   }
 // }
+
+
+
 
 
 .progress {
