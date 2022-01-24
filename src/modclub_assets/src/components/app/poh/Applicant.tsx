@@ -232,11 +232,16 @@ export default function PohApplicant() {
   }
 
   const isDisabled = (values: any) => {
-    const checked = getChecked(values);
-    return checked.length ? true : false
+    const checkedLength = Object.keys(values).length;
+    let formRules = [];
+    content.ok.forEach(task => formRules.push(...task.allowedViolationRules));
+    return checkedLength === formRules.length ? false : true;
   }
 
-  const parentSubmit = () => {}
+  const parentSubmit = (values: any) => {
+    // console.log("values", values);
+    Object.values(values).indexOf("true") >= 0 ? toggleReject() : toggleApprove();
+  }
 
   return loading ?
     <Modal show={true} showClose={false}>
@@ -292,26 +297,14 @@ export default function PohApplicant() {
             ))}
 
             <Card.Footer className="pt-0" style={{ border: 0 }}>
-              <Button.Group>
-                <Button
-                  color="danger"
-                  fullwidth
-                  onClick={toggleReject}
-                  disabled={!isDisabled(values)}
-                  renderAs="a"
-                >
-                  Reject
-                </Button>
-                <Button
-                  color="primary"
-                  fullwidth
-                  onClick={toggleApprove}
-                  disabled={isDisabled(values)}
-                  renderAs="a"
-                >
-                  Approve
-                </Button>
-              </Button.Group>
+              <Button
+                size="large"
+                color="primary"
+                disabled={isDisabled(values)}
+                style={{ width: 320, margin: "auto" }}
+              >
+                Submit
+              </Button>
             </Card.Footer>
 
             {showApprove &&
@@ -340,14 +333,14 @@ export default function PohApplicant() {
                 packageId={packageId}
                 values={values}
               > 
-                <p className="mb-3">You have selected the following rules:</p>
+                <p className="mb-3">These are the failed requirements you selected:</p>
                 <Card backgroundColor="dark">
                   <Card.Content>
                     <ul>
                       {Object.keys(values).map((key, index) => (
-                        values[key].length > 0 && values[key][0] != "voteIncorrectlyConfirmation" &&
+                        values[key] === "true" &&
                           <li key={index}>
-                            {index + 1}. {values[key]}
+                            {index + 1}. {Object.keys(values)[index]}
                           </li>
                         )
                       )}
