@@ -156,7 +156,7 @@ actor class Bucket () = this {
     let canister = actor (canisterId) : actor { streamingCallback : shared () -> async () };
 
     var _status_code:Nat16=404;
-    var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
+    var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline"),  ("Access-Control-Allow-Origin", "*")];
     var _body:Blob = "404 Not Found";
     var _streaming_strategy:? StreamingStrategy = null;
     let _ = do ? {
@@ -176,7 +176,8 @@ actor class Bucket () = this {
       _headers := [
         ("Content-Type", info!.contentType),
         ("Transfer-Encoding", "chunked"),
-        ("Content-Disposition", "inline")
+        ("Content-Disposition", "inline"),
+        ("Access-Control-Allow-Origin", "*")
       ];
       _status_code:=200;
       _streaming_strategy := ?#Callback({
