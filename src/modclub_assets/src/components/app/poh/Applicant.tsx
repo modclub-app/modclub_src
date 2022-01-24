@@ -9,11 +9,10 @@ import {
   Columns,
   Button,
   Modal,
-  Notification
+  Notification,
 } from "react-bulma-components";
-import { Form } from "react-final-form";
+import { Form, Field } from "react-final-form";
 import Userstats from "../profile/Userstats";
-import Toggle from "../../common/toggle/Toggle";
 import Confirm from "../../common/confirm/Confirm";
 import Progress from "../../common/progress/Progress";
 import approveImg from "../../../../assets/approve.svg";
@@ -145,7 +144,6 @@ const ProfilePic = ({ data }) => {
 };
 
 const UserVideo = ({ data }) => {
-  console.log("UserVideo", data);
   const videoUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
   const phrases = data.wordList[0]
 
@@ -171,6 +169,38 @@ const UserVideo = ({ data }) => {
     </Card.Content>
   )
 };
+
+const CheckBox = ({ id, label, values }) => {
+  return (
+    <fieldset className="level mb-1">    
+      <p>{label}</p>
+      <div className="control">
+        <label className="radio">
+          <Field
+            name={id}
+            component="input"
+            type="radio"
+            value={true}
+            id={id}
+            checked={values[id] === "true"}
+          />
+          <span className="ml-2 mr-4">Yes</span>
+        </label>
+        <label className="radio">
+          <Field
+            name={id}
+            component="input"
+            type="radio"
+            value={false}
+            id={id}
+            checked={values[id] === "false"}
+          />
+          <span className="ml-2">No</span>
+        </label>
+      </div>      
+    </fieldset>
+  )
+}
 
 export default function PohApplicant() {
   const { packageId } = useParams();
@@ -250,7 +280,12 @@ export default function PohApplicant() {
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
                   {task.allowedViolationRules.map(rule => (
-                    <Toggle key={rule.ruleId} id={`${task.challengeId}-${rule.ruleId}`} label={rule.ruleDesc} />
+                    <CheckBox
+                      key={rule.ruleId}
+                      id={`${task.challengeId}-${rule.ruleId}`}
+                      label={rule.ruleDesc}
+                      values={values}
+                    />
                   ))}
                 </Card.Footer>
               </Card.Content>
