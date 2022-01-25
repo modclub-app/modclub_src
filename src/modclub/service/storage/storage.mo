@@ -32,14 +32,28 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
     };
 
     public func registerModerators(moderatorIds: [Principal]): async () {
+      for(modId in moderatorIds.vals()) {
+        storageState.moderatorsId.put(modId, modId);
+      };
+
       for((bucketId, bucket) in storageState.dataCanisters.entries()) {
         bucket.registerModerators(moderatorIds);
       };
     };
 
     public func deRegisterModerators(moderatorIds: [Principal]): async () {
+      for(modId in moderatorIds.vals()) {
+        storageState.moderatorsId.delete(modId);
+      };
+
       for((bucketId, bucket) in storageState.dataCanisters.entries()) {
         bucket.deRegisterModerators(moderatorIds);
+      };
+    };
+
+    public func setInitialModerators(moderatorIds: [Principal]) : () {
+      for(modId in moderatorIds.vals()) {
+        storageState.moderatorsId.put(modId, modId);
       };
     };
 

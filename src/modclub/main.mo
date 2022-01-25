@@ -1208,11 +1208,20 @@ shared ({caller = initializer}) actor class ModClub () = this {
       } else {
         #equal;
       }
+  };
+
+  func getModerators() : [Principal] {
+    let moderatorIds = Buffer.Buffer<Principal>(1);
+    for((id, profile) in state.profiles.entries()) {
+      if(profile.role == #moderator) {
+        moderatorIds.add(id);
+      };
     };
+    return moderatorIds.toArray();
+  };
     
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
-  
 
   system func preupgrade() {
     Debug.print("MODCLUB PREUPGRRADE");
@@ -1239,26 +1248,13 @@ shared ({caller = initializer}) actor class ModClub () = this {
     storageStateStable := StorageState.emptyStableState();
     pohStableState := PohState.emptyStableState();
     pohVoteStableState := VoteState.emptyStableState();
+    
+    // This statement should be run after the storagestate gets restored from stable state
+    storageSolution.setInitialModerators(getModerators());
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 
-  var moderatorsPermissioned = false;
-  func permissionModeratorInBuckets() : async () {
-    let moderatorIds = Buffer.Buffer<Principal>(1);
-    for((id, profile) in state.profiles.entries()) {
-      if(profile.role == #moderator) {
-        moderatorIds.add(id);
-      };
-    };
-    await storageSolution.registerModerators(moderatorIds.toArray());
-  };
-
-  system func heartbeat() : async () {
-    if(moderatorsPermissioned == false) {
-      await permissionModeratorInBuckets();
-      await populateChallenges();
-      moderatorsPermissioned := true;
-    };
-  };
+  // Uncomment when required
+  // system func heartbeat() : async () {};
 
 };
