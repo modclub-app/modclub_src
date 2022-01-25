@@ -153,6 +153,7 @@ hr {
 
   &.is-primary {
     background: $primary;
+    border-color: $primary !important;
     &:hover {
       background: $primary-hover;
     }
@@ -167,6 +168,7 @@ hr {
 
   &.is-danger {
     background: $secondary;
+    border-color: $secondary !important;
   }
 
   &.is-gradient {

@@ -181,9 +181,9 @@ const CheckBox = ({ id, label, values }) => {
         <Button.Group justifyContent="flex-end">
           <Button
             renderAs="label"
-            color={values[id] === "confirm" ? "primary" : "black"}
+            color={values[id] === "confirm" && "primary" }
             size="small"
-            style={{ paddingLeft: 6 }}
+            style={{ paddingLeft: 6, borderColor: "white" }}
           >
             <Field
               name={id}
@@ -195,16 +195,16 @@ const CheckBox = ({ id, label, values }) => {
               style={{ display: "none" }}
             />
             <Icon color="white" size="small">
-              <span className="material-icons">{values[id] === "confirm" ? "radio_button_checked" : "radio_button_unchecked"}</span>
+              <span className="material-icons">{values[id] === "confirm" ? "trip_origin" : "circle"}</span>
             </Icon>
             <span className="ml-1">Confirm</span>
           </Button>
 
           <Button
             renderAs="label"
-            color={values[id] === label ? "danger" : "black"}
+            color={values[id] === label && "danger" }
             size="small"
-            style={{ paddingLeft: 6 }}
+            style={{ paddingLeft: 6, borderColor: "white" }}
           >
             <Field
               name={id}
@@ -216,7 +216,7 @@ const CheckBox = ({ id, label, values }) => {
               style={{ display: "none" }}
             />
             <Icon color="white" size="small">
-              <span className="material-icons">{values[id] === label ? "radio_button_checked" : "radio_button_unchecked"}</span>
+              <span className="material-icons">{values[id] === label ? "trip_origin" : "circle"}</span>
             </Icon>
             <span className="ml-1">Reject</span>
           </Button>
