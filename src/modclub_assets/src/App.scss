@@ -569,6 +569,10 @@ label.checkbox {
   }
   &.is-striped tbody tr:not(.is-selected):nth-child(even) {
     background: $black;
+
+    .button.is-black {
+      background: $dark;
+    }
   }
 
   &.is-checked {

@@ -173,39 +173,56 @@ const UserVideo = ({ data }) => {
 
 const CheckBox = ({ id, label, values }) => {
   return (
-    <fieldset className="level mb-3">    
-      <p>{label}</p>
-      <div className="control">
-        <label className="checkbox is-large">
-          <Field
-            name={id}
-            component="input"
-            type="radio"
-            value="confirm"
-            id={id}
-            checked={values[id] === "confirm"}
-          />
-          <Icon className="check">
-            <span className="material-icons">done</span>
-          </Icon>
-          <p style={{ width: 50, marginLeft: "-100%" }}>Confirm</p>
-        </label>
-        <label className="checkbox is-large">
-          <Field
-            name={id}
-            component="input"
-            type="radio"
-            value={label}
-            id={id}
-            checked={values[id] === label}
-          />
-          <Icon className="check">
-            <span className="material-icons">done</span>
-          </Icon>
-          <p style={{ width: 50, marginLeft: "-80%" }}>Reject</p>
-        </label>
-      </div>      
-    </fieldset>
+    <>
+      <td className="has-text-left has-text-white has-text-weight-bold">
+        {label}
+      </td>
+      <td>
+        <Button.Group justifyContent="flex-end">
+          <Button
+            renderAs="label"
+            color={values[id] === "confirm" ? "primary" : "black"}
+            size="small"
+            style={{ paddingLeft: 6 }}
+          >
+            <Field
+              name={id}
+              component="input"
+              type="radio"
+              value="confirm"
+              id={id}
+              checked={values[id] === "confirm"}
+              style={{ display: "none" }}
+            />
+            <Icon color="white" size="small">
+              <span className="material-icons">{values[id] === "confirm" ? "radio_button_checked" : "radio_button_unchecked"}</span>
+            </Icon>
+            <span className="ml-1">Confirm</span>
+          </Button>
+
+          <Button
+            renderAs="label"
+            color={values[id] === label ? "danger" : "black"}
+            size="small"
+            style={{ paddingLeft: 6 }}
+          >
+            <Field
+              name={id}
+              component="input"
+              type="radio"
+              value={label}
+              id={id}
+              checked={values[id] === label}
+              style={{ display: "none" }}
+            />
+            <Icon color="white" size="small">
+              <span className="material-icons">{values[id] === label ? "radio_button_checked" : "radio_button_unchecked"}</span>
+            </Icon>
+            <span className="ml-1">Reject</span>
+          </Button>
+        </Button.Group>
+      </td>
+    </>
   )
 }
 
@@ -293,14 +310,20 @@ export default function PohApplicant() {
                   }
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
-                  {task.allowedViolationRules.map(rule => (
-                    <CheckBox
-                      key={rule.ruleId}
-                      id={`${task.challengeId}-${rule.ruleId}`}
-                      label={rule.ruleDesc}
-                      values={values}
-                    />
-                  ))}
+                  <table className="table is-striped has-text-left">
+                    <tbody>
+                      {task.allowedViolationRules.map((rule) => (
+                        <tr key={rule}>
+                          <CheckBox
+                            key={rule.ruleId}
+                            id={`${task.challengeId}-${rule.ruleId}`}
+                            label={rule.ruleDesc}
+                            values={values}
+                          />
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </Card.Footer>
               </Card.Content>
             ))}
