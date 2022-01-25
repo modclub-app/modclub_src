@@ -76,6 +76,7 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
     // dynamically install a new Bucket
     private func newEmptyBucket(): async Bucket.Bucket {
+      Cycles.add(400000000000);
       let b = await Bucket.Bucket();
       let _ = await updateCanister(b); // update canister permissions and settings
       let s = await b.getSize();
@@ -94,7 +95,6 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
     // set canister owners to the wallet canister and the container canister ie: this
     private func updateCanister(a: actor {}) : async () {
       Debug.print("balance before: " # Nat.toText(Cycles.balance()));
-      // Cycles.add(Cycles.balance()/2);
       let cid = { canister_id = Principal.fromActor(a)};
       Debug.print("IC status..."  # debug_show(await IC.IC.canister_status(cid)));
       // let cid = await IC.create_canister(  {
