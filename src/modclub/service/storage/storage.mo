@@ -2,6 +2,7 @@ import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Cycles "mo:base/ExperimentalCycles";
+import Iter "mo:base/Iter";
 import StorageTypes "./types";
 import Bucket "./buckets";
 import StorageState "./storageState";
@@ -18,7 +19,6 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
     let storageState = StorageState.getState(storageStableState);
 
-
     public func getBlob(contentId: Text, offset:Nat): async ?Blob {
       do? {
         let contentCanisterId = storageState.contentIdToCanisterId.get(contentId)!;
@@ -29,6 +29,32 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
     public func dataCanisterId(contentId: Text): async ?Types.DataCanisterId {
       storageState.contentIdToCanisterId.get(contentId);
+    };
+
+    public func registerModerators(moderatorIds: [Principal]): async () {
+      for(modId in moderatorIds.vals()) {
+        storageState.moderatorsId.put(modId, modId);
+      };
+
+      for((bucketId, bucket) in storageState.dataCanisters.entries()) {
+        bucket.registerModerators(moderatorIds);
+      };
+    };
+
+    public func deRegisterModerators(moderatorIds: [Principal]): async () {
+      for(modId in moderatorIds.vals()) {
+        storageState.moderatorsId.delete(modId);
+      };
+
+      for((bucketId, bucket) in storageState.dataCanisters.entries()) {
+        bucket.deRegisterModerators(moderatorIds);
+      };
+    };
+
+    public func setInitialModerators(moderatorIds: [Principal]) : () {
+      for(modId in moderatorIds.vals()) {
+        storageState.moderatorsId.put(modId, modId);
+      };
     };
 
     // persist chunks in bucket
@@ -76,16 +102,13 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
     // dynamically install a new Bucket
     private func newEmptyBucket(): async Bucket.Bucket {
+    
       Cycles.add(400000000000);
-      let b = await Bucket.Bucket();
+      let b = await Bucket.Bucket(Iter.toArray(storageState.moderatorsId.entries()));
       let _ = await updateCanister(b); // update canister permissions and settings
       let s = await b.getSize();
       Debug.print("new canister principal is " # debug_show(Principal.toText(Principal.fromActor(b))) );
       Debug.print("initial size is " # debug_show(s));
-      // var newCanisterState : CanisterState<Bucket, Nat> = {
-      //     bucket = b;
-      //     var size = s;
-      // };
       storageState.dataCanisters.put(Principal.fromActor(b), b);
       return b;
     };
