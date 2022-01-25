@@ -127,6 +127,7 @@ hr {
   background: none;
   color: $white;
   border-color: $dark;
+  transition: background-color .2s;
 
   &:focus:not(:active) {
     box-shadow: none;
@@ -153,6 +154,7 @@ hr {
 
   &.is-primary {
     background: $primary;
+    border-color: $primary !important;
     &:hover {
       background: $primary-hover;
     }
@@ -167,6 +169,7 @@ hr {
 
   &.is-danger {
     background: $secondary;
+    border-color: $secondary !important;
   }
 
   &.is-gradient {
@@ -569,6 +572,10 @@ label.checkbox {
   }
   &.is-striped tbody tr:not(.is-selected):nth-child(even) {
     background: $black;
+
+    .button.is-black {
+      background: $dark;
+    }
   }
 
   &.is-checked {

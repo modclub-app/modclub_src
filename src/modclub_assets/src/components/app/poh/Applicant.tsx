@@ -173,39 +173,56 @@ const UserVideo = ({ data }) => {
 
 const CheckBox = ({ id, label, values }) => {
   return (
-    <fieldset className="level mb-3">    
-      <p>{label}</p>
-      <div className="control">
-        <label className="checkbox is-large">
-          <Field
-            name={id}
-            component="input"
-            type="radio"
-            value={true}
-            id={id}
-            checked={values[id] === "true"}
-          />
-          <Icon className="check">
-            <span className="material-icons">done</span>
-          </Icon>
-          <p>Yes</p>
-        </label>
-        <label className="checkbox is-large">
-          <Field
-            name={id}
-            component="input"
-            type="radio"
-            value={false}
-            id={id}
-            checked={values[id] === "false"}
-          />
-          <Icon className="check">
-            <span className="material-icons">done</span>
-          </Icon>
-          <p>No</p>
-        </label>
-      </div>      
-    </fieldset>
+    <>
+      <td className="has-text-left has-text-white has-text-weight-bold">
+        {label}
+      </td>
+      <td>
+        <Button.Group justifyContent="flex-end">
+          <Button
+            renderAs="label"
+            color={values[id] === "confirm" && "primary" }
+            className="is-size-7 has-text-weight-normal"
+            style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
+          >
+            <Field
+              name={id}
+              component="input"
+              type="radio"
+              value="confirm"
+              id={id}
+              checked={values[id] === "confirm"}
+              style={{ display: "none" }}
+            />
+            <Icon color="white" size="small">
+              <span className="material-icons">{values[id] === "confirm" ? "trip_origin" : "fiber_manual_record"}</span>
+            </Icon>
+            <span className="ml-1">Confirm</span>
+          </Button>
+
+          <Button
+            renderAs="label"
+            color={values[id] === label && "danger" }
+            className="is-size-7 has-text-weight-normal"
+            style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
+          >
+            <Field
+              name={id}
+              component="input"
+              type="radio"
+              value={label}
+              id={id}
+              checked={values[id] === label}
+              style={{ display: "none" }}
+            />
+            <Icon color="white" size="small">
+              <span className="material-icons">{values[id] === label ? "trip_origin" : "fiber_manual_record"}</span>
+            </Icon>
+            <span className="ml-1">Reject</span>
+          </Button>
+        </Button.Group>
+      </td>
+    </>
   )
 }
 
@@ -247,7 +264,9 @@ export default function PohApplicant() {
 
   const parentSubmit = (values: any) => {
     // console.log("values", values);
-    Object.values(values).indexOf("true") >= 0 ? toggleReject() : toggleApprove();
+    const filteredValues = Object.values(values).filter(value => typeof value === "string");
+    const confirmed = Object.values(values).filter(value => value === "confirm");
+    filteredValues.length === confirmed.length ? toggleApprove() : toggleReject();
   }
 
   return loading ?
@@ -291,14 +310,20 @@ export default function PohApplicant() {
                   }
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
-                  {task.allowedViolationRules.map(rule => (
-                    <CheckBox
-                      key={rule.ruleId}
-                      id={`${task.challengeId}-${rule.ruleId}`}
-                      label={rule.ruleDesc}
-                      values={values}
-                    />
-                  ))}
+                  <table className="table is-striped has-text-left">
+                    <tbody>
+                      {task.allowedViolationRules.map((rule) => (
+                        <tr key={rule}>
+                          <CheckBox
+                            key={rule.ruleId}
+                            id={`${task.challengeId}-${rule.ruleId}`}
+                            label={rule.ruleDesc}
+                            values={values}
+                          />
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </Card.Footer>
               </Card.Content>
             ))}
@@ -345,9 +370,9 @@ export default function PohApplicant() {
                   <Card.Content>
                     <ul>
                       {Object.keys(values).map((key, index) => (
-                        values[key] === "true" &&
+                        values[key] != "confirm" && values[key] != "voteIncorrectlyConfirmation" && values[key] != "voteRulesConfirmation" &&
                           <li key={index}>
-                            {index + 1}. {Object.keys(values)[index]}
+                            {index + 1}. {values[key]}
                           </li>
                         )
                       )}
