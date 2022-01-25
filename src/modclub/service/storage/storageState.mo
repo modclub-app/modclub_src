@@ -12,18 +12,20 @@ module StorageState {
     // data canisters to hold data
     dataCanisters: HashMap.HashMap<Types.DataCanisterId, Bucket>;
     contentIdToCanisterId: HashMap.HashMap<Text, Types.DataCanisterId>;
+    moderatorsId : HashMap.HashMap<Principal, Principal>;
   };
 
   public type DataCanisterStateStable = {    
     dataCanisters: [(Types.DataCanisterId, Bucket)];
     contentIdToCanisterId: [(Text, Types.DataCanisterId)];
-
+    moderatorsId : [(Principal, Principal)];
   };
 
   public func emptyState() : DataCanisterState {
     var st : DataCanisterState = {
       dataCanisters = HashMap.HashMap<Types.DataCanisterId, Bucket> (1, Principal.equal, Principal.hash);
       contentIdToCanisterId = HashMap.HashMap<Text, Types.DataCanisterId> (1, Text.equal, Text.hash);
+      moderatorsId = HashMap.HashMap<Principal, Principal> (1, Principal.equal, Principal.hash);
     };
     st;
   };
@@ -32,6 +34,7 @@ module StorageState {
     var st : DataCanisterStateStable = {
       dataCanisters = [];
       contentIdToCanisterId = [];
+      moderatorsId = [];
     };
     st;
   };
@@ -40,6 +43,7 @@ module StorageState {
     let st : DataCanisterStateStable = {
       dataCanisters = Iter.toArray(state.dataCanisters.entries());
       contentIdToCanisterId = Iter.toArray(state.contentIdToCanisterId.entries());
+      moderatorsId = Iter.toArray(state.moderatorsId.entries());
     };
     st;
   };
@@ -51,6 +55,9 @@ module StorageState {
     };
     for( (id, pid) in stateShared.contentIdToCanisterId.vals()) {
       state.contentIdToCanisterId.put(id, pid);
+    };
+    for( (id, pid) in stateShared.moderatorsId.vals()) {
+      state.moderatorsId.put(id, pid);
     };
     return state;
   };

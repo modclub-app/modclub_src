@@ -17,22 +17,25 @@ import Iter "mo:base/Iter";
 import Types "./types"
 
 
-actor class Bucket () = this {
+actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
 
   public type DataCanisterState = {
       contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
       chunks : HashMap.HashMap<Types.ChunkId, Types.ChunkData>;
+      moderators : HashMap.HashMap<Principal, Principal>;
   };
 
   public type DataCanisterSharedState = {
       contentInfo: [(Text, Types.ContentInfo)];
       chunks : [(Types.ChunkId, Types.ChunkData)];
+      moderators : [(Principal, Principal)];
   };
 
   private func emptyStateForDataCanister () : DataCanisterState {
     var st : DataCanisterState = {
         contentInfo = HashMap.HashMap<Text, Types.ContentInfo>(10, Text.equal, Text.hash);
         chunks = HashMap.HashMap<Types.ChunkId, Types.ChunkData>(10, Text.equal, Text.hash);
+        moderators = HashMap.HashMap<Principal, Principal>(10, Principal.equal, Principal.hash);
     };
     st;
   };
@@ -40,6 +43,10 @@ actor class Bucket () = this {
   var state: DataCanisterState = emptyStateForDataCanister();
 
   let limit = 20_000_000_000_000;
+
+  for((modId, mId) in moderatorsId.vals()) {
+    state.moderators.put(modId, modId);
+  };
 
   public func getSize(): async Nat {
     Debug.print("canister balance: " # Nat.toText(Cycles.balance()));
@@ -150,13 +157,39 @@ actor class Bucket () = this {
     };
   };
 
-  public query func http_request(req: HttpRequest) : async HttpResponse {
+  public func registerModerators(moderatorIds: [Principal]):  () {
+    for(moderatorId in moderatorIds.vals()) {
+      state.moderators.put(moderatorId, moderatorId);
+    };
+  };
+
+  public func deRegisterModerators(moderatorIds: [Principal]): () {
+    for(moderatorId in moderatorIds.vals()) {
+      state.moderators.delete(moderatorId);
+    };
+  };
+
+  public query({caller}) func http_request(req: HttpRequest) : async HttpResponse {
+    var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
+    switch(state.moderators.get(caller)) {
+      case(null) {
+        return {
+          status_code=401;
+          headers=_headers;
+          body="401 Not Found";
+          streaming_strategy= null;
+        };
+      };
+      case(_)();
+    };
     let self: Principal = Principal.fromActor(this);
     let canisterId: Text = Principal.toText(self);
     let canister = actor (canisterId) : actor { streamingCallback : shared () -> async () };
 
     var _status_code:Nat16=404;
+
     var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline"),  ("Access-Control-Allow-Origin", "*")];
+
     var _body:Blob = "404 Not Found";
     var _streaming_strategy:? StreamingStrategy = null;
     let _ = do ? {
@@ -202,6 +235,7 @@ actor class Bucket () = this {
     var st : DataCanisterSharedState = {
       contentInfo = [];
       chunks= [];
+      moderators = [];
     };
     st;
   };
@@ -210,12 +244,13 @@ actor class Bucket () = this {
     let st : DataCanisterSharedState = {
       contentInfo = Iter.toArray(state.contentInfo.entries());
       chunks = Iter.toArray(state.chunks.entries());
+      moderators = Iter.toArray(state.moderators.entries());
     };
     st;
   };
 
   private func toDataCanisterState(stateShared: DataCanisterSharedState) : DataCanisterState {
-    var st:DataCanisterState = emptyStateForDataCanister();
+    var state:DataCanisterState = emptyStateForDataCanister();
 
     for( (category, val) in stateShared.chunks.vals()) {
       state.chunks.put(category, val);
@@ -224,7 +259,11 @@ actor class Bucket () = this {
     for( (category, val) in stateShared.contentInfo.vals()) {
       state.contentInfo.put(category, val);
     };
-    st;
+
+    for( (category, val) in stateShared.moderators.vals()) {
+      state.moderators.put(category, val);
+    };
+    state;
   };
 
   stable var stateShared : DataCanisterSharedState = emptyDataCanisterSharedState();

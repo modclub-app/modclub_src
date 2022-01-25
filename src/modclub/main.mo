@@ -34,7 +34,6 @@ import VoteState "./service/vote/state";
 import Helpers "./helpers";
 
 
-
 shared ({caller = initializer}) actor class ModClub () = this {
 
   // Constants
@@ -452,7 +451,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Image) : async Profile {
        // Anonymous principal 
       if(Principal.toText(caller) == "2vxsx-fae") {
-          Debug.print("Anonymous principal");
           throw Error.reject("Unauthorized, user does not have an identity");
       };
 
@@ -496,7 +494,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
               // Give new users MOD points
               await tokens.transfer(initializer, caller, DEFAULT_TEST_TOKENS);
               state.profiles.put(caller, profile);
-
+              await storageSolution.registerModerators([caller]);
               return profile;
             };
             case(false) throw Error.reject("username already taken");
@@ -1210,11 +1208,20 @@ shared ({caller = initializer}) actor class ModClub () = this {
       } else {
         #equal;
       }
+  };
+
+  func getModerators() : [Principal] {
+    let moderatorIds = Buffer.Buffer<Principal>(1);
+    for((id, profile) in state.profiles.entries()) {
+      if(profile.role == #moderator) {
+        moderatorIds.add(id);
+      };
     };
+    return moderatorIds.toArray();
+  };
     
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
-  
 
   system func preupgrade() {
     Debug.print("MODCLUB PREUPGRRADE");
@@ -1238,10 +1245,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
     tokensStable := Token.emptyStable(initializer);
-    // storageStateStable := StorageState.emptyStableState();
-    // pohStableState := PohState.emptyStableState();
-    // pohVoteStableState := VoteState.emptyStableState();
+    
+    storageStateStable := StorageState.emptyStableState();
+    pohStableState := PohState.emptyStableState();
+    pohVoteStableState := VoteState.emptyStableState();
+    
+    // This statement should be run after the storagestate gets restored from stable state
+    storageSolution.setInitialModerators(getModerators());
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
+
+  // Uncomment when required
+  // system func heartbeat() : async () {};
 
 };
