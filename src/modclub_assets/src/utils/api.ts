@@ -48,7 +48,6 @@ export async function registerModerator(
   const response = await (
     await getMC()
   ).registerModerator(username, email, imgResult ? [imgResult] : []);
-  console.log(response);
   return response;
 }
 
@@ -61,7 +60,7 @@ export async function getUserFromCanister(): Promise<Profile | null> {
       return null;
     }
   } catch (e) {
-    console.log(e);
+    console.log("error", e);
     return null;
   }
 }
@@ -93,8 +92,6 @@ export async function getProvider(
 }
 
 export async function getProviderRules(providerId: Principal): Promise<Rule[]> {
-  console.log("getProviderRules");
-  console.log(providerId);
   return (await getMC()).getRules(providerId);
 }
 
@@ -196,9 +193,9 @@ export async function votePohContent(
   decision: Decision,
   violatedRules: [PohRulesViolated]
 ): Promise<void> {
-  console.log("votePohContent");
   return (await getMC()).votePohContent(packageId, decision, violatedRules);
 }
+
 export async function getPerformance(): Promise<number> {
   return (await getMC()).getVotePerformance();
 }

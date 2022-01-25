@@ -75,6 +75,7 @@ type PohVerificationResponse =
    providerUserId: principal;
    requestId: text;
    requestedOn: int;
+   status: PohChallengeStatus;
  };
 type PohUniqueToken = record {token: text;};
 type PohTaskPlus = 
@@ -235,6 +236,11 @@ type ModClub =
    updateSettings: (ProviderSettings) -> ();
    verifyForHumanity: (principal) -> (PohVerificationResponse);
    verifyUserHumanity: () -> (PohChallengeStatus, opt PohUniqueToken);
+   verifyUserHumanityAPI: () ->
+    (record {
+       status: PohChallengeStatus;
+       token: opt PohUniqueToken;
+     });
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
    votePohContent: (text, Decision, vec PohRulesViolated) -> ();
  };

@@ -237,6 +237,7 @@ export const idlFactory = ({ IDL }) => {
     'challengeId' : IDL.Text,
   });
   const PohVerificationResponse = IDL.Record({
+    'status' : PohChallengeStatus,
     'requestId' : IDL.Text,
     'providerId' : IDL.Principal,
     'challenges' : IDL.Vec(ChallengeResponse),
@@ -326,6 +327,16 @@ export const idlFactory = ({ IDL }) => {
     'verifyUserHumanity' : IDL.Func(
         [],
         [PohChallengeStatus, IDL.Opt(PohUniqueToken)],
+        [],
+      ),
+    'verifyUserHumanityAPI' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'status' : PohChallengeStatus,
+            'token' : IDL.Opt(PohUniqueToken),
+          }),
+        ],
         [],
       ),
     'vote' : IDL.Func(
