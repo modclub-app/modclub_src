@@ -1229,9 +1229,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
 
-    storageStateStable := storageSolution.getStableState();
-    pohStableState := pohEngine.getStableState();
-    pohVoteStableState := voteManager.getStableState();
+    // storageStateStable := storageSolution.getStableState();
+    // pohStableState := pohEngine.getStableState();
+    // pohVoteStableState := voteManager.getStableState();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -1245,6 +1245,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
     tokensStable := Token.emptyStable(initializer);
+    
     storageStateStable := StorageState.emptyStableState();
     pohStableState := PohState.emptyStableState();
     pohVoteStableState := VoteState.emptyStableState();

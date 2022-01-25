@@ -40,9 +40,6 @@ export default function ModclubApp() {
             <Route exact path="/app/activity">
               <Activity />
             </Route>
-            <Route exact path="/app/leaderboard">
-              <Leaderboard />
-            </Route>
             <Route exact path="/app/admin">
               <Admin />
             </Route>

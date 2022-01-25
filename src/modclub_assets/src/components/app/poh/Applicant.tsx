@@ -1,30 +1,67 @@
 import * as React from 'react'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { getPohTaskData } from "../../../utils/api";
+import { getPohTaskData, votePohContent } from "../../../utils/api";
+import { getChecked } from "../../../utils/util";
 import {
   Heading,
   Card,
   Columns,
   Button,
   Modal,
-  Notification
+  Notification,
+  Icon
 } from "react-bulma-components";
-import { Form } from "react-final-form";
+import { Form, Field } from "react-final-form";
 import Userstats from "../profile/Userstats";
-import Toggle from "../../common/toggle/Toggle";
+import Confirm from "../../common/confirm/Confirm";
 import Progress from "../../common/progress/Progress";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
-import { formatDate } from "../../../utils/util";
+import { formatDate, getUrlForData } from "../../../utils/util";
 
-const Modal_ = ({ toggle, title, image, children, handleSubmit }) => {
-  const [submitting, setSubmitting] = useState<boolean>(false);
+const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
+  const [submitting, setSubmitting] = useState(null);
   const [message, setMessage] = useState(null);
 
-  // const onFormSubmit = async (values: any) => {
-  //   console.log("FormModal values", values);
-  // }
+  const isDisabled = (values: any) => {
+    if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true;
+    if (title === "Approve Confirmation") {
+      if (!values["voteRulesConfirmation"] || !values["voteRulesConfirmation"].length) return true;
+    }
+    if (title === "Reject Confirmation") {
+      let checked = 0
+      for (const key in values) {
+        values[key].length && checked ++
+      }
+      if (checked < 2) return true;
+    }
+    return false;
+  }
+
+  const onFormSubmit = async (values: any) => {
+    console.log("onFormSubmit values !!!", values)
+    const checked = getChecked(values);
+
+    // export interface PohRulesViolated { 'ruleId' : string, 'challengeId' : string }
+    // TODO! format the array of rules when I get real rule id's returned..
+    const rules = checked.map(rule => {
+      return { ruleId: rule.slice(-1), challengeId: rule.substring(0, rule.length - 2) }
+    });
+
+    try {
+      setSubmitting(true);
+      // @ts-ignore
+      const result = await votePohContent(packageId, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, rules);
+      console.log("result", result);
+      setSubmitting(false);
+    } catch (e) {
+      const regEx = /Reject text: (.*)/g;
+      let errAr = regEx.exec(e.message);
+      errAr ? setMessage({ success: false, value: errAr[1] }) : setMessage({ success: false, value: e });
+      setSubmitting(false);
+    }
+  }
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
@@ -37,22 +74,23 @@ const Modal_ = ({ toggle, title, image, children, handleSubmit }) => {
           
           {children}
 
+          <Confirm
+            type="danger"
+            id="voteIncorrectlyConfirmation"
+            label={`I understand I will lose 5 MOD if I vote incorrectly`}
+          />
+
         </Modal.Card.Body>
-        <Modal.Card.Footer className="pt-0">
-          {title === "Reject Confirmation" &&
-            <p className="is-size-7">
-              Voting incorrectly will result in some loss<br />of staked tokens.
-            </p>
-          }
+        <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
           <Button.Group>
             <Button color="dark" onClick={toggle}>
               Cancel
             </Button>
             <Button
               color="primary"
-              disabled={message || submitting}
+              disabled={isDisabled(values)}
               className={submitting && "is-loading"}
-              onClick={handleSubmit}
+              onClick={() => onFormSubmit(values)}
             >
               Submit
             </Button>
@@ -97,7 +135,7 @@ const ProfileDetails = ({ data }) => {
 };
 
 const ProfilePic = ({ data }) => {
-  const imageUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
+  const imageUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
 
   return (
     <Card.Content>
@@ -107,8 +145,7 @@ const ProfilePic = ({ data }) => {
 };
 
 const UserVideo = ({ data }) => {
-  console.log("UserVideo", data);
-  const videoUrl = `http://localhost:8000/storage?canisterId=${data.dataCanisterId}&contentId=${data.contentId[0]}`;
+  const videoUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
   const phrases = data.wordList[0]
 
   return (
@@ -134,6 +171,44 @@ const UserVideo = ({ data }) => {
   )
 };
 
+const CheckBox = ({ id, label, values }) => {
+  return (
+    <fieldset className="level mb-3">    
+      <p>{label}</p>
+      <div className="control">
+        <label className="checkbox is-large">
+          <Field
+            name={id}
+            component="input"
+            type="radio"
+            value={true}
+            id={id}
+            checked={values[id] === "true"}
+          />
+          <Icon className="check">
+            <span className="material-icons">done</span>
+          </Icon>
+          <p>Yes</p>
+        </label>
+        <label className="checkbox is-large">
+          <Field
+            name={id}
+            component="input"
+            type="radio"
+            value={false}
+            id={id}
+            checked={values[id] === "false"}
+          />
+          <Icon className="check">
+            <span className="material-icons">done</span>
+          </Icon>
+          <p>No</p>
+        </label>
+      </div>      
+    </fieldset>
+  )
+}
+
 export default function PohApplicant() {
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(true);
@@ -143,18 +218,7 @@ export default function PohApplicant() {
   const toggleApprove = () => setShowApprove(!showApprove);
 
   const [showReject, setShowReject] = useState(false);
-  const togglReject = () => setShowReject(!showReject);
-
-  const formatTitle = (challengeId) => {
-    if (challengeId === "challenge-profile-details") return "Challenge: Profile Details";
-    if (challengeId === "challenge-profile-pic") return "Challenge: Profile Picture";
-    if (challengeId === "challenge-user-video") return "Challenge: Video";
-    return challengeId;
-  }
-
-  const onFormSubmit = (values: any) => {
-    console.log("onFormSubmit values", values)
-  }
+  const toggleReject = () => setShowReject(!showReject);
 
   const getApplicant = async () => {
     const applicant = await getPohTaskData(packageId);
@@ -167,6 +231,25 @@ export default function PohApplicant() {
     getApplicant();
   }, []);
 
+  const formatTitle = (challengeId) => {
+    if (challengeId === "challenge-profile-details") return "Challenge: Profile Details";
+    if (challengeId === "challenge-profile-pic") return "Challenge: Profile Picture";
+    if (challengeId === "challenge-user-video") return "Challenge: Video";
+    return challengeId;
+  }
+
+  const isDisabled = (values: any) => {
+    const checkedLength = Object.keys(values).length;
+    let formRules = [];
+    content.ok.forEach(task => formRules.push(...task.allowedViolationRules));
+    return checkedLength === formRules.length ? false : true;
+  }
+
+  const parentSubmit = (values: any) => {
+    // console.log("values", values);
+    Object.values(values).indexOf("true") >= 0 ? toggleReject() : toggleApprove();
+  }
+
   return loading ?
     <Modal show={true} showClose={false}>
       <div className="loader is-loading p-5"></div>
@@ -174,24 +257,23 @@ export default function PohApplicant() {
     :
     <>
       <Userstats />
+      
+      <Form onSubmit={parentSubmit} render={({ handleSubmit, values }) => (
+        <form onSubmit={handleSubmit}>
+          <Card>
+            <Card.Header>
+              <Card.Header.Title>
+                <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
+                  {/* Submitted {formatDate(createdAt)} */}
+                  Submitted todo Date()
+                </span>
+              </Card.Header.Title>
+              <Progress
+                value={5}
+                min={10}
+              />
+            </Card.Header>
 
-      <Card>
-        <Card.Header>
-          <Card.Header.Title>
-            <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-              {/* Submitted {formatDate(createdAt)} */}
-              Submitted todo Date()
-            </span>
-          </Card.Header.Title>
-          <Progress
-            value={5}
-            min={10}
-          />
-        </Card.Header>
-
-        <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
-          <form onSubmit={handleSubmit}>
-            
             {content.ok.map((task) => (
               <Card.Content key={task.challengeId}>
                 <Heading subtitle className="mb-3">
@@ -207,26 +289,29 @@ export default function PohApplicant() {
                   {task.challengeId == "challenge-user-video" &&
                     <UserVideo data={task} />
                   }
-                  <Card.Footer className="is-block" style={{ borderColor: "#000"}}>
-                    {task.allowedViolationRules.map((rule, index) => (
-                      <p key={rule.ruleId}>
-                        {index + 1}. {rule.ruleDesc}
-                      </p>
-                    ))}
-                  </Card.Footer>
                 </Card>
+                <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
+                  {task.allowedViolationRules.map(rule => (
+                    <CheckBox
+                      key={rule.ruleId}
+                      id={`${task.challengeId}-${rule.ruleId}`}
+                      label={rule.ruleDesc}
+                      values={values}
+                    />
+                  ))}
+                </Card.Footer>
               </Card.Content>
             ))}
 
             <Card.Footer className="pt-0" style={{ border: 0 }}>
-              <Button.Group>
-                <Button color="danger" fullwidth onClick={togglReject}>
-                  Reject
-                </Button>
-                <Button color="primary" fullwidth onClick={toggleApprove}>
-                  Approve
-                </Button>
-              </Button.Group>
+              <Button
+                size="large"
+                color="primary"
+                disabled={isDisabled(values)}
+                style={{ width: 320, margin: "auto" }}
+              >
+                Submit
+              </Button>
             </Card.Footer>
 
             {showApprove &&
@@ -234,10 +319,16 @@ export default function PohApplicant() {
                 title="Approve Confirmation"
                 image={approveImg}
                 toggle={toggleApprove}
-                handleSubmit={onFormSubmit}
+                packageId={packageId}
+                values={values}
               >
                 <p>You are confirming that this is a real human.</p>
                 <p>Voting incorrectly will result in loss of some staked tokens.</p>
+                <Confirm
+                  type="warning"
+                  id="voteRulesConfirmation"
+                  label="I confirm that this is a real person"
+                />
               </Modal_>
             }
 
@@ -245,24 +336,29 @@ export default function PohApplicant() {
               <Modal_
                 title="Reject Confirmation"
                 image={rejectImg}
-                toggle={togglReject}
-                handleSubmit={onFormSubmit}
+                toggle={toggleReject}
+                packageId={packageId}
+                values={values}
               > 
-                <p className="mb-3">Select which rules were broken:</p>
+                <p className="mb-3">These are the failed requirements you selected:</p>
                 <Card backgroundColor="dark">
                   <Card.Content>
-                    <Toggle id="reject-notsame" label="Person in picture and video are not the same" />
-                    <Toggle id="reject-social" label="Social accounts do not match person" />
-                    <Toggle id="reject-phrase" label="Person did not say the unique phrase" />
-                    <Toggle id="reject-name" label="Person did not provide first and last name" />
+                    <ul>
+                      {Object.keys(values).map((key, index) => (
+                        values[key] === "true" &&
+                          <li key={index}>
+                            {index + 1}. {Object.keys(values)[index]}
+                          </li>
+                        )
+                      )}
+                    </ul>
                   </Card.Content>
                 </Card>
               </Modal_>
             }
-
-            </form>
-          )}
-        />
-      </Card>
-    </>
+          </Card>
+        </form>
+      )}
+    />
+  </>
 };

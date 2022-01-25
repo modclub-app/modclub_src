@@ -6,7 +6,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 // Replace this value with the ID of your local Internet Identity canister
 const LOCAL_II_CANISTER =
-  "http://rkp4c-7iaaa-aaaaa-aaaca-cai.localhost:8000/#authorize";
+  "http://rwlgt-iiaaa-aaaaa-aaaaa-cai.localhost:8000/#authorize";
 
 let localCanisters, prodCanisters, canisters;
 
@@ -77,7 +77,7 @@ module.exports = {
         loader: "esbuild-loader",
         options: {
           loader: "tsx", // Or 'ts' if you don't need tsx
-          target: "es2015",
+          target: "ES2020",
         },
       },
       {
@@ -125,8 +125,10 @@ module.exports = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       MODCLUB_CANISTER_ID: canisters["modclub"],
+      MODCLUB_DEV_CANISTER_ID: canisters["modclub_dev"],
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
+      DEV_ENV: process.env.DEV_ENV || "production",
     }),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],

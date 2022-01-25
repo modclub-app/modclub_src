@@ -3,7 +3,24 @@ import { Profile } from "./types";
 import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
 import { submitChallengeData } from "./api";
 
-export function b64toBlob(b64Data: string, contentType = '', sliceSize = 512) {
+export function getFileExtension(type: string): any | null {
+  switch (type) {
+    case "image/jpeg":
+      return "jpeg";
+    case "image/gif":
+      return "gif";
+    case "image/jpg":
+      return "jpg";
+    case "image/png":
+      return "png";
+    case "image/svg":
+      return "svg";
+    default:
+      return null;
+  }
+}
+
+export function b64toBlob(b64Data: string, contentType = "", sliceSize = 512) {
   const byteCharacters = atob(b64Data);
   const byteArrays = [];
 
@@ -15,7 +32,7 @@ export function b64toBlob(b64Data: string, contentType = '', sliceSize = 512) {
     }
     byteArrays.push(new Uint8Array(byteNumbers));
   }
-  const blob = new Blob(byteArrays, { type: contentType } );
+  const blob = new Blob(byteArrays, { type: contentType });
   return blob;
 }
 
@@ -27,13 +44,13 @@ export async function processAndUploadChunk(
   chunk: number,
   fileSize: number,
   fileExtension: string
-) : Promise<any> {
+): Promise<any> {
   const blobSlice = blob.slice(
     byteStart,
     Math.min(Number(fileSize), byteStart + MAX_CHUNK_SIZE),
-    blob.type,
+    blob.type
   );
- 
+
   const bsf = await blobSlice.arrayBuffer();
 
   const res = await submitChallengeData({
@@ -48,9 +65,8 @@ export async function processAndUploadChunk(
     mimeType: fileExtension,
     dataSize: BigInt(fileSize),
   });
-  console.log("res", res)
+  console.log("res", res);
 }
-
 
 export function getUserFromStorage(
   storage = window.localStorage,
@@ -111,6 +127,28 @@ export function formatDate(integer: bigint) {
 }
 
 export function validateEmail(email: string) {
-  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const re =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
+}
+
+export function getUrlForData(canisterId: String, contentId: String) {
+  if (window.location.hostname.includes("localhost")) {
+    return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}}`;
+  } else {
+    return (
+      "https://" + canisterId + "raw.ic0.app/storage?contentId=" + contentId
+    );
+  }
+}
+
+export function getChecked(values: any) {
+  const checked = []
+  for (const key in values) {
+    const value = values[key][0]
+    if (value && value != "voteIncorrectlyConfirmation" && value != "voteRulesConfirmation") {
+      checked.push(values[key][0])
+    }
+  }
+  return checked;
 }

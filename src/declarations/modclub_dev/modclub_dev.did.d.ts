@@ -122,6 +122,9 @@ export interface ModClub {
   'verifyUserHumanity' : () => Promise<
       [PohChallengeStatus, [] | [PohUniqueToken]]
     >,
+  'verifyUserHumanityAPI' : () => Promise<
+      { 'status' : PohChallengeStatus, 'token' : [] | [PohUniqueToken] }
+    >,
   'vote' : (
       arg_0: ContentId,
       arg_1: Decision,
@@ -229,6 +232,7 @@ export interface PohTaskPlus {
 }
 export interface PohUniqueToken { 'token' : string }
 export interface PohVerificationResponse {
+  'status' : PohChallengeStatus,
   'requestId' : string,
   'providerId' : Principal,
   'challenges' : Array<ChallengeResponse>,

@@ -218,7 +218,7 @@ module PohModule {
                                                 completedOn = -1; // -1 means not completed
                                                 wordList = do ?{
                                                     switch(state.pohChallenges.get(challengeId)!.challengeType) {
-                                                        case(#selfVideo) generateRandomWordList(5);
+                                                        case(#selfVideo) generateRandomWordList(6);
                                                         case(_) [];
                                                     };
                                                 };
@@ -469,11 +469,15 @@ module PohModule {
             let allowedViolationRules1 = Buffer.Buffer<PohTypes.ViolatedRules>(2);
             allowedViolationRules1.add( {
                 ruleId= "1";
-                ruleDesc = "Rule 1";
+                ruleDesc = "The username is not offensive or uses fowl language";
             }); 
             allowedViolationRules1.add( {
                 ruleId= "2";
-                ruleDesc = "Rule 2";
+                ruleDesc = "The fullname is not offensive or uses fowl language";
+            });
+            allowedViolationRules1.add( {
+                ruleId= "3";
+                ruleDesc = "The about section is not offensive or uses fowl language";
             });
             state.pohChallenges.put(CHALLENGE_PROFILE_DETAILS_ID, {
                 challengeId = CHALLENGE_PROFILE_DETAILS_ID;
@@ -491,15 +495,15 @@ module PohModule {
             let allowedViolationRules2 = Buffer.Buffer<PohTypes.ViolatedRules>(3);
             allowedViolationRules2.add({
                 ruleId= "1";
-                ruleDesc = "Rule 1";
+                ruleDesc = "The person face is well lit";
             }); 
             allowedViolationRules2.add( {
                 ruleId= "2";
-                ruleDesc = "Rule 2";
+                ruleDesc = "You can clearly see the persons face";
             });
             allowedViolationRules2.add( {
                 ruleId= "3";
-                ruleDesc = "Rule 3";
+                ruleDesc = "The person is not wearing a mask or hiding their face";
             });
             state.pohChallenges.put(CHALLENGE_PROFILE_PIC_ID, {
                 challengeId = CHALLENGE_PROFILE_PIC_ID;
@@ -517,19 +521,15 @@ module PohModule {
             let allowedViolationRules3 = Buffer.Buffer<PohTypes.ViolatedRules>(4);
             allowedViolationRules3.add( {
                 ruleId= "1";
-                ruleDesc = "Rule 1";
+                ruleDesc = "The person in the video is the same person in the picture above";
             }); 
             allowedViolationRules3.add( {
                 ruleId= "2";
-                ruleDesc = "Rule 2";
+                ruleDesc = "The person in the video says all the words in order in the box above";
             });
             allowedViolationRules3.add( {
                 ruleId= "3";
-                ruleDesc = "Rule 3";
-            });
-            allowedViolationRules3.add( {
-                ruleId= "4";
-                ruleDesc = "Rule 4";
+                ruleDesc = "The person in the video appears to be a real person and not AI generated";
             });
             state.pohChallenges.put(CHALLENGE_USER_VIDEO_ID, {
                 challengeId = CHALLENGE_USER_VIDEO_ID;

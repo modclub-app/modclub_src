@@ -4,8 +4,12 @@ import { idlFactory } from "../../../declarations/modclub/index";
 export { idlFactory } from "../../../declarations/modclub/index";
 import { _SERVICE } from "./types";
 // CANISTER_ID is replaced by webpack based on node environment
-export const canisterId = process.env.MODCLUB_CANISTER_ID;
+export const canisterId =
+  process.env.DEV_ENV == "dev"
+    ? process.env.MODCLUB_DEV_CANISTER_ID
+    : process.env.MODCLUB_CANISTER_ID;
 
+console.log("Canister ID:", canisterId);
 import dfxConfig from "../../../../dfx.json";
 
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
