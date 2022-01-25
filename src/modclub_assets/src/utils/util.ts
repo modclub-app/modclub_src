@@ -137,17 +137,21 @@ export function getUrlForData(canisterId: String, contentId: String) {
     return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}}`;
   } else {
     return (
-      "https://" + canisterId + "raw.ic0.app/storage?contentId=" + contentId
+      "https://" + canisterId + ".raw.ic0.app/storage?contentId=" + contentId
     );
   }
 }
 
 export function getChecked(values: any) {
-  const checked = []
+  const checked = [];
   for (const key in values) {
-    const value = values[key][0]
-    if (value && value != "voteIncorrectlyConfirmation" && value != "voteRulesConfirmation") {
-      checked.push(values[key][0])
+    const value = values[key][0];
+    if (
+      value &&
+      value != "voteIncorrectlyConfirmation" &&
+      value != "voteRulesConfirmation"
+    ) {
+      checked.push(values[key][0]);
     }
   }
   return checked;
