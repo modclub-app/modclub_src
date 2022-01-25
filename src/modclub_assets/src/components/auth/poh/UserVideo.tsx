@@ -138,70 +138,81 @@ export default function UserVideo({ steps }) {
       }
 
       {!videoUrl ? (
-        <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%", margin: "auto" }}>
-          <Webcam
-            audio={true}
-            muted={true}
-            mirrored={true}
-            ref={webcamRef}
-            onUserMedia={() => setLoading(false)}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: "100%",
-              objectFit: "fill",
-            }}
-          />
-
-          <RecordButton
-            capturing={capturing}
-            onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
-          >
-            <svg width="46" height="46" className="btn-record-timer">
-              <defs> <mask id="cirleMask"> <rect height="46" width="46" fill="white"></rect> <circle r="18" cx="23" cy="23" fill="black"></circle> </mask> </defs> <circle r="23" cx="23" cy="23" fill="#64686B" mask="url(#cirleMask)"></circle> <path id="timerArc" fill="#ffffff" strokeWidth="0" mask="url(#cirleMask)" d="M 23 23 L 22.999999999999996 0 A 23 23 0 0 0 22.999999999999996 0 L 23 23"></path>
-            </svg>
-            <i />
-          </RecordButton>
-
-          {recordedChunks.length && 
-            <Button
-              rounded
-              size="large"
-              color="light"
+        <div className="is-relative has-text-centered has-background-grey" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
+          <div style={{ paddingBottom: "75%" }}>
+            <Webcam
+              audio={true}
+              muted={true}
+              mirrored={true}
+              ref={webcamRef}
+              onUserMedia={() => setLoading(false)}
               style={{
                 position: "absolute",
-                bottom: "1rem",
-                right: "calc(50% + 2.5rem)",
-                height: "3rem"
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: "100%",
+                objectFit: "fill",
               }}
-              onClick={saveVideo}
-            >
-              <span>Preview</span>
-              <Icon color="success">
-                <span className="material-icons">
-                  videocam
-                </span>
-              </Icon>
-            </Button>
-          }
+              forceScreenshotSourceSize
+              videoConstraints={{
+                width: 640,
+                height: 480
+              }}
+            />
+
+            {!loading &&
+              <RecordButton
+                capturing={capturing}
+                onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
+              >
+                <svg width="46" height="46" className="btn-record-timer">
+                  <defs> <mask id="cirleMask"> <rect height="46" width="46" fill="white"></rect> <circle r="18" cx="23" cy="23" fill="black"></circle> </mask> </defs> <circle r="23" cx="23" cy="23" fill="#64686B" mask="url(#cirleMask)"></circle> <path id="timerArc" fill="#ffffff" strokeWidth="0" mask="url(#cirleMask)" d="M 23 23 L 22.999999999999996 0 A 23 23 0 0 0 22.999999999999996 0 L 23 23"></path>
+                </svg>
+                <i />
+              </RecordButton>
+            }
+
+            {recordedChunks.length && 
+              <Button
+                rounded
+                size="large"
+                color="light"
+                style={{
+                  position: "absolute",
+                  bottom: "1rem",
+                  right: "calc(50% + 2.5rem)",
+                  height: "3rem"
+                }}
+                onClick={saveVideo}
+              >
+                <span>Preview</span>
+                <Icon color="success">
+                  <span className="material-icons">
+                    videocam
+                  </span>
+                </Icon>
+              </Button>
+            }
+          </div>
         </div>
       ) : (
-        <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%", margin: "auto" }}>
-          <video width="100%" height="auto" autoPlay style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}>
-            <source src={videoUrl} />
-            Your browser does not support the video tag.
-          </video>
-          <CaptureButton
+        <div className="is-relative has-text-centered has-background-grey" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
+          <div style={{ paddingBottom: "75%" }}>
+            <video width="100%" height="auto" autoPlay style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}>
+              <source src={videoUrl} />
+              Your browser does not support the video tag.
+            </video>
+            <CaptureButton
               icon="delete"
               handleClick={resetVideo}
             />
+          </div>
         </div>
       )}
 
-      <Card className="mt-4 mb-5">
+      <Card className="mt-6 mb-5">
         <Card.Content className="columns is-multiline">
           <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
             Record yourself saying the following<br /> words in order:
