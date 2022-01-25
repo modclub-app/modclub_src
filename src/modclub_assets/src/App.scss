@@ -127,6 +127,7 @@ hr {
   background: none;
   color: $white;
   border-color: $dark;
+  transition: background-color .2s;
 
   &:focus:not(:active) {
     box-shadow: none;

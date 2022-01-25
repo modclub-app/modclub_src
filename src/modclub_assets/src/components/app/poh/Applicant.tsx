@@ -182,8 +182,8 @@ const CheckBox = ({ id, label, values }) => {
           <Button
             renderAs="label"
             color={values[id] === "confirm" && "primary" }
-            size="small"
-            style={{ paddingLeft: 6, borderColor: "white" }}
+            className="is-size-7 has-text-weight-normal"
+            style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
           >
             <Field
               name={id}
@@ -195,7 +195,7 @@ const CheckBox = ({ id, label, values }) => {
               style={{ display: "none" }}
             />
             <Icon color="white" size="small">
-              <span className="material-icons">{values[id] === "confirm" ? "trip_origin" : "circle"}</span>
+              <span className="material-icons">{values[id] === "confirm" ? "trip_origin" : "fiber_manual_record"}</span>
             </Icon>
             <span className="ml-1">Confirm</span>
           </Button>
@@ -203,8 +203,8 @@ const CheckBox = ({ id, label, values }) => {
           <Button
             renderAs="label"
             color={values[id] === label && "danger" }
-            size="small"
-            style={{ paddingLeft: 6, borderColor: "white" }}
+            className="is-size-7 has-text-weight-normal"
+            style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
           >
             <Field
               name={id}
@@ -216,7 +216,7 @@ const CheckBox = ({ id, label, values }) => {
               style={{ display: "none" }}
             />
             <Icon color="white" size="small">
-              <span className="material-icons">{values[id] === label ? "trip_origin" : "circle"}</span>
+              <span className="material-icons">{values[id] === label ? "trip_origin" : "fiber_manual_record"}</span>
             </Icon>
             <span className="ml-1">Reject</span>
           </Button>
