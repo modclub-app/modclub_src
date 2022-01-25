@@ -176,7 +176,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
         return {
           status_code=401;
           headers=_headers;
-          body="401 Not Found";
+          body="401 Unauthorized";
           streaming_strategy= null;
         };
       };
@@ -188,7 +188,6 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
 
     var _status_code:Nat16=404;
 
-    var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline"),  ("Access-Control-Allow-Origin", "*")];
 
     var _body:Blob = "404 Not Found";
     var _streaming_strategy:? StreamingStrategy = null;

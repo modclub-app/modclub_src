@@ -454,10 +454,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
           throw Error.reject("Unauthorized, user does not have an identity");
       };
 
-      switch(state.airdropWhitelist.get(caller)){
-        case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
-        case(_) ();
-      };
+      // switch(state.airdropWhitelist.get(caller)){
+      //   case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
+      //   case(_) ();
+      // };
 
       Debug.print("Registering moderator");
       var _userName = Text.trim(userName, #text " ");
@@ -977,7 +977,13 @@ shared ({caller = initializer}) actor class ModClub () = this {
     pohEngine.populateChallenges();
   };
 
-  public shared({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+  public query({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+     switch(checkProfilePermission(caller, #getContent)){
+       case(#err(e)) {
+         throw Error.reject("Unauthorized");
+       };
+       case(_)();
+     };
     let pohTaskIds = voteManager.getTasksId(status, 10);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
@@ -1035,6 +1041,12 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<[PohTypes.PohTaskData], PohTypes.PohError> {
+     switch(checkProfilePermission(caller, #getContent)){
+       case(#err(e)) {
+         throw Error.reject("Unauthorized");
+       };
+       case(_)();
+     };
     let pohTasks = pohEngine.getPohTasks([packageId]);
     if(pohTasks.size() == 0) {
       return #err(#invalidPackageId);
