@@ -109,29 +109,36 @@ export function WebcamWrapper({ setFile, file }) {
   }
 
   return !file.data ? (
-    <div className="is-relative has-text-centered has-background-grey" style={{ maxWidth: 640, maxHeight: 480, paddingBottom: "75%", margin: "auto" }}>
-      <Webcam
-        audio={false}
-        ref={webcamRef}
-        mirrored={true}
-        screenshotFormat="image/jpeg"
-        onUserMedia={() => setLoading(false)}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: "100%",
-          objectFit: "fill",
-        }}
-      />
-      {!loading &&
-        <CaptureButton
-          icon="photo_camera"
-          handleClick={captureWebcam}
+    <div className="is-relative has-text-centered has-background-grey" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
+      <div style={{ paddingBottom: "75%" }}>
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          mirrored={true}
+          screenshotFormat="image/jpeg"
+          onUserMedia={() => setLoading(false)}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: "100%",
+            objectFit: "fill",
+          }}
+          forceScreenshotSourceSize
+          videoConstraints={{
+            width: 640,
+            height: 480
+          }}
         />
-      }
+        {!loading &&
+          <CaptureButton
+            icon="photo_camera"
+            handleClick={captureWebcam}
+          />
+        }
+      </div>
     </div>
   ) : (
     <div className="is-relative has-text-centered">

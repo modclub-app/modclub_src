@@ -15,6 +15,7 @@ import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
 import { ContentPlus } from "../../../utils/types";
+import { getChecked } from "../../../utils/util";
 
 const Modal_ = ({
   title,
@@ -42,7 +43,6 @@ const Modal_ = ({
     if (title === "Reject Confirmation") {
       let checked = 0
       for (const key in values) {
-        console.log('values[key]', values[key])
         values[key].length && checked ++
       }
       if (checked < 2) return true;
@@ -52,21 +52,18 @@ const Modal_ = ({
 
   const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
-    const checked = []
-    for (const key in values) {
-      if (values[key][0]) checked.push(values[key][0])
-    }
+    const checked = getChecked(values);
 
-    setSubmitting(true);
-    const regEx = /Reject text: (.*)/g;
     try {
+      setSubmitting(true);
       const result = await vote(task.id, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, checked);
       console.log("result", result);
       setSubmitting(false);
       setMessage({ success: result === "Vote successful" ? true : false, value: result });
     } catch (e) {
+      const regEx = /Reject text: (.*)/g;
       let errAr = regEx.exec(e.message);
-      setMessage({ success: false, value: errAr[1] });
+      errAr ? setMessage({ success: false, value: errAr[1] }) : setMessage({ success: false, value: e });
       setSubmitting(false);
     }
     setTimeout(() => {

@@ -141,3 +141,14 @@ export function getUrlForData(canisterId: String, contentId: String) {
     );
   }
 }
+
+export function getChecked(values: any) {
+  const checked = []
+  for (const key in values) {
+    const value = values[key][0]
+    if (value && value != "voteIncorrectlyConfirmation" && value != "voteRulesConfirmation") {
+      checked.push(values[key][0])
+    }
+  }
+  return checked;
+}
