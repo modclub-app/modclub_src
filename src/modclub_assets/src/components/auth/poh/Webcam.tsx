@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useRef, useState, useCallback } from "react";
-import { Image, Button, Icon } from "react-bulma-components";
+import { Button, Icon } from "react-bulma-components";
 import Webcam from "react-webcam";
 import { b64toBlob, getFileExtension } from "../../../utils/util";
 
@@ -12,14 +12,6 @@ export function CaptureButton({
   handleClick: React.MouseEventHandler<HTMLButtonElement>,
 }) {
   return (
-
-  //   .video-recorder .bottom-menu .btn-photo:hover {
-  //     background-color: #2e3136;
-  // }
-  // .video-recorder .bottom-menu .btn-photo:hover #cameraIcon {
-  //     transform: scale(1.03, 1.03);
-  // }
-
     <Button
       rounded
       style={{
@@ -142,11 +134,12 @@ export function WebcamWrapper({ setFile, file }) {
     </div>
   ) : (
     <div className="is-relative has-text-centered">
-      <Image
-        src={file.data}
-        style={{ maxWidth: 640, maxHeight: 480, margin: "auto" }}
-      />
-      <SaveButton file={file} />
+      <div style={{ maxWidth: 640, maxHeight: 480, margin: "auto", background: `url(${file.data}) no-repeat center`, backgroundSize: "cover" }}>
+        <div style={{ paddingBottom: "75%" }} />
+      </div>
+      {!file.uploaded &&
+        <SaveButton file={file} />
+      }
       <CaptureButton
         icon="delete"
         handleClick={clearImage}

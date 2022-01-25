@@ -22,7 +22,7 @@ export default function ProfilePic() {
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  const handleFileChange = (event: React.FormEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.FormEvent<HTMLInputElement>) => {    
     // @ts-ignore
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -41,7 +41,8 @@ export default function ProfilePic() {
         type: file.type,
         size: file.size,
         blob: blob,
-        data: data
+        data: data,
+        uploaded: true
       };
       console.log("fileInfo", fileInfo);
       setFile(fileInfo);
@@ -78,23 +79,26 @@ export default function ProfilePic() {
         file={file}
       />
 
-      <div className="is-divider" data-content="OR"></div>
-      
-      <Button.Group align="center">
-        <Button color="black" onClick={() => inputFile.current.click()}>
-          <Icon size="small" className="has-text-white">
-            <span className="material-icons">file_upload</span>
-          </Icon>
-          <span>Upload Photo</span>
-        </Button>
-      </Button.Group>
-      <input
-        style={{ display: "none" }}
-        ref={inputFile}
-        onChange={handleFileChange}
-        accept="image/*"
-        type="file"
-      />
+      {!file.data &&
+      <>
+        <div className="is-divider" data-content="OR"></div>
+        <Button.Group align="center">
+          <Button color="black" onClick={() => inputFile.current.click()}>
+            <Icon size="small" className="has-text-white">
+              <span className="material-icons">file_upload</span>
+            </Icon>
+            <span>Upload Photo</span>
+          </Button>
+        </Button.Group>
+        <input
+          style={{ display: "none" }}
+          ref={inputFile}
+          onChange={handleFileChange}
+          accept="image/*"
+          type="file"
+        />
+      </>
+      }
 
       <Button.Group align="right" className="mt-4">
         <Link to="/app/" className="button is-black" disabled={!file.data}>
