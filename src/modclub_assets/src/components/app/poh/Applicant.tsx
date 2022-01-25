@@ -181,28 +181,28 @@ const CheckBox = ({ id, label, values }) => {
             name={id}
             component="input"
             type="radio"
-            value={true}
+            value="confirm"
             id={id}
-            checked={values[id] === "true"}
+            checked={values[id] === "confirm"}
           />
           <Icon className="check">
             <span className="material-icons">done</span>
           </Icon>
-          <p>Yes</p>
+          <p style={{ width: 50, marginLeft: "-100%" }}>Confirm</p>
         </label>
         <label className="checkbox is-large">
           <Field
             name={id}
             component="input"
             type="radio"
-            value={false}
+            value={label}
             id={id}
-            checked={values[id] === "false"}
+            checked={values[id] === label}
           />
           <Icon className="check">
             <span className="material-icons">done</span>
           </Icon>
-          <p>No</p>
+          <p style={{ width: 50, marginLeft: "-80%" }}>Reject</p>
         </label>
       </div>      
     </fieldset>
@@ -247,7 +247,9 @@ export default function PohApplicant() {
 
   const parentSubmit = (values: any) => {
     // console.log("values", values);
-    Object.values(values).indexOf("true") >= 0 ? toggleReject() : toggleApprove();
+    const filteredValues = Object.values(values).filter(value => typeof value === "string");
+    const confirmed = Object.values(values).filter(value => value === "confirm");
+    filteredValues.length === confirmed.length ? toggleApprove() : toggleReject();
   }
 
   return loading ?
@@ -345,9 +347,9 @@ export default function PohApplicant() {
                   <Card.Content>
                     <ul>
                       {Object.keys(values).map((key, index) => (
-                        values[key] === "true" &&
+                        values[key] != "confirm" && values[key] != "voteIncorrectlyConfirmation" && values[key] != "voteRulesConfirmation" &&
                           <li key={index}>
-                            {index + 1}. {Object.keys(values)[index]}
+                            {index + 1}. {values[key]}
                           </li>
                         )
                       )}
