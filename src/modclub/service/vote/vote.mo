@@ -58,6 +58,14 @@ module VoteModule {
             };
         };
 
+        public func getPOHVotesId(packageId: Text) : [Text] {
+            return state.pohContent2votes.get0(packageId);
+        };
+
+        public func getPOHVote(voteId: Text) : ?VoteTypes.Vote {
+            return state.pohVotes.get(voteId);
+        };
+
         public func votePohContent(userId: Principal, packageId: Text, decision: Types.Decision, violatedRules: [Types.PohRulesViolated])  
         : Result.Result<Bool, VoteTypes.VoteError> {
 

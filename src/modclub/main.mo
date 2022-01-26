@@ -1068,7 +1068,30 @@ shared ({caller = initializer}) actor class ModClub () = this {
       throw Error.reject("Valid rules not provided.");
     };
 
-    let result = voteManager.votePohContent(caller, packageId, decision, violatedRules);
+    let finishedVoting = voteManager.votePohContent(caller, packageId, decision, violatedRules);
+    if(finishedVoting == #ok(true)) {
+      let decision = voteManager.getContentStatus(packageId);
+      let votesId = voteManager.getPOHVotesId(packageId);
+      for(id in votesId.vals()) {
+        let vote = voteManager.getPOHVote(id);
+        switch(vote) {
+          case(null)();
+          case(?v) {
+            let reward = (ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH));
+            if((v.decision == #approved and decision == #approved) or
+                (v.decision == #rejected and decision == #rejected)
+              ) {
+              //reward only some percentage
+              await tokens.reward(initializer, v.userId, Float.toInt(reward));
+            } else {
+              // burn only some percentage
+              await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
+            }
+          };
+        };
+      };
+    };
+
   };
 
   // Helpers
