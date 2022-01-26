@@ -1067,15 +1067,15 @@ shared ({caller = initializer}) actor class ModClub () = this {
         switch(vote) {
           case(null)();
           case(?v) {
+            let reward = (ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH));
             if((v.decision == #approved and decision == #approved) or
                 (v.decision == #rejected and decision == #rejected)
               ) {
               //reward only some percentage
-              let reward = (ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH));
               await tokens.reward(initializer, v.userId, Float.toInt(reward));
             } else {
-              // burn whole stake
-              await tokens.burnStakeFrom(v.userId, ModClubParam.MIN_STAKE_POH);
+              // burn only some percentage
+              await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
             }
           };
         };
