@@ -26,6 +26,7 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Prim "mo:prim";
 import Token "./token";
 import TrieSet "mo:base/TrieSet";
 import Types "./types";
@@ -1052,6 +1053,12 @@ shared ({caller = initializer}) actor class ModClub () = this {
       return #err(#invalidPackageId);
     };
     return #ok(pohTasks[0].pohTaskData);
+  };
+
+  // Prim's rts memory size is a good approximation of memory used by a canister
+  public shared({ caller }) func getSize(): async Nat {
+    await onlyOwner(caller);
+    Prim.rts_memory_size();
   };
 
   public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
