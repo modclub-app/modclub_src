@@ -1,6 +1,8 @@
 import * as React from 'react'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { useAuth } from "../../../utils/auth";
+import { formatDate, getUrlForData } from "../../../utils/util";
 import { getPohTaskData, votePohContent } from "../../../utils/api";
 import { getChecked } from "../../../utils/util";
 import {
@@ -18,7 +20,6 @@ import Confirm from "../../common/confirm/Confirm";
 import Progress from "../../common/progress/Progress";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
-import { formatDate, getUrlForData } from "../../../utils/util";
 
 const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
   const [submitting, setSubmitting] = useState(null);
@@ -227,6 +228,7 @@ const CheckBox = ({ id, label, values }) => {
 }
 
 export default function PohApplicant() {
+  const { user, isAuthenticated } = useAuth();
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [content, setContent] = useState(null);
@@ -245,8 +247,8 @@ export default function PohApplicant() {
   }
 
   useEffect(() => {
-    getApplicant();
-  }, []);
+    user && getApplicant();
+  }, [user]);
 
   const formatTitle = (challengeId) => {
     if (challengeId === "challenge-profile-details") return "Challenge: Profile Details";
@@ -312,8 +314,8 @@ export default function PohApplicant() {
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
                   <table className="table is-striped has-text-left">
                     <tbody>
-                      {task.allowedViolationRules.map((rule) => (
-                        <tr key={rule}>
+                      {task.allowedViolationRules.map((rule, index) => (
+                        <tr key={index}>
                           <CheckBox
                             key={rule.ruleId}
                             id={`${task.challengeId}-${rule.ruleId}`}
