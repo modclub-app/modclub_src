@@ -1,12 +1,15 @@
-import Types "./types";
-import Time "mo:base/Time";
-import Blob "mo:base/Blob";
-import Text "mo:base/Text";
 import Array "mo:base/Array";
+import Blob "mo:base/Blob";
+import GlobalState "state";
 import Prim "mo:prim";
-import Source "mo:uuid/async/SourceV4";
-import UUID "mo:uuid/UUID";
 import SHA256 "mo:crypto/SHA/SHA256";
+import Source "mo:uuid/async/SourceV4";
+import Text "mo:base/Text";
+import Time "mo:base/Time";
+import Principal "mo:base/Principal";
+import Nat "mo:base/Nat";
+import Types "./types";
+import UUID "mo:uuid/UUID";
 
 module Helpers {
 
@@ -30,6 +33,20 @@ module Helpers {
     public func generateHash(content: Text) : Text {
       return encode(SHA256.sum(Blob.toArray(Text.encodeUtf8(content))));
     };
+
+    // Generates a semi unique ID
+  public func generateId(caller: Principal, category: Text, state: GlobalState.State): Text {
+    var count : Nat = 0;
+    switch(state.GLOBAL_ID_MAP.get(category)){
+      case(?result){
+        count := result;
+      };
+      case(_) ();
+    };
+    count := count + 1;
+    state.GLOBAL_ID_MAP.put(category, count);
+    return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
+  };
 
     /**
    * Encode an array of unsigned 8-bit integers in hexadecimal format.
