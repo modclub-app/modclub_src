@@ -228,9 +228,9 @@ const CheckBox = ({ id, label, values }) => {
 }
 
 export default function PohApplicant() {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { packageId } = useParams();
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
 
   const [showApprove, setShowApprove] = useState(false);
@@ -240,14 +240,15 @@ export default function PohApplicant() {
   const toggleReject = () => setShowReject(!showReject);
 
   const getApplicant = async () => {
-    const applicant = await getPohTaskData(packageId);
-    console.log("getPohTaskData res", applicant);
-    setContent(applicant);
+    setLoading(true)
+    const res = await getPohTaskData(packageId);
+    console.log("getPohTaskData res", res);
+    setContent(res.ok);
     setLoading(false);
   }
 
   useEffect(() => {
-    user && getApplicant();
+    user && !loading && getApplicant();
   }, [user]);
 
   const formatTitle = (challengeId) => {
@@ -260,7 +261,7 @@ export default function PohApplicant() {
   const isDisabled = (values: any) => {
     const checkedLength = Object.keys(values).length;
     let formRules = [];
-    content.ok.forEach(task => formRules.push(...task.allowedViolationRules));
+    content.pohTaskData.forEach(task => formRules.push(...task.allowedViolationRules));
     return checkedLength === formRules.length ? false : true;
   }
 
@@ -271,7 +272,7 @@ export default function PohApplicant() {
     filteredValues.length === confirmed.length ? toggleApprove() : toggleReject();
   }
 
-  return loading ?
+  return !content ?
     <Modal show={true} showClose={false}>
       <div className="loader is-loading p-5"></div>
     </Modal>
@@ -285,17 +286,16 @@ export default function PohApplicant() {
             <Card.Header>
               <Card.Header.Title>
                 <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-                  {/* Submitted {formatDate(createdAt)} */}
-                  Submitted todo Date()
+                  Submitted {formatDate(content.updatedAt)}
                 </span>
               </Card.Header.Title>
               <Progress
-                value={5}
-                min={10}
+                value={content.votes}
+                min={content.minVotes}
               />
             </Card.Header>
 
-            {content.ok.map((task) => (
+            {content.pohTaskData.map((task) => (
               <Card.Content key={task.challengeId}>
                 <Heading subtitle className="mb-3">
                   {formatTitle(task.challengeId)}
