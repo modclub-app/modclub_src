@@ -1040,7 +1040,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return tasks.toArray();
   };
 
-  public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<[PohTypes.PohTaskData], PohTypes.PohError> {
+  public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
      switch(checkProfilePermission(caller, #getContent)){
        case(#err(e)) {
          throw Error.reject("Unauthorized");
@@ -1051,7 +1051,15 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(pohTasks.size() == 0) {
       return #err(#invalidPackageId);
     };
-    return #ok(pohTasks[0].pohTaskData);
+    let voteCount = voteManager.getVoteCountForPoh(caller, packageId);
+    #ok({
+        packageId = pohTasks[0].packageId;
+        pohTaskData = pohTasks[0].pohTaskData;
+        votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+        minVotes =  ModClubParam.MIN_VOTE_POH;
+        createdAt = pohTasks[0].createdAt;
+        updatedAt = pohTasks[0].updatedAt;
+    });
   };
 
   public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {

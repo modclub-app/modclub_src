@@ -146,6 +146,17 @@ module {
     public type PohTaskDataWrapper = {
         packageId: Text;
         pohTaskData: [PohTaskData];
+        createdAt: Int;
+        updatedAt: Int;
+    };
+
+    public type PohTaskDataWrapperPlus = {
+        packageId: Text;
+        pohTaskData: [PohTaskData];
+        votes: Nat;
+        minVotes: Int;
+        createdAt: Int;
+        updatedAt: Int;
     };
 
     public type PohTaskPlus = {

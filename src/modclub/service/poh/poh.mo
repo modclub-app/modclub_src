@@ -1,8 +1,10 @@
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
+import Helpers "../../helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
+import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import PohState "./state";
@@ -12,8 +14,6 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
-
-import Helpers "../../helpers";
 
 module PohModule {
 
@@ -434,6 +434,8 @@ module PohModule {
                         pohTasks.add({
                             packageId = id;
                             pohTaskData = taskData.toArray();
+                            createdAt = package.createdAt;
+                            updatedAt = package.updatedAt;
                         });
                     };
                 };
