@@ -5,14 +5,14 @@ import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
-import PohState "./state";
-import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Types "../../types";
 
+import PohState "./state";
+import PohTypes "./types";
+import Types "../../types";
 import Helpers "../../helpers";
 
 module PohModule {
@@ -350,7 +350,7 @@ module PohModule {
                         fullName = ?fullName;
                         aboutUser = ?aboutUser;
                         createdAt = user.createdAt;
-                        updatedAt = Time.now();
+                        updatedAt = Helpers.timeNow();
                     });
                 };
             };

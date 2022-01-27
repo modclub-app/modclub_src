@@ -1,5 +1,3 @@
-import Debug "mo:base/Debug";
-import Principal "mo:base/Principal";
 import Error "mo:base/Error";
 import Buffer "mo:base/Buffer";
 import Array "mo:base/Array";

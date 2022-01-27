@@ -1,10 +1,3 @@
-import Principal "mo:base/Principal";
-import Text "mo:base/Text";
-import Hash "mo:base/Hash";
-import Nat "mo:base/Nat";
-import Float "mo:base/Float";
-import HashMap "mo:base/HashMap";
-
 module {
   public type Timestamp = Int; // See mo:base/Time and Time.now()
   public type UserId = Principal;

@@ -1,9 +1,5 @@
-import Debug "mo:base/Debug";
-import Principal "mo:base/Principal";
 import Error "mo:base/Error";
 import Buffer "mo:base/Buffer";
-import Array "mo:base/Array";
-import Order "mo:base/Order";
 
 import GlobalState "../../state";
 import Types "../../types";

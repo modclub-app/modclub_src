@@ -2,23 +2,21 @@ import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
-import Int "mo:base/Int";
+import Nat "mo:base/Nat";
 import Float "mo:base/Float";
+import Principal "mo:base/Principal";
+import Result "mo:base/Result";
+import Text "mo:base/Text";
 
 import GlobalState "../../state";
 import Helpers "../../helpers";
-import ModClubParams "../parameters/params";
-import Principal "mo:base/Principal";
-import Result "mo:base/Result";
-
-import Text "mo:base/Text";
 import Types "../../types";
 import Tokens "../../token";
 
 
 module ModeratorModule {
   
-  type ModError = {#notFound; #voteNotFound; #contentNotFound;};
+  public type ModError = {#notFound; #voteNotFound; #contentNotFound; #providerNotFound};
   
   public func registerModerator(moderatorId: Principal, userName: Text, email: Text, pic: ?Types.Image, state: GlobalState.State) : async Types.Profile {
     var _userName = Text.trim(userName, #text " ");
@@ -158,6 +156,64 @@ module ModeratorModule {
       };
     };
     return moderatorIds.toArray();
+  };
+
+  public func getActivity(moderatorId: Principal, isComplete: Bool, 
+                        getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount, 
+                        state: GlobalState.State) : Result.Result<[Types.Activity], ModError> {
+      let buf = Buffer.Buffer<Types.Activity>(0);
+      label l for (vid in state.mods2votes.get0(moderatorId).vals()) {
+        switch(state.votes.get(vid)) {
+          case (?vote) {
+            switch(state.content.get(vote.contentId)) {
+              case (?content) {
+                // Filter out wrong results
+                if(content.status == #new and isComplete == true) {
+                  continue l;
+                } else if(content.status != #new and isComplete == false) {
+                  continue l;
+                };
+                switch(state.providers.get(content.providerId)) {
+                  case(?provider) {
+                    let voteCount = getVoteCount(content.id, ?moderatorId);
+
+                    let item : Types.Activity = {
+                        vote = vote;
+                        providerId = content.providerId;
+                        providerName =  provider.name;
+                        contentType = content.contentType;    
+                        status =  content.status;
+                        title = content.title;
+                        createdAt = content.createdAt;
+                        updatedAt = content.updatedAt;
+                        voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+                        minVotes = provider.settings.minVotes;
+                        minStake = provider.settings.minStaked;
+                        rewardRelease = Helpers.timeNow();
+                        reward = do  {
+                          switch(isComplete == true) {
+                            case(true) {
+                              switch(vote.decision == content.status) {
+                                case(true) Float.fromInt(provider.settings.minStaked);
+                                case(false) -1 * Float.fromInt(provider.settings.minStaked);
+                              };
+                            };
+                            case(false) 0;
+                          };
+                        }; 
+                    };
+                    buf.add(item);
+                };
+                case(_) return #err(#providerNotFound);
+                };
+              };
+              case(_) return #err(#contentNotFound); 
+          };          
+        };
+        case (_) return #err(#voteNotFound);
+      };    
+    };
+    return #ok(buf.toArray());
   };
 
   func checkUsernameAvailable(userName_ : Text, state: GlobalState.State): async Bool {

@@ -5,11 +5,10 @@ import Result "mo:base/Result";
 
 import GlobalState "../../state";
 import Types "../../types";
-import Helpers "../../helpers";
-import ModClubParams "../parameters/params";
 
 
 module AuthModule {
+
 
     public func onlyOwner(p: Principal, owner: Principal) : async() {
         if( p != owner) throw Error.reject( "unauthorized" );

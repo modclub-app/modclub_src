@@ -1,15 +1,8 @@
-import Hash "mo:base/Hash";
-import Prelude "mo:base/Prelude";
 import Text "mo:base/Text";
-import Int "mo:base/Int";
 import Trie "mo:base/Trie";
-import TrieMap "mo:base/TrieMap";
 import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
-import Buffer "mo:base/Buffer";
-import TrieSet "mo:base/TrieSet";
-import SeqObj "data_structures/SeqObj";
 import Rel "data_structures/Rel";
 import RelObj "data_structures/RelObj";
 import Debug "mo:base/Debug";
