@@ -31,7 +31,7 @@ type Role =
 type Result_1 = 
  variant {
    err: PohError;
-   ok: vec PohTaskData;
+   ok: PohTaskDataWrapperPlus;
  };
 type Result = 
  variant {
@@ -95,6 +95,15 @@ type PohTaskPlus =
    updatedAt: int;
    userName: opt text;
    voteCount: nat;
+ };
+type PohTaskDataWrapperPlus = 
+ record {
+   createdAt: int;
+   minVotes: int;
+   packageId: text;
+   pohTaskData: vec PohTaskData;
+   updatedAt: int;
+   votes: nat;
  };
 type PohTaskData = 
  record {
@@ -211,7 +220,7 @@ type ModClub =
    getModclubHoldings: () -> (Holdings) query;
    getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
    getPohTaskData: (text) -> (Result_1);
-   getPohTasks: (ContentStatus) -> (vec PohTaskPlus);
+   getPohTasks: (ContentStatus) -> (vec PohTaskPlus) query;
    getProfile: () -> (Profile) query;
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;

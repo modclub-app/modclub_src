@@ -75,10 +75,11 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 
 export default function PohApplicantList() {
   const { user, isAuthenticated } = useAuth();
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
 
   const getApplicants = async () => {
+    setLoading(true);
     const status = { "new": null };
     const applicants = await getPohTasks(status);
     console.log("getPohTasks res", applicants);
@@ -87,14 +88,10 @@ export default function PohApplicantList() {
   }
 
   useEffect(() => {
-    getApplicants();
-  }, []);
-
-  useEffect(() => {
-    user && getApplicants();
+    user && !loading && getApplicants();
   }, [user]);
 
-  return loading ?
+  return !applicants ?
     <Modal show={true} showClose={false}>
       <div className="loader is-loading p-5"></div>
     </Modal>
