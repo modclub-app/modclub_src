@@ -90,11 +90,12 @@ const Table = (
 }
 
 export default function Activity() {
-  const { user } = useAuth();
+  const { user, identity } = useAuth();
   const [completedActivity, setCompletedActivity] = useState<Activity[]>([]);
   const [inProgressActivity, setInProgressActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
+  const [principalID, setPrincipalID] = useState<string>("");
 
   const filters = ["completed", "new"];
 
@@ -113,6 +114,15 @@ export default function Activity() {
     setLoading(false);
   };
 
+  const getUserData = (identity) => {
+    const principalId = identity.getPrincipal().toText();
+    setPrincipalID(principalId);
+  };
+
+  useEffect(() => {
+    identity && getUserData(identity);
+  }, [identity]);
+
   useEffect(() => {
     user && fetchActivity(currentFilter);
   }, [user]);
@@ -121,15 +131,27 @@ export default function Activity() {
     fetchActivity(currentFilter);
   }, [currentFilter]);
 
-  const tempClick = () => {
-    console.log("tempClick");
-  }
-
   return (
     <>
       <Userstats detailed={true} />
         <Columns>
-        <Columns.Column size={12}>
+          <Columns.Column size={12}>
+            <Card className="has-gradient">
+              <Card.Content textAlign="center">
+                <label className="label">
+                  My Principal ID
+                </label>
+                <p className="is-flex is-justify-content-center has-text-white">
+                  {principalID}
+                  <Icon color="white" className="ml-3 is-clickable" onClick={() => {navigator.clipboard.writeText(principalID)}}>
+                    <span className="material-icons">file_copy</span>
+                  </Icon>
+                </p>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
+
+          <Columns.Column size={12}>
             <Card>
               <Card.Content className="level">
                 <Heading marginless>

@@ -86,7 +86,6 @@ export function getUserFromStorage(
 }
 
 export function convertObj(obj: any): any {
-  console.log(obj);
   return Object.entries(obj).reduce((acc, [k, v]) => {
     if (typeof v === "object") {
       acc[k] = convertObj(v);
