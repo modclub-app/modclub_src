@@ -9,6 +9,8 @@ import Platform from "../platform/Platform";
 import ApproveReject from "../modals/ApproveReject";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
+// var sanitizeHtml = require('sanitize-html');
+import sanitizeHtml from "sanitize-html-react"
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -103,7 +105,7 @@ export default function Task() {
                   <p>{task.text}</p>
                 } */}
 
-                <div dangerouslySetInnerHTML={{__html: html }} />
+                <div dangerouslySetInnerHTML={{__html: sanitizeHtml(html) }} />
 
                 <Card backgroundColor="dark" className="mt-5">
                   <Card.Content>
