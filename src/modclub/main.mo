@@ -94,6 +94,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
     allowSubmissionFlag := allow;
   };
 
+  public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
+    await onlyOwner(caller);
+    voteManager.addToAutoApprovedPOHUser(userId);
+  };
+
   // Airdrop Methods
   public shared({ caller }) func airdropRegister() : async AirdropUser {
     Debug.print("AirdropRegister");
@@ -916,7 +921,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Method called by user on UI
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await pohEngine.retrieveChallengesForUser(caller, token, ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"]);
+    await pohEngine.retrieveChallengesForUser(caller, token, ["challenge-profile-pic", "challenge-user-video"]);
   };
 
   // Method called by user on UI
@@ -940,14 +945,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
         };
       };
       // TODO dynamic list will be fetched from admin dashboard state
-      let providerChallenges = ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"];
+      let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
       let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId);
       switch(challengePackage) {
         case(null)();
         case(?package) {
-          voteManager.initiateVotingPoh(package.id);
+          voteManager.initiateVotingPoh(package.id, caller);
+          if(voteManager.isAutoApprovedPOHUser(caller)) {
+            pohEngine.changeChallengePackageStatus(package.id, #verified);
+          };
         };
-      }
+      };
     };
     return {
       challengeId = pohDataRequest.challengeId;
@@ -977,13 +985,16 @@ shared ({caller = initializer}) actor class ModClub () = this {
     pohEngine.populateChallenges();
   };
 
-  public query({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
-     switch(checkProfilePermission(caller, #getContent)){
-       case(#err(e)) {
-         throw Error.reject("Unauthorized");
-       };
-       case(_)();
-     };
+  public shared({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+    switch(checkProfilePermission(caller, #getContent)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
     let pohTaskIds = voteManager.getTasksId(status, 10);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
@@ -1041,12 +1052,15 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
-     switch(checkProfilePermission(caller, #getContent)){
-       case(#err(e)) {
-         throw Error.reject("Unauthorized");
-       };
-       case(_)();
-     };
+    switch(checkProfilePermission(caller, #getContent)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
     let pohTasks = pohEngine.getPohTasks([packageId]);
     if(pohTasks.size() == 0) {
       return #err(#invalidPackageId);
@@ -1063,6 +1077,15 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
     let holdings = tokens.getHoldings(caller);
     if( holdings.stake < ModClubParams.MIN_STAKE_POH) { 
       throw Error.reject("Not enough tokens staked");
@@ -1090,11 +1113,13 @@ shared ({caller = initializer}) actor class ModClub () = this {
                 (v.decision == #rejected and decision == #rejected)
               ) {
               //reward only some percentage
+              pohEngine.changeChallengePackageStatus(packageId, #verified);
               await tokens.reward(initializer, v.userId, Float.toInt(reward));
             } else {
+              pohEngine.changeChallengePackageStatus(packageId, #rejected);
               // burn only some percentage
               await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
-            }
+            };
           };
         };
       };
