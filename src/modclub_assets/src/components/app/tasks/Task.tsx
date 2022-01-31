@@ -9,8 +9,7 @@ import Platform from "../platform/Platform";
 import ApproveReject from "../modals/ApproveReject";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
-// var sanitizeHtml = require('sanitize-html');
-import sanitizeHtml from "sanitize-html-react"
+import sanitizeHtml from "sanitize-html-react";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -43,28 +42,120 @@ export default function Task() {
     const content = await getContent(taskId);
     console.log("content !!!!!!!!!!!!!!!!!!!!!!!", content);
     setTask(content);
-    setHtml(`<div class="container">
-    <br>
-    <br>
-    <div>
-    <input hidden="" type="text" value="96" id="postId">
-    <div>
-        <div class="mr-2 nuanceLogo-2" width="30" height="30"><div id="profile" title="Not logged on" class="dropdown mr-3" style="float:left"><img src="ba097b490b92a293f48d.png" width="44" height="50"></div></div>matador
-        <button style="background-color: black; color: aquamarine; float:right;" type="button" id="sharePost" class="btn rightPanelButton">Share</button>
-        </div>
-        <br><br>
-        <h3><p>ボリンジャーマップ</p></h3>
-        <br>
-        <p></p><p><span style="background-color: rgb(247, 249, 249); color: rgb(34, 34, 34);">Steemitからnoteに移植したものを、再移植。</span></p><p><br></p><p><span style="background-color: rgb(247, 249, 249); color: rgb(34, 34, 34);">　　＊＊＊＊＊＊＊＊＊＊＊＊＊</span></p><p><br></p><p>ここ↓で書いているボリンジャーマップの説明をBTC用に書き直します。</p><p><a href="http://blog.goo.ne.jp/fxtradenote/e/125305a9df867131bc9d699bc284e08f?" rel="noopener noreferrer" target="_blank" style="color: inherit;">http://blog.goo.ne.jp/fxtradenote/e/125305a9df867131bc9d699bc284e08f</a></p><p><strong>「ボリンジャーマップ」</strong>は、私の造語です。</p><p>複数の時間足の「期間２０のボリンジャーバンド」を一枚のチャートに重ねて表示したもの。</p><p><strong>利点その１．</strong></p><p>長い時間足のボリンジャーバンドが拡大表示されるので、細かい動きが分かる。</p><p>（拡大されていても非常に正確に反応していることが多い。）</p><p><strong>利点その２．</strong></p><p>複数の時間足のボリンジャーバンドの重なりが一目で分かる。</p><p>重なっている所はそれだけ強くなる。</p><p>ブレイクして急騰・急落した時、長い時間足のボリンジャーバンドで止められて急反転することも多い。</p><p><strong>利点その３．</strong></p><p>プライスの動きに従って、複数時間足のボリンジャーバンドのチャートポイントを連続的に確認出来る。</p><p><strong>利点その４．</strong></p><p>これによって、後で説明する「ジェイウォーク」の動きと、そのトリガーが、一見して明らかになる。</p><p>こんなチャート　↓。</p><p>BTCUSD</p><p><strong>４時間足ボリンジャーマップ</strong></p><p><span style="color: inherit;"><img src="https://assets.st-note.com/production/uploads/images/39574992/picture_pc_988ef48a64788dc7d04beb18daff291e.png?width=800" alt="画像3" height="270" width="620"></span></p><p>基本のチャートは、４時間足。</p><p>水色；期間２０のボリンジャーバンド</p><p> 太実線は、センターライン</p><p> 細実線は、±２σ</p><p>紫色；期間１２０のボリンジャーバンド</p><p>（日足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p>緑色；期間８４０のボリンジャーバンド</p><p>（週足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p>茶色；期間３６００のボリンジャーバンド</p><p>（月足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p><br></p><p><strong>１５分足ボリンジャーマップ</strong></p><p><span style="color: inherit;"><img src="https://assets.st-note.com/production/uploads/images/39575066/picture_pc_ac48b9e271943582f65048da537a07d4.png?width=800" alt="画像3" height="270" width="620"></span></p><p>基本のチャートは、１５分足。</p><p>赤色；期間２０のボリンジャーバンド（線種については同上）</p><p>黄色；期間８０のボリンジャーバンド</p><p>（１時間足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p>水色；期間３２０のボリンジャーバンド</p><p>（４時間足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p>紫色；期間１９２０のボリンジャーバンド</p><p>（日足における期間２０のボリンジャーバンドに相当）（線種についてはは同上）</p><p><br></p><p><strong>１分足ボリンジャーマップ</strong></p><p><span style="color: inherit;"><img src="https://assets.st-note.com/production/uploads/images/39575125/picture_pc_1502eb63df8595f7a109a5c06bf137ab.png?width=800" alt="画像3" height="270" width="620"></span></p><p>基本のチャートは、１分足。</p><p>赤色；期間２０のボリンジャーバンド（線種については同上）</p><p>黄色；期間１００のボリンジャーバンド</p><p>（５分足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p>水色；期間３００のボリンジャーバンド</p><p>（１５分足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p>紫色；期間１２００のボリンジャーバンド</p><p>（１時間足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p>黒色；期間４８００のボリンジャーバンド</p><p>（４時間足における期間２０のボリンジャーバンドに相当）（線種については同上）</p><p></p>
-        <br>
-        <p style="display: inline-block;"><i class="fas fa-tags"></i>
-           <span class="badge badge-light"></span>
-           <span id="createdDateDisplay"><i class="fas fa-calendar-alt mr-1"></i><small>created: 11/6/2021, 10:39:21 PM</small></span>
-           <span id="modifiedDateDisplay"><i class="fas fa-calendar-alt mr-1 ml-2"></i><small>modified: 11/6/2021, 10:39:21 PM</small></span>
-        </p>
-     </div>
-    <br>
-  </div>`);
+    setHtml(`<body><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WGQVQ44"
+    <p>At the heart of the rewards card concept is the incentive for shoppers to select your business over the endless choices in today’s global market. The more they buy from you, the more rewards they expect to receive.</p>
+    <p>Since today’s shoppers are more interested in rewards that can be utilized anywhere, the ideal rewards card concept should utilize a currency technology such as Discover, Mastercard, or Visa, which are pretty much accepted anywhere these days.</p><h2>An Example: Vester &amp; Son’s</h2>
+    <p>As an example, let’s assume that Vester &amp; Son’s is an online retailer looking to increase sales via a rewards card program. When shoppers sign up for the Vester &amp; Son’s Rewards program, they only need an account on the Vester &amp; Son’s e-commerce site. This is not a stretch for most customers, because they already provide the following required information every time they make a purchase:</p>
+    <ul>
+    <li>Full Name</li>
+    <li>Email Address</li>
+    <li>Phone Number</li>
+    <li>Mailing Address</li>
+    </ul>
+    <p>Once a customer spends over $100 in purchases, Vester &amp; Son’s will provide a Discover card which will be pre-loaded with 10% of their total purchases. Meaning, every $10 spent on Vester &amp; Son’s products will yield a $1 reward. Not a bad deal, right?</p><p>The customer can use their Vester &amp; Son’s Rewards Discover card on anything … wherever Discover is accepted.</p><h2>Using Marqeta as a Rewards Card Source</h2>
+    <p>In my “<a href="https://hackernoon.com/leveraging-marqeta-to-build-a-payment-service-in-spring-boot-a-how-to-guide?ref=hackernoon.com" rel="ugc">Leveraging Marqeta to Build a Payment Service in Spring Boot</a>” article published earlier this year, I detailed the following transaction flow used by Marqeta for popular services by Uber, DoorDash, and Square (just to name a few):</p>
+    <p><div style="width:0;height:0;position:relative"><div class="fullscreen"><div style="display:block;overflow:hidden;position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;margin:0"><img alt="image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" data-nimg="fill" style="position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;padding:0;border:none;margin:auto;display:block;width:0;height:0;min-width:100%;max-width:100%;min-height:100%;max-height:100%;object-fit:contain"/><noscript><img alt="image" sizes="100vw" srcSet="/_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=640&amp;q=75 640w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=750&amp;q=75 750w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=828&amp;q=75 828w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=1080&amp;q=75 1080w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=1200&amp;q=75 1200w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=1920&amp;q=75 1920w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=2048&amp;q=75 2048w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=3840&amp;q=75 3840w" src="/_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ir03ccw.png&amp;w=3840&amp;q=75" decoding="async" data-nimg="fill" style="position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;padding:0;border:none;margin:auto;display:block;width:0;height:0;min-width:100%;max-width:100%;min-height:100%;max-height:100%;object-fit:contain" loading="lazy"/></noscript></div></div></div></p>
+    <p>As it turns out, using Marqeta to fund a globally accepted rewards card follows a very similar flow:</p>
+    <p><div style="width:0;height:0;position:relative"><div class="fullscreen"><div style="display:block;overflow:hidden;position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;margin:0"><img alt="image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" data-nimg="fill" style="position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;padding:0;border:none;margin:auto;display:block;width:0;height:0;min-width:100%;max-width:100%;min-height:100%;max-height:100%;object-fit:contain"/><noscript><img alt="image" sizes="100vw" srcSet="/_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=640&amp;q=75 640w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=750&amp;q=75 750w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=828&amp;q=75 828w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=1080&amp;q=75 1080w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=1200&amp;q=75 1200w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=1920&amp;q=75 1920w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=2048&amp;q=75 2048w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=3840&amp;q=75 3840w" src="/_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-xq13c1l.png&amp;w=3840&amp;q=75" decoding="async" data-nimg="fill" style="position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;padding:0;border:none;margin:auto;display:block;width:0;height:0;min-width:100%;max-width:100%;min-height:100%;max-height:100%;object-fit:contain" loading="lazy"/></noscript></div></div></div></p>
+    <p>In this example, Vester &amp; Son’s provides a funding source for the rewards card program. As each customer qualifies for the program, funds are made available for use on the Discover-based rewards card.</p>
+    <p>While the customer can use the Discover card for future purchases at Vester &amp; Son’s, nothing prevents the purchase of anything from anywhere, including from Vester &amp; Son’s competitors.</p>
+    <h3>Creating the Rewards Card Program</h3>
+    <p>Leveraging the Marqeta API, I was able to establish a new program for the Vester &amp; Son’s rewards card program using the following cURL command:</p>
+    <pre><code class="language-javascript">curl --location --request POST &#x27;https://sandbox-api.marqeta.com/v3/fundingsources/program&#x27; \
+    --header &#x27;accept: application/json&#x27; \
+    --header &#x27;Content-Type: application/json&#x27; \
+    --header &#x27;Authorization: Basic APPLICATION_TOKEN_GOES_HERE:ADMIN_ACCESS_TOKEN_GOES_HERE&#x27; \
+    --data-raw &#x27;{&quot;name&quot;:&quot;vester_rewards_card_program&quot;,&quot;active&quot;:true}&#x27;
+    </code></pre>
+    <p>The following response was returned, which includes a token property that will be referenced later in this article:</p><pre><code class="language-javascript">{
+    &quot;name&quot;: &quot;vester_rewards_card_program&quot;,
+    &quot;active&quot;: true,
+    &quot;token&quot;: &quot;9ff9d776-bf89-4350-bac2-ee8d8412f611&quot;,
+    &quot;created_time&quot;: &quot;2021-12-28T12:37:47Z&quot;,
+    &quot;last_modified_time&quot;: &quot;2021-12-28T12:37:47Z&quot;,
+    &quot;account&quot;: &quot;12.003.001.000000&quot;
+    }
+    </code></pre>
+    <h2>A Quick Example (Using cURL Commands)</h2>
+    <p>For the “Leveraging Marqeta to Build a Payment Service in Spring Boot” article (referenced above), I created a Spring Boot API service to act as a front-end to the Marqeta API, which can be found on GitLab at the following URL:</p>
+    <p><a href="https://gitlab.com/johnjvester/marqeta-example?ref=hackernoon.com" target="_blank" rel="noopener noreferrer ugc">https://gitlab.com/johnjvester/marqeta-example</a></p><p>I will continue to use this service in this publication as well.</p><h2>Locating the Customer</h2>
+    <p>The Spring Boot User API was enhanced to return Marqeta user data for a given customer, Doing so utilized the user token as the unique key in the URI. Using the <a href="https://twitter.com/randykern?ref=hackernoon.com" target="_blank" rel="noopener noreferrer ugc">Randy Kern</a> user token (from my prior publication), we can send the following cURL request:</p>
+    <pre><code class="language-javascript">curl --location -X GET &#x27;localhost:9999/users/1017b62c-6b61-4fcd-b663-5c81feab6524&#x27;
+    </code></pre>
+    <p>The request returns the following response payload:</p><pre><code class="language-javascript">{
+    &quot;token&quot;: &quot;7193b62c-6b61-4fcd-b663-5c81feab6524&quot;,
+    &quot;createdTime&quot;: 1628946073000,
+    &quot;lastModifiedTime&quot;: 1628946074000,
+    &quot;metadata&quot;: {},
+    &quot;active&quot;: true,
+    &quot;firstName&quot;: &quot;Randy&quot;,
+    &quot;lastName&quot;: &quot;Kern&quot;,
+    &quot;usersParentAccount&quot;: false,
+    &quot;corporateCardHolder&quot;: false,
+    &quot;accountHolderGroupToken&quot;: &quot;DEFAULT_AHG&quot;,
+    &quot;status&quot;: &quot;ACTIVE&quot;
+    }
+    </code></pre>
+    <h3>Locating the Rewards Card</h3>
+    <p>The Vester &amp; Son’s e-commerce site would automatically establish a new Vester &amp; Son’s rewards card once the customer made $100 in purchases. To simulate this action, we send the following cURL request to the Marqeta API:</p>
+    <pre><code class="language-javascript">curl --location --request POST &#x27;https://sandbox-api.marqeta.com/v3/fundingsources/paymentcard&#x27; \
+    --header &#x27;accept: application/json&#x27; \
+    --header &#x27;Content-Type: application/json&#x27; \
+    --header &#x27;Authorization: Basic APPLICATION_TOKEN_GOES_HERE:ADMIN_ACCESS_TOKEN_GOES_HERE’ \
+    --data-raw &#x27;{&quot;postal_code&quot;:&quot;46077&quot;,&quot;account_number&quot;:&quot;6559906559906557&quot;,&quot;exp_date&quot;:&quot;1225&quot;,&quot;cvv_number&quot;:&quot;123&quot;,&quot;user_token&quot;:&quot;1017b62c-6b61-4fcd-b663-5c81feab6524&quot;,&quot;is_default_account&quot;:true}&#x27;
+    </code></pre>
+    <p>The response payload includes the newly created Discover card information for the Randy Kern customer:</p><pre><code class="language-javascript">{
+    &quot;created_time&quot;: &quot;2021-12-28T11:54:08Z&quot;,
+    &quot;last_modified_time&quot;: &quot;2021-12-28T11:54:08Z&quot;,
+    &quot;type&quot;: &quot;paymentcard&quot;,
+    &quot;token&quot;: &quot;2ee44d0b-5d00-4744-af2d-8ab9c8c606b8&quot;,
+    &quot;account_suffix&quot;: &quot;6557&quot;,
+    &quot;account_type&quot;: &quot;DISCOVER&quot;,
+    &quot;active&quot;: true,
+    &quot;is_default_account&quot;: true,
+    &quot;exp_date&quot;: &quot;1225&quot;,
+    &quot;user_token&quot;: &quot;1017b62c-6b61-4fcd-b663-5c81feab6524&quot;
+    }
+    </code></pre>
+    <p>Please note: the expiration date for the card may have to align with the card provider’s standards (it cannot be endless). In these cases, the Vester &amp; Son’s rewards card program would have the necessary business logic in place to route a new card to the customer when the expiration date nears.</p><p>Below is an example of what the Vester &amp; Son’s rewards card for Randy Kern might look like:</p><p><div style="width:0;height:0;position:relative"><div class="fullscreen"><div style="display:block;overflow:hidden;position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;margin:0"><img alt="image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" data-nimg="fill" style="position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;padding:0;border:none;margin:auto;display:block;width:0;height:0;min-width:100%;max-width:100%;min-height:100%;max-height:100%;object-fit:contain"/><noscript><img alt="image" sizes="100vw" srcSet="/_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=640&amp;q=75 640w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=750&amp;q=75 750w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=828&amp;q=75 828w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=1080&amp;q=75 1080w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=1200&amp;q=75 1200w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=1920&amp;q=75 1920w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=2048&amp;q=75 2048w, /_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=3840&amp;q=75 3840w" src="/_next/image?url=https%3A%2F%2Fcdn.hackernoon.com%2Fimages%2FcINIFbqqBHP6eJ0PSVZp9TroFeI3-ua23cew.png&amp;w=3840&amp;q=75" decoding="async" data-nimg="fill" style="position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;padding:0;border:none;margin:auto;display:block;width:0;height:0;min-width:100%;max-width:100%;min-height:100%;max-height:100%;object-fit:contain" loading="lazy"/></noscript></div></div></div></p><p>With the user token identified, the Spring Boot service can easily locate the Vester &amp; Son’s rewards card payment cards for the Randy Kern user via the following cURL command:</p>
+    <pre><code class="language-javascript">curl --location --request GET &#x27;localhost:9999/paymentcards/user/7193b62c-6b61-4fcd-b663-5c81feab6524&#x27;
+    </code></pre>
+    <p>The following response includes all the payment cards associated with the Randy Kern customer:</p><pre><code class="language-javascript">[
+    {
+    &quot;token&quot;: &quot;2ee44d0b-5d00-4744-af2d-8ab9c8c606b8&quot;,
+    &quot;createdTime&quot;: 1640692448000,
+    &quot;lastModifiedTime&quot;: 1640692448000,
+    &quot;type&quot;: &quot;paymentcard&quot;,
+    &quot;active&quot;: true,
+    &quot;userToken&quot;: &quot;7193b62c-6b61-4fcd-b663-5c81feab6524&quot;,
+    &quot;accountSuffix&quot;: &quot;6557&quot;,
+    &quot;accountType&quot;: &quot;DISCOVER&quot;,
+    &quot;expDate&quot;: &quot;1225&quot;,
+    &quot;defaultAccount&quot;: true
+    }
+    ]
+    </code></pre>
+    <p>Using the payment card token, we sent the following cURL request to retrieve a single payment card:</p><pre><code class="language-javascript">curl --location --request GET &#x27;localhost:9999/paymentcards/2ee44d0b-5d00-4744-af2d-8ab9c8c606b8&#x27;
+    </code></pre>
+    <p>This returns a payload limited to the payment card token provided:</p><pre><code class="language-javascript">{
+    &quot;token&quot;: &quot;2ee44d0b-5d00-4744-af2d-8ab9c8c606b8&quot;,
+    &quot;createdTime&quot;: 1640692448000,
+    &quot;lastModifiedTime&quot;: 1640692448000,
+    &quot;type&quot;: &quot;paymentcard&quot;,
+    &quot;active&quot;: true,
+    &quot;userToken&quot;: &quot;7193b62c-6b61-4fcd-b663-5c81feab6524&quot;,
+    &quot;accountSuffix&quot;: &quot;6557&quot;,
+    &quot;accountType&quot;: &quot;DISCOVER&quot;,
+    &quot;expDate&quot;: &quot;1225&quot;,
+    &quot;defaultAccount&quot;: true
+    }
+    </code></pre>
+    <p>The Vester &amp; Son’s e-commerce site would store the user token and payment card token for each customer enrolled in the Vester &amp; Son’s rewards card program. This will make it easy to cross-reference a given customer for a given rewards card.</p><p>As the customer earns more rewards, the program adds to the funds available for spending on the customer&#x27;s reward card. Adding funds is as simple as making an API call. From there, the customer can spend their Vester &amp; Son’s rewards anywhere that Discover is accepted.</p><h2>Conclusion</h2>
+    <p>Starting in 2021, I have been trying to live the following mission statement, which I feel can apply to any IT professional:</p>
+    <blockquote>
+    <p>“Focus your time on delivering features/functionality which extends the value of your intellectual property. Leverage frameworks, products, and services for everything else.”</p>
+    <p>- J. Vester</p></blockquote>
+    </body>`);
   }
 
   useEffect(() => {
@@ -105,7 +196,9 @@ export default function Task() {
                   <p>{task.text}</p>
                 } */}
 
-                <div dangerouslySetInnerHTML={{__html: sanitizeHtml(html) }} />
+                <div className="htmlContent">
+                  <div dangerouslySetInnerHTML={{__html: sanitizeHtml(html) }} />
+                </div>
 
                 <Card backgroundColor="dark" className="mt-5">
                   <Card.Content>
