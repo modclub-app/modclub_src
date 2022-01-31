@@ -69,8 +69,9 @@ export default function NewProfile() {
       setMessage({ success: true, value: "Sign Up Successfull!" });
       setTimeout(() => {
         setMessage(null);
-        history.push("/app");
+        history.push("/new-poh-profile");
       }, 2000);
+      
     } catch (e) {
       let errAr = regEx.exec(e.message);  
       setMessage({ success: false, value: errAr[1] });
