@@ -277,6 +277,17 @@ module PohModule {
             };
         };
 
+        public func changeChallengePackageStatus(packageId: Text, status: PohTypes.PohChallengeStatus) : () {
+            switch(state.pohChallengePackages.get(packageId)) {
+                case(null)();
+                case(?package) {
+                    for(id in package.challengeIds.vals()) {
+                        changeChallengeTaskStatus(id, package.userId, status);
+                    };
+                };
+            };
+        };
+
         // Step 6 MODCLUB mods verify that user data and approve the user. The 
         // dApp is then notified that the user has verified their POH.
         public func changeChallengeTaskStatus(challengeId: Text, userId: Principal, status: PohTypes.PohChallengeStatus) {

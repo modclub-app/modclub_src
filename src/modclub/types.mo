@@ -113,7 +113,7 @@ module {
     image: Image;
   };
 
-  public type Image = {    
+  public type Image = {   
     data: [Nat8];
     imageType: Text;
   };
