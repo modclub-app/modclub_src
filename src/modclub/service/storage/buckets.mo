@@ -45,8 +45,11 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
   let limit = 20_000_000_000_000;
 
   for((modId, mId) in moderatorsId.vals()) {
+    Debug.print("Add moderator to new Bucket with modID " # Principal.toText(modId) # " mid: " # Principal.toText(mId));
     state.moderators.put(modId, modId);
   };
+  Debug.print("FINISHED ADDING MODERATORS TO BUCKET");
+  
 
   public func getSize(): async Nat {
     Debug.print("canister balance: " # Nat.toText(Cycles.balance()));
@@ -170,6 +173,8 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
   };
 
   public query({caller}) func http_request(req: HttpRequest) : async HttpResponse {
+    Debug.print("http_request: " # debug_show(req));
+    Debug.print("http_request Caller: " # Principal.toText(caller));
     var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
     switch(state.moderators.get(caller)) {
       case(null) {

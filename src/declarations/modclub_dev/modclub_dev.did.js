@@ -133,13 +133,21 @@ export const idlFactory = ({ IDL }) => {
     'aboutUser' : IDL.Opt(IDL.Text),
     'wordList' : IDL.Opt(IDL.Vec(IDL.Text)),
   });
+  const PohTaskDataWrapperPlus = IDL.Record({
+    'minVotes' : IDL.Int,
+    'votes' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'updatedAt' : IDL.Int,
+    'pohTaskData' : IDL.Vec(PohTaskData),
+    'packageId' : IDL.Text,
+  });
   const PohError = IDL.Variant({
     'invalidPackageId' : IDL.Null,
     'challengeNotPendingForSubmission' : IDL.Null,
     'invalidToken' : IDL.Null,
   });
   const Result_1 = IDL.Variant({
-    'ok' : IDL.Vec(PohTaskData),
+    'ok' : PohTaskDataWrapperPlus,
     'err' : PohError,
   });
   const PohTaskPlus = IDL.Record({
@@ -277,7 +285,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getPohTaskData' : IDL.Func([IDL.Text], [Result_1], []),
-    'getPohTasks' : IDL.Func([ContentStatus], [IDL.Vec(PohTaskPlus)], []),
+    'getPohTasks' : IDL.Func(
+        [ContentStatus],
+        [IDL.Vec(PohTaskPlus)],
+        ['query'],
+      ),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),

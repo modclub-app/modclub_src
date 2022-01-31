@@ -213,6 +213,14 @@ export interface PohTaskData {
   'aboutUser' : [] | [string],
   'wordList' : [] | [Array<string>],
 }
+export interface PohTaskDataWrapperPlus {
+  'minVotes' : bigint,
+  'votes' : bigint,
+  'createdAt' : bigint,
+  'updatedAt' : bigint,
+  'pohTaskData' : Array<PohTaskData>,
+  'packageId' : string,
+}
 export interface PohTaskPlus {
   'status' : ContentStatus,
   'reward' : number,
@@ -265,7 +273,7 @@ export interface ProviderPlus {
 export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
 export type Result = { 'ok' : Array<PohChallengesAttempt> } |
   { 'err' : PohError };
-export type Result_1 = { 'ok' : Array<PohTaskData> } |
+export type Result_1 = { 'ok' : PohTaskDataWrapperPlus } |
   { 'err' : PohError };
 export type Role = { 'admin' : null } |
   { 'moderator' : null } |

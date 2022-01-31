@@ -1257,6 +1257,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     let moderatorIds = Buffer.Buffer<Principal>(1);
     for((id, profile) in state.profiles.entries()) {
       if(profile.role == #moderator) {
+        Debug.print("Moderator: " # Principal.toText(id));
         moderatorIds.add(id);
       };
     };
