@@ -1,17 +1,23 @@
-import modclubImg from "../../../assets/logo.png";
+import * as React from 'react'
 import { HashLink } from "react-router-hash-link";
+import { Footer, Container, Columns, Image, Heading, Level } from "react-bulma-components";
+import modclubImg from "../../../assets/logo.png";
 
-export default function Footer() {
+export default function Footer_() {
   return (
-    <footer className="section footer has-background-black pb-6">
-      <div className="container content">
-
-        <div className="columns">
-          <div className="column is-one-fifth">
-            <img src={modclubImg} style={{ width: 60, height: 60 }} />
-          </div>
-          <div className="column is-one-fifth">
-            <h4 className="subtitle has-text-white">Menu</h4>
+    <Footer backgroundColor="black">
+      <Container marginless>
+        <Columns>
+          <Columns.Column size="one-fifth">
+            <Image
+              src={modclubImg}
+              size={64}
+            />
+          </Columns.Column>
+          <Columns.Column size="one-fifth">
+            <Heading subtitle>
+              Menu
+            </Heading>
             <HashLink to="/#developers" className="is-block has-text-white">
               Developers
             </HashLink>
@@ -21,22 +27,28 @@ export default function Footer() {
             <HashLink to="/#roadmap" className="is-block has-text-white">
               Roadmap
             </HashLink>
-          </div>
-          <div className="column is-one-fifth">
-            <h4 className="subtitle has-text-white">Company</h4>
-            <a href="#contact" className="is-block has-text-white">
+          </Columns.Column>
+          <Columns.Column size="one-fifth">
+            <Heading subtitle>
+              Company
+            </Heading>
+            <a href="mailto:team@modclub.app" className="is-block has-text-white">
               Contact
             </a>
-          </div>
-        </div>
+          </Columns.Column>
+        </Columns>
 
-        <hr style={{ marginTop: 60, marginBottom: 60 }} />
-        
-        <div className="level">
-          <p className="has-text-silver">&copy; 2021 MODCLUB. All Rights Reserved</p>
-          <a href="#main" className="has-text-silver">Go to the top</a>
-        </div>
-      </div>
-    </footer>
+        <hr />
+
+        <Level>
+          <p className="has-text-silver">
+            &copy; 2021 MODCLUB. All Rights Reserved
+          </p>
+          <a href="#main" className="has-text-silver">
+            Go to the top
+          </a>
+        </Level>
+      </Container>
+    </Footer>
   );
 }

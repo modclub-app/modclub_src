@@ -6,7 +6,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 // Replace this value with the ID of your local Internet Identity canister
 const LOCAL_II_CANISTER =
-  "http://rno2w-sqaaa-aaaaa-aaacq-cai.localhost:8000/#authorize";
+  "http://rwlgt-iiaaa-aaaaa-aaaaa-cai.localhost:8000/#authorize";
 
 let localCanisters, prodCanisters, canisters;
 
@@ -64,6 +64,7 @@ module.exports = {
       stream: require.resolve("stream-browserify/"),
       util: require.resolve("util/"),
     },
+    symlinks: false,
   },
   output: {
     filename: "index.js",
@@ -71,9 +72,17 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.(js|ts)x?$/, loader: "ts-loader" },
+      {
+        test: /\.(js|ts)x?$/,
+        loader: "esbuild-loader",
+        options: {
+          loader: "tsx", // Or 'ts' if you don't need tsx
+          target: "ES2020",
+        },
+      },
       {
         test: /\.(sa|sc|c)ss$/,
+        include: path.resolve(__dirname, "src/modclub_assets/src"),
         use: [
           // Creates `style` nodes from JS strings
           "style-loader",
@@ -86,6 +95,7 @@ module.exports = {
       },
       {
         test: /\.(png|jpe?g|gif|ico|svg|woff|woff2|eot|ttf)$/i,
+        include: path.resolve(__dirname, "src/modclub_assets/assets"),
         use: [
           {
             loader: "file-loader",
@@ -94,6 +104,7 @@ module.exports = {
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        include: path.resolve(__dirname, "src/modclub_assets/src"),
         type: "asset/resource",
       },
     ],
@@ -114,8 +125,10 @@ module.exports = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       MODCLUB_CANISTER_ID: canisters["modclub"],
+      MODCLUB_DEV_CANISTER_ID: canisters["modclub_dev"],
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
+      DEV_ENV: process.env.DEV_ENV || "production",
     }),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],
@@ -124,6 +137,7 @@ module.exports = {
   ],
   // proxy /api to port 8000 during development
   devServer: {
+    port: "9000",
     proxy: {
       "/api": {
         target: "http://localhost:8000",

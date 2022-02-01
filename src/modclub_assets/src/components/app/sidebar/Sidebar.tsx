@@ -1,92 +1,126 @@
+import * as React from 'react'
 import { Link } from "react-router-dom";
-import "./Sidebar.scss";
+import {
+  Columns,
+  Menu,
+  Image,
+  Heading,
+  Icon,
+  Button,
+  Modal
+} from "react-bulma-components";
 import LogoImg from '../../../../assets/logo.png';
-import { SidebarUser } from "./SidebarUser";
+import SidebarUser from "./SidebarUser";
 import { useAuth } from '../../../utils/auth';
-import { SignIn } from '../../Auth/SignIn';
+import { SignIn } from '../../auth/SignIn';
 import { useHistory } from 'react-router-dom';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import FormModal from "../modals/FormModal";
+
+const InviteModerator = ({ toggle }) => {
+  const link = 'Coming Soon';//`${window.location.origin}/referral=${Date.now()}`
+
+  return (
+    <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
+      <Modal.Card backgroundColor="circles" className="is-small">
+        <Modal.Card.Body>
+
+          <Heading subtitle>
+            Invite a Moderator
+          </Heading>
+          <p>
+            Invite moderators to earn MOD tokens. For every invited moderator that registers with MODCLUB, you will earn <span className="has-text-weight-bold">5 mod tokens</span>
+          </p>
+
+          <div className="field mt-6">
+            <label className="label has-text-white">Referral Link:</label>
+            <div className="control has-icons-right">
+              <input className="input"
+                placeholder={link}
+                style={{ zIndex: -1 }}
+              />
+              <Icon align="right" color="white" className="is-clickable" onClick={() => {navigator.clipboard.writeText(link)}}>
+                <span className="material-icons">file_copy</span>
+              </Icon>
+            </div>
+          </div>
+
+        </Modal.Card.Body>
+        <Modal.Card.Footer justifyContent="flex-end" className="pt-0">
+          <Button.Group>
+            <Button color="primary" onClick={toggle}>
+              Close
+            </Button>
+          </Button.Group>
+        </Modal.Card.Footer>
+      </Modal.Card>
+    </Modal>
+  )
+}
 
 export default function Sidebar() {
   const history = useHistory();
   const { isAuthReady, user, isAuthenticated, requiresSignUp } = useAuth();
-  useEffect(
-    () => {
-      if (!isAuthReady) return;
-      if (!isAuthenticated) return;
-      if(!user && requiresSignUp) {
-        history.push('/signup');
+
+  const [showModal, setShowModal] = useState(false);
+  const toggleModal = () => setShowModal(!showModal);
+
+  useEffect(() => {
+      if(isAuthReady && isAuthenticated && !user && requiresSignUp) {
+        history.push("/signup");
       }
-    }
-    , [isAuthReady, isAuthenticated, user]
+    }, [isAuthReady, isAuthenticated, user, requiresSignUp]
   )
   return (
-    <div className="column is-one-fifth has-background-black">
-      <aside className="p-3">
+    <Columns.Column size="one-fifth" backgroundColor="black" style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}>
+      <Menu className="p-3">
         <div className="is-flex is-align-items-center mt-3">
-          <img src={LogoImg} style={{ height: 40, width: 40}} />
-          <h1 className="title is-size-3 ml-2" style={{ fontFamily: 'sans-serif' }}>MODCLUB</h1>
+          <Image src={LogoImg} size={32} />
+          <Heading className="ml-2" style={{ fontFamily: "sans-serif", whiteSpace: "nowrap" }}>
+            MODCLUB
+          </Heading>
         </div>
 
         <hr />
 
-        {isAuthenticated && user ? <SidebarUser />: <SignIn /> }
+        {isAuthenticated && user ? <SidebarUser /> : <SignIn />}
 
-        <ul className="menu-list">
-          <li>
-            <Link to="/app">
-              <span className="icon">
-                <span className="material-icons">dehaze</span>
-              </span>
-              <span>Dashboard</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/moderators">
-              <span className="icon">
-                <span className="material-icons">assignment_ind</span>
-              </span>
-              <span>Moderators</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/tasks">
-              <span className="icon">
-                <span className="material-icons">playlist_add_check</span>
-              </span>
-              <span>Tasks</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/verification">
-              <span className="icon">
-                <span className="material-icons">check_circle_outline</span>
-              </span>
-              <span>Human Verification</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/support">
-              <span className="icon">
-                <span className="material-icons">help_outline</span>
-              </span>
-              <span>Support</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/app/admin">
-              <span className="icon">
-                <span className="material-icons">admin</span>
-              </span>
-              <span>Admin</span>
-            </Link>
-          </li>
-        </ul>
+        <Menu.List>
+          <Link to="/app">
+            <Icon>
+              <span className="material-icons">playlist_add_check</span>
+            </Icon>
+            Tasks
+          </Link>
+          <Link to="/app/poh">
+            <Icon>
+              <span className="material-icons">check_circle_outline</span>
+            </Icon>
+            Human Verification
+          </Link>
+          <Link to="/app/leaderboard">
+            <Icon>
+              <span className="material-icons">stars</span>
+            </Icon>
+            Leaderboard
+          </Link>
+          <Link to="/app/admin">
+            <Icon>
+              <span className="material-icons">assignment_ind</span>
+            </Icon>
+            Admin
+          </Link>
+        </Menu.List>
 
-        <button className="button is-large is-primary is-fullwidth mt-6">
+        <Button color="primary" fullwidth size="large" className="mt-6" onClick={toggleModal}>
           Invite a Moderator
-        </button>
-      </aside>
-    </div>
+        </Button>
+
+      </Menu>
+
+      {showModal && (
+        <InviteModerator toggle={toggleModal} />
+      )}
+    </Columns.Column>
   );
 }

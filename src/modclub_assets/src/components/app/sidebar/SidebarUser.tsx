@@ -1,59 +1,86 @@
+import * as React from 'react'
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Dropdown, Heading, Media, Image, Icon } from "react-bulma-components";
 import { useAuth } from "../../../utils/auth"
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import placeholder from "../../../../assets/user_placeholder.png";
 
-export function SidebarUser() {
+const DropdownLabel = ({ pic, user, toggle }) => {
+  const snippet = (string, truncate) => {
+    return string.length > truncate ? string.substring(0, truncate - 3) + "..." : string;
+  }
+
+  return (
+    <div className="is-flex" onClick={toggle}>
+      <Media style={{
+        display: "flex",
+        alignItems: "center",
+        background: "linear-gradient(to left, #3d52fa, #c91988",
+        padding: 2,
+        borderRadius: "50%",
+      }}>
+        <Image
+          src={pic}
+          size={48}
+          rounded
+          style={{ overflow: "hidden", borderRadius: "50%" }}
+        />
+      </Media>
+      <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center has-text-left">
+        <Heading size={6}  marginless>
+          {snippet(user.userName, 15)}
+        </Heading>
+        <p className="has-text-white is-size-7">
+          {snippet(user.email, 18)}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default function SidebarUser() {
   const { user, logOut, identity } = useAuth();
   const imgData = unwrap(user.pic);
   const pic = imgData ? fileToImgSrc(imgData.data, imgData.imageType) : placeholder;
+
+  const [showDropdown, setShowDropdown] = useState(false);
+  const toggle = () => {
+    setShowDropdown(!showDropdown);
+  }
 
   const handleLogOut = async () => {
     await logOut();
   };
 
   return (
-    <div className="dropdown is-hoverable">
-      <div className="dropdown-trigger level is-justify-content-flex-start is-clickable">
-        <div className="user-avatar">
-          <img src={pic} alt="User avatar"/>
-        </div>
-        <div className="ml-3">
-          <label className="label has-text-white mb-0 is-flex is-align-items-flex-end is-clickable">
-            <span>{user.userName}</span>
-            <span className="icon has-text-white" style={{ marginLeft: 'auto' }}>
-              <span className="material-icons">expand_more</span>
-            </span>
-          </label>
-          <p className="has-text-white is-size-7">
-            {user.email}
-          </p>
-        </div>
-      </div>
-      <div className="dropdown-menu" id="dropdown-menu" role="menu">
-        <div className="dropdown-content">
-
-          <Link to="/app/activity" className="dropdown-item">
-            <span className="icon is-small mr-2">
-              <span className="material-icons">stars</span>
-            </span>
-            <span>Activity</span>
-          </Link>
-          <Link to="/app/settings" className="dropdown-item">
-            <span className="icon is-small mr-2">
-              <span className="material-icons">logout</span>
-            </span>
-            <span>Settings</span>
-          </Link>
-          <hr className="dropdown-divider" />
-          <a href="#" className="dropdown-item" onClick={handleLogOut}>
-            <span className="icon is-small mr-2">
-              <span className="material-icons">logout</span>
-            </span>
-            <span>Logout</span>
-          </a>
-        </div>
-      </div>
-    </div>
+    <Dropdown
+      className="mb-5"
+      color="ghost"
+      icon={
+        <Icon color="white">
+          <span className="material-icons">expand_more</span>
+        </Icon>
+      }
+      label={<DropdownLabel
+        pic={pic}
+        user={user}
+        toggle={toggle}
+      />}
+    >
+      <Link to="/app/activity" className="dropdown-item">
+        <Icon size="small" className="mr-2">
+          <span className="material-icons">assignment_ind</span>
+        </Icon>
+        Profile
+      </Link>
+      <Dropdown.Divider />
+      <Dropdown.Item value="#" renderAs="a" onMouseDown={handleLogOut}>
+        <Icon size="small" className="mr-2">
+          <span className="material-icons">logout</span>
+        </Icon>
+        Logout
+      </Dropdown.Item>
+    </Dropdown>
   );
-}
+};

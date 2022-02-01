@@ -1,3 +1,4 @@
+import * as React from 'react'
 import {
   isAirdropRegistered,
   airdropRegister,
@@ -5,7 +6,7 @@ import {
 } from "../../utils/api";
 import { useAuth } from "../../utils/auth";
 import { useEffect, useRef, useState } from "react";
-import { SignIn } from "../Auth/SignIn";
+import { SignIn } from "../auth/SignIn";
 import { Principal } from "@dfinity/candid/lib/cjs/idl";
 import { AirdropUser } from "../../utils/types";
 import "./landing/Landing.scss";
@@ -61,7 +62,7 @@ export default function Airdrop() {
   };
 
   const spinner = (
-    <div className="loader is-loading is-large mt-10" style={{ width: 80,height:80}}></div>
+    <div className="loader is-loading is-large mt-10" style={{ width: 80, height:80 }}></div>
   );
   return (
     <>

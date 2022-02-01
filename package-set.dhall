@@ -5,7 +5,27 @@ let Package =
 let
   -- This is where you can add your own packages to the package-set
   additions =
-    [] : List Package
+    [{ name = "uuid"
+      , repo = "https://github.com/aviate-labs/uuid.mo"
+      , version = "v0.2.0"
+      , dependencies = [ "base" ]
+      },
+      { name = "array"
+      , repo = "https://github.com/aviate-labs/array.mo"
+      , version = "v0.1.1"
+      , dependencies = [ "base" ]
+      },
+      { name = "encoding"
+      , repo = "https://github.com/aviate-labs/encoding.mo"
+      , version = "v0.3.1"
+      , dependencies = [ "array", "base" ]
+      },
+      { name = "crypto"
+      , repo = "https://github.com/aviate-labs/crypto.mo"
+      , version = "v0.1.0"
+      , dependencies = ["base"]
+      },
+  ] : List Package
 
 let
   {- This is where you can override existing packages in the package-set

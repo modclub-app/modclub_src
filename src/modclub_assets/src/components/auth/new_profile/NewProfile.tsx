@@ -1,11 +1,13 @@
-import "./NewProfile.scss";
+import * as React from 'react'
 import { Form, Field } from "react-final-form";
-import {  registerModerator } from "../../../utils/api";
+import { Notification, Columns, Card, Heading, Media, Image, Button, Icon } from "react-bulma-components";
+import { registerModerator } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { useHistory } from "react-router-dom";
 import { useRef, useState } from "react";
 import placeholder from "../../../../assets/user_placeholder.png";
-import { Image, ImageData } from "../../../utils/types";
+import { ImageData } from "../../../utils/types";
+import { validateEmail } from "../../../utils/util";
 
 const MAX_IMAGE_SIZE = 500000; // 500kb
 
@@ -14,15 +16,20 @@ export default function NewProfile() {
   const { setUser } = useAuth();
   const [pic, setPic] = useState<string>(null);
   const [picType, setPicType] = useState<string>(null);
-  const [ submitting, setSubmitting ] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const inputFile = useRef(null);
-
   const [message, setMessage] = useState(null);
 
   const handleFileChange = (e) => {
     const { files } = e.target;
     if (files.length > 0) {
       const f = files[0];
+      if (f.size > 800000) {
+        setMessage({ success: false, value: "Maximum file size is 800KB" });
+        setTimeout(() => setMessage(null), 2000);
+        return
+      }
+
       const reader = new FileReader();
       reader.onload = function (evt) {
         console.log(evt.target.result);
@@ -39,45 +46,56 @@ export default function NewProfile() {
 
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
-    setSubmitting(true);
 
-    setMessage({ success: true, value: "ERROR" });
+    const validEmail = validateEmail(email)
+    if (!validEmail) {
+      setMessage({ success: false, value: "Email is badly formatted" });
+      setTimeout(() => setMessage(null), 2000);
+      return
+    }
 
     const imageData: ImageData = pic ? {
       src: pic,
       type: picType,
     } : undefined;
-
-    const user = await registerModerator(username, email, imageData);
-    console.log("user", user);
-    // TODO not returning the error here!
-
-    if (user) {
+    
+    const regEx = /Reject text: (.*)/g;
+    try {
+      setSubmitting(true);
+      const user = await registerModerator(username, email, imageData);
+      console.log("user", user);
+      // TODO not returning the error here!
       setUser(user);
-      history.push("/app");
-    } else {
+      setMessage({ success: true, value: "Sign Up Successfull!" });
+      setTimeout(() => {
+        setMessage(null);
+        history.push("/app");
+      }, 2000);
+    } catch (e) {
+      let errAr = regEx.exec(e.message);  
+      setMessage({ success: false, value: errAr[1] });
       setSubmitting(false);
-      console.error("Error creating user");
     }
+
+    setTimeout(() => setMessage(null), 2000);
   };
 
   return (
   <>
     {message &&
-      <div className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"}`}>
+      <Notification color={message.success ? "success" : "danger"} className="has-text-centered">
         {message.value}
-      </div>
+      </Notification>
     }
-    <div
-      className="columns is-centered is-vcentered"
-      style={{ height: "100%" }}
-    >
-      <div className="column is-half">
-        <div className="card">
-          <div className="card-content has-text-centered">
-            <h1 className="title">
+
+    <Columns centered vCentered className="is-fullheight">
+      <Columns.Column size={6}>
+        <Card>
+          <Card.Content>
+            <Heading textAlign="center">
               Create your profile
-            </h1>
+            </Heading>
+
             <input
               style={{ display: "none" }}
               ref={inputFile}
@@ -85,61 +103,90 @@ export default function NewProfile() {
               accept="image/*"
               type="file"
             />
-      
-            <div className="profilePicture" onClick={() =>  inputFile.current.click()}>
-              <img src={pic ? pic : placeholder} alt="profile" />
-            </div>
 
-            <p className="has-text-centered	mt-2 mb-5">
-              Upload Profile Picture
-            </p>
+            <Media
+              justifyContent="center"
+              onClick={() => inputFile.current.click()}
+            >
+              <Image
+                src={pic ? pic : placeholder}
+                alt="profile"
+                size={128}
+                className="is-clickable is-hover-reduced"
+                style={{ overflow: "hidden", borderRadius: "50%" }}
+                rounded
+              />
+              {!pic &&
+                <div style={{
+                  position: "absolute",
+                  backgroundColor: "rgba(0, 0, 0, .5)",
+                  width: 128,
+                  height: 128,
+                  borderRadius: "50%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  cursor: "pointer"
+                }}>
+                  <Icon color="white">
+                    <span className="material-icons">backup</span>
+                  </Icon>
+                  <p>Click to add profile photo</p>
+                </div>
+              }
+            </Media>
 
-            <Form
-              onSubmit={onFormSubmit}
-              render={({ handleSubmit, pristine }) => (
-                <form onSubmit={handleSubmit}>
-                  <div className="field">
-                    <div className="control has-icons-left">
-                      <Field
-                        name="username"
-                        component="input"
-                        type="text"
-                        className="input is-medium"
-                        placeholder="Username"
-                      />
-                      <span className="icon is-medium is-left">
-                        <span className="material-icons">person</span>
-                      </span>
-                    </div>
+            <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
+              <form onSubmit={handleSubmit}>
+                <div className="field">
+                  <div className="control has-icons-left">
+                    <Field
+                      name="username"
+                      component="input"
+                      type="text"
+                      className="input is-medium"
+                      placeholder="Username"
+                    />
+                    <Icon align="left">
+                      <span className="material-icons">person</span>
+                    </Icon>
                   </div>
-                  <div className="field">
-                    <div className="control has-icons-left">
-                      <Field
-                        name="email"
-                        component="input"
-                        type="text"
-                        placeholder="Email"
-                        className="input is-medium"
-                      />
-                      <span className="icon is-medium is-left">
-                        <span className="material-icons">email</span>
-                      </span>
-                    </div>
+                </div>
+                <div className="field">
+                  <div className="control has-icons-left">
+                    <Field
+                      name="email"
+                      component="input"
+                      type="text"
+                      placeholder="Email"
+                      className="input is-medium"
+                    />
+                    <Icon align="left">
+                      <span className="material-icons">email</span>
+                    </Icon>
                   </div>
+                </div>
 
-                  <button
-                    type="submit"
-                    disabled={pristine || submitting}
-                    className={"button is-large is-primary is-fullwidth mt-6 " + (submitting ? "is-loading" : "")}
-                    value="Submit"
-                  >Submit</button>
-                </form>
+                <Button
+                  type="submit"
+                  disabled={!values.username || !values.email || submitting}
+                  size="large"
+                  color="primary"
+                  fullwidth
+                  value="submit"
+                  className={submitting ? "is-loading" : ""}
+                >
+                  Submit
+                </Button>
+              </form>
               )}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+          />
+          </Card.Content>
+        </Card>
+      </Columns.Column>
+    </Columns>
   </>
   );
 }

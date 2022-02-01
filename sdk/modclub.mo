@@ -40,17 +40,41 @@ module {
   public type ProviderTextResult = Result.Result<Text, ProviderError>;
   public type SubscribeMessage = { callback: shared ContentResult -> (); };
 
+  public type PohVerificationResponse = {
+    requestId: Text;
+    providerUserId: Principal;
+    status : PohChallengeStatus;
+    // status at each challenge level
+    challenges: [ChallengeResponse];
+    providerId: Principal;
+    requestedOn: Int;
+  };
+
+  public type ChallengeResponse = {
+    challengeId: Text;
+    status : PohChallengeStatus;
+    completedOn : ?Int;
+  };
+
+  public type PohChallengeStatus = {#notSubmitted; #pending; #verified; #rejected; #expired;};
+
+  public type PohUniqueToken =  {
+    token: Text;
+  };
+
   // Have to hardcode principal for modclub, change it to production canister ID later
   public let ModClub =
-      actor "la3yy-gaaaa-aaaah-qaiuq-cai" : actor {      
-        registerProvider: (Text, Text, ?Image) -> async ProviderTextResult;
-        deregisterProvider: () -> async ProviderTextResult;
-        addRules: ([Text]) -> async ProviderResult;
-        removeRules: ([Text]) -> async ProviderResult;
-        updateSettings: (ProviderSettings) -> async ProviderResult;
-        submitText: (Text, Text, ?Text) -> async ProviderTextResult;
-        submitImage: (Text, [Nat8], Text, ?Text) -> async ProviderTextResult;
-        subscribe: (SubscribeMessage) -> async ProviderResult;
-        addProviderAdmin: (Text, Principal, ?Principal) -> async ProviderResult;
+      actor "MODCLUB public principal ID" : actor {      
+        registerProvider: (Text, Text, ?Image) -> async Text;
+        deregisterProvider: () -> async Text;
+        addRules: ([Text]) -> async ();
+        removeRules: ([Text]) -> async ();
+        updateSettings: (ProviderSettings) -> async ();
+        submitText: (Text, Text, ?Text) -> async Text;
+        submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
+        subscribe: (SubscribeMessage) -> async ();
+        // Proof of Humanity APIs
+        verifyForHumanity: (Principal) -> async PohVerificationResponse;
+        generateUniqueToken: (Principal) -> async PohUniqueToken;
       };
 };

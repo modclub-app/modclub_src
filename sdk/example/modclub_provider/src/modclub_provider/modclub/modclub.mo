@@ -28,9 +28,31 @@ module {
 
   public type SubscribeMessage = { callback: shared ContentResult -> (); };
 
+  public type PohVerificationResponse = {
+    requestId: Text;
+    providerUserId: Principal;
+    status : PohChallengeStatus;
+    // status at each challenge level
+    challenges: [ChallengeResponse];
+    providerId: Principal;
+    requestedOn: Int;
+  };
+
+  public type ChallengeResponse = {
+    challengeId: Text;
+    status : PohChallengeStatus;
+    completedOn : ?Int;
+  };
+
+  public type PohChallengeStatus = {#notSubmitted; #pending; #verified; #rejected; #expired;};
+
+  public type PohUniqueToken =  {
+    token: Text;
+  };
+
   // Have to hardcode principal for modclub, change it to production canister ID later
   public let ModClub =
-      actor "rrkah-fqaaa-aaaaa-aaaaq-cai" : actor {      
+      actor "MODCLUB public principal ID" : actor {      
         registerProvider: (Text, Text, ?Image) -> async Text;
         deregisterProvider: () -> async Text;
         addRules: ([Text]) -> async ();
@@ -39,5 +61,8 @@ module {
         submitText: (Text, Text, ?Text) -> async Text;
         submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
         subscribe: (SubscribeMessage) -> async ();
+        // Proof of Humanity APIs
+        verifyForHumanity: (Principal) -> async PohVerificationResponse;
+        generateUniqueToken: (Principal) -> async PohUniqueToken;
       };
 };

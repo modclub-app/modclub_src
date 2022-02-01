@@ -3,6 +3,8 @@ import Text "mo:base/Text";
 import Hash "mo:base/Hash";
 import Nat "mo:base/Nat";
 import Result "mo:base/Result";
+import Float "mo:base/Float";
+import HashMap "mo:base/HashMap";
 
 module {
   public type Timestamp = Int; // See mo:base/Time and Time.now()
@@ -45,6 +47,8 @@ module {
     #imageUrl;
     // Image Data
     #imageBlob;
+    // Poh Content Package
+    #pohPackage
   };
 
   public type Role = {
@@ -76,6 +80,7 @@ module {
     updatedAt: Timestamp;
     text: ?Text;
     image: ?Image;
+    hasVoted: ?Bool;
   };
 
   public type Content = {
@@ -109,7 +114,7 @@ module {
     image: Image;
   };
 
-  public type Image = {    
+  public type Image = {   
     data: [Nat8];
     imageType: Text;
   };
@@ -153,6 +158,20 @@ module {
     updatedAt: Timestamp;
   };
 
+  public type ModeratorLeaderboard = {
+    id: UserId;
+    userName: Text;
+    completedVoteCount: Int;
+    rewardsEarned: Int;
+    performance: Float;
+    lastVoted: ?Timestamp;
+  };
+
+  public type RewardsEarnedMap = {
+    rewardsEarned: Int;
+    userId: Principal;
+  };
+
   public type Vote = {
     id: VoteId;
     contentId: Text;
@@ -179,6 +198,7 @@ module {
   public type VoteCount = {
     approvedCount: Nat;
     rejectedCount: Nat;
+    hasVoted: Bool;
   };
 
   public type Activity = {
@@ -193,8 +213,13 @@ module {
     voteCount: Nat;
     minVotes: Nat;
     minStake: Nat;    
-    reward: Nat;
+    reward: Float;
     rewardRelease: Timestamp;
+  };
+
+  public type ActivityResult = {
+    activity: Activity;
+    voteCount: VoteCount;
   };
 
   public type AirdropUser = {
@@ -202,31 +227,36 @@ module {
     createdAt: Timestamp;
   };
 
-   public type Callback = shared () -> async ();
-    public func notify(callback : ?Callback) : async () {
-        switch(callback) {
-            case null   return;
-            case (? cb) {ignore cb()};
-        };
-    };
+  public type Callback = shared () -> async ();
+  public func notify(callback : ?Callback) : async () {
+      switch(callback) {
+          case null   return;
+          case (? cb) {ignore cb()};
+      };
+  };
 
-    public type StagedWrite = {
-        #Init : {
-            size     : Nat; 
-            callback : ?Callback};
-        #Chunk : {
-            chunk    : Blob; 
-            callback : ?Callback
-        };
-    };
+  public type StagedWrite = {
+      #Init : {
+          size     : Nat; 
+          callback : ?Callback};
+      #Chunk : {
+          chunk    : Blob; 
+          callback : ?Callback
+      };
+  };
 
-    public type Error = {
-        #Unauthorized;
-        #NotFound;
-        #InvalidRequest;
-        #AuthorizedPrincipalLimitReached : Nat;
-        #Immutable;
-    };
+  public type PohRulesViolated = {
+    challengeId: Text;
+    ruleId: Text;
+  };
+
+  public type Error = {
+      #Unauthorized;
+      #NotFound;
+      #InvalidRequest;
+      #AuthorizedPrincipalLimitReached : Nat;
+      #Immutable;
+  };
 
     public type ProviderError = {
         #Unauthorized;

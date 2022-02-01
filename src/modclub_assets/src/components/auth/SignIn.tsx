@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useEffect } from "react";
-import { useHistory } from "react-router-dom";
 import { useAuth } from "../../utils/auth";
+import { Button, Icon } from "react-bulma-components";
 import dfinitylogo from "../../../assets/dfinity.svg"
 
 /*
@@ -8,7 +8,7 @@ import dfinitylogo from "../../../assets/dfinity.svg"
  * Internet Identity Service.
  */
 export function SignIn(props: PropsWithChildren<{}>) {
-  const {logIn, isAuthenticated, user} = useAuth();
+  const { logIn, isAuthenticated, user } = useAuth();
   // If the auth provider has a user (which could be from local storage) and
   // the user is properly authenticated with the identity provider service then
   // send the user to their feed, as they are correctly signed in.
@@ -26,9 +26,11 @@ export function SignIn(props: PropsWithChildren<{}>) {
   };
 
   return (
-    <button onClick={handleLogin} id="sign-in"
-      className="button is-large extra  mt-4">
-        Login <img src={dfinitylogo} alt="dfinity logo"  style={{ width: "33px", marginRight: "-1em", marginLeft: "0.7em" }} />
-      </button>
+    <Button fullwidth color="gradient" className="is-outlined mb-4" onClick={handleLogin} >
+      <span className="mr-2">Login</span>
+      <Icon>
+        <img src={dfinitylogo} alt="dfinity logo" />
+      </Icon>
+    </Button>
   );
 }

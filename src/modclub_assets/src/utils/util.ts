@@ -1,42 +1,71 @@
 import { Optional } from "./api";
-import { ImageData, Profile } from "./types";
-import { formatDistanceStrict, isSameDay, format } from "date-fns";
+import { Profile } from "./types";
+import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
+import { submitChallengeData } from "./api";
 
-export async function convertImage(imageData: ImageData): Promise<number[]> {
-  return new Promise((resolve) => {
-    const image = new Image();
-    image.src = imageData.src;
-    image.onload = async () => {
-      resolve(imageToUint8Array(image, imageData.type));
-    };
-  });
+export function getFileExtension(type: string): any | null {
+  switch (type) {
+    case "image/jpeg":
+      return "jpeg";
+    case "image/gif":
+      return "gif";
+    case "image/jpg":
+      return "jpg";
+    case "image/png":
+      return "png";
+    case "image/svg":
+      return "svg";
+    default:
+      return null;
+  }
 }
 
-export async function imageToUint8Array(image, imageType): Promise<number[]> {
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  canvas.width = image.width;
-  canvas.height = image.height;
-  context.drawImage(image, 0, 0);
-  return toBlob(context.canvas, imageType);
+export function b64toBlob(b64Data: string, contentType = "", sliceSize = 512) {
+  const byteCharacters = atob(b64Data);
+  const byteArrays = [];
+
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize);
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+  const blob = new Blob(byteArrays, { type: contentType });
+  return blob;
 }
 
-function toBlob(
-  canvas: HTMLCanvasElement,
-  type: string = "image/png",
-  quality: number = 1
-): Promise<number[]> {
-  return new Promise((resolve) =>
-    canvas.toBlob(
-      (canvasBlob) => {
-        canvasBlob!.arrayBuffer().then((arrayBuffer) => {
-          resolve([...new Uint8Array(arrayBuffer)]);
-        });
-      },
-      type,
-      quality
-    )
+export async function processAndUploadChunk(
+  challengeId: string,
+  MAX_CHUNK_SIZE: number,
+  blob: Blob,
+  byteStart: number,
+  chunk: number,
+  fileSize: number,
+  fileExtension: string
+): Promise<any> {
+  const blobSlice = blob.slice(
+    byteStart,
+    Math.min(Number(fileSize), byteStart + MAX_CHUNK_SIZE),
+    blob.type
   );
+
+  const bsf = await blobSlice.arrayBuffer();
+
+  const res = await submitChallengeData({
+    challengeId: challengeId,
+    challengeDataBlob: [encodeArrayBuffer(bsf)],
+    userName: [],
+    email: [],
+    fullName: [],
+    aboutUser: [],
+    offset: BigInt(chunk),
+    numOfChunks: BigInt(Number(Math.ceil(fileSize / MAX_CHUNK_SIZE))),
+    mimeType: fileExtension,
+    dataSize: BigInt(fileSize),
+  });
+  console.log("res", res);
 }
 
 export function getUserFromStorage(
@@ -57,7 +86,6 @@ export function getUserFromStorage(
 }
 
 export function convertObj(obj: any): any {
-  console.log(obj);
   return Object.entries(obj).reduce((acc, [k, v]) => {
     if (typeof v === "object") {
       acc[k] = convertObj(v);
@@ -88,9 +116,42 @@ export function unwrap<T>(val: Optional<T>): T | null {
 export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
   Array.from(new Uint8Array(file));
 
-export function formatDate(date: bigint) {
-  const same = isSameDay(new Date(), new Date(Number(date)));
+export function formatDate(integer: bigint) {
+  const date = new Date(Number(integer));
+  if (!isValid(date)) return "invalid date";
+  const same = isSameDay(new Date(), date);
   return same
-    ? formatDistanceStrict(new Date(), new Date(Number(date))) + " ago"
-    : format(new Date(Number(date)), "PP");
+    ? formatDistanceStrict(new Date(), date) + " ago"
+    : format(date, "PP");
+}
+
+export function validateEmail(email: string) {
+  const re =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+}
+
+export function getUrlForData(canisterId: String, contentId: String) {
+  if (window.location.hostname.includes("localhost")) {
+    return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}`;
+  } else {
+    return (
+      "https://" + canisterId + ".raw.ic0.app/storage?contentId=" + contentId
+    );
+  }
+}
+
+export function getChecked(values: any) {
+  const checked = [];
+  for (const key in values) {
+    const value = values[key][0];
+    if (
+      value &&
+      value != "voteIncorrectlyConfirmation" &&
+      value != "voteRulesConfirmation"
+    ) {
+      checked.push(values[key][0]);
+    }
+  }
+  return checked;
 }

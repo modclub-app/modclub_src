@@ -1,8 +1,22 @@
 {
   "modclub": {
-    "ic": "la3yy-gaaaa-aaaah-qaiuq-cai"
+    "ic": "la3yy-gaaaa-aaaah-qaiuq-cai",
+    "staging": "oqhcr-riaaa-aaaah-qcoma-cai"
   },
   "modclub_assets": {
-    "ic": "ljyte-qiaaa-aaaah-qaiva-cai"
+    "ic": "ljyte-qiaaa-aaaah-qaiva-cai",
+    "staging": "oxgef-4qaaa-aaaah-qcomq-cai"
+  },
+  "modclub_dev": {
+    "ic": "olc6u-lqaaa-aaaah-qcooq-cai"
+  },
+  "modclub_dev_assets": {
+    "ic": "ocbvi-5yaaa-aaaah-qcopa-cai"
+  },
+  "modclub_staging": {
+    "ic": "o6fpz-kyaaa-aaaah-qcona-cai"
+  },
+  "modclub_staging_assets": {
+    "ic": "ozejn-haaaa-aaaah-qconq-cai"
   }
 }

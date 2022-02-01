@@ -11,6 +11,18 @@
       },
       "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
       "type": "assets"
+    },
+    "modclub_dev": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko"
+    },
+    "modclub_dev_assets": {
+      "dependencies": ["modclub_dev"],
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
+      "type": "assets"
     }
   },
   "defaults": {
@@ -18,7 +30,7 @@
       "packtool": "vessel sources"
     }
   },
-  "dfx": "0.8.3",
+  "dfx": "0.9.0",
   "networks": {
     "local": {
       "bind": "127.0.0.1:8000",

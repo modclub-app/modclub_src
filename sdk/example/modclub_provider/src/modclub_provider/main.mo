@@ -1,20 +1,28 @@
 import Debug "mo:base/Debug";
 import Text "mo:base/Text";
+import Principal "mo:base/Principal";
 import ModClub "./modclub/modclub";
-import Files "./files";
+import File "./files";
+
 
 actor {
     type SubscribeMessage = ModClub.SubscribeMessage;
     type ContentResult = ModClub.ContentResult;
+    type Image = ModClub.Image;
     let MC = ModClub.ModClub;
-    let file = Files.File();
+    let file = File.File();
+
     public func greet(name : Text) : async Text {
         return "Hello, " # name # "!";
     };
 
     public func test() : async Text {
         // Register with Modclub
-        let registerResult = await MC.registerProvider("SocialApp", "The description of your application.", null);
+        let companyLogo = {
+             data = file.SoccerBall;
+            imageType = "image/jpeg";
+        };
+        let registerResult = await MC.registerProvider("TestApp", "Test App's Description", ?companyLogo);
 
         // Sub the callback
         await subscribe();
@@ -42,9 +50,21 @@ actor {
     public func deregister() : async Text {
         await MC.deregisterProvider();
     };
-    
 
     public func voteResult(result: ContentResult) {
         Debug.print(debug_show(result));
     };
+
+     public func exampleToInitiatePOH(): async ({#notAttempted; #pending; #rejected; #expired; #verified;#notSubmitted;}, ?Text) {
+        // userId to check if it's a human
+        let userId = Principal.fromText("2vxsx-fae");
+        // call to check humanity
+       let response =  await MC.verifyForHumanity(userId);
+
+        if(response.status != #verified) {
+            return (response.status, ?(await MC.generateUniqueToken(userId)).token);
+        };
+        return (response.status, null);
+    };
+   
 };

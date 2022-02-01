@@ -1,4 +1,4 @@
-import { convertImage, convertObj, imageToUint8Array, unwrap } from "./util";
+import { /* convertImage, */ convertObj, unwrap } from "./util";
 import { actorController } from "./actor";
 import {
   ContentPlus,
@@ -16,6 +16,14 @@ import {
   _SERVICE,
   AirdropUser,
   ProviderSettings,
+  PohChallengeStatus,
+  PohUniqueToken,
+  PohChallengeSubmissionRequest,
+  PohChallengeSubmissionResponse,
+  Result,
+  PohTaskPlus,
+  PohRulesViolated,
+  ModeratorLeaderboard,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -26,35 +34,20 @@ var actor: _SERVICE = null;
 function getMC(): Promise<_SERVICE> {
   return actorController.actor;
 }
-export async function sendImage(imageData: number[]) {
-  const response = await (
-    await getMC()
-  ).sendImage("id_1", imageData, "image/png");
-  console.log("Send Image Response " + response);
-}
-
-export async function getImage(imageId: string): Promise<number[]> {
-  const icResponse = await (await getMC()).getImage(imageId);
-  const imageData = unwrap<number[]>(icResponse);
-  if (imageData !== null) {
-    return imageData;
-  } else {
-    throw new Error("Image data does not exist");
-  }
-}
 
 export async function registerModerator(
   username: string,
   email: string,
   imageData?: ImageData
 ): Promise<Profile> {
-  const imgResult: Image = imageData
-    ? { data: await convertImage(imageData), imageType: imageData.type }
-    : undefined;
+  // const imgResult: Image = imageData
+  //   ? { data: await convertImage(imageData), imageType: imageData.type }
+  //   : undefined;
+
+  const imgResult = null;
   const response = await (
     await getMC()
   ).registerModerator(username, email, imgResult ? [imgResult] : []);
-  console.log(response);
   return response;
 }
 
@@ -67,7 +60,7 @@ export async function getUserFromCanister(): Promise<Profile | null> {
       return null;
     }
   } catch (e) {
-    console.log(e);
+    console.log("error", e);
     return null;
   }
 }
@@ -99,8 +92,6 @@ export async function getProvider(
 }
 
 export async function getProviderRules(providerId: Principal): Promise<Rule[]> {
-  console.log("getProviderRules");
-  console.log(providerId);
   return (await getMC()).getRules(providerId);
 }
 
@@ -122,6 +113,20 @@ export async function unStakeTokens(amount: number): Promise<string> {
 
 export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
+}
+
+export async function getProfileById(userId: Principal): Promise<Profile> {
+  return (await getMC()).getProfileById(userId);
+}
+
+export async function getModeratorLeaderboard(
+  pageSize: number,
+  page: number
+): Promise<ModeratorLeaderboard[]> {
+  return (await getMC()).getModeratorLeaderboard(
+    BigInt((page - 1) * pageSize),
+    BigInt(page * pageSize)
+  );
 }
 
 export async function airdropRegister(): Promise<AirdropUser> {
@@ -149,4 +154,48 @@ export async function updateProviderSettings(
   settings: ProviderSettings
 ): Promise<void> {
   return (await getMC()).updateSettings(settings);
+}
+
+// POH Methods
+export async function verifyUserHumanity(): Promise<
+  [PohChallengeStatus, [] | [PohUniqueToken]]
+> {
+  return (await getMC()).verifyUserHumanity();
+}
+
+export async function retrieveChallengesForUser(
+  token: string
+): Promise<Result> {
+  return (await getMC()).retrieveChallengesForUser(token);
+}
+
+export async function submitChallengeData(
+  pohDataRequest: PohChallengeSubmissionRequest
+): Promise<PohChallengeSubmissionResponse> {
+  console.log("pohDataRequest", pohDataRequest);
+  return (await getMC()).submitChallengeData(pohDataRequest);
+}
+
+export async function getPohTasks(
+  status: ContentStatus
+): Promise<PohTaskPlus[]> {
+  return (await getMC()).getPohTasks(status);
+}
+
+export async function getPohTaskData(
+  packageId: string
+): Promise<any> {
+  return (await getMC()).getPohTaskData(packageId);
+}
+
+export async function votePohContent(
+  packageId: string,
+  decision: Decision,
+  violatedRules: [PohRulesViolated]
+): Promise<void> {
+  return (await getMC()).votePohContent(packageId, decision, violatedRules);
+}
+
+export async function getPerformance(): Promise<number> {
+  return (await getMC()).getVotePerformance();
 }

@@ -1,96 +1,77 @@
-// import { Link } from "react-router-dom";
+import * as React from 'react';
 import { useEffect, useState } from "react";
+import { Columns, Card, Heading, Button } from "react-bulma-components";
 
 export default function Moderators() {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
   }, []);
+
+  const dummyData = [
+    { id: 483250, name: "Joe Smit",  voted: 421, received: "3000 MOD", rewards: "3000 DSCVR", date: "10/09/2021" },
+    { id: 483250, name: "Joe Smit",  voted: 421, received: "3000 MOD", rewards: "3000 DSCVR", date: "10/09/2021" },
+    { id: 483250, name: "Joe Smit",  voted: 421, received: "3000 MOD", rewards: "3000 DSCVR", date: "10/09/2021" },
+    { id: 483250, name: "Joe Smit",  voted: 421, received: "3000 MOD", rewards: "3000 DSCVR", date: "10/09/2021" },
+    { id: 483250, name: "Joe Smit",  voted: 421, received: "3000 MOD", rewards: "3000 DSCVR", date: "10/09/2021" },
+    { id: 483250, name: "Joe Smit",  voted: 421, received: "3000 MOD", rewards: "3000 DSCVR", date: "10/09/2021" },
+    { id: 483250, name: "Joe Smit",  voted: 421, received: "3000 MOD", rewards: "3000 DSCVR", date: "10/09/2021" },
+  ]
   
   return (
-    <>
-      <div className="card mb-5">
-        <div className="card-content">
-          <h1 className="title">Moderators</h1>
-        </div>
-      </div>
-      <div className="card">
-        <div className="card-content">
-          <h3 className="subtitle">Most active moderators</h3>
+    <Columns>
+      <Columns.Column size={12}>
+        <Card>
+          <Card.Content>
+            <Heading>
+              Moderators
+            </Heading>
+          </Card.Content>
+        </Card>
+      </Columns.Column>
 
-          <table className="table is-striped">
-            <thead>
-              <tr>
-                <th>MODID</th>
-                <th>Name</th>
-                <th>Voted amt</th>
-                <th>Reward received</th>
-                <th>Platform rewards</th>
-                <th>Last voted</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>483250</td>
-                <td>Joe Smit</td>
-                <td>421</td>
-                <td>3000 MOD</td>
-                <td>3000 DSCVR</td>
-                <td>10/09/2021</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
-                </td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Joe Smit</td>
-                <td>421</td>
-                <td>3000 MOD</td>
-                <td>3000 DSCVR</td>
-                <td>10/09/2021</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
-                </td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Joe Smit</td>
-                <td>421</td>
-                <td>3000 MOD</td>
-                <td>3000 DSCVR</td>
-                <td>10/09/2021</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
-                </td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Joe Smit</td>
-                <td>421</td>
-                <td>3000 MOD</td>
-                <td>3000 DSCVR</td>
-                <td>10/09/2021</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
-                </td>
-              </tr>
-              <tr>
-                <td>483250</td>
-                <td>Joe Smit</td>
-                <td>421</td>
-                <td>3000 MOD</td>
-                <td>3000 DSCVR</td>
-                <td>10/09/2021</td>
-                <td>
-                  <button className="button is-gradient is-small is-fullwidth">Flag</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <Columns.Column size={12}>
+        <Card>
+          <Card.Content>
+            <Heading subtitle>
+              Most active moderators
+            </Heading>
 
-        </div>
-      </div>
-    </>
+            <div className="table-container">
+              <table className="table is-striped">
+                <thead>
+                  <tr>
+                    <th>MODID</th>
+                    <th>Name</th>
+                    <th>Voted amt</th>
+                    <th>Reward received</th>
+                    <th>Platform rewards</th>
+                    <th>Last voted</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dummyData.map((item) => (
+                    <tr>
+                      <td>{item.id}</td>
+                      <td>{item.name}</td>
+                      <td>{item.voted}</td>
+                      <td>{item.received}</td>
+                      <td>{item.rewards}</td>
+                      <td>{item.date}</td>
+                      <td>
+                        <Button color="gradient" size="small" fullwidth>
+                          Flag
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card.Content>
+        </Card>
+      </Columns.Column>
+    </Columns>
   )
 }

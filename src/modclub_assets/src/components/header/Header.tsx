@@ -1,23 +1,28 @@
-import LogoImg from '../../../assets/logo.png';
-import Hamburger from "./Hamburger";
+import * as React from 'react'
 import { HashLink } from "react-router-hash-link";
+import { Navbar, Container, Image, Heading } from "react-bulma-components";
+import LogoImg from "../../../assets/logo.png";
+import Hamburger from "./Hamburger";
 
 export default function Header() {
   return (
-    <nav className="section navbar has-background-black py-5" role="navigation" aria-label="main navigation">
-      <div className="container">
-        <div className="navbar-brand">
+    <Navbar backgroundColor="black" className="py-5">
+      <Container>
+        <Navbar.Brand>
           <a id='main' href="/">
             <div className="is-flex is-align-items-center">
-              <img src={LogoImg} style={{ height: 40, width: 40}} />
-              <h1 className="title is-size-3 ml-2" style={{ fontFamily: 'sans-serif' }}>MODCLUB</h1>
+              <Image src={LogoImg} size={32} />
+              <Heading className="ml-2" style={{ fontFamily: "sans-serif" }}>
+                MODCLUB
+              </Heading>
             </div>
           </a>
-          <Hamburger />
-        </div>
 
-        <div id="navbarBasicExample" className="navbar-menu">
-          <div className="navbar-end">
+          <Hamburger />
+          
+        </Navbar.Brand>
+        <Navbar.Menu>
+          <Navbar.Container align="right">
             <HashLink className="navbar-item" to="/#developers">
               Developers
             </HashLink>
@@ -27,9 +32,9 @@ export default function Header() {
             <HashLink className="navbar-item" to="/#roadmap">
               Roadmap
             </HashLink>
-          </div>
-        </div>
-      </div>
-    </nav>
+          </Navbar.Container>
+        </Navbar.Menu>
+      </Container>
+    </Navbar>
   )
 }
