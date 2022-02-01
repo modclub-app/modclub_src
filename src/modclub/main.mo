@@ -26,12 +26,14 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Base32 "mo:encoding/Base32";
 import Token "./token";
 import TrieSet "mo:base/TrieSet";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
 import Helpers "./helpers";
+
 
 
 shared ({caller = initializer}) actor class ModClub () = this {
@@ -1127,6 +1129,20 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   };
 
+  public query({ caller }) func issueJwt() : async Text {
+    let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());
+    let signature = Helpers.generateHash(message # ModClubParam.SIGNING_KEY);
+    let base32Message = Helpers.encodeBase32(message);
+    switch(base32Message) {
+      case(null) {
+        throw Error.reject("Jwt creation failed");
+      };
+      case(?b32Message) {
+        return b32Message # "." # signature;
+      };
+    }
+  };
+
   // Helpers
   private func getProviderRules(providerId: Principal) : [Rule] {
       let buf = Buffer.Buffer<Types.Rule>(0);
@@ -1288,7 +1304,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
     return moderatorIds.toArray();
   };
-    
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
 

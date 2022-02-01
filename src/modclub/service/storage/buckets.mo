@@ -12,6 +12,9 @@ import Cycles "mo:base/ExperimentalCycles";
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
+import Helpers "../../helpers";
+import ModClubParam "../parameters/params";
+
 
 
 import Types "./types"
@@ -176,17 +179,6 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
     Debug.print("http_request: " # debug_show(req));
     Debug.print("http_request Caller: " # Principal.toText(caller));
     var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
-    switch(state.moderators.get(caller)) {
-      case(null) {
-        return {
-          status_code=401;
-          headers=_headers;
-          body="401 Unauthorized";
-          streaming_strategy= null;
-        };
-      };
-      case(_)();
-    };
     let self: Principal = Principal.fromActor(this);
     let canisterId: Text = Principal.toText(self);
     let canister = actor (canisterId) : actor { streamingCallback : shared () -> async () };
@@ -200,12 +192,24 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
       let storageParams:Text = Text.stripStart(req.url, #text("/storage?"))!;
       let fields:Iter.Iter<Text> = Text.split(storageParams, #text("&"));
       var contentId: ?Text=null;
+      var jwt:Text = "";
       var chunkNum:Nat=1;
       for (field:Text in fields){
         let kv:[Text] = Iter.toArray<Text>(Text.split(field,#text("=")));
         if (kv[0]=="contentId"){
           contentId:=?kv[1];
+        } else if (kv[0]=="token"){
+          jwt:=kv[1];
         }
+      };
+
+      if(not isUserAllowed(jwt)) {
+        return {
+          status_code=401;
+          headers=_headers;
+          body="401 Unauthorized";
+          streaming_strategy= null;
+        }; 
       };
 
       _body := state.chunks.get(chunkId(contentId!, chunkNum))!;
@@ -233,6 +237,62 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
       body=_body;
       streaming_strategy=_streaming_strategy;
     };
+  };
+
+  private func isUserAllowed(jwt: Text) : Bool {
+    if(jwt == "") {
+      return false;
+    };
+    var c = 0;
+    var modId = "";
+    var issueTime = 0;
+    var signature = "";
+    var message = "";
+    for(part in Text.split(jwt, #char('.'))) {
+      if(c == 0) {
+        var k = 0;
+        switch(Helpers.decodeBase32(part)) {
+          case(null) { return false;};
+          case(?msg) {
+            message := msg;
+            for(ele in Text.split(msg, #char('.'))) {
+              if(k == 0) {
+                modId := ele;
+              } else if(k == 1) {
+                issueTime := Helpers.textToNat(ele);
+              };
+              k+=1;
+            };
+          };
+        };
+      } else {
+        signature := part;
+      };
+      c+=1;
+    };
+    if(not verifiedSignature(signature, message) or not jwtNotExpired(issueTime)) {
+      return false;
+    };
+    //skipping moderator id check as it's not required really
+    return true;
+  };
+
+  private func verifiedSignature(signature: Text, message: Text): Bool {
+    if(signature == "") {
+      return false;
+    };
+    let actualSignature = Helpers.generateHash(message # ModClubParam.SIGNING_KEY);
+    if(actualSignature != signature) {
+      return false;
+    };
+    return true;
+  };
+
+  private func jwtNotExpired(issueTime: Nat): Bool {
+    if(issueTime == 0 or (Helpers.timeNow() - issueTime) > ModClubParam.JWT_VALIDITY_MILLI) {
+      return false;
+    };
+    return true;
   };
 
   private func emptyDataCanisterSharedState(): DataCanisterSharedState {
