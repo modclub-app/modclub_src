@@ -911,7 +911,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
         providerId = caller;
     };
     // validity and rules needs to come from admin dashboard here
-    await pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"]);
+    await pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
   };
   
   // Method called by provider
