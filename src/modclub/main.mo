@@ -104,7 +104,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func generateSigningKey() : async () {
-    // await onlyOwner(caller);
+    await onlyOwner(caller);
     switch(Helpers.encodeNat8ArraytoBase32(Blob.toArray(await Random.blob()))) {
       case(null){throw Error.reject("Couldn't generate key");};
       case(?key) {
