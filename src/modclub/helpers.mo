@@ -37,17 +37,20 @@ module Helpers {
     public func encodeBase32(content: Text) : ?Text {
       return Text.decodeUtf8(Blob.fromArray(Base32.encode(Blob.toArray(Text.encodeUtf8(content)))));
     };
-
-  public func decodeBase32(content: Text) : ?Text {
-    let res = Base32.decode(Blob.toArray(Text.encodeUtf8(content)));
-    switch(res) {
-      case(#ok(r)) {
-        return Text.decodeUtf8(Blob.fromArray(r));
-      };
-      case(_)();
+    public func encodeNat8ArraytoBase32(content: [Nat8]) : ?Text {
+      return Text.decodeUtf8(Blob.fromArray(Base32.encode(content)));
     };
-    return null;
-  };
+
+    public func decodeBase32(content: Text) : ?Text {
+      let res = Base32.decode(Blob.toArray(Text.encodeUtf8(content)));
+      switch(res) {
+        case(#ok(r)) {
+          return Text.decodeUtf8(Blob.fromArray(r));
+        };
+        case(_)();
+      };
+      return null;
+    };
 
   public func textToNat( txt : Text) : Nat {
     assert(txt.size() > 0);

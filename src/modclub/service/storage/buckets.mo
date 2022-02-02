@@ -20,7 +20,7 @@ import ModClubParam "../parameters/params";
 import Types "./types"
 
 
-actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
+actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) = this {
 
   public type DataCanisterState = {
       contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
@@ -43,6 +43,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
     st;
   };
 
+  stable var signingKey = signingKey1;
   var state: DataCanisterState = emptyStateForDataCanister();
 
   let limit = 20_000_000_000_000;
@@ -175,9 +176,13 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
     };
   };
 
-  public query({caller}) func http_request(req: HttpRequest) : async HttpResponse {
+  public func setSigningKey(signingKey1: Text): async () {
+    signingKey := signingKey1;
+  };
+
+  public query func http_request(req: HttpRequest) : async HttpResponse {
     Debug.print("http_request: " # debug_show(req));
-    Debug.print("http_request Caller: " # Principal.toText(caller));
+
     var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
     let self: Principal = Principal.fromActor(this);
     let canisterId: Text = Principal.toText(self);
@@ -203,7 +208,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
         }
       };
 
-      if(not isUserAllowed(jwt)) {
+      if(not (isUserAllowed(jwt))) {
         return {
           status_code=401;
           headers=_headers;
@@ -270,18 +275,21 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
       };
       c+=1;
     };
-    if(not verifiedSignature(signature, message) or not jwtNotExpired(issueTime)) {
+    if(not verifiedSignature(signature, message) or not jwtNotExpired(issueTime) or not (isUserModerator(modId))) {
       return false;
     };
-    //skipping moderator id check as it's not required really
     return true;
   };
 
   private func verifiedSignature(signature: Text, message: Text): Bool {
+    Debug.print("singature: " # signature);
+    
     if(signature == "") {
       return false;
     };
-    let actualSignature = Helpers.generateHash(message # ModClubParam.SIGNING_KEY);
+    let actualSignature = Helpers.generateHash(message # signingKey);
+    Debug.print("actualSignature: " # actualSignature);
+
     if(actualSignature != signature) {
       return false;
     };
@@ -289,10 +297,27 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
   };
 
   private func jwtNotExpired(issueTime: Nat): Bool {
+    Debug.print("actualSignature: " # Nat.toText(issueTime));
+
     if(issueTime == 0 or (Helpers.timeNow() - issueTime) > ModClubParam.JWT_VALIDITY_MILLI) {
       return false;
     };
     return true;
+  };
+
+  private func isUserModerator(modId: Text): Bool {
+    Debug.print(modId);
+    switch(state.moderators.get(Principal.fromText(modId))) {
+      case(null) {
+        Debug.print("not present");
+        return false;
+      };
+      case(?exists) {
+        Debug.print("present");
+
+        return true;
+      }
+    };
   };
 
   private func emptyDataCanisterSharedState(): DataCanisterSharedState {
