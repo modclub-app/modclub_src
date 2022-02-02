@@ -1,4 +1,5 @@
 import Array "mo:base/Array";
+import Base32 "mo:encoding/Base32";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
@@ -7,6 +8,7 @@ import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
+import Helpers "./helpers";
 import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
@@ -15,6 +17,7 @@ import ModClubParams "./service/parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Order "mo:base/Order";
+import Random "mo:base/Random";
 import POH "./service/poh/poh";
 import PohState "./service/poh/state";
 import PohTypes "./service/poh/types";
@@ -31,7 +34,7 @@ import TrieSet "mo:base/TrieSet";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
-import Helpers "./helpers";
+
 
 
 shared ({caller = initializer}) actor class ModClub () = this {
@@ -66,6 +69,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   type RewardsEarnedMap = Types.RewardsEarnedMap;
 
 
+  stable var signingKey = "";
   // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
   // Global Objects  
@@ -77,7 +81,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   
   stable var storageStateStable  = StorageState.emptyStableState();
   // Will be updated with this in postupgrade. Motoko not allowing to use "this" here
-  var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer);
+  var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer, signingKey);
 
   stable var pohStableState = PohState.emptyStableState();
   var pohEngine = POH.PohEngine(pohStableState);
@@ -97,6 +101,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
     await onlyOwner(caller);
     voteManager.addToAutoApprovedPOHUser(userId);
+  };
+
+  public shared({ caller }) func generateSigningKey() : async () {
+    await onlyOwner(caller);
+    switch(Helpers.encodeNat8ArraytoBase32(Blob.toArray(await Random.blob()))) {
+      case(null){throw Error.reject("Couldn't generate key");};
+      case(?key) {
+        signingKey := key;
+        await storageSolution.setSigningKey(signingKey);
+      };
+    };
   };
 
   // Airdrop Methods
@@ -1127,6 +1142,29 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   };
 
+  public shared({ caller }) func issueJwt() : async Text {
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
+    let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());
+    let signature = Helpers.generateHash(message # signingKey);
+    let base32Message = Helpers.encodeBase32(message);
+    switch(base32Message) {
+      case(null) {
+        throw Error.reject("Jwt creation failed");
+      };
+      case(?b32Message) {
+        return b32Message # "." # signature;
+      };
+    }
+  };
+
   // Helpers
   private func getProviderRules(providerId: Principal) : [Rule] {
       let buf = Buffer.Buffer<Types.Rule>(0);
@@ -1288,7 +1326,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
     return moderatorIds.toArray();
   };
-    
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
 
@@ -1306,7 +1343,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   system func postupgrade() {
     // Reinitializing storage Solution to add this actor as a controller
-    storageSolution := StorageSolution.StorageSolution(storageStateStable, initializer, Principal.fromActor(this));
+    storageSolution := StorageSolution.StorageSolution(storageStateStable, initializer, Principal.fromActor(this), signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);

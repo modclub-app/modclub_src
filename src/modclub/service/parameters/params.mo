@@ -9,4 +9,6 @@ module {
     public let MIN_STAKE_POH = 100:Int;
     public let MIN_VOTE_POH = 100 :Int;
     public let STAKE_REWARD_PERCENTAGE = 0.1; // Reward is based on a percentage of the min stake
+
+    public let JWT_VALIDITY_MILLI = 3600000;
 };
