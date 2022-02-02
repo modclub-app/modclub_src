@@ -86,8 +86,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
 
   func onlyOwner(p: Principal) : async() {
-    Debug.print(Principal.toText(p));
-    Debug.print(Principal.toText(initializer));
     if( p != initializer) throw Error.reject( "unauthorized" );
   };
 
@@ -176,15 +174,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
     name: Text,
     description: Text,
     image: ?Image
-    ) : async Types.ProviderTextResult {
-
-    switch(state.providersWhitelist.get(caller)) {
-      case(null) {
-        return #err(#RequiresWhitelisting);
-      };
-      case(?_) ();
-    };
-
     ) : async Text {
     // Todo remove this after airdrop
     // await onlyOwner(caller);
@@ -203,90 +192,29 @@ shared ({caller = initializer}) actor class ModClub () = this {
             minStaked = DEFAULT_MIN_STAKED; // Default amount staked, change when tokens are released
           };
         });
-        return #ok("Registration successful");
+        return "Registration successful";
       };
-       case (?result) return #err(#ProviderIsRegistered);
+       case (?result) return "Provider already registered";
     };
   };
 
-  public shared({ caller }) func deregisterProvider() : async Result.Result<Text, Types.ProviderError> {
+  public shared({ caller }) func deregisterProvider() : async Text {
     switch(state.providers.get(caller)){
       case (null) {
-        return #err(#NotFound);
+        return "Provider does not exist";
       };
        case (?result) {
          state.providers.delete(caller);
-         return #ok("Provider deregistered");
+         return "Provider deregistered";
        };
     };
   };
 
-  public shared({ caller }) func addProviderAdmin(userName: Text, userId: Principal, providerId: ?Principal) : async Types.ProviderResult {
-    var authorized = false;
-    var isProvider = false;
-    var _providerId : Principal = switch providerId {
-      case null caller;
-      case (?result) result;
-    };
-
-    // Provider check
-    switch(state.providers.get(_providerId)) {
-      case (null) return #err(#NotFound);
-      case (?result) {
-        if(caller == result.id) {
-          authorized := true;
-          isProvider := true;
-        };
-      };
-    };
-
-    // Check if the caller is an admin of this provider
-    if(isProvider == false) {
-        switch(await checkProviderAdminPermission(_providerId, caller)) {
-          case (#err(error)) return #err(error);
-          case (#ok()) authorized := true;
-        };
-      };
-
-    if(authorized == false) return #err(#Unauthorized);
-
-    // Add the user to the provider admin list
-    let adminProfile : Profile = {
-      id = userId;
-      userName = userName;
-      email = "";
-      pic = null;
-      role = #admin;
-      createdAt = timeNow_();
-      updatedAt = timeNow_();
-    };
-
-    state.profiles.put(userId, adminProfile);
-    switch(state.providerAdmins.get(_providerId)) { 
-      case (null) {
-        let adminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
-        adminMap.put(userId, ());
-        state.providerAdmins.put(_providerId, adminMap);
-        };
-      case (?adminMap) {
-        adminMap.put(userId, ());
-      };
-    };
-
-    #ok();
-  };
-
-  public shared({ caller }) func getProviders() : async [ProviderPlus] {
-    await onlyOwner(caller);
-    let buf = Buffer.Buffer<ProviderPlus>(0);      
-      for ( (id, p) in state.providers.entries()) {        
-        buf.add(await getProvider(id));                        
-      };
-      buf.toArray();
-  };
 
 
-  public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) : async Types.ProviderResult {
+  public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) : async () {
+    // Todo remove this after airdrop
+    // await onlyOwner(caller);
     var provider = state.providers.get(caller);
     switch(provider) {
       case (?result) {
@@ -301,20 +229,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
               updatedAt = now;
               settings = settings;
         });
-        #ok();
       };
-      case(null) #err(#NotFound);
+      case(null) ();
     };
-  };
 
-  public shared({ caller }) func getSettings() : async Types.ProviderSettingResult {
-    var provider = state.providers.get(caller);
-    switch(provider) {
-      case (?result) {
-        return #ok(result.settings);
-      };
-      case(null) #err(#NotFound);
-    };
+    // todo: Re-evaluate all new content with votes to determine if a potential decision can be made 
   };
 
   public query func getProvider(providerId: Principal) : async ProviderPlus {
@@ -341,12 +260,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
   };
 
-  public shared({ caller }) func addRules(rules: [Text]) : async Types.ProviderResult {
-    try {
-      await checkProviderPermission(caller);
-    } catch(e) {
-      return #err(#Unauthorized);
-    };
+  public shared({ caller }) func addRules(rules: [Text]) {
+    // await onlyOwner(caller);
+    await checkProviderPermission(caller);
     for(rule in rules.vals()) {
       var ruleId = generateId(caller, "rule");       
       state.rules.put(ruleId, {
@@ -355,26 +271,19 @@ shared ({caller = initializer}) actor class ModClub () = this {
       });
       state.provider2rules.put(caller, ruleId);
     };
-    #ok();
   };
 
-  public shared({ caller }) func removeRules(ruleIds: [Types.RuleId]) : async Types.ProviderResult {
+  public shared({ caller }) func removeRules(ruleIds: [Types.RuleId]) {
     for(ruleId in ruleIds.vals()) {
       state.provider2rules.delete(caller, ruleId);
     };
-    #ok();
   };
 
   // Subscribe function for providers to register their callback after a vote decision has been made
-  public shared({caller}) func subscribe(sub: SubscribeMessage) : async Types.ProviderResult {
-    try {
-      await checkProviderPermission(caller);
-    } catch(e) {
-      return #err(#Unauthorized);
-    };
+  public shared({caller}) func subscribe(sub: SubscribeMessage) : async() {
+    await checkProviderPermission(caller);
     Debug.print(Principal.toText(caller) # " subscribed" );
     state.providerSubs.put(caller, sub);
-    #ok();
   };
 
   public query({caller}) func getContent(id: Text) : async ?ContentPlus {
@@ -383,35 +292,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   func checkProviderPermission(p: Principal) : async () {
     switch(state.providers.get(p)){
-      case (null) throw Error.reject( "Provider does not exist" );
+      case (null) throw Error.reject("unauthorized");
       case(_) ();
     };
   };
 
- private func checkProviderAdminPermission(p: Principal, admin: Principal) : async Types.ProviderResult {
-      switch(state.providerAdmins.get(p)) {
-        case (null) return #err(#NotFound);
-        case (?adminMap) {
-          switch(adminMap.get(admin)) {
-            case (null) return #err(#Unauthorized);
-            case(?_) {
-              return #ok();
-            };
-          };
-        };
-      };
-  };
-
-  public shared({ caller }) func submitText(sourceId: Text, text: Text, title: ?Text ) : async Result.Result<Text, Types.ProviderError> {
-      try {
-        await checkProviderPermission(caller);
-      } catch(e) {
-        return #err(#Unauthorized);
-      };
-      let content = createContentObj(sourceId, caller, #text, title);
-      let textContent : TextContent = {
-        id = content.id;
-        text = text;
   public shared({ caller }) func submitText(sourceId: Text, text: Text, title: ?Text ) : async Text {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -447,34 +332,13 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       // Store and update relationships
       state.content.put(content.id, content);
-      state.textContent.put(content.id, textContent);
+      state.imageContent.put(content.id, imageContent);
       state.provider2content.put(caller, content.id);
       state.contentNew.put(caller, content.id);
-      return #ok(content.id);
+      return content.id;
     };
-  
-    public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Result.Result<Text, Types.ProviderError> {
-      try {
-        await checkProviderPermission(caller);
-      } catch(e) {
-        return #err(#Unauthorized);
-      };
-      let content = createContentObj(sourceId, caller, #imageBlob, title);
 
-      let imageContent : ImageContent = {
-        id = content.id;
-        image  = {
-          data = image;
-          imageType = imageType;
-        };
-      };
-        // Store and update relationships
-        state.content.put(content.id, content);
-        state.imageContent.put(content.id, imageContent);
-        state.provider2content.put(caller, content.id);
-        state.contentNew.put(caller, content.id);
-        return #ok(content.id);
-    };
+    
 
   // Retreives all content for the calling Provider
   public query({ caller }) func getProviderContent() : async [ContentPlus] {
@@ -488,19 +352,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
         };
       };
       buf.toArray();
-  };
-
-  public shared({ caller }) func whiteListProvider(providerId: Principal) : async () {
-    await onlyOwner(caller);
-    switch(state.providersWhitelist.get(providerId)) {
-      case (?result) {
-        throw Error.reject("Provider already whitelisted");
-        return;
-      };
-      case (_) {
-        state.providersWhitelist.put(providerId, true);
-      };
-    };
   };
   
   // Moderator functions
@@ -627,6 +478,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
             Debug.print(debug_show(result));
         };
       };
+
 
       // Check if already registered
       switch(state.profiles.get(caller)){
