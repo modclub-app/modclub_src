@@ -1142,7 +1142,16 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   };
 
-  public query({ caller }) func issueJwt() : async Text {
+  public shared({ caller }) func issueJwt() : async Text {
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
     let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());
     let signature = Helpers.generateHash(message # signingKey);
     let base32Message = Helpers.encodeBase32(message);
