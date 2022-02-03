@@ -31,7 +31,7 @@ type Role =
 type Result_1 = 
  variant {
    err: PohError;
-   ok: vec PohTaskData;
+   ok: PohTaskDataWrapperPlus;
  };
 type Result = 
  variant {
@@ -95,6 +95,15 @@ type PohTaskPlus =
    updatedAt: int;
    userName: opt text;
    voteCount: nat;
+ };
+type PohTaskDataWrapperPlus = 
+ record {
+   createdAt: int;
+   minVotes: int;
+   packageId: text;
+   pohTaskData: vec PohTaskData;
+   updatedAt: int;
+   votes: nat;
  };
 type PohTaskData = 
  record {
@@ -198,9 +207,11 @@ type ModClub =
  service {
    addRules: (vec text) -> () oneway;
    addToAirdropWhitelist: (vec principal) -> ();
+   addToApprovedUser: (principal) -> ();
    airdropRegister: () -> (AirdropUser);
    checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
+   generateSigningKey: () -> ();
    generateUniqueToken: (principal) -> (PohUniqueToken);
    getActivity: (bool) -> (vec Activity) query;
    getAirdropUsers: () -> (vec AirdropUser);
@@ -220,6 +231,7 @@ type ModClub =
    getTokenHoldings: () -> (Holdings) query;
    getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
+   issueJwt: () -> (text);
    populateChallenges: () -> ();
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);

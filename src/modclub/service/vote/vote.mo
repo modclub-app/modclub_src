@@ -17,9 +17,32 @@ module VoteModule {
 
         var state:VoteState.PohVoteState = VoteState.getState(stableState);
 
-        public func initiateVotingPoh(challengePackageId: Text) : () {
-            state.package2Status.put(challengePackageId, #new);
-            state.newPohPackages.add(challengePackageId);
+        public func initiateVotingPoh(challengePackageId: Text, userId: Principal) : () {
+            switch(state.autoApprovePOHUserIds.get(userId)) {
+                case(null){
+                    state.package2Status.put(challengePackageId, #new);
+                    state.newPohPackages.add(challengePackageId);
+                };
+                case(approvedUser) {
+                    state.package2Status.put(challengePackageId, #approved);
+                    state.approvedPohPackages.add(challengePackageId);
+                };
+            };
+        };
+
+        public func isAutoApprovedPOHUser(userId: Principal) : Bool {
+            switch(state.autoApprovePOHUserIds.get(userId)) {
+                case(null){
+                    return false;
+                };
+                case(_) {
+                    return true;
+                };
+            };
+        };
+
+        public func addToAutoApprovedPOHUser(userId: Principal) {
+            state.autoApprovePOHUserIds.put(userId, userId);
         };
 
         public func getTasksId(status: Types.ContentStatus, limit: Nat) : [Text] {

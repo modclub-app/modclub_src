@@ -11,23 +11,32 @@ import {
 } from "react-bulma-components";
 import Userstats from "../profile/Userstats";
 import Progress from "../../common/progress/Progress";
+import { useAuth } from "../../../utils/auth";
 import { getPohTasks } from "../../../utils/api";
-import { formatDate, getUrlForData } from "../../../utils/util";
+import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
-  console.log("ApplicantSnippet", applicant);
   const { fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
-  const match = regEx.exec(applicant.profileImageUrlSuffix[0]);
+  const match = regEx.exec(profileImageUrlSuffix[0]);
   const imageUrl = getUrlForData(match[1], match[2]);
+  const [urlObject, setUrlObject] = useState(null);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      const urlObject = await fetchObjectUrl(imageUrl);
+      setUrlObject(urlObject);
+    };
+    fetchData();
+  }, [])   
   
   return (
     <Link
       to={`/app/poh/${applicant.packageId}`}
       className="card is-block"
       style={{
-        background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%), url(${imageUrl}) no-repeat top center`
+        background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%), url(${urlObject}) no-repeat top center`
       }}
     >
       <Card.Header justifyContent="start">
@@ -73,10 +82,12 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 };
 
 export default function PohApplicantList() {
-  const [loading, setLoading] = useState<boolean>(true);
+  const { user, isAuthenticated } = useAuth();
+  const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
 
   const getApplicants = async () => {
+    setLoading(true);
     const status = { "new": null };
     const applicants = await getPohTasks(status);
     console.log("getPohTasks res", applicants);
@@ -85,10 +96,10 @@ export default function PohApplicantList() {
   }
 
   useEffect(() => {
-    getApplicants();
-  }, []);
+    user && !loading && getApplicants();
+  }, [user]);
 
-  return loading ?
+  return !applicants ?
     <Modal show={true} showClose={false}>
       <div className="loader is-loading p-5"></div>
     </Modal>

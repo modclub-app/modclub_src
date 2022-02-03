@@ -133,13 +133,21 @@ export const idlFactory = ({ IDL }) => {
     'aboutUser' : IDL.Opt(IDL.Text),
     'wordList' : IDL.Opt(IDL.Vec(IDL.Text)),
   });
+  const PohTaskDataWrapperPlus = IDL.Record({
+    'minVotes' : IDL.Int,
+    'votes' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'updatedAt' : IDL.Int,
+    'pohTaskData' : IDL.Vec(PohTaskData),
+    'packageId' : IDL.Text,
+  });
   const PohError = IDL.Variant({
     'invalidPackageId' : IDL.Null,
     'challengeNotPendingForSubmission' : IDL.Null,
     'invalidToken' : IDL.Null,
   });
   const Result_1 = IDL.Variant({
-    'ok' : IDL.Vec(PohTaskData),
+    'ok' : PohTaskDataWrapperPlus,
     'err' : PohError,
   });
   const PohTaskPlus = IDL.Record({
@@ -256,9 +264,11 @@ export const idlFactory = ({ IDL }) => {
   const ModClub = IDL.Service({
     'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
+    'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
+    'generateSigningKey' : IDL.Func([], [], []),
     'generateUniqueToken' : IDL.Func([IDL.Principal], [PohUniqueToken], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
@@ -286,6 +296,7 @@ export const idlFactory = ({ IDL }) => {
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
     'getVotePerformance' : IDL.Func([], [IDL.Float64], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
+    'issueJwt' : IDL.Func([], [IDL.Text], []),
     'populateChallenges' : IDL.Func([], [], []),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],

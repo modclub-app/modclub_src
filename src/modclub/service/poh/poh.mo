@@ -1,8 +1,10 @@
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
+import Helpers "../../helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
+import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import PohState "./state";
@@ -12,8 +14,6 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
-
-import Helpers "../../helpers";
 
 module PohModule {
 
@@ -277,6 +277,17 @@ module PohModule {
             };
         };
 
+        public func changeChallengePackageStatus(packageId: Text, status: PohTypes.PohChallengeStatus) : () {
+            switch(state.pohChallengePackages.get(packageId)) {
+                case(null)();
+                case(?package) {
+                    for(id in package.challengeIds.vals()) {
+                        changeChallengeTaskStatus(id, package.userId, status);
+                    };
+                };
+            };
+        };
+
         // Step 6 MODCLUB mods verify that user data and approve the user. The 
         // dApp is then notified that the user has verified their POH.
         public func changeChallengeTaskStatus(challengeId: Text, userId: Principal, status: PohTypes.PohChallengeStatus) {
@@ -434,6 +445,8 @@ module PohModule {
                         pohTasks.add({
                             packageId = id;
                             pohTaskData = taskData.toArray();
+                            createdAt = package.createdAt;
+                            updatedAt = package.updatedAt;
                         });
                     };
                 };

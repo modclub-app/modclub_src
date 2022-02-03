@@ -1,8 +1,10 @@
 import * as React from 'react'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { useAuth } from "../../../utils/auth";
+import { formatDate, getUrlForData } from "../../../utils/util";
 import { getPohTaskData, votePohContent } from "../../../utils/api";
-import { getChecked } from "../../../utils/util";
+import { getChecked, fetchObjectUrl } from "../../../utils/util";
 import {
   Heading,
   Card,
@@ -18,7 +20,6 @@ import Confirm from "../../common/confirm/Confirm";
 import Progress from "../../common/progress/Progress";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
-import { formatDate, getUrlForData } from "../../../utils/util";
 
 const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
   const [submitting, setSubmitting] = useState(null);
@@ -136,10 +137,18 @@ const ProfileDetails = ({ data }) => {
 
 const ProfilePic = ({ data }) => {
   const imageUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
+  const [urlObject, setUrlObject] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const urlObject = await fetchObjectUrl(imageUrl);
+      setUrlObject(urlObject);
+    };
+    fetchData();
+  }, [])  
 
   return (
     <Card.Content>
-      <img src={imageUrl} alt="Image File" style={{ display: "block", margin: "auto" }} />
+      <img src={urlObject} alt="Image File" style={{ display: "block", margin: "auto" }} />
     </Card.Content>
   )
 };
@@ -147,13 +156,24 @@ const ProfilePic = ({ data }) => {
 const UserVideo = ({ data }) => {
   const videoUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
   const phrases = data.wordList[0]
+  const [videoObject, setVideoObject] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const urlObject = await fetchObjectUrl(videoUrl);
+      console.log("urlObject", urlObject);
+      setVideoObject(urlObject);
+    };
+    fetchData();
+  }, [])  
 
   return (
     <Card.Content>
-      <video width="100%" height="auto" controls>
-        <source src={videoUrl} />
-        Your browser does not support the video tag.
-      </video>
+      {videoObject &&
+        <video width="100%" height="auto" controls>
+          <source src={videoObject} />
+          Your browser does not support the video tag.
+        </video>
+      }
 
       <Card className="mt-5">
         <Card.Content className="columns is-multiline">
@@ -174,7 +194,7 @@ const UserVideo = ({ data }) => {
 const CheckBox = ({ id, label, values }) => {
   return (
     <>
-      <td className="has-text-left has-text-white has-text-weight-bold">
+      <td className="has-text-left has-text-white has-text-weight-medium">
         {label}
       </td>
       <td>
@@ -227,8 +247,9 @@ const CheckBox = ({ id, label, values }) => {
 }
 
 export default function PohApplicant() {
+  const { user } = useAuth();
   const { packageId } = useParams();
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
 
   const [showApprove, setShowApprove] = useState(false);
@@ -238,15 +259,15 @@ export default function PohApplicant() {
   const toggleReject = () => setShowReject(!showReject);
 
   const getApplicant = async () => {
-    const applicant = await getPohTaskData(packageId);
-    console.log("getPohTaskData res", applicant);
-    setContent(applicant);
+    setLoading(true)
+    const res = await getPohTaskData(packageId);
+    setContent(res.ok);
     setLoading(false);
   }
 
   useEffect(() => {
-    getApplicant();
-  }, []);
+    user && !loading && getApplicant();
+  }, [user]);
 
   const formatTitle = (challengeId) => {
     if (challengeId === "challenge-profile-details") return "Challenge: Profile Details";
@@ -258,18 +279,17 @@ export default function PohApplicant() {
   const isDisabled = (values: any) => {
     const checkedLength = Object.keys(values).length;
     let formRules = [];
-    content.ok.forEach(task => formRules.push(...task.allowedViolationRules));
+    content.pohTaskData.forEach(task => formRules.push(...task.allowedViolationRules));
     return checkedLength === formRules.length ? false : true;
   }
 
   const parentSubmit = (values: any) => {
-    // console.log("values", values);
     const filteredValues = Object.values(values).filter(value => typeof value === "string");
     const confirmed = Object.values(values).filter(value => value === "confirm");
     filteredValues.length === confirmed.length ? toggleApprove() : toggleReject();
   }
 
-  return loading ?
+  return !content ?
     <Modal show={true} showClose={false}>
       <div className="loader is-loading p-5"></div>
     </Modal>
@@ -283,17 +303,16 @@ export default function PohApplicant() {
             <Card.Header>
               <Card.Header.Title>
                 <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-                  {/* Submitted {formatDate(createdAt)} */}
-                  Submitted todo Date()
+                  Submitted {formatDate(content.updatedAt)}
                 </span>
               </Card.Header.Title>
               <Progress
-                value={5}
-                min={10}
+                value={content.votes}
+                min={content.minVotes}
               />
             </Card.Header>
 
-            {content.ok.map((task) => (
+            {content.pohTaskData.map((task) => (
               <Card.Content key={task.challengeId}>
                 <Heading subtitle className="mb-3">
                   {formatTitle(task.challengeId)}
@@ -310,10 +329,10 @@ export default function PohApplicant() {
                   }
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
-                  <table className="table is-striped has-text-left">
+                  <table className="table has-text-left">
                     <tbody>
-                      {task.allowedViolationRules.map((rule) => (
-                        <tr key={rule}>
+                      {task.allowedViolationRules.map((rule, index) => (
+                        <tr key={index}>
                           <CheckBox
                             key={rule.ruleId}
                             id={`${task.challengeId}-${rule.ruleId}`}

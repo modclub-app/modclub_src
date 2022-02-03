@@ -1,4 +1,5 @@
 import Array "mo:base/Array";
+import Base32 "mo:encoding/Base32";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
@@ -7,6 +8,7 @@ import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
+import Helpers "./helpers";
 import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
@@ -15,6 +17,7 @@ import ModClubParams "./service/parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Order "mo:base/Order";
+import Random "mo:base/Random";
 import POH "./service/poh/poh";
 import PohState "./service/poh/state";
 import PohTypes "./service/poh/types";
@@ -32,7 +35,7 @@ import TrieSet "mo:base/TrieSet";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
-import Helpers "./helpers";
+
 
 import Canistergeek "./canistergeek/canistergeek";
 
@@ -69,6 +72,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   type RewardsEarnedMap = Types.RewardsEarnedMap;
 
 
+  stable var signingKey = "";
   // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
   // Global Objects  
@@ -80,7 +84,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   
   stable var storageStateStable  = StorageState.emptyStableState();
   // Will be updated with this in postupgrade. Motoko not allowing to use "this" here
-  var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer);
+  var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer, signingKey);
 
   stable var pohStableState = PohState.emptyStableState();
   var pohEngine = POH.PohEngine(pohStableState);
@@ -98,6 +102,22 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func toggleAllowSubmission(allow: Bool) : async () {
     await onlyOwner(caller);
     allowSubmissionFlag := allow;
+  };
+
+  public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
+    await onlyOwner(caller);
+    voteManager.addToAutoApprovedPOHUser(userId);
+  };
+
+  public shared({ caller }) func generateSigningKey() : async () {
+    await onlyOwner(caller);
+    switch(Helpers.encodeNat8ArraytoBase32(Blob.toArray(await Random.blob()))) {
+      case(null){throw Error.reject("Couldn't generate key");};
+      case(?key) {
+        signingKey := key;
+        await storageSolution.setSigningKey(signingKey);
+      };
+    };
   };
 
   // Airdrop Methods
@@ -922,7 +942,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Method called by user on UI
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await pohEngine.retrieveChallengesForUser(caller, token, ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"]);
+    await pohEngine.retrieveChallengesForUser(caller, token, ["challenge-profile-pic", "challenge-user-video"]);
   };
 
   // Method called by user on UI
@@ -946,14 +966,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
         };
       };
       // TODO dynamic list will be fetched from admin dashboard state
-      let providerChallenges = ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"];
+      let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
       let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId);
       switch(challengePackage) {
         case(null)();
         case(?package) {
-          voteManager.initiateVotingPoh(package.id);
+          voteManager.initiateVotingPoh(package.id, caller);
+          if(voteManager.isAutoApprovedPOHUser(caller)) {
+            pohEngine.changeChallengePackageStatus(package.id, #verified);
+          };
         };
-      }
+      };
     };
     return {
       challengeId = pohDataRequest.challengeId;
@@ -983,13 +1006,16 @@ shared ({caller = initializer}) actor class ModClub () = this {
     pohEngine.populateChallenges();
   };
 
-  public query({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
-     switch(checkProfilePermission(caller, #getContent)){
-       case(#err(e)) {
-         throw Error.reject("Unauthorized");
-       };
-       case(_)();
-     };
+  public shared({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+    switch(checkProfilePermission(caller, #getContent)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
     let pohTaskIds = voteManager.getTasksId(status, 10);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
@@ -1046,18 +1072,29 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return tasks.toArray();
   };
 
-  public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<[PohTypes.PohTaskData], PohTypes.PohError> {
-     switch(checkProfilePermission(caller, #getContent)){
-       case(#err(e)) {
-         throw Error.reject("Unauthorized");
-       };
-       case(_)();
-     };
+  public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
+    switch(checkProfilePermission(caller, #getContent)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
     let pohTasks = pohEngine.getPohTasks([packageId]);
     if(pohTasks.size() == 0) {
       return #err(#invalidPackageId);
     };
-    return #ok(pohTasks[0].pohTaskData);
+    let voteCount = voteManager.getVoteCountForPoh(caller, packageId);
+    #ok({
+        packageId = pohTasks[0].packageId;
+        pohTaskData = pohTasks[0].pohTaskData;
+        votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+        minVotes =  ModClubParam.MIN_VOTE_POH;
+        createdAt = pohTasks[0].createdAt;
+        updatedAt = pohTasks[0].updatedAt;
+    });
   };
 
   public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
@@ -1071,6 +1108,15 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
     let holdings = tokens.getHoldings(caller);
     if( holdings.stake < ModClubParams.MIN_STAKE_POH) { 
       throw Error.reject("Not enough tokens staked");
@@ -1098,16 +1144,41 @@ shared ({caller = initializer}) actor class ModClub () = this {
                 (v.decision == #rejected and decision == #rejected)
               ) {
               //reward only some percentage
+              pohEngine.changeChallengePackageStatus(packageId, #verified);
               await tokens.reward(initializer, v.userId, Float.toInt(reward));
             } else {
+              pohEngine.changeChallengePackageStatus(packageId, #rejected);
               // burn only some percentage
               await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
-            }
+            };
           };
         };
       };
     };
 
+  };
+
+  public shared({ caller }) func issueJwt() : async Text {
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await verifyForHumanity(caller)).status != #verified) {
+      throw Error.reject("POH not completed for moderator.");
+    };
+    let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());
+    let signature = Helpers.generateHash(message # signingKey);
+    let base32Message = Helpers.encodeBase32(message);
+    switch(base32Message) {
+      case(null) {
+        throw Error.reject("Jwt creation failed");
+      };
+      case(?b32Message) {
+        return b32Message # "." # signature;
+      };
+    }
   };
 
   // Helpers
@@ -1265,12 +1336,12 @@ shared ({caller = initializer}) actor class ModClub () = this {
     let moderatorIds = Buffer.Buffer<Principal>(1);
     for((id, profile) in state.profiles.entries()) {
       if(profile.role == #moderator) {
+        Debug.print("Moderator: " # Principal.toText(id));
         moderatorIds.add(id);
       };
     };
     return moderatorIds.toArray();
   };
-    
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
 
@@ -1289,7 +1360,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   system func postupgrade() {
     // Reinitializing storage Solution to add this actor as a controller
-    storageSolution := StorageSolution.StorageSolution(storageStateStable, initializer, Principal.fromActor(this));
+    storageSolution := StorageSolution.StorageSolution(storageStateStable, initializer, Principal.fromActor(this), signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);

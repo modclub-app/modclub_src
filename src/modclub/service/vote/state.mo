@@ -21,6 +21,8 @@ module State {
         pohContent2votes: RelObj.RelObj<Text, Text>;
         // relates users to votes
         mods2Pohvotes: RelObj.RelObj<Principal, Text>;
+        // allowlisted userIds
+        autoApprovePOHUserIds: HashMap.HashMap<Principal, Principal>;
     };
 
     public type PohVoteStableState = {
@@ -31,6 +33,7 @@ module State {
         pohVotes: [(Text, VoteTypes.Vote)];
         pohContent2votes: Rel.RelShared<Types.ContentId, Types.VoteId>;
         mods2Pohvotes: Rel.RelShared<Types.UserId, Types.VoteId>;
+        autoApprovePOHUserIds: [(Principal, Principal)];
     };
 
     public func emptyState(): PohVoteState {
@@ -42,6 +45,8 @@ module State {
             pohVotes = HashMap.HashMap<Text, VoteTypes.Vote>(1, Text.equal, Text.hash);
             pohContent2votes = RelObj.RelObj((Text.hash, Text.hash), (Text.equal, Text.equal));
             mods2Pohvotes = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
+            autoApprovePOHUserIds = HashMap.HashMap<Principal, Principal>(1, Principal.equal, Principal.hash);
+
         };
     };
 
@@ -54,6 +59,7 @@ module State {
             pohVotes = [];
             pohContent2votes = Rel.emptyShared<Text, Text>();
             mods2Pohvotes = Rel.emptyShared<Principal, Text>();
+            autoApprovePOHUserIds = [];
         };
     };
 
@@ -85,6 +91,9 @@ module State {
         state.mods2Pohvotes.setRel(
                 Rel.fromShare<Principal, Text>(stableState.mods2Pohvotes, (Principal.hash, Text.hash), (Principal.equal, Text.equal))
         );
+        for( (id, pid) in stableState.autoApprovePOHUserIds.vals()) {
+            state.autoApprovePOHUserIds.put(id, pid);
+        };
 
         return state;
     };
@@ -99,6 +108,8 @@ module State {
             pohVotes = Iter.toArray(state.pohVotes.entries());
             pohContent2votes = Rel.share<Text, Text>(state.pohContent2votes.getRel());
             mods2Pohvotes = Rel.share<Principal, Text>(state.mods2Pohvotes.getRel());
+            autoApprovePOHUserIds = Iter.toArray(state.autoApprovePOHUserIds.entries());
+
         };
         return stableState;
     };
