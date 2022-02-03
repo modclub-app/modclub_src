@@ -62,7 +62,7 @@ export default function NewPohProfile({ match }) {
   }
 
   useEffect(() => {
-    initialCall();
+    isAuthenticated && initialCall();
   }, [isAuthenticated]);
 
   useEffect(() => {
