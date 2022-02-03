@@ -277,10 +277,12 @@ export default function PohApplicant() {
   }
 
   const isDisabled = (values: any) => {
-    const checkedLength = Object.keys(values).length;
+    const checked = Object.keys(values).filter(rule =>
+      rule != "voteIncorrectlyConfirmation" && rule != "voteRulesConfirmation"
+    )
     let formRules = [];
     content.pohTaskData.forEach(task => formRules.push(...task.allowedViolationRules));
-    return checkedLength === formRules.length ? false : true;
+    return checked.length === formRules.length ? false : true;
   }
 
   const parentSubmit = (values: any) => {
@@ -389,12 +391,11 @@ export default function PohApplicant() {
                   <Card.Content>
                     <ul>
                       {Object.keys(values).map((key, index) => (
-                        values[key] != "confirm" && values[key] != "voteIncorrectlyConfirmation" && values[key] != "voteRulesConfirmation" &&
-                          <li key={index}>
-                            {index + 1}. {values[key]}
-                          </li>
-                        )
-                      )}
+                        key != "confirm" && key != "voteIncorrectlyConfirmation" && key != "voteRulesConfirmation" && 
+                        <li key={index}>
+                          {index + 1}. {values[key]}
+                        </li>
+                      ))}
                     </ul>
                   </Card.Content>
                 </Card>
