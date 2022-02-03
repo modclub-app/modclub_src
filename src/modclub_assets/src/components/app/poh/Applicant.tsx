@@ -261,7 +261,6 @@ export default function PohApplicant() {
   const getApplicant = async () => {
     setLoading(true)
     const res = await getPohTaskData(packageId);
-    console.log("getPohTaskData res", res);
     setContent(res.ok);
     setLoading(false);
   }
