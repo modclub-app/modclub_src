@@ -2,6 +2,7 @@ import { Optional } from "./api";
 import { Profile } from "./types";
 import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
 import { submitChallengeData } from "./api";
+import { fetchWithJwt } from "./jwt";
 
 export function getFileExtension(type: string): any | null {
   switch (type) {
@@ -154,4 +155,10 @@ export function getChecked(values: any) {
     }
   }
   return checked;
+}
+
+export async function fetchObjectUrl(url: string): Promise<string> {
+  const res = await fetchWithJwt(url);
+  const imageBlob = await res.blob();
+  return URL.createObjectURL(imageBlob);
 }

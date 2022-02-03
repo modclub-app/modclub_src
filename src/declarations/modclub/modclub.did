@@ -207,9 +207,11 @@ type ModClub =
  service {
    addRules: (vec text) -> () oneway;
    addToAirdropWhitelist: (vec principal) -> ();
+   addToApprovedUser: (principal) -> ();
    airdropRegister: () -> (AirdropUser);
    checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
+   generateSigningKey: () -> ();
    generateUniqueToken: (principal) -> (PohUniqueToken);
    getActivity: (bool) -> (vec Activity) query;
    getAirdropUsers: () -> (vec AirdropUser);
@@ -220,7 +222,7 @@ type ModClub =
    getModclubHoldings: () -> (Holdings) query;
    getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
    getPohTaskData: (text) -> (Result_1);
-   getPohTasks: (ContentStatus) -> (vec PohTaskPlus) query;
+   getPohTasks: (ContentStatus) -> (vec PohTaskPlus);
    getProfile: () -> (Profile) query;
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
@@ -229,6 +231,7 @@ type ModClub =
    getTokenHoldings: () -> (Holdings) query;
    getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
+   issueJwt: () -> (text);
    populateChallenges: () -> ();
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);

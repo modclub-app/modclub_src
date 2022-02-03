@@ -62,9 +62,11 @@ export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export interface ModClub {
   'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
+  'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
   'airdropRegister' : () => Promise<AirdropUser>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
+  'generateSigningKey' : () => Promise<undefined>,
   'generateUniqueToken' : (arg_0: Principal) => Promise<PohUniqueToken>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
@@ -86,6 +88,7 @@ export interface ModClub {
   'getTokenHoldings' : () => Promise<Holdings>,
   'getVotePerformance' : () => Promise<number>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
+  'issueJwt' : () => Promise<string>,
   'populateChallenges' : () => Promise<undefined>,
   'registerModerator' : (
       arg_0: string,

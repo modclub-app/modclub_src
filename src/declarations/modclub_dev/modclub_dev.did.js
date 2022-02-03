@@ -264,9 +264,11 @@ export const idlFactory = ({ IDL }) => {
   const ModClub = IDL.Service({
     'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
+    'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
+    'generateSigningKey' : IDL.Func([], [], []),
     'generateUniqueToken' : IDL.Func([IDL.Principal], [PohUniqueToken], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
@@ -285,11 +287,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getPohTaskData' : IDL.Func([IDL.Text], [Result_1], []),
-    'getPohTasks' : IDL.Func(
-        [ContentStatus],
-        [IDL.Vec(PohTaskPlus)],
-        ['query'],
-      ),
+    'getPohTasks' : IDL.Func([ContentStatus], [IDL.Vec(PohTaskPlus)], []),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
@@ -298,6 +296,7 @@ export const idlFactory = ({ IDL }) => {
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
     'getVotePerformance' : IDL.Func([], [IDL.Float64], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
+    'issueJwt' : IDL.Func([], [IDL.Text], []),
     'populateChallenges' : IDL.Func([], [], []),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],

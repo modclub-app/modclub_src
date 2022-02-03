@@ -4,7 +4,7 @@ import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
 import { formatDate, getUrlForData } from "../../../utils/util";
 import { getPohTaskData, votePohContent } from "../../../utils/api";
-import { getChecked } from "../../../utils/util";
+import { getChecked, fetchObjectUrl } from "../../../utils/util";
 import {
   Heading,
   Card,
@@ -137,10 +137,18 @@ const ProfileDetails = ({ data }) => {
 
 const ProfilePic = ({ data }) => {
   const imageUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
+  const [urlObject, setUrlObject] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const urlObject = await fetchObjectUrl(imageUrl);
+      setUrlObject(urlObject);
+    };
+    fetchData();
+  }, [])  
 
   return (
     <Card.Content>
-      <img src={imageUrl} alt="Image File" style={{ display: "block", margin: "auto" }} />
+      <img src={urlObject} alt="Image File" style={{ display: "block", margin: "auto" }} />
     </Card.Content>
   )
 };
@@ -148,13 +156,24 @@ const ProfilePic = ({ data }) => {
 const UserVideo = ({ data }) => {
   const videoUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
   const phrases = data.wordList[0]
+  const [videoObject, setVideoObject] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const urlObject = await fetchObjectUrl(videoUrl);
+      console.log("urlObject", urlObject);
+      setVideoObject(urlObject);
+    };
+    fetchData();
+  }, [])  
 
   return (
     <Card.Content>
-      <video width="100%" height="auto" controls>
-        <source src={videoUrl} />
-        Your browser does not support the video tag.
-      </video>
+      {videoObject &&
+        <video width="100%" height="auto" controls>
+          <source src={videoObject} />
+          Your browser does not support the video tag.
+        </video>
+      }
 
       <Card className="mt-5">
         <Card.Content className="columns is-multiline">
@@ -175,7 +194,7 @@ const UserVideo = ({ data }) => {
 const CheckBox = ({ id, label, values }) => {
   return (
     <>
-      <td className="has-text-left has-text-white has-text-weight-bold">
+      <td className="has-text-left has-text-white has-text-weight-medium">
         {label}
       </td>
       <td>
@@ -266,7 +285,6 @@ export default function PohApplicant() {
   }
 
   const parentSubmit = (values: any) => {
-    // console.log("values", values);
     const filteredValues = Object.values(values).filter(value => typeof value === "string");
     const confirmed = Object.values(values).filter(value => value === "confirm");
     filteredValues.length === confirmed.length ? toggleApprove() : toggleReject();
@@ -312,7 +330,7 @@ export default function PohApplicant() {
                   }
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
-                  <table className="table is-striped has-text-left">
+                  <table className="table has-text-left">
                     <tbody>
                       {task.allowedViolationRules.map((rule, index) => (
                         <tr key={index}>
