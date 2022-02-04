@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { SignIn } from '../../auth/SignIn';
 import { Steps, Step } from "../../common/steps/Steps";
-import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
@@ -111,7 +110,6 @@ export default function NewPohProfile({ match }) {
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>                
                 <Switch>
-                  <Route path={`${match.path}/:challenge-profile-details`} component={ProfileDetails}/>
                   <Route path={`${match.path}/:challenge-profile-pic`} component={ProfilePic}/>
                   <Route path={`${match.path}/:challenge-user-video`}>
                     {steps && <UserVideo steps={steps} />}
