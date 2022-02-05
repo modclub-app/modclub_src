@@ -58,6 +58,8 @@ export default function NewPohProfile({ match }) {
       return status === "notSubmitted"
     })
 
+    console.log(verified, challenges["ok"]);
+
     history.push(`${match.path}/${ uncompleted ? uncompleted.challengeId : "confirm" }`);
   }
 

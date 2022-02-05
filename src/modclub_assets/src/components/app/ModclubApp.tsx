@@ -14,6 +14,7 @@ import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 import { useAuth } from "../../utils/auth";
 import { verifyUserHumanity } from '../../utils/api';
+import { refreshJwt } from '../../utils/jwt';
 
 export default function ModclubApp() {
   const { isAuthenticated } = useAuth();
@@ -23,6 +24,7 @@ export default function ModclubApp() {
     const verified = await verifyUserHumanity();
     const [status] = Object.keys(verified[0]);
     console.log("status", status);
+    refreshJwt()
     setVerified(status);
   }
 

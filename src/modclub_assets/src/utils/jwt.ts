@@ -10,11 +10,19 @@ export async function getJwt() {
 }
 
 export async function fetchWithJwt(url: string) {
-  const jwt = await getJwt();
+  let jwt = await getJwt();
   const options = {
     method: "GET",
   };
-  return fetch(url + `&token=${jwt}`, options);
+  let result = null;
+  try {
+    result = await fetch(url + `&token=${jwt}`, options);
+  } catch (e) {
+    // Try again with a new JWT
+    jwt = await refreshJwt();
+    result = await fetch(url + `&token=${jwt}`, options);
+  }
+  return result;
 }
 
 export async function refreshJwt(): Promise<string> {
