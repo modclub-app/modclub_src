@@ -67,7 +67,6 @@ export interface ModClub {
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
   'generateSigningKey' : () => Promise<undefined>,
-  'generateUniqueToken' : (arg_0: Principal) => Promise<PohUniqueToken>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
   'getAirdropWhitelist' : () => Promise<Array<Principal>>,
@@ -89,6 +88,10 @@ export interface ModClub {
   'getVotePerformance' : () => Promise<number>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
   'issueJwt' : () => Promise<string>,
+  'pohGenerateUniqueToken' : (arg_0: Principal) => Promise<PohUniqueToken>,
+  'pohVerificationRequest' : (arg_0: Principal) => Promise<
+      PohVerificationResponse
+    >,
   'populateChallenges' : () => Promise<undefined>,
   'registerModerator' : (
       arg_0: string,
@@ -121,13 +124,7 @@ export interface ModClub {
   'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
-  'verifyForHumanity' : (arg_0: Principal) => Promise<PohVerificationResponse>,
-  'verifyUserHumanity' : () => Promise<
-      [PohChallengeStatus, [] | [PohUniqueToken]]
-    >,
-  'verifyUserHumanityAPI' : () => Promise<
-      { 'status' : PohChallengeStatus, 'token' : [] | [PohUniqueToken] }
-    >,
+  'verifyUserHumanity' : () => Promise<VerifyHumanityResponse>,
   'vote' : (
       arg_0: ContentId,
       arg_1: Decision,
@@ -286,6 +283,10 @@ export type RuleId = string;
 export interface SubscribeMessage { 'callback' : [Principal, string] }
 export type Timestamp = bigint;
 export type UserId = Principal;
+export interface VerifyHumanityResponse {
+  'status' : PohChallengeStatus,
+  'token' : [] | [PohUniqueToken],
+}
 export interface ViolatedRules { 'ruleId' : string, 'ruleDesc' : string }
 export interface Vote {
   'id' : VoteId,

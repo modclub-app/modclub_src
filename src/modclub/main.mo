@@ -67,6 +67,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   type AirdropUser = Types.AirdropUser;
   type ModeratorLeaderboard = Types.ModeratorLeaderboard;
   type RewardsEarnedMap = Types.RewardsEarnedMap;
+  type VerifyHumanityResponse = PohTypes.VerifyHumanityResponse;
 
 
   stable var signingKey = "";
@@ -919,19 +920,19 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // POH Methods
   // Method called by provider
-  public shared({ caller }) func verifyForHumanity(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
+  public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
     let pohVerificationRequest: PohTypes.PohVerificationRequest = {
         requestId = generateId(caller, "pohRequest");
         providerUserId = providerUserId;
         providerId = caller;
     };
     // validity and rules needs to come from admin dashboard here
-    await pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
+    await pohEngine.pohVerificationRequest(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
   };
   
   // Method called by provider
-  public shared({ caller }) func generateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
-    await pohEngine.generateUniqueToken(providerUserId, caller);
+  public shared({ caller }) func pohGenerateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
+    await pohEngine.pohGenerateUniqueToken(providerUserId, caller);
   };
 
   // Method called by user on UI
@@ -978,22 +979,22 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
   };
 
-  // Method called by user on UI
-  public shared({ caller }) func verifyUserHumanity() : async (PohTypes.PohChallengeStatus, ?PohTypes.PohUniqueToken)  {
-    let response =  await verifyForHumanity(caller);
-    if(response.status != #verified) {
-      return (response.status, ?(await generateUniqueToken(caller)));
-    };
-    return (response.status, null);
-  };
-
-  // Method called by user on UI
-  public shared({ caller }) func verifyUserHumanityAPI() : async {status: PohTypes.PohChallengeStatus; token: ?PohTypes.PohUniqueToken} {
-    let response =  await verifyForHumanity(caller);
-    if(response.status != #verified) {
-      return {status = response.status; token =  ?(await generateUniqueToken(caller))};
-    };
-    return {status = response.status; token =  null};
+  public shared({ caller }) func verifyUserHumanity() : async VerifyHumanityResponse {
+    if(voteManager.isAutoApprovedPOHUser(caller)) {
+      return {
+        status = #verified;
+        token = null;
+      };
+    } else {
+      let result = await pohVerificationRequest(caller);
+      if(result.status != #verified) {
+        return {
+          status = result.status;
+          token = ?(await pohGenerateUniqueToken(caller));
+        };
+      };
+      return {status = result.status; token = null;};
+    }
   };
 
   public shared({ caller }) func populateChallenges() : async () {
@@ -1007,7 +1008,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if((await verifyForHumanity(caller)).status != #verified) {
+    if((await pohVerificationRequest(caller)).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let pohTaskIds = voteManager.getTasksId(status, 10);
@@ -1073,7 +1074,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if((await verifyForHumanity(caller)).status != #verified) {
+    if((await verifyUserHumanity()).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let pohTasks = pohEngine.getPohTasks([packageId]);
@@ -1098,7 +1099,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if((await verifyForHumanity(caller)).status != #verified) {
+    if((await verifyUserHumanity()).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let holdings = tokens.getHoldings(caller);
@@ -1149,7 +1150,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if((await verifyForHumanity(caller)).status != #verified) {
+    if((await verifyUserHumanity()).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());

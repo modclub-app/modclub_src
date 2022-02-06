@@ -24,6 +24,7 @@ import {
   PohTaskPlus,
   PohRulesViolated,
   ModeratorLeaderboard,
+  VerifyHumanityResponse,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -157,9 +158,7 @@ export async function updateProviderSettings(
 }
 
 // POH Methods
-export async function verifyUserHumanity(): Promise<
-  [PohChallengeStatus, [] | [PohUniqueToken]]
-> {
+export async function verifyUserHumanity(): Promise<VerifyHumanityResponse> {
   return (await getMC()).verifyUserHumanity();
 }
 

@@ -56,10 +56,10 @@ actor {
         // userId to check if it's a human
         let userId = Principal.fromText("2vxsx-fae");
         // call to check humanity
-       let response =  await MC.verifyForHumanity(userId);
+       let response =  await MC.pohVerificationRequest(userId);
 
         if(response.status != #verified) {
-            return (response.status, ?(await MC.generateUniqueToken(userId)).token);
+            return (response.status, ?(await MC.pohGenerateUniqueToken(userId)).token);
         };
         return (response.status, null);
     };

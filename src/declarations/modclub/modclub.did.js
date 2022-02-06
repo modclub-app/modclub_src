@@ -4,7 +4,6 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Principal,
     'createdAt' : Timestamp,
   });
-  const PohUniqueToken = IDL.Record({ 'token' : IDL.Text });
   const ContentStatus = IDL.Variant({
     'new' : IDL.Null,
     'approved' : IDL.Null,
@@ -185,6 +184,20 @@ export const idlFactory = ({ IDL }) => {
     'image' : IDL.Opt(Image__1),
     'rules' : IDL.Vec(Rule),
   });
+  const PohUniqueToken = IDL.Record({ 'token' : IDL.Text });
+  const ChallengeResponse = IDL.Record({
+    'status' : PohChallengeStatus,
+    'completedOn' : IDL.Opt(IDL.Int),
+    'challengeId' : IDL.Text,
+  });
+  const PohVerificationResponse = IDL.Record({
+    'status' : PohChallengeStatus,
+    'requestId' : IDL.Text,
+    'providerId' : IDL.Principal,
+    'challenges' : IDL.Vec(ChallengeResponse),
+    'requestedOn' : IDL.Int,
+    'providerUserId' : IDL.Principal,
+  });
   const Image = IDL.Record({
     'imageType' : IDL.Text,
     'data' : IDL.Vec(IDL.Nat8),
@@ -239,18 +252,9 @@ export const idlFactory = ({ IDL }) => {
   const SubscribeMessage = IDL.Record({
     'callback' : IDL.Func([ContentResult], [], ['oneway']),
   });
-  const ChallengeResponse = IDL.Record({
+  const VerifyHumanityResponse = IDL.Record({
     'status' : PohChallengeStatus,
-    'completedOn' : IDL.Opt(IDL.Int),
-    'challengeId' : IDL.Text,
-  });
-  const PohVerificationResponse = IDL.Record({
-    'status' : PohChallengeStatus,
-    'requestId' : IDL.Text,
-    'providerId' : IDL.Principal,
-    'challenges' : IDL.Vec(ChallengeResponse),
-    'requestedOn' : IDL.Int,
-    'providerUserId' : IDL.Principal,
+    'token' : IDL.Opt(PohUniqueToken),
   });
   const ContentId = IDL.Text;
   const Decision = IDL.Variant({
@@ -269,7 +273,6 @@ export const idlFactory = ({ IDL }) => {
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'generateSigningKey' : IDL.Func([], [], []),
-    'generateUniqueToken' : IDL.Func([IDL.Principal], [PohUniqueToken], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
     'getAirdropWhitelist' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
@@ -297,6 +300,12 @@ export const idlFactory = ({ IDL }) => {
     'getVotePerformance' : IDL.Func([], [IDL.Float64], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
     'issueJwt' : IDL.Func([], [IDL.Text], []),
+    'pohGenerateUniqueToken' : IDL.Func([IDL.Principal], [PohUniqueToken], []),
+    'pohVerificationRequest' : IDL.Func(
+        [IDL.Principal],
+        [PohVerificationResponse],
+        [],
+      ),
     'populateChallenges' : IDL.Func([], [], []),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],
@@ -330,26 +339,7 @@ export const idlFactory = ({ IDL }) => {
     'toggleAllowSubmission' : IDL.Func([IDL.Bool], [], []),
     'unStakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'updateSettings' : IDL.Func([ProviderSettings], [], []),
-    'verifyForHumanity' : IDL.Func(
-        [IDL.Principal],
-        [PohVerificationResponse],
-        [],
-      ),
-    'verifyUserHumanity' : IDL.Func(
-        [],
-        [PohChallengeStatus, IDL.Opt(PohUniqueToken)],
-        [],
-      ),
-    'verifyUserHumanityAPI' : IDL.Func(
-        [],
-        [
-          IDL.Record({
-            'status' : PohChallengeStatus,
-            'token' : IDL.Opt(PohUniqueToken),
-          }),
-        ],
-        [],
-      ),
+    'verifyUserHumanity' : IDL.Func([], [VerifyHumanityResponse], []),
     'vote' : IDL.Func(
         [ContentId, Decision, IDL.Opt(IDL.Vec(RuleId))],
         [IDL.Text],

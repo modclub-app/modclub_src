@@ -6,6 +6,14 @@ import Buffer "mo:base/Buffer";
 import Types "../../types";
 
 module {
+      
+    public type PohChallengeStatus = {
+        #notSubmitted;
+        #pending;
+        #verified;
+        #rejected;
+        #expired;
+    };
 
     //POH Users Ref Data
     public type PohUsers = {
@@ -93,8 +101,6 @@ module {
         completedOn : ?Int;
     };
 
-    public type PohChallengeStatus = {#notSubmitted; #pending; #verified; #rejected; #expired;};
-
     // type our UI will use to submit data for a challenge along with offset
     public type PohChallengeSubmissionRequest = {
         challengeId: Text;
@@ -181,6 +187,11 @@ module {
         #invalidToken;
         #challengeNotPendingForSubmission;
         #invalidPackageId;
+    };
+
+    public type VerifyHumanityResponse = {
+        status: PohChallengeStatus;
+         token: ?PohUniqueToken;
     };
 
 };

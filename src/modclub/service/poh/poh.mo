@@ -27,7 +27,7 @@ module PohModule {
 
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
 
-        public func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
+        public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
         : async PohTypes.PohVerificationResponse {
             // request audit
             state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
@@ -140,7 +140,7 @@ module PohModule {
         };
 
         //Pre Step 4 Generate token
-        public func generateUniqueToken(providerUserId: Principal, providerId: Principal) : async PohTypes.PohUniqueToken {
+        public func pohGenerateUniqueToken(providerUserId: Principal, providerId: Principal) : async PohTypes.PohUniqueToken {
             //using token: as salt instead of time here to keep behavior deterministic for us
             let hash: Text = Helpers.generateHash("token:" # Principal.toText(providerUserId) # Principal.toText(providerId));
             // let uuid:Text =  await Helpers.generateUUID(); //generate uuid code here. We can use hash here instead.

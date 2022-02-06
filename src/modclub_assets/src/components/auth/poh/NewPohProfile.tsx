@@ -37,27 +37,24 @@ export default function NewPohProfile({ match }) {
   const [currentStep, setCurrentStep] = useState<string>('')
 
   const initialCall = async () => {
-    const verified = await verifyUserHumanity();
+    const response = await verifyUserHumanity();
 
-    const [status] = Object.keys(verified[0]);
-    if (status === "verified") {
+    if ('verified' in response.status) {
       history.push("/app");
       return
     }
 
-    const token = verified[1][0].token;
-    if (!token) return
+    const token = response.token;
+    if (!token.length) return
 
-    const challenges = await retrieveChallengesForUser(token);
-    setLoading(false);
+    const challenges = await retrieveChallengesForUser(token[0].token);
+    setLoading(false);``
     setSteps(challenges["ok"]);
 
     const uncompleted = challenges["ok"].find(challenge => {
       const status = Object.keys(challenge.status)[0];
       return status === "notSubmitted"
     })
-
-    console.log(verified, challenges["ok"]);
 
     history.push(`${match.path}/${ uncompleted ? uncompleted.challengeId : "confirm" }`);
   }

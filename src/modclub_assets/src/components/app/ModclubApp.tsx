@@ -18,14 +18,13 @@ import { refreshJwt } from '../../utils/jwt';
 
 export default function ModclubApp() {
   const { isAuthenticated } = useAuth();
-  const [verified, setVerified] = useState(null);
+  const [status, setStatus] = useState(null);
 
   const initialCall = async () => {
-    const verified = await verifyUserHumanity();
-    const [status] = Object.keys(verified[0]);
-    console.log("status", status);
+    const result = await verifyUserHumanity();
+    const status = Object.keys(result.status)[0];
     refreshJwt()
-    setVerified(status);
+    setStatus(status);
   }
 
   useEffect(() => {
@@ -34,24 +33,24 @@ export default function ModclubApp() {
 
   return (
     <>
-      {verified && verified != "verified" &&
+      { status &&  status != "verified" &&
          <Modal show={true} showClose={false}>
          <Modal.Card backgroundColor="circles">
            <Modal.Card.Body>
              <Heading subtitle>
               Proof of Humanity
              </Heading>
-             {verified === "pending" &&
-              <p>Your Proof of Humanity is still in progress. Please continue.</p>
+             { status === "pending" &&
+              <p>Your Proof of Humanity approval is in progress. You will be able to access MODCLUB once it is approved. Please come back later to check your status.</p>
              }
-             {verified === "notSubmitted" &&
+             { status === "notSubmitted" &&
               <p>You have not submitted your Proof of Humanity. Please do so now.</p>
              }
            </Modal.Card.Body>
            <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
-            <Link to="/new-poh-profile" className="button is-primary" style={{ textDecoration: "none" }}>
-              Continue
-            </Link>
+              {status === "notSubmitted" && <Link to="/new-poh-profile" className="button is-primary" style={{ textDecoration: "none" }}>
+                Continue
+              </Link>}
            </Modal.Card.Footer>
          </Modal.Card>
        </Modal>

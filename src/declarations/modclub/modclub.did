@@ -13,6 +13,11 @@ type ViolatedRules =
    ruleDesc: text;
    ruleId: text;
  };
+type VerifyHumanityResponse = 
+ record {
+   status: PohChallengeStatus;
+   token: opt PohUniqueToken;
+ };
 type UserId = principal;
 type Timestamp = int;
 type SubscribeMessage = record {callback: func (ContentResult) -> () oneway;};
@@ -212,7 +217,6 @@ type ModClub =
    checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
    generateSigningKey: () -> ();
-   generateUniqueToken: (principal) -> (PohUniqueToken);
    getActivity: (bool) -> (vec Activity) query;
    getAirdropUsers: () -> (vec AirdropUser);
    getAirdropWhitelist: () -> (vec principal);
@@ -232,6 +236,8 @@ type ModClub =
    getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
    issueJwt: () -> (text);
+   pohGenerateUniqueToken: (principal) -> (PohUniqueToken);
+   pohVerificationRequest: (principal) -> (PohVerificationResponse);
    populateChallenges: () -> ();
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
@@ -246,13 +252,7 @@ type ModClub =
    toggleAllowSubmission: (bool) -> ();
    unStakeTokens: (nat) -> (text);
    updateSettings: (ProviderSettings) -> ();
-   verifyForHumanity: (principal) -> (PohVerificationResponse);
-   verifyUserHumanity: () -> (PohChallengeStatus, opt PohUniqueToken);
-   verifyUserHumanityAPI: () ->
-    (record {
-       status: PohChallengeStatus;
-       token: opt PohUniqueToken;
-     });
+   verifyUserHumanity: () -> (VerifyHumanityResponse);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
    votePohContent: (text, Decision, vec PohRulesViolated) -> ();
  };
