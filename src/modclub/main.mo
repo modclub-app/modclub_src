@@ -1008,7 +1008,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if((await pohVerificationRequest(caller)).status != #verified) {
+    if((await verifyUserHumanity()).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let pohTaskIds = voteManager.getTasksId(status, 10);
