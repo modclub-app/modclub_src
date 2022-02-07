@@ -31,7 +31,7 @@ module VoteModule {
             };
         };
 
-        public query func isAutoApprovedPOHUser(userId: Principal) : Bool {
+        public func isAutoApprovedPOHUser(userId: Principal) : Bool {
             Debug.print("isAutoApprovedPOHUser: " # Principal.toText(userId));
             switch(state.autoApprovePOHUserIds.get(userId)) {
                 case(null){
@@ -48,7 +48,7 @@ module VoteModule {
             state.autoApprovePOHUserIds.put(userId, userId);
         };
 
-        public query func getTasksId(status: Types.ContentStatus, limit: Nat) : [Text] {
+        public func getTasksId(status: Types.ContentStatus, limit: Nat) : [Text] {
             var sourceBuffer = Buffer.Buffer<Text>(1);
             switch(status) {
                 case(#new) {
@@ -73,7 +73,7 @@ module VoteModule {
             return buf.toArray();
         };
 
-        public query func getContentStatus(packageId: Text) : Types.ContentStatus {
+        public func getContentStatus(packageId: Text) : Types.ContentStatus {
             switch(state.package2Status.get(packageId)) {
                 case(null) {
                     return #new;
@@ -84,11 +84,11 @@ module VoteModule {
             };
         };
 
-        public query func getPOHVotesId(packageId: Text) : [Text] {
+        public func getPOHVotesId(packageId: Text) : [Text] {
             return state.pohContent2votes.get0(packageId);
         };
 
-        public query func getPOHVote(voteId: Text) : ?VoteTypes.Vote {
+        public func getPOHVote(voteId: Text) : ?VoteTypes.Vote {
             return state.pohVotes.get(voteId);
         };
 
@@ -144,7 +144,7 @@ module VoteModule {
             #ok(finishedVoting);
         };
         
-        public query func getVoteCountForPoh(userId: Principal, packageId: Text) : VoteTypes.VoteCount {
+        public func getVoteCountForPoh(userId: Principal, packageId: Text) : VoteTypes.VoteCount {
             var voteApproved : Nat = 0;
             var voteRejected : Nat  = 0;
             var hasVoted : Bool = false;
@@ -171,7 +171,7 @@ module VoteModule {
             };
         };
 
-        public query func checkPohUserHasVoted(userId: Principal, packageId: Text) : Bool {
+        public func checkPohUserHasVoted(userId: Principal, packageId: Text) : Bool {
             for(vid in state.pohContent2votes.get0(packageId).vals()){
                 switch(state.pohVotes.get(vid)){
                     case(?v){
