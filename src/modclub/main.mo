@@ -1121,9 +1121,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if( holdings.stake < ModClubParams.MIN_STAKE_POH) { 
       throw Error.reject("Not enough tokens staked");
     };
-
+    if(voteManager.checkPohUserHasVoted(caller, packageId)) {
+      throw Error.reject("User has already voted");
+    };
     if(voteManager.getContentStatus(packageId) != #new) {
-      throw Error.reject("User has already voted.");
+      throw Error.reject("Vote has been finalized.");
     };
 
     if(pohEngine.validateRules(violatedRules) == false) {
