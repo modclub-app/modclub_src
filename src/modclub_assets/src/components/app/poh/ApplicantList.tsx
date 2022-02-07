@@ -35,21 +35,20 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
   return (
     <Link
       to={`/app/poh/${applicant.packageId}`}
-      className="card is-block"
+      className="card is-flex is-flex-direction-column is-justify-content-flex-end"
       style={{
         background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 90%), url(${urlObject}) no-repeat center`,
-        height: "100%",
-        maxWidth: 297, minWidth: 297, minHeight: 395, maxHeight: 395
+        height: 395
       }}
     >
-      <Card.Header justifyContent="start">
+      <Card.Header justifyContent="start" style={{ marginBottom: "auto", boxShadow: "none" }}>
         <Progress
           value={applicant.voteCount}
           min={applicant.minVotes}
         />
       </Card.Header>
 
-      <Card.Content style={{ paddingTop: "50%", height: "60%" }}>
+      <Card.Content>
         <Heading subtitle marginless>
           {fullName}
         </Heading>
@@ -117,7 +116,6 @@ export default function PohApplicantList() {
             mobile={{ size: 12 }}
             tablet={{ size: 6 }}
             fullhd={{ size: 4 }}
-            style={{ maxWidth: 297, minWidth: 297, minHeight: 395, maxHeight: 395 }}
           >
             <ApplicantSnippet applicant={applicant} />
           </Columns.Column>
