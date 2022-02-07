@@ -2,9 +2,8 @@ import * as React from 'react'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
-import { formatDate, getUrlForData, getViolatedRules } from "../../../utils/util";
+import { formatDate, getUrlForData, getViolatedRules, fetchObjectUrl } from "../../../utils/util";
 import { getPohTaskData, votePohContent } from "../../../utils/api";
-import { fetchObjectUrl } from "../../../utils/util";
 import {
   Heading,
   Card,
@@ -20,6 +19,7 @@ import Confirm from "../../common/confirm/Confirm";
 import Progress from "../../common/progress/Progress";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
+import { PohRulesViolated, ViolatedRules } from '../../../utils/types';
 
 const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
   const [submitting, setSubmitting] = useState(null);
@@ -41,16 +41,17 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
     return false;
   }
 
-  const onFormSubmit = async (values: Object) => {
+  const onFormSubmit = async (values: {[key: string]: string}) => {
     const rules = getViolatedRules(values).map(rule => {
-      return { ruleId: rule.slice(-1), challengeId: rule.substring(0, rule.length - 2) }
+      let result: PohRulesViolated = {
+        ruleId: rule.slice(-1),
+        challengeId: rule.substring(0, rule.length - 2)
+      };
+      return result;
     });
-
-    console.log("rules: ", rules);
-
+    
     try {
       setSubmitting(true);
-      // @ts-ignore
       const result = await votePohContent(packageId, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, rules);
       console.log("result", result);
       setSubmitting(false);

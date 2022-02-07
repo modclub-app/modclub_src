@@ -142,8 +142,8 @@ export function getUrlForData(canisterId: String, contentId: String) {
   }
 }
 
-export function getViolatedRules(values: any) {
-  const result = [];
+export function getViolatedRules(values: { [key: string]: string }): string[] {
+  const result: [string?] = [];
   for (const key in values) {
     const value = values[key];
     if (

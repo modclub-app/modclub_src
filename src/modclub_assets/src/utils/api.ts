@@ -188,7 +188,7 @@ export async function getPohTaskData(packageId: string): Promise<any> {
 export async function votePohContent(
   packageId: string,
   decision: Decision,
-  violatedRules: [PohRulesViolated]
+  violatedRules: PohRulesViolated[]
 ): Promise<void> {
   return (await getMC()).votePohContent(packageId, decision, violatedRules);
 }
