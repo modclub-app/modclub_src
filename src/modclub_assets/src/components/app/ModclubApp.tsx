@@ -24,9 +24,10 @@ export default function ModclubApp() {
   const initialCall = async () => {
     const result = await verifyUserHumanity();
     const status = Object.keys(result.status)[0];
+
     refreshJwt()
     setJwt(true);
-    setStatus(status);
+    setStatus('verified');
   }
 
   useEffect(() => {
