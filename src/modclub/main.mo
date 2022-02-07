@@ -1024,7 +1024,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       case(_)();
     };
     if((await pohVerificationRequest(caller)).status != #verified) {
-      throw Error.reject("POH not completed for moderator.");
+      throw Error.reject("Proof of Humanity not completed user");
     };
     let pohTaskIds = voteManager.getTasksId(status, 10);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
@@ -1090,7 +1090,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       case(_)();
     };
     if((await pohVerificationRequest(caller)).status != #verified) {
-      throw Error.reject("POH not completed for moderator.");
+      throw Error.reject("Proof of Humanity not completed user");
     };
     let pohTasks = pohEngine.getPohTasks([packageId]);
     if(pohTasks.size() == 0) {
@@ -1115,7 +1115,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       case(_)();
     };
     if((await pohVerificationRequest(caller)).status != #verified) {
-      throw Error.reject("POH not completed for moderator.");
+      throw Error.reject("Proof of Humanity not completed user");
     };
     let holdings = tokens.getHoldings(caller);
     if( holdings.stake < ModClubParams.MIN_STAKE_POH) { 
@@ -1170,7 +1170,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
     Debug.print("Issue JWT Check user humanity " # Principal.toText(caller));
     if((await pohVerificationRequest(caller)).status != #verified) {
-      throw Error.reject("POH not completed for moderator.");
+      throw Error.reject("Proof of Humanity not completed user");
     };
     let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());
     let signature = Helpers.generateHash(message # signingKey);

@@ -92,21 +92,21 @@ module VoteModule {
             return state.pohVotes.get(voteId);
         };
 
-        public func votePohContent(userId: Principal, packageId: Text, decision: Types.Decision, violatedRules: [Types.PohRulesViolated])  
+        public func votePohContent(
+            userId: Principal,
+            packageId: Text,
+            decision: Types.Decision,
+            violatedRules: [Types.PohRulesViolated]
+            )  
         : Result.Result<Bool, VoteTypes.VoteError> {
-
-            let voteId = "vote-poh-" # Principal.toText(userId) # packageId;
-            switch(state.pohVotes.get(voteId)){
-                case(?v){
+            Debug.print("votePohContent: " # packageId # " UserId " # Principal.toText(userId));
+            if (checkPohUserHasVoted(userId, packageId)) {
                     return #err(#userAlreadyVoted);
-                };
-                case(_)();
             };
-
-            switch(state.package2Status.get(packageId)) {
-                case(null)();
-                case(?status) {
-                    if(status != #new) {
+            switch (state.package2Status.get(packageId)) {
+                case (null)();
+                case (?status) {
+                    if (status != #new) {
                         return #err(#contentAlreadyReviewed);
                     };
                 };
@@ -117,7 +117,7 @@ module VoteModule {
             var voteRejected = voteCount.rejectedCount;
 
             let vote : VoteTypes.Vote = {
-                id = voteId;
+                id = getVoteId(userId, packageId);
                 contentId =  packageId;
                 userId = userId;
                 decision = decision; 
@@ -141,6 +141,7 @@ module VoteModule {
 
             // Evaluate and send notification to provider
             let finishedVoting = evaluatePohVotes(packageId, voteApproved, voteRejected);
+            Debug.print("Finished voting: ");
             #ok(finishedVoting);
         };
         
@@ -172,19 +173,19 @@ module VoteModule {
         };
 
         public func checkPohUserHasVoted(userId: Principal, packageId: Text) : Bool {
-            for(vid in state.pohContent2votes.get0(packageId).vals()){
-                switch(state.pohVotes.get(vid)){
-                    case(?v){
-                        if(v.userId == userId){
-                            return true;
-                        };
-                    }; 
-                    case(_) ();
+        let voteId = getVoteId(userId, packageId);
+            switch(state.pohVotes.get(voteId)){
+                case(?v){
+                    return true;
                 };
+                case(_)();
             };
             return false;
         };
 
+        public func getVoteId(userId: Principal, packageId: Text) : Text {
+            return "vote-poh-" # Principal.toText(userId) # packageId;
+        };
 
         public func evaluatePohVotes(packageId: Text, aCount: Nat, rCount: Nat) : Bool {
             var finishedVote = false;

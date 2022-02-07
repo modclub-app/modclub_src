@@ -24,7 +24,6 @@ import { PohRulesViolated, ViolatedRules } from '../../../utils/types';
 const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
   const [submitting, setSubmitting] = useState(null);
   const [message, setMessage] = useState(null);
-  console.log("values", values);
   
   const isDisabled = (values: any) => {
     if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true;
@@ -53,7 +52,7 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
     try {
       setSubmitting(true);
       const result = await votePohContent(packageId, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, rules);
-      console.log("result", result);
+      setMessage({ success: true, value: "Vote submitted successfully" });
       setSubmitting(false);
     } catch (e) {
       const regEx = /Reject text: (.*)/g;
@@ -159,7 +158,6 @@ const UserVideo = ({ data }) => {
   useEffect(() => {
     const fetchData = async () => {
       const urlObject = await fetchObjectUrl(videoUrl);
-      console.log("urlObject", urlObject);
       setVideoObject(urlObject);
     };
     fetchData();
