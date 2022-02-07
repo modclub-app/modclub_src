@@ -15,7 +15,7 @@ import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
 import { ContentPlus } from "../../../utils/types";
-import { getChecked } from "../../../utils/util";
+import { getViolatedRules } from "../../../utils/util";
 
 const Modal_ = ({
   title,
@@ -52,7 +52,7 @@ const Modal_ = ({
 
   const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
-    const checked = getChecked(values);
+    const checked = getViolatedRules(values);
 
     try {
       setSubmitting(true);
@@ -169,7 +169,7 @@ const Modal_ = ({
   );
 };
 
-export default function ApproveReject({
+export default function ApproveRejectTask({
   task,
   fullWidth = false,
   onUpdate,
