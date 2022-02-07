@@ -2,8 +2,8 @@ import * as React from 'react'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
-import { formatDate, getUrlForData, getViolatedRules, fetchObjectUrl } from "../../../utils/util";
-import { getPohTaskData, votePohContent } from "../../../utils/api";
+import { formatDate, getUrlForData, fetchObjectUrl } from "../../../utils/util";
+import { getPohTaskData } from "../../../utils/api";
 import {
   Heading,
   Card,
@@ -14,23 +14,15 @@ import {
 } from "react-bulma-components";
 import { Form, Field } from "react-final-form";
 import Userstats from "../profile/Userstats";
-import Confirm from "../../common/confirm/Confirm";
 import Progress from "../../common/progress/Progress";
-import approveImg from "../../../../assets/approve.svg";
-import rejectImg from "../../../../assets/reject.svg";
-import { PohRulesViolated, ViolatedRules } from '../../../utils/types';
-
-// import Modal_ from "./_Modal";
-import ApproveRejectPOH from "../modals/ApproveRejectPOH2";
-import Fresh from "../modals/Fresh";
-
+import ApproveRejectPOH from "../modals/ApproveRejectPOH";
 
 const ProfileDetails = ({ data }) => {
   return (
     <Card.Content>
       <table className="table is-label">
         <tbody>
-        <tr>
+          <tr>
             <td>Username:</td>
             <td>{data.userName}</td>
           </tr>
@@ -168,12 +160,6 @@ export default function PohApplicant() {
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
 
-  // const [showApprove, setShowApprove] = useState(false);
-  // const toggleApprove = () => setShowApprove(!showApprove);
-
-  // const [showReject, setShowReject] = useState(false);
-  // const toggleReject = () => setShowReject(!showReject);
-
   const getApplicant = async () => {
     setLoading(true)
     const res = await getPohTaskData(packageId);
@@ -192,28 +178,12 @@ export default function PohApplicant() {
     return challengeId;
   }
 
-  // const isDisabled = (values: any) => {
-  //   const checked = Object.keys(values).filter(rule =>
-  //     rule != "voteIncorrectlyConfirmation" && rule != "voteRulesConfirmation"
-  //   )
-  //   let formRules = [];
-  //   content.pohTaskData.forEach(task => formRules.push(...task.allowedViolationRules));
-  //   return checked.length === formRules.length ? false : true;
-  // }
-
-
   const [formRules, setFormRules] = useState([]);
   useEffect(() => {
     content && content.pohTaskData && content.pohTaskData.forEach(task => {
       setFormRules(existingRule => [...existingRule, ...task.allowedViolationRules]);
     });
   }, [content]);
-
-  const parentSubmit = (values: any) => {
-    const filteredValues = Object.values(values).filter(value => typeof value === "string");
-    const confirmed = Object.values(values).filter(value => value === "confirm");
-    // filteredValues.length === confirmed.length ? toggleApprove() : toggleReject();
-  }
 
   if (!content) {
     return (
@@ -228,8 +198,7 @@ export default function PohApplicant() {
       <Userstats />
       
       <Form
-        // initialValues={{ ...content.pohTaskData }} 
-        onSubmit={parentSubmit}
+        onSubmit={() => {}}
         render={({ handleSubmit, values }) => (
         <form onSubmit={handleSubmit}>
           <Card>
@@ -280,64 +249,10 @@ export default function PohApplicant() {
               </Card.Content>
             ))}
 
-            <Fresh
+            <ApproveRejectPOH
               formRules={formRules}
+              reward={content.reward}
             />
-
-            {/* <Card.Footer className="pt-0" style={{ border: 0 }}>
-              <Button
-                size="large"
-                color="primary"
-                disabled={isDisabled(values)}
-                style={{ width: 320, margin: "auto" }}
-              >
-                Submit
-              </Button>
-            </Card.Footer>
-
-            {showApprove &&
-              <ApproveRejectPOH
-                title="Approve Confirmation"
-                image={approveImg}
-                toggle={toggleApprove}
-                packageId={packageId}
-                values={values}
-                reward={content.reward}
-              >
-                <p>You are confirming that this is a real human.</p>
-                <p>Voting incorrectly will result in loss of some staked tokens.</p>
-                <Confirm
-                  type="warning"
-                  id="voteRulesConfirmation"
-                  label="I confirm that this is a real person"
-                />
-              </ApproveRejectPOH>
-            }
-
-            {showReject &&
-              <ApproveRejectPOH
-                title="Reject Confirmation"
-                image={rejectImg}
-                toggle={toggleReject}
-                packageId={packageId}
-                values={values}
-                reward={content.reward}
-              > 
-                <p className="mb-3">These are the failed requirements you selected:</p>
-                <Card backgroundColor="dark">
-                  <Card.Content>
-                    <ul>
-                      {Object.keys(values).map((key, index) => (
-                        values[key] != "confirm" && key != "voteIncorrectlyConfirmation" && key != "voteRulesConfirmation" && 
-                        <li key={index}>
-                          {index + 1}. {values[key]}
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Content>
-                </Card>
-              </ApproveRejectPOH>
-            } */}
           </Card>
         </form>
       )}

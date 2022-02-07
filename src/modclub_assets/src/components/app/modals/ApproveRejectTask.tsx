@@ -17,7 +17,7 @@ import { vote, getProviderRules } from "../../../utils/api";
 import { ContentPlus } from "../../../utils/types";
 import { getViolatedRules } from "../../../utils/util";
 
-const Modal_ = ({
+const ConfirmationModal = ({
   title,
   image,
   task,
@@ -121,7 +121,6 @@ const Modal_ = ({
     fetchRules();
   }, []);
 
-
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
       <Modal.Card backgroundColor="circles">
@@ -205,7 +204,7 @@ export default function ApproveRejectTask({
       </Button>
 
       {showApprove &&
-        <Modal_
+        <ConfirmationModal
           title="Approve Confirmation"
           image={approveImg}
           task={task}
@@ -214,7 +213,7 @@ export default function ApproveRejectTask({
         />
       }
       {showReject &&
-        <Modal_
+        <ConfirmationModal
           title="Reject Confirmation"
           image={rejectImg}
           task={task}
