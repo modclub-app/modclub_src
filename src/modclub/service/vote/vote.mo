@@ -62,6 +62,7 @@ module VoteModule {
                 };
             };
 
+
             var fetchSize = limit;
             if(limit > sourceBuffer.size()) {
                 fetchSize := sourceBuffer.size();
@@ -212,7 +213,7 @@ module VoteModule {
             let newBuffer = Buffer.Buffer<Text>(buff.size());
             for(val in buff.vals()) {
                 if(val != ele) {
-                    newBuffer.add(ele);
+                    newBuffer.add(val);
                 }
             };
             return newBuffer;
