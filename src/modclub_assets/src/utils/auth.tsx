@@ -47,7 +47,8 @@ export function useProvideAuth(authClient): AuthContext {
     console.log("setUserFromLocalStorage");
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
     console.log("lsUser", lsUser);
-    if (lsUser) {
+    if (lsUser && !user && !isAuthenticatedLocal) {
+      console.log('Setting User from local storage!!!!');
       setUser(lsUser);
       setIsAuthenticatedLocal(true);
       // Check to make sure your local storage user exists on the backend, and

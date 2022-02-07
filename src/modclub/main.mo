@@ -921,6 +921,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
   // POH Methods
   // Method called by provider
   public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
+     if(voteManager.isAutoApprovedPOHUser(providerUserId)) {
+        return
+        {
+            requestId = "null";
+            providerUserId = caller;
+            status = #verified;
+            challenges = [];
+            providerId = initializer;
+            requestedOn = Helpers.timeNow();
+        };
+    };
     let pohVerificationRequest: PohTypes.PohVerificationRequest = {
         requestId = generateId(caller, "pohRequest");
         providerUserId = providerUserId;
@@ -980,12 +991,14 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func verifyUserHumanity() : async VerifyHumanityResponse {
+    Debug.print("Verifying humanity called by: " # Principal.toText(caller));
     if(voteManager.isAutoApprovedPOHUser(caller)) {
       return {
         status = #verified;
         token = null;
       };
     } else {
+      Debug.print("Calling pohVerificationRequest");
       let result = await pohVerificationRequest(caller);
       if(result.status != #verified) {
         return {
@@ -998,6 +1011,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func populateChallenges() : async () {
+    Debug.print("Populating challenges called by: " # Principal.toText(caller));
+    await onlyOwner(caller);
     pohEngine.populateChallenges();
   };
 
@@ -1008,7 +1023,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if((await verifyUserHumanity()).status != #verified) {
+    if((await pohVerificationRequest(caller)).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let pohTaskIds = voteManager.getTasksId(status, 10);
@@ -1074,7 +1089,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if((await verifyUserHumanity()).status != #verified) {
+    if((await pohVerificationRequest(caller)).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let pohTasks = pohEngine.getPohTasks([packageId]);
@@ -1099,7 +1114,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if((await verifyUserHumanity()).status != #verified) {
+    if((await pohVerificationRequest(caller)).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let holdings = tokens.getHoldings(caller);
@@ -1144,13 +1159,15 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func issueJwt() : async Text {
+    Debug.print("Issue JWT called by " # Principal.toText(caller));
     switch(checkProfilePermission(caller, #vote)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
       };
       case(_)();
     };
-    if((await verifyUserHumanity()).status != #verified) {
+    Debug.print("Issue JWT Check user humanity " # Principal.toText(caller));
+    if((await pohVerificationRequest(caller)).status != #verified) {
       throw Error.reject("POH not completed for moderator.");
     };
     let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());
@@ -1167,6 +1184,12 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   // Helpers
+  public shared({caller}) func adminInit() : async () {
+    await onlyOwner(caller);
+    await generateSigningKey();
+    await populateChallenges();
+  };
+
   private func getProviderRules(providerId: Principal) : [Rule] {
       let buf = Buffer.Buffer<Types.Rule>(0);
       for(ruleId in state.provider2rules.get0(providerId).vals()){

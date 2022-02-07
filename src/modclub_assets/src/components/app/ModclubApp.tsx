@@ -17,19 +17,23 @@ import { verifyUserHumanity } from '../../utils/api';
 import { refreshJwt } from '../../utils/jwt';
 
 export default function ModclubApp() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAuthReady, user } = useAuth();
   const [status, setStatus] = useState(null);
+  const [isJwtSet, setJwt] = useState(false);
 
   const initialCall = async () => {
     const result = await verifyUserHumanity();
     const status = Object.keys(result.status)[0];
     refreshJwt()
+    setJwt(true);
     setStatus(status);
   }
 
   useEffect(() => {
-    isAuthenticated && initialCall();
-  }, [isAuthenticated]);
+    if (!isJwtSet) {
+      user && initialCall();
+    }
+  }, [user]);
 
   return (
     <>

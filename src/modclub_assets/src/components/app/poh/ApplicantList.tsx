@@ -29,6 +29,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
       setUrlObject(urlObject);
     };
     fetchData();
+    return () => { setUrlObject(null) };
   }, [])   
   
   return (

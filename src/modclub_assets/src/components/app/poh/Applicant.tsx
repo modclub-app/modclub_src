@@ -391,7 +391,7 @@ export default function PohApplicant() {
                   <Card.Content>
                     <ul>
                       {Object.keys(values).map((key, index) => (
-                        key != "confirm" && key != "voteIncorrectlyConfirmation" && key != "voteRulesConfirmation" && 
+                        values[key] != "confirm" && key != "voteIncorrectlyConfirmation" && key != "voteRulesConfirmation" && 
                         <li key={index}>
                           {index + 1}. {values[key]}
                         </li>

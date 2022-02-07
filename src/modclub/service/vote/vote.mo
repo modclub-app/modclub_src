@@ -10,6 +10,7 @@ import Time "mo:base/Time";
 import Types "../../types";
 import VoteState "./state";
 import VoteTypes "./types";
+import Debug "mo:base/Debug";
 
 module VoteModule {
 
@@ -31,6 +32,7 @@ module VoteModule {
         };
 
         public func isAutoApprovedPOHUser(userId: Principal) : Bool {
+            Debug.print("isAutoApprovedPOHUser: " # Principal.toText(userId));
             switch(state.autoApprovePOHUserIds.get(userId)) {
                 case(null){
                     return false;
@@ -42,6 +44,7 @@ module VoteModule {
         };
 
         public func addToAutoApprovedPOHUser(userId: Principal) {
+            Debug.print("addToAudoapprovedUser: " # Principal.toText(userId));
             state.autoApprovePOHUserIds.put(userId, userId);
         };
 
