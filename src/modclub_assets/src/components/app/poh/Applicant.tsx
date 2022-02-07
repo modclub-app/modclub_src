@@ -21,7 +21,7 @@ import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { PohRulesViolated, ViolatedRules } from '../../../utils/types';
 
-const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
+const Modal_ = ({ toggle, title, image, children, packageId, values, reward }) => {
   const [submitting, setSubmitting] = useState(null);
   const [message, setMessage] = useState(null);
   
@@ -77,7 +77,7 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
           <Confirm
             type="danger"
             id="voteIncorrectlyConfirmation"
-            label={`I understand I will lose 5 MOD if I vote incorrectly`}
+            label={`I understand I will lose ${reward} MOD if I vote incorrectly`}
           />
 
         </Modal.Card.Body>
@@ -365,6 +365,7 @@ export default function PohApplicant() {
                 toggle={toggleApprove}
                 packageId={packageId}
                 values={values}
+                reward={content.reward}
               >
                 <p>You are confirming that this is a real human.</p>
                 <p>Voting incorrectly will result in loss of some staked tokens.</p>
@@ -383,6 +384,7 @@ export default function PohApplicant() {
                 toggle={toggleReject}
                 packageId={packageId}
                 values={values}
+                reward={content.reward}
               > 
                 <p className="mb-3">These are the failed requirements you selected:</p>
                 <Card backgroundColor="dark">

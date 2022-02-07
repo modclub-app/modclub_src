@@ -475,10 +475,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
           throw Error.reject("Unauthorized, user does not have an identity");
       };
 
-      // switch(state.airdropWhitelist.get(caller)){
-      //   case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
-      //   case(_) ();
-      // };
+      switch(state.airdropWhitelist.get(caller)){
+        case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
+        case(_) ();
+      };
 
       Debug.print("Registering moderator");
       var _userName = Text.trim(userName, #text " ");
