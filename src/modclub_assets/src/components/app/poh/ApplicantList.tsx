@@ -37,7 +37,9 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
       to={`/app/poh/${applicant.packageId}`}
       className="card is-block"
       style={{
-        background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%), url(${urlObject}) no-repeat top center`
+        background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 90%), url(${urlObject}) no-repeat center`,
+        height: "100%",
+        maxWidth: 297, minWidth: 297, minHeight: 395, maxHeight: 395
       }}
     >
       <Card.Header justifyContent="start">
@@ -47,7 +49,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
         />
       </Card.Header>
 
-      <Card.Content style={{ paddingTop: "50%" }}>
+      <Card.Content style={{ paddingTop: "50%", height: "60%" }}>
         <Heading subtitle marginless>
           {fullName}
         </Heading>
@@ -63,7 +65,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
           </span>
         </Card.Header.Title>
 
-        <Button.Group className="is-flex-wrap-nowrap mt-5">
+        <Button.Group className="is-flex-wrap-nowrap mt-5" style={{ paddingBottom: 10 }}>
           <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
             <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">local_atm</span>
@@ -115,7 +117,7 @@ export default function PohApplicantList() {
             mobile={{ size: 12 }}
             tablet={{ size: 6 }}
             fullhd={{ size: 4 }}
-            style={{ maxWidth: 480 }}
+            style={{ maxWidth: 297, minWidth: 297, minHeight: 395, maxHeight: 395 }}
           >
             <ApplicantSnippet applicant={applicant} />
           </Columns.Column>
