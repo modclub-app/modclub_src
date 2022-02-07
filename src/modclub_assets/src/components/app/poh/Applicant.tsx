@@ -2,9 +2,9 @@ import * as React from 'react'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
-import { formatDate, getUrlForData } from "../../../utils/util";
+import { formatDate, getUrlForData, getViolatedRules } from "../../../utils/util";
 import { getPohTaskData, votePohContent } from "../../../utils/api";
-import { getChecked, fetchObjectUrl } from "../../../utils/util";
+import { fetchObjectUrl } from "../../../utils/util";
 import {
   Heading,
   Card,
@@ -24,7 +24,8 @@ import rejectImg from "../../../../assets/reject.svg";
 const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
   const [submitting, setSubmitting] = useState(null);
   const [message, setMessage] = useState(null);
-
+  console.log("values", values);
+  
   const isDisabled = (values: any) => {
     if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true;
     if (title === "Approve Confirmation") {
@@ -40,15 +41,12 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
     return false;
   }
 
-  const onFormSubmit = async (values: any) => {
-    console.log("onFormSubmit values !!!", values)
-    const checked = getChecked(values);
-
-    // export interface PohRulesViolated { 'ruleId' : string, 'challengeId' : string }
-    // TODO! format the array of rules when I get real rule id's returned..
-    const rules = checked.map(rule => {
+  const onFormSubmit = async (values: Object) => {
+    const rules = getViolatedRules(values).map(rule => {
       return { ruleId: rule.slice(-1), challengeId: rule.substring(0, rule.length - 2) }
     });
+
+    console.log("rules: ", rules);
 
     try {
       setSubmitting(true);
@@ -270,9 +268,9 @@ export default function PohApplicant() {
   }, [user]);
 
   const formatTitle = (challengeId) => {
-    if (challengeId === "challenge-profile-details") return "Challenge: Profile Details";
-    if (challengeId === "challenge-profile-pic") return "Challenge: Profile Picture";
-    if (challengeId === "challenge-user-video") return "Challenge: Video";
+    if (challengeId === "challenge-profile-details") return "Profile Details";
+    if (challengeId === "challenge-profile-pic") return "Profile Picture";
+    if (challengeId === "challenge-user-video") return "Unique Phrase Video";
     return challengeId;
   }
 

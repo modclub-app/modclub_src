@@ -142,19 +142,20 @@ export function getUrlForData(canisterId: String, contentId: String) {
   }
 }
 
-export function getChecked(values: any) {
-  const checked = [];
+export function getViolatedRules(values: any) {
+  const result = [];
   for (const key in values) {
-    const value = values[key][0];
+    const value = values[key];
     if (
       value &&
       value != "voteIncorrectlyConfirmation" &&
-      value != "voteRulesConfirmation"
+      value != "voteRulesConfirmation" &&
+      value != "confirm"
     ) {
-      checked.push(values[key][0]);
+      result.push(key);
     }
   }
-  return checked;
+  return result;
 }
 
 export async function fetchObjectUrl(url: string): Promise<string> {
