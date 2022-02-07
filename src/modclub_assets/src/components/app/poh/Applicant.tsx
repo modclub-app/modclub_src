@@ -54,6 +54,7 @@ const Modal_ = ({ toggle, title, image, children, packageId, values }) => {
       const result = await votePohContent(packageId, title === "Approve Confirmation" ? { approved: null } : { rejected: null }, rules);
       setMessage({ success: true, value: "Vote submitted successfully" });
       setSubmitting(false);
+      toggle();
     } catch (e) {
       const regEx = /Reject text: (.*)/g;
       let errAr = regEx.exec(e.message);

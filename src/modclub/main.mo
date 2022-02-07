@@ -121,7 +121,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     Debug.print(Principal.toText(caller));  
     switch(state.airdropUsers.get(caller)) {
       case(?result) {
-        throw Error.reject("User already registered for airdrop");
+        throw Error.reject("You are already registered for airdrop");
       };
       case(null) {
         let user: AirdropUser = {
@@ -689,7 +689,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     let voteId = "vote-" # Principal.toText(caller) # contentId;
     switch(state.votes.get(voteId)){
       case(?v){
-        throw Error.reject("User already voted");
+        throw Error.reject("You have already voted");
       };
       case(_)();
     };
@@ -1122,7 +1122,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       throw Error.reject("Not enough tokens staked");
     };
     if(voteManager.checkPohUserHasVoted(caller, packageId)) {
-      throw Error.reject("User has already voted");
+      throw Error.reject("You have already voted");
     };
     if(voteManager.getContentStatus(packageId) != #new) {
       throw Error.reject("Vote has been finalized.");
