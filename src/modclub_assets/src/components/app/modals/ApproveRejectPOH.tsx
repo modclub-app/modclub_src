@@ -12,7 +12,7 @@ import {
   Notification
 } from "react-bulma-components";
 import Confirm from "../../common/confirm/Confirm";
-import { PohRulesViolated } from '../../../utils/types';
+import { PohRulesViolated, ViolatedRules } from '../../../utils/types';
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 
@@ -115,7 +115,7 @@ export default function ApproveRejectPOH({
   formRules,
   reward
 }: {
-  formRules: Array<PohRulesViolated>;
+  formRules: Array<ViolatedRules>;
   reward: number;
 }) {
   const { values } = useFormState();

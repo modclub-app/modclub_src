@@ -2,12 +2,12 @@ import * as React from 'react'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
-import { formatDate, getUrlForData, fetchObjectUrl } from "../../../utils/util";
+import { formatDate } from "../../../utils/util";
 import { getPohTaskData } from "../../../utils/api";
+import { ViolatedRules } from '../../../utils/types';
 import {
   Heading,
   Card,
-  Columns,
   Button,
   Modal,
   Icon
@@ -15,89 +15,10 @@ import {
 import { Form, Field } from "react-final-form";
 import Userstats from "../profile/Userstats";
 import Progress from "../../common/progress/Progress";
+import ProfileDetails from "./ProfileDetails";
+import ProfilePic from "./ProfilePic";
+import UserVideo from "./UserVideo";
 import ApproveRejectPOH from "../modals/ApproveRejectPOH";
-
-const ProfileDetails = ({ data }) => {
-  return (
-    <Card.Content>
-      <table className="table is-label">
-        <tbody>
-          <tr>
-            <td>Username:</td>
-            <td>{data.userName}</td>
-          </tr>
-          <tr>
-            <td>Full Name:</td>
-            <td>{data.fullName}</td>
-          </tr>
-          <tr>
-            <td>Email:</td>
-            <td>{data.email}</td>
-          </tr>
-          <tr>
-            <td>About bio:</td>
-            <td>{data.aboutUser}</td>
-          </tr>
-        </tbody>
-      </table>
-    </Card.Content>
-  )
-};
-
-const ProfilePic = ({ data }) => {
-  const imageUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
-  const [urlObject, setUrlObject] = useState(null);
-  useEffect(() => {
-    const fetchData = async () => {
-      const urlObject = await fetchObjectUrl(imageUrl);
-      setUrlObject(urlObject);
-    };
-    fetchData();
-  }, [])  
-
-  return (
-    <Card.Content>
-      <img src={urlObject} alt="Image File" style={{ display: "block", margin: "auto" }} />
-    </Card.Content>
-  )
-};
-
-const UserVideo = ({ data }) => {
-  const videoUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
-  const phrases = data.wordList[0]
-  const [videoObject, setVideoObject] = useState(null);
-  useEffect(() => {
-    const fetchData = async () => {
-      const urlObject = await fetchObjectUrl(videoUrl);
-      setVideoObject(urlObject);
-    };
-    fetchData();
-  }, [])  
-
-  return (
-    <Card.Content>
-      {videoObject &&
-        <video width="100%" height="auto" controls>
-          <source src={videoObject} />
-          Your browser does not support the video tag.
-        </video>
-      }
-
-      <Card className="mt-5">
-        <Card.Content className="columns is-multiline">
-          {phrases.map((phrase, index) => (
-            <Columns.Column key={phrase} size={4}>
-              <Button fullwidth isStatic>
-                {index + 1} <span className="ml-2">{phrase}</span>
-              </Button>
-            </Columns.Column>
-          ))}
-        </Card.Content>
-      </Card>
-
-    </Card.Content>
-  )
-};
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -159,6 +80,7 @@ export default function PohApplicant() {
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
+  const [formRules, setFormRules] = useState<ViolatedRules[]>([]);
 
   const getApplicant = async () => {
     setLoading(true)
@@ -171,19 +93,18 @@ export default function PohApplicant() {
     user && !loading && getApplicant();
   }, [user]);
 
-  const formatTitle = (challengeId) => {
-    if (challengeId === "challenge-profile-details") return "Profile Details";
-    if (challengeId === "challenge-profile-pic") return "Profile Picture";
-    if (challengeId === "challenge-user-video") return "Unique Phrase Video";
-    return challengeId;
-  }
-
-  const [formRules, setFormRules] = useState([]);
   useEffect(() => {
     content && content.pohTaskData && content.pohTaskData.forEach(task => {
       setFormRules(existingRule => [...existingRule, ...task.allowedViolationRules]);
     });
   }, [content]);
+
+  const formatTitle = (challengeId) => {
+    if (challengeId === "challenge-profile-details") return "Profile Details";
+    if (challengeId === "challenge-profile-pic") return "Profile Picture";
+    if (challengeId === "challenge-user-video") return "Unique Phrase Video";
+    return challengeId;
+  };
 
   if (!content) {
     return (
@@ -191,7 +112,7 @@ export default function PohApplicant() {
         <div className="loader is-loading p-5"></div>
       </Modal>
     )
-  }
+  };
 
   return (
     <>
@@ -258,5 +179,5 @@ export default function PohApplicant() {
       )}
     />
   </>
-  )
+  );
 };
