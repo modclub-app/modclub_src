@@ -133,9 +133,11 @@ export const idlFactory = ({ IDL }) => {
     'wordList' : IDL.Opt(IDL.Vec(IDL.Text)),
   });
   const PohTaskDataWrapperPlus = IDL.Record({
+    'reward' : IDL.Float64,
     'minVotes' : IDL.Int,
     'votes' : IDL.Nat,
     'createdAt' : IDL.Int,
+    'minStake' : IDL.Int,
     'updatedAt' : IDL.Int,
     'pohTaskData' : IDL.Vec(PohTaskData),
     'packageId' : IDL.Text,
@@ -269,6 +271,7 @@ export const idlFactory = ({ IDL }) => {
     'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
+    'adminInit' : IDL.Func([], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),

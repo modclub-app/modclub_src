@@ -63,6 +63,7 @@ export interface ModClub {
   'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
+  'adminInit' : () => Promise<undefined>,
   'airdropRegister' : () => Promise<AirdropUser>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
   'deregisterProvider' : () => Promise<string>,
@@ -214,9 +215,11 @@ export interface PohTaskData {
   'wordList' : [] | [Array<string>],
 }
 export interface PohTaskDataWrapperPlus {
+  'reward' : number,
   'minVotes' : bigint,
   'votes' : bigint,
   'createdAt' : bigint,
+  'minStake' : bigint,
   'updatedAt' : bigint,
   'pohTaskData' : Array<PohTaskData>,
   'packageId' : string,

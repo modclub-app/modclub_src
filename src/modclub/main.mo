@@ -1102,6 +1102,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
         pohTaskData = pohTasks[0].pohTaskData;
         votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
         minVotes =  ModClubParam.MIN_VOTE_POH;
+        minStake = ModClubParam.MIN_STAKE_POH;
+        reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
         createdAt = pohTasks[0].createdAt;
         updatedAt = pohTasks[0].updatedAt;
     });
@@ -1361,9 +1363,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
 
-    // storageStateStable := storageSolution.getStableState();
-    // pohStableState := pohEngine.getStableState();
-    // pohVoteStableState := voteManager.getStableState();
+    storageStateStable := storageSolution.getStableState();
+    pohStableState := pohEngine.getStableState();
+    pohVoteStableState := voteManager.getStableState();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 

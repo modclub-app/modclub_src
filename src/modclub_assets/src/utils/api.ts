@@ -25,6 +25,7 @@ import {
   PohRulesViolated,
   ModeratorLeaderboard,
   VerifyHumanityResponse,
+  Result_1,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 

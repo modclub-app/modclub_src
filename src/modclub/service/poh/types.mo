@@ -161,6 +161,8 @@ module {
         pohTaskData: [PohTaskData];
         votes: Nat;
         minVotes: Int;
+        minStake: Int;
+        reward: Float;
         createdAt: Int;
         updatedAt: Int;
     };

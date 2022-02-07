@@ -104,9 +104,11 @@ type PohTaskPlus =
 type PohTaskDataWrapperPlus = 
  record {
    createdAt: int;
+   minStake: int;
    minVotes: int;
    packageId: text;
    pohTaskData: vec PohTaskData;
+   reward: float64;
    updatedAt: int;
    votes: nat;
  };
@@ -213,6 +215,7 @@ type ModClub =
    addRules: (vec text) -> () oneway;
    addToAirdropWhitelist: (vec principal) -> ();
    addToApprovedUser: (principal) -> ();
+   adminInit: () -> ();
    airdropRegister: () -> (AirdropUser);
    checkUsernameAvailable: (text) -> (bool) query;
    deregisterProvider: () -> (text);
