@@ -1138,6 +1138,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(finishedVoting == #ok(true)) {
       let decision = voteManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
+      if(decision == #approved) {
+        pohEngine.changeChallengePackageStatus(packageId, #verified);
+      } else {
+        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+      };
       for(id in votesId.vals()) {
         let vote = voteManager.getPOHVote(id);
         switch(vote) {
@@ -1148,10 +1153,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
                 (v.decision == #rejected and decision == #rejected)
               ) {
               //reward only some percentage
-              pohEngine.changeChallengePackageStatus(packageId, #verified);
               await tokens.reward(initializer, v.userId, Float.toInt(reward));
             } else {
-              pohEngine.changeChallengePackageStatus(packageId, #rejected);
               // burn only some percentage
               await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
             };
