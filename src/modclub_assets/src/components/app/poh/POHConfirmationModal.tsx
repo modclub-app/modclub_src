@@ -111,7 +111,7 @@ const ConfirmationModal = ({
   );
 };
 
-export default function ApproveRejectPOH({
+export default function ConfirmationModalToggle({
   formRules,
   reward
 }: {
@@ -155,10 +155,7 @@ export default function ApproveRejectPOH({
       </Card.Footer>
 
       {showApprove &&
-        <ConfirmationModal
-          type="approve"
-          toggle={() => setShowApprove(false)}
-        >
+        <ConfirmationModal type="approve" toggle={() => setShowApprove(false)}>
           <p>You are confirming that this is a real human.</p>
           <p>Voting incorrectly will result in loss of some staked tokens.</p>
           <Confirm
@@ -174,10 +171,7 @@ export default function ApproveRejectPOH({
         </ConfirmationModal>
       }
       {showReject &&
-        <ConfirmationModal
-          type="reject"
-          toggle={() => setShowReject(false)}
-        >
+        <ConfirmationModal type="reject" toggle={() => setShowReject(false)}>
           <p className="mb-3">These are the failed requirements you selected:</p>
           <Card backgroundColor="dark">
             <Card.Content>

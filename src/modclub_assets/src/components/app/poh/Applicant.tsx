@@ -18,7 +18,7 @@ import Progress from "../../common/progress/Progress";
 import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
-import ApproveRejectPOH from "../modals/ApproveRejectPOH";
+import POHConfirmationModal from "./POHConfirmationModal";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -170,7 +170,7 @@ export default function PohApplicant() {
               </Card.Content>
             ))}
 
-            <ApproveRejectPOH
+            <POHConfirmationModal
               formRules={formRules}
               reward={content.reward}
             />

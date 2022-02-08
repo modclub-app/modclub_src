@@ -13,7 +13,7 @@ import {
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
-import ApproveRejectTask from "../modals/ApproveRejectTask";
+import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
@@ -82,7 +82,7 @@ const Task = ({ task, setVoted }) => {
                 rules={rules}
               />
             </div>
-            <ApproveRejectTask
+            <TaskConfirmationModal
               task={task}
               onUpdate={() => setVoted(true)}
             />

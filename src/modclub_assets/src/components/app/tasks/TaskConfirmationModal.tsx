@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { Form } from "react-final-form";
 import {
@@ -168,7 +167,7 @@ const ConfirmationModal = ({
   );
 };
 
-export default function ApproveRejectTask({
+export default function ConfirmationModalToggle({
   task,
   fullWidth = false,
   onUpdate,
