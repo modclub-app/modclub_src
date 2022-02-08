@@ -2,7 +2,7 @@
 .vscode/
 .idea/
 **/*~
-
+.env
 # Mac OSX temporary files
 .DS_Store
 **/.DS_Store
@@ -10,6 +10,8 @@
 # dfx temporary files
 .dfx/
 .vessel/
+output.txt
+generated.config.json
 
 # frontend code
 node_modules/
