@@ -109,7 +109,17 @@ export default function Tasks() {
     setVoted(false);
   }, [user, voted]);
 
-  if (!isAuthenticated) return (<div>You need to be logged in to view this page</div>);
+  if (!isAuthenticated) return (
+    <Columns centered vCentered className="mt-6">
+    <Columns.Column size={6}>
+      <Card>
+        <Card.Content className="has-text-centered">
+          <p className="my-6">You need to be logged in to view this page</p>
+        </Card.Content>
+      </Card>
+    </Columns.Column>
+  </Columns>
+  );
   
   return (
     <>

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useParams } from "react-router";
 import { useState } from "react";
+import { useHistory } from "react-router-dom";
 import { useFormState } from "react-final-form";
 import { getViolatedRules } from "../../../utils/util";
 import { votePohContent } from "../../../utils/api";
@@ -29,6 +30,7 @@ const ConfirmationModal = ({
   const { values } = useFormState();
   const [submitting, setSubmitting] = useState(null);
   const [message, setMessage] = useState(null);
+  const history = useHistory();
 
   const isDisabled = () => {
     if (!values["voteIncorrectlyConfirmation"] || !values["voteIncorrectlyConfirmation"].length) return true;
@@ -59,7 +61,10 @@ const ConfirmationModal = ({
       const result = await votePohContent(packageId, type === "approve" ? { approved: null } : { rejected: null }, rules);
       setMessage({ success: true, value: "Vote submitted successfully" });
       setSubmitting(false);
-      setTimeout(() => toggle(), 2000);
+      setTimeout(() => {
+        toggle()
+        history.push(`/app/poh`);
+      }, 2000);
     } catch (e) {
       const regEx = /Reject text: (.*)/g;
       let errAr = regEx.exec(e.message);
