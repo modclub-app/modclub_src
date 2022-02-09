@@ -23,7 +23,7 @@ cd modclub
 dfx stop
 rm -rf .dfx
 touch generated.config.json
-echo "export config = {\"IDENTITY_CANISTER\":$canister_id}" &> generated.config.json
+echo "{\"IDENTITY_CANISTER\":$canister_id}" &> generated.config.json
 
 echo "Deploying modclub canisters ..."
 dfx deploy &> output.txt
