@@ -29,12 +29,15 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Prim "mo:prim";
 import Token "./token";
 import TrieSet "mo:base/TrieSet";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
 
+
+import Canistergeek "./canistergeek/canistergeek";
 
 
 shared ({caller = initializer}) actor class ModClub () = this {
@@ -89,6 +92,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   stable var pohVoteStableState = VoteState.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
+
+  stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
+  private let canistergeekMonitor = Canistergeek.Monitor();
 
   func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
@@ -1109,6 +1115,16 @@ shared ({caller = initializer}) actor class ModClub () = this {
     });
   };
 
+  public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
+      // validateCaller(caller);
+      canistergeekMonitor.getMetrics(parameters);
+  };
+
+  public shared ({caller}) func collectCanisterMetrics(): async () {
+      // validateCaller(caller);
+      canistergeekMonitor.collectMetrics();
+  };
+
   public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
     switch(checkProfilePermission(caller, #vote)){
       case(#err(e)) {
@@ -1366,9 +1382,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
 
-    // storageStateStable := storageSolution.getStableState();
-    // pohStableState := pohEngine.getStableState();
-    // pohVoteStableState := voteManager.getStableState();
+    storageStateStable := storageSolution.getStableState();
+    pohStableState := pohEngine.getStableState();
+    pohVoteStableState := voteManager.getStableState();
+    _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -1389,6 +1406,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
     
     // This statement should be run after the storagestate gets restored from stable state
     storageSolution.setInitialModerators(getModerators());
+    canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
+    _canistergeekMonitorUD := null;
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 

@@ -5,16 +5,11 @@
       "type": "motoko"
     },
     "modclub_assets": {
-      "dependencies": [
-        "modclub"
-      ],
+      "dependencies": ["modclub"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
-      "source": [
-        "src/modclub_assets/assets",
-        "dist/modclub_assets/"
-      ],
+      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
       "type": "assets"
     },
     "modclub_dev": {
@@ -22,16 +17,11 @@
       "type": "motoko"
     },
     "modclub_dev_assets": {
-      "dependencies": [
-        "modclub_dev"
-      ],
+      "dependencies": ["modclub_dev"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
-      "source": [
-        "src/modclub_assets/assets",
-        "dist/modclub_assets/"
-      ],
+      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
       "type": "assets"
     }
   },

@@ -13,7 +13,7 @@ import {
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
-import ApproveReject from "../modals/ApproveReject";
+import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
@@ -82,7 +82,7 @@ const Task = ({ task, setVoted }) => {
                 rules={rules}
               />
             </div>
-            <ApproveReject
+            <TaskConfirmationModal
               task={task}
               onUpdate={() => setVoted(true)}
             />
@@ -109,7 +109,17 @@ export default function Tasks() {
     setVoted(false);
   }, [user, voted]);
 
-  if (!isAuthenticated) return (<div>You need to be logged in to view this page</div>);
+  if (!isAuthenticated) return (
+    <Columns centered vCentered className="mt-6">
+    <Columns.Column size={6}>
+      <Card>
+        <Card.Content className="has-text-centered">
+          <p className="my-6">You need to be logged in to view this page</p>
+        </Card.Content>
+      </Card>
+    </Columns.Column>
+  </Columns>
+  );
   
   return (
     <>

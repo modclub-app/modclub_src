@@ -5,7 +5,6 @@ export async function getJwt() {
   if (!jwt) {
     jwt = await refreshJwt();
   }
-  console.log("Fetched JWT:", jwt);
   return jwt;
 }
 

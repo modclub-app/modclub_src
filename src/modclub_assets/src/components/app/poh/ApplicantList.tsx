@@ -101,11 +101,25 @@ export default function PohApplicantList() {
     user && !loading && getApplicants();
   }, [user]);
 
-  return !applicants ?
-    <Modal show={true} showClose={false}>
+  if (loading) {
+    return (
+      <Modal show={true} showClose={false}>
       <div className="loader is-loading p-5"></div>
-    </Modal>
-    :
+      </Modal>
+    )
+  }
+  if (user && applicants.length === 0) {
+    return (
+      <section className="hero is-black is-medium">
+        <div className="hero-body container has-text-centered">
+          <p className="has-text-silver is-size-4 has-text-centered mb-6">
+            There are no proof of humanity applicants at the moment.
+          </p>
+        </div>
+      </section>
+    )
+  }
+  return(
     <>
       <Userstats />
 
@@ -122,4 +136,5 @@ export default function PohApplicantList() {
         ))}
       </Columns>
     </>
+  )
 }
