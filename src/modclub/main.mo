@@ -927,24 +927,28 @@ shared ({caller = initializer}) actor class ModClub () = this {
   // POH Methods
   // Method called by provider
   public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
-     if(voteManager.isAutoApprovedPOHUser(providerUserId)) {
-        return
-        {
-            requestId = "null";
-            providerUserId = caller;
-            status = #verified;
-            challenges = [];
-            providerId = initializer;
-            requestedOn = Helpers.timeNow();
-        };
+    pohVerificationRequestHelper(providerUserId, caller);
+  };
+
+  private func pohVerificationRequestHelper(providerUserId: Principal, providerId: Principal) : PohTypes.PohVerificationResponse  {
+    if(voteManager.isAutoApprovedPOHUser(providerUserId)) {
+      return
+      {
+          requestId = "null";
+          providerUserId = providerId;
+          status = #verified;
+          challenges = [];
+          providerId = initializer;
+          requestedOn = Helpers.timeNow();
+      };
     };
     let pohVerificationRequest: PohTypes.PohVerificationRequest = {
-        requestId = generateId(caller, "pohRequest");
+        requestId = generateId(providerId, "pohRequest");
         providerUserId = providerUserId;
-        providerId = caller;
+        providerId = providerId;
     };
     // validity and rules needs to come from admin dashboard here
-    await pohEngine.pohVerificationRequest(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
+    pohEngine.pohVerificationRequest(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
   };
   
   // Method called by provider
@@ -1022,14 +1026,14 @@ shared ({caller = initializer}) actor class ModClub () = this {
     pohEngine.populateChallenges();
   };
 
-  public shared({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+  public query({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
     switch(checkProfilePermission(caller, #getContent)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
       };
       case(_)();
     };
-    if((await pohVerificationRequest(caller)).status != #verified) {
+    if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
     let pohTaskIds = voteManager.getTasksId(status, 10);
@@ -1088,14 +1092,14 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return tasks.toArray();
   };
 
-  public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
+  public query({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
     switch(checkProfilePermission(caller, #getContent)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
       };
       case(_)();
     };
-    if((await pohVerificationRequest(caller)).status != #verified) {
+    if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
     let pohTasks = pohEngine.getPohTasks([packageId]);
