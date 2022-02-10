@@ -1045,7 +1045,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       for(wrapper in taskDataWrapper.vals()) {
         for(data in wrapper.pohTaskData.vals()) {
           if(data.challengeId == POH.CHALLENGE_PROFILE_DETAILS_ID) {
-            userName := data.userName;
+            // userName := data.userName;
             email := data.email;
             fullName := data.fullName;
             aboutUser := data.aboutUser;
@@ -1062,6 +1062,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
       switch(pohPackage) {
         case(null)();
         case(?package) {
+          switch(state.profiles.get(package.userId)){
+            case (null) ();
+            case (?result) userName := ?result.userName;
+          };
           let taskPlus = {
             packageId = id;
             status = voteManager.getContentStatus(id);

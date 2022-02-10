@@ -17,7 +17,7 @@ import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
-  const { fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
+  const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
   const match = regEx.exec(profileImageUrlSuffix[0]);
   const imageUrl = getUrlForData(match[1], match[2]);
@@ -50,7 +50,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 
       <Card.Content>
         <Heading subtitle marginless>
-          {fullName}
+          {userName[0]}
         </Heading>
         <p className="is-size-7 mt-2">
           {aboutUser}
