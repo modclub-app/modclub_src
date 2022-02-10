@@ -62,9 +62,12 @@ export default function UserVideo({ steps }) {
   const [videoUrl, setVideoUrl] = useState(null);
 
   const handleStartCaptureClick = useCallback(() => {
+    const supportsWebm = MediaRecorder.isTypeSupported("video/webm")
+    const mimeType = supportsWebm ? "video/webm" : "video/mp4";
+    
     setCapturing(true);
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
-      mimeType: "video/webm"
+      mimeType: mimeType
     });
     mediaRecorderRef.current.addEventListener(
       "dataavailable",

@@ -28,7 +28,7 @@ module PohModule {
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
 
         public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
-        : async PohTypes.PohVerificationResponse {
+        : PohTypes.PohVerificationResponse {
             // request audit
             state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
             state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
