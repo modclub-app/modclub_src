@@ -60,11 +60,10 @@ export default function UserVideo({ steps }) {
   const [phrases, setPhrases] = useState([]);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [videoUrl, setVideoUrl] = useState(null);
+  const supportsWebm = MediaRecorder.isTypeSupported("video/webm")
+  const mimeType = supportsWebm ? "video/webm" : "video/mp4";
 
   const handleStartCaptureClick = useCallback(() => {
-    const supportsWebm = MediaRecorder.isTypeSupported("video/webm")
-    const mimeType = supportsWebm ? "video/webm" : "video/mp4";
-    
     setCapturing(true);
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
       mimeType: mimeType
@@ -93,7 +92,7 @@ export default function UserVideo({ steps }) {
   const saveVideo = useCallback(() => {
     if (!recordedChunks.length) return
     const blob = new Blob(recordedChunks, {
-      type: "video/webm"
+      type: mimeType
     });
     const url = URL.createObjectURL(blob);
     setVideoUrl(url);
@@ -107,7 +106,7 @@ export default function UserVideo({ steps }) {
   const submit = async () => {
     setSubmitting(true);
     const blob = new Blob(recordedChunks, {
-      type: "video/webm"
+      type: mimeType
     });
 
     const putChunkPromises: Promise<undefined>[] = [];
