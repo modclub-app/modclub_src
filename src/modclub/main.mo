@@ -1032,7 +1032,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if((await pohVerificationRequest(caller)).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    let pohTaskIds = voteManager.getTasksId(status, 10);
+    let pohTaskIds = voteManager.getTasksId(status, 20);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);
