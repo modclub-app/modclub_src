@@ -27,7 +27,7 @@ export default function ModclubApp() {
 
     refreshJwt()
     setJwt(true);
-    setStatus('verified');
+    setStatus(status);
   }
 
   useEffect(() => {
@@ -45,15 +45,19 @@ export default function ModclubApp() {
              <Heading subtitle>
               Proof of Humanity
              </Heading>
-             { status === "pending" &&
+            { status === "pending" &&
               <p>Your Proof of Humanity approval is in progress. You will be able to access MODCLUB once it is approved. Please come back later to check your status.</p>
-             }
-             { status === "notSubmitted" &&
+            }
+            { status === "notSubmitted" &&
               <p>You have not submitted your Proof of Humanity. Please do so now.</p>
-             }
+            }
+            {
+              status === "rejected" &&
+              <p>Your Proof of Humanity has been rejected. Please submit a new Proof of Humanity.</p>
+            }
            </Modal.Card.Body>
            <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
-              {status === "notSubmitted" && <Link to="/new-poh-profile" className="button is-primary" style={{ textDecoration: "none" }}>
+              {(status === "notSubmitted" || status === "rejected") && <Link to="/new-poh-profile" className="button is-primary" style={{ textDecoration: "none" }}>
                 Continue
               </Link>}
            </Modal.Card.Footer>

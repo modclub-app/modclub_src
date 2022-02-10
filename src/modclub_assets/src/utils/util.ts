@@ -1,3 +1,4 @@
+import { Principal } from "@dfinity/principal";
 import { Optional } from "./api";
 import { Profile } from "./types";
 import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
@@ -132,7 +133,7 @@ export function validateEmail(email: string) {
   return re.test(String(email).toLowerCase());
 }
 
-export function getUrlForData(canisterId: String, contentId: String) {
+export function getUrlForData(canisterId: [] | [Principal], contentId: String) {
   if (window.location.hostname.includes("localhost")) {
     return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}`;
   } else {

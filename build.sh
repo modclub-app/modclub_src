@@ -1,4 +1,7 @@
 #!/bin/bash
+
+echo "Starting"
+
 cd ..
 cd internet-identity
 dfx stop
@@ -62,3 +65,6 @@ echo "modclub_dev_assets CANISTER ID: ${modclub_dev_assets_canister_id}"
 
 
 rm -rf output.txt
+
+
+echo "Finished"

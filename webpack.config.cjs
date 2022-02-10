@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
+
 try {
   const config = require("./generated.config.json");
   // Replace this value with the ID of your local Internet Identity canister
