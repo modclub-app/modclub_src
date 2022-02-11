@@ -87,6 +87,7 @@ export default function UserVideo({ steps }) {
   const handleStopCaptureClick = useCallback(() => {
     mediaRecorderRef.current.stop();
     setCapturing(false);
+    setRecordedChunks([]);
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
   const saveVideo = useCallback(() => {
@@ -236,7 +237,7 @@ export default function UserVideo({ steps }) {
         <Link to="/app/" className="button is-black">
           Cancel
         </Link>
-        <Button color="primary" disabled={!recordedChunks.length} onClick={submit}>
+        <Button color="primary" disabled={!recordedChunks.length || capturing} onClick={submit}>
           Next
         </Button>
       </Button.Group>
