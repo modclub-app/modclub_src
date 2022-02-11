@@ -71,11 +71,11 @@ export default function NewPohProfile({ match }) {
   }, [history])
 
   if (!isAuthenticated) return (
-    <Columns centered vCentered className="mt-6">
-      <Columns.Column size={6}>
-        <Card>
+    <Columns centered vCentered style={{ display: "flex", height: "calc(100vh - 75px)" }}>
+      <Columns.Column size={6} desktop={{ size: 4 }} style={{ flex: "none", minWidth: 320 }}>
+        <Card backgroundColor="circles">
           <Card.Content className="has-text-centered">
-            <p className="my-6">You need to be logged in to view this page</p>
+            <p className="my-6">You need to be logged in<br />to view this page</p>
             <div style={{ width: 200, margin: "auto" }}>
               <SignIn />
             </div>
