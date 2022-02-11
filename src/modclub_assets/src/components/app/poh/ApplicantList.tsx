@@ -38,8 +38,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
       className="card is-flex is-flex-direction-column is-justify-content-flex-end"
       style={{
         background: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${urlObject}) no-repeat center`,
-        backgroundSize: "cover",
-        height: 395
+        backgroundSize: "cover"
       }}
     >
       <Card.Header justifyContent="start" style={{ marginBottom: "auto", boxShadow: "none" }}>
@@ -49,7 +48,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
         />
       </Card.Header>
 
-      <Card.Content>
+      <Card.Content style={{ paddingTop: "65%" }}>
         <Heading subtitle marginless>
           {userName[0]}
         </Heading>
