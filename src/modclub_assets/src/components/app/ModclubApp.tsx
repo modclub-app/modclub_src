@@ -1,5 +1,5 @@
-import * as React from 'react'
-import { Switch, Route } from "react-router-dom";
+import * as React from "react";
+import { Switch, Route, Redirect } from "react-router-dom";
 import { Columns } from "react-bulma-components";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
@@ -12,12 +12,23 @@ import Leaderboard from "./moderators/Leaderboard";
 import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 
+import { getUserFromCanister } from "../../utils/api";
+
 export default function ModclubApp() {
+  const [user, setUser] = React.useState(null);
+  const [isAdmin, setAdmin] = React.useState(false);
+  React.useEffect(() => {
+    const asyncReroute = async () => {
+      const user = await getUserFromCanister();
+      setUser(user);
+    };
+
+    asyncReroute();
+  }, [user]);
 
   return (
     <>
       <Columns className="container" marginless multiline={false}>
-
         <Sidebar />
 
         <Columns.Column id="main-content" className="mt-6 pb-6">
@@ -26,7 +37,7 @@ export default function ModclubApp() {
               <Tasks />
             </Route>
             <Route path="/app/tasks/:taskId">
-              <Task /> 
+              <Task />
             </Route>
             <Route exact path="/app/poh">
               <PohApplicantList />
@@ -40,14 +51,19 @@ export default function ModclubApp() {
             <Route exact path="/app/activity">
               <Activity />
             </Route>
-            <Route exact path="/app/admin">
-              <Admin />
-            </Route>
+
+            {user && user.role.admin ? (
+              <Route exact path="/app/admin">
+                <Admin />
+              </Route>
+            ) : (
+              ""
+            )}
           </Switch>
         </Columns.Column>
       </Columns>
-      
+
       <Footer />
     </>
-  )
+  );
 }
