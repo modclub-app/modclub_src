@@ -1234,6 +1234,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
       buf.toArray();
   };
 
+  // Return the principal identifier of this canister.
+  public func whoami () : async Principal {
+        Principal.fromActor(this);
+  };
+
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {
     let now = Helpers.timeNow();
     let content : Content  = {
