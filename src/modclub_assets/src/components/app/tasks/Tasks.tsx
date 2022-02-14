@@ -10,7 +10,7 @@ import {
   Button,
   Icon
 } from "react-bulma-components";
-import { SignIn } from '../../auth/SignIn';
+import NotAuthenticatedModal from '../modals/NotAuthenticated';
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
@@ -111,18 +111,7 @@ export default function Tasks() {
   }, [user, voted]);
 
   if (!isAuthenticated) return (
-    <Columns centered vCentered style={{ display: "flex",  height: "100%" }}>
-      <Columns.Column size={6} desktop={{ size: 4 }} style={{ flex: "none", minWidth: 480 }}>
-        <Card backgroundColor="circles">
-          <Card.Content className="has-text-centered">
-            <p className="my-6">You need to be logged in<br />to view this page</p>
-            <div style={{ width: 200, margin: "auto" }}>
-              <SignIn />
-            </div>
-          </Card.Content>
-        </Card>
-      </Columns.Column>
-    </Columns>
+    <NotAuthenticatedModal />
   );
   
   return (

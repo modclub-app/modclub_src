@@ -9,7 +9,7 @@ import {
 } from "react-bulma-components";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
-import { SignIn } from '../../auth/SignIn';
+import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
@@ -71,18 +71,7 @@ export default function NewPohProfile({ match }) {
   }, [history])
 
   if (!isAuthenticated) return (
-    <Columns centered vCentered style={{ display: "flex", height: "calc(100vh - 75px)" }}>
-      <Columns.Column size={6} desktop={{ size: 4 }} style={{ flex: "none", minWidth: 320 }}>
-        <Card backgroundColor="circles">
-          <Card.Content className="has-text-centered">
-            <p className="my-6">You need to be logged in<br />to view this page</p>
-            <div style={{ width: 200, margin: "auto" }}>
-              <SignIn />
-            </div>
-          </Card.Content>
-        </Card>
-      </Columns.Column>
-    </Columns>
+    <NotAuthenticatedModal />
   );
 
   return (
