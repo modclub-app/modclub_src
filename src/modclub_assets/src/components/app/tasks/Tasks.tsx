@@ -10,7 +10,6 @@ import {
   Button,
   Icon
 } from "react-bulma-components";
-import NotAuthenticatedModal from '../modals/NotAuthenticated';
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
@@ -109,10 +108,6 @@ export default function Tasks() {
     user && fetchTasks();
     setVoted(false);
   }, [user, voted]);
-
-  if (!isAuthenticated) return (
-    <NotAuthenticatedModal />
-  );
   
   return (
     <>

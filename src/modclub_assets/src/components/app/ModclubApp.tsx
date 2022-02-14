@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useEffect, useState } from "react";
 import { Switch, Route, Link } from "react-router-dom";
 import { Columns, Modal, Heading } from "react-bulma-components";
+import NotAuthenticatedModal from './modals/NotAuthenticated'; 
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
@@ -35,6 +36,10 @@ export default function ModclubApp() {
       user && initialCall();
     }
   }, [user]);
+
+  if (!isAuthenticated) return (
+    <NotAuthenticatedModal />
+  );
 
   return (
     <>
