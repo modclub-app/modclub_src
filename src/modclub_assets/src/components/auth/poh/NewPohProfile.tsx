@@ -30,7 +30,7 @@ const Confirmation = () => {
 };
 
 export default function NewPohProfile({ match }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAuthReady } = useAuth();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)
@@ -70,7 +70,7 @@ export default function NewPohProfile({ match }) {
     })
   }, [history])
 
-  if (!isAuthenticated) return (
+  if (!isAuthenticated || !isAuthReady) return (
     <NotAuthenticatedModal />
   );
 
