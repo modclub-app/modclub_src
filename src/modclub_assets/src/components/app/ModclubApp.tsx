@@ -37,7 +37,7 @@ export default function ModclubApp() {
     }
   }, [user]);
 
-  if (!isAuthenticated || !isAuthReady) return (
+  if (isAuthReady && !isAuthenticated) return (
     <NotAuthenticatedModal />
   );
 
