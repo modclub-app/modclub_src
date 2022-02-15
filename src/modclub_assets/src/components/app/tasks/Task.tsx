@@ -6,7 +6,7 @@ import { Columns, Card, Level, Heading, Icon, Button } from "react-bulma-compone
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
-import ApproveReject from "../modals/ApproveReject";
+import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 
@@ -107,7 +107,7 @@ export default function Task() {
               </Card.Content>
               <Card.Footer className="pt-0" style={{ border: 0 }}>
                 <Button.Group>
-                  <ApproveReject
+                  <TaskConfirmationModal
                     task={task}
                     fullWidth={true}
                     onUpdate={() => setVoted(true)}

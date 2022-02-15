@@ -24,6 +24,8 @@ import {
   PohTaskPlus,
   PohRulesViolated,
   ModeratorLeaderboard,
+  VerifyHumanityResponse,
+  Result_1,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -157,9 +159,7 @@ export async function updateProviderSettings(
 }
 
 // POH Methods
-export async function verifyUserHumanity(): Promise<
-  [PohChallengeStatus, [] | [PohUniqueToken]]
-> {
+export async function verifyUserHumanity(): Promise<VerifyHumanityResponse> {
   return (await getMC()).verifyUserHumanity();
 }
 
@@ -182,20 +182,22 @@ export async function getPohTasks(
   return (await getMC()).getPohTasks(status);
 }
 
-export async function getPohTaskData(
-  packageId: string
-): Promise<any> {
+export async function getPohTaskData(packageId: string): Promise<any> {
   return (await getMC()).getPohTaskData(packageId);
 }
 
 export async function votePohContent(
   packageId: string,
   decision: Decision,
-  violatedRules: [PohRulesViolated]
+  violatedRules: PohRulesViolated[]
 ): Promise<void> {
   return (await getMC()).votePohContent(packageId, decision, violatedRules);
 }
 
 export async function getPerformance(): Promise<number> {
   return (await getMC()).getVotePerformance();
+}
+
+export async function issueJwt(): Promise<string> {
+  return (await getMC()).issueJwt();
 }

@@ -13,12 +13,13 @@ import Types "./types";
 module StorageModule {
 
 
-public class StorageSolution(storageStableState : StorageState.DataCanisterStateStable, mainCanisterInitializer: Principal, mainCanisterActorPrincipal: Principal) {
+public class StorageSolution(storageStableState : StorageState.DataCanisterStateStable, mainCanisterInitializer: Principal, 
+          mainCanisterActorPrincipal: Principal, signingKeyFromMain: Text) {
 
     let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
 
     let storageState = StorageState.getState(storageStableState);
-
+    var signingKey = signingKeyFromMain;
     public func getBlob(contentId: Text, offset:Nat): async ?Blob {
       do? {
         let contentCanisterId = storageState.contentIdToCanisterId.get(contentId)!;
@@ -38,6 +39,13 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
 
       for((bucketId, bucket) in storageState.dataCanisters.entries()) {
         bucket.registerModerators(moderatorIds);
+      };
+    };
+
+    public func setSigningKey(signingKey1: Text): async () {
+      signingKey := signingKey1;
+      for((bucketId, bucket) in storageState.dataCanisters.entries()) {
+        await bucket.setSigningKey(signingKey1);
       };
     };
 
@@ -104,7 +112,7 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
     private func newEmptyBucket(): async Bucket.Bucket {
     
       Cycles.add(400000000000);
-      let b = await Bucket.Bucket(Iter.toArray(storageState.moderatorsId.entries()));
+      let b = await Bucket.Bucket(Iter.toArray(storageState.moderatorsId.entries()), signingKey);
       let _ = await updateCanister(b); // update canister permissions and settings
       let s = await b.getSize();
       Debug.print("new canister principal is " # debug_show(Principal.toText(Principal.fromActor(b))) );

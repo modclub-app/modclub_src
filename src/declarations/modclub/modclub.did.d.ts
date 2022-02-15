@@ -72,17 +72,14 @@ export interface Image__1 {
   data: Array<number>;
 }
 export interface ModClub {
-  addProviderAdmin: (
-    arg_0: string,
-    arg_1: Principal,
-    arg_2: [] | [Principal]
-  ) => Promise<ProviderResult>;
   addRules: (arg_0: Array<string>) => Promise<undefined>;
   addToAirdropWhitelist: (arg_0: Array<Principal>) => Promise<undefined>;
+  addToApprovedUser: (arg_0: Principal) => Promise<undefined>;
+  adminInit: () => Promise<undefined>;
   airdropRegister: () => Promise<AirdropUser>;
   checkUsernameAvailable: (arg_0: string) => Promise<boolean>;
   deregisterProvider: () => Promise<string>;
-  generateUniqueToken: (arg_0: Principal) => Promise<PohUniqueToken>;
+  generateSigningKey: () => Promise<undefined>;
   getActivity: (arg_0: boolean) => Promise<Array<Activity>>;
   getAirdropUsers: () => Promise<Array<AirdropUser>>;
   getAirdropWhitelist: () => Promise<Array<Principal>>;
@@ -100,12 +97,15 @@ export interface ModClub {
   getProfileById: (arg_0: Principal) => Promise<Profile>;
   getProvider: (arg_0: Principal) => Promise<ProviderPlus>;
   getProviderContent: () => Promise<Array<ContentPlus>>;
-  getProviders: () => Promise<Array<ProviderPlus>>;
   getRules: (arg_0: Principal) => Promise<Array<Rule>>;
-  getSettings: () => Promise<ProviderSettingResult>;
   getTokenHoldings: () => Promise<Holdings>;
   getVotePerformance: () => Promise<number>;
   isAirdropRegistered: () => Promise<AirdropUser>;
+  issueJwt: () => Promise<string>;
+  pohGenerateUniqueToken: (arg_0: Principal) => Promise<PohUniqueToken>;
+  pohVerificationRequest: (
+    arg_0: Principal
+  ) => Promise<PohVerificationResponse>;
   populateChallenges: () => Promise<undefined>;
   registerModerator: (
     arg_0: string,
@@ -128,7 +128,7 @@ export interface ModClub {
     arg_1: Array<number>,
     arg_2: string,
     arg_3: [] | [string]
-  ) => Promise<Result>;
+  ) => Promise<string>;
   submitText: (
     arg_0: string,
     arg_1: string,
@@ -138,20 +138,12 @@ export interface ModClub {
   toggleAllowSubmission: (arg_0: boolean) => Promise<undefined>;
   unStakeTokens: (arg_0: bigint) => Promise<string>;
   updateSettings: (arg_0: ProviderSettings) => Promise<undefined>;
-  verifyForHumanity: (arg_0: Principal) => Promise<PohVerificationResponse>;
-  verifyUserHumanity: () => Promise<
-    [PohChallengeStatus, [] | [PohUniqueToken]]
-  >;
-  verifyUserHumanityAPI: () => Promise<{
-    status: PohChallengeStatus;
-    token: [] | [PohUniqueToken];
-  }>;
+  verifyUserHumanity: () => Promise<VerifyHumanityResponse>;
   vote: (
     arg_0: ContentId,
     arg_1: Decision,
     arg_2: [] | [Array<RuleId>]
   ) => Promise<string>;
-  whiteListProvider: (arg_0: Principal) => Promise<undefined>;
   votePohContent: (
     arg_0: string,
     arg_1: Decision,
@@ -243,9 +235,11 @@ export interface PohTaskData {
   wordList: [] | [Array<string>];
 }
 export interface PohTaskDataWrapperPlus {
+  reward: number;
   minVotes: bigint;
   votes: bigint;
   createdAt: bigint;
+  minStake: bigint;
   updatedAt: bigint;
   pohTaskData: Array<PohTaskData>;
   packageId: string;
@@ -331,6 +325,10 @@ export interface SubscribeMessage {
 }
 export type Timestamp = bigint;
 export type UserId = Principal;
+export interface VerifyHumanityResponse {
+  status: PohChallengeStatus;
+  token: [] | [PohUniqueToken];
+}
 export interface ViolatedRules {
   ruleId: string;
   ruleDesc: string;

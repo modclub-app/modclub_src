@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { Form } from "react-final-form";
 import {
@@ -15,9 +14,9 @@ import approveImg from '../../../../assets/approve.svg';
 import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
 import { ContentPlus } from "../../../utils/types";
-import { getChecked } from "../../../utils/util";
+import { getViolatedRules } from "../../../utils/util";
 
-const Modal_ = ({
+const ConfirmationModal = ({
   title,
   image,
   task,
@@ -52,7 +51,7 @@ const Modal_ = ({
 
   const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
-    const checked = getChecked(values);
+    const checked = getViolatedRules(values);
 
     try {
       setSubmitting(true);
@@ -121,7 +120,6 @@ const Modal_ = ({
     fetchRules();
   }, []);
 
-
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
       <Modal.Card backgroundColor="circles">
@@ -169,7 +167,7 @@ const Modal_ = ({
   );
 };
 
-export default function ApproveReject({
+export default function ConfirmationModalToggle({
   task,
   fullWidth = false,
   onUpdate,
@@ -205,7 +203,7 @@ export default function ApproveReject({
       </Button>
 
       {showApprove &&
-        <Modal_
+        <ConfirmationModal
           title="Approve Confirmation"
           image={approveImg}
           task={task}
@@ -214,7 +212,7 @@ export default function ApproveReject({
         />
       }
       {showReject &&
-        <Modal_
+        <ConfirmationModal
           title="Reject Confirmation"
           image={rejectImg}
           task={task}

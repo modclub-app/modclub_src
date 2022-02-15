@@ -1,22 +1,35 @@
 import Array "mo:base/Array";
+import Base32 "mo:encoding/Base32";
+import Blob "mo:base/Blob";
+import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
+import Helpers "./helpers";
+import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
-import Iter "mo:base/Iter";
+import Option "mo:base/Option";
+import Order "mo:base/Order";
+import Random "mo:base/Random";
+import POH "./service/poh/poh";
+import PohState "./service/poh/state";
+import PohTypes "./service/poh/types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import State "./state";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Prim "mo:prim";
+import Token "./token";
 import TrieSet "mo:base/TrieSet";
 import Types "./types";
-import Option "mo:base/Option";
-import Debug "mo:base/Debug";
-import Order "mo:base/Order";
-import Rel "data_structures/Rel";
-import Token "./token";
+import VoteManager "./service/vote/vote";
+import VoteState "./service/vote/state";
+
+
+import Canistergeek "./canistergeek/canistergeek";
+
 
 shared ({caller = initializer}) actor class ModClub () {  
 
@@ -46,18 +59,59 @@ shared ({caller = initializer}) actor class ModClub () {
   type ProviderPlus = Types.ProviderPlus; 
   type Activity = Types.Activity;
   type AirdropUser = Types.AirdropUser;
+  type ModeratorLeaderboard = Types.ModeratorLeaderboard;
+  type RewardsEarnedMap = Types.RewardsEarnedMap;
+  type VerifyHumanityResponse = PohTypes.VerifyHumanityResponse;
 
+
+  stable var signingKey = "";
+  // Airdrop Flags
+  stable var allowSubmissionFlag : Bool = true;
   // Global Objects  
   var state = State.empty();
   stable var tokensStable : Token.TokensStable = Token.emptyStable(initializer);
   var tokens = Token.Tokens(
         tokensStable
   );
+  
+  stable var storageStateStable  = StorageState.emptyStableState();
+  // Will be updated with this in postupgrade. Motoko not allowing to use "this" here
+  var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer, signingKey);
+
+  stable var pohStableState = PohState.emptyStableState();
+  var pohEngine = POH.PohEngine(pohStableState);
+
+  stable var pohVoteStableState = VoteState.emptyStableState();
+  var voteManager = VoteManager.VoteManager(pohVoteStableState);
+
+  stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
+  private let canistergeekMonitor = Canistergeek.Monitor();
 
   func onlyOwner(p: Principal) : async() {
     Debug.print(Principal.toText(p));
     Debug.print(Principal.toText(initializer));
     if( p != initializer) throw Error.reject( "unauthorized" );
+  };
+
+  public shared({ caller }) func toggleAllowSubmission(allow: Bool) : async () {
+    await onlyOwner(caller);
+    allowSubmissionFlag := allow;
+  };
+
+  public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
+    await onlyOwner(caller);
+    voteManager.addToAutoApprovedPOHUser(userId);
+  };
+
+  public shared({ caller }) func generateSigningKey() : async () {
+    await onlyOwner(caller);
+    switch(Helpers.encodeNat8ArraytoBase32(Blob.toArray(await Random.blob()))) {
+      case(null){throw Error.reject("Couldn't generate key");};
+      case(?key) {
+        signingKey := key;
+        await storageSolution.setSigningKey(signingKey);
+      };
+    };
   };
 
   // Airdrop Methods
@@ -66,7 +120,7 @@ shared ({caller = initializer}) actor class ModClub () {
     Debug.print(Principal.toText(caller));  
     switch(state.airdropUsers.get(caller)) {
       case(?result) {
-        throw Error.reject("User already registered for airdrop");
+        throw Error.reject("You are already registered for airdrop");
       };
       case(null) {
         let user: AirdropUser = {
@@ -503,6 +557,11 @@ shared ({caller = initializer}) actor class ModClub () {
           throw Error.reject("Unauthorized, user does not have an identity");
       };
 
+      switch(state.airdropWhitelist.get(caller)){
+        case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
+        case(_) ();
+      };
+
       Debug.print("Registering moderator");
       var _userName = Text.trim(userName, #text " ");
       var _email = Text.trim(email, #text " ");
@@ -591,7 +650,7 @@ shared ({caller = initializer}) actor class ModClub () {
     let voteId = "vote-" # Principal.toText(caller) # contentId;
     switch(state.votes.get(voteId)){
       case(?v){
-        throw Error.reject("User already voted");
+        throw Error.reject("You have already voted");
       };
       case(_)();
     };
@@ -809,8 +868,303 @@ shared ({caller = initializer}) actor class ModClub () {
     tokens.getHoldings(initializer);
   };
 
-  // Helpers
+  // POH Methods
+  // Method called by provider
+  public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
+    pohVerificationRequestHelper(providerUserId, caller);
+  };
+
+  private func pohVerificationRequestHelper(providerUserId: Principal, providerId: Principal) : PohTypes.PohVerificationResponse  {
+    if(voteManager.isAutoApprovedPOHUser(providerUserId)) {
+      return
+      {
+          requestId = "null";
+          providerUserId = providerId;
+          status = #verified;
+          challenges = [];
+          providerId = initializer;
+          requestedOn = Helpers.timeNow();
+      };
+    };
+    let pohVerificationRequest: PohTypes.PohVerificationRequest = {
+        requestId = generateId(providerId, "pohRequest");
+        providerUserId = providerUserId;
+        providerId = providerId;
+    };
+    // validity and rules needs to come from admin dashboard here
+    pohEngine.pohVerificationRequest(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
+  };
   
+  // Method called by provider
+  public shared({ caller }) func pohGenerateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
+    await pohEngine.pohGenerateUniqueToken(providerUserId, caller);
+  };
+
+  // Method called by user on UI
+  public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+    await pohEngine.retrieveChallengesForUser(caller, token, ["challenge-profile-pic", "challenge-user-video"]);
+  };
+
+  // Method called by user on UI
+  public shared({ caller }) func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest) : async PohTypes.PohChallengeSubmissionResponse {
+    // let caller = Principal.fromText("2vxsx-fae");
+    let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, caller);
+    if(isValid == #ok) {
+      let _ = do ? {
+        if(pohDataRequest.challengeDataBlob != null) {
+          let attemptId = pohEngine.getAttemptId(pohDataRequest.challengeId, caller);
+          let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset, 
+                  pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
+          if(pohDataRequest.offset == pohDataRequest.numOfChunks) {//last Chunk coming in
+            pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
+            pohEngine.updateDataCanisterId(pohDataRequest.challengeId, caller, dataCanisterId);
+          };
+        } else {
+          // It's a username, email task
+          pohEngine.updatePohUserObject(caller, pohDataRequest.fullName!, pohDataRequest.email!, pohDataRequest.userName!, pohDataRequest.aboutUser!);
+          pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
+        };
+      };
+      // TODO dynamic list will be fetched from admin dashboard state
+      let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
+      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId);
+      switch(challengePackage) {
+        case(null)();
+        case(?package) {
+          voteManager.initiateVotingPoh(package.id, caller);
+          if(voteManager.isAutoApprovedPOHUser(caller)) {
+            pohEngine.changeChallengePackageStatus(package.id, #verified);
+          };
+        };
+      };
+    };
+    return {
+      challengeId = pohDataRequest.challengeId;
+      submissionStatus = isValid;
+    };
+  };
+
+  public shared({ caller }) func verifyUserHumanity() : async VerifyHumanityResponse {
+    Debug.print("Verifying humanity called by: " # Principal.toText(caller));
+    if(voteManager.isAutoApprovedPOHUser(caller)) {
+      return {
+        status = #verified;
+        token = null;
+      };
+    } else {
+      Debug.print("Calling pohVerificationRequest");
+      let result = await pohVerificationRequest(caller);
+      if(result.status != #verified) {
+        return {
+          status = result.status;
+          token = ?(await pohGenerateUniqueToken(caller));
+        };
+      };
+      return {status = result.status; token = null;};
+    }
+  };
+
+  public shared({ caller }) func populateChallenges() : async () {
+    Debug.print("Populating challenges called by: " # Principal.toText(caller));
+    await onlyOwner(caller);
+    pohEngine.populateChallenges();
+  };
+
+  public query({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+    switch(checkProfilePermission(caller, #getContent)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
+    let pohTaskIds = voteManager.getTasksId(status, 20);
+    let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
+    for(id in pohTaskIds.vals()) {
+      let voteCount = voteManager.getVoteCountForPoh(caller, id);
+      let taskDataWrapper = pohEngine.getPohTasks([id]);
+      var userName :?Text = null;
+      var email:?Text = null;
+      var fullName :?Text = null;
+      var aboutUser:?Text = null;
+      var profileImageUrlSuffix :?Text = null;
+      for(wrapper in taskDataWrapper.vals()) {
+        for(data in wrapper.pohTaskData.vals()) {
+          if(data.challengeId == POH.CHALLENGE_PROFILE_DETAILS_ID) {
+            // userName := data.userName;
+            email := data.email;
+            fullName := data.fullName;
+            aboutUser := data.aboutUser;
+          };
+          
+          if(data.challengeId == POH.CHALLENGE_PROFILE_PIC_ID) {
+            profileImageUrlSuffix := do ? {
+              ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
+            };
+          };
+        }
+      };
+      let pohPackage = pohEngine.getPohChallengePackage(id);
+      switch(pohPackage) {
+        case(null)();
+        case(?package) {
+          switch(state.profiles.get(package.userId)){
+            case (null) ();
+            case (?result) userName := ?result.userName;
+          };
+          let taskPlus = {
+            packageId = id;
+            status = voteManager.getContentStatus(id);
+            userName = userName;
+            email = email;
+            fullName = fullName;
+            aboutUser = aboutUser;
+            profileImageUrlSuffix = profileImageUrlSuffix;
+            // TODO: change these vote settings
+            voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+            minVotes = ModClubParam.MIN_VOTE_POH;
+            minStake = ModClubParam.MIN_STAKE_POH; 
+            title = null;
+            hasVoted = ?voteCount.hasVoted;
+            reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
+            createdAt = package.createdAt;
+            updatedAt = package.updatedAt;
+          };
+          tasks.add(taskPlus);
+        };
+      }
+      
+    };
+    return tasks.toArray();
+  };
+
+  public query({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
+    switch(checkProfilePermission(caller, #getContent)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
+    let pohTasks = pohEngine.getPohTasks([packageId]);
+    if(pohTasks.size() == 0) {
+      return #err(#invalidPackageId);
+    };
+    let voteCount = voteManager.getVoteCountForPoh(caller, packageId);
+    #ok({
+        packageId = pohTasks[0].packageId;
+        pohTaskData = pohTasks[0].pohTaskData;
+        votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+        minVotes =  ModClubParam.MIN_VOTE_POH;
+        minStake = ModClubParam.MIN_STAKE_POH;
+        reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
+        createdAt = pohTasks[0].createdAt;
+        updatedAt = pohTasks[0].updatedAt;
+    });
+  };
+
+  public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
+      // validateCaller(caller);
+      canistergeekMonitor.getMetrics(parameters);
+  };
+
+  public shared ({caller}) func collectCanisterMetrics(): async () {
+      // validateCaller(caller);
+      canistergeekMonitor.collectMetrics();
+  };
+
+  public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await pohVerificationRequest(caller)).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
+    let holdings = tokens.getHoldings(caller);
+    if( holdings.stake < ModClubParams.MIN_STAKE_POH) { 
+      throw Error.reject("Not enough tokens staked");
+    };
+    if(voteManager.checkPohUserHasVoted(caller, packageId)) {
+      throw Error.reject("You have already voted");
+    };
+    if(voteManager.getContentStatus(packageId) != #new) {
+      throw Error.reject("Vote has been finalized.");
+    };
+
+    if(pohEngine.validateRules(violatedRules) == false) {
+      throw Error.reject("Valid rules not provided.");
+    };
+
+    let finishedVoting = voteManager.votePohContent(caller, packageId, decision, violatedRules);
+    if(finishedVoting == #ok(true)) {
+      let decision = voteManager.getContentStatus(packageId);
+      let votesId = voteManager.getPOHVotesId(packageId);
+      if(decision == #approved) {
+        pohEngine.changeChallengePackageStatus(packageId, #verified);
+      } else {
+        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+      };
+      for(id in votesId.vals()) {
+        let vote = voteManager.getPOHVote(id);
+        switch(vote) {
+          case(null)();
+          case(?v) {
+            let reward = (ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH));
+            if((v.decision == #approved and decision == #approved) or
+                (v.decision == #rejected and decision == #rejected)
+              ) {
+              //reward only some percentage
+              await tokens.reward(initializer, v.userId, Float.toInt(reward));
+            } else {
+              // burn only some percentage
+              await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
+            };
+          };
+        };
+      };
+    };
+
+  };
+
+  public shared({ caller }) func issueJwt() : async Text {
+    Debug.print("Issue JWT called by " # Principal.toText(caller));
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    Debug.print("Issue JWT Check user humanity " # Principal.toText(caller));
+    if((await pohVerificationRequest(caller)).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
+    let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());
+    let signature = Helpers.generateHash(message # signingKey);
+    let base32Message = Helpers.encodeBase32(message);
+    switch(base32Message) {
+      case(null) {
+        throw Error.reject("Jwt creation failed");
+      };
+      case(?b32Message) {
+        return b32Message # "." # signature;
+      };
+    }
+  };
+
+  // Helpers
+  public shared({caller}) func adminInit() : async () {
+    await onlyOwner(caller);
+    await generateSigningKey();
+    await populateChallenges();
+  };
+
   private func getProviderRules(providerId: Principal) : [Rule] {
       let buf = Buffer.Buffer<Types.Rule>(0);
       for(ruleId in state.provider2rules.get0(providerId).vals()){
@@ -954,7 +1308,6 @@ shared ({caller = initializer}) actor class ModClub () {
  private func timeNow_() : Timestamp {
       Time.now()  / NANOS_PER_MILLI; // Convert to milliseconds
   };
-
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
   
@@ -963,12 +1316,33 @@ shared ({caller = initializer}) actor class ModClub () {
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
+
+    storageStateStable := storageSolution.getStableState();
+    pohStableState := pohEngine.getStableState();
+    pohVoteStableState := voteManager.getStableState();
+    _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
   system func postupgrade() {
+    // Reinitializing storage Solution to add this actor as a controller
+    storageSolution := StorageSolution.StorageSolution(storageStateStable, initializer, Principal.fromActor(this), signingKey);
+    Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
+
+    // Reducing memory footprint by assigning empty stable state
+    stateShared := State.emptyShared();
+    tokensStable := Token.emptyStable(initializer);
+    
+    storageStateStable := StorageState.emptyStableState();
+    pohStableState := PohState.emptyStableState();
+    pohVoteStableState := VoteState.emptyStableState();
+    
+    // This statement should be run after the storagestate gets restored from stable state
+    storageSolution.setInitialModerators(getModerators());
+    canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
+    _canistergeekMonitorUD := null;
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 };

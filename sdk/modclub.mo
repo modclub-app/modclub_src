@@ -74,7 +74,7 @@ module {
         submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
         subscribe: (SubscribeMessage) -> async ();
         // Proof of Humanity APIs
-        verifyForHumanity: (Principal) -> async PohVerificationResponse;
-        generateUniqueToken: (Principal) -> async PohUniqueToken;
+        pohVerificationRequest: (Principal) -> async PohVerificationResponse;
+        pohGenerateUniqueToken: (Principal) -> async PohUniqueToken;
       };
 };

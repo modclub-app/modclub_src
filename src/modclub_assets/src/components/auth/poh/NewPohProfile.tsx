@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { SignIn } from '../../auth/SignIn';
 import { Steps, Step } from "../../common/steps/Steps";
-import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
@@ -38,19 +37,18 @@ export default function NewPohProfile({ match }) {
   const [currentStep, setCurrentStep] = useState<string>('')
 
   const initialCall = async () => {
-    const verified = await verifyUserHumanity();
+    const response = await verifyUserHumanity();
 
-    const [status] = Object.keys(verified[0]);
-    if (status === "verified") {
+    if ('verified' in response.status) {
       history.push("/app");
       return
     }
 
-    const token = verified[1][0].token;
-    if (!token) return
+    const token = response.token;
+    if (!token.length) return
 
-    const challenges = await retrieveChallengesForUser(token);
-    setLoading(false);
+    const challenges = await retrieveChallengesForUser(token[0].token);
+    setLoading(false);``
     setSteps(challenges["ok"]);
 
     const uncompleted = challenges["ok"].find(challenge => {
@@ -62,7 +60,7 @@ export default function NewPohProfile({ match }) {
   }
 
   useEffect(() => {
-    initialCall();
+    isAuthenticated && initialCall();
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -111,7 +109,6 @@ export default function NewPohProfile({ match }) {
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>                
                 <Switch>
-                  <Route path={`${match.path}/:challenge-profile-details`} component={ProfileDetails}/>
                   <Route path={`${match.path}/:challenge-profile-pic`} component={ProfilePic}/>
                   <Route path={`${match.path}/:challenge-user-video`}>
                     {steps && <UserVideo steps={steps} />}

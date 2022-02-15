@@ -13,34 +13,45 @@ import Userstats from "../profile/Userstats";
 import Progress from "../../common/progress/Progress";
 import { useAuth } from "../../../utils/auth";
 import { getPohTasks } from "../../../utils/api";
-import { formatDate, getUrlForData } from "../../../utils/util";
+import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
-  console.log("ApplicantSnippet", applicant);
-  const { fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
+  const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
-  const match = regEx.exec(applicant.profileImageUrlSuffix[0]);
+  const match = regEx.exec(profileImageUrlSuffix[0]);
   const imageUrl = getUrlForData(match[1], match[2]);
+  const [urlObject, setUrlObject] = useState(null);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      const urlObject = await fetchObjectUrl(imageUrl);
+      setUrlObject(urlObject);
+    };
+    fetchData();
+    return () => { setUrlObject(null) };
+  }, [])   
   
   return (
     <Link
       to={`/app/poh/${applicant.packageId}`}
-      className="card is-block"
+      className="card is-flex is-flex-direction-column is-justify-content-flex-end"
       style={{
-        background: `linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 70%), url(${imageUrl}) no-repeat top center`
+        background: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${urlObject}) no-repeat center`,
+        backgroundSize: "cover",
+        height: 395
       }}
     >
-      <Card.Header justifyContent="start">
+      <Card.Header justifyContent="start" style={{ marginBottom: "auto", boxShadow: "none" }}>
         <Progress
           value={applicant.voteCount}
           min={applicant.minVotes}
         />
       </Card.Header>
 
-      <Card.Content style={{ paddingTop: "50%" }}>
+      <Card.Content>
         <Heading subtitle marginless>
-          {fullName}
+          {userName[0]}
         </Heading>
         <p className="is-size-7 mt-2">
           {aboutUser}
@@ -54,7 +65,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
           </span>
         </Card.Header.Title>
 
-        <Button.Group className="is-flex-wrap-nowrap mt-5">
+        <Button.Group className="is-flex-wrap-nowrap mt-5" style={{ paddingBottom: 10 }}>
           <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
             <Icon align="left" size="small" className="has-text-white">
               <span className="material-icons">local_atm</span>
@@ -91,11 +102,25 @@ export default function PohApplicantList() {
     user && !loading && getApplicants();
   }, [user]);
 
-  return !applicants ?
-    <Modal show={true} showClose={false}>
+  if (loading) {
+    return (
+      <Modal show={true} showClose={false}>
       <div className="loader is-loading p-5"></div>
-    </Modal>
-    :
+      </Modal>
+    )
+  }
+  if (user && applicants.length === 0) {
+    return (
+      <section className="hero is-black is-medium">
+        <div className="hero-body container has-text-centered">
+          <p className="has-text-silver is-size-4 has-text-centered mb-6">
+            There are no proof of humanity applicants at the moment.
+          </p>
+        </div>
+      </section>
+    )
+  }
+  return(
     <>
       <Userstats />
 
@@ -106,11 +131,11 @@ export default function PohApplicantList() {
             mobile={{ size: 12 }}
             tablet={{ size: 6 }}
             fullhd={{ size: 4 }}
-            style={{ maxWidth: 480 }}
           >
             <ApplicantSnippet applicant={applicant} />
           </Columns.Column>
         ))}
       </Columns>
     </>
+  )
 }
