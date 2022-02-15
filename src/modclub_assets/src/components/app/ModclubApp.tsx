@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Switch, Route, Link, Redirect } from "react-router-dom";
+import { Switch, Route, Link, useHistory } from "react-router-dom";
 import { Columns, Modal, Heading } from "react-bulma-components";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
@@ -19,7 +19,7 @@ import { refreshJwt } from "../../utils/jwt";
 import { getUserFromCanister } from "../../utils/api";
 
 export default function ModclubApp() {
-  const [isAdmin, setAdmin] = useState(false);
+  const history = useHistory();
   // useEffect(() => {
   //   const asyncReroute = async () => {
   //     const user = await getUserFromCanister();
@@ -43,13 +43,17 @@ export default function ModclubApp() {
 
   useEffect(() => {
     if (!isJwtSet) {
-      user && initialCall();
+      if (user?.role?.hasOwnProperty("admin")) {
+        history.push("/app/admin");
+      } else {
+        user && initialCall();
+      }
     }
   }, [user]);
 
   return (
     <>
-      {status && status != "verified" && (
+      {!user?.role?.hasOwnProperty("admin") && status && status != "verified" && (
         <Modal show={true} showClose={false}>
           <Modal.Card backgroundColor="circles">
             <Modal.Card.Body>
@@ -112,7 +116,7 @@ export default function ModclubApp() {
               <Activity />
             </Route>
 
-            {user && user.role.admin ? (
+            {user && user?.role?.hasOwnProperty("admin") ? (
               <Route exact path="/app/admin">
                 <Admin />
               </Route>

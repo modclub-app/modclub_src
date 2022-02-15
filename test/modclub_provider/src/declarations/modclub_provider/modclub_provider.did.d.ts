@@ -22,6 +22,7 @@ export interface ModclubProvider {
     ) => Promise<string>,
   'subscribe' : () => Promise<undefined>,
   'test' : () => Promise<string>,
+  'testDataCanisterStorage' : () => Promise<[Principal, Principal, string]>,
   'updateSettings' : (arg_0: bigint, arg_1: bigint) => Promise<undefined>,
   'voteResult' : (arg_0: ContentResult) => Promise<undefined>,
 }

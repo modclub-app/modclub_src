@@ -26,6 +26,8 @@ shared ({caller = initializer}) actor class ModclubProvider () {
         // Register with Modclub
         let registerResult = await MC.registerProvider("SocialApp", "The description of your application.", null);
 
+        MC.addProviderAdmin( Principal.fromText("k7nen-3nlk6-lfitz-vrck5-inhz4-drdq3-ogjob-4qkv7-tbpku-qo6ak-kae"));
+
         // Sub the callback
         await subscribe();
 

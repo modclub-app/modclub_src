@@ -26,6 +26,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'subscribe' : IDL.Func([], [], []),
     'test' : IDL.Func([], [IDL.Text], []),
+    'testDataCanisterStorage' : IDL.Func(
+        [],
+        [IDL.Principal, IDL.Principal, IDL.Text],
+        [],
+      ),
     'updateSettings' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'voteResult' : IDL.Func([ContentResult], [], ['oneway']),
   });
