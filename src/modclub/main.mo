@@ -958,7 +958,25 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Method called by user on UI
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await pohEngine.retrieveChallengesForUser(caller, token, ["challenge-profile-pic", "challenge-user-video"]);
+    let tokenResponse = pohEngine.decodeToken(caller, token);
+    if(tokenResponse == #err(#invalidToken)) {
+      return #err(#invalidToken);
+    };
+    await pohEngine.retrieveChallengesForUser(caller, ["challenge-profile-pic", "challenge-user-video"], false);
+  };
+
+  // Admin method to create new attempts
+  public shared({ caller }) func resetUserChallengeAttempt(packageId: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+    await onlyOwner(caller);
+    switch(pohEngine.getPohChallengePackage(packageId)) {
+      case(null) {
+        throw Error.reject("Package doesn't exist");
+      };
+      case(_)();
+    };
+    pohEngine.changeChallengePackageStatus(packageId, #rejected);
+    voteManager.changePohPackageVotingStatus(packageId, #rejected);
+    await pohEngine.retrieveChallengesForUser(caller, ["challenge-profile-pic", "challenge-user-video"], true);
   };
 
   // Method called by user on UI
