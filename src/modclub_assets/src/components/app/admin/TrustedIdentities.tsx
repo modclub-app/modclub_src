@@ -168,7 +168,6 @@ export default function TrustedIdentities() {
     setChecked(
       isChecked ? [...checked, item] : checked.filter((id) => id != item)
     );
-    console.log(checked);
   };
 
   const handleCheckAll = () => {
