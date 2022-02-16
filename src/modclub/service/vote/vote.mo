@@ -195,18 +195,24 @@ module VoteModule {
             if(aCount >= ModClubParam.MIN_VOTE_POH) {
                 // Approved
                 finishedVote := true;
-                state.newPohPackages := deleteElementFromBuffer(state.newPohPackages, packageId);
-                state.approvedPohPackages.add(packageId);
-                state.package2Status.put(packageId, #approved);
+                changePohPackageVotingStatus(packageId, #approved);
             } else if ( rCount >= ModClubParam.MIN_VOTE_POH) {
                 // Rejected
                 finishedVote := true;
-                state.newPohPackages := deleteElementFromBuffer(state.newPohPackages, packageId);
-                state.rejectedPohPackages.add(packageId);
-                state.package2Status.put(packageId, #rejected);
+                changePohPackageVotingStatus(packageId, #rejected);
             };
 
             return finishedVote;
+        };
+
+        public func changePohPackageVotingStatus(packageId: Text, status : Types.ContentStatus) {
+            state.newPohPackages := deleteElementFromBuffer(state.newPohPackages, packageId);
+            state.package2Status.put(packageId, status);
+            if(status == #approved) {
+                state.approvedPohPackages.add(packageId);
+            } else if ( status == #rejected) {
+                state.rejectedPohPackages.add(packageId);
+            };
         };
 
         func deleteElementFromBuffer(buff: Buffer.Buffer<Text>, ele: Text) : Buffer.Buffer<Text> {
