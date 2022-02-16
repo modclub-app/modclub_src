@@ -115,7 +115,6 @@ export default function ModclubApp() {
             <Route exact path="/app/activity">
               <Activity />
             </Route>
-
             {user && user?.role?.hasOwnProperty("admin") ? (
               <Route exact path="/app/admin">
                 <Admin />
