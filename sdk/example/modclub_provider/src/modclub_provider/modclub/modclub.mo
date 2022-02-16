@@ -1,7 +1,6 @@
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 
-
 // This is the interface to modclub for providers
 module { 
 

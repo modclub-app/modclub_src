@@ -7,33 +7,39 @@ import TrieMap "mo:base/TrieMap";
 import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
-import Buffer "mo:base/Buffer";
-import TrieSet "mo:base/TrieSet";
-import SeqObj "data_structures/SeqObj";
 import Rel "data_structures/Rel";
 import RelObj "data_structures/RelObj";
 import Debug "mo:base/Debug";
+import Buffer "mo:base/Buffer"; 
 
 import Types "./types";
 
 module State {
   type Profile = Types.Profile;
+  type ProviderId = Types.ProviderId;
   type Content = Types.Content;
   type Provider = Types.Provider;
   type Rel<X, Y> = RelObj.RelObj<X, Y>;
   public type RelShared<X, Y> = Rel.RelShared<X, Y>;
   public type MapShared<X, Y> = Trie.Trie<X, Y>;
   public type Map<X, Y> = HashMap.HashMap<X, Y>;
+  public type ProviderAdminMap = HashMap.HashMap<Types.UserId, ()>;
 
   public type State = {
     // Global IDs, Keeps track of 
     GLOBAL_ID_MAP : Map<Text, Nat>;
+
+    // Provider whitelist
+    providersWhitelist : Map<Principal, Bool>;
 
     // Providers
     providers : Map<Principal, Provider>;
 
     // Pub / Sub for Providers
     providerSubs: Map<Principal, Types.SubscribeMessage>;
+
+    providerAdmins : Map<ProviderId, ProviderAdminMap>;
+
 
     /// all profiles.
     profiles : Map<Types.UserId, Profile>;
@@ -84,6 +90,8 @@ module State {
   public type StateShared = {    
     GLOBAL_ID_MAP : [(Text, Nat)];    
     providers : [(Principal, Provider)];        
+    providersWhitelist: [(Principal, Bool)];
+    providerAdmins: [(Principal, [(Principal, ())])];
     airdropUsers : [(Principal, Types.AirdropUser)]; 
     airdropWhitelist : [(Principal, Principal)];   
     profiles : [(Types.UserId, Profile)];
@@ -108,7 +116,9 @@ module State {
     var st : State = {
       GLOBAL_ID_MAP = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
       providers = HashMap.HashMap<Principal, Provider>(1, Principal.equal, Principal.hash);
+      providersWhitelist = HashMap.HashMap<Principal, Bool>(1, Principal.equal, Principal.hash);
       providerSubs =  HashMap.HashMap<Principal, Types.SubscribeMessage>(1, Principal.equal, Principal.hash);
+      providerAdmins = HashMap.HashMap<Principal, ProviderAdminMap>(1, Principal.equal, Principal.hash);
       profiles = HashMap.HashMap<Types.UserId, Profile>(1, Principal.equal, Principal.hash);
       usernames = HashMap.HashMap<Text, Types.UserId>(1, Text.equal, Text.hash);
       airdropUsers =  HashMap.HashMap<Principal, Types.AirdropUser>(1, Principal.equal, Principal.hash);
@@ -136,6 +146,8 @@ module State {
       profiles = [];
       content = [];
       providers = [];   
+      providersWhitelist = [];
+      providerAdmins = [];
       rules = [];
       votes = [];
       textContent = [];
@@ -155,9 +167,14 @@ module State {
   };
 
   public func fromState(state: State) : StateShared {
+      let buf = Buffer.Buffer<(Principal, [(Principal, ())])>(0);
+      for( (pid, admins) in state.providerAdmins.entries()) {
+        buf.add((pid, Iter.toArray(admins.entries())));
+      };
     let st : StateShared = {
       GLOBAL_ID_MAP = Iter.toArray(state.GLOBAL_ID_MAP.entries());
       providers = Iter.toArray(state.providers.entries());
+      providersWhitelist = Iter.toArray(state.providersWhitelist.entries());
       profiles = Iter.toArray(state.profiles.entries());
       content = Iter.toArray(state.content.entries());
       rules = Iter.toArray(state.rules.entries());
@@ -165,6 +182,7 @@ module State {
       textContent = Iter.toArray(state.textContent.entries());
       imageContent = Iter.toArray(state.imageContent.entries());
       airdropUsers = Iter.toArray(state.airdropUsers.entries());
+      providerAdmins = buf.toArray();
       airdropWhitelist = Iter.toArray(state.airdropWhitelist.entries());
       contentApproved = Rel.share<Principal, Types.ContentId>(state.contentApproved.getRel());
       contentRejected = Rel.share<Principal, Types.ContentId>(state.contentRejected.getRel());
@@ -191,6 +209,9 @@ module State {
     for( (id, provider) in stateShared.providers.vals()) {
       state.providers.put(id, provider);
     };
+    for( (id, val) in stateShared.providersWhitelist.vals()) {
+      state.providersWhitelist.put(id, val);
+    };
     for( (id, profile) in stateShared.profiles.vals()) {
       state.profiles.put(id, profile);
     };
@@ -210,6 +231,15 @@ module State {
     for( (id, airdropUser) in stateShared.airdropUsers.vals()) {
       state.airdropUsers.put(id, airdropUser);
     };
+
+    for( (pid, admins) in stateShared.providerAdmins.vals()) {
+      let adminMap : ProviderAdminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
+      for( (admin, ()) in admins.vals()) {
+        adminMap.put(admin, ());
+      };
+      state.providerAdmins.put(pid, adminMap);
+    };
+
     for( (id, pid) in stateShared.airdropWhitelist.vals()) {
       state.airdropWhitelist.put(id, pid);
     };

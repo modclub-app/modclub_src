@@ -2,6 +2,7 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Hash "mo:base/Hash";
 import Nat "mo:base/Nat";
+import Result "mo:base/Result";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 
@@ -257,5 +258,18 @@ module {
       #Immutable;
   };
 
-   
+    public type ProviderError = {
+        #Unauthorized;
+        #ProviderIsRegistered;
+        #NotFound;
+        #RequiresWhitelisting;
+        #InvalidProvider;
+        #InvalidContentType;
+        #InvalidContentStatus;
+    };
+
+    public type ProviderSettingResult = Result.Result<ProviderSettings, ProviderError>;
+    public type ProviderResult = Result.Result<(), ProviderError>;
+    public type ProviderTextResult = Result.Result<Text, ProviderError>;
+
 };
