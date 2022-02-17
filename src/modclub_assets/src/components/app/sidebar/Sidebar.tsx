@@ -73,9 +73,9 @@ export default function Sidebar() {
 
   useEffect(() => {
     console.log(user);
-    if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
-      history.push("/signup");
-    }
+    // if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
+    //   history.push("/signup");
+    // }
   }, [isAuthReady, isAuthenticated, user, requiresSignUp]);
   return (
     <Columns.Column
@@ -117,7 +117,7 @@ export default function Sidebar() {
             </Icon>
             Leaderboard
           </Link>
-          {user && user.role?.admin ? (
+          {user && user.role.hasOwnProperty("admin") ? (
             <Link to="/app/admin">
               <Icon>
                 <span className="material-icons">assignment_ind</span>
