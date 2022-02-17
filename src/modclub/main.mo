@@ -987,11 +987,13 @@ shared ({caller = initializer}) actor class ModClub () = this {
       case(null) {
         throw Error.reject("Package doesn't exist");
       };
-      case(_)();
+      case(?package) {
+        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        voteManager.changePohPackageVotingStatus(packageId, #rejected);
+        await pohEngine.retrieveChallengesForUser(package.userId, ["challenge-profile-pic", "challenge-user-video"], true);
+      };
     };
-    pohEngine.changeChallengePackageStatus(packageId, #rejected);
-    voteManager.changePohPackageVotingStatus(packageId, #rejected);
-    await pohEngine.retrieveChallengesForUser(caller, ["challenge-profile-pic", "challenge-user-video"], true);
+   
   };
 
   // Method called by user on UI
