@@ -5,7 +5,7 @@ MODCLUB is a moderation platform for online apps deployed on the IC. Moderation 
 
 # Usage
 
-To integrate with MODCLUB you need to import the "modclub.mo" module into your project and register your application as a provider. 
+To integrate with MODCLUB you need to import the "modclub.mo" module into your project and register your application as a provider. You will need to provide your canister ID to the MODCLUB team first so that it can be whitelisted.
 
 To register:
 ```js
@@ -37,7 +37,6 @@ await MC.submitText("my_content_id", "Text content to be reviewed", ?"Title of c
 
 **submitImage**
 Params:
-Params:
 - *sourceId* - Text - The unique ID for this content on your platform. 
 - *image* - [Nat8] - A Nat8 array containing the image data 
 - *imageType* - Text - The image mime type i.e image/jpeg, image/png etc..
@@ -55,9 +54,9 @@ Params:
 - *rules* - [Text] - An array of Texts that describe your content rules
 
 
-**removeContentRules** - Remove existing rules
+**removeRules** - Remove existing rules
 Params:
-- *ruleIds* - [Text] - An array of rule Ids that you would like to remove
+- *ruleIds* - [Text] - An array of Rule Ids that you would like to remove
 
 **getContentRules** - Returns the list of rules you have provided
 
@@ -85,7 +84,16 @@ Example of registering your callback:
   };
 ```
 
-### Managing your settings
+### Adding an Admin
+You can add admins to manage your application via our Admin dashboard. This is more convenient if you have other team members that are setting your app's content rules or the moderator settings.
+
+**addProviderAdmin**
+Params:
+ - *userName* - Text - The username for the admin
+ - *userPrincipal* - Principal - The principal ID for the admin
+ - *providerId* - ?Principal - The principal ID of your app. (Optional if your app is making this call directly) 
+
+### Managing Moderator settings
 You can adjust the number of votes required for content to be approved / rejected and the number of staked tokens to vote.
 
 **updateSettings**

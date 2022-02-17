@@ -48,6 +48,21 @@ type ProviderSettings =
    minStaked: nat;
    minVotes: nat;
  };
+type ProviderSettingResult = 
+ variant {
+   err: ProviderError;
+   ok: ProviderSettings;
+ };
+type ProviderResult = 
+ variant {
+   err: ProviderError;
+   ok;
+ };
+type ProviderRegisterResult = 
+ variant {
+   err: ProviderError;
+   ok: text;
+ };
 type ProviderPlus = 
  record {
    activeCount: nat;
@@ -63,6 +78,16 @@ type ProviderPlus =
    updatedAt: Timestamp;
  };
 type ProviderId = principal;
+type ProviderError = 
+ variant {
+   InvalidContentStatus;
+   InvalidContentType;
+   InvalidProvider;
+   NotFound;
+   ProviderIsRegistered;
+   RequiresWhitelisting;
+   Unauthorized;
+ };
 type Profile = 
  record {
    createdAt: Timestamp;
@@ -212,6 +237,7 @@ type ModeratorLeaderboard =
  };
 type ModClub = 
  service {
+   addProviderAdmin: (text, principal, opt principal) -> (ProviderResult); // 
    addRules: (vec text) -> () oneway;
    addToAirdropWhitelist: (vec principal) -> ();
    addToApprovedUser: (principal) -> ();
@@ -234,7 +260,9 @@ type ModClub =
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
    getProviderContent: () -> (vec ContentPlus) query;
+   getProviders: () -> (vec ProviderPlus);
    getRules: (principal) -> (vec Rule) query;
+   getSettings: () -> (ProviderSettingResult);
    getTokenHoldings: () -> (Holdings) query;
    getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
@@ -258,6 +286,7 @@ type ModClub =
    verifyUserHumanity: () -> (VerifyHumanityResponse);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
    votePohContent: (text, Decision, vec PohRulesViolated) -> ();
+    whiteListProvider: (principal) -> ();
  };
 type Image__1 = 
  record {

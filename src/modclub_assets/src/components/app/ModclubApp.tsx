@@ -1,6 +1,6 @@
-import * as React from 'react'
+import * as React from "react";
 import { useEffect, useState } from "react";
-import { Switch, Route, Link } from "react-router-dom";
+import { Switch, Route, Link, useHistory } from "react-router-dom";
 import { Columns, Modal, Heading } from "react-bulma-components";
 import NotAuthenticatedModal from './modals/NotAuthenticated'; 
 import Sidebar from "./sidebar/Sidebar";
@@ -14,10 +14,21 @@ import Leaderboard from "./moderators/Leaderboard";
 import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 import { useAuth } from "../../utils/auth";
-import { verifyUserHumanity } from '../../utils/api';
-import { refreshJwt } from '../../utils/jwt';
+import { verifyUserHumanity } from "../../utils/api";
+import { refreshJwt } from "../../utils/jwt";
+
+import { getUserFromCanister } from "../../utils/api";
 
 export default function ModclubApp() {
+  const history = useHistory();
+  // useEffect(() => {
+  //   const asyncReroute = async () => {
+  //     const user = await getUserFromCanister();
+  //     setUser(user);
+  //   };
+  //   asyncReroute();
+  // });
+
   const { isAuthenticated, isAuthReady, user } = useAuth();
   const [status, setStatus] = useState(null);
   const [isJwtSet, setJwt] = useState(false);
@@ -26,14 +37,18 @@ export default function ModclubApp() {
     const result = await verifyUserHumanity();
     const status = Object.keys(result.status)[0];
 
-    refreshJwt()
+    refreshJwt();
     setJwt(true);
     setStatus(status);
-  }
+  };
 
   useEffect(() => {
     if (!isJwtSet) {
-      user && initialCall();
+      if (user?.role?.hasOwnProperty("admin")) {
+        history.push("/app/admin");
+      } else {
+        user && initialCall();
+      }
     }
   }, [user]);
 
@@ -43,34 +58,46 @@ export default function ModclubApp() {
 
   return (
     <>
-      { status &&  status != "verified" &&
-         <Modal show={true} showClose={false}>
-         <Modal.Card backgroundColor="circles">
-           <Modal.Card.Body>
-             <Heading subtitle>
-              Proof of Humanity
-             </Heading>
-            { status === "pending" &&
-              <p>Your Proof of Humanity approval is in progress. You will be able to access MODCLUB once it is approved. Please come back later to check your status.</p>
-            }
-            { status === "notSubmitted" &&
-              <p>You have not submitted your Proof of Humanity. Please do so now.</p>
-            }
-            {
-              status === "rejected" &&
-              <p>Your Proof of Humanity has been rejected. Please submit a new Proof of Humanity.</p>
-            }
-           </Modal.Card.Body>
-           <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
-              {(status === "notSubmitted" || status === "rejected") && <Link to="/new-poh-profile" className="button is-primary" style={{ textDecoration: "none" }}>
-                Continue
-              </Link>}
-           </Modal.Card.Footer>
-         </Modal.Card>
-       </Modal>
-      }
+      {!user?.role?.hasOwnProperty("admin") && status && status != "verified" && (
+        <Modal show={true} showClose={false}>
+          <Modal.Card backgroundColor="circles">
+            <Modal.Card.Body>
+              <Heading subtitle>Proof of Humanity</Heading>
+              {status === "pending" && (
+                <p>
+                  Your Proof of Humanity approval is in progress. You will be
+                  able to access MODCLUB once it is approved. Please come back
+                  later to check your status.
+                </p>
+              )}
+              {status === "notSubmitted" && (
+                <p>
+                  You have not submitted your Proof of Humanity. Please do so
+                  now.
+                </p>
+              )}
+              {status === "rejected" && (
+                <p>
+                  Your Proof of Humanity has been rejected. Please submit a new
+                  Proof of Humanity.
+                </p>
+              )}
+            </Modal.Card.Body>
+            <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
+              {(status === "notSubmitted" || status === "rejected") && (
+                <Link
+                  to="/new-poh-profile"
+                  className="button is-primary"
+                  style={{ textDecoration: "none" }}
+                >
+                  Continue
+                </Link>
+              )}
+            </Modal.Card.Footer>
+          </Modal.Card>
+        </Modal>
+      )}
       <Columns className="container" marginless multiline={false}>
-
         <Sidebar />
 
         <Columns.Column id="main-content" className="mt-6 pb-6">
@@ -79,7 +106,7 @@ export default function ModclubApp() {
               <Tasks />
             </Route>
             <Route path="/app/tasks/:taskId">
-              <Task /> 
+              <Task />
             </Route>
             <Route exact path="/app/poh">
               <PohApplicantList />
@@ -93,14 +120,19 @@ export default function ModclubApp() {
             <Route exact path="/app/activity">
               <Activity />
             </Route>
-            <Route exact path="/app/admin">
-              <Admin />
-            </Route>
+
+            {user && user?.role?.hasOwnProperty("admin") ? (
+              <Route exact path="/app/admin">
+                <Admin />
+              </Route>
+            ) : (
+              ""
+            )}
           </Switch>
         </Columns.Column>
       </Columns>
-      
+
       <Footer />
     </>
-  )
+  );
 }

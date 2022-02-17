@@ -1,5 +1,6 @@
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
+import Result "mo:base/Result";
 
 
 // This is the interface to modclub for providers
@@ -26,7 +27,17 @@ module {
     data: [Nat8];
     imageType: Text;
   };
-
+  public type ProviderError = {
+      #Unauthorized;
+      #ProviderIsRegistered;
+      #NotFound;
+      #RequiresWhitelisting;
+      #InvalidProvider;
+      #InvalidContentType;
+      #InvalidContentStatus;
+  };
+  public type ProviderResult = Result.Result<(), ProviderError>;
+  public type ProviderTextResult = Result.Result<Text, ProviderError>;
   public type SubscribeMessage = { callback: shared ContentResult -> (); };
 
   public type PohVerificationResponse = {

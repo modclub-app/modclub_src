@@ -29,7 +29,6 @@ let
 
 let
   {- This is where you can override existing packages in the package-set
-
      For example, if you wanted to use version `v2.0.0` of the foo library:
      let overrides = [
          { name = "foo"

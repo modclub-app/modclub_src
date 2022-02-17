@@ -1,6 +1,15 @@
-import * as React from 'react'
+import * as React from "react";
 import { Form, Field } from "react-final-form";
-import { Notification, Columns, Card, Heading, Media, Image, Button, Icon } from "react-bulma-components";
+import {
+  Notification,
+  Columns,
+  Card,
+  Heading,
+  Media,
+  Image,
+  Button,
+  Icon,
+} from "react-bulma-components";
 import { registerModerator } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { useHistory } from "react-router-dom";
@@ -27,7 +36,7 @@ export default function NewProfile() {
       if (f.size > 800000) {
         setMessage({ success: false, value: "Maximum file size is 800KB" });
         setTimeout(() => setMessage(null), 2000);
-        return
+        return;
       }
 
       const reader = new FileReader();
@@ -47,18 +56,20 @@ export default function NewProfile() {
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
 
-    const validEmail = validateEmail(email)
+    const validEmail = validateEmail(email);
     if (!validEmail) {
       setMessage({ success: false, value: "Email is badly formatted" });
       setTimeout(() => setMessage(null), 2000);
-      return
+      return;
     }
 
-    const imageData: ImageData = pic ? {
-      src: pic,
-      type: picType,
-    } : undefined;
-    
+    const imageData: ImageData = pic
+      ? {
+          src: pic,
+          type: picType,
+        }
+      : undefined;
+
     const regEx = /Reject text: (.*)/g;
     try {
       setSubmitting(true);
@@ -71,9 +82,8 @@ export default function NewProfile() {
         setMessage(null);
         history.push("/new-poh-profile");
       }, 2000);
-      
     } catch (e) {
-      let errAr = regEx.exec(e.message);  
+      let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr[1] });
       setSubmitting(false);
     }
@@ -82,112 +92,117 @@ export default function NewProfile() {
   };
 
   return (
-  <>
-    {message &&
-      <Notification color={message.success ? "success" : "danger"} className="has-text-centered">
-        {message.value}
-      </Notification>
-    }
+    <>
+      {message && (
+        <Notification
+          color={message.success ? "success" : "danger"}
+          className="has-text-centered"
+        >
+          {message.value}
+        </Notification>
+      )}
 
-    <Columns centered vCentered className="is-fullheight">
-      <Columns.Column size={6}>
-        <Card>
-          <Card.Content>
-            <Heading textAlign="center">
-              Create your profile
-            </Heading>
+      <Columns centered vCentered className="is-fullheight">
+        <Columns.Column size={6}>
+          <Card>
+            <Card.Content>
+              <Heading textAlign="center">Create your profile</Heading>
 
-            <input
-              style={{ display: "none" }}
-              ref={inputFile}
-              onChange={handleFileChange}
-              accept="image/*"
-              type="file"
-            />
-
-            <Media
-              justifyContent="center"
-              onClick={() => inputFile.current.click()}
-            >
-              <Image
-                src={pic ? pic : placeholder}
-                alt="profile"
-                size={128}
-                className="is-clickable is-hover-reduced"
-                style={{ overflow: "hidden", borderRadius: "50%" }}
-                rounded
+              <input
+                style={{ display: "none" }}
+                ref={inputFile}
+                onChange={handleFileChange}
+                accept="image/*"
+                type="file"
               />
-              {!pic &&
-                <div style={{
-                  position: "absolute",
-                  backgroundColor: "rgba(0, 0, 0, .5)",
-                  width: 128,
-                  height: 128,
-                  borderRadius: "50%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  cursor: "pointer"
-                }}>
-                  <Icon color="white">
-                    <span className="material-icons">backup</span>
-                  </Icon>
-                  <p>Click to add profile photo</p>
-                </div>
-              }
-            </Media>
 
-            <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
-              <form onSubmit={handleSubmit}>
-                <div className="field">
-                  <div className="control has-icons-left">
-                    <Field
-                      name="username"
-                      component="input"
-                      type="text"
-                      className="input is-medium"
-                      placeholder="Username"
-                    />
-                    <Icon align="left">
-                      <span className="material-icons">person</span>
+              <Media
+                justifyContent="center"
+                onClick={() => inputFile.current.click()}
+              >
+                <Image
+                  src={pic ? pic : placeholder}
+                  alt="profile"
+                  size={128}
+                  className="is-clickable is-hover-reduced"
+                  style={{ overflow: "hidden", borderRadius: "50%" }}
+                  rounded
+                />
+                {!pic && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      backgroundColor: "rgba(0, 0, 0, .5)",
+                      width: 128,
+                      height: 128,
+                      borderRadius: "50%",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Icon color="white">
+                      <span className="material-icons">backup</span>
                     </Icon>
+                    <p>Click to add profile photo</p>
                   </div>
-                </div>
-                <div className="field">
-                  <div className="control has-icons-left">
-                    <Field
-                      name="email"
-                      component="input"
-                      type="text"
-                      placeholder="Email"
-                      className="input is-medium"
-                    />
-                    <Icon align="left">
-                      <span className="material-icons">email</span>
-                    </Icon>
-                  </div>
-                </div>
+                )}
+              </Media>
 
-                <Button
-                  type="submit"
-                  disabled={!values.username || !values.email || submitting}
-                  size="large"
-                  color="primary"
-                  fullwidth
-                  value="submit"
-                  className={submitting ? "is-loading" : ""}
-                >
-                  Submit
-                </Button>
-              </form>
-              )}
-          />
-          </Card.Content>
-        </Card>
-      </Columns.Column>
-    </Columns>
-  </>
+              <Form
+                onSubmit={onFormSubmit}
+                render={({ handleSubmit, values }) => (
+                  <form onSubmit={handleSubmit}>
+                    <div className="field">
+                      <div className="control has-icons-left">
+                        <Field
+                          name="username"
+                          component="input"
+                          type="text"
+                          className="input is-medium"
+                          placeholder="Username"
+                        />
+                        <Icon align="left">
+                          <span className="material-icons">person</span>
+                        </Icon>
+                      </div>
+                    </div>
+                    <div className="field">
+                      <div className="control has-icons-left">
+                        <Field
+                          name="email"
+                          component="input"
+                          type="text"
+                          placeholder="Email"
+                          className="input is-medium"
+                        />
+                        <Icon align="left">
+                          <span className="material-icons">email</span>
+                        </Icon>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={!values.username || !values.email || submitting}
+                      size="large"
+                      color="primary"
+                      fullwidth
+                      value="submit"
+                      className={submitting ? "is-loading" : ""}
+                    >
+                      Submit
+                    </Button>
+                  </form>
+                )}
+              />
+            </Card.Content>
+          </Card>
+        </Columns.Column>
+      </Columns>
+    </>
   );
 }

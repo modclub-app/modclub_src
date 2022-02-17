@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 import { Link } from "react-router-dom";
 import {
   Columns,
@@ -7,44 +7,50 @@ import {
   Heading,
   Icon,
   Button,
-  Modal
+  Modal,
 } from "react-bulma-components";
-import LogoImg from '../../../../assets/logo.png';
+import LogoImg from "../../../../assets/logo.png";
 import SidebarUser from "./SidebarUser";
-import { useAuth } from '../../../utils/auth';
-import { SignIn } from '../../auth/SignIn';
-import { useHistory } from 'react-router-dom';
+import { useAuth } from "../../../utils/auth";
+import { SignIn } from "../../auth/SignIn";
+import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import FormModal from "../modals/FormModal";
 
 const InviteModerator = ({ toggle }) => {
-  const link = 'Coming Soon';//`${window.location.origin}/referral=${Date.now()}`
+  const link = "Coming Soon"; //`${window.location.origin}/referral=${Date.now()}`
 
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
       <Modal.Card backgroundColor="circles" className="is-small">
         <Modal.Card.Body>
-
-          <Heading subtitle>
-            Invite a Moderator
-          </Heading>
+          <Heading subtitle>Invite a Moderator</Heading>
           <p>
-            Invite moderators to earn MOD tokens. For every invited moderator that registers with MODCLUB, you will earn <span className="has-text-weight-bold">5 mod tokens</span>
+            Invite moderators to earn MOD tokens. For every invited moderator
+            that registers with MODCLUB, you will earn{" "}
+            <span className="has-text-weight-bold">5 mod tokens</span>
           </p>
 
           <div className="field mt-6">
             <label className="label has-text-white">Referral Link:</label>
             <div className="control has-icons-right">
-              <input className="input"
+              <input
+                className="input"
                 placeholder={link}
                 style={{ zIndex: -1 }}
               />
-              <Icon align="right" color="white" className="is-clickable" onClick={() => {navigator.clipboard.writeText(link)}}>
+              <Icon
+                align="right"
+                color="white"
+                className="is-clickable"
+                onClick={() => {
+                  navigator.clipboard.writeText(link);
+                }}
+              >
                 <span className="material-icons">file_copy</span>
               </Icon>
             </div>
           </div>
-
         </Modal.Card.Body>
         <Modal.Card.Footer justifyContent="flex-end" className="pt-0">
           <Button.Group>
@@ -55,8 +61,8 @@ const InviteModerator = ({ toggle }) => {
         </Modal.Card.Footer>
       </Modal.Card>
     </Modal>
-  )
-}
+  );
+};
 
 export default function Sidebar() {
   const history = useHistory();
@@ -66,17 +72,24 @@ export default function Sidebar() {
   const toggleModal = () => setShowModal(!showModal);
 
   useEffect(() => {
-      if(isAuthReady && isAuthenticated && !user && requiresSignUp) {
-        history.push("/signup");
-      }
-    }, [isAuthReady, isAuthenticated, user, requiresSignUp]
-  )
+    console.log(user);
+    // if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
+    //   history.push("/signup");
+    // }
+  }, [isAuthReady, isAuthenticated, user, requiresSignUp]);
   return (
-    <Columns.Column size="one-fifth" backgroundColor="black" style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}>
+    <Columns.Column
+      size="one-fifth"
+      backgroundColor="black"
+      style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}
+    >
       <Menu className="p-3">
         <div className="is-flex is-align-items-center mt-3">
           <Image src={LogoImg} size={32} />
-          <Heading className="ml-2" style={{ fontFamily: "sans-serif", whiteSpace: "nowrap" }}>
+          <Heading
+            className="ml-2"
+            style={{ fontFamily: "sans-serif", whiteSpace: "nowrap" }}
+          >
             MODCLUB
           </Heading>
         </div>
@@ -104,23 +117,30 @@ export default function Sidebar() {
             </Icon>
             Leaderboard
           </Link>
-          <Link to="/app/admin">
-            <Icon>
-              <span className="material-icons">assignment_ind</span>
-            </Icon>
-            Admin
-          </Link>
+          {user && user.role.hasOwnProperty("admin") ? (
+            <Link to="/app/admin">
+              <Icon>
+                <span className="material-icons">assignment_ind</span>
+              </Icon>
+              Admin
+            </Link>
+          ) : (
+            ""
+          )}
         </Menu.List>
 
-        <Button color="primary" fullwidth size="large" className="mt-6" onClick={toggleModal}>
+        <Button
+          color="primary"
+          fullwidth
+          size="large"
+          className="mt-6"
+          onClick={toggleModal}
+        >
           Invite a Moderator
         </Button>
-
       </Menu>
 
-      {showModal && (
-        <InviteModerator toggle={toggleModal} />
-      )}
+      {showModal && <InviteModerator toggle={toggleModal} />}
     </Columns.Column>
   );
 }
