@@ -14,6 +14,7 @@ import Text "mo:base/Text";
 import Iter "mo:base/Iter";
 import Helpers "../../helpers";
 import ModClubParam "../parameters/params";
+import Canistergeek "../../canistergeek/canistergeek";
 
 
 
@@ -21,6 +22,9 @@ import Types "./types"
 
 
 actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) = this {
+
+  stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
+  private let canistergeekMonitor = Canistergeek.Monitor();
 
   public type DataCanisterState = {
       contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
@@ -180,6 +184,11 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
     signingKey := signingKey1;
   };
 
+  // Return the principal identifier of this canister.
+  public func whoami () : async Principal {
+        Principal.fromActor(this);
+  };
+
   public query func http_request(req: HttpRequest) : async HttpResponse {
     Debug.print("http_request: " # debug_show(req));
 
@@ -242,6 +251,16 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
       body=_body;
       streaming_strategy=_streaming_strategy;
     };
+  };
+
+  public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
+      // validateCaller(caller);
+      canistergeekMonitor.getMetrics(parameters);
+  };
+
+  public shared ({caller}) func collectCanisterMetrics(): async () {
+      // validateCaller(caller);
+      canistergeekMonitor.collectMetrics();
   };
 
   private func isUserAllowed(jwt: Text) : Bool {
@@ -359,11 +378,14 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
 
   system func preupgrade() {
     stateShared := fromDataCanisterState(state);
+     _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
   };
 
   system func postupgrade() {
     state := toDataCanisterState(stateShared);
     stateShared := emptyDataCanisterSharedState();
+    canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
+    _canistergeekMonitorUD := null;
   };
 
 };

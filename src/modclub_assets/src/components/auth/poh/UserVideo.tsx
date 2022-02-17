@@ -64,6 +64,7 @@ export default function UserVideo({ steps }) {
   const mimeType = supportsWebm ? "video/webm" : "video/mp4";
 
   const handleStartCaptureClick = useCallback(() => {
+    if(!webcamRef.current || !webcamRef.current.stream) return;
     setCapturing(true);
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
       mimeType: mimeType
@@ -87,6 +88,7 @@ export default function UserVideo({ steps }) {
   const handleStopCaptureClick = useCallback(() => {
     mediaRecorderRef.current.stop();
     setCapturing(false);
+    setRecordedChunks([]);
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
   const saveVideo = useCallback(() => {
@@ -236,7 +238,7 @@ export default function UserVideo({ steps }) {
         <Link to="/app/" className="button is-black">
           Cancel
         </Link>
-        <Button color="primary" disabled={!recordedChunks.length} onClick={submit}>
+        <Button color="primary" disabled={!recordedChunks.length || capturing} onClick={submit}>
           Next
         </Button>
       </Button.Group>

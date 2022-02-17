@@ -81,7 +81,6 @@ const EditModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
         return e.id === values.id;
       });
       items[index].userName = values.userName;
-      console.log(items);
       setPrincipleIDs([...items]);
       return "Edit Trusted Identity form submitted";
     }
@@ -124,7 +123,6 @@ const RemoveModal = ({ toggle, principalIDS, setPrincipleIDs, toRemove }) => {
     let index = principalIDS.findIndex(function (e) {
       return e.id === toRemove;
     });
-    console.log(index);
     items[index].userName = values.userName;
     items.splice(index, 1);
     setPrincipleIDs([...items]);
@@ -164,11 +162,9 @@ export default function TrustedIdentities() {
   const handleCheck = (e) => {
     const item = e.target.id;
     const isChecked = e.target.checked;
-    console.log(item);
     setChecked(
       isChecked ? [...checked, item] : checked.filter((id) => id != item)
     );
-    console.log(checked);
   };
 
   const handleCheckAll = () => {

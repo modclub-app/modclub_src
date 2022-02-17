@@ -155,17 +155,19 @@ module PohModule {
             };
         };
 
-        // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
-        // Modclub UI will ask for all the challenge for a user to show
-        // ResponseType of this function is yet to be designed.
-        public func retrieveChallengesForUser(userId: Principal, token: Text, challengeIds: [Text]) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-            // populate provider to userId mapping
+        public func decodeToken(userId: Principal, token: Text) : Result.Result<(), PohTypes.PohError> {
             switch(state.pohProviderUserData.get(token)) {
                 case(null) return #err(#invalidToken);
                 case(?pUser)
                     state.providerToModclubUser.put(pUser.providerUserId, userId);
             };
+            #ok();
+        };
 
+        // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
+        // Modclub UI will ask for all the challenge for a user to show
+        // ResponseType of this function is yet to be designed.
+        public func retrieveChallengesForUser(userId: Principal, challengeIds: [Text], forceCreateNewAttempts: Bool) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
             // populate pohUsers but with their modclub user id
             switch(state.pohUsers.get(userId)) {
                 case(null) {
@@ -202,7 +204,7 @@ module PohModule {
 
                     let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
 
-                    if(attempts.size() == 0) {
+                    if(attempts.size() == 0 or forceCreateNewAttempts == true) {
                         let newAttempt = {
                                                 attemptId = ?Helpers.generateHash(Principal.toText(userId) # challengeId # Nat.toText(attempts.size()));
                                                 challengeId = challengeId;
