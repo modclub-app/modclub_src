@@ -6,9 +6,10 @@ import FormModal from "../modals/FormModal";
 
 import { Link } from "react-router-dom";
 
-const principalIDValidationForInput = (ID, principalIDS) => {
-  if (ID.length !== 28) return false;
+import { addProviderAdmin } from "../../../utils/api";
+import { Principal } from "@dfinity/principal";
 
+const principalIDValidationForInput = (ID, principalIDS) => {
   if (
     principalIDS.filter(function (e) {
       return e.id === ID;
@@ -35,7 +36,10 @@ const principalIDValidationForEditAndRemove = (ID, principalIDS) => {
 const AddModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
-    if (principalIDValidationForInput(values.id, principalIDS)) {
+    if (
+      principalIDValidationForInput(values.id, principalIDS) &&
+      (await addProviderAdmin(Principal.fromText(values.id)))
+    ) {
       setPrincipleIDs([...principalIDS, values]);
       return "Add Trust Identity form submitted";
     }

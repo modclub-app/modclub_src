@@ -67,6 +67,22 @@ export async function getUserFromCanister(): Promise<Profile | null> {
   }
 }
 
+export async function addProviderAdmin(principalId): Promise<boolean> {
+  try {
+    let result = await (
+      await getMC()
+    )
+      .addProviderAdmin(principalId)
+      .then((data) => console.log(data))
+      .catch((e) => console.log(e));
+
+    return false;
+  } catch (e) {
+    console.log("error", e);
+    return false;
+  }
+}
+
 export async function getAllContent(
   status: ContentStatus
 ): Promise<ContentPlus[]> {

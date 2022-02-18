@@ -15,6 +15,12 @@ export interface Activity {
   'providerId' : ProviderId,
 }
 export interface AirdropUser { 'id' : Principal, 'createdAt' : Timestamp }
+export type CanisterCyclesAggregatedData = Array<bigint>;
+export type CanisterHeapMemoryAggregatedData = Array<bigint>;
+export type CanisterMemoryAggregatedData = Array<bigint>;
+export interface CanisterMetrics { 'data' : CanisterMetricsData }
+export type CanisterMetricsData = { 'hourly' : Array<HourlyMetricsData> } |
+  { 'daily' : Array<DailyMetricsData> };
 export interface ChallengeResponse {
   'status' : PohChallengeStatus,
   'completedOn' : [] | [bigint],
@@ -48,24 +54,49 @@ export type ContentType = { 'imageBlob' : null } |
   { 'imageUrl' : null } |
   { 'multiText' : null } |
   { 'pohPackage' : null };
+export interface DailyMetricsData {
+  'updateCalls' : bigint,
+  'canisterHeapMemorySize' : NumericEntity,
+  'canisterCycles' : NumericEntity,
+  'canisterMemorySize' : NumericEntity,
+  'timeMillis' : bigint,
+}
 export type Decision = { 'approved' : null } |
   { 'rejected' : null };
 export type Decision__1 = { 'approved' : null } |
   { 'rejected' : null };
+export interface GetMetricsParameters {
+  'dateToMillis' : bigint,
+  'granularity' : MetricsGranularity,
+  'dateFromMillis' : bigint,
+}
 export interface Holdings {
   'pendingRewards' : bigint,
   'stake' : bigint,
   'wallet' : bigint,
 }
+export interface HourlyMetricsData {
+  'updateCalls' : UpdateCallsAggregatedData,
+  'canisterHeapMemorySize' : CanisterHeapMemoryAggregatedData,
+  'canisterCycles' : CanisterCyclesAggregatedData,
+  'canisterMemorySize' : CanisterMemoryAggregatedData,
+  'timeMillis' : bigint,
+}
 export interface Image { 'imageType' : string, 'data' : Array<number> }
 export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
+export type MetricsGranularity = { 'hourly' : null } |
+  { 'daily' : null };
 export interface ModClub {
+  'addProviderAdmin' : (arg_0: string, arg_1: Principal) => Promise<
+      ProviderResult
+    >,
   'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
   'adminInit' : () => Promise<undefined>,
   'airdropRegister' : () => Promise<AirdropUser>,
   'checkUsernameAvailable' : (arg_0: string) => Promise<boolean>,
+  'collectCanisterMetrics' : () => Promise<undefined>,
   'deregisterProvider' : () => Promise<string>,
   'generateSigningKey' : () => Promise<undefined>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
@@ -73,6 +104,9 @@ export interface ModClub {
   'getAirdropWhitelist' : () => Promise<Array<Principal>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
+  'getCanisterMetrics' : (arg_0: GetMetricsParameters) => Promise<
+      [] | [CanisterMetrics]
+    >,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
   'getModclubHoldings' : () => Promise<Holdings>,
   'getModeratorLeaderboard' : (arg_0: bigint, arg_1: bigint) => Promise<
@@ -105,6 +139,7 @@ export interface ModClub {
       arg_2: [] | [Image],
     ) => Promise<string>,
   'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
+  'resetUserChallengeAttempt' : (arg_0: string) => Promise<Result>,
   'retrieveChallengesForUser' : (arg_0: string) => Promise<Result>,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,
   'submitChallengeData' : (arg_0: PohChallengeSubmissionRequest) => Promise<
@@ -136,6 +171,7 @@ export interface ModClub {
       arg_1: Decision,
       arg_2: Array<PohRulesViolated>,
     ) => Promise<undefined>,
+  'whoami' : () => Promise<Principal>,
 }
 export interface ModeratorLeaderboard {
   'id' : UserId,
@@ -144,6 +180,13 @@ export interface ModeratorLeaderboard {
   'rewardsEarned' : bigint,
   'lastVoted' : [] | [Timestamp],
   'performance' : number,
+}
+export interface NumericEntity {
+  'avg' : bigint,
+  'max' : bigint,
+  'min' : bigint,
+  'first' : bigint,
+  'last' : bigint,
 }
 export type PohChallengeStatus = { 'notSubmitted' : null } |
   { 'verified' : null } |
@@ -259,6 +302,13 @@ export interface Profile {
   'email' : string,
   'updatedAt' : Timestamp,
 }
+export type ProviderError = { 'InvalidContentType' : null } |
+  { 'NotFound' : null } |
+  { 'Unauthorized' : null } |
+  { 'RequiresWhitelisting' : null } |
+  { 'InvalidContentStatus' : null } |
+  { 'InvalidProvider' : null } |
+  { 'ProviderIsRegistered' : null };
 export type ProviderId = Principal;
 export interface ProviderPlus {
   'id' : Principal,
@@ -273,6 +323,8 @@ export interface ProviderPlus {
   'image' : [] | [Image__1],
   'rules' : Array<Rule>,
 }
+export type ProviderResult = { 'ok' : null } |
+  { 'err' : ProviderError };
 export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
 export type Result = { 'ok' : Array<PohChallengesAttempt> } |
   { 'err' : PohError };
@@ -285,6 +337,7 @@ export interface Rule { 'id' : RuleId, 'description' : string }
 export type RuleId = string;
 export interface SubscribeMessage { 'callback' : [Principal, string] }
 export type Timestamp = bigint;
+export type UpdateCallsAggregatedData = Array<bigint>;
 export type UserId = Principal;
 export interface VerifyHumanityResponse {
   'status' : PohChallengeStatus,

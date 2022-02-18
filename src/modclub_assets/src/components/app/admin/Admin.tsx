@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Field } from "react-final-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Columns,
@@ -15,6 +15,7 @@ import FormModal from "../modals/FormModal";
 import {
   addRules,
   removeRules,
+  getProviderRules,
   updateProviderSettings,
 } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
@@ -27,6 +28,8 @@ const EditAppModal = ({ toggle }) => {
     const { address, amount } = values;
     return "EditAppModal success return";
   };
+
+  useEffect(() => {});
 
   return (
     <FormModal title="Edit App" toggle={toggle} handleSubmit={onFormSubmit}>
@@ -60,6 +63,7 @@ const EditRulesModal = ({ rules, toggle }) => {
   const [newRules, setNewRules] = useState(rules);
 
   const remove = (rule) => {
+    console.log(rule);
     setNewRules(newRules.filter((item) => item !== rule));
   };
 
@@ -72,8 +76,8 @@ const EditRulesModal = ({ rules, toggle }) => {
     console.log("parent !!! onFormSubmit newRules", newRules);
 
     const { newRule } = values;
-    return await addRules(newRule);
-    // return await removeRules(newRules);
+    console.log(newRule);
+    // return await addRules(newRule);
   };
 
   return (

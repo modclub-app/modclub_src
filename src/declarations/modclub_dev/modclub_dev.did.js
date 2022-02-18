@@ -1,4 +1,17 @@
 export const idlFactory = ({ IDL }) => {
+  const ProviderError = IDL.Variant({
+    'InvalidContentType' : IDL.Null,
+    'NotFound' : IDL.Null,
+    'Unauthorized' : IDL.Null,
+    'RequiresWhitelisting' : IDL.Null,
+    'InvalidContentStatus' : IDL.Null,
+    'InvalidProvider' : IDL.Null,
+    'ProviderIsRegistered' : IDL.Null,
+  });
+  const ProviderResult = IDL.Variant({
+    'ok' : IDL.Null,
+    'err' : ProviderError,
+  });
   const Timestamp = IDL.Int;
   const AirdropUser = IDL.Record({
     'id' : IDL.Principal,
@@ -83,6 +96,45 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'updatedAt' : Timestamp,
   });
+  const MetricsGranularity = IDL.Variant({
+    'hourly' : IDL.Null,
+    'daily' : IDL.Null,
+  });
+  const GetMetricsParameters = IDL.Record({
+    'dateToMillis' : IDL.Nat,
+    'granularity' : MetricsGranularity,
+    'dateFromMillis' : IDL.Nat,
+  });
+  const UpdateCallsAggregatedData = IDL.Vec(IDL.Nat64);
+  const CanisterHeapMemoryAggregatedData = IDL.Vec(IDL.Nat64);
+  const CanisterCyclesAggregatedData = IDL.Vec(IDL.Nat64);
+  const CanisterMemoryAggregatedData = IDL.Vec(IDL.Nat64);
+  const HourlyMetricsData = IDL.Record({
+    'updateCalls' : UpdateCallsAggregatedData,
+    'canisterHeapMemorySize' : CanisterHeapMemoryAggregatedData,
+    'canisterCycles' : CanisterCyclesAggregatedData,
+    'canisterMemorySize' : CanisterMemoryAggregatedData,
+    'timeMillis' : IDL.Int,
+  });
+  const NumericEntity = IDL.Record({
+    'avg' : IDL.Nat64,
+    'max' : IDL.Nat64,
+    'min' : IDL.Nat64,
+    'first' : IDL.Nat64,
+    'last' : IDL.Nat64,
+  });
+  const DailyMetricsData = IDL.Record({
+    'updateCalls' : IDL.Nat64,
+    'canisterHeapMemorySize' : NumericEntity,
+    'canisterCycles' : NumericEntity,
+    'canisterMemorySize' : NumericEntity,
+    'timeMillis' : IDL.Int,
+  });
+  const CanisterMetricsData = IDL.Variant({
+    'hourly' : IDL.Vec(HourlyMetricsData),
+    'daily' : IDL.Vec(DailyMetricsData),
+  });
+  const CanisterMetrics = IDL.Record({ 'data' : CanisterMetricsData });
   const Holdings = IDL.Record({
     'pendingRewards' : IDL.Int,
     'stake' : IDL.Int,
@@ -268,12 +320,18 @@ export const idlFactory = ({ IDL }) => {
     'challengeId' : IDL.Text,
   });
   const ModClub = IDL.Service({
+    'addProviderAdmin' : IDL.Func(
+        [IDL.Text, IDL.Principal],
+        [ProviderResult],
+        [],
+      ),
     'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'adminInit' : IDL.Func([], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'collectCanisterMetrics' : IDL.Func([], [], []),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'generateSigningKey' : IDL.Func([], [], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
@@ -285,6 +343,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
+    'getCanisterMetrics' : IDL.Func(
+        [GetMetricsParameters],
+        [IDL.Opt(CanisterMetrics)],
+        ['query'],
+      ),
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
     'getModeratorLeaderboard' : IDL.Func(
@@ -292,8 +355,12 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ModeratorLeaderboard)],
         ['query'],
       ),
-    'getPohTaskData' : IDL.Func([IDL.Text], [Result_1], []),
-    'getPohTasks' : IDL.Func([ContentStatus], [IDL.Vec(PohTaskPlus)], []),
+    'getPohTaskData' : IDL.Func([IDL.Text], [Result_1], ['query']),
+    'getPohTasks' : IDL.Func(
+        [ContentStatus],
+        [IDL.Vec(PohTaskPlus)],
+        ['query'],
+      ),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
@@ -321,6 +388,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'removeRules' : IDL.Func([IDL.Vec(RuleId)], [], ['oneway']),
+    'resetUserChallengeAttempt' : IDL.Func([IDL.Text], [Result], []),
     'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result], []),
     'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'submitChallengeData' : IDL.Func(
@@ -353,6 +421,7 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'whoami' : IDL.Func([], [IDL.Principal], []),
   });
   return ModClub;
 };
