@@ -21,14 +21,6 @@ import { getUserFromCanister } from "../../utils/api";
 
 export default function ModclubApp() {
   const history = useHistory();
-  // useEffect(() => {
-  //   const asyncReroute = async () => {
-  //     const user = await getUserFromCanister();
-  //     setUser(user);
-  //   };
-  //   asyncReroute();
-  // });
-
   const { isAuthenticated, isAuthReady, user } = useAuth();
   const [status, setStatus] = useState(null);
   const [isJwtSet, setJwt] = useState(false);

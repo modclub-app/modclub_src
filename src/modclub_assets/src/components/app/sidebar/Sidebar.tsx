@@ -72,10 +72,9 @@ export default function Sidebar() {
   const toggleModal = () => setShowModal(!showModal);
 
   useEffect(() => {
-    console.log(user);
-    // if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
-    //   history.push("/signup");
-    // }
+    if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
+      history.push("/signup");
+    }
   }, [isAuthReady, isAuthenticated, user, requiresSignUp]);
   return (
     <Columns.Column
