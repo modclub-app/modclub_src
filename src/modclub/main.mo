@@ -1274,11 +1274,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
 
 
-  public func getAdminsProfiles():async HashMap.HashMap<>{
-   return state.providerAdmins;
-  };
 
-   public shared({ caller }) func addProviderAdmin(_userName:Text,userId: Principal) : async Types.ProviderResult {
+
+   public shared({ caller }) func addProviderAdmin(userId: Principal) : async Types.ProviderResult {
     var authorized = false;
     var isProvider = false;
     var _providerId : Principal = caller;
@@ -1309,7 +1307,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
     let adminProfile : Profile = {
       id = userId;
-      userName = _userName;
+      userName = "Admin";
       email = "";
       pic = null;
       role = #admin;

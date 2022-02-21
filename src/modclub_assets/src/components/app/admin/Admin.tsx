@@ -21,6 +21,7 @@ import {
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
+import { Principal } from "@dfinity/principal";
 
 const EditAppModal = ({ toggle }) => {
   const onFormSubmit = async (values: any) => {
@@ -30,6 +31,10 @@ const EditAppModal = ({ toggle }) => {
   };
 
   useEffect(() => {});
+
+  getProviderRules(Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"))
+    .then((data) => console.log("DATA: ", data))
+    .catch((e) => console.log(e));
 
   return (
     <FormModal title="Edit App" toggle={toggle} handleSubmit={onFormSubmit}>
@@ -77,6 +82,7 @@ const EditRulesModal = ({ rules, toggle }) => {
 
     const { newRule } = values;
     console.log(newRule);
+    await addRules([newRule]).then((data) => console.log(data));
     // return await addRules(newRule);
   };
 
