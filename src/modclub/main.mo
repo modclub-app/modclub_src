@@ -214,11 +214,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
             minStaked = DEFAULT_MIN_STAKED; // Default amount staked, change when tokens are released
           };
         });
-          Debug.print(Principal.toText(cALLER) # " subscribed" );
         return "Registration successful";
       };
        case (?result) {          
-         Debug.print(Principal.toText(state.providers.get(caller)) # " subscribed" );
           return "Provider already registered"};
     };
   };
@@ -304,16 +302,16 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
   };
 
-  public  func getAllRules():  async HashMap.HashMap<Types.RuleId, Types.Rule>{
-    // await onlyOwner(caller);
+  // public  func getAllRules():  async HashMap.HashMap<Types.RuleId, Types.Rule>{
+  //   // await onlyOwner(caller);
 
-    let rules = state.rules;
+  //   let rules = state.rules;
 
-     return rules;
+  //    return rules;
         
       
 
-  };
+  // };
 
 
 
@@ -1355,13 +1353,27 @@ shared ({caller = initializer}) actor class ModClub () = this {
         let adminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
         adminMap.put(userId, ());
         state.providerAdmins.put(_providerId, adminMap);
+        state.admin2Provider.put(userId,_providerId);
         };
       case (?adminMap) {
         adminMap.put(userId, ());
       };
     };
-
     #ok();
+  };
+
+  public query func getAdminProviderIDs(userId:Principal): async [Principal]{
+      // let buf = Buffer.Buffer<Principal>(0);
+      return state.admin2Provider.get0(userId);
+      // for(providerID in state.admin2Provider.get0(userId).vals()){
+      //   switch(state.admin2Provider.get(providerID)){
+      //     case(?P){
+      //       buf.add(rule);
+      //     };
+      //     case(_)();
+      //   };
+      // };
+      // buf.toArray();
   };
 
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {
