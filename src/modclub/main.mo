@@ -214,9 +214,12 @@ shared ({caller = initializer}) actor class ModClub () = this {
             minStaked = DEFAULT_MIN_STAKED; // Default amount staked, change when tokens are released
           };
         });
+          Debug.print(Principal.toText(cALLER) # " subscribed" );
         return "Registration successful";
       };
-       case (?result) return "Provider already registered";
+       case (?result) {          
+         Debug.print(Principal.toText(state.providers.get(caller)) # " subscribed" );
+          return "Provider already registered"};
     };
   };
 
@@ -282,18 +285,39 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
   };
 
-  public shared({ caller }) func addRules(rules: [Text]) {
+  public shared({ caller }) func addRules(rules: [Text],providerId:Principal) {
     // await onlyOwner(caller);
+   
     await checkProviderPermission(caller);
     for(rule in rules.vals()) {
-      var ruleId = generateId(caller, "rule");       
+      var ruleId = generateId(providerId, "rule");       
       state.rules.put(ruleId, {
         id = ruleId;
         description = rule;
       });
-      state.provider2rules.put(caller, ruleId);
+      
+      state.provider2rules.put(providerId, ruleId);
+        
+
+      
+      
     };
   };
+
+  public  func getAllRules():  async HashMap.HashMap<Types.RuleId, Types.Rule>{
+    // await onlyOwner(caller);
+
+    let rules = state.rules;
+
+     return rules;
+        
+      
+
+  };
+
+
+
+  
 
   public shared({ caller }) func removeRules(ruleIds: [Types.RuleId]) {
     for(ruleId in ruleIds.vals()) {

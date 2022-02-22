@@ -160,8 +160,11 @@ export async function updateMC(): Promise<void> {
 }
 
 // Admin API's / Need to be a provider admin to call these
-export async function addRules(rules: string[]): Promise<void> {
-  return (await getMC()).addRules(rules);
+export async function addRules(
+  rules: string[],
+  provider: Principal
+): Promise<void> {
+  return (await getMC()).addRules(rules, provider);
 }
 
 export async function removeRules(rules: RuleId[]): Promise<void> {

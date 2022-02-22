@@ -321,7 +321,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const ModClub = IDL.Service({
     'addProviderAdmin' : IDL.Func([IDL.Principal], [ProviderResult], []),
-    'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
+    'addRules' : IDL.Func([IDL.Vec(IDL.Text), IDL.Principal], [], ['oneway']),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'adminInit' : IDL.Func([], [], []),

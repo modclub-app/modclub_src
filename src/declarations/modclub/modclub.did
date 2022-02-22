@@ -237,7 +237,7 @@ type ModeratorLeaderboard =
 type ModClub = 
  service {
    addProviderAdmin: (principal) -> (ProviderResult);
-   addRules: (vec text) -> () oneway;
+   addRules: (vec text, principal) -> () oneway;
    addToAirdropWhitelist: (vec principal) -> ();
    addToApprovedUser: (principal) -> ();
    adminInit: () -> ();

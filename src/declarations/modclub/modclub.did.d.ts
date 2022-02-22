@@ -88,7 +88,7 @@ export type MetricsGranularity = { 'hourly' : null } |
   { 'daily' : null };
 export interface ModClub {
   'addProviderAdmin' : (arg_0: Principal) => Promise<ProviderResult>,
-  'addRules' : (arg_0: Array<string>) => Promise<undefined>,
+  'addRules' : (arg_0: Array<string>, arg_1: Principal) => Promise<undefined>,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
   'adminInit' : () => Promise<undefined>,

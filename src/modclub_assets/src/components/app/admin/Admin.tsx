@@ -16,12 +16,15 @@ import {
   addRules,
   removeRules,
   getProviderRules,
+  getProvider,
   updateProviderSettings,
+  getUserFromCanister,
 } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
 import { Principal } from "@dfinity/principal";
+import AdminIdentity from "../../external/AdminIdentity";
 
 const EditAppModal = ({ toggle }) => {
   const onFormSubmit = async (values: any) => {
@@ -29,12 +32,6 @@ const EditAppModal = ({ toggle }) => {
     const { address, amount } = values;
     return "EditAppModal success return";
   };
-
-  useEffect(() => {});
-
-  getProviderRules(Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"))
-    .then((data) => console.log("DATA: ", data))
-    .catch((e) => console.log(e));
 
   return (
     <FormModal title="Edit App" toggle={toggle} handleSubmit={onFormSubmit}>
@@ -64,12 +61,15 @@ const EditAppModal = ({ toggle }) => {
   );
 };
 
-const EditRulesModal = ({ rules, toggle }) => {
+const EditRulesModal = ({ rules, toggle, principalID }) => {
   const [newRules, setNewRules] = useState(rules);
 
-  const remove = (rule) => {
+  const remove = async (rule) => {
     console.log(rule);
     setNewRules(newRules.filter((item) => item !== rule));
+    await removeRules([rule])
+      .then((data) => console.log(data))
+      .catch((e) => console.log(e));
   };
 
   const add = (rule) => {
@@ -82,26 +82,28 @@ const EditRulesModal = ({ rules, toggle }) => {
 
     const { newRule } = values;
     console.log(newRule);
-    await addRules([newRule]).then((data) => console.log(data));
+    await addRules([newRule], principalID)
+      .then((data) => console.log(data))
+      .catch((e) => console.log(e));
     // return await addRules(newRule);
   };
 
   return (
     <FormModal title="Edit Rules" toggle={toggle} handleSubmit={onFormSubmit}>
       {newRules.map((rule) => (
-        <div key={rule} className="field level">
+        <div key={rule.id} className="field level">
           <Field
-            name={rule}
+            name={rule.description}
             component="input"
             type="text"
             className="input"
-            placeholder={rule}
-            value={rule}
+            placeholder={rule.description}
+            value={rule.description}
             disabled
           />
           <span
             className="icon has-text-danger is-clickable ml-3"
-            onClick={() => remove(rule)}
+            onClick={() => remove(rule.id)}
           >
             <span className="material-icons">remove_circle</span>
           </span>
@@ -203,6 +205,25 @@ export default function Admin() {
     setShowModeratorSettings(!showModeratorSettings);
 
   const dummyRules = ["No drugs & weapsons", "No sexual content", "No racism"];
+
+  const [rules, setRules] = useState([]);
+
+  const [userPrincipleID, setUserPrincipleID] = useState(null);
+
+  useEffect(() => {
+    let adminInit = async () => {
+      let user = await getUserFromCanister();
+      console.log(user);
+      setUserPrincipleID(user.id);
+      getProviderRules(user.id)
+        .then((data) => {
+          setRules(data);
+          console.log("DATA: ", data);
+        })
+        .catch((e) => console.log(e));
+    };
+    adminInit();
+  }, []);
 
   return (
     <>
@@ -360,9 +381,9 @@ export default function Admin() {
             <Card.Content>
               <table className="table is-striped has-text-left">
                 <tbody>
-                  {dummyRules.map((rule) => (
-                    <tr key={rule}>
-                      <td className="has-text-left">{rule}</td>
+                  {rules.map((rule) => (
+                    <tr key={rule.id}>
+                      <td className="has-text-left">{rule.description}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -423,7 +444,11 @@ export default function Admin() {
       {showEditApp && <EditAppModal toggle={toggleEditApp} />}
 
       {showEditRules && (
-        <EditRulesModal rules={dummyRules} toggle={toggleEditRules} />
+        <EditRulesModal
+          rules={rules}
+          toggle={toggleEditRules}
+          principalID={userPrincipleID}
+        />
       )}
       {showModeratorSettings && (
         <EditModeratorSettingsModal toggle={toggleModeratorSettings} />
