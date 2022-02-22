@@ -285,7 +285,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
   };
 
-  public shared({ caller }) func addRules(rules: [Text],providerId:Principal) {
+  public shared({ caller }) func addRules(rules: [Text], providerId: Principal) {
     // await onlyOwner(caller);
    
     await checkProviderPermission(caller);
@@ -1300,14 +1300,24 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
 
 
-   public shared({ caller }) func addProviderAdmin(userId: Principal) : async Types.ProviderResult {
+   public shared({ caller }) func addProviderAdmin(userId: Principal, providerId: ?Principal) : async Types.ProviderResult {
     var authorized = false;
     var isProvider = false;
-    var _providerId : Principal = caller;
-
+    var _providerId : ?Principal = do ? {
+        switch(providerId) {
+          case(?result) {
+            isProvider := false;
+            return providerId;
+          };
+          case(_) {
+            return caller
+          };
+        };
+    };
+    
     // Provider check
     switch(state.providers.get(_providerId)) {
-      case (null) return #err(#NotFound);
+      case (null) (); // Do nothing check if the caller is an admin for the provider
       case (?result) {
         if(caller == result.id) {
           authorized := true;
