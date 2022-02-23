@@ -33,12 +33,15 @@ const principalIDValidationForEditAndRemove = (ID, principalIDS) => {
   return false;
 };
 
-const AddModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
+const AddModal = ({ toggle, principalIDS, setPrincipleIDs, Provider }) => {
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
     if (
       principalIDValidationForInput(values.id, principalIDS) &&
-      (await addProviderAdmin(Principal.fromText(values.id)))
+      (await addProviderAdmin(
+        Principal.fromText(values.id),
+        Principal.fromText(Provider.id)
+      ))
     ) {
       setPrincipleIDs([...principalIDS, values]);
       return "Add Trust Identity form submitted";
@@ -123,7 +126,13 @@ const EditModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
   );
 };
 
-const RemoveModal = ({ toggle, principalIDS, setPrincipleIDs, toRemove }) => {
+const RemoveModal = ({
+  toggle,
+  principalIDS,
+  setPrincipleIDs,
+  toRemove,
+  Provider,
+}) => {
   const onFormSubmit = async (values: any) => {
     let items = [...principalIDS];
     let index = principalIDS.findIndex(function (e) {
@@ -146,7 +155,7 @@ const RemoveModal = ({ toggle, principalIDS, setPrincipleIDs, toRemove }) => {
   );
 };
 
-export default function TrustedIdentities() {
+export default function TrustedIdentities({ provider }) {
   const [checked, setChecked] = useState([]);
 
   const [showAdd, setAdd] = useState(false);
@@ -176,17 +185,6 @@ export default function TrustedIdentities() {
   const handleCheckAll = () => {
     setChecked([...checked, trustedPrincipleIDs]);
   };
-
-  const dummyData = [
-    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
-    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
-    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
-    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
-    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
-    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
-    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
-    { id: "xhyfj-2jsdflkj-asjdfkj-ssdfa", name: "Jedi Master" },
-  ];
 
   return (
     <>
@@ -279,6 +277,7 @@ export default function TrustedIdentities() {
           toggle={toggleAdd}
           principalIDS={trustedPrincipleIDs}
           setPrincipleIDs={setTrustedPrincipleIDs}
+          Provider={provider}
         />
       )}
       {showEdit && (
@@ -294,6 +293,7 @@ export default function TrustedIdentities() {
           principalIDS={trustedPrincipleIDs}
           setPrincipleIDs={setTrustedPrincipleIDs}
           toRemove={entryToRemove}
+          Provider={provider}
         />
       )}
     </>

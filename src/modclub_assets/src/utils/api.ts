@@ -67,12 +67,12 @@ export async function getUserFromCanister(): Promise<Profile | null> {
   }
 }
 
-export async function addProviderAdmin(principalId): Promise<boolean> {
+export async function addProviderAdmin(userId, principalId): Promise<boolean> {
   try {
     let result = await (
       await getMC()
     )
-      .addProviderAdmin(principalId)
+      .addProviderAdmin(userId, principalId)
       .then((data) => console.log(data))
       .catch((e) => console.log(e));
 
@@ -119,6 +119,12 @@ export async function getActivity(isComplete: boolean): Promise<Activity[]> {
 
 export async function getTokenHoldings(): Promise<UserHoldings> {
   return convertObj(await (await getMC()).getTokenHoldings());
+}
+
+export async function getAdminProviderIDs(
+  providerId: Principal
+): Promise<Principal[]> {
+  return await (await getMC()).getAdminProviderIDs(providerId);
 }
 
 export async function stakeTokens(amount: number): Promise<string> {

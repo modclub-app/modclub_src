@@ -7,6 +7,7 @@ import {
   Card,
   Button,
   Heading,
+  Modal,
   Media,
   Image,
   Notification,
@@ -19,6 +20,7 @@ import {
   getProvider,
   updateProviderSettings,
   getUserFromCanister,
+  getAdminProviderIDs,
 } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
@@ -204,29 +206,64 @@ export default function Admin() {
   const toggleModeratorSettings = () =>
     setShowModeratorSettings(!showModeratorSettings);
 
-  const dummyRules = ["No drugs & weapsons", "No sexual content", "No racism"];
-
   const [rules, setRules] = useState([]);
 
   const [userPrincipleID, setUserPrincipleID] = useState(null);
 
+  const [providers, setProviders] = useState([]);
+
+  const [selectedProvider, setSelectedProvider] = useState(null);
+
+  const [showModal, setShowModal] = useState(true);
+
   useEffect(() => {
     let adminInit = async () => {
       let user = await getUserFromCanister();
-      console.log(user);
       setUserPrincipleID(user.id);
-      getProviderRules(user.id)
-        .then((data) => {
-          setRules(data);
-          console.log("DATA: ", data);
-        })
-        .catch((e) => console.log(e));
+      let adminProviders = await getAdminProviderIDs(user.id);
+      let providerList = [];
+      for (let i = 0; i < adminProviders.length; i++) {
+        providerList.push(await getProvider(adminProviders[i]));
+      }
+      setProviders(providerList);
+      console.log(providerList);
     };
     adminInit();
   }, []);
 
   return (
     <>
+      {selectedProvider == null && providers != [] ? (
+        <Modal show={showModal} showClose={true}>
+          <Modal.Card backgroundColor="circles">
+            <Modal.Card.Body>
+              <Heading subtitle>Avalible Providers</Heading>
+            </Modal.Card.Body>
+            {/* <div>{providers.settings}</div> */}
+            {console.log(providers[0])}
+            {providers.map((provider) => {
+              return (
+                <Button
+                  onClick={() => {
+                    setSelectedProvider(provider);
+                    setShowModal(false);
+                    setRules(provider.rules);
+                  }}
+                >
+                  {provider.name}
+                </Button>
+              );
+            })}
+            <Modal.Card.Footer
+              className="pt-0"
+              justifyContent="flex-end"
+            ></Modal.Card.Footer>
+          </Modal.Card>
+        </Modal>
+      ) : (
+        ""
+      )}
+
       <Notification color="danger" textAlign="center">
         Administrator Dashboard DEMO
       </Notification>
@@ -439,7 +476,7 @@ export default function Admin() {
         </Columns.Column>
       </Columns>
 
-      <TrustedIdentities />
+      <TrustedIdentities provider={selectedProvider} />
 
       {showEditApp && <EditAppModal toggle={toggleEditApp} />}
 
@@ -447,7 +484,7 @@ export default function Admin() {
         <EditRulesModal
           rules={rules}
           toggle={toggleEditRules}
-          principalID={userPrincipleID}
+          principalID={selectedProvider.id}
         />
       )}
       {showModeratorSettings && (

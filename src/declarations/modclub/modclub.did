@@ -236,7 +236,7 @@ type ModeratorLeaderboard =
  };
 type ModClub = 
  service {
-   addProviderAdmin: (principal) -> (ProviderResult);
+   addProviderAdmin: (principal, principal) -> (ProviderResult);
    addRules: (vec text, principal) -> () oneway;
    addToAirdropWhitelist: (vec principal) -> ();
    addToApprovedUser: (principal) -> ();
@@ -247,6 +247,7 @@ type ModClub =
    deregisterProvider: () -> (text);
    generateSigningKey: () -> ();
    getActivity: (bool) -> (vec Activity) query;
+   getAdminProviderIDs: (principal) -> (vec principal) query;
    getAirdropUsers: () -> (vec AirdropUser);
    getAirdropWhitelist: () -> (vec principal);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;

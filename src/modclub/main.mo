@@ -202,7 +202,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     switch(state.providers.get(caller)){
       case (null) {
         let now = Helpers.timeNow();
-        state.providers.put(caller, {
+        state.providers.put(Principal.fromText("nogav-un4ek-yhwah-k3ssn-6zzcm-xhpzj-onmnw-jz6fw-xu6rl-vfjoc-xqe"), {
           id = caller;
           name = name;
           description = description;
@@ -1298,20 +1298,21 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
 
 
-   public shared({ caller }) func addProviderAdmin(userId: Principal, providerId: ?Principal) : async Types.ProviderResult {
+   public shared({ caller }) func addProviderAdmin(userId: Principal, providerId: Principal) : async Types.ProviderResult {
     var authorized = false;
     var isProvider = false;
-    var _providerId : ?Principal = do ? {
-        switch(providerId) {
-          case(?result) {
-            isProvider := false;
-            return providerId;
-          };
-          case(_) {
-            return caller
-          };
-        };
-    };
+    var _providerId = providerId;
+    // var _providerId : Principal = do ? {
+    //     switch(providerId) {
+    //       case(?result) {
+    //         isProvider := false;
+    //         return providerId;
+    //       };
+    //       case(_) {
+    //         return caller
+    //       };
+    //     };
+    // };
     
     // Provider check
     switch(state.providers.get(_providerId)) {

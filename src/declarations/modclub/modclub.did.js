@@ -320,7 +320,11 @@ export const idlFactory = ({ IDL }) => {
     'challengeId' : IDL.Text,
   });
   const ModClub = IDL.Service({
-    'addProviderAdmin' : IDL.Func([IDL.Principal], [ProviderResult], []),
+    'addProviderAdmin' : IDL.Func(
+        [IDL.Principal, IDL.Principal],
+        [ProviderResult],
+        [],
+      ),
     'addRules' : IDL.Func([IDL.Vec(IDL.Text), IDL.Principal], [], ['oneway']),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
@@ -331,6 +335,11 @@ export const idlFactory = ({ IDL }) => {
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'generateSigningKey' : IDL.Func([], [], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
+    'getAdminProviderIDs' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(IDL.Principal)],
+        ['query'],
+      ),
     'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
     'getAirdropWhitelist' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
     'getAllContent' : IDL.Func(
