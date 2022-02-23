@@ -3,6 +3,7 @@ import {
   isAirdropRegistered,
   airdropRegister,
   updateMC,
+  getUserFromCanister,
 } from "../../utils/api";
 import { useAuth } from "../../utils/auth";
 import { useEffect, useRef, useState } from "react";
@@ -21,9 +22,11 @@ export default function AdminIdentity() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    getUserFromCanister().then((user) => console.log("USER", setUser(user)));
     const fetchData = async () => {
       try {
         await updateMC();
+
         setAirdropUser(await isAirdropRegistered());
         setIsRegistered(true);
       } catch (e) {
@@ -91,13 +94,11 @@ export default function AdminIdentity() {
                 spinner
               ) : (
                 <>
-                  {!isAuthenticated ? (
-                    <SignIn />
-                  ) : aidropUser ? (
+                  {isAuthenticated ? (
                     <div className="card has-gradient">
                       <div className="card-content">
                         <label className="label">Principal ID</label>
-                        <p>{aidropUser.id.toText()}</p>
+                        <p>{identity.getPrincipal().toText()}</p>
                       </div>
                     </div>
                   ) : (
