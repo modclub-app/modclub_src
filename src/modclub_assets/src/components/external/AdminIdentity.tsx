@@ -97,7 +97,7 @@ export default function AdminIdentity() {
                     <div className="card has-gradient">
                       <div className="card-content">
                         <label className="label">Principal ID</label>
-                        <p>{aidropUser.id.toText()}</p>
+                        <p>{identity}</p>
                       </div>
                     </div>
                   ) : (
