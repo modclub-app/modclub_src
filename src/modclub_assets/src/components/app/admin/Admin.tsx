@@ -129,7 +129,8 @@ const EditRulesModal = ({ rules, toggle, principalID }) => {
   );
 };
 
-const EditModeratorSettingsModal = ({ toggle }) => {
+const EditModeratorSettingsModal = ({ toggle, settings }) => {
+  console.log(settings);
   const onFormSubmit = async (values: any) => {
     console.log("parent !!! onFormSubmit values", values);
     return await updateProviderSettings(values);
@@ -488,7 +489,10 @@ export default function Admin() {
         />
       )}
       {showModeratorSettings && (
-        <EditModeratorSettingsModal toggle={toggleModeratorSettings} />
+        <EditModeratorSettingsModal
+          toggle={toggleModeratorSettings}
+          settings={selectedProvider.settings}
+        />
       )}
     </>
   );
