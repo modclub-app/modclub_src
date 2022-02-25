@@ -1077,7 +1077,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     pohEngine.populateChallenges();
   };
 
-  public query({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+  public query({ caller }) func getPohTasks(status: Types.ContentStatus, start: Nat, end: Nat) : async [PohTypes.PohTaskPlus] {
     switch(checkProfilePermission(caller, #getContent)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
@@ -1087,7 +1087,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    let pohTaskIds = voteManager.getTasksId(status, 20);
+    let pohTaskIds = voteManager.getTasksId(status, start, end);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);

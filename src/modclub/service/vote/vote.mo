@@ -49,7 +49,10 @@ module VoteModule {
             state.autoApprovePOHUserIds.put(userId, userId);
         };
 
-        public func getTasksId(status: Types.ContentStatus, limit: Nat) : [Text] {
+        public func getTasksId(status: Types.ContentStatus, start: Nat, end: Nat) : [Text] {
+            if(start > end) {
+                return [];
+            };
             var sourceBuffer = Buffer.Buffer<Text>(1);
             switch(status) {
                 case(#new) {
@@ -63,13 +66,16 @@ module VoteModule {
                 };
             };
 
-
-            var fetchSize = limit;
-            if(limit > sourceBuffer.size()) {
-                fetchSize := sourceBuffer.size();
+            if(start >= sourceBuffer.size()) {
+                return [];
+            };
+            
+            var fetchSize = end;
+            if(end >= sourceBuffer.size()) {
+                fetchSize := sourceBuffer.size() - 1;
             };
             let buf = Buffer.Buffer<Text>(fetchSize);
-            for(i in Iter.range(0, fetchSize - 1)) {
+            for(i in Iter.range(start, fetchSize)) {
                 buf.add(sourceBuffer.get(i));
             };
             return buf.toArray();
