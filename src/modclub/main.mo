@@ -20,6 +20,7 @@ import Order "mo:base/Order";
 import Random "mo:base/Random";
 import POH "./service/poh/poh";
 import PohState "./service/poh/state";
+import PohStateV1 "./service/poh/statev1";
 import PohTypes "./service/poh/types";
 import Principal "mo:base/Principal";
 import Rel "data_structures/Rel";
@@ -36,6 +37,7 @@ import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
 
+import RelObj "./data_structures/RelObj";
 
 import Canistergeek "./canistergeek/canistergeek";
 
@@ -88,7 +90,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
   var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer, signingKey);
 
   stable var pohStableState = PohState.emptyStableState();
-  var pohEngine = POH.PohEngine(pohStableState);
+  stable var pohStableStateV1 = PohStateV1.emptyStableState();
+  var pohEngine = POH.PohEngine(pohStableStateV1);
 
   stable var pohVoteStableState = VoteState.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
@@ -1018,7 +1021,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       // TODO dynamic list will be fetched from admin dashboard state
       let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
-      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId);
+      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId, voteManager.getContentStatus);
       switch(challengePackage) {
         case(null)();
         case(?package) {
@@ -1486,7 +1489,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
     tokensStable := tokens.getStable();
 
     storageStateStable := storageSolution.getStableState();
-    pohStableState := pohEngine.getStableState();
+    //pohStableState := pohEngine.getStableState();
+    pohStableStateV1 := pohEngine.getStableState();
     pohVoteStableState := voteManager.getStableState();
     _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
@@ -1504,7 +1508,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
     tokensStable := Token.emptyStable(initializer);
     
     storageStateStable := StorageState.emptyStableState();
-    pohStableState := PohState.emptyStableState();
+    // Delete these two lines after one deployment
+    pohStableStateV1 := mergeV0StateIntoV1(pohStableStateV1, pohStableState);
+    pohEngine := POH.PohEngine(pohStableStateV1);
+    // Upto Here
+    pohStableStateV1 := PohStateV1.emptyStableState();
     pohVoteStableState := VoteState.emptyStableState();
     
     // This statement should be run after the storagestate gets restored from stable state
@@ -1513,6 +1521,28 @@ shared ({caller = initializer}) actor class ModClub () = this {
     _canistergeekMonitorUD := null;
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
+
+  // Delete this function after one deployment
+  func mergeV0StateIntoV1(pohStableStateV1 : PohStateV1.PohStableState, pohStableState :  PohState.PohStableState) 
+  : PohStateV1.PohStableState {
+    let userToPackage : RelObj.RelObj<Principal, Text> = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
+    for((packageId, package) in pohStableState.pohChallengePackages.vals()) {
+      userToPackage.put(package.userId, packageId);
+    };
+    let st = {
+            pohUsers = Array.append(pohStableState.pohUsers, pohStableStateV1.pohUsers);
+            pohChallenges = Array.append(pohStableState.pohChallenges, pohStableStateV1.pohChallenges);
+            pohUserChallengeAttempts = Array.append(pohStableState.pohUserChallengeAttempts, pohStableStateV1.pohUserChallengeAttempts);
+            pohProviderUserData = Array.append(pohStableState.pohProviderUserData, pohStableStateV1.pohProviderUserData);
+            providerToModclubUser = Array.append(pohStableState.providerToModclubUser, pohStableStateV1.providerToModclubUser);
+            pohChallengePackages = Array.append(pohStableState.pohChallengePackages, pohStableStateV1.pohChallengePackages);
+            userToPohChallengePackageId =  pohStableStateV1.userToPohChallengePackageId;
+            wordList = Array.append(pohStableState.wordList, pohStableStateV1.wordList);
+            provider2PohVerificationRequests =  Array.append(pohStableState.provider2PohVerificationRequests, pohStableStateV1.provider2PohVerificationRequests);
+            pohVerificationRequests = Array.append(pohStableState.pohVerificationRequests, pohStableStateV1.pohVerificationRequests);
+        };
+        return st;
+  }
 
   // Uncomment when required
   // system func heartbeat() : async () {};

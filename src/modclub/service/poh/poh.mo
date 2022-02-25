@@ -7,7 +7,7 @@ import Iter "mo:base/Iter";
 import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
-import PohState "./state";
+import PohState "./statev1";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
@@ -24,6 +24,8 @@ module PohModule {
     public class PohEngine(stableState : PohState.PohStableState) {
 
         let state = PohState.getState(stableState);
+
+        let userToPackageIdState = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
 
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
 
@@ -369,7 +371,38 @@ module PohModule {
             };
         };
 
-        public func createChallengePackageForVoting(userId: Principal, challengeIds: [Text], generateId: (Principal, Text) -> Text) : ?PohTypes.PohChallengePackage {
+        public func createChallengePackageForVoting(userId: Principal, challengeIds: [Text], 
+                        generateId: (Principal, Text) -> Text,
+                        getContentStatus: Text -> Types.ContentStatus) : ?PohTypes.PohChallengePackage {
+            for(packageId in state.userToPohChallengePackageId.get0(userId).vals()) {
+                switch(state.pohChallengePackages.get(packageId)) {
+                    case(null)();
+                    case(?package) {
+                        if(package.challengeIds.size() == challengeIds.size()) {
+                            let cIdsMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+                            for(id in package.challengeIds.vals()) {
+                                cIdsMap.put(id, id);
+                            };
+                            var allMatched = true;
+                            label l for(id in challengeIds.vals()) {
+                                switch(cIdsMap.get(id)) {
+                                    case(null) {
+                                        allMatched := false;
+                                        break l;
+                                    };
+                                    case(_)();
+                                };
+                            };
+                            // if package exists with same challenge and not voted approved/rejected
+                            // don't create a new package
+                            if(allMatched and getContentStatus(package.id) == #new) {
+                                return null;
+                            };
+                        };
+                    };
+                };
+            };
+
             do? {
                 let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
                 var allChallengeSubmitted = true;
@@ -636,6 +669,10 @@ module PohModule {
         };
 
         public func getStableState() : PohState.PohStableState {
+            return PohState.getStableState(state);
+        };
+
+        public func getStableStateV1() : PohState.PohStableState {
             return PohState.getStableState(state);
         };
     };
