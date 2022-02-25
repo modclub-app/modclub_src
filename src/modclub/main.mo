@@ -1040,21 +1040,34 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   public shared({ caller }) func verifyUserHumanity() : async VerifyHumanityResponse {
     Debug.print("Verifying humanity called by: " # Principal.toText(caller));
+    var rejectionReasons: [Text] = [];
     if(voteManager.isAutoApprovedPOHUser(caller)) {
       return {
         status = #verified;
         token = null;
+        rejectionReasons = rejectionReasons;
       };
     } else {
       Debug.print("Calling pohVerificationRequest");
       let result = await pohVerificationRequest(caller);
+      if(result.status == #rejected) {
+        let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, ["challenge-profile-pic", "challenge-user-video"]);
+        switch(rejectedPackageId) {
+          case(null)();
+          case(?id) {
+            let violatedRules = voteManager.getAllUniqueViolatedRules(id);
+            rejectionReasons := pohEngine.resolveViolatedRulesById(violatedRules);
+          }
+        };
+      };
       if(result.status != #verified) {
         return {
           status = result.status;
           token = ?(await pohGenerateUniqueToken(caller));
+          rejectionReasons = rejectionReasons;
         };
       };
-      return {status = result.status; token = null;};
+      return {status = result.status; token = null; rejectionReasons = rejectionReasons;};
     }
   };
 
