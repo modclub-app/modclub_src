@@ -63,19 +63,22 @@ const EditAppModal = ({ toggle }) => {
   );
 };
 
-const EditRulesModal = ({ rules, toggle, principalID }) => {
+const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
   const [newRules, setNewRules] = useState(rules);
 
   const remove = async (rule) => {
     console.log(rule);
     setNewRules(newRules.filter((item) => item !== rule));
-    await removeRules([rule])
-      .then((data) => console.log(data))
+    await removeRules([rule], Principal.fromText(principalID))
+      .then(async () => {
+        let updatedRules = await getProviderRules(
+          Principal.fromText(principalID)
+        );
+        console.log(updatedRules);
+        updateState(updatedRules);
+        setNewRules(updatedRules);
+      })
       .catch((e) => console.log(e));
-  };
-
-  const add = (rule) => {
-    rule && setNewRules([...newRules, rule]);
   };
 
   const onFormSubmit = async (values: any) => {
@@ -84,10 +87,16 @@ const EditRulesModal = ({ rules, toggle, principalID }) => {
 
     const { newRule } = values;
     console.log(newRule);
-    await addRules([newRule], principalID)
-      .then((data) => console.log(data))
+    await addRules([newRule], Principal.fromText(principalID))
+      .then(async () => {
+        let updatedRules = await getProviderRules(
+          Principal.fromText(principalID)
+        );
+        console.log(updatedRules);
+        updateState(updatedRules);
+        setNewRules(updatedRules);
+      })
       .catch((e) => console.log(e));
-    // return await addRules(newRule);
   };
 
   return (
@@ -130,7 +139,7 @@ const EditRulesModal = ({ rules, toggle, principalID }) => {
 };
 
 const EditModeratorSettingsModal = ({ toggle, settings }) => {
-  console.log(settings);
+  console.log("settings", settings);
   const onFormSubmit = async (values: any) => {
     console.log("parent !!! onFormSubmit values", values);
     return await updateProviderSettings(values);
@@ -147,9 +156,8 @@ const EditModeratorSettingsModal = ({ toggle, settings }) => {
         <Field
           name="minVotes"
           component="input"
-          type="number"
           className="input has-text-centered ml-3"
-          initialValue={5}
+          initialValue={settings.minVotes ? settings.minVotes : 0}
           style={{ width: 70 }}
         />
       </div>
@@ -161,7 +169,7 @@ const EditModeratorSettingsModal = ({ toggle, settings }) => {
           component="input"
           type="number"
           className="input has-text-centered ml-3"
-          initialValue={1000}
+          initialValue={settings.minStaked ? settings.minStaked : 0}
           style={{ width: 70 }}
         />
       </div>
@@ -217,6 +225,8 @@ export default function Admin() {
 
   const [showModal, setShowModal] = useState(true);
 
+  const [providerIdText, setProviderIdText] = useState("");
+
   useEffect(() => {
     let adminInit = async () => {
       let user = await getUserFromCanister();
@@ -227,7 +237,8 @@ export default function Admin() {
         providerList.push(await getProvider(adminProviders[i]));
       }
       setProviders(providerList);
-      console.log(providerList);
+      console.log("Data", providerList[0]);
+      setProviderIdText(adminProviders[0].toText());
     };
     adminInit();
   }, []);
@@ -240,8 +251,6 @@ export default function Admin() {
             <Modal.Card.Body>
               <Heading subtitle>Avalible Providers</Heading>
             </Modal.Card.Body>
-            {/* <div>{providers.settings}</div> */}
-            {console.log(providers[0])}
             {providers.map((provider) => {
               return (
                 <Button
@@ -289,13 +298,16 @@ export default function Admin() {
                     <tbody>
                       <tr>
                         <td>App Name:</td>
-                        <td>DSCVR</td>
+                        <td>
+                          {!!selectedProvider ? selectedProvider.name : ""}
+                        </td>
                       </tr>
                       <tr>
                         <td>Description:</td>
                         <td>
-                          DSCVR is a reddit like community that exists on the
-                          internet computer.
+                          {!!selectedProvider
+                            ? selectedProvider.description
+                            : ""}
                         </td>
                       </tr>
                     </tbody>
@@ -317,15 +329,28 @@ export default function Admin() {
                 <tbody>
                   <tr>
                     <td>Total Feeds Posted</td>
-                    <td>8373</td>
+                    <td>
+                      {!!selectedProvider
+                        ? selectedProvider.contentCount.toString()
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Active Posts</td>
-                    <td>5</td>
+                    <td>
+                      {!!selectedProvider
+                        ? selectedProvider.activeCount.toString()
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Rewards Spent</td>
-                    <td>5</td>
+                    <td>
+                      {" "}
+                      {!!selectedProvider
+                        ? selectedProvider.rewardsSpent.toString()
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Avg. Stakes</td>
@@ -446,19 +471,25 @@ export default function Admin() {
                   <tr>
                     <td>Number of votes required to finalize decision:</td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      2
+                      {selectedProvider
+                        ? selectedProvider.settings.minVotes.toString()
+                        : 0}
                     </td>
                   </tr>
                   <tr>
                     <td>Required number of staked MOD tokens to vote:</td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      1000
+                      {selectedProvider
+                        ? selectedProvider.settings.minStaked.toString()
+                        : 0}
                     </td>
                   </tr>
                   <tr>
                     <td>Example cost per each succesful vote (1% of stake)</td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      1
+                      {selectedProvider
+                        ? selectedProvider.settings.costPerSuccesfulVote.toString()
+                        : 0}
                     </td>
                   </tr>
                   <tr>
@@ -467,7 +498,9 @@ export default function Admin() {
                       majority voters (optional)
                     </td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      5
+                      {selectedProvider
+                        ? selectedProvider.settings.distributedTokens.toString()
+                        : 0}
                     </td>
                   </tr>
                 </tbody>
@@ -477,7 +510,7 @@ export default function Admin() {
         </Columns.Column>
       </Columns>
 
-      <TrustedIdentities provider={selectedProvider} />
+      <TrustedIdentities provider={providerIdText} />
 
       {showEditApp && <EditAppModal toggle={toggleEditApp} />}
 
@@ -485,7 +518,8 @@ export default function Admin() {
         <EditRulesModal
           rules={rules}
           toggle={toggleEditRules}
-          principalID={selectedProvider.id}
+          principalID={providerIdText}
+          updateState={setRules}
         />
       )}
       {showModeratorSettings && (

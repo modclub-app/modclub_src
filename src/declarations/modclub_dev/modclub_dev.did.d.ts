@@ -87,9 +87,7 @@ export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export type MetricsGranularity = { 'hourly' : null } |
   { 'daily' : null };
 export interface ModClub {
-  'addProviderAdmin' : (arg_0: string, arg_1: Principal) => Promise<
-      ProviderResult
-    >,
+  'addProviderAdmin' : (arg_0: Principal) => Promise<ProviderResult>,
   'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,

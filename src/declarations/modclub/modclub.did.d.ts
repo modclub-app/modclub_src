@@ -138,8 +138,11 @@ export interface ModClub {
       arg_0: string,
       arg_1: string,
       arg_2: [] | [Image],
+      arg_3: [] | [Principal],
     ) => Promise<string>,
-  'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
+  'removeRules' : (arg_0: Array<RuleId>, arg_1: Principal) => Promise<
+      undefined
+    >,
   'resetUserChallengeAttempt' : (arg_0: string) => Promise<Result>,
   'retrieveChallengesForUser' : (arg_0: string) => Promise<Result>,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,

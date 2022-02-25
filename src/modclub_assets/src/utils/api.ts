@@ -173,8 +173,11 @@ export async function addRules(
   return (await getMC()).addRules(rules, provider);
 }
 
-export async function removeRules(rules: RuleId[]): Promise<void> {
-  return (await getMC()).removeRules(rules);
+export async function removeRules(
+  rules: RuleId[],
+  providerId: Principal
+): Promise<void> {
+  return (await getMC()).removeRules(rules, providerId);
 }
 
 export async function updateProviderSettings(

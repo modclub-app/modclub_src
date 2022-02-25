@@ -388,11 +388,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'registerProvider' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(Image)],
+        [IDL.Text, IDL.Text, IDL.Opt(Image), IDL.Opt(IDL.Principal)],
         [IDL.Text],
         [],
       ),
-    'removeRules' : IDL.Func([IDL.Vec(RuleId)], [], ['oneway']),
+    'removeRules' : IDL.Func([IDL.Vec(RuleId), IDL.Principal], [], ['oneway']),
     'resetUserChallengeAttempt' : IDL.Func([IDL.Text], [Result], []),
     'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result], []),
     'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),

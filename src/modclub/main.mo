@@ -46,6 +46,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
+  let DEFAULT_COST_PER_VOTE = 1;
+  let DEFAULT_DISTRIBUTED_TOKENS = 1;
   let DEFAULT_TEST_TOKENS = 100;
 
   // Types
@@ -195,25 +197,51 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func registerProvider(
     name: Text,
     description: Text,
-    image: ?Image
+    image: ?Image,
+    test:?Principal
     ) : async Text {
     // Todo remove this after airdrop
     // await onlyOwner(caller);
     switch(state.providers.get(caller)){
       case (null) {
         let now = Helpers.timeNow();
-        state.providers.put(Principal.fromText("nogav-un4ek-yhwah-k3ssn-6zzcm-xhpzj-onmnw-jz6fw-xu6rl-vfjoc-xqe"), {
-          id = caller;
-          name = name;
-          description = description;
-          image = image;
-          createdAt = now;
-          updatedAt = now;
-          settings = {
-            minVotes = DEFAULT_MIN_VOTES; // At least 2 votes required to finalize a decision
-            minStaked = DEFAULT_MIN_STAKED; // Default amount staked, change when tokens are released
+        switch(test){
+          case(null){
+             state.providers.put(caller, {
+                id = caller;
+                name = name;
+                description = description;
+                image = image;
+                createdAt = now;
+                updatedAt = now;
+                settings = {
+                  minVotes = DEFAULT_MIN_VOTES; // At least 2 votes required to finalize a decision
+                  minStaked = DEFAULT_MIN_STAKED; // Default amount staked, change when tokens are released
+                  costPerSuccesfulVote = DEFAULT_COST_PER_VOTE;
+                  distributedTokens = DEFAULT_DISTRIBUTED_TOKENS;
+
+                };
+              });
           };
-        });
+          case(?t){
+             state.providers.put(t, {
+                id = caller;
+                name = name;
+                description = description;
+                image = image;
+                createdAt = now;
+                updatedAt = now;
+                 settings = {
+                  minVotes = DEFAULT_MIN_VOTES; // At least 2 votes required to finalize a decision
+                  minStaked = DEFAULT_MIN_STAKED; // Default amount staked, change when tokens are released
+                  costPerSuccesfulVote = DEFAULT_COST_PER_VOTE;
+                  distributedTokens = DEFAULT_DISTRIBUTED_TOKENS;
+
+                };
+              });
+          }
+        };
+       
         return "Registration successful";
       };
        case (?result) {          
@@ -286,42 +314,37 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func addRules(rules: [Text], providerId: Principal) {
     // await onlyOwner(caller);
    
-    await checkProviderPermission(caller);
+    var authorized = false;
+
+     switch(await checkProviderAdminPermission(providerId, caller)) {
+          case (#err(error)) throw Error.reject("Unauthorized");
+          case (#ok()) authorized := true;
+        };
     for(rule in rules.vals()) {
       var ruleId = generateId(providerId, "rule");       
       state.rules.put(ruleId, {
         id = ruleId;
         description = rule;
       });
-      
       state.provider2rules.put(providerId, ruleId);
-        
-
-      
-      
     };
   };
 
-  // public  func getAllRules():  async HashMap.HashMap<Types.RuleId, Types.Rule>{
-  //   // await onlyOwner(caller);
+  public shared({ caller }) func removeRules(ruleIds: [Types.RuleId], providerId:Principal) {
 
-  //   let rules = state.rules;
+  var authorized=false;
+  switch(await checkProviderAdminPermission(providerId, caller)) {
+          case (#err(error)) throw Error.reject("Unauthorized");
+          case (#ok()) authorized := true;
+        };
 
-  //    return rules;
-        
-      
-
-  // };
-
-
-
-  
-
-  public shared({ caller }) func removeRules(ruleIds: [Types.RuleId]) {
     for(ruleId in ruleIds.vals()) {
-      state.provider2rules.delete(caller, ruleId);
+      state.provider2rules.delete(providerId, ruleId);
     };
+
   };
+
+
 
   // Subscribe function for providers to register their callback after a vote decision has been made
   public shared({caller}) func subscribe(sub: SubscribeMessage) : async() {
@@ -343,13 +366,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   private func checkProviderAdminPermission(p: Principal, admin: Principal) : async Types.ProviderResult {
       switch(state.providerAdmins.get(p)) {
-        case (null) return #err(#NotFound);
+        case (null)  return #err(#NotFound);
         case (?adminMap) {
           switch(adminMap.get(admin)) {
-            case (null) return #err(#Unauthorized);
-            case(?_) {
-              return #ok();
-            };
+            case (null)  return #err(#Unauthorized);
+            case(?_) return #ok()
           };
         };
       };

@@ -146,6 +146,9 @@ module {
   public type ProviderSettings = {
     minVotes: Nat;
     minStaked: Nat;
+    costPerSuccesfulVote: Nat;
+    distributedTokens:Nat;
+
   };
 
   public type Profile = {

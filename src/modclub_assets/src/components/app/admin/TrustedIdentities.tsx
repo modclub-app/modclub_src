@@ -40,7 +40,7 @@ const AddModal = ({ toggle, principalIDS, setPrincipleIDs, Provider }) => {
       principalIDValidationForInput(values.id, principalIDS) &&
       (await addProviderAdmin(
         Principal.fromText(values.id),
-        Principal.fromText(Provider.id)
+        Principal.fromText(Provider)
       ))
     ) {
       setPrincipleIDs([...principalIDS, values]);
