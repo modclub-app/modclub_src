@@ -489,6 +489,59 @@ module PohModule {
             return pohTasks.toArray();
         };
 
+        public func retrieveRejectedPackageId(userId: Principal, challengeIds: [Text]) : ?Text {
+            let packageIds = state.userToPohChallengePackageId.get0(userId);
+            if(packageIds.size() == 0) {
+                return null;
+            };
+            for(i in Iter.range(packageIds.size() - 1, 0)) {
+                switch(state.pohChallengePackages.get(packageIds.get(i))) {
+                    case(null)();
+                    case(?package) {
+                        if(package.challengeIds.size() == challengeIds.size()) {
+                            let cIdsMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+                            for(id in package.challengeIds.vals()) {
+                                cIdsMap.put(id, id);
+                            };
+                            var allMatched = true;
+                            label l for(id in challengeIds.vals()) {
+                                switch(cIdsMap.get(id)) {
+                                    case(null) {
+                                        allMatched := false;
+                                        break l;
+                                    };
+                                    case(_)();
+                                };
+                            };
+                            // if package exists with same challenge
+                            if(allMatched) {
+                                return ?package.id;
+                            };
+                        };
+                    };
+                };
+            };
+            return null;
+        };
+
+        public func resolveViolatedRulesById(violatedRules: [Types.PohRulesViolated]) : [Text] {
+            let buff = Buffer.Buffer<Text>(violatedRules.size());
+            for(vRule in violatedRules.vals()) {
+                switch(state.pohChallenges.get(vRule.challengeId)) {
+                    case(null)();
+                    case(?challenge) {
+                        label l for(allowedVRule in challenge.allowedViolationRules.vals()) {
+                            if(allowedVRule.ruleId == vRule.ruleId) {
+                                buff.add(allowedVRule.ruleDesc);
+                                break l;
+                            };
+                        };
+                    };
+                };
+            };
+            return buff.toArray();
+        };
+
         public func getPohChallengePackage(packageId: Text) : ?PohTypes.PohChallengePackage {
             return state.pohChallengePackages.get(packageId);
         };
