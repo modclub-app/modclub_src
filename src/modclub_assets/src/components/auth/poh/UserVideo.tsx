@@ -13,6 +13,8 @@ import {
 import Webcam from "react-webcam";
 import { CaptureButton } from "./Webcam"
 import { processAndUploadChunk } from "../../../utils/util";
+import { format, formatDuration } from "date-fns";
+
 const MAX_CHUNK_SIZE = 1024 * 500;
 
 const RecordButton = styled.div`
@@ -50,12 +52,32 @@ const RecordButton = styled.div`
   }
 `;
 
+const Timer = styled.div`
+  position:absolute;
+  left: 0;
+  right: 0;
+  top: 11px;
+  width: 40px;
+  margin: auto;
+  display: flex;
+  z-index: 50;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
+  background-color: rgba(46,49,54,.9);
+  border-radius: 35px;
+  padding: 4px 7px;
+  line-height: 1;
+  color: white;
+`;
+
 export default function UserVideo({ steps }) {
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const [capturing, setCapturing] = useState<boolean>(false);
+  const [seconds, setSeconds] = useState<number>(0);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [phrases, setPhrases] = useState([]);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -101,9 +123,10 @@ export default function UserVideo({ steps }) {
   }, [recordedChunks]);
 
   const resetVideo = () => {
+    setSeconds(0);
     setRecordedChunks([]);
     setVideoUrl(null);
-  }
+  };
 
   const submit = async () => {
     setSubmitting(true);
@@ -129,9 +152,27 @@ export default function UserVideo({ steps }) {
     setPhrases(wordList[0])
   }
 
+  const formattedTime = (val) => {
+    const time = new Date(0, 0, 0);
+    time.setSeconds(val);
+    return format(time, 'mm:ss');
+  }
+
   useEffect(() => {
     steps && steps.length && formatPhrases();
   }, [steps]);
+
+  useEffect(() => {
+    let interval = null;
+    if (capturing) {
+      interval = setInterval(() => {
+        setSeconds(seconds => seconds + 1);
+      }, 1000);
+    } else if (!capturing && seconds !== 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [capturing, seconds]);
 
   return (
     <>
@@ -165,6 +206,10 @@ export default function UserVideo({ steps }) {
                 height: 480
               }}
             />
+
+            <Timer>
+              {formattedTime(seconds)}
+            </Timer>
 
             {!loading &&
               <RecordButton
