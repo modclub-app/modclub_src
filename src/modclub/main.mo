@@ -1175,9 +1175,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
         // validateCaller(caller);
-        canistergeekLogger.logMessage("Log from canister Log method. This is how to collect log with canistergeek");
+        Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
         canistergeekLogger.getLog(request);
-    };
+  };
 
   public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
     switch(checkProfilePermission(caller, #vote)){
@@ -1232,7 +1232,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
         };
       };
     };
-
   };
 
   public shared({ caller }) func issueJwt() : async Text {
