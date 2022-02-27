@@ -40,6 +40,8 @@ import VoteState "./service/vote/state";
 import RelObj "./data_structures/RelObj";
 
 import Canistergeek "./canistergeek/canistergeek";
+import LoggerTypesModule "./canistergeek/logger/typesModule";
+
 
 
 shared ({caller = initializer}) actor class ModClub () = this {
@@ -98,6 +100,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
+
+  stable var _canistergeekLoggerUD: ? Canistergeek.LoggerUpgradeData = null;
+  private let canistergeekLogger = Canistergeek.Logger();
 
   func onlyOwner(p: Principal) : async() {
     if( p != initializer) throw Error.reject( "unauthorized" );
@@ -1184,6 +1189,12 @@ shared ({caller = initializer}) actor class ModClub () = this {
       canistergeekMonitor.collectMetrics();
   };
 
+  public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
+        // validateCaller(caller);
+        Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
+        canistergeekLogger.getLog(request);
+  };
+
   public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
     switch(checkProfilePermission(caller, #vote)){
       case(#err(e)) {
@@ -1237,7 +1248,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
         };
       };
     };
-
   };
 
   public shared({ caller }) func issueJwt() : async Text {
@@ -1506,6 +1516,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     pohStableStateV1 := pohEngine.getStableState();
     pohVoteStableState := voteManager.getStableState();
     _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
+    _canistergeekLoggerUD := ? canistergeekLogger.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -1532,6 +1543,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     storageSolution.setInitialModerators(getModerators());
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
     _canistergeekMonitorUD := null;
+    canistergeekLogger.postupgrade(_canistergeekLoggerUD);
+    _canistergeekLoggerUD := null;
+    canistergeekLogger.setMaxMessagesCount(3000);
+
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 
