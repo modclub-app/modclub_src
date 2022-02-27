@@ -86,8 +86,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
   );
   
   stable var storageStateStable  = StorageState.emptyStableState();
-  // Will be updated with this in postupgrade. Motoko not allowing to use "this" here
-  var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer, signingKey);
+  stable var retiredDataCanisterId : [Text] = [];
+  // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
+  var storageSolution = StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, initializer, initializer, signingKey);
 
   stable var pohStableState = PohState.emptyStableState();
   stable var pohStableStateV1 = PohStateV1.emptyStableState();
@@ -1272,6 +1273,18 @@ shared ({caller = initializer}) actor class ModClub () = this {
     await populateChallenges();
   };
 
+  public shared({caller}) func retiredDataCanisterIdForWriting(canisterId: Text) {
+    await onlyOwner(caller);
+    storageSolution.retiredDataCanisterId(canisterId);
+  };
+
+  public shared({caller}) func getAllDataCanisterIds() : async ([Principal], [Text]) {
+    await onlyOwner(caller);
+    let allDataCanisterId = storageSolution.getAllDataCanisterIds();
+    let retired = storageSolution.getRetiredDataCanisterIdsStable();
+    (allDataCanisterId, retired);
+  };
+
   private func getProviderRules(providerId: Principal) : [Rule] {
       let buf = Buffer.Buffer<Types.Rule>(0);
       for(ruleId in state.provider2rules.get0(providerId).vals()){
@@ -1502,6 +1515,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     tokensStable := tokens.getStable();
 
     storageStateStable := storageSolution.getStableState();
+    retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
     //pohStableState := pohEngine.getStableState();
     pohStableStateV1 := pohEngine.getStableState();
     pohVoteStableState := voteManager.getStableState();
@@ -1510,8 +1524,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   system func postupgrade() {
-    // Reinitializing storage Solution to add this actor as a controller
-    storageSolution := StorageSolution.StorageSolution(storageStateStable, initializer, Principal.fromActor(this), signingKey);
+    // Reinitializing storage Solution to add "this" actor as a controller
+    storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, initializer, Principal.fromActor(this), signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
@@ -1521,6 +1535,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     tokensStable := Token.emptyStable(initializer);
     
     storageStateStable := StorageState.emptyStableState();
+    retiredDataCanisterId := [];
     // Delete these two lines after one deployment
     pohStableStateV1 := mergeV0StateIntoV1(pohStableStateV1, pohStableState);
     pohEngine := POH.PohEngine(pohStableStateV1);
