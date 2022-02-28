@@ -921,6 +921,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     getProviderRules(providerId); 
   };
 
+  public query({ caller }) func getProviderRegisteredRules() : async [Types.Rule] {
+    getProviderRules(caller); 
+  };
+
   public query func checkUsernameAvailable(userName_ : Text): async Bool {
     switch (state.usernames.get(userName_)) {
       case (?_) { /* error -- ID already taken. */ false };
