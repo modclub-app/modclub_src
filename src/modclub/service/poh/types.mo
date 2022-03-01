@@ -193,7 +193,8 @@ module {
 
     public type VerifyHumanityResponse = {
         status: PohChallengeStatus;
-         token: ?PohUniqueToken;
+        token: ?PohUniqueToken;
+        rejectionReasons: [Text];
     };
 
 };

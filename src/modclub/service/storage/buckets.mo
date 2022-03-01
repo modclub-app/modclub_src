@@ -15,9 +15,7 @@ import Iter "mo:base/Iter";
 import Helpers "../../helpers";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
-
-
-
+import LoggerTypesModule "../../canistergeek/logger/typesModule";
 import Types "./types"
 
 
@@ -25,6 +23,9 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
 
   stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
+
+  stable var _canistergeekLoggerUD: ? Canistergeek.LoggerUpgradeData = null;
+  private let canistergeekLogger = Canistergeek.Logger();
 
   public type DataCanisterState = {
       contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
@@ -261,6 +262,12 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
       canistergeekMonitor.collectMetrics();
   };
 
+  public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
+        // validateCaller(caller);
+        Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
+        canistergeekLogger.getLog(request);
+  };
+
   private func isUserAllowed(jwt: Text) : Bool {
     if(jwt == "") {
       return false;
@@ -377,6 +384,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
   system func preupgrade() {
     stateShared := fromDataCanisterState(state);
      _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
+     _canistergeekLoggerUD := ? canistergeekLogger.preupgrade();
   };
 
   system func postupgrade() {
@@ -384,6 +392,9 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
     stateShared := emptyDataCanisterSharedState();
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
     _canistergeekMonitorUD := null;
+    canistergeekLogger.postupgrade(_canistergeekLoggerUD);
+    _canistergeekLoggerUD := null;
+    canistergeekLogger.setMaxMessagesCount(3000);
   };
 
 };

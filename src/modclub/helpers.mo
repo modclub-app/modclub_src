@@ -10,6 +10,7 @@ import Time "mo:base/Time";
 import Types "./types";
 import UUID "mo:uuid/UUID";
 import Base32 "mo:encoding/Base32";
+import Canistergeek "./canistergeek/canistergeek";
 
 module Helpers {
 
@@ -64,6 +65,25 @@ module Helpers {
     };
 
     num;
+  };
+
+  public func logMessage(canistergeekLogger : Canistergeek.Logger, logMessage: Text, logLevel: {#info; #error; #warn; #debugLevel;}) {
+    var level = "INFO: ";
+    switch(logLevel) {
+      case(#info) {
+        level := "INFO: ";
+      };
+      case(#error) {
+        level := "ERROR: ";
+      };
+      case(#warn) {
+        level := "WARN: ";
+      };
+      case(#debugLevel) {
+        level := "DEBUG: ";
+      };
+    };
+    canistergeekLogger.logMessage(level # logMessage);
   };
 
     /**

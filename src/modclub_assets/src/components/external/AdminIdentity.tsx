@@ -1,65 +1,12 @@
 import * as React from "react";
-import {
-  isAirdropRegistered,
-  airdropRegister,
-  updateMC,
-} from "../../utils/api";
 import { useAuth } from "../../utils/auth";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { SignIn } from "../auth/SignIn";
-import { Principal } from "@dfinity/candid/lib/cjs/idl";
-import { AirdropUser } from "../../utils/types";
 import "./landing/Landing.scss";
-import styled from "styled-components";
 
 export default function AdminIdentity() {
-  const { setUser, isAuthenticated, logIn, identity, isAuthReady } = useAuth();
+  const { isAuthenticated, identity, isAuthReady } = useAuth();
   const [message, setMessage] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [aidropUser, setAirdropUser] = useState<AirdropUser>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await updateMC();
-        setAirdropUser(await isAirdropRegistered());
-        setIsRegistered(true);
-      } catch (e) {
-        console.log(e);
-      }
-      setLoading(false);
-    };
-    console.log("isAuthReady", isAuthReady);
-    console.log("isAuthenticated", isAuthenticated);
-    console.log("identity", identity && identity.getPrincipal().toText());
-
-    if (
-      isAuthReady &&
-      isAuthenticated &&
-      identity &&
-      !identity.getPrincipal().isAnonymous()
-    ) {
-      setLoading(true);
-      fetchData();
-    } else {
-      setLoading(false);
-    }
-  }, [isAuthenticated, identity]);
-
-  const handleRegister = async () => {
-    setSubmitting(true);
-    try {
-      const user = await airdropRegister();
-      setAirdropUser(user);
-      setIsRegistered(true);
-    } catch (e) {
-      console.log(e);
-      setMessage(e.message);
-    }
-    setSubmitting(false);
-  };
 
   const spinner = (
     <div
@@ -84,29 +31,21 @@ export default function AdminIdentity() {
       >
         <section className="hero is-black is-medium">
           <div className="hero-body container has-text-centered">
-            <h1 className="title is-size-1">MODCLUB Admin Registration</h1>
-            <p className="has-text-silver is-size-4 has-text-centered mb-6"></p>
+            <h1 className="title is-size-1">MODCLUB Admin Principal ID</h1>
+            <p className="has-text-silver is-size-4 has-text-centered mb-6">Login to retrieve your principal ID, then provide this to your admin so they can add you as a trusted identity</p>
             <div className="is-flex is-justify-content-center	">
-              {!isAuthReady || loading ? (
+              {!isAuthReady ? (
                 spinner
               ) : (
                 <>
-                  {!isAuthenticated ? (
-                    <SignIn />
-                  ) : aidropUser ? (
-                    <div className="card has-gradient">
-                      <div className="card-content">
-                        <label className="label">Principal ID</label>
-                        <p>{identity}</p>
+                    {isAuthenticated && identity? (
+                      <div className="card has-gradient">
+                        <div className="card-content">
+                          <label className="label">Principal ID</label>
+                          <p>{identity.getPrincipal().toText()}</p>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="has-text-silver is-size-4 has-text-centered mb-6">
-                        Please Register as user first
-                      </p>
-                    </div>
-                  )}
+                    ) : <SignIn />}
                 </>
               )}
             </div>

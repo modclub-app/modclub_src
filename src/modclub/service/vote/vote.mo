@@ -1,16 +1,17 @@
-
 import Buffer "mo:base/Buffer";
+import Debug "mo:base/Debug";
+import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import List "mo:base/Array";
 import ModClubParam "../parameters/params";
 import PohState "state";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
 import VoteState "./state";
 import VoteTypes "./types";
-import Debug "mo:base/Debug";
 
 module VoteModule {
 
@@ -97,6 +98,28 @@ module VoteModule {
 
         public func getPOHVote(voteId: Text) : ?VoteTypes.Vote {
             return state.pohVotes.get(voteId);
+        };
+
+        public func getAllUniqueViolatedRules(packageId: Text) : [Types.PohRulesViolated] {
+            let uniqueViolatedRules = HashMap.HashMap<Text, Types.PohRulesViolated>(1, Text.equal, Text.hash);
+            for(voteId in state.pohContent2votes.get0(packageId).vals()) {
+                switch(state.pohVotes.get(voteId)) {
+                    case(null)();
+                    case(?vote) {
+                        if(vote.decision == #rejected) {
+                            for(vRule in vote.violatedRules.vals()) {
+                                let key = vRule.challengeId # vRule.ruleId;
+                                uniqueViolatedRules.put(key, vRule);
+                            };
+                        };
+                    };
+                };
+            };
+            let buffer = Buffer.Buffer<Types.PohRulesViolated>(uniqueViolatedRules.size());
+            for((key, val) in uniqueViolatedRules.entries()) {
+                buffer.add(val);
+            };
+            return buffer.toArray();
         };
 
         public func votePohContent(
