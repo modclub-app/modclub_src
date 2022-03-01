@@ -16,22 +16,6 @@ import styled from "styled-components";
 export default function AdminIdentity() {
   const { setUser, isAuthenticated, logIn, identity, isAuthReady } = useAuth();
   const [message, setMessage] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getUserFromCanister().then((user) => console.log("USER", setUser(user)));
-
-    if (
-      isAuthReady &&
-      isAuthenticated &&
-      identity &&
-      !identity.getPrincipal().isAnonymous()
-    ) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }, [isAuthenticated, identity]);
 
   const spinner = (
     <div
@@ -56,14 +40,14 @@ export default function AdminIdentity() {
       >
         <section className="hero is-black is-medium">
           <div className="hero-body container has-text-centered">
-            <h1 className="title is-size-1">MODCLUB Admin Registration</h1>
-            <p className="has-text-silver is-size-4 has-text-centered mb-6"></p>
+            <h1 className="title is-size-1">MODCLUB Admin Principal ID</h1>
+            <p className="has-text-silver is-size-4 has-text-centered mb-6">Login to retrieve your principal ID, then provide this to your admin so they can add you as a trusted identity</p>
             <div className="is-flex is-justify-content-center	">
-              {!isAuthReady || loading ? (
+              {!isAuthReady ? (
                 spinner
               ) : (
                 <>
-                    {isAuthenticated ? (
+                    {isAuthenticated && identity? (
                       <div className="card has-gradient">
                         <div className="card-content">
                           <label className="label">Principal ID</label>
