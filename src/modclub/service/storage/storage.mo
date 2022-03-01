@@ -1,25 +1,33 @@
-import Debug "mo:base/Debug";
-import Principal "mo:base/Principal";
-import Nat "mo:base/Nat";
-import Cycles "mo:base/ExperimentalCycles";
-import Iter "mo:base/Iter";
-import StorageTypes "./types";
 import Bucket "./buckets";
-import StorageState "./storageState";
+import Buffer "mo:base/Buffer";
+import Cycles "mo:base/ExperimentalCycles";
+import Debug "mo:base/Debug";
+import HashMap "mo:base/HashMap";
 import IC "../../remote_canisters/IC";
+import Iter "mo:base/Iter";
+import Nat "mo:base/Nat";
+import Principal "mo:base/Principal";
+import StorageState "./storageState";
+import StorageTypes "./types";
+import Text "mo:base/Text";
 import Types "./types";
 
 
 module StorageModule {
 
 
-public class StorageSolution(storageStableState : StorageState.DataCanisterStateStable, mainCanisterInitializer: Principal, 
+public class StorageSolution(storageStableState : StorageState.DataCanisterStateStable, retiredDataCanisterIds: [Text], mainCanisterInitializer: Principal, 
           mainCanisterActorPrincipal: Principal, signingKeyFromMain: Text) {
 
     let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
 
     let storageState = StorageState.getState(storageStableState);
     var signingKey = signingKeyFromMain;
+    let retiredDataCanisterIdMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+    for(id in retiredDataCanisterIds.vals()) {
+      retiredDataCanisterIdMap.put(id, id);
+    };
+
     public func getBlob(contentId: Text, offset:Nat): async ?Blob {
       do? {
         let contentCanisterId = storageState.contentIdToCanisterId.get(contentId)!;
@@ -40,6 +48,26 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
       for((bucketId, bucket) in storageState.dataCanisters.entries()) {
         bucket.registerModerators(moderatorIds);
       };
+    };
+
+    public func retiredDataCanisterId(canisterId: Text) {
+      retiredDataCanisterIdMap.put(canisterId, canisterId);
+    };
+
+    public func getRetiredDataCanisterIdsStable() : [Text] {
+      let buff = Buffer.Buffer<Text>(retiredDataCanisterIdMap.size());
+      for((id, _) in retiredDataCanisterIdMap.entries()) {
+        buff.add(id);
+      };
+      return buff.toArray();
+    };
+
+    public func getAllDataCanisterIds() : [Principal] {
+      let buff = Buffer.Buffer<Principal>(retiredDataCanisterIdMap.size());
+      for((id, _) in storageState.dataCanisters.entries()) {
+        buff.add(id);
+      };
+      return buff.toArray();
     };
 
     public func setSigningKey(signingKey1: Text): async () {
@@ -100,10 +128,15 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
       };
 
       for((pId, bucket) in storageState.dataCanisters.entries()) {
-        let size = await bucket.getSize();
-        if(size + fs < DATA_CANISTER_MAX_STORAGE_LIMIT) {
-          return bucket;
-        }
+        switch(retiredDataCanisterIdMap.get(Principal.toText(pId))) {
+          case(null) {
+            let size = await bucket.getSize();
+            if(size + fs < DATA_CANISTER_MAX_STORAGE_LIMIT) {
+              return bucket;
+            }
+          };
+          case(_)();
+        };
       };
       await newEmptyBucket();
     };
