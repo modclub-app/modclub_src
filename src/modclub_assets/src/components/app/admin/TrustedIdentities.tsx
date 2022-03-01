@@ -4,6 +4,8 @@ import { Card, Heading, Button, Icon } from "react-bulma-components";
 import { Field } from "react-final-form";
 import FormModal from "../modals/FormModal";
 
+import { Link } from "react-router-dom";
+
 const principalIDValidationForInput = (ID, principalIDS) => {
   if (ID.length !== 28) return false;
 
@@ -187,9 +189,12 @@ export default function TrustedIdentities() {
       <Card>
         <Card.Content>
           <Heading className="mb-2">Trusted identities</Heading>
+
           <p className="mb-6">
             Add the principal IDs for other members of your team so they can
-            manage your Modclub account
+            manage your Modclub account <br />
+            To get principal ID please visit this{" "}
+            <Link to="/admin-identity">page</Link>
           </p>
 
           <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>

@@ -74,7 +74,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
   public func putChunks(contentId : Text, chunkNum : Nat, chunkData : Blob,
           numOfChunks: Nat, contentType: Text) : async ?() {
     do ? {
-      Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
+      // Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
       if(chunkNum == 1) {
         state.contentInfo.put(contentId, {
         contentId= contentId;
@@ -199,8 +199,6 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
     let canister = actor (canisterId) : actor { streamingCallback : shared () -> async () };
 
     var _status_code:Nat16=404;
-
-
     var _body:Blob = "404 Not Found";
     var _streaming_strategy:? StreamingStrategy = null;
     let _ = do ? {
@@ -209,7 +207,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
       var contentId: ?Text=null;
       var jwt:Text = "";
       var chunkNum:Nat=1;
-      for (field:Text in fields){
+      for (field:Text in fields) {
         let kv:[Text] = Iter.toArray<Text>(Text.split(field,#text("=")));
         if (kv[0]=="contentId"){
           contentId:=?kv[1];
@@ -218,7 +216,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
         }
       };
 
-      if(not (isUserAllowed(jwt))) {
+      if (not (isUserAllowed(jwt))) {
         return {
           status_code=401;
           headers=_headers;
