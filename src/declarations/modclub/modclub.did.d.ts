@@ -87,10 +87,8 @@ export interface Image__1 { 'imageType' : string, 'data' : Array<number> }
 export type MetricsGranularity = { 'hourly' : null } |
   { 'daily' : null };
 export interface ModClub {
-  'addProviderAdmin' : (arg_0: Principal, arg_1: Principal) => Promise<
-      ProviderResult
-    >,
-  'addRules' : (arg_0: Array<string>, arg_1: Principal) => Promise<undefined>,
+  'addProviderAdmin' : (arg_0: Principal) => Promise<ProviderResult>,
+  'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
   'adminInit' : () => Promise<undefined>,
@@ -100,7 +98,6 @@ export interface ModClub {
   'deregisterProvider' : () => Promise<string>,
   'generateSigningKey' : () => Promise<undefined>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
-  'getAdminProviderIDs' : (arg_0: Principal) => Promise<Array<Principal>>,
   'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
   'getAirdropWhitelist' : () => Promise<Array<Principal>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
@@ -114,7 +111,11 @@ export interface ModClub {
       Array<ModeratorLeaderboard>
     >,
   'getPohTaskData' : (arg_0: string) => Promise<Result_1>,
-  'getPohTasks' : (arg_0: ContentStatus) => Promise<Array<PohTaskPlus>>,
+  'getPohTasks' : (
+      arg_0: ContentStatus,
+      arg_1: bigint,
+      arg_2: bigint,
+    ) => Promise<Array<PohTaskPlus>>,
   'getProfile' : () => Promise<Profile>,
   'getProfileById' : (arg_0: Principal) => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
@@ -138,11 +139,8 @@ export interface ModClub {
       arg_0: string,
       arg_1: string,
       arg_2: [] | [Image],
-      arg_3: [] | [Principal],
     ) => Promise<string>,
-  'removeRules' : (arg_0: Array<RuleId>, arg_1: Principal) => Promise<
-      undefined
-    >,
+  'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
   'resetUserChallengeAttempt' : (arg_0: string) => Promise<Result>,
   'retrieveChallengesForUser' : (arg_0: string) => Promise<Result>,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,

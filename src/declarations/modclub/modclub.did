@@ -236,8 +236,8 @@ type ModeratorLeaderboard =
  };
 type ModClub = 
  service {
-   addProviderAdmin: (principal, principal) -> (ProviderResult);
-   addRules: (vec text, principal) -> () oneway;
+   addProviderAdmin: (principal) -> (ProviderResult);
+   addRules: (vec text) -> () oneway;
    addToAirdropWhitelist: (vec principal) -> ();
    addToApprovedUser: (principal) -> ();
    adminInit: () -> ();
@@ -257,7 +257,7 @@ type ModClub =
    getModclubHoldings: () -> (Holdings) query;
    getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
    getPohTaskData: (text) -> (Result_1) query;
-   getPohTasks: (ContentStatus) -> (vec PohTaskPlus) query;
+   getPohTasks: (ContentStatus, nat, nat) -> (vec PohTaskPlus) query;
    getProfile: () -> (Profile) query;
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus) query;
@@ -271,8 +271,8 @@ type ModClub =
    pohVerificationRequest: (principal) -> (PohVerificationResponse);
    populateChallenges: () -> ();
    registerModerator: (text, text, opt Image) -> (Profile);
-   registerProvider: (text, text, opt Image, opt principal) -> (text);
-   removeRules: (vec RuleId, principal) -> () oneway;
+   registerProvider: (text, text, opt Image) -> (text);
+   removeRules: (vec RuleId) -> () oneway;
    resetUserChallengeAttempt: (text) -> (Result);
    retrieveChallengesForUser: (text) -> (Result);
    stakeTokens: (nat) -> (text);

@@ -111,7 +111,11 @@ export interface ModClub {
       Array<ModeratorLeaderboard>
     >,
   'getPohTaskData' : (arg_0: string) => Promise<Result_1>,
-  'getPohTasks' : (arg_0: ContentStatus) => Promise<Array<PohTaskPlus>>,
+  'getPohTasks' : (
+      arg_0: ContentStatus,
+      arg_1: bigint,
+      arg_2: bigint,
+    ) => Promise<Array<PohTaskPlus>>,
   'getProfile' : () => Promise<Profile>,
   'getProfileById' : (arg_0: Principal) => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,

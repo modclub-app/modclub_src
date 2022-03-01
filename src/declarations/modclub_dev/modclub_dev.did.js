@@ -353,7 +353,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getPohTaskData' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'getPohTasks' : IDL.Func(
-        [ContentStatus],
+        [ContentStatus, IDL.Nat, IDL.Nat],
         [IDL.Vec(PohTaskPlus)],
         ['query'],
       ),

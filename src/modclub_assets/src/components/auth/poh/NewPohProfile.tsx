@@ -70,7 +70,7 @@ export default function NewPohProfile({ match }) {
     })
   }, [history])
 
-  if (!isAuthenticated || !isAuthReady) return (
+  if (isAuthReady && !isAuthenticated) return (
     <NotAuthenticatedModal />
   );
 

@@ -1030,11 +1030,13 @@ shared ({caller = initializer}) actor class ModClub () = this {
       case(null) {
         throw Error.reject("Package doesn't exist");
       };
-      case(_)();
+      case(?package) {
+        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        voteManager.changePohPackageVotingStatus(packageId, #rejected);
+        await pohEngine.retrieveChallengesForUser(package.userId, ["challenge-profile-pic", "challenge-user-video"], true);
+      };
     };
-    pohEngine.changeChallengePackageStatus(packageId, #rejected);
-    voteManager.changePohPackageVotingStatus(packageId, #rejected);
-    await pohEngine.retrieveChallengesForUser(caller, ["challenge-profile-pic", "challenge-user-video"], true);
+   
   };
 
   // Method called by user on UI
@@ -1102,7 +1104,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     pohEngine.populateChallenges();
   };
 
-  public query({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
+  public query({ caller }) func getPohTasks(status: Types.ContentStatus, start: Nat, end: Nat) : async [PohTypes.PohTaskPlus] {
     switch(checkProfilePermission(caller, #getContent)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
@@ -1112,7 +1114,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    let pohTaskIds = voteManager.getTasksId(status, 20);
+    let pohTaskIds = voteManager.getTasksId(status, start, end);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);
@@ -1384,18 +1386,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
     #ok();
   };
 
-  public query func getAdminProviderIDs(userId:Principal): async [Principal]{
-      // let buf = Buffer.Buffer<Principal>(0);
-      return state.admin2Provider.get0(userId);
-      // for(providerID in state.admin2Provider.get0(userId).vals()){
-      //   switch(state.admin2Provider.get(providerID)){
-      //     case(?P){
-      //       buf.add(rule);
-      //     };
-      //     case(_)();
-      //   };
-      // };
-      // buf.toArray();
+  public query({caller}) func getAdminProviderIDs(): async [Principal]{
+      return state.admin2Provider.get0(caller);
   };
 
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {
