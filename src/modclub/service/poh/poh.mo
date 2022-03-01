@@ -390,7 +390,6 @@ module PohModule {
                     challengeIds =  challengeIds;
                     userId =  userId;
                     contentType = #pohPackage;
-                    status = #new;
                     title = ?("POH Content for User: " # Principal.toText(userId));
                     createdAt =  Helpers.timeNow();
                     updatedAt = Helpers.timeNow();

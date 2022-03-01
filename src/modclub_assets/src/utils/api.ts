@@ -179,7 +179,7 @@ export async function submitChallengeData(
 export async function getPohTasks(
   status: ContentStatus
 ): Promise<PohTaskPlus[]> {
-  return (await getMC()).getPohTasks(status);
+  return (await getMC()).getPohTasks(status, BigInt(0), BigInt(20));
 }
 
 export async function getPohTaskData(packageId: string): Promise<any> {
