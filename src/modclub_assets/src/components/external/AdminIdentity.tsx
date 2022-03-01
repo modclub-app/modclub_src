@@ -17,26 +17,9 @@ export default function AdminIdentity() {
   const { setUser, isAuthenticated, logIn, identity, isAuthReady } = useAuth();
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [aidropUser, setAirdropUser] = useState<AirdropUser>(null);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     getUserFromCanister().then((user) => console.log("USER", setUser(user)));
-    const fetchData = async () => {
-      try {
-        await updateMC();
-
-        setAirdropUser(await isAirdropRegistered());
-        setIsRegistered(true);
-      } catch (e) {
-        console.log(e);
-      }
-      setLoading(false);
-    };
-    console.log("isAuthReady", isAuthReady);
-    console.log("isAuthenticated", isAuthenticated);
-    console.log("identity", identity && identity.getPrincipal().toText());
 
     if (
       isAuthReady &&
@@ -45,24 +28,10 @@ export default function AdminIdentity() {
       !identity.getPrincipal().isAnonymous()
     ) {
       setLoading(true);
-      fetchData();
     } else {
       setLoading(false);
     }
   }, [isAuthenticated, identity]);
-
-  const handleRegister = async () => {
-    setSubmitting(true);
-    try {
-      const user = await airdropRegister();
-      setAirdropUser(user);
-      setIsRegistered(true);
-    } catch (e) {
-      console.log(e);
-      setMessage(e.message);
-    }
-    setSubmitting(false);
-  };
 
   const spinner = (
     <div
@@ -94,20 +63,14 @@ export default function AdminIdentity() {
                 spinner
               ) : (
                 <>
-                  {isAuthenticated ? (
-                    <div className="card has-gradient">
-                      <div className="card-content">
-                        <label className="label">Principal ID</label>
-                        <p>{identity.getPrincipal().toText()}</p>
+                    {isAuthenticated ? (
+                      <div className="card has-gradient">
+                        <div className="card-content">
+                          <label className="label">Principal ID</label>
+                          <p>{identity.getPrincipal().toText()}</p>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="has-text-silver is-size-4 has-text-centered mb-6">
-                        Please Register as user first
-                      </p>
-                    </div>
-                  )}
+                    ) : <SignIn />}
                 </>
               )}
             </div>
