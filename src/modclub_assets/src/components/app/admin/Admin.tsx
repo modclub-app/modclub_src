@@ -217,8 +217,6 @@ export default function Admin() {
 
   const [rules, setRules] = useState([]);
 
-  const [userPrincipleID, setUserPrincipleID] = useState(null);
-
   const [providers, setProviders] = useState([]);
 
   const [selectedProvider, setSelectedProvider] = useState(null);
@@ -229,12 +227,10 @@ export default function Admin() {
 
   useEffect(() => {
     let adminInit = async () => {
-      let user = await getUserFromCanister();
-      setUserPrincipleID(user.id);
-      let adminProviders = await getAdminProviderIDs(user.id);
+      let adminProviders = await getAdminProviderIDs();
       let providerList = [];
-      for (let i = 0; i < adminProviders.length; i++) {
-        providerList.push(await getProvider(adminProviders[i]));
+      for (let provider of adminProviders) {
+        providerList.push(await getProvider(provider));
       }
       setProviders(providerList);
       console.log("Data", providerList[0]);
@@ -249,7 +245,7 @@ export default function Admin() {
         <Modal show={showModal} showClose={true}>
           <Modal.Card backgroundColor="circles">
             <Modal.Card.Body>
-              <Heading subtitle>Avalible Providers</Heading>
+              <Heading subtitle>Available Providers</Heading>
             </Modal.Card.Body>
             {providers.map((provider) => {
               return (

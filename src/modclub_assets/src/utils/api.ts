@@ -122,9 +122,8 @@ export async function getTokenHoldings(): Promise<UserHoldings> {
 }
 
 export async function getAdminProviderIDs(
-  providerId: Principal
 ): Promise<Principal[]> {
-  return await (await getMC()).getAdminProviderIDs(providerId);
+  return await (await getMC()).getAdminProviderIDs();
 }
 
 export async function stakeTokens(amount: number): Promise<string> {
