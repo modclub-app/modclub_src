@@ -40,6 +40,8 @@ actor {
 
         let test4 = await MC.submitImage("id_4", file.SoccerBall, "image/jpeg", ?"Soccer Ball" );
 
+        let test5 = await MC.submitHtmlContent("id_5", "<p>Sample Html Content</p>", ?"Soccer Ball" );
+
         return registerResult # "\n " # test1 # "\n" # test2 # "\n" # test3;
     };
 
