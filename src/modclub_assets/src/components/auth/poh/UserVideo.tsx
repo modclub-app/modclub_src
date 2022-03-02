@@ -60,7 +60,7 @@ const Timer = styled.div`
   width: 40px;
   margin: auto;
   display: flex;
-  z-index: 50;
+  z-index: 10;
   justify-content: center;
   align-items: center;
   font-size: 11px;
