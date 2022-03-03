@@ -26,8 +26,6 @@ shared ({caller = initializer}) actor class ModclubProvider () {
         // Register with Modclub
         let registerResult = await MC.registerProvider("SocialApp", "The description of your application.", null);
 
-        MC.addProviderAdmin( Principal.fromText("k7nen-3nlk6-lfitz-vrck5-inhz4-drdq3-ogjob-4qkv7-tbpku-qo6ak-kae"));
-
         // Sub the callback
         await subscribe();
 
@@ -45,6 +43,10 @@ shared ({caller = initializer}) actor class ModclubProvider () {
         let test4 = await MC.submitImage("id_4", file.SoccerBall, "image/jpeg", ?"Soccer Ball" );
 
         return registerResult # "\n " # test1 # "\n" # test2 # "\n" # test3;
+    };
+
+    public shared({ caller }) func addAdmin(p: Principal) : async() {
+        await MC.addProviderAdmin(p);
     };
 
     public shared({ caller }) func submitText(id: Text, text: Text, title: ?Text) : async Text  {

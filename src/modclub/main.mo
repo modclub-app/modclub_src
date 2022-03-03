@@ -1364,21 +1364,20 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
 
 
-   public shared({ caller }) func addProviderAdmin(userId: Principal, providerId: Principal) : async Types.ProviderResult {
+   public shared({ caller }) func addProviderAdmin(userId: Principal, providerId: ?Principal) : async Types.ProviderResult {
     var authorized = false;
     var isProvider = false;
-    var _providerId = providerId;
-    // var _providerId : Principal = do ? {
-    //     switch(providerId) {
-    //       case(?result) {
-    //         isProvider := false;
-    //         return providerId;
-    //       };
-    //       case(_) {
-    //         return caller
-    //       };
-    //     };
-    // };
+    var _providerId : Principal = do {
+        switch(providerId) {
+          case(?result) {
+            isProvider := false;
+            result;
+          };
+          case(_) {
+            caller;
+          };
+        };
+    };
     
     // Provider check
     switch(state.providers.get(_providerId)) {
