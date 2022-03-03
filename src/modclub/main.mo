@@ -347,19 +347,32 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-
     await checkProviderPermission(caller);
-    let content = createContentObj(sourceId, caller, #text, title);
+    
+    submitTextOrHtmlContent(caller, sourceId, text, title, #text);
+  };
+
+  public shared({ caller }) func submitHtmlContent(sourceId: Text, htmlContent: Text, title: ?Text) : async Text {
+    if(allowSubmissionFlag == false) {
+      throw Error.reject("Submissions are disabled");
+    };
+    await checkProviderPermission(caller);
+
+    submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent);
+  };
+
+  func submitTextOrHtmlContent(caller: Principal, sourceId: Text, contentText: Text, title: ?Text, contentType: Types.ContentType) : Text {
+    let content = createContentObj(sourceId, caller, contentType, title);
     let textContent : TextContent = {
       id = content.id;
-      text = text;
+      text = contentText;
     };
-      // Store and update relationships
-      state.content.put(content.id, content);
-      state.textContent.put(content.id, textContent);
-      state.provider2content.put(caller, content.id);
-      state.contentNew.put(caller, content.id);
-      return content.id;
+    // Store and update relationships
+    state.content.put(content.id, content);
+    state.textContent.put(content.id, textContent);
+    state.provider2content.put(caller, content.id);
+    state.contentNew.put(caller, content.id);
+    return content.id;
   };
   
     public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
