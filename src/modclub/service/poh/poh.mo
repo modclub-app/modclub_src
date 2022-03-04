@@ -428,6 +428,7 @@ module PohModule {
                     updatedAt = Helpers.timeNow();
                 };
                 state.pohChallengePackages.put(pohPackage.id, pohPackage);
+                state.userToPohChallengePackageId.put(userId, pohPackage.id);
                 return ?pohPackage;
             };
         };
