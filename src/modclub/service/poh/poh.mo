@@ -490,7 +490,7 @@ module PohModule {
             return pohTasks.toArray();
         };
 
-        public func retrieveRejectedPackageId(userId: Principal, challengeIds: [Text]) : ?Text {
+        public func retrieveRejectedPackageId(userId: Principal, challengeIds: [Text], getContentStatus: Text -> Types.ContentStatus) : ?Text {
             let packageIds = state.userToPohChallengePackageId.get0(userId);
             if(packageIds.size() == 0) {
                 return null;
@@ -499,7 +499,7 @@ module PohModule {
                 switch(state.pohChallengePackages.get(packageIds.get(i))) {
                     case(null)();
                     case(?package) {
-                        if(package.challengeIds.size() == challengeIds.size()) {
+                        if(package.challengeIds.size() == challengeIds.size() and getContentStatus(package.id) == #rejected) {
                             let cIdsMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
                             for(id in package.challengeIds.vals()) {
                                 cIdsMap.put(id, id);

@@ -51,6 +51,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   let DEFAULT_MIN_VOTES = 2;
   let DEFAULT_MIN_STAKED = 0;
   let DEFAULT_TEST_TOKENS = 100;
+  let CHALLENGE_IDS = ["challenge-profile-pic", "challenge-user-video"];
 
   // Types
   type Content = Types.Content;
@@ -989,12 +990,35 @@ shared ({caller = initializer}) actor class ModClub () = this {
         providerId = providerId;
     };
     // validity and rules needs to come from admin dashboard here
-    pohEngine.pohVerificationRequest(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
+    pohEngine.pohVerificationRequest(pohVerificationRequest, 365, CHALLENGE_IDS);
   };
   
   // Method called by provider
   public shared({ caller }) func pohGenerateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
     await pohEngine.pohGenerateUniqueToken(providerUserId, caller);
+  };
+
+  // Method called by provider
+  public shared({ caller }) func resetUsersPOH(providerUserId: Principal) : async Result.Result<(), PohTypes.PohError> {
+    let providerId = caller;
+    // challenges will be replaced by the ones configured by provider
+    let rejectedPackageId = pohEngine.retrieveRejectedPackageId(providerId, CHALLENGE_IDS, voteManager.getContentStatus);
+    switch(rejectedPackageId) {
+      case(null) {
+        return #err(#challengeNotRejectedOrExpired);
+      };
+      case(?id) {
+        pohEngine.changeChallengePackageStatus(id, #rejected);
+        voteManager.changePohPackageVotingStatus(id, #rejected);
+        let _ = await pohEngine.retrieveChallengesForUser(providerUserId, CHALLENGE_IDS, true);
+        return #ok();
+      }
+    };
+  };
+
+  // Method called by user on UI
+  public shared({ caller }) func resetModClubUsersPOH() : async Result.Result<(), PohTypes.PohError> {
+    await resetUsersPOH(caller);
   };
 
   // Method called by user on UI
@@ -1003,23 +1027,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(tokenResponse == #err(#invalidToken)) {
       return #err(#invalidToken);
     };
-    await pohEngine.retrieveChallengesForUser(caller, ["challenge-profile-pic", "challenge-user-video"], false);
-  };
-
-  // Admin method to create new attempts
-  public shared({ caller }) func resetUserChallengeAttempt(packageId: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await onlyOwner(caller);
-    switch(pohEngine.getPohChallengePackage(packageId)) {
-      case(null) {
-        throw Error.reject("Package doesn't exist");
-      };
-      case(?package) {
-        pohEngine.changeChallengePackageStatus(packageId, #rejected);
-        voteManager.changePohPackageVotingStatus(packageId, #rejected);
-        await pohEngine.retrieveChallengesForUser(package.userId, ["challenge-profile-pic", "challenge-user-video"], true);
-      };
-    };
-   
+    await pohEngine.retrieveChallengesForUser(caller, CHALLENGE_IDS, false);
   };
 
   // Method called by user on UI
@@ -1043,7 +1051,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
         };
       };
       // TODO dynamic list will be fetched from admin dashboard state
-      let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
+      let providerChallenges = CHALLENGE_IDS;
       let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId, voteManager.getContentStatus);
       switch(challengePackage) {
         case(null)();
@@ -1074,7 +1082,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       Debug.print("Calling pohVerificationRequest");
       let result = await pohVerificationRequest(caller);
       if(result.status == #rejected) {
-        let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, ["challenge-profile-pic", "challenge-user-video"]);
+        let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, CHALLENGE_IDS, voteManager.getContentStatus);
         switch(rejectedPackageId) {
           case(null)();
           case(?id) {
@@ -1092,6 +1100,23 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       return {status = result.status; token = null; rejectionReasons = rejectionReasons;};
     }
+  };
+
+
+  // Admin method to create new attempts
+  public shared({ caller }) func resetUserChallengeAttempt(packageId: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+    await onlyOwner(caller);
+    switch(pohEngine.getPohChallengePackage(packageId)) {
+      case(null) {
+        throw Error.reject("Package doesn't exist");
+      };
+      case(?package) {
+        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        voteManager.changePohPackageVotingStatus(packageId, #rejected);
+        await pohEngine.retrieveChallengesForUser(package.userId, CHALLENGE_IDS, true);
+      };
+    };
+   
   };
 
   public shared({ caller }) func populateChallenges() : async () {
