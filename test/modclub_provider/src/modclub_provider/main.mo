@@ -44,6 +44,8 @@ shared ({caller = initializer}) actor class ModclubProvider () {
 
         let test4 = await MC.submitImage("id_4", file.SoccerBall, "image/jpeg", ?"Soccer Ball" );
 
+        let test5 = await MC.submitHtmlContent("id_5", "<html><head><title>Href Attribute Example</title></head><body><h1>Href Attribute Example</h1><p><a href='https://www.freecodecamp.org/contribute/'>The freeCodeCamp Contribution Page</a> shows you how and where you can contribute to freeCodeCamp's community and growth.</p></body></html>", ?"Taylors HTML" );
+
         return registerResult # "\n " # test1 # "\n" # test2 # "\n" # test3;
     };
 
