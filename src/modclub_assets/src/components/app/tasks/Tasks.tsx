@@ -111,6 +111,7 @@ export default function Tasks() {
   const fetchTasks = async () => {
     const status = { "new": null };
     const content = await getAllContent(status);
+    console.log("content", content);
     setTasks(content);
   }
 
