@@ -12,12 +12,20 @@ import Cycles "mo:base/ExperimentalCycles";
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
-
-
+import Helpers "../../helpers";
+import ModClubParam "../parameters/params";
+import Canistergeek "../../canistergeek/canistergeek";
+import LoggerTypesModule "../../canistergeek/logger/typesModule";
 import Types "./types"
 
 
-actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
+actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) = this {
+
+  stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
+  private let canistergeekMonitor = Canistergeek.Monitor();
+
+  stable var _canistergeekLoggerUD: ? Canistergeek.LoggerUpgradeData = null;
+  private let canistergeekLogger = Canistergeek.Logger();
 
   public type DataCanisterState = {
       contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
@@ -40,13 +48,17 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
     st;
   };
 
+  stable var signingKey = signingKey1;
   var state: DataCanisterState = emptyStateForDataCanister();
 
   let limit = 20_000_000_000_000;
 
   for((modId, mId) in moderatorsId.vals()) {
+    Debug.print("Add moderator to new Bucket with modID " # Principal.toText(modId) # " mid: " # Principal.toText(mId));
     state.moderators.put(modId, modId);
   };
+  Debug.print("FINISHED ADDING MODERATORS TO BUCKET");
+  
 
   public func getSize(): async Nat {
     Debug.print("canister balance: " # Nat.toText(Cycles.balance()));
@@ -62,7 +74,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
   public func putChunks(contentId : Text, chunkNum : Nat, chunkData : Blob,
           numOfChunks: Nat, contentType: Text) : async ?() {
     do ? {
-      Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
+      // Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
       if(chunkNum == 1) {
         state.contentInfo.put(contentId, {
         contentId= contentId;
@@ -169,38 +181,48 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
     };
   };
 
-  public query({caller}) func http_request(req: HttpRequest) : async HttpResponse {
+  public func setSigningKey(signingKey1: Text): async () {
+    signingKey := signingKey1;
+  };
+
+  // Return the principal identifier of this canister.
+  public func whoami () : async Principal {
+        Principal.fromActor(this);
+  };
+
+  public query func http_request(req: HttpRequest) : async HttpResponse {
+    Debug.print("http_request: " # debug_show(req));
+
     var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
-    switch(state.moderators.get(caller)) {
-      case(null) {
-        return {
-          status_code=401;
-          headers=_headers;
-          body="401 Unauthorized";
-          streaming_strategy= null;
-        };
-      };
-      case(_)();
-    };
     let self: Principal = Principal.fromActor(this);
     let canisterId: Text = Principal.toText(self);
     let canister = actor (canisterId) : actor { streamingCallback : shared () -> async () };
 
     var _status_code:Nat16=404;
-
-
     var _body:Blob = "404 Not Found";
     var _streaming_strategy:? StreamingStrategy = null;
     let _ = do ? {
       let storageParams:Text = Text.stripStart(req.url, #text("/storage?"))!;
       let fields:Iter.Iter<Text> = Text.split(storageParams, #text("&"));
       var contentId: ?Text=null;
+      var jwt:Text = "";
       var chunkNum:Nat=1;
-      for (field:Text in fields){
+      for (field:Text in fields) {
         let kv:[Text] = Iter.toArray<Text>(Text.split(field,#text("=")));
         if (kv[0]=="contentId"){
           contentId:=?kv[1];
+        } else if (kv[0]=="token"){
+          jwt:=kv[1];
         }
+      };
+
+      if (not (isUserAllowed(jwt))) {
+        return {
+          status_code=401;
+          headers=_headers;
+          body="401 Unauthorized";
+          streaming_strategy= null;
+        }; 
       };
 
       _body := state.chunks.get(chunkId(contentId!, chunkNum))!;
@@ -227,6 +249,98 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
       headers=_headers;
       body=_body;
       streaming_strategy=_streaming_strategy;
+    };
+  };
+
+  public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
+      // validateCaller(caller);
+      canistergeekMonitor.getMetrics(parameters);
+  };
+
+  public shared ({caller}) func collectCanisterMetrics(): async () {
+      // validateCaller(caller);
+      canistergeekMonitor.collectMetrics();
+  };
+
+  public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
+        // validateCaller(caller);
+        Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
+        canistergeekLogger.getLog(request);
+  };
+
+  private func isUserAllowed(jwt: Text) : Bool {
+    if(jwt == "") {
+      return false;
+    };
+    var c = 0;
+    var modId = "";
+    var issueTime = 0;
+    var signature = "";
+    var message = "";
+    for(part in Text.split(jwt, #char('.'))) {
+      if(c == 0) {
+        var k = 0;
+        switch(Helpers.decodeBase32(part)) {
+          case(null) { return false;};
+          case(?msg) {
+            message := msg;
+            for(ele in Text.split(msg, #char('.'))) {
+              if(k == 0) {
+                modId := ele;
+              } else if(k == 1) {
+                issueTime := Helpers.textToNat(ele);
+              };
+              k+=1;
+            };
+          };
+        };
+      } else {
+        signature := part;
+      };
+      c+=1;
+    };
+    if(not verifiedSignature(signature, message) or not jwtNotExpired(issueTime) or not (isUserModerator(modId))) {
+      return false;
+    };
+    return true;
+  };
+
+  private func verifiedSignature(signature: Text, message: Text): Bool {
+    Debug.print("singature: " # signature);
+    
+    if(signature == "") {
+      return false;
+    };
+    let actualSignature = Helpers.generateHash(message # signingKey);
+    Debug.print("actualSignature: " # actualSignature);
+
+    if(actualSignature != signature) {
+      return false;
+    };
+    return true;
+  };
+
+  private func jwtNotExpired(issueTime: Nat): Bool {
+    Debug.print("actualSignature: " # Nat.toText(issueTime));
+
+    if(issueTime == 0 or (Helpers.timeNow() - issueTime) > ModClubParam.JWT_VALIDITY_MILLI) {
+      return false;
+    };
+    return true;
+  };
+
+  private func isUserModerator(modId: Text): Bool {
+    Debug.print(modId);
+    switch(state.moderators.get(Principal.fromText(modId))) {
+      case(null) {
+        Debug.print("not present");
+        return false;
+      };
+      case(?exists) {
+        Debug.print("present");
+
+        return true;
+      }
     };
   };
 
@@ -269,11 +383,18 @@ actor class Bucket (moderatorsId : [(Principal, Principal)]) = this {
 
   system func preupgrade() {
     stateShared := fromDataCanisterState(state);
+     _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
+     _canistergeekLoggerUD := ? canistergeekLogger.preupgrade();
   };
 
   system func postupgrade() {
     state := toDataCanisterState(stateShared);
     stateShared := emptyDataCanisterSharedState();
+    canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
+    _canistergeekMonitorUD := null;
+    canistergeekLogger.postupgrade(_canistergeekLoggerUD);
+    _canistergeekLoggerUD := null;
+    canistergeekLogger.setMaxMessagesCount(3000);
   };
 
 };

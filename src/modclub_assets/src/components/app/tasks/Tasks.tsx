@@ -13,7 +13,7 @@ import {
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
-import ApproveReject from "../modals/ApproveReject";
+import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
@@ -205,7 +205,7 @@ const Task = ({ task, setVoted }) => {
                 rules={rules}
               />
             </div>
-            <ApproveReject
+            <TaskConfirmationModal
               task={task}
               onUpdate={() => setVoted(true)}
             />
@@ -231,8 +231,6 @@ export default function Tasks() {
     user && fetchTasks();
     setVoted(false);
   }, [user, voted]);
-
-  if (!isAuthenticated) return (<div>You need to be logged in to view this page</div>);
   
   return (
     <>

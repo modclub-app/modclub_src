@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { authClient as authenticationClient } from "./authClient";
+import {Usergeek} from "usergeek-ic-js";
 
 import { actorController } from "./actor";
 import { Identity } from "@dfinity/agent";
+import { Principal } from "@dfinity/principal";
 import { getUserFromStorage } from "./util";
 import { Profile } from "./types";
 import { getUserFromCanister } from "./api";
+
 
 export interface AuthContext {
   isAuthenticated: boolean;
@@ -40,11 +43,12 @@ export function useProvideAuth(authClient): AuthContext {
 
   // Use the user from local storage if it is set so the flow doesn't have to
   // make an async query.
-  const setUserFromLocalStorage = () => {    
+  const setUserFromLocalStorage = () => {  
     console.log("setUserFromLocalStorage");
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
     console.log("lsUser", lsUser);
-    if (lsUser) {
+    if (lsUser && !user && !isAuthenticatedLocal) {
+      console.log('Setting User from local storage!!!!');
       setUser(lsUser);
       setIsAuthenticatedLocal(true);
       // Check to make sure your local storage user exists on the backend, and
@@ -122,9 +126,13 @@ export function useProvideAuth(authClient): AuthContext {
       actorController.authenticateActor(_identity).then(() => {
         setAuthClientReady(true);
       });
+      const principal: Principal = _identity.getPrincipal();
+      Usergeek.setPrincipal(principal);
+      Usergeek.trackSession()
     } else {
       console.log(" setting not authenticated");
       actorController.unauthenticateActor();
+      Usergeek.setPrincipal(null);
     }
   }, [_identity]);
 
@@ -154,6 +162,7 @@ export function useProvideAuth(authClient): AuthContext {
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
     if (!authClient.ready) return;
     authClient.logout();
+    Usergeek.setPrincipal(null);
   }
 
   return {

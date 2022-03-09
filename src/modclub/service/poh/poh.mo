@@ -7,7 +7,7 @@ import Iter "mo:base/Iter";
 import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
-import PohState "./state";
+import PohState "./statev1";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
@@ -25,10 +25,12 @@ module PohModule {
 
         let state = PohState.getState(stableState);
 
+        let userToPackageIdState = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
+
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
 
-        public func verifyForHumanity(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
-        : async PohTypes.PohVerificationResponse {
+        public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
+        : PohTypes.PohVerificationResponse {
             // request audit
             state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
             state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
@@ -140,7 +142,7 @@ module PohModule {
         };
 
         //Pre Step 4 Generate token
-        public func generateUniqueToken(providerUserId: Principal, providerId: Principal) : async PohTypes.PohUniqueToken {
+        public func pohGenerateUniqueToken(providerUserId: Principal, providerId: Principal) : async PohTypes.PohUniqueToken {
             //using token: as salt instead of time here to keep behavior deterministic for us
             let hash: Text = Helpers.generateHash("token:" # Principal.toText(providerUserId) # Principal.toText(providerId));
             // let uuid:Text =  await Helpers.generateUUID(); //generate uuid code here. We can use hash here instead.
@@ -155,17 +157,19 @@ module PohModule {
             };
         };
 
-        // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
-        // Modclub UI will ask for all the challenge for a user to show
-        // ResponseType of this function is yet to be designed.
-        public func retrieveChallengesForUser(userId: Principal, token: Text, challengeIds: [Text]) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-            // populate provider to userId mapping
+        public func decodeToken(userId: Principal, token: Text) : Result.Result<(), PohTypes.PohError> {
             switch(state.pohProviderUserData.get(token)) {
                 case(null) return #err(#invalidToken);
                 case(?pUser)
                     state.providerToModclubUser.put(pUser.providerUserId, userId);
             };
+            #ok();
+        };
 
+        // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
+        // Modclub UI will ask for all the challenge for a user to show
+        // ResponseType of this function is yet to be designed.
+        public func retrieveChallengesForUser(userId: Principal, challengeIds: [Text], forceCreateNewAttempts: Bool) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
             // populate pohUsers but with their modclub user id
             switch(state.pohUsers.get(userId)) {
                 case(null) {
@@ -202,7 +206,7 @@ module PohModule {
 
                     let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
 
-                    if(attempts.size() == 0) {
+                    if(attempts.size() == 0 or forceCreateNewAttempts == true) {
                         let newAttempt = {
                                                 attemptId = ?Helpers.generateHash(Principal.toText(userId) # challengeId # Nat.toText(attempts.size()));
                                                 challengeId = challengeId;
@@ -272,6 +276,17 @@ module PohModule {
                             };
                             return #ok;
                         }
+                    };
+                };
+            };
+        };
+
+        public func changeChallengePackageStatus(packageId: Text, status: PohTypes.PohChallengeStatus) : () {
+            switch(state.pohChallengePackages.get(packageId)) {
+                case(null)();
+                case(?package) {
+                    for(id in package.challengeIds.vals()) {
+                        changeChallengeTaskStatus(id, package.userId, status);
                     };
                 };
             };
@@ -356,7 +371,38 @@ module PohModule {
             };
         };
 
-        public func createChallengePackageForVoting(userId: Principal, challengeIds: [Text], generateId: (Principal, Text) -> Text) : ?PohTypes.PohChallengePackage {
+        public func createChallengePackageForVoting(userId: Principal, challengeIds: [Text], 
+                        generateId: (Principal, Text) -> Text,
+                        getContentStatus: Text -> Types.ContentStatus) : ?PohTypes.PohChallengePackage {
+            for(packageId in state.userToPohChallengePackageId.get0(userId).vals()) {
+                switch(state.pohChallengePackages.get(packageId)) {
+                    case(null)();
+                    case(?package) {
+                        if(package.challengeIds.size() == challengeIds.size()) {
+                            let cIdsMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+                            for(id in package.challengeIds.vals()) {
+                                cIdsMap.put(id, id);
+                            };
+                            var allMatched = true;
+                            label l for(id in challengeIds.vals()) {
+                                switch(cIdsMap.get(id)) {
+                                    case(null) {
+                                        allMatched := false;
+                                        break l;
+                                    };
+                                    case(_)();
+                                };
+                            };
+                            // if package exists with same challenge and not voted approved/rejected
+                            // don't create a new package
+                            if(allMatched and getContentStatus(package.id) == #new) {
+                                return null;
+                            };
+                        };
+                    };
+                };
+            };
+
             do? {
                 let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
                 var allChallengeSubmitted = true;
@@ -377,12 +423,12 @@ module PohModule {
                     challengeIds =  challengeIds;
                     userId =  userId;
                     contentType = #pohPackage;
-                    status = #new;
                     title = ?("POH Content for User: " # Principal.toText(userId));
                     createdAt =  Helpers.timeNow();
                     updatedAt = Helpers.timeNow();
                 };
                 state.pohChallengePackages.put(pohPackage.id, pohPackage);
+                state.userToPohChallengePackageId.put(userId, pohPackage.id);
                 return ?pohPackage;
             };
         };
@@ -442,6 +488,59 @@ module PohModule {
                 
             };
             return pohTasks.toArray();
+        };
+
+        public func retrieveRejectedPackageId(userId: Principal, challengeIds: [Text]) : ?Text {
+            let packageIds = state.userToPohChallengePackageId.get0(userId);
+            if(packageIds.size() == 0) {
+                return null;
+            };
+            for(i in Iter.range(packageIds.size() - 1, 0)) {
+                switch(state.pohChallengePackages.get(packageIds.get(i))) {
+                    case(null)();
+                    case(?package) {
+                        if(package.challengeIds.size() == challengeIds.size()) {
+                            let cIdsMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+                            for(id in package.challengeIds.vals()) {
+                                cIdsMap.put(id, id);
+                            };
+                            var allMatched = true;
+                            label l for(id in challengeIds.vals()) {
+                                switch(cIdsMap.get(id)) {
+                                    case(null) {
+                                        allMatched := false;
+                                        break l;
+                                    };
+                                    case(_)();
+                                };
+                            };
+                            // if package exists with same challenge
+                            if(allMatched) {
+                                return ?package.id;
+                            };
+                        };
+                    };
+                };
+            };
+            return null;
+        };
+
+        public func resolveViolatedRulesById(violatedRules: [Types.PohRulesViolated]) : [Text] {
+            let buff = Buffer.Buffer<Text>(violatedRules.size());
+            for(vRule in violatedRules.vals()) {
+                switch(state.pohChallenges.get(vRule.challengeId)) {
+                    case(null)();
+                    case(?challenge) {
+                        label l for(allowedVRule in challenge.allowedViolationRules.vals()) {
+                            if(allowedVRule.ruleId == vRule.ruleId) {
+                                buff.add(allowedVRule.ruleDesc);
+                                break l;
+                            };
+                        };
+                    };
+                };
+            };
+            return buff.toArray();
         };
 
         public func getPohChallengePackage(packageId: Text) : ?PohTypes.PohChallengePackage {
@@ -624,6 +723,10 @@ module PohModule {
         };
 
         public func getStableState() : PohState.PohStableState {
+            return PohState.getStableState(state);
+        };
+
+        public func getStableStateV1() : PohState.PohStableState {
             return PohState.getStableState(state);
         };
     };

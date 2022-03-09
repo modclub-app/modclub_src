@@ -9,9 +9,8 @@ import {
 } from "react-bulma-components";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
-import { SignIn } from '../../auth/SignIn';
+import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
 import { Steps, Step } from "../../common/steps/Steps";
-import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
@@ -31,26 +30,25 @@ const Confirmation = () => {
 };
 
 export default function NewPohProfile({ match }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAuthReady } = useAuth();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)
   const [currentStep, setCurrentStep] = useState<string>('')
 
   const initialCall = async () => {
-    const verified = await verifyUserHumanity();
+    const response = await verifyUserHumanity();
 
-    const [status] = Object.keys(verified[0]);
-    if (status === "verified") {
+    if ('verified' in response.status) {
       history.push("/app");
       return
     }
 
-    const token = verified[1][0].token;
-    if (!token) return
+    const token = response.token;
+    if (!token.length) return
 
-    const challenges = await retrieveChallengesForUser(token);
-    setLoading(false);
+    const challenges = await retrieveChallengesForUser(token[0].token);
+    setLoading(false);``
     setSteps(challenges["ok"]);
 
     const uncompleted = challenges["ok"].find(challenge => {
@@ -62,7 +60,7 @@ export default function NewPohProfile({ match }) {
   }
 
   useEffect(() => {
-    initialCall();
+    isAuthenticated && initialCall();
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -72,19 +70,8 @@ export default function NewPohProfile({ match }) {
     })
   }, [history])
 
-  if (!isAuthenticated) return (
-    <Columns centered vCentered className="mt-6">
-      <Columns.Column size={6}>
-        <Card>
-          <Card.Content className="has-text-centered">
-            <p className="my-6">You need to be logged in to view this page</p>
-            <div style={{ width: 200, margin: "auto" }}>
-              <SignIn />
-            </div>
-          </Card.Content>
-        </Card>
-      </Columns.Column>
-    </Columns>
+  if (isAuthReady && !isAuthenticated) return (
+    <NotAuthenticatedModal />
   );
 
   return (
@@ -111,7 +98,6 @@ export default function NewPohProfile({ match }) {
             <Card backgroundColor="dark" className="mt-6">
               <Card.Content>                
                 <Switch>
-                  <Route path={`${match.path}/:challenge-profile-details`} component={ProfileDetails}/>
                   <Route path={`${match.path}/:challenge-profile-pic`} component={ProfilePic}/>
                   <Route path={`${match.path}/:challenge-user-video`}>
                     {steps && <UserVideo steps={steps} />}
