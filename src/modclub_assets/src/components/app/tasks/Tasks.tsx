@@ -60,7 +60,7 @@ const Task = ({ task, setVoted }) => {
             <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
           )}
           {'htmlContent' in task.contentType && (
-            <div className="htmlContent preview">
+            <div className="htmlContent content preview">
               <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text) }} />
             </div>
           )}

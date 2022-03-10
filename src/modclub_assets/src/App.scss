@@ -804,4 +804,21 @@ input[type='number']::-webkit-inner-spin-button {
   }
 }
 
+.content {
+  h1, h2, h3, h4, h5, h6, table thead td, table thead th, strong {
+    color: #fff;
+  }
 
+  hr {
+    background: #383838;
+  }
+  
+  pre, blockquote {
+    background: #212121;
+    color: #c4c4c4;
+  }
+
+  blockquote {
+    border-color: #c4c4c4;
+  }
+}

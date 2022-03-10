@@ -81,12 +81,12 @@ export default function Task() {
                   <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
                 )}
                 {'htmlContent' in task.contentType && (
-                  <div className="htmlContent">
+                  <div className="htmlContent content">
                     <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text) }} />
                   </div>
                 )}
 
-                <Card backgroundColor="dark" className="mt-5">
+                {/* <Card backgroundColor="dark" className="mt-5">
                   <Card.Content>
                     <Heading subtitle>
                       Additional Information
@@ -108,7 +108,7 @@ export default function Task() {
                       info="This post looked suspicious please review as we are not sure"
                     />
                   </Card.Content>
-                </Card>
+                </Card> */}
               </Card.Content>
               <Card.Footer className="pt-0" style={{ border: 0 }}>
                 <Button.Group>
