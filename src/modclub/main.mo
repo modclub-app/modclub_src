@@ -421,15 +421,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
   };
 
-
-  public shared({ caller }) func verifyUserHumanityAPI() : async {status: PohTypes.PohChallengeStatus; token: ?PohTypes.PohUniqueToken} {
-    let response =  await verifyForHumanity(caller);
-    if(response.status != #verified) {
-      return {status = response.status; token =  ?(await generateUniqueToken(caller))};
-    };
-    return {status = response.status; token =  null};
-  };
-
   public shared({ caller }) func verifyUserHumanity() : async PohTypes.VerifyHumanityResponse {
     // TODO add security check
     Debug.print("Verifying humanity called by: " # Principal.toText(caller));
@@ -466,7 +457,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   public shared({ caller }) func populateChallenges() : async () {
     Debug.print("Populating challenges called by: " # Principal.toText(caller));
-    await onlyOwner(caller);
+    await AuthManager.onlyOwner(caller, initializer);
     pohEngine.populateChallenges();
   };
 
@@ -584,7 +575,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func votePohContent(packageId: Text, decision: Types.Decision, violatedRules: [Types.PohRulesViolated]) : async () {
-    switch(checkProfilePermission(caller, #vote)){
+    switch(AuthManager.checkProfilePermission(caller, #vote, state)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -640,7 +631,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   public shared({ caller }) func issueJwt() : async Text {
     Debug.print("Issue JWT called by " # Principal.toText(caller));
-    switch(checkProfilePermission(caller, #vote)){
+    switch(AuthManager.checkProfilePermission(caller, #vote, state)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -665,18 +656,18 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Helpers
   public shared({caller}) func adminInit() : async () {
-    await onlyOwner(caller);
+    await AuthManager.onlyOwner(caller, initializer);
     await generateSigningKey();
     await populateChallenges();
   };
 
   public shared({caller}) func retiredDataCanisterIdForWriting(canisterId: Text) {
-    await onlyOwner(caller);
+    await AuthManager.onlyOwner(caller, initializer);
     storageSolution.retiredDataCanisterId(canisterId);
   };
 
   public shared({caller}) func getAllDataCanisterIds() : async ([Principal], [Text]) {
-    await onlyOwner(caller);
+    await AuthManager.onlyOwner(caller, initializer);
     let allDataCanisterId = storageSolution.getAllDataCanisterIds();
     let retired = storageSolution.getRetiredDataCanisterIdsStable();
     (allDataCanisterId, retired);
@@ -699,7 +690,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public func whoami () : async Principal {
         Principal.fromActor(this);
   };
-
 
    public shared({ caller }) func addProviderAdmin( userId: Principal) : async Types.ProviderResult {
     var authorized = false;
@@ -730,7 +720,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     // Add the user to the provider admin list
     let now = Helpers.timeNow();
 
-    let adminProfile : Profile = {
+    let adminProfile : Types.Profile = {
       id = userId;
       userName = "Safi";
       email = "";
