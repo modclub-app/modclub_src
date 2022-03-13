@@ -14,8 +14,8 @@ module ContentModule {
         return getContentPlus(id, ?userId, voteCount, state);  
     };
 
-    public func submitText(caller: Principal, sourceId: Text, text: Text, title: ?Text, state: GlobalState.State) : Text {
-        let content = createContentObj(sourceId, caller, #text, title, state);
+    public func submitTextOrHtmlContent(caller: Principal, sourceId: Text, text: Text, title: ?Text, contentType: Types.ContentType, state: GlobalState.State) : Text {
+        let content = createContentObj(sourceId, caller, contentType, title, state);
         let textContent : Types.TextContent = {
         id = content.id;
         text = text;
