@@ -13,6 +13,7 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Types "../../types";
 
 module PohModule {
 
@@ -370,9 +371,12 @@ module PohModule {
             };
         };
 
-        public func createChallengePackageForVoting(userId: Principal, challengeIds: [Text], 
-                        generateId: (Principal, Text) -> Text,
-                        getContentStatus: Text -> Types.ContentStatus) : ?PohTypes.PohChallengePackage {
+        public func createChallengePackageForVoting(
+            userId: Principal,
+            challengeIds: [Text], 
+            generateId: (Principal, Text) -> Text,
+            getContentStatus: Text -> Types.ContentStatus) 
+            : ?PohTypes.PohChallengePackage {
             for(packageId in state.userToPohChallengePackageId.get0(userId).vals()) {
                 switch(state.pohChallengePackages.get(packageId)) {
                     case(null)();

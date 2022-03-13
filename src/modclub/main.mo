@@ -45,9 +45,6 @@ import RelObj "./data_structures/RelObj";
 import Canistergeek "./canistergeek/canistergeek";
 import LoggerTypesModule "./canistergeek/logger/typesModule";
 
-
-import Helpers "./helpers";
-
 shared ({caller = initializer}) actor class ModClub () = this {
 
   // Constants
@@ -100,7 +97,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   // ----------------------Airdrop Methods------------------------------
   public shared({ caller }) func airdropRegister() : async Types.AirdropUser {
     await AirDropManager.airdropRegister(caller, state);
-  }
+  };
 
   public shared({ caller }) func isAirdropRegistered() : async Types.AirdropUser {
     await AirDropManager.isAirdropRegistered(caller, state);
@@ -124,7 +121,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
-    await onlyOwner(caller);
+     await AuthManager.onlyOwner(caller, initializer);
     voteManager.addToAutoApprovedPOHUser(userId);
   };
 
@@ -330,7 +327,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   //----------------------POH Methods For Providers------------------------------
-  
+
   public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
     pohVerificationRequestHelper(providerUserId, caller);
   };
@@ -372,7 +369,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Admin method to create new attempts
   public shared({ caller }) func resetUserChallengeAttempt(packageId: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await onlyOwner(caller);
+    await AuthManager.onlyOwner(caller, initializer);
     switch(pohEngine.getPohChallengePackage(packageId)) {
       case(null) {
         throw Error.reject("Package doesn't exist");
@@ -433,7 +430,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return {status = response.status; token =  null};
   };
 
-  public shared({ caller }) func verifyUserHumanity() : async VerifyHumanityResponse {
+  public shared({ caller }) func verifyUserHumanity() : async PohTypes.VerifyHumanityResponse {
     // TODO add security check
     Debug.print("Verifying humanity called by: " # Principal.toText(caller));
     var rejectionReasons: [Text] = [];
@@ -586,7 +583,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
         canistergeekLogger.getLog(request);
   };
 
-  public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
+  public shared({ caller }) func votePohContent(packageId: Text, decision: Types.Decision, violatedRules: [Types.PohRulesViolated]) : async () {
     switch(checkProfilePermission(caller, #vote)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
@@ -685,7 +682,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     (allDataCanisterId, retired);
   };
 
-  private func getProviderRules(providerId: Principal) : [Rule] {
+  private func getProviderRules(providerId: Principal) : [Types.Rule] {
       let buf = Buffer.Buffer<Types.Rule>(0);
       for(ruleId in state.provider2rules.get0(providerId).vals()){
         switch(state.rules.get(ruleId)){
@@ -758,9 +755,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
     #ok();
   };
 
-  private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {
+  private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
     let now = Helpers.timeNow();
-    let content : Content  = {
+    let content : Types.Content  = {
         id = generateId(caller, "content");
         providerId = caller;
         contentType = contentType;
