@@ -8,8 +8,6 @@ import Types "../../types";
 
 
 module AuthModule {
-
-
     public func onlyOwner(p: Principal, owner: Principal) : async() {
         if( p != owner) throw Error.reject( "unauthorized" );
     };
@@ -57,5 +55,19 @@ module AuthModule {
         };
         #ok();
   }; 
+
+        public func checkProviderAdminPermission(p: Principal, admin: Principal, state: GlobalState.State) : async Types.ProviderResult {
+        switch(state.providerAdmins.get(p)) {
+            case (null) return #err(#NotFound);
+            case (?adminMap) {
+            switch(adminMap.get(admin)) {
+                case (null) return #err(#Unauthorized);
+                case(?_) {
+                    return #ok();
+                };
+            };
+            };
+        };
+    };
 
 };

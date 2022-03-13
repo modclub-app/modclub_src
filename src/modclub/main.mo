@@ -709,7 +709,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
     // Check if the caller is an admin of this provider
     if(isProvider == false) {
-        switch(await checkProviderAdminPermission(_providerId, caller)) {
+        switch(await AuthManager.checkProviderAdminPermission(_providerId, caller, state)) {
           case (#err(error)) return #err(error);
           case (#ok()) authorized := true;
         };

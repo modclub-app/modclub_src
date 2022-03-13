@@ -25,12 +25,12 @@ export const idlFactory = ({ IDL }) => {
   const ContentType = IDL.Variant({
     'imageBlob' : IDL.Null,
     'text' : IDL.Null,
+    'htmlContent' : IDL.Null,
     'imageUrl' : IDL.Null,
     'multiText' : IDL.Null,
-    'pohPackage' : IDL.Null,
   });
   const VoteId = IDL.Text;
-  const Decision__1 = IDL.Variant({
+  const Decision = IDL.Variant({
     'approved' : IDL.Null,
     'rejected' : IDL.Null,
   });
@@ -39,7 +39,7 @@ export const idlFactory = ({ IDL }) => {
   const Vote = IDL.Record({
     'id' : VoteId,
     'contentId' : IDL.Text,
-    'decision' : Decision__1,
+    'decision' : Decision,
     'userId' : UserId,
     'createdAt' : Timestamp,
     'violatedRules' : IDL.Opt(IDL.Vec(RuleId)),
@@ -60,13 +60,13 @@ export const idlFactory = ({ IDL }) => {
     'providerName' : IDL.Text,
     'providerId' : ProviderId,
   });
-  const ContentId__1 = IDL.Text;
-  const Image__1 = IDL.Record({
+  const ContentId = IDL.Text;
+  const Image = IDL.Record({
     'imageType' : IDL.Text,
     'data' : IDL.Vec(IDL.Nat8),
   });
   const ContentPlus = IDL.Record({
-    'id' : ContentId__1,
+    'id' : ContentId,
     'status' : ContentStatus,
     'title' : IDL.Opt(IDL.Text),
     'voteCount' : IDL.Nat,
@@ -78,7 +78,7 @@ export const idlFactory = ({ IDL }) => {
     'minStake' : IDL.Nat,
     'updatedAt' : Timestamp,
     'providerName' : IDL.Text,
-    'image' : IDL.Opt(Image__1),
+    'image' : IDL.Opt(Image),
     'hasVoted' : IDL.Opt(IDL.Bool),
     'providerId' : IDL.Principal,
   });
@@ -89,12 +89,55 @@ export const idlFactory = ({ IDL }) => {
   });
   const Profile = IDL.Record({
     'id' : UserId,
-    'pic' : IDL.Opt(Image__1),
+    'pic' : IDL.Opt(Image),
     'userName' : IDL.Text,
     'createdAt' : Timestamp,
     'role' : Role,
     'email' : IDL.Text,
     'updatedAt' : Timestamp,
+  });
+  const GetLogMessagesFilter = IDL.Record({
+    'analyzeCount' : IDL.Nat32,
+    'messageRegex' : IDL.Opt(IDL.Text),
+    'messageContains' : IDL.Opt(IDL.Text),
+  });
+  const Nanos = IDL.Nat64;
+  const GetLogMessagesParameters = IDL.Record({
+    'count' : IDL.Nat32,
+    'filter' : IDL.Opt(GetLogMessagesFilter),
+    'fromTimeNanos' : IDL.Opt(Nanos),
+  });
+  const GetLatestLogMessagesParameters = IDL.Record({
+    'upToTimeNanos' : IDL.Opt(Nanos),
+    'count' : IDL.Nat32,
+    'filter' : IDL.Opt(GetLogMessagesFilter),
+  });
+  const CanisterLogRequest = IDL.Variant({
+    'getMessagesInfo' : IDL.Null,
+    'getMessages' : GetLogMessagesParameters,
+    'getLatestMessages' : GetLatestLogMessagesParameters,
+  });
+  const CanisterLogFeature = IDL.Variant({
+    'filterMessageByContains' : IDL.Null,
+    'filterMessageByRegex' : IDL.Null,
+  });
+  const CanisterLogMessagesInfo = IDL.Record({
+    'features' : IDL.Vec(IDL.Opt(CanisterLogFeature)),
+    'lastTimeNanos' : IDL.Opt(Nanos),
+    'count' : IDL.Nat32,
+    'firstTimeNanos' : IDL.Opt(Nanos),
+  });
+  const LogMessagesData = IDL.Record({
+    'timeNanos' : Nanos,
+    'message' : IDL.Text,
+  });
+  const CanisterLogMessages = IDL.Record({
+    'data' : IDL.Vec(LogMessagesData),
+    'lastAnalyzedMessageTimeNanos' : IDL.Opt(Nanos),
+  });
+  const CanisterLogResponse = IDL.Variant({
+    'messagesInfo' : CanisterLogMessagesInfo,
+    'messages' : CanisterLogMessages,
   });
   const MetricsGranularity = IDL.Variant({
     'hourly' : IDL.Null,
@@ -235,7 +278,7 @@ export const idlFactory = ({ IDL }) => {
     'updatedAt' : Timestamp,
     'settings' : ProviderSettings,
     'activeCount' : IDL.Nat,
-    'image' : IDL.Opt(Image__1),
+    'image' : IDL.Opt(Image),
     'rules' : IDL.Vec(Rule),
   });
   const PohUniqueToken = IDL.Record({ 'token' : IDL.Text });
@@ -251,10 +294,6 @@ export const idlFactory = ({ IDL }) => {
     'challenges' : IDL.Vec(ChallengeResponse),
     'requestedOn' : IDL.Int,
     'providerUserId' : IDL.Principal,
-  });
-  const Image = IDL.Record({
-    'imageType' : IDL.Text,
-    'data' : IDL.Vec(IDL.Nat8),
   });
   const PohChallengesAttempt = IDL.Record({
     'dataCanisterId' : IDL.Opt(IDL.Principal),
@@ -309,11 +348,7 @@ export const idlFactory = ({ IDL }) => {
   const VerifyHumanityResponse = IDL.Record({
     'status' : PohChallengeStatus,
     'token' : IDL.Opt(PohUniqueToken),
-  });
-  const ContentId = IDL.Text;
-  const Decision = IDL.Variant({
-    'approved' : IDL.Null,
-    'rejected' : IDL.Null,
+    'rejectionReasons' : IDL.Vec(IDL.Text),
   });
   const PohRulesViolated = IDL.Record({
     'ruleId' : IDL.Text,
@@ -326,7 +361,6 @@ export const idlFactory = ({ IDL }) => {
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'adminInit' : IDL.Func([], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
-    'checkUsernameAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'collectCanisterMetrics' : IDL.Func([], [], []),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'generateSigningKey' : IDL.Func([], [], []),
@@ -338,7 +372,17 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ContentPlus)],
         ['query'],
       ),
+    'getAllDataCanisterIds' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Principal), IDL.Vec(IDL.Text)],
+        [],
+      ),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
+    'getCanisterLog' : IDL.Func(
+        [IDL.Opt(CanisterLogRequest)],
+        [IDL.Opt(CanisterLogResponse)],
+        ['query'],
+      ),
     'getCanisterMetrics' : IDL.Func(
         [GetMetricsParameters],
         [IDL.Opt(CanisterMetrics)],
@@ -359,7 +403,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
-    'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], ['query']),
+    'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], []),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
@@ -385,11 +429,17 @@ export const idlFactory = ({ IDL }) => {
       ),
     'removeRules' : IDL.Func([IDL.Vec(RuleId)], [], ['oneway']),
     'resetUserChallengeAttempt' : IDL.Func([IDL.Text], [Result], []),
+    'retiredDataCanisterIdForWriting' : IDL.Func([IDL.Text], [], ['oneway']),
     'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result], []),
     'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'submitChallengeData' : IDL.Func(
         [PohChallengeSubmissionRequest],
         [PohChallengeSubmissionResponse],
+        [],
+      ),
+    'submitHtmlContent' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+        [IDL.Text],
         [],
       ),
     'submitImage' : IDL.Func(

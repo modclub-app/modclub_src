@@ -3,7 +3,7 @@ type Vote =
  record {
    contentId: text;
    createdAt: Timestamp;
-   decision: Decision__1;
+   decision: Decision;
    id: VoteId;
    userId: UserId;
    violatedRules: opt vec RuleId;
@@ -15,6 +15,7 @@ type ViolatedRules =
  };
 type VerifyHumanityResponse = 
  record {
+   rejectionReasons: vec text;
    status: PohChallengeStatus;
    token: opt PohUniqueToken;
  };
@@ -61,7 +62,7 @@ type ProviderPlus =
    createdAt: Timestamp;
    description: text;
    id: principal;
-   image: opt Image__1;
+   image: opt Image;
    name: text;
    rewardsSpent: nat;
    rules: vec Rule;
@@ -84,7 +85,7 @@ type Profile =
    createdAt: Timestamp;
    email: text;
    id: UserId;
-   pic: opt Image__1;
+   pic: opt Image;
    role: Role;
    updatedAt: Timestamp;
    userName: text;
@@ -225,6 +226,7 @@ type NumericEntity =
    max: nat64;
    min: nat64;
  };
+type Nanos = nat64;
 type ModeratorLeaderboard = 
  record {
    completedVoteCount: int;
@@ -242,7 +244,6 @@ type ModClub =
    addToApprovedUser: (principal) -> ();
    adminInit: () -> ();
    airdropRegister: () -> (AirdropUser);
-   checkUsernameAvailable: (text) -> (bool) query;
    collectCanisterMetrics: () -> ();
    deregisterProvider: () -> (text);
    generateSigningKey: () -> ();
@@ -250,7 +251,10 @@ type ModClub =
    getAirdropUsers: () -> (vec AirdropUser);
    getAirdropWhitelist: () -> (vec principal);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
+   getAllDataCanisterIds: () -> (vec principal, vec text);
    getAllProfiles: () -> (vec Profile) query;
+   getCanisterLog: (opt CanisterLogRequest) ->
+    (opt CanisterLogResponse) query;
    getCanisterMetrics: (GetMetricsParameters) -> (opt CanisterMetrics) query;
    getContent: (text) -> (opt ContentPlus) query;
    getModclubHoldings: () -> (Holdings) query;
@@ -259,7 +263,7 @@ type ModClub =
    getPohTasks: (ContentStatus, nat, nat) -> (vec PohTaskPlus) query;
    getProfile: () -> (Profile) query;
    getProfileById: (principal) -> (Profile) query;
-   getProvider: (principal) -> (ProviderPlus) query;
+   getProvider: (principal) -> (ProviderPlus);
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTokenHoldings: () -> (Holdings) query;
@@ -273,10 +277,12 @@ type ModClub =
    registerProvider: (text, text, opt Image) -> (text);
    removeRules: (vec RuleId) -> () oneway;
    resetUserChallengeAttempt: (text) -> (Result);
+   retiredDataCanisterIdForWriting: (text) -> () oneway;
    retrieveChallengesForUser: (text) -> (Result);
    stakeTokens: (nat) -> (text);
    submitChallengeData: (PohChallengeSubmissionRequest) ->
     (PohChallengeSubmissionResponse);
+   submitHtmlContent: (text, text, opt text) -> (text);
    submitImage: (text, vec nat8, text, opt text) -> (text);
    submitText: (text, text, opt text) -> (text);
    subscribe: (SubscribeMessage) -> ();
@@ -293,10 +299,10 @@ type MetricsGranularity =
    daily;
    hourly;
  };
-type Image__1 = 
+type LogMessagesData = 
  record {
-   data: vec nat8;
-   imageType: text;
+   message: text;
+   timeNanos: Nanos;
  };
 type Image = 
  record {
@@ -323,10 +329,23 @@ type GetMetricsParameters =
    dateToMillis: nat;
    granularity: MetricsGranularity;
  };
-type Decision__1 = 
- variant {
-   approved;
-   rejected;
+type GetLogMessagesParameters = 
+ record {
+   count: nat32;
+   filter: opt GetLogMessagesFilter;
+   fromTimeNanos: opt Nanos;
+ };
+type GetLogMessagesFilter = 
+ record {
+   analyzeCount: nat32;
+   messageContains: opt text;
+   messageRegex: opt text;
+ };
+type GetLatestLogMessagesParameters = 
+ record {
+   count: nat32;
+   filter: opt GetLogMessagesFilter;
+   upToTimeNanos: opt Nanos;
  };
 type Decision = 
  variant {
@@ -343,10 +362,10 @@ type DailyMetricsData =
  };
 type ContentType = 
  variant {
+   htmlContent;
    imageBlob;
    imageUrl;
    multiText;
-   pohPackage;
    "text";
  };
 type ContentStatus = 
@@ -365,8 +384,8 @@ type ContentPlus =
    contentType: ContentType;
    createdAt: Timestamp;
    hasVoted: opt bool;
-   id: ContentId__1;
-   image: opt Image__1;
+   id: ContentId;
+   image: opt Image;
    minStake: nat;
    minVotes: nat;
    providerId: principal;
@@ -378,7 +397,6 @@ type ContentPlus =
    updatedAt: Timestamp;
    voteCount: nat;
  };
-type ContentId__1 = text;
 type ContentId = text;
 type ChallengeResponse = 
  record {
@@ -393,6 +411,34 @@ type CanisterMetricsData =
  };
 type CanisterMetrics = record {data: CanisterMetricsData;};
 type CanisterMemoryAggregatedData = vec nat64;
+type CanisterLogResponse = 
+ variant {
+   messages: CanisterLogMessages;
+   messagesInfo: CanisterLogMessagesInfo;
+ };
+type CanisterLogRequest = 
+ variant {
+   getLatestMessages: GetLatestLogMessagesParameters;
+   getMessages: GetLogMessagesParameters;
+   getMessagesInfo;
+ };
+type CanisterLogMessagesInfo = 
+ record {
+   count: nat32;
+   features: vec opt CanisterLogFeature;
+   firstTimeNanos: opt Nanos;
+   lastTimeNanos: opt Nanos;
+ };
+type CanisterLogMessages = 
+ record {
+   data: vec LogMessagesData;
+   lastAnalyzedMessageTimeNanos: opt Nanos;
+ };
+type CanisterLogFeature = 
+ variant {
+   filterMessageByContains;
+   filterMessageByRegex;
+ };
 type CanisterHeapMemoryAggregatedData = vec nat64;
 type CanisterCyclesAggregatedData = vec nat64;
 type AirdropUser = 
