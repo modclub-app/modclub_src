@@ -9,6 +9,7 @@ type ModclubProvider =
    submitText: (text, text, opt text) -> (text);
    subscribe: () -> ();
    test: () -> (text);
+   testDataCanisterStorage: () -> (principal, principal, text);
    updateSettings: (nat, nat) -> ();
    voteResult: (ContentResult) -> () oneway;
  };

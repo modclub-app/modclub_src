@@ -13,9 +13,10 @@ import {
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
-import ApproveReject from "../modals/ApproveReject";
+import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
+import sanitizeHtml from "sanitize-html-react";
 
 const Task = ({ task, setVoted }) => {
   const [rules, setRules] = useState([]);
@@ -25,11 +26,12 @@ const Task = ({ task, setVoted }) => {
     return fileToImgSrc(image.data, image.imageType);
   }
 
+  const fetchRules = async () => {
+    const rules = await getProviderRules(task.providerId);
+    setRules(rules);
+  };
+
   useEffect(() => {
-    const fetchRules = async () => {
-      const rules = await getProviderRules(task.providerId);
-      setRules(rules);
-    };
     fetchRules();
   }, []);
 
@@ -50,11 +52,19 @@ const Task = ({ task, setVoted }) => {
           <Heading subtitle>
             {task.title}
           </Heading>
-          {'imageBlob' in task.contentType ?
-            <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
-            :
+
+          {'text' in task.contentType && (
             <p>{task.text}</p>
-          }
+          )}
+          {'imageBlob' in task.contentType && (
+            <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
+          )}
+          {'htmlContent' in task.contentType && (
+            <div className="htmlContent content preview">
+              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text) }} />
+            </div>
+          )}
+
           <Link to={`/app/tasks/${task.id}`} className="button is-block mt-4" style={{ width: 100, margin: "auto" }}>
             See More
           </Link>
@@ -82,7 +92,7 @@ const Task = ({ task, setVoted }) => {
                 rules={rules}
               />
             </div>
-            <ApproveReject
+            <TaskConfirmationModal
               task={task}
               onUpdate={() => setVoted(true)}
             />
@@ -101,15 +111,14 @@ export default function Tasks() {
   const fetchTasks = async () => {
     const status = { "new": null };
     const content = await getAllContent(status);
+    console.log("content", content);
     setTasks(content);
   }
 
   useEffect(() => {
-    user && fetchTasks();
+    user && !tasks && fetchTasks();
     setVoted(false);
   }, [user, voted]);
-
-  if (!isAuthenticated) return (<div>You need to be logged in to view this page</div>);
   
   return (
     <>

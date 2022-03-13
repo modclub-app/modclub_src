@@ -1,19 +1,33 @@
+import Array "mo:base/Array";
+import Base32 "mo:encoding/Base32";
+import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
+import HashMap "mo:base/HashMap";
+import Helpers "./helpers";
+import IC "./remote_canisters/IC";
+import Int "mo:base/Int";
+import Iter "mo:base/Iter";
 import ModClubParam "service/parameters/params";
 import Nat "mo:base/Nat";
-
+import Option "mo:base/Option";
+import Order "mo:base/Order";
+import Random "mo:base/Random";
 import POH "./service/poh/poh";
 import PohState "./service/poh/state";
+import PohStateV1 "./service/poh/statev1";
 import PohTypes "./service/poh/types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import State "./state";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
+import Text "mo:base/Text";
+import Time "mo:base/Time";
+import Prim "mo:prim";
 import Token "./token";
 import Types "./types";
 
@@ -26,6 +40,12 @@ import AuthManager "./service/auth/auth";
 import ContentManager "./service/content/content";
 import ContentVotingManager "./service/content/vote";
 
+import RelObj "./data_structures/RelObj";
+
+import Canistergeek "./canistergeek/canistergeek";
+import LoggerTypesModule "./canistergeek/logger/typesModule";
+
+
 import Helpers "./helpers";
 
 shared ({caller = initializer}) actor class ModClub () = this {
@@ -33,6 +53,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
 
+  stable var signingKey = "";
   // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
   // Global Objects 
@@ -43,24 +64,43 @@ shared ({caller = initializer}) actor class ModClub () = this {
   );
   
   stable var storageStateStable  = StorageState.emptyStableState();
-  // Will be updated with this in postupgrade. Motoko not allowing to use "this" here
-  var storageSolution = StorageSolution.StorageSolution(storageStateStable, initializer, initializer);
+  stable var retiredDataCanisterId : [Text] = [];
+  // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
+  var storageSolution = StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, initializer, initializer, signingKey);
 
   stable var pohStableState = PohState.emptyStableState();
-  var pohEngine = POH.PohEngine(pohStableState);
+  stable var pohStableStateV1 = PohStateV1.emptyStableState();
+  var pohEngine = POH.PohEngine(pohStableStateV1);
 
   stable var pohVoteStableState = VoteState.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
+
+  stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
+  private let canistergeekMonitor = Canistergeek.Monitor();
+
+  stable var _canistergeekLoggerUD: ? Canistergeek.LoggerUpgradeData = null;
+  private let canistergeekLogger = Canistergeek.Logger();
 
   public shared({ caller }) func toggleAllowSubmission(allow: Bool) : async () {
     await AuthManager.onlyOwner(caller, initializer);
     allowSubmissionFlag := allow;
   };
 
+  public shared({ caller }) func generateSigningKey() : async () {
+    await AuthManager.onlyOwner(caller, initializer);
+    switch(Helpers.encodeNat8ArraytoBase32(Blob.toArray(await Random.blob()))) {
+      case(null){throw Error.reject("Couldn't generate key");};
+      case(?key) {
+        signingKey := key;
+        await storageSolution.setSigningKey(signingKey);
+      };
+    };
+  };
+
   // ----------------------Airdrop Methods------------------------------
   public shared({ caller }) func airdropRegister() : async Types.AirdropUser {
     await AirDropManager.airdropRegister(caller, state);
-  };
+  }
 
   public shared({ caller }) func isAirdropRegistered() : async Types.AirdropUser {
     await AirDropManager.isAirdropRegistered(caller, state);
@@ -81,6 +121,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func getAirdropWhitelist() : async [Principal] {
     await AuthManager.onlyOwner(caller, initializer);
     AirDropManager.getAirdropWhitelist(state);
+  };
+
+  public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
+    await onlyOwner(caller);
+    voteManager.addToAutoApprovedPOHUser(userId);
   };
 
   // ----------------------Provider Methods------------------------------
@@ -132,6 +177,32 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
     await AuthManager.checkProviderPermission(caller, state);
     return ContentManager.submitText(caller, sourceId, text, title, state);
+    
+    // Todo update this
+    // submitTextOrHtmlContent(caller, sourceId, text, title, #text);
+  };
+
+  public shared({ caller }) func submitHtmlContent(sourceId: Text, htmlContent: Text, title: ?Text) : async Text {
+    if(allowSubmissionFlag == false) {
+      throw Error.reject("Submissions are disabled");
+    };
+    await checkProviderPermission(caller);
+
+    submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent);
+  };
+
+  func submitTextOrHtmlContent(caller: Principal, sourceId: Text, contentText: Text, title: ?Text, contentType: Types.ContentType) : Text {
+    let content = createContentObj(sourceId, caller, contentType, title);
+    let textContent : TextContent = {
+      id = content.id;
+      text = contentText;
+    };
+    // Store and update relationships
+    state.content.put(content.id, content);
+    state.textContent.put(content.id, textContent);
+    state.provider2content.put(caller, content.id);
+    state.contentNew.put(caller, content.id);
+    return content.id;
   };
   
   public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
@@ -162,10 +233,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
-    // switch(state.airdropWhitelist.get(caller)){
-    //   case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
-    //   case(_) ();
-    // };
+    switch(state.airdropWhitelist.get(caller)){
+      case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
+      case(_) ();
+    };
     let profile = await ModeratorManager.registerModerator(caller, userName, email, pic, state);
     // Todo: Remove this after testnet
     // Give new users MOD points
@@ -246,32 +317,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
     }
   };
 
-  // Todo: Enable updating profile at a later time
-  // public shared({ caller }) func updateProfile(userName: Text, email: Text, pic: ?Image) : async Profile {
-  //     switch(state.profiles.get(caller)){
-  //       case (null) throw Error.reject("profile not found");
-  //       case (?result) {
-  //         switch( await checkUsernameAvailable(userName) ) {
-  //           case(true) {
-  //             let now = Helpers.timeNow();
-  //             let profile = {
-  //               id = caller;
-  //               userName = userName;
-  //               pic = pic;
-  //               email = email;
-  //               role = result.role;
-  //               createdAt = result.createdAt;
-  //               updatedAt = now;
-  //             };
-  //             state.profiles.put(caller, profile);
-  //             return profile;
-  //           };
-  //           case(false) throw Error.reject("username already taken");
-  //         };
-  //       };
-  //     };
-  // };
-
   public shared({ caller }) func vote(contentId: Types.ContentId, decision: Types.Decision, violatedRules: ?[Types.RuleId]) : async Text {
     
     switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
@@ -305,20 +350,72 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func verifyForHumanity(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
     let pohVerificationRequest: PohTypes.PohVerificationRequest = {
         requestId = Helpers.generateId(caller, "pohRequest", state);
+    }
+    //TODO FiX this
+    let pohVerificationResponse: PohTypes.PohVerificationResponse = {
+        requestId = pohVerificationRequest.requestId,
+        status = PohTypes.PohVerificationStatus.PENDING,
+        providerUserId = providerUserId,
+        provider = caller,
+        timestamp = Timestamp.now(),
+        pohRequest = pohVerificationRequest,
+    };
+  };
+  // POH Methods
+  // Method called by provider
+  public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
+    pohVerificationRequestHelper(providerUserId, caller);
+  };
+
+  private func pohVerificationRequestHelper(providerUserId: Principal, providerId: Principal) : PohTypes.PohVerificationResponse  {
+    if(voteManager.isAutoApprovedPOHUser(providerUserId)) {
+      return
+      {
+          requestId = "null";
+          providerUserId = providerId;
+          status = #verified;
+          challenges = [];
+          providerId = initializer;
+          requestedOn = Helpers.timeNow();
+      };
+    };
+    let pohVerificationRequest: PohTypes.PohVerificationRequest = {
+        requestId = generateId(providerId, "pohRequest");
         providerUserId = providerUserId;
-        providerId = caller;
+        providerId = providerId;
     };
     // validity and rules needs to come from admin dashboard here
-    await pohEngine.verifyForHumanity(pohVerificationRequest, 365, ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"]);
+    pohEngine.pohVerificationRequest(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
   };
   
-  public shared({ caller }) func generateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
-    await pohEngine.generateUniqueToken(providerUserId, caller);
+  // Method called by provider
+  public shared({ caller }) func pohGenerateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
+    await pohEngine.pohGenerateUniqueToken(providerUserId, caller);
   };
 
   //----------------------POH Methods For ModClub------------------------------
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await pohEngine.retrieveChallengesForUser(caller, token, ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"]);
+    let tokenResponse = pohEngine.decodeToken(caller, token);
+    if(tokenResponse == #err(#invalidToken)) {
+      return #err(#invalidToken);
+    };
+    await pohEngine.retrieveChallengesForUser(caller, ["challenge-profile-pic", "challenge-user-video"], false);
+  };
+
+  // Admin method to create new attempts
+  public shared({ caller }) func resetUserChallengeAttempt(packageId: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+    await onlyOwner(caller);
+    switch(pohEngine.getPohChallengePackage(packageId)) {
+      case(null) {
+        throw Error.reject("Package doesn't exist");
+      };
+      case(?package) {
+        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        voteManager.changePohPackageVotingStatus(packageId, #rejected);
+        await pohEngine.retrieveChallengesForUser(package.userId, ["challenge-profile-pic", "challenge-user-video"], true);
+      };
+    };
+   
   };
 
   public shared({ caller }) func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest) : async PohTypes.PohChallengeSubmissionResponse {
@@ -341,14 +438,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
         };
       };
       // TODO dynamic list will be fetched from admin dashboard state
-      let providerChallenges = ["challenge-profile-details", "challenge-profile-pic", "challenge-user-video"];
-      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId);
+      let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
+      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId, voteManager.getContentStatus);
       switch(challengePackage) {
         case(null)();
         case(?package) {
-          voteManager.initiateVotingPoh(package.id);
+          voteManager.initiateVotingPoh(package.id, caller);
+          if(voteManager.isAutoApprovedPOHUser(caller)) {
+            pohEngine.changeChallengePackageStatus(package.id, #verified);
+          };
         };
-      }
+      };
     };
     return {
       challengeId = pohDataRequest.challengeId;
@@ -356,13 +456,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
     };
   };
 
-  public shared({ caller }) func verifyUserHumanity() : async (PohTypes.PohChallengeStatus, ?PohTypes.PohUniqueToken)  {
-    let response =  await verifyForHumanity(caller);
-    if(response.status != #verified) {
-      return (response.status, ?(await generateUniqueToken(caller)));
-    };
-    return (response.status, null);
-  };
 
   public shared({ caller }) func verifyUserHumanityAPI() : async {status: PohTypes.PohChallengeStatus; token: ?PohTypes.PohUniqueToken} {
     let response =  await verifyForHumanity(caller);
@@ -372,18 +465,57 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return {status = response.status; token =  null};
   };
 
+  public shared({ caller }) func verifyUserHumanity() : async VerifyHumanityResponse {
+    // TODO add security check
+    Debug.print("Verifying humanity called by: " # Principal.toText(caller));
+    var rejectionReasons: [Text] = [];
+    if(voteManager.isAutoApprovedPOHUser(caller)) {
+      return {
+        status = #verified;
+        token = null;
+        rejectionReasons = rejectionReasons;
+      };
+    } else {
+      Debug.print("Calling pohVerificationRequest");
+      let result = await pohVerificationRequest(caller);
+      if(result.status == #rejected) {
+        let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, ["challenge-profile-pic", "challenge-user-video"]);
+        switch(rejectedPackageId) {
+          case(null)();
+          case(?id) {
+            let violatedRules = voteManager.getAllUniqueViolatedRules(id);
+            rejectionReasons := pohEngine.resolveViolatedRulesById(violatedRules);
+          }
+        };
+      };
+      if(result.status != #verified) {
+        return {
+          status = result.status;
+          token = ?(await pohGenerateUniqueToken(caller));
+          rejectionReasons = rejectionReasons;
+        };
+      };
+      return {status = result.status; token = null; rejectionReasons = rejectionReasons;};
+    }
+  };
+
   public shared({ caller }) func populateChallenges() : async () {
+    Debug.print("Populating challenges called by: " # Principal.toText(caller));
+    await onlyOwner(caller);
     pohEngine.populateChallenges();
   };
 
-  public query({ caller }) func getPohTasks(status: Types.ContentStatus) : async [PohTypes.PohTaskPlus] {
-     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
-       case(#err(e)) {
-         throw Error.reject("Unauthorized");
-       };
-       case(_)();
-     };
-    let pohTaskIds = voteManager.getTasksId(status, 10);
+  public query({ caller }) func getPohTasks(status: Types.ContentStatus, start: Nat, end: Nat) : async [PohTypes.PohTaskPlus] {
+    switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
+    let pohTaskIds = voteManager.getTasksId(status, start, end);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);
@@ -396,7 +528,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       for(wrapper in taskDataWrapper.vals()) {
         for(data in wrapper.pohTaskData.vals()) {
           if(data.challengeId == POH.CHALLENGE_PROFILE_DETAILS_ID) {
-            userName := data.userName;
+            // userName := data.userName;
             email := data.email;
             fullName := data.fullName;
             aboutUser := data.aboutUser;
@@ -413,6 +545,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
       switch(pohPackage) {
         case(null)();
         case(?package) {
+          switch(state.profiles.get(package.userId)){
+            case (null) ();
+            case (?result) userName := ?result.userName;
+          };
           let taskPlus = {
             packageId = id;
             status = voteManager.getContentStatus(id);
@@ -439,28 +575,68 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return tasks.toArray();
   };
 
-  public shared({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<[PohTypes.PohTaskData], PohTypes.PohError> {
-     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
-       case(#err(e)) {
-         throw Error.reject("Unauthorized");
-       };
-       case(_)();
-     };
+  public query({ caller }) func getPohTaskData(packageId: Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
+    switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
     let pohTasks = pohEngine.getPohTasks([packageId]);
     if(pohTasks.size() == 0) {
       return #err(#invalidPackageId);
     };
-    return #ok(pohTasks[0].pohTaskData);
+    let voteCount = voteManager.getVoteCountForPoh(caller, packageId);
+    #ok({
+        packageId = pohTasks[0].packageId;
+        pohTaskData = pohTasks[0].pohTaskData;
+        votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+        minVotes =  ModClubParam.MIN_VOTE_POH;
+        minStake = ModClubParam.MIN_STAKE_POH;
+        reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
+        createdAt = pohTasks[0].createdAt;
+        updatedAt = pohTasks[0].updatedAt;
+    });
   };
 
-  public shared({ caller }) func votePohContent(packageId: Text, decision: Types.Decision, violatedRules: [Types.PohRulesViolated]) : async () {
+  public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
+      // validateCaller(caller);
+      canistergeekMonitor.getMetrics(parameters);
+  };
+
+  public shared ({caller}) func collectCanisterMetrics(): async () {
+      // validateCaller(caller);
+      canistergeekMonitor.collectMetrics();
+  };
+
+  public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
+        // validateCaller(caller);
+        Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
+        canistergeekLogger.getLog(request);
+  };
+
+  public shared({ caller }) func votePohContent(packageId: Text, decision: Decision, violatedRules: [Types.PohRulesViolated]) : async () {
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if((await pohVerificationRequest(caller)).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
     let holdings = tokens.getHoldings(caller);
     if( holdings.stake < ModClubParam.MIN_STAKE_POH) { 
       throw Error.reject("Not enough tokens staked");
     };
-
+    if(voteManager.checkPohUserHasVoted(caller, packageId)) {
+      throw Error.reject("You have already voted");
+    };
     if(voteManager.getContentStatus(packageId) != #new) {
-      throw Error.reject("User has already voted.");
+      throw Error.reject("Vote has been finalized.");
     };
 
     if(pohEngine.validateRules(violatedRules) == false) {
@@ -471,6 +647,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(finishedVoting == #ok(true)) {
       let decision = voteManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
+      if(decision == #approved) {
+        pohEngine.changeChallengePackageStatus(packageId, #verified);
+      } else {
+        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+      };
       for(id in votesId.vals()) {
         let vote = voteManager.getPOHVote(id);
         switch(vote) {
@@ -485,14 +666,144 @@ shared ({caller = initializer}) actor class ModClub () = this {
             } else {
               // burn only some percentage
               await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
-            }
+            };
           };
         };
       };
     };
   };
 
-  
+  public shared({ caller }) func issueJwt() : async Text {
+    Debug.print("Issue JWT called by " # Principal.toText(caller));
+    switch(checkProfilePermission(caller, #vote)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    Debug.print("Issue JWT Check user humanity " # Principal.toText(caller));
+    if((await pohVerificationRequest(caller)).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
+    let message = Principal.toText(caller) # "." # Int.toText(Helpers.timeNow());
+    let signature = Helpers.generateHash(message # signingKey);
+    let base32Message = Helpers.encodeBase32(message);
+    switch(base32Message) {
+      case(null) {
+        throw Error.reject("Jwt creation failed");
+      };
+      case(?b32Message) {
+        return b32Message # "." # signature;
+      };
+    }
+  };
+
+  // Helpers
+  public shared({caller}) func adminInit() : async () {
+    await onlyOwner(caller);
+    await generateSigningKey();
+    await populateChallenges();
+  };
+
+  public shared({caller}) func retiredDataCanisterIdForWriting(canisterId: Text) {
+    await onlyOwner(caller);
+    storageSolution.retiredDataCanisterId(canisterId);
+  };
+
+  public shared({caller}) func getAllDataCanisterIds() : async ([Principal], [Text]) {
+    await onlyOwner(caller);
+    let allDataCanisterId = storageSolution.getAllDataCanisterIds();
+    let retired = storageSolution.getRetiredDataCanisterIdsStable();
+    (allDataCanisterId, retired);
+  };
+
+  private func getProviderRules(providerId: Principal) : [Rule] {
+      let buf = Buffer.Buffer<Types.Rule>(0);
+      for(ruleId in state.provider2rules.get0(providerId).vals()){
+        switch(state.rules.get(ruleId)){
+          case(?rule){
+            buf.add(rule);
+          };
+          case(_)();
+        };
+      };
+      buf.toArray();
+  };
+
+  // Return the principal identifier of this canister.
+  public func whoami () : async Principal {
+        Principal.fromActor(this);
+  };
+
+
+   public shared({ caller }) func addProviderAdmin( userId: Principal) : async Types.ProviderResult {
+    var authorized = false;
+    var isProvider = false;
+    var _providerId : Principal = caller;
+
+    // Provider check
+    switch(state.providers.get(_providerId)) {
+      case (null) return #err(#NotFound);
+      case (?result) {
+        if(caller == result.id) {
+          authorized := true;
+          isProvider := true;
+        };
+      };
+    };
+
+    // Check if the caller is an admin of this provider
+    if(isProvider == false) {
+        switch(await checkProviderAdminPermission(_providerId, caller)) {
+          case (#err(error)) return #err(error);
+          case (#ok()) authorized := true;
+        };
+      };
+
+    if(authorized == false) return #err(#Unauthorized);
+
+    // Add the user to the provider admin list
+    let now = Helpers.timeNow();
+
+    let adminProfile : Profile = {
+      id = userId;
+      userName = "Safi";
+      email = "";
+      pic = null;
+      role = #admin;
+      createdAt = now;
+      updatedAt =now;
+    };
+
+    state.profiles.put(userId, adminProfile);
+    switch(state.providerAdmins.get(_providerId)) { 
+      case (null) {
+        let adminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
+        adminMap.put(userId, ());
+        state.providerAdmins.put(_providerId, adminMap);
+        };
+      case (?adminMap) {
+        adminMap.put(userId, ());
+      };
+    };
+
+    #ok();
+  };
+
+  private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Content {
+    let now = Helpers.timeNow();
+    let content : Content  = {
+        id = generateId(caller, "content");
+        providerId = caller;
+        contentType = contentType;
+        status = #new;
+        sourceId = sourceId;
+        title = title;
+        createdAt= now;
+        updatedAt= now;
+    };
+    return content;
+  };
 
   // Generates a semi unique ID
   private func generateId(caller: Principal, category: Text): Text {
@@ -549,15 +860,19 @@ shared ({caller = initializer}) actor class ModClub () = this {
     stateShared := State.fromState(state);
     tokensStable := tokens.getStable();
 
-    // storageStateStable := storageSolution.getStableState();
-    // pohStableState := pohEngine.getStableState();
-    // pohVoteStableState := voteManager.getStableState();
+    storageStateStable := storageSolution.getStableState();
+    retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
+    //pohStableState := pohEngine.getStableState();
+    pohStableStateV1 := pohEngine.getStableState();
+    pohVoteStableState := voteManager.getStableState();
+    _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
+    _canistergeekLoggerUD := ? canistergeekLogger.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
   system func postupgrade() {
-    // Reinitializing storage Solution to add this actor as a controller
-    storageSolution := StorageSolution.StorageSolution(storageStateStable, initializer, Principal.fromActor(this));
+    // Reinitializing storage Solution to add "this" actor as a controller
+    storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, initializer, Principal.fromActor(this), signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
@@ -567,15 +882,50 @@ shared ({caller = initializer}) actor class ModClub () = this {
     tokensStable := Token.emptyStable(initializer);
     
     storageStateStable := StorageState.emptyStableState();
-    pohStableState := PohState.emptyStableState();
+    retiredDataCanisterId := [];
+    // Delete these two lines after one deployment
+    pohStableStateV1 := mergeV0StateIntoV1(pohStableStateV1, pohStableState);
+    pohEngine := POH.PohEngine(pohStableStateV1);
+    // Upto Here
+    pohStableStateV1 := PohStateV1.emptyStableState();
     pohVoteStableState := VoteState.emptyStableState();
     
     // This statement should be run after the storagestate gets restored from stable state
     storageSolution.setInitialModerators(ModeratorManager.getModerators(state));
+    canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
+    _canistergeekMonitorUD := null;
+    canistergeekLogger.postupgrade(_canistergeekLoggerUD);
+    _canistergeekLoggerUD := null;
+    canistergeekLogger.setMaxMessagesCount(3000);
+
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
+
+  // Delete this function after one deployment
+  func mergeV0StateIntoV1(pohStableStateV1 : PohStateV1.PohStableState, pohStableState :  PohState.PohStableState) 
+  : PohStateV1.PohStableState {
+    let userToPackage : RelObj.RelObj<Principal, Text> = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
+    for((packageId, package) in pohStableState.pohChallengePackages.vals()) {
+      userToPackage.put(package.userId, packageId);
+    };
+    let st = {
+            pohUsers = Array.append(pohStableState.pohUsers, pohStableStateV1.pohUsers);
+            pohChallenges = Array.append(pohStableState.pohChallenges, pohStableStateV1.pohChallenges);
+            pohUserChallengeAttempts = Array.append(pohStableState.pohUserChallengeAttempts, pohStableStateV1.pohUserChallengeAttempts);
+            pohProviderUserData = Array.append(pohStableState.pohProviderUserData, pohStableStateV1.pohProviderUserData);
+            providerToModclubUser = Array.append(pohStableState.providerToModclubUser, pohStableStateV1.providerToModclubUser);
+            pohChallengePackages = Array.append(pohStableState.pohChallengePackages, pohStableStateV1.pohChallengePackages);
+            userToPohChallengePackageId =  pohStableStateV1.userToPohChallengePackageId;
+            wordList = Array.append(pohStableState.wordList, pohStableStateV1.wordList);
+            provider2PohVerificationRequests =  Array.append(pohStableState.provider2PohVerificationRequests, pohStableStateV1.provider2PohVerificationRequests);
+            pohVerificationRequests = Array.append(pohStableState.pohVerificationRequests, pohStableStateV1.pohVerificationRequests);
+        };
+        return st;
+  }
 
   // Uncomment when required
   // system func heartbeat() : async () {};
 
 };
+
+

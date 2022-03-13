@@ -1,7 +1,6 @@
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 
-
 // This is the interface to modclub for providers
 module { 
 
@@ -51,6 +50,11 @@ module {
     token: Text;
   };
 
+  public type Rule = {
+    id: Text;
+    description: Text;
+  };
+
   // Have to hardcode principal for modclub, change it to production canister ID later
   public let ModClub =
       actor "MODCLUB public principal ID" : actor {      
@@ -58,12 +62,14 @@ module {
         deregisterProvider: () -> async Text;
         addRules: ([Text]) -> async ();
         removeRules: ([Text]) -> async ();
+        getProviderRegisteredRules: () -> async [Rule];
         updateSettings: (ProviderSettings) -> async ();
         submitText: (Text, Text, ?Text) -> async Text;
+        submitHtmlContent: (Text, Text, ?Text) -> async Text;
         submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
         subscribe: (SubscribeMessage) -> async ();
         // Proof of Humanity APIs
-        verifyForHumanity: (Principal) -> async PohVerificationResponse;
-        generateUniqueToken: (Principal) -> async PohUniqueToken;
+        pohVerificationRequest: (Principal) -> async PohVerificationResponse;
+        pohGenerateUniqueToken: (Principal) -> async PohUniqueToken;
       };
 };

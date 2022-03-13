@@ -1,3 +1,11 @@
+import Principal "mo:base/Principal";
+import Text "mo:base/Text";
+import Hash "mo:base/Hash";
+import Nat "mo:base/Nat";
+import Result "mo:base/Result";
+import Float "mo:base/Float";
+import HashMap "mo:base/HashMap";
+
 module {
   public type Timestamp = Int; // See mo:base/Time and Time.now()
   public type UserId = Principal;
@@ -39,8 +47,7 @@ module {
     #imageUrl;
     // Image Data
     #imageBlob;
-    // Poh Content Package
-    #pohPackage
+    #htmlContent;
   };
 
   public type Role = {
@@ -106,7 +113,7 @@ module {
     image: Image;
   };
 
-  public type Image = {    
+  public type Image = {   
     data: [Nat8];
     imageType: Text;
   };
@@ -250,5 +257,18 @@ module {
       #Immutable;
   };
 
-   
+    public type ProviderError = {
+        #Unauthorized;
+        #ProviderIsRegistered;
+        #NotFound;
+        #RequiresWhitelisting;
+        #InvalidProvider;
+        #InvalidContentType;
+        #InvalidContentStatus;
+    };
+
+    public type ProviderSettingResult = Result.Result<ProviderSettings, ProviderError>;
+    public type ProviderResult = Result.Result<(), ProviderError>;
+    public type ProviderTextResult = Result.Result<Text, ProviderError>;
+
 };

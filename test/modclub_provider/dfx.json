@@ -5,7 +5,9 @@
       "type": "motoko"
     },
     "modclub_provider_assets": {
-      "dependencies": ["modclub_provider"],
+      "dependencies": [
+        "modclub_provider"
+      ],
       "frontend": {
         "entrypoint": "src/modclub_provider_assets/src/index.html"
       },
@@ -22,7 +24,7 @@
       "packtool": ""
     }
   },
-  "dfx": "0.8.3",
+  "dfx": "0.8.4",
   "networks": {
     "local": {
       "bind": "127.0.0.1:8000",

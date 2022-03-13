@@ -1,10 +1,11 @@
-import * as React from 'react'
+import * as React from "react";
 import Header from "../header/Header";
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch } from "react-router-dom";
 import Home from "./Home";
 import NewProfile from "../auth/new_profile/NewProfile";
 import NewPohProfile from "../auth/poh/NewPohProfile";
 import Airdrop from "./Airdrop";
+import AdminIdentity from "./AdminIdentity";
 
 export default function External() {
   return (
@@ -16,6 +17,7 @@ export default function External() {
         <Route path="/new-poh-profile" component={NewPohProfile} />
         <Route path="/terms" component={Home} />
         <Route path="/airdrop" component={Airdrop} />
+        <Route path="/admin-identity" component={AdminIdentity} />
       </Switch>
     </>
   );

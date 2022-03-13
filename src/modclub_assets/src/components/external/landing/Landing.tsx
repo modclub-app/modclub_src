@@ -69,7 +69,7 @@ export default function Landing() {
           MODCLUB is a decentralized content moderation platform, it simplifies the moderation process by connecting our community to dApps that need UGC moderation.
         </p>
         <div>
-          <a className="button is-large extra mt-6" onClick={() => history.push('/app')}>Beta 1.0</a>
+          <a className="button is-large extra is-primary mt-6" onClick={() => history.push('/app')}>Beta 1.0</a>
         </div>
       </div>
     </section>
@@ -146,7 +146,7 @@ export default function Landing() {
             <p className="has-text-silver is-size-4 mb-5">
               Moderators earn reward tokens for actively moderating and participating on the platform.
             </p>
-            <a className="button is-large extra" onClick={()=> history.push('/app')}>Beta 1.0</a>
+            <a className="button is-large extra is-primary" onClick={()=> history.push('/app')}>Beta 1.0</a>
           </div>
         </div>
 

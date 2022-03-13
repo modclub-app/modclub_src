@@ -53,6 +53,9 @@ html {
 }
 
 @media screen and (max-width: 768px) {
+  .is-11-mobile {
+    margin: auto;
+  }
   @include columns($gap: 2.5%, $mainPadding: 2.5%);
 }
 @media screen and (min-width: 769px) {

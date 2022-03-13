@@ -1,7 +1,9 @@
+import { Principal } from "@dfinity/principal";
 import { Optional } from "./api";
 import { Profile } from "./types";
 import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
 import { submitChallengeData } from "./api";
+import { fetchWithJwt } from "./jwt";
 
 export function getFileExtension(type: string): any | null {
   switch (type) {
@@ -86,7 +88,6 @@ export function getUserFromStorage(
 }
 
 export function convertObj(obj: any): any {
-  console.log(obj);
   return Object.entries(obj).reduce((acc, [k, v]) => {
     if (typeof v === "object") {
       acc[k] = convertObj(v);
@@ -132,9 +133,9 @@ export function validateEmail(email: string) {
   return re.test(String(email).toLowerCase());
 }
 
-export function getUrlForData(canisterId: String, contentId: String) {
+export function getUrlForData(canisterId: [] | [Principal], contentId: String) {
   if (window.location.hostname.includes("localhost")) {
-    return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}}`;
+    return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}`;
   } else {
     return (
       "https://" + canisterId + ".raw.ic0.app/storage?contentId=" + contentId
@@ -142,17 +143,24 @@ export function getUrlForData(canisterId: String, contentId: String) {
   }
 }
 
-export function getChecked(values: any) {
-  const checked = [];
+export function getViolatedRules(values: { [key: string]: string }): string[] {
+  const result: [string?] = [];
   for (const key in values) {
-    const value = values[key][0];
+    const value = values[key];
     if (
       value &&
       value != "voteIncorrectlyConfirmation" &&
-      value != "voteRulesConfirmation"
+      value != "voteRulesConfirmation" &&
+      value != "confirm"
     ) {
-      checked.push(values[key][0]);
+      result.push(key);
     }
   }
-  return checked;
+  return result;
+}
+
+export async function fetchObjectUrl(url: string): Promise<string> {
+  const res = await fetchWithJwt(url);
+  const imageBlob = await res.blob();
+  return URL.createObjectURL(imageBlob);
 }

@@ -13,7 +13,7 @@
     "build": "webpack",
     "start": "webpack serve --mode development --env development",
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
-    "deploy_dev": "DEPLOYMENT_ENV=dfx deploy --network ic modclub_dev_assets"
+    "deploy_dev": "DEV_ENV=dev dfx deploy --network ic modclub_dev_assets"
   },
   "devDependencies": {
     "@dfinity/agent": "^0.10.1",
@@ -40,7 +40,8 @@
     "util": "0.12.3",
     "webpack": "5.24.4",
     "webpack-cli": "4.5.0",
-    "webpack-dev-server": "^3.11.2"
+    "webpack-dev-server": "^3.11.2",
+    "usergeek-ic-js": "github:usergeek/usergeek-ic-js"
   },
   "browserslist": [
     "last 2 chrome version",
@@ -80,6 +81,7 @@
     "react-router-hash-link": "^2.4.3",
     "react-scripts": "4.0.3",
     "react-webcam": "^6.0.0",
+    "sanitize-html-react": "^1.13.0",
     "semantic-ui-css": "^2.4.1",
     "styled-components": "^5.3.1"
   }
