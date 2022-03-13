@@ -80,6 +80,9 @@ module State {
 
     provider2rules: Rel<Types.ProviderId, Types.RuleId>;
 
+    admin2Provider: Rel<Types.UserId, Types.ProviderId>;
+
+
     appName: Text;
   };
 
@@ -103,6 +106,7 @@ module State {
     mods2votes: RelShared<Types.UserId, Types.VoteId>;
     provider2content: RelShared<Types.ProviderId, Types.ContentId>;
     provider2rules: RelShared<Types.ProviderId, Types.RuleId>;
+    admin2Provider: RelShared<Types.UserId, Types.ProviderId>;
     appName: Text;
   };
 
@@ -131,6 +135,7 @@ module State {
       mods2votes = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       provider2content = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       provider2rules = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
+      admin2Provider = RelObj.RelObj((Principal.hash, Principal.hash), (Principal.equal, Principal.equal));
       appName = "MODCLUB";
     };
     st;
@@ -157,6 +162,7 @@ module State {
       mods2votes = Rel.emptyShared<Principal, Text>();
       provider2content = Rel.emptyShared<Principal, Text>();
       provider2rules = Rel.emptyShared<Principal, Text>();
+      admin2Provider = Rel.emptyShared<Principal, Principal>();
       appName = "MODCLUB";
     };
     st;
@@ -187,6 +193,8 @@ module State {
       mods2votes = Rel.share<Types.UserId, Types.VoteId>(state.mods2votes.getRel());
       provider2content = Rel.share<Principal, Types.ContentId>(state.provider2content.getRel());
       provider2rules = Rel.share<Principal, Types.ContentId>(state.provider2rules.getRel());
+      admin2Provider = Rel.share<Principal, Types.ProviderId>(state.admin2Provider.getRel());
+
       appName = state.appName;
     };
     st;
@@ -275,6 +283,11 @@ module State {
       stateShared.provider2rules,
       (Principal.hash, Text.hash),
       (Principal.equal, Text.equal)
+    ));
+    state.admin2Provider.setRel( Rel.fromShare<Principal, Types.ProviderId>(
+      stateShared.admin2Provider,
+      (Principal.hash, Principal.hash),
+      (Principal.equal, Principal.equal)
     ));
     return state;
   };

@@ -266,6 +266,8 @@ export const idlFactory = ({ IDL }) => {
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,
     'minStaked' : IDL.Nat,
+    'distributedTokens' : IDL.Nat,
+    'costPerSuccesfulVote' : IDL.Nat,
   });
   const Rule = IDL.Record({ 'id' : RuleId, 'description' : IDL.Text });
   const ProviderPlus = IDL.Record({
@@ -355,8 +357,12 @@ export const idlFactory = ({ IDL }) => {
     'challengeId' : IDL.Text,
   });
   const ModClub = IDL.Service({
-    'addProviderAdmin' : IDL.Func([IDL.Principal], [ProviderResult], []),
-    'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
+    'addProviderAdmin' : IDL.Func(
+        [IDL.Principal, IDL.Principal],
+        [ProviderResult],
+        [],
+      ),
+    'addRules' : IDL.Func([IDL.Vec(IDL.Text), IDL.Principal], [], ['oneway']),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'adminInit' : IDL.Func([], [], []),
@@ -365,6 +371,7 @@ export const idlFactory = ({ IDL }) => {
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'generateSigningKey' : IDL.Func([], [], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
+    'getAdminProviderIDs' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
     'getAirdropWhitelist' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
     'getAllContent' : IDL.Func(
@@ -423,11 +430,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'registerProvider' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(Image)],
+        [IDL.Text, IDL.Text, IDL.Opt(Image), IDL.Opt(IDL.Principal)],
         [IDL.Text],
         [],
       ),
-    'removeRules' : IDL.Func([IDL.Vec(RuleId)], [], ['oneway']),
+    'removeRules' : IDL.Func([IDL.Vec(RuleId), IDL.Principal], [], ['oneway']),
     'resetUserChallengeAttempt' : IDL.Func([IDL.Text], [Result], []),
     'retiredDataCanisterIdForWriting' : IDL.Func([IDL.Text], [], ['oneway']),
     'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result], []),
