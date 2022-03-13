@@ -345,7 +345,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
     };
     let pohVerificationRequest: PohTypes.PohVerificationRequest = {
-        requestId = generateId(providerId, "pohRequest");
+        requestId = Helpers.generateId(providerId, "pohRequest", state);
         providerUserId = providerUserId;
         providerId = providerId;
     };
@@ -404,7 +404,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       // TODO dynamic list will be fetched from admin dashboard state
       let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
-      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, generateId, voteManager.getContentStatus);
+      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, Helpers.generateId, voteManager.getContentStatus);
       switch(challengePackage) {
         case(null)();
         case(?package) {
@@ -691,64 +691,14 @@ shared ({caller = initializer}) actor class ModClub () = this {
         Principal.fromActor(this);
   };
 
-   public shared({ caller }) func addProviderAdmin( userId: Principal) : async Types.ProviderResult {
-    var authorized = false;
-    var isProvider = false;
-    var _providerId : Principal = caller;
-
-    // Provider check
-    switch(state.providers.get(_providerId)) {
-      case (null) return #err(#NotFound);
-      case (?result) {
-        if(caller == result.id) {
-          authorized := true;
-          isProvider := true;
-        };
-      };
-    };
-
-    // Check if the caller is an admin of this provider
-    if(isProvider == false) {
-        switch(await AuthManager.checkProviderAdminPermission(_providerId, caller, state)) {
-          case (#err(error)) return #err(error);
-          case (#ok()) authorized := true;
-        };
-      };
-
-    if(authorized == false) return #err(#Unauthorized);
-
-    // Add the user to the provider admin list
-    let now = Helpers.timeNow();
-
-    let adminProfile : Types.Profile = {
-      id = userId;
-      userName = "Safi";
-      email = "";
-      pic = null;
-      role = #admin;
-      createdAt = now;
-      updatedAt =now;
-    };
-
-    state.profiles.put(userId, adminProfile);
-    switch(state.providerAdmins.get(_providerId)) { 
-      case (null) {
-        let adminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
-        adminMap.put(userId, ());
-        state.providerAdmins.put(_providerId, adminMap);
-        };
-      case (?adminMap) {
-        adminMap.put(userId, ());
-      };
-    };
-
-    #ok();
+  public shared({ caller }) func addProviderAdmin( userId: Principal, userName: Text, providerId: ?Principal) : async Types.ProviderResult {
+    return ProviderManager.addProviderAdmin(userId, userName, caller, providerId, state)
   };
 
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
     let now = Helpers.timeNow();
     let content : Types.Content  = {
-        id = generateId(caller, "content");
+        id = Helpers.generateId(caller, "content", state);
         providerId = caller;
         contentType = contentType;
         status = #new;
@@ -758,20 +708,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
         updatedAt= now;
     };
     return content;
-  };
-
-  // Generates a semi unique ID
-  private func generateId(caller: Principal, category: Text): Text {
-    var count : Nat = 0;
-    switch(state.GLOBAL_ID_MAP.get(category)){
-      case(?result){
-        count := result;
-      };
-      case(_) ();
-    };
-    count := count + 1;
-    state.GLOBAL_ID_MAP.put(category, count);
-    return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
  private func getVoteCount(contentId: Types.ContentId, caller: ?Principal) : Types.VoteCount {

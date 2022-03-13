@@ -1,10 +1,13 @@
 import Error "mo:base/Error";
 import Buffer "mo:base/Buffer";
+import HashMap "mo:base/HashMap";
+import Principal "mo:base/Principal";
 
 import GlobalState "../../state";
 import Types "../../types";
 import Helpers "../../helpers";
 import ModClubParams "../parameters/params";
+import AuthManager "../auth/auth";
 
 
 module ProviderModule {
@@ -129,58 +132,75 @@ module ProviderModule {
       buf.toArray();
   };
 
-//   public func addProviderAdmin(caller: Principal, adminId: Principal, state: GlobalState.State) : async Types.ProviderResult {
-// var authorized = false;
-//     var isProvider = false;
-//     var _providerId : Principal = caller;
+    public func addProviderAdmin(
+      userId: Principal,
+      username: Text,
+      caller: Principal,
+      providerId: ?Principal,
+      state: GlobalState.State
+      ) : async Types.ProviderResult {
+      var authorized = false;
+      var isProvider = false;
+      var _providerId : Principal = do {
+          switch(providerId) {
+            case(?result) {
+              isProvider := false;
+              result;
+            };
+            case(_) {
+              caller;
+            };
+          };
+      };
+      
+      // Provider check
+      switch(state.providers.get(_providerId)) {
+        case (null) (); // Do nothing check if the caller is an admin for the provider
+        case (?result) {
+          if(caller == result.id) {
+            authorized := true;
+            isProvider := true;
+          };
+        };
+      };
 
-//     // Provider check
-//     switch(state.providers.get(_providerId)) {
-//       case (null) return #err(#NotFound);
-//       case (?result) {
-//         if(caller == result.id) {
-//           authorized := true;
-//           isProvider := true;
-//         };
-//       };
-//     };
+      // Check if the caller is an admin of this provider
+      if(isProvider == false) {
+          switch(await AuthManager.checkProviderAdminPermission(_providerId, caller, state)) {
+            case (#err(error)) return #err(error);
+            case (#ok()) authorized := true;
+          };
+        };
 
-//     // Check if the caller is an admin of this provider
-//     if(isProvider == false) {
-//         switch(await AuthManager.checkProviderAdminPermission(_providerId, caller, state)) {
-//           case (#err(error)) return #err(error);
-//           case (#ok()) authorized := true;
-//         };
-//       };
+      if(authorized == false) return #err(#Unauthorized);
 
-//     if(authorized == false) return #err(#Unauthorized);
+      // Add the user to the provider admin list
+      let now = Helpers.timeNow();
 
-//     // Add the user to the provider admin list
-//     let now = Helpers.timeNow();
+      let adminProfile : Types.Profile = {
+        id = userId;
+        userName = username; // Todo accept username as a paramater
+        email = "";
+        pic = null;
+        role = #admin;
+        createdAt = now;
+        updatedAt =now;
+      };
 
-//     let adminProfile : Types.Profile = {
-//       id = userId;
-//       userName = "Safi";
-//       email = "";
-//       pic = null;
-//       role = #admin;
-//       createdAt = now;
-//       updatedAt =now;
-//     };
-
-//     state.profiles.put(userId, adminProfile);
-//     switch(state.providerAdmins.get(_providerId)) { 
-//       case (null) {
-//         let adminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
-//         adminMap.put(userId, ());
-//         state.providerAdmins.put(_providerId, adminMap);
-//         };
-//       case (?adminMap) {
-//         adminMap.put(userId, ());
-//       };
-//     };
-
-//     #ok();
-//   };
+      state.profiles.put(userId, adminProfile);
+      // TODO: Consider adding to username map to preserve uniqueness
+      switch(state.providerAdmins.get(_providerId)) { 
+        case (null) {
+          let adminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
+          adminMap.put(userId, ());
+          state.providerAdmins.put(_providerId, adminMap);
+          state.admin2Provider.put(userId,_providerId);
+          };
+        case (?adminMap) {
+          adminMap.put(userId, ());
+        };
+      };
+      #ok();
+  };
 
 };
