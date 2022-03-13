@@ -1049,6 +1049,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func verifyUserHumanity() : async VerifyHumanityResponse {
+    // TODO add security check
     Debug.print("Verifying humanity called by: " # Principal.toText(caller));
     var rejectionReasons: [Text] = [];
     if(voteManager.isAutoApprovedPOHUser(caller)) {
