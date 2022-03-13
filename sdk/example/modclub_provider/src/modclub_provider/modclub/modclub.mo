@@ -65,6 +65,7 @@ module {
         getProviderRegisteredRules: () -> async [Rule];
         updateSettings: (ProviderSettings) -> async ();
         submitText: (Text, Text, ?Text) -> async Text;
+        submitHtmlContent: (Text, Text, ?Text) -> async Text;
         submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
         subscribe: (SubscribeMessage) -> async ();
         // Proof of Humanity APIs

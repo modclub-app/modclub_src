@@ -9,6 +9,7 @@ import Platform from "../platform/Platform";
 import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
+import sanitizeHtml from "sanitize-html-react";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -27,9 +28,9 @@ const InfoItem = ({ icon, title, info }) => {
 };
 
 export default function Task() {
+  const { taskId } = useParams();
   const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
-  const { taskId } = useParams();
 
   const getImage = (data: any) => {
     const image = unwrap<Image__1>(data);
@@ -72,15 +73,20 @@ export default function Task() {
                 <Heading>
                   {task.title}
                 </Heading>
-                {/* <p>{task.text}</p> */}
 
-                {'imageBlob' in task.contentType ?
-                  <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
-                  :
+                {'text' in task.contentType && (
                   <p>{task.text}</p>
-                }
+                )}
+                {'imageBlob' in task.contentType && (
+                  <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
+                )}
+                {'htmlContent' in task.contentType && (
+                  <div className="htmlContent content">
+                    <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text) }} />
+                  </div>
+                )}
 
-                <Card backgroundColor="dark" className="mt-5">
+                {/* <Card backgroundColor="dark" className="mt-5">
                   <Card.Content>
                     <Heading subtitle>
                       Additional Information
@@ -102,8 +108,7 @@ export default function Task() {
                       info="This post looked suspicious please review as we are not sure"
                     />
                   </Card.Content>
-                </Card>
-
+                </Card> */}
               </Card.Content>
               <Card.Footer className="pt-0" style={{ border: 0 }}>
                 <Button.Group>
