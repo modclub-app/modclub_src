@@ -330,22 +330,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   //----------------------POH Methods For Providers------------------------------
-  public shared({ caller }) func verifyForHumanity(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
-    let pohVerificationRequest: PohTypes.PohVerificationRequest = {
-        requestId = Helpers.generateId(caller, "pohRequest", state);
-    }
-    //TODO FiX this
-    let pohVerificationResponse: PohTypes.PohVerificationResponse = {
-        requestId = pohVerificationRequest.requestId,
-        status = PohTypes.PohVerificationStatus.PENDING,
-        providerUserId = providerUserId,
-        provider = caller,
-        timestamp = Timestamp.now(),
-        pohRequest = pohVerificationRequest,
-    };
-  };
-  // POH Methods
-  // Method called by provider
+  
   public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
     pohVerificationRequestHelper(providerUserId, caller);
   };
