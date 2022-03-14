@@ -213,10 +213,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
-    switch(state.airdropWhitelist.get(caller)){
-      case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
-      case(_) ();
-    };
+    // switch(state.airdropWhitelist.get(caller)){
+    //   case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
+    //   case(_) ();
+    // };
     let profile = await ModeratorManager.registerModerator(caller, userName, email, pic, state);
     // Todo: Remove this after testnet
     // Give new users MOD points
