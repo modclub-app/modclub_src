@@ -67,6 +67,22 @@ export async function getUserFromCanister(): Promise<Profile | null> {
   }
 }
 
+export async function addProviderAdmin(userId, principalId): Promise<boolean> {
+  try {
+    let result = await (
+      await getMC()
+    )
+      .addProviderAdmin(userId, principalId)
+      .then((data) => console.log(data))
+      .catch((e) => console.log(e));
+
+    return false;
+  } catch (e) {
+    console.log("error", e);
+    return false;
+  }
+}
+
 export async function getAllContent(
   status: ContentStatus
 ): Promise<ContentPlus[]> {
@@ -103,6 +119,11 @@ export async function getActivity(isComplete: boolean): Promise<Activity[]> {
 
 export async function getTokenHoldings(): Promise<UserHoldings> {
   return convertObj(await (await getMC()).getTokenHoldings());
+}
+
+export async function getAdminProviderIDs(
+): Promise<Principal[]> {
+  return await (await getMC()).getAdminProviderIDs();
 }
 
 export async function stakeTokens(amount: number): Promise<string> {
@@ -144,12 +165,18 @@ export async function updateMC(): Promise<void> {
 }
 
 // Admin API's / Need to be a provider admin to call these
-export async function addRules(rules: string[]): Promise<void> {
-  return (await getMC()).addRules(rules);
+export async function addRules(
+  rules: string[],
+  provider: Principal
+): Promise<void> {
+  return (await getMC()).addRules(rules, provider);
 }
 
-export async function removeRules(rules: RuleId[]): Promise<void> {
-  return (await getMC()).removeRules(rules);
+export async function removeRules(
+  rules: RuleId[],
+  providerId: Principal
+): Promise<void> {
+  return (await getMC()).removeRules(rules, providerId);
 }
 
 export async function updateProviderSettings(

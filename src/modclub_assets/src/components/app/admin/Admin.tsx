@@ -1,12 +1,13 @@
 import * as React from "react";
 import { Field } from "react-final-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Columns,
   Card,
   Button,
   Heading,
+  Modal,
   Media,
   Image,
   Notification,
@@ -15,11 +16,17 @@ import FormModal from "../modals/FormModal";
 import {
   addRules,
   removeRules,
+  getProviderRules,
+  getProvider,
   updateProviderSettings,
+  getUserFromCanister,
+  getAdminProviderIDs,
 } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
+import { Principal } from "@dfinity/principal";
+import AdminIdentity from "../../external/AdminIdentity";
 
 const EditAppModal = ({ toggle }) => {
   const onFormSubmit = async (values: any) => {
@@ -56,15 +63,22 @@ const EditAppModal = ({ toggle }) => {
   );
 };
 
-const EditRulesModal = ({ rules, toggle }) => {
+const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
   const [newRules, setNewRules] = useState(rules);
 
-  const remove = (rule) => {
+  const remove = async (rule) => {
+    console.log(rule);
     setNewRules(newRules.filter((item) => item !== rule));
-  };
-
-  const add = (rule) => {
-    rule && setNewRules([...newRules, rule]);
+    await removeRules([rule], Principal.fromText(principalID))
+      .then(async () => {
+        let updatedRules = await getProviderRules(
+          Principal.fromText(principalID)
+        );
+        console.log(updatedRules);
+        updateState(updatedRules);
+        setNewRules(updatedRules);
+      })
+      .catch((e) => console.log(e));
   };
 
   const onFormSubmit = async (values: any) => {
@@ -72,26 +86,35 @@ const EditRulesModal = ({ rules, toggle }) => {
     console.log("parent !!! onFormSubmit newRules", newRules);
 
     const { newRule } = values;
-    return await addRules(newRule);
-    // return await removeRules(newRules);
+    console.log(newRule);
+    await addRules([newRule], Principal.fromText(principalID))
+      .then(async () => {
+        let updatedRules = await getProviderRules(
+          Principal.fromText(principalID)
+        );
+        console.log(updatedRules);
+        updateState(updatedRules);
+        setNewRules(updatedRules);
+      })
+      .catch((e) => console.log(e));
   };
 
   return (
     <FormModal title="Edit Rules" toggle={toggle} handleSubmit={onFormSubmit}>
       {newRules.map((rule) => (
-        <div key={rule} className="field level">
+        <div key={rule.id} className="field level">
           <Field
-            name={rule}
+            name={rule.description}
             component="input"
             type="text"
             className="input"
-            placeholder={rule}
-            value={rule}
+            placeholder={rule.description}
+            value={rule.description}
             disabled
           />
           <span
             className="icon has-text-danger is-clickable ml-3"
-            onClick={() => remove(rule)}
+            onClick={() => remove(rule.id)}
           >
             <span className="material-icons">remove_circle</span>
           </span>
@@ -115,7 +138,8 @@ const EditRulesModal = ({ rules, toggle }) => {
   );
 };
 
-const EditModeratorSettingsModal = ({ toggle }) => {
+const EditModeratorSettingsModal = ({ toggle, settings }) => {
+  console.log("settings", settings);
   const onFormSubmit = async (values: any) => {
     console.log("parent !!! onFormSubmit values", values);
     return await updateProviderSettings(values);
@@ -132,9 +156,8 @@ const EditModeratorSettingsModal = ({ toggle }) => {
         <Field
           name="minVotes"
           component="input"
-          type="number"
           className="input has-text-centered ml-3"
-          initialValue={5}
+          initialValue={settings.minVotes ? settings.minVotes : 0}
           style={{ width: 70 }}
         />
       </div>
@@ -146,7 +169,7 @@ const EditModeratorSettingsModal = ({ toggle }) => {
           component="input"
           type="number"
           className="input has-text-centered ml-3"
-          initialValue={1000}
+          initialValue={settings.minStaked ? settings.minStaked : 0}
           style={{ width: 70 }}
         />
       </div>
@@ -192,10 +215,61 @@ export default function Admin() {
   const toggleModeratorSettings = () =>
     setShowModeratorSettings(!showModeratorSettings);
 
-  const dummyRules = ["No drugs & weapsons", "No sexual content", "No racism"];
+  const [rules, setRules] = useState([]);
+
+  const [providers, setProviders] = useState([]);
+
+  const [selectedProvider, setSelectedProvider] = useState(null);
+
+  const [showModal, setShowModal] = useState(true);
+
+  const [providerIdText, setProviderIdText] = useState("");
+
+  useEffect(() => {
+    let adminInit = async () => {
+      let adminProviders = await getAdminProviderIDs();
+      let providerList = [];
+      for (let provider of adminProviders) {
+        providerList.push(await getProvider(provider));
+      }
+      setProviders(providerList);
+      console.log("Data", providerList[0]);
+      setProviderIdText(adminProviders[0].toText());
+    };
+    adminInit();
+  }, []);
 
   return (
     <>
+      {selectedProvider == null && providers != [] ? (
+        <Modal show={showModal} showClose={true}>
+          <Modal.Card backgroundColor="circles">
+            <Modal.Card.Body>
+              <Heading subtitle>Available Providers</Heading>
+            </Modal.Card.Body>
+            {providers.map((provider) => {
+              return (
+                <Button
+                  onClick={() => {
+                    setSelectedProvider(provider);
+                    setShowModal(false);
+                    setRules(provider.rules);
+                  }}
+                >
+                  {provider.name}
+                </Button>
+              );
+            })}
+            <Modal.Card.Footer
+              className="pt-0"
+              justifyContent="flex-end"
+            ></Modal.Card.Footer>
+          </Modal.Card>
+        </Modal>
+      ) : (
+        ""
+      )}
+
       <Notification color="danger" textAlign="center">
         Administrator Dashboard DEMO
       </Notification>
@@ -220,13 +294,16 @@ export default function Admin() {
                     <tbody>
                       <tr>
                         <td>App Name:</td>
-                        <td>DSCVR</td>
+                        <td>
+                          {!!selectedProvider ? selectedProvider.name : ""}
+                        </td>
                       </tr>
                       <tr>
                         <td>Description:</td>
                         <td>
-                          DSCVR is a reddit like community that exists on the
-                          internet computer.
+                          {!!selectedProvider
+                            ? selectedProvider.description
+                            : ""}
                         </td>
                       </tr>
                     </tbody>
@@ -248,15 +325,28 @@ export default function Admin() {
                 <tbody>
                   <tr>
                     <td>Total Feeds Posted</td>
-                    <td>8373</td>
+                    <td>
+                      {!!selectedProvider
+                        ? selectedProvider.contentCount.toString()
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Active Posts</td>
-                    <td>5</td>
+                    <td>
+                      {!!selectedProvider
+                        ? selectedProvider.activeCount.toString()
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Rewards Spent</td>
-                    <td>5</td>
+                    <td>
+                      {" "}
+                      {!!selectedProvider
+                        ? selectedProvider.rewardsSpent.toString()
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Avg. Stakes</td>
@@ -350,9 +440,9 @@ export default function Admin() {
             <Card.Content>
               <table className="table is-striped has-text-left">
                 <tbody>
-                  {dummyRules.map((rule) => (
-                    <tr key={rule}>
-                      <td className="has-text-left">{rule}</td>
+                  {rules.map((rule) => (
+                    <tr key={rule.id}>
+                      <td className="has-text-left">{rule.description}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -377,19 +467,25 @@ export default function Admin() {
                   <tr>
                     <td>Number of votes required to finalize decision:</td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      2
+                      {selectedProvider
+                        ? selectedProvider.settings.minVotes.toString()
+                        : 0}
                     </td>
                   </tr>
                   <tr>
                     <td>Required number of staked MOD tokens to vote:</td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      1000
+                      {selectedProvider
+                        ? selectedProvider.settings.minStaked.toString()
+                        : 0}
                     </td>
                   </tr>
                   <tr>
                     <td>Example cost per each succesful vote (1% of stake)</td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      1
+                      {selectedProvider
+                        ? selectedProvider.settings.costPerSuccesfulVote.toString()
+                        : 0}
                     </td>
                   </tr>
                   <tr>
@@ -398,7 +494,9 @@ export default function Admin() {
                       majority voters (optional)
                     </td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      5
+                      {selectedProvider
+                        ? selectedProvider.settings.distributedTokens.toString()
+                        : 0}
                     </td>
                   </tr>
                 </tbody>
@@ -408,15 +506,23 @@ export default function Admin() {
         </Columns.Column>
       </Columns>
 
-      <TrustedIdentities />
+      <TrustedIdentities provider={providerIdText} />
 
       {showEditApp && <EditAppModal toggle={toggleEditApp} />}
 
       {showEditRules && (
-        <EditRulesModal rules={dummyRules} toggle={toggleEditRules} />
+        <EditRulesModal
+          rules={rules}
+          toggle={toggleEditRules}
+          principalID={providerIdText}
+          updateState={setRules}
+        />
       )}
       {showModeratorSettings && (
-        <EditModeratorSettingsModal toggle={toggleModeratorSettings} />
+        <EditModeratorSettingsModal
+          toggle={toggleModeratorSettings}
+          settings={selectedProvider.settings}
+        />
       )}
     </>
   );
