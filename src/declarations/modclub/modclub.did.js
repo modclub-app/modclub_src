@@ -266,8 +266,6 @@ export const idlFactory = ({ IDL }) => {
   const ProviderSettings = IDL.Record({
     'minVotes' : IDL.Nat,
     'minStaked' : IDL.Nat,
-    'distributedTokens' : IDL.Nat,
-    'costPerSuccesfulVote' : IDL.Nat,
   });
   const Rule = IDL.Record({ 'id' : RuleId, 'description' : IDL.Text });
   const ProviderPlus = IDL.Record({
@@ -358,11 +356,11 @@ export const idlFactory = ({ IDL }) => {
   });
   const ModClub = IDL.Service({
     'addProviderAdmin' : IDL.Func(
-        [IDL.Principal, IDL.Principal],
+        [IDL.Principal, IDL.Text, IDL.Opt(IDL.Principal)],
         [ProviderResult],
         [],
       ),
-    'addRules' : IDL.Func([IDL.Vec(IDL.Text), IDL.Principal], [], ['oneway']),
+    'addRules' : IDL.Func([IDL.Vec(IDL.Text)], [], ['oneway']),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'adminInit' : IDL.Func([], [], []),
@@ -430,11 +428,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'registerProvider' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(Image), IDL.Opt(IDL.Principal)],
+        [IDL.Text, IDL.Text, IDL.Opt(Image)],
         [IDL.Text],
         [],
       ),
-    'removeRules' : IDL.Func([IDL.Vec(RuleId), IDL.Principal], [], ['oneway']),
+    'removeRules' : IDL.Func([IDL.Vec(RuleId)], [], ['oneway']),
     'resetUserChallengeAttempt' : IDL.Func([IDL.Text], [Result], []),
     'retiredDataCanisterIdForWriting' : IDL.Func([IDL.Text], [], ['oneway']),
     'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result], []),

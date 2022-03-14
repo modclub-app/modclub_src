@@ -47,8 +47,6 @@ type Result =
  };
 type ProviderSettings = 
  record {
-   costPerSuccesfulVote: nat;
-   distributedTokens: nat;
    minStaked: nat;
    minVotes: nat;
  };
@@ -240,8 +238,8 @@ type ModeratorLeaderboard =
  };
 type ModClub = 
  service {
-   addProviderAdmin: (principal, principal) -> (ProviderResult);
-   addRules: (vec text, principal) -> () oneway;
+   addProviderAdmin: (principal, text, opt principal) -> (ProviderResult);
+   addRules: (vec text) -> () oneway;
    addToAirdropWhitelist: (vec principal) -> ();
    addToApprovedUser: (principal) -> ();
    adminInit: () -> ();
@@ -277,8 +275,8 @@ type ModClub =
    pohVerificationRequest: (principal) -> (PohVerificationResponse);
    populateChallenges: () -> ();
    registerModerator: (text, text, opt Image) -> (Profile);
-   registerProvider: (text, text, opt Image, opt principal) -> (text);
-   removeRules: (vec RuleId, principal) -> () oneway;
+   registerProvider: (text, text, opt Image) -> (text);
+   removeRules: (vec RuleId) -> () oneway;
    resetUserChallengeAttempt: (text) -> (Result);
    retiredDataCanisterIdForWriting: (text) -> () oneway;
    retrieveChallengesForUser: (text) -> (Result);

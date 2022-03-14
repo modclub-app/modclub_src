@@ -116,10 +116,12 @@ export interface LogMessagesData { 'timeNanos' : Nanos, 'message' : string }
 export type MetricsGranularity = { 'hourly' : null } |
   { 'daily' : null };
 export interface ModClub {
-  'addProviderAdmin' : (arg_0: Principal, arg_1: Principal) => Promise<
-      ProviderResult
-    >,
-  'addRules' : (arg_0: Array<string>, arg_1: Principal) => Promise<undefined>,
+  'addProviderAdmin' : (
+      arg_0: Principal,
+      arg_1: string,
+      arg_2: [] | [Principal],
+    ) => Promise<ProviderResult>,
+  'addRules' : (arg_0: Array<string>) => Promise<undefined>,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
   'adminInit' : () => Promise<undefined>,
@@ -174,11 +176,8 @@ export interface ModClub {
       arg_0: string,
       arg_1: string,
       arg_2: [] | [Image],
-      arg_3: [] | [Principal],
     ) => Promise<string>,
-  'removeRules' : (arg_0: Array<RuleId>, arg_1: Principal) => Promise<
-      undefined
-    >,
+  'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
   'resetUserChallengeAttempt' : (arg_0: string) => Promise<Result>,
   'retiredDataCanisterIdForWriting' : (arg_0: string) => Promise<undefined>,
   'retrieveChallengesForUser' : (arg_0: string) => Promise<Result>,
@@ -372,12 +371,7 @@ export interface ProviderPlus {
 }
 export type ProviderResult = { 'ok' : null } |
   { 'err' : ProviderError };
-export interface ProviderSettings {
-  'minVotes' : bigint,
-  'minStaked' : bigint,
-  'distributedTokens' : bigint,
-  'costPerSuccesfulVote' : bigint,
-}
+export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
 export type Result = { 'ok' : Array<PohChallengesAttempt> } |
   { 'err' : PohError };
 export type Result_1 = { 'ok' : PohTaskDataWrapperPlus } |
