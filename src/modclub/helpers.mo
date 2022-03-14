@@ -1,5 +1,6 @@
 import Array "mo:base/Array";
 import Blob "mo:base/Blob";
+import GlobalState "state";
 import Char "mo:base/Char";
 import Nat32 "mo:base/Nat32";
 import Prim "mo:prim";
@@ -7,6 +8,8 @@ import SHA256 "mo:crypto/SHA/SHA256";
 import Source "mo:uuid/async/SourceV4";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Principal "mo:base/Principal";
+import Nat "mo:base/Nat";
 import Types "./types";
 import UUID "mo:uuid/UUID";
 import Base32 "mo:encoding/Base32";
@@ -35,6 +38,20 @@ module Helpers {
       return encode(SHA256.sum(Blob.toArray(Text.encodeUtf8(content))));
     };
 
+    // Generates a semi unique ID
+  public func generateId(caller: Principal, category: Text, state: GlobalState.State): Text {
+    var count : Nat = 0;
+    switch(state.GLOBAL_ID_MAP.get(category)){
+      case(?result){
+        count := result;
+      };
+      case(_) ();
+    };
+    count := count + 1;
+    state.GLOBAL_ID_MAP.put(category, count);
+    return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
+  };
+  
     public func encodeBase32(content: Text) : ?Text {
       return Text.decodeUtf8(Blob.fromArray(Base32.encode(Blob.toArray(Text.encodeUtf8(content)))));
     };

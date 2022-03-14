@@ -1,13 +1,9 @@
-import Random "mo:base/Random";
 import Nat "mo:base/Nat";
-import Time "mo:base/Time";
 import Principal "mo:base/Principal";
 import Blob "mo:base/Blob";
-import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import Debug "mo:base/Debug";
 import Prim "mo:prim";
-import Buffer "mo:base/Buffer";
 import Cycles "mo:base/ExperimentalCycles";
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
@@ -148,10 +144,12 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
   };
 
   public shared query({caller}) func streamingCallback(token : StreamingCallbackToken,) : async StreamingCallbackHttpResponse {
-    Debug.print("Sending chunk " # debug_show(token.key) # debug_show(token.index));
     let body:Blob = switch(state.chunks.get(chunkId(token.key, token.index))) {
       case (?b) b;
-      case (null) "404 Not Found";
+      case (null) {
+        Helpers.logMessage(canistergeekLogger, "Chunk not found for token key" # token.key # " token index " # Nat.toText(token.index), #error); 
+        "404 Not Found";
+        };
     };
     let next_token:? StreamingCallbackToken = switch(state.chunks.get(chunkId(token.key, token.index+1))){
       case (?nextbody) ?{
@@ -190,9 +188,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
         Principal.fromActor(this);
   };
 
-  public query func http_request(req: HttpRequest) : async HttpResponse {
-    Debug.print("http_request: " # debug_show(req));
-
+  public query({ caller }) func http_request(req: HttpRequest) : async HttpResponse {
     var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
     let self: Principal = Principal.fromActor(this);
     let canisterId: Text = Principal.toText(self);
@@ -217,6 +213,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
       };
 
       if (not (isUserAllowed(jwt))) {
+        Helpers.logMessage(canistergeekLogger, "User "# Principal.toText(caller) #" tried to access data with invalid JWT", #error); 
         return {
           status_code=401;
           headers=_headers;
@@ -264,7 +261,6 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
 
   public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
         // validateCaller(caller);
-        Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
         canistergeekLogger.getLog(request);
   };
 
@@ -315,6 +311,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
     Debug.print("actualSignature: " # actualSignature);
 
     if(actualSignature != signature) {
+      Helpers.logMessage(canistergeekLogger, "JWT Signatures did not match", #error); 
       return false;
     };
     return true;
@@ -324,6 +321,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
     Debug.print("actualSignature: " # Nat.toText(issueTime));
 
     if(issueTime == 0 or (Helpers.timeNow() - issueTime) > ModClubParam.JWT_VALIDITY_MILLI) {
+      Helpers.logMessage(canistergeekLogger, "JWT expired", #error); 
       return false;
     };
     return true;
@@ -333,6 +331,7 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
     Debug.print(modId);
     switch(state.moderators.get(Principal.fromText(modId))) {
       case(null) {
+        Helpers.logMessage(canistergeekLogger, "User " # modId # " is not a moderator", #error);
         Debug.print("not present");
         return false;
       };

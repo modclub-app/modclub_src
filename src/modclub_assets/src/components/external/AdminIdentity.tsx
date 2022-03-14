@@ -1,20 +1,11 @@
 import * as React from "react";
-import {
-  isAirdropRegistered,
-  airdropRegister,
-  updateMC,
-  getUserFromCanister,
-} from "../../utils/api";
 import { useAuth } from "../../utils/auth";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { SignIn } from "../auth/SignIn";
-import { Principal } from "@dfinity/candid/lib/cjs/idl";
-import { AirdropUser } from "../../utils/types";
 import "./landing/Landing.scss";
-import styled from "styled-components";
 
 export default function AdminIdentity() {
-  const { setUser, isAuthenticated, logIn, identity, isAuthReady } = useAuth();
+  const { isAuthenticated, identity, isAuthReady } = useAuth();
   const [message, setMessage] = useState(null);
 
   const spinner = (
