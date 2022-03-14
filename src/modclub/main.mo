@@ -166,9 +166,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
   public shared({ caller }) func getAirdropUsers() : async [AirdropUser] {
     await onlyOwner(caller);
     let buf = Buffer.Buffer<AirdropUser>(0);      
-      for ( (id, u) in state.airdropUsers.entries()) {        
-        buf.add(u);                        
-      }; 
+    for ( (id, u) in state.airdropUsers.entries()) {        
+      buf.add(u);                        
+    };
     return Array.sort(buf.toArray(), compareUsers);
   };
 
@@ -998,36 +998,13 @@ shared ({caller = initializer}) actor class ModClub () = this {
     await pohEngine.pohGenerateUniqueToken(providerUserId, caller);
   };
 
-  // Method called by provider
-  public shared({ caller }) func resetUsersPOH(providerUserId: Principal) : async Result.Result<(), PohTypes.PohError> {
-    let providerId = caller;
-    // challenges will be replaced by the ones configured by provider
-    let rejectedPackageId = pohEngine.retrieveRejectedPackageId(providerId, CHALLENGE_IDS, voteManager.getContentStatus);
-    switch(rejectedPackageId) {
-      case(null) {
-        return #err(#challengeNotRejectedOrExpired);
-      };
-      case(?id) {
-        pohEngine.changeChallengePackageStatus(id, #rejected);
-        voteManager.changePohPackageVotingStatus(id, #rejected);
-        let _ = await pohEngine.retrieveChallengesForUser(providerUserId, CHALLENGE_IDS, true);
-        return #ok();
-      }
-    };
-  };
-
-  // Method called by user on UI
-  public shared({ caller }) func resetModClubUsersPOH() : async Result.Result<(), PohTypes.PohError> {
-    await resetUsersPOH(caller);
-  };
-
   // Method called by user on UI
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
     let tokenResponse = pohEngine.decodeToken(caller, token);
     if(tokenResponse == #err(#invalidToken)) {
       return #err(#invalidToken);
     };
-    await pohEngine.retrieveChallengesForUser(caller, CHALLENGE_IDS, false);
+    await pohEngine.retrieveChallengesForUser(caller, CHALLENGE_IDS, 365, false);
   };
 
   // Method called by user on UI
@@ -1113,7 +1090,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       case(?package) {
         pohEngine.changeChallengePackageStatus(packageId, #rejected);
         voteManager.changePohPackageVotingStatus(packageId, #rejected);
-        await pohEngine.retrieveChallengesForUser(package.userId, CHALLENGE_IDS, true);
+        await pohEngine.retrieveChallengesForUser(package.userId, CHALLENGE_IDS, 365, true);
       };
     };
    

@@ -1,11 +1,12 @@
-let upstream = https://github.com/dfinity/vessel-package-set/releases/download/mo-0.6.5-20210729/package-set.dhall sha256:6f30b0de62cf03760e60c7e6e9d681a321fa9825f308828a616b0f627bd88953
+let upstream = https://github.com/dfinity/vessel-package-set/releases/download/mo-0.6.21-20220215/package-set.dhall
 let Package =
     { name : Text, version : Text, repo : Text, dependencies : List Text }
 
 let
   -- This is where you can add your own packages to the package-set
   additions =
-    [{ name = "uuid"
+    [
+      { name = "uuid"
       , repo = "https://github.com/aviate-labs/uuid.mo"
       , version = "v0.2.0"
       , dependencies = [ "base" ]

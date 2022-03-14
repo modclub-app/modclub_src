@@ -130,7 +130,7 @@ module PohModule {
         (PohTypes.PohChallengeStatus, ?Int) {
             if(attempts.get(index).status == #rejected) {
                 return (#rejected, ?attempts.get(index).completedOn);
-            } else if(Helpers.timeNow() - attempts.get(index).completedOn >= validForDays * MILLI_SECONDS_DAY and attempts.get(index).status == #verified) {
+            } else if(isChallengeExpired(attempts.get(index), validForDays)) {
                 return (#expired, ?attempts.get(index).completedOn);
             } else if(attempts.get(index).status == #verified) {
                 return (#verified, ?attempts.get(index).completedOn);
@@ -139,6 +139,10 @@ module PohModule {
             } else {
                 return findChallengeStatus(attempts, validForDays, index - 1);
             };
+        };
+
+        func isChallengeExpired(attempt: PohTypes.PohChallengesAttempt, validForDays: Nat) : Bool {
+            return Helpers.timeNow() - attempt.completedOn >= validForDays * MILLI_SECONDS_DAY and attempt.status == #verified;
         };
 
         //Pre Step 4 Generate token
@@ -168,8 +172,7 @@ module PohModule {
 
         // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
         // Modclub UI will ask for all the challenge for a user to show
-        // ResponseType of this function is yet to be designed.
-        public func retrieveChallengesForUser(userId: Principal, challengeIds: [Text], forceCreateNewAttempts: Bool) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+        public func retrieveChallengesForUser(userId: Principal, challengeIds: [Text], validForDays: Nat, forceCreateNewAttempts: Bool) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
             // populate pohUsers but with their modclub user id
             switch(state.pohUsers.get(userId)) {
                 case(null) {
@@ -202,39 +205,51 @@ module PohModule {
                         };
                         case(_)();
                     };
-                    
 
                     let attempts = state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!;
 
                     if(attempts.size() == 0 or forceCreateNewAttempts == true) {
-                        let newAttempt = {
-                                                attemptId = ?Helpers.generateHash(Principal.toText(userId) # challengeId # Nat.toText(attempts.size()));
-                                                challengeId = challengeId;
-                                                userId = userId;
-                                                challengeName = state.pohChallenges.get(challengeId)!.challengeName;
-                                                challengeDescription = state.pohChallenges.get(challengeId)!.challengeDescription;
-                                                challengeType = state.pohChallenges.get(challengeId)!.challengeType;
-                                                status = #notSubmitted;
-                                                contentId = null;
-                                                dataCanisterId = null;
-                                                createdAt = Helpers.timeNow();
-                                                updatedAt = Helpers.timeNow();
-                                                completedOn = -1; // -1 means not completed
-                                                wordList = do ?{
-                                                    switch(state.pohChallenges.get(challengeId)!.challengeType) {
-                                                        case(#selfVideo) generateRandomWordList(6);
-                                                        case(_) [];
-                                                    };
-                                                };
-                                        };
+                        let newAttempt = createNewAttempt(userId, challengeId, attempts.size())!;
                         state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!.add(newAttempt);
                         challengesCurrent.add(newAttempt);
                     } else {
+                        let lastAttempt = attempts.get(attempts.size() - 1);
+                        // if last attempt was rejected, auto create a new one.
+                        if(lastAttempt.status == #rejected or isChallengeExpired(lastAttempt, validForDays)) {
+                            let newAttempt = createNewAttempt(userId, challengeId, attempts.size())!;
+                            state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!.add(newAttempt);
+                        };
                         challengesCurrent.add(attempts.get(attempts.size() - 1));
                     };
                 };
             };
             #ok(challengesCurrent.toArray());
+        };
+
+        func createNewAttempt(userId: Principal, challengeId: Text, nextAttemptIndex: Nat) : ?PohTypes.PohChallengesAttempt {
+            do? 
+            {
+                {
+                    attemptId = ?Helpers.generateHash(Principal.toText(userId) # challengeId # Nat.toText(nextAttemptIndex));
+                    challengeId = challengeId;
+                    userId = userId;
+                    challengeName = state.pohChallenges.get(challengeId)!.challengeName;
+                    challengeDescription = state.pohChallenges.get(challengeId)!.challengeDescription;
+                    challengeType = state.pohChallenges.get(challengeId)!.challengeType;
+                    status = #notSubmitted;
+                    contentId = null;
+                    dataCanisterId = null;
+                    createdAt = Helpers.timeNow();
+                    updatedAt = Helpers.timeNow();
+                    completedOn = -1; // -1 means not completed
+                    wordList = do ?{
+                        switch(state.pohChallenges.get(challengeId)!.challengeType) {
+                            case(#selfVideo) generateRandomWordList(6);
+                            case(_) [];
+                        };
+                    };
+                };
+            };
         };
 
         public func validateChallengeSubmission(challengeData : PohTypes.PohChallengeSubmissionRequest, userId: Principal) : PohTypes.PohChallengeSubmissionStatus {
