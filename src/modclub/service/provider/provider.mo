@@ -203,4 +203,8 @@ module ProviderModule {
       #ok();
   };
 
+    public func getAdminProviderIDs(caller: Principal, state: GlobalState.State): [Principal]{
+      return state.admin2Provider.get0(caller);
+  };
+
 };

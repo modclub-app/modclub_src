@@ -404,7 +404,12 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       // TODO dynamic list will be fetched from admin dashboard state
       let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
-      let challengePackage = pohEngine.createChallengePackageForVoting(caller, providerChallenges, Helpers.generateId, voteManager.getContentStatus);
+      let challengePackage = pohEngine.createChallengePackageForVoting(
+        caller,
+        providerChallenges,
+        voteManager.getContentStatus,
+        state
+      );
       switch(challengePackage) {
         case(null)();
         case(?package) {
@@ -691,8 +696,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
         Principal.fromActor(this);
   };
 
-  public shared({ caller }) func addProviderAdmin( userId: Principal, userName: Text, providerId: ?Principal) : async Types.ProviderResult {
-    return ProviderManager.addProviderAdmin(userId, userName, caller, providerId, state)
+  public shared({ caller }) func addProviderAdmin( 
+    userId: Principal,
+     userName: Text,
+      providerId: ?Principal
+      ) : async Types.ProviderResult {
+        let result = await ProviderManager.addProviderAdmin(userId, userName, caller, providerId, state);
+    return result;
+  };
+
+  public query({caller}) func getAdminProviderIDs(): async [Principal] {
+    return ProviderManager.getAdminProviderIDs(caller, state);
   };
 
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
