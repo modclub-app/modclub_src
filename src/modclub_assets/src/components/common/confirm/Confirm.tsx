@@ -23,7 +23,7 @@ export default function Confirm({
             value={id}
             id={id}
           />
-          <Icon className="check">
+          <Icon className="check ml-6">
             <span className="material-icons">done</span>
           </Icon>
         </label>
