@@ -189,7 +189,6 @@ module {
         #invalidToken;
         #challengeNotPendingForSubmission;
         #invalidPackageId;
-        #challengeNotRejectedOrExpired;
     };
 
     public type VerifyHumanityResponse = {
