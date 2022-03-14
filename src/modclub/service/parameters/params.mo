@@ -3,7 +3,7 @@ module {
     
     public let DEFAULT_MIN_VOTES = 2;
     public let DEFAULT_MIN_STAKED = 0;
-    public let DEFAULT_TEST_TOKENS = 10;
+    public let DEFAULT_TEST_TOKENS = 100;
 
     public let MIN_STAKE_POH = 100:Int;
     public let MIN_VOTE_POH = 3:Int;
