@@ -1,21 +1,20 @@
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
+import GlobalState "../../state";
 import HashMap "mo:base/HashMap";
+import Helpers "../../helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
+import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
+import PohState "./statev1";
+import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-
-import GlobalState "../../state";
-import PohState "./statev1";
-import PohTypes "./types";
-import ModClubParam "../parameters/params";
 import Types "../../types";
-import Helpers "../../helpers";
 
 module PohModule {
 
@@ -85,7 +84,7 @@ module PohModule {
                                 var status: PohTypes.PohChallengeStatus = #notSubmitted;
                                 var completedOn: ?Int = null;
                                 if(attempts.size() != 0) {
-                                    let statusAndDate = findChallengeStatus(attempts, validForDays, attempts.size() - 1);
+                                    let statusAndDate = findChallengeStatus(attempts, validForDays);
                                     status := statusAndDate.0;
                                     completedOn := statusAndDate.1;
                                 };
@@ -127,20 +126,32 @@ module PohModule {
             };
         };
 
+            // User A
+            // 4 years back	 3 years back	2 year back	
+            // rejected	      verified	     verified	pending
 
-        func findChallengeStatus(attempts: Buffer.Buffer<PohTypes.PohChallengesAttempt>, validForDays: Nat, index: Nat) : 
+            // User B         
+            // 4 years back	 1 years back		
+            //  rejected	       verified	     rejected	rejected
+
+            // Provider A expiry: 1 year
+            // Provider B expiry: 2 year
+        func findChallengeStatus(attempts: Buffer.Buffer<PohTypes.PohChallengesAttempt>, validForDays: Nat) : 
         (PohTypes.PohChallengeStatus, ?Int) {
-            if(attempts.get(index).status == #rejected) {
-                return (#rejected, ?attempts.get(index).completedOn);
-            } else if(isChallengeExpired(attempts.get(index), validForDays)) {
-                return (#expired, ?attempts.get(index).completedOn);
-            } else if(attempts.get(index).status == #verified) {
-                return (#verified, ?attempts.get(index).completedOn);
-            } else if(index == 0) {
-                return (attempts.get(index).status, ?attempts.get(index).completedOn);
-            } else {
-                return findChallengeStatus(attempts, validForDays, index - 1);
+            for(i in Iter.revRange(attempts.size() - 1, 0)) {
+                let attempt = attempts.get(Helpers.intToNat(i));
+                // search for a verified and non expired attempt through all attempts in reverse order
+                if(attempt.status == #verified and not isChallengeExpired(attempt, validForDays)) {
+                    return (#verified, ?attempt.completedOn);
+                }
             };
+            // if not found, return the status of last attempt whatsoever it is
+            // but check for expiry if the last one is verified
+            let lastAttempt = attempts.get(attempts.size()-1);
+            if(isChallengeExpired(lastAttempt, validForDays)) {
+                return (#expired, ?lastAttempt.completedOn);
+            };
+            return (lastAttempt.status, ?lastAttempt.completedOn);
         };
 
         func isChallengeExpired(attempt: PohTypes.PohChallengesAttempt, validForDays: Nat) : Bool {

@@ -3,6 +3,8 @@ import Blob "mo:base/Blob";
 import GlobalState "state";
 import Char "mo:base/Char";
 import Nat32 "mo:base/Nat32";
+import Nat64 "mo:base/Nat64";
+import Int64 "mo:base/Int64";
 import Prim "mo:prim";
 import SHA256 "mo:crypto/SHA/SHA256";
 import Source "mo:uuid/async/SourceV4";
@@ -83,6 +85,8 @@ module Helpers {
 
     num;
   };
+
+  public func intToNat(value: Int) : Nat { Nat64.toNat(Int64.toNat64(Int64.fromInt(value))) };
 
   public func logMessage(canistergeekLogger : Canistergeek.Logger, logMessage: Text, logLevel: {#info; #error; #warn; #debugLevel;}) {
     var level = "INFO: ";
