@@ -49,7 +49,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
-
+  let CHALLENGE_IDS = ["challenge-profile-pic", "challenge-user-video"];
   stable var signingKey = "";
   // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
@@ -350,7 +350,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
         providerId = providerId;
     };
     // validity and rules needs to come from admin dashboard here
-    pohEngine.pohVerificationRequest(pohVerificationRequest, 365, ["challenge-profile-pic", "challenge-user-video"]);
+    pohEngine.pohVerificationRequest(pohVerificationRequest, 365, CHALLENGE_IDS);
   };
   
   // Method called by provider
@@ -364,23 +364,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(tokenResponse == #err(#invalidToken)) {
       return #err(#invalidToken);
     };
-    await pohEngine.retrieveChallengesForUser(caller, ["challenge-profile-pic", "challenge-user-video"], false);
-  };
-
-  // Admin method to create new attempts
-  public shared({ caller }) func resetUserChallengeAttempt(packageId: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await AuthManager.onlyOwner(caller, initializer);
-    switch(pohEngine.getPohChallengePackage(packageId)) {
-      case(null) {
-        throw Error.reject("Package doesn't exist");
-      };
-      case(?package) {
-        pohEngine.changeChallengePackageStatus(packageId, #rejected);
-        voteManager.changePohPackageVotingStatus(packageId, #rejected);
-        await pohEngine.retrieveChallengesForUser(package.userId, ["challenge-profile-pic", "challenge-user-video"], true);
-      };
-    };
-   
+    await pohEngine.retrieveChallengesForUser(caller, CHALLENGE_IDS, 365, false);
   };
 
   public shared({ caller }) func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest) : async PohTypes.PohChallengeSubmissionResponse {
@@ -440,7 +424,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       Debug.print("Calling pohVerificationRequest");
       let result = await pohVerificationRequest(caller);
       if(result.status == #rejected) {
-        let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, ["challenge-profile-pic", "challenge-user-video"]);
+        let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, CHALLENGE_IDS, voteManager.getContentStatus);
         switch(rejectedPackageId) {
           case(null)();
           case(?id) {
@@ -458,6 +442,23 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       return {status = result.status; token = null; rejectionReasons = rejectionReasons;};
     }
+  };
+
+
+  // Admin method to create new attempts
+  public shared({ caller }) func resetUserChallengeAttempt(packageId: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+    await AuthManager.onlyOwner(caller, initializer);
+    switch(pohEngine.getPohChallengePackage(packageId)) {
+      case(null) {
+        throw Error.reject("Package doesn't exist");
+      };
+      case(?package) {
+        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        voteManager.changePohPackageVotingStatus(packageId, #rejected);
+        await pohEngine.retrieveChallengesForUser(package.userId, CHALLENGE_IDS, 365, true);
+      };
+    };
+   
   };
 
   public shared({ caller }) func populateChallenges() : async () {
