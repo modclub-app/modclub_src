@@ -31,14 +31,15 @@ module {
 
   // Have to hardcode principal for modclub, change it to production canister ID later
   public let ModClub =
-      actor "r7inp-6aaaa-aaaaa-aaabq-cai" : actor {      
+      actor "rwlgt-iiaaa-aaaaa-aaaaa-cai" : actor {      
         registerProvider: (Text, Text, ?Image) -> async Text;
         deregisterProvider: () -> async Text;
-        addProviderAdmin:(Text,Principal) ->  ();
+        addProviderAdmin:(Text,?Principal, Text) ->  ();
         addRules: ([Text]) -> async ();
         removeRules: ([Text]) -> async ();
         updateSettings: (ProviderSettings) -> async ();
         submitText: (Text, Text, ?Text) -> async Text;
+        submitHtmlContent: (Text, Text, ?Text) -> async Text;
         submitImage: (Text, [Nat8], Text, ?Text) -> async Text;
         subscribe: (SubscribeMessage) -> async ();
         putBlobsInDataCanister: (Text, Blob, Nat, Nat, Text) -> async (Principal, Nat);

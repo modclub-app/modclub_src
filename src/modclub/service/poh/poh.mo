@@ -1,19 +1,21 @@
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
-import Helpers "../../helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
-import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
-import PohState "./statev1";
-import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+
+import GlobalState "../../state";
+import PohState "./statev1";
+import PohTypes "./types";
+import ModClubParam "../parameters/params";
 import Types "../../types";
+import Helpers "../../helpers";
 
 module PohModule {
 
@@ -380,15 +382,18 @@ module PohModule {
                         fullName = ?fullName;
                         aboutUser = ?aboutUser;
                         createdAt = user.createdAt;
-                        updatedAt = Time.now();
+                        updatedAt = Helpers.timeNow();
                     });
                 };
             };
         };
 
-        public func createChallengePackageForVoting(userId: Principal, challengeIds: [Text], 
-                        generateId: (Principal, Text) -> Text,
-                        getContentStatus: Text -> Types.ContentStatus) : ?PohTypes.PohChallengePackage {
+        public func createChallengePackageForVoting(
+            userId: Principal,
+            challengeIds: [Text], 
+            getContentStatus: Text -> Types.ContentStatus,
+            globalState: GlobalState.State) 
+            : ?PohTypes.PohChallengePackage {
             for(packageId in state.userToPohChallengePackageId.get0(userId).vals()) {
                 switch(state.pohChallengePackages.get(packageId)) {
                     case(null)();
@@ -434,7 +439,7 @@ module PohModule {
                     return null;
                 };
                 let pohPackage = {
-                    id = generateId(userId, "poh-content");
+                    id = Helpers.generateId(userId, "poh-content", globalState);
                     challengeIds =  challengeIds;
                     userId =  userId;
                     contentType = #pohPackage;
