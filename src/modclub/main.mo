@@ -788,10 +788,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
     
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
-    // Delete these two lines after one deployment
-    pohStableStateV1 := mergeV0StateIntoV1(pohStableStateV1, pohStableState);
-    pohEngine := POH.PohEngine(pohStableStateV1);
-    // Upto Here
     pohStableStateV1 := PohStateV1.emptyStableState();
     pohVoteStableState := VoteState.emptyStableState();
     
@@ -805,28 +801,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
-
-  // Delete this function after one deployment
-  func mergeV0StateIntoV1(pohStableStateV1 : PohStateV1.PohStableState, pohStableState :  PohState.PohStableState) 
-  : PohStateV1.PohStableState {
-    let userToPackage : RelObj.RelObj<Principal, Text> = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
-    for((packageId, package) in pohStableState.pohChallengePackages.vals()) {
-      userToPackage.put(package.userId, packageId);
-    };
-    let st = {
-            pohUsers = Array.append(pohStableState.pohUsers, pohStableStateV1.pohUsers);
-            pohChallenges = Array.append(pohStableState.pohChallenges, pohStableStateV1.pohChallenges);
-            pohUserChallengeAttempts = Array.append(pohStableState.pohUserChallengeAttempts, pohStableStateV1.pohUserChallengeAttempts);
-            pohProviderUserData = Array.append(pohStableState.pohProviderUserData, pohStableStateV1.pohProviderUserData);
-            providerToModclubUser = Array.append(pohStableState.providerToModclubUser, pohStableStateV1.providerToModclubUser);
-            pohChallengePackages = Array.append(pohStableState.pohChallengePackages, pohStableStateV1.pohChallengePackages);
-            userToPohChallengePackageId =  pohStableStateV1.userToPohChallengePackageId;
-            wordList = Array.append(pohStableState.wordList, pohStableStateV1.wordList);
-            provider2PohVerificationRequests =  Array.append(pohStableState.provider2PohVerificationRequests, pohStableStateV1.provider2PohVerificationRequests);
-            pohVerificationRequests = Array.append(pohStableState.pohVerificationRequests, pohStableStateV1.pohVerificationRequests);
-        };
-        return st;
-  }
 
   // Uncomment when required
   // system func heartbeat() : async () {};
