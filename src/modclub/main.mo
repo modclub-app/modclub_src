@@ -326,6 +326,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     tokens.getHoldings(initializer);
   };
 
+  public query func getAllModeratorHoldings() : async [Token.Holdings] {
+    return tokens.getAllHoldings();
+  };
+
   //----------------------POH Methods For Providers------------------------------
 
   public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {

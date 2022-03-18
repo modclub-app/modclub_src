@@ -251,9 +251,13 @@ module Token {
       };
     };  
 
-
-
-
+    public func getAllHoldings() : [Holdings] {
+      let rt = [];
+      for(p in _tokenWallets.keys().vals()) {
+        rt.push(getHoldings(p));
+      };
+      rt;
+    };
 
     public func getStable() : TokensStable {
       let st = {
