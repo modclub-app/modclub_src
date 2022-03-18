@@ -754,6 +754,9 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .image {
+  display: flex;
+  justify-content: center;
+  
   &.has-gradient {
     background: linear-gradient(to left, $primary, $secondary);
     padding: 2px;
