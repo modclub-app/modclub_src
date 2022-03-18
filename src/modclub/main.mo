@@ -11,6 +11,7 @@ import Helpers "./helpers";
 import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
+import List "mo:base/List";
 import ModClubParam "service/parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
@@ -62,8 +63,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   
   stable var storageStateStable  = StorageState.emptyStableState();
   stable var retiredDataCanisterId : [Text] = [];
-  // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
-  var storageSolution = StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, initializer, initializer, signingKey);
+ 
 
   stable var pohStableState = PohState.emptyStableState();
   stable var pohStableStateV1 = PohStateV1.emptyStableState();
@@ -78,18 +78,52 @@ shared ({caller = initializer}) actor class ModClub () = this {
   stable var _canistergeekLoggerUD: ? Canistergeek.LoggerUpgradeData = null;
   private let canistergeekLogger = Canistergeek.Logger();
 
+  stable var admins : List.List<Principal> = List.nil<Principal>();
+  // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
+  var storageSolution = StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, admins, signingKey);
+
   public shared({ caller }) func toggleAllowSubmission(allow: Bool) : async () {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     allowSubmissionFlag := allow;
   };
 
   public shared({ caller }) func generateSigningKey() : async () {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     switch(Helpers.encodeNat8ArraytoBase32(Blob.toArray(await Random.blob()))) {
       case(null){throw Error.reject("Couldn't generate key");};
       case(?key) {
         signingKey := key;
         await storageSolution.setSigningKey(signingKey);
+      };
+    };
+  };
+
+  public shared query ({ caller }) func getAdmins() : async Result.Result<[Principal], Text> {
+    AuthManager.getAdmins(caller, admins);
+  };
+
+  //This function should be invoked immediately after the canister is deployed via script.
+  public shared({ caller }) func registerAdmin(id : Principal) : async Result.Result<(), Text> {
+    await resolveAdminResponse(AuthManager.registerAdmin(caller, admins, id));
+  };
+
+  public shared({ caller }) func unregisterAdmin(id : Text) : async Result.Result<(), Text> {
+    await resolveAdminResponse(AuthManager.unregisterAdmin(caller, admins, id));
+  };
+
+  func resolveAdminResponse(adminListResponse: Result.Result<List.List<Principal>, Text>) : async Result.Result<(), Text> {
+    switch(adminListResponse) {
+      case(#err(Unauthorized)) {
+        return #err(Unauthorized);
+      };
+      case(#ok(adminList)) {
+        admins := adminList;
+        await storageSolution.updateBucketControllers(admins);
+        #ok();
       };
     };
   };
@@ -104,24 +138,32 @@ shared ({caller = initializer}) actor class ModClub () = this {
   };
 
   public shared({ caller }) func getAirdropUsers() : async [Types.AirdropUser] {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     AirDropManager.getAirdropUsers(state);
   };
 
   // Add principals to airdropWhitelist
   public shared({ caller }) func addToAirdropWhitelist(pids: [Principal]) : async () {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     AirDropManager.addToAirdropWhitelist(pids, state);
   };
 
   // Get airdropWhitelist entries
   public shared({ caller }) func getAirdropWhitelist() : async [Principal] {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     AirDropManager.getAirdropWhitelist(state);
   };
 
   public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
-     await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     voteManager.addToAutoApprovedPOHUser(userId);
   };
 
@@ -451,7 +493,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Admin method to create new attempts
   public shared({ caller }) func resetUserChallengeAttempt(packageId: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     switch(pohEngine.getPohChallengePackage(packageId)) {
       case(null) {
         throw Error.reject("Package doesn't exist");
@@ -467,7 +511,9 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   public shared({ caller }) func populateChallenges() : async () {
     Debug.print("Populating challenges called by: " # Principal.toText(caller));
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     pohEngine.populateChallenges();
   };
 
@@ -666,18 +712,24 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   // Helpers
   public shared({caller}) func adminInit() : async () {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     await generateSigningKey();
     await populateChallenges();
   };
 
   public shared({caller}) func retiredDataCanisterIdForWriting(canisterId: Text) {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     storageSolution.retiredDataCanisterId(canisterId);
   };
 
   public shared({caller}) func getAllDataCanisterIds() : async ([Principal], [Text]) {
-    await AuthManager.onlyOwner(caller, initializer);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     let allDataCanisterId = storageSolution.getAllDataCanisterIds();
     let retired = storageSolution.getRetiredDataCanisterIdsStable();
     (allDataCanisterId, retired);
@@ -782,7 +834,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   system func postupgrade() {
     // Reinitializing storage Solution to add "this" actor as a controller
-    storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, initializer, Principal.fromActor(this), signingKey);
+    admins := AuthManager.setUpDefaultAdmins(admins, initializer, Principal.fromActor(this));
+    storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, admins, signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);

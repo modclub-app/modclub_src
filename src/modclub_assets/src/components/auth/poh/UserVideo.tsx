@@ -183,7 +183,7 @@ export default function UserVideo({ steps }) {
       }
 
       {!videoUrl ? (
-        <div className="is-relative has-text-centered has-background-grey" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
+        <div className="is-relative has-text-centered" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
           <div style={{ paddingBottom: "75%" }}>
             <Webcam
               audio={true}
@@ -199,6 +199,7 @@ export default function UserVideo({ steps }) {
                 bottom: 0,
                 height: "100%",
                 objectFit: "fill",
+                margin: "auto"
               }}
               forceScreenshotSourceSize
               videoConstraints={{

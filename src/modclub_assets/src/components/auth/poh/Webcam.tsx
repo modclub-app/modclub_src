@@ -101,7 +101,7 @@ export function WebcamWrapper({ setFile, file }) {
   }
 
   return !file.data ? (
-    <div className="is-relative has-text-centered has-background-grey" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
+    <div className="is-relative has-text-centered" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
       <div style={{ paddingBottom: "75%" }}>
         <Webcam
           audio={false}
@@ -117,6 +117,7 @@ export function WebcamWrapper({ setFile, file }) {
             bottom: 0,
             height: "100%",
             objectFit: "fill",
+            margin: "auto"
           }}
           forceScreenshotSourceSize
           videoConstraints={{
