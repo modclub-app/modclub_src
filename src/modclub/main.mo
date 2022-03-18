@@ -371,7 +371,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     tokens.getHoldings(initializer);
   };
 
-  public query({ caller }) func getAllModeratorHoldings() : async [Token.Holdings] {
+  public query({ caller }) func getAllModeratorHoldings() : async [(Principal, Token.Holdings)] {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };

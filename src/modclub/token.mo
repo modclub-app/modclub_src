@@ -252,10 +252,10 @@ module Token {
       };
     };  
 
-    public func getAllHoldings() : [Holdings] {
-      let rt = Buffer.Buffer<Holdings>(0);
+    public func getAllHoldings() : [(Principal, Holdings)] {
+      let rt = Buffer.Buffer<(Principal, Holdings)>(0);
       for(p in _tokenWallets.keys()) {
-        rt.add(getHoldings(p));
+        rt.add((p, getHoldings(p)));
       };
       rt.toArray();
     };
