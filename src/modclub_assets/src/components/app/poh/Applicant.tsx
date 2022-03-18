@@ -94,7 +94,7 @@ export default function PohApplicant() {
   }, [user]);
 
   useEffect(() => {
-    content && content.pohTaskData && content.pohTaskData.forEach(task => {
+    !formRules.length && content && content.pohTaskData && content.pohTaskData.forEach(task => {
       setFormRules(existingRule => [...existingRule, ...task.allowedViolationRules]);
     });
   }, [content]);
