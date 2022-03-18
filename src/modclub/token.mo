@@ -6,6 +6,7 @@ import State "./state";
 import Error "mo:base/Error";
 import Iter "mo:base/Iter";
 import Debug "mo:base/Debug"; 
+import Buffer "mo:base/Buffer";
 
 module Token {
   public type Map<X, Y> = HashMap.HashMap<X, Y>;
@@ -252,11 +253,11 @@ module Token {
     };  
 
     public func getAllHoldings() : [Holdings] {
-      let rt = [];
-      for(p in _tokenWallets.keys().vals()) {
-        rt.push(getHoldings(p));
+      let rt = Buffer.Buffer<Holdings>(0);
+      for(p in _tokenWallets.keys()) {
+        rt.add(getHoldings(p));
       };
-      rt;
+      rt.toArray();
     };
 
     public func getStable() : TokensStable {

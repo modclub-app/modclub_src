@@ -364,11 +364,17 @@ shared ({caller = initializer}) actor class ModClub () = this {
     "Unstaked " # Nat.toText(amount) # " tokens";
   };
 
-  public query func getModclubHoldings() : async Token.Holdings {
+  public query({ caller }) func getModclubHoldings() : async Token.Holdings {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     tokens.getHoldings(initializer);
   };
 
-  public query func getAllModeratorHoldings() : async [Token.Holdings] {
+  public query({ caller }) func getAllModeratorHoldings() : async [Token.Holdings] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     return tokens.getAllHoldings();
   };
 
