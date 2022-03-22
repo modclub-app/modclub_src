@@ -14,8 +14,7 @@ import Webcam from "react-webcam";
 import { CaptureButton } from "./Webcam"
 import { processAndUploadChunk } from "../../../utils/util";
 import { format, formatDuration } from "date-fns";
-
-const MAX_CHUNK_SIZE = 1024 * 500;
+import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
 
 const RecordButton = styled.div`
   cursor: pointer;
@@ -133,16 +132,25 @@ export default function UserVideo({ steps }) {
     const blob = new Blob(recordedChunks, {
       type: mimeType
     });
-
-    const putChunkPromises: Promise<undefined>[] = [];
+    if (blob.size <= MIN_FILE_SIZE) {
+      alert("File upload could not be completed. File size is too small. Please try again"); 
+      setSubmitting(false);
+      return;
+    }
+    
     let chunk = 1;
     for (let byteStart = 0; byteStart < blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
-      putChunkPromises.push(
-        processAndUploadChunk("challenge-user-video", MAX_CHUNK_SIZE, blob, byteStart, chunk, blob.size, blob.type)
+      await processAndUploadChunk(
+        "challenge-user-video",
+        MAX_CHUNK_SIZE,
+        blob,
+        byteStart,
+        chunk,
+        blob.size,
+        blob.type
       );
     }
     
-    await Promise.all(putChunkPromises);
     setSubmitting(false);
     history.push("/new-poh-profile/confirm");
   }

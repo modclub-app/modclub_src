@@ -121,8 +121,7 @@ export async function getTokenHoldings(): Promise<UserHoldings> {
   return convertObj(await (await getMC()).getTokenHoldings());
 }
 
-export async function getAdminProviderIDs(
-): Promise<Principal[]> {
+export async function getAdminProviderIDs(): Promise<Principal[]> {
   return await (await getMC()).getAdminProviderIDs();
 }
 

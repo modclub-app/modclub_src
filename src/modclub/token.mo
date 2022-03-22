@@ -117,12 +117,12 @@ module Token {
               };
             };
           } else {
-            Debug.print("Insufficient funds: fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount));
-            throw Error.reject("Insufficient funds");
+            Debug.print("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
+            throw Error.reject("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
           };
         };
         case (null) {
-          throw Error.reject("Insufficient funds");
+          throw Error.reject("No balance for Principal: "# Principal.toText(from));
         };
       };
     };
@@ -141,11 +141,11 @@ module Token {
               };
             };
           } else {
-            throw Error.reject("Insufficient funds");
+            throw Error.reject("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
           };
         };
         case (null) {
-          throw Error.reject("Insufficient funds");
+          throw Error.reject("No balance for Principal: "# Principal.toText(from));
         };
       };
     };

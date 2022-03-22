@@ -759,6 +759,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
         Principal.fromActor(this);
   };
 
+  public query func getInitializer () : async Principal {
+    return initializer;
+  };
+
   public shared({ caller }) func addProviderAdmin( 
     userId: Principal,
      userName: Text,

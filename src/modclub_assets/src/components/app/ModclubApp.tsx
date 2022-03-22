@@ -28,10 +28,10 @@ export default function ModclubApp() {
   const initialCall = async () => {
     const result = await verifyUserHumanity();
     const status = Object.keys(result.status)[0];
-
-    refreshJwt();
-    setJwt(true);
     setStatus(status);
+    if(status == "verified" && await refreshJwt()) {
+      setJwt(true);
+    }
   };
 
   useEffect(() => {
@@ -39,10 +39,10 @@ export default function ModclubApp() {
       if (user?.role?.hasOwnProperty("admin")) {
         history.push("/app/admin");
       } else {
-        user && initialCall();
+        isAuthenticated && user && initialCall();
       }
     }
-  }, [user]);
+  }, [user, isAuthenticated]);
 
   if (isAuthReady && !isAuthenticated) return (
     <NotAuthenticatedModal />
@@ -50,7 +50,7 @@ export default function ModclubApp() {
 
   return (
     <>
-      {!user?.role?.hasOwnProperty("admin") && status && status != "verified" && (
+      {status && status != "verified" && (
         <Modal show={true} showClose={false}>
           <Modal.Card backgroundColor="circles">
             <Modal.Card.Body>
