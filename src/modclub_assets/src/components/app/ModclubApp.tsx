@@ -1,8 +1,9 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Switch, Route, Link, useHistory } from "react-router-dom";
-import { Columns, Modal, Heading } from "react-bulma-components";
-import NotAuthenticatedModal from './modals/NotAuthenticated'; 
+import { Switch, Route, useHistory } from "react-router-dom";
+import { Columns } from "react-bulma-components";
+import NotAuthenticatedModal from './modals/NotAuthenticated';
+import UserIncompleteModal from './modals/UserIncompleteModal'; 
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
@@ -23,10 +24,15 @@ export default function ModclubApp() {
   const history = useHistory();
   const { isAuthenticated, isAuthReady, user } = useAuth();
   const [status, setStatus] = useState(null);
+  const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([])
+
   const [isJwtSet, setJwt] = useState(false);
 
   const initialCall = async () => {
     const result = await verifyUserHumanity();
+    if (result.rejectionReasons && result.rejectionReasons.length) {
+      setRejectionReasons(result.rejectionReasons);
+    }
     const status = Object.keys(result.status)[0];
     setStatus(status);
     if(status == "verified" && await refreshJwt()) {
@@ -50,45 +56,9 @@ export default function ModclubApp() {
 
   return (
     <>
-      {status && status != "verified" && (
-        <Modal show={true} showClose={false}>
-          <Modal.Card backgroundColor="circles">
-            <Modal.Card.Body>
-              <Heading subtitle>Proof of Humanity</Heading>
-              {status === "pending" && (
-                <p>
-                  Your Proof of Humanity approval is in progress. You will be
-                  able to access MODCLUB once it is approved. Please come back
-                  later to check your status.
-                </p>
-              )}
-              {status === "notSubmitted" && (
-                <p>
-                  You have not submitted your Proof of Humanity. Please do so
-                  now.
-                </p>
-              )}
-              {status === "rejected" && (
-                <p>
-                  Your Proof of Humanity has been rejected. Please submit a new
-                  Proof of Humanity.
-                </p>
-              )}
-            </Modal.Card.Body>
-            <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
-              {(status === "notSubmitted" || status === "rejected") && (
-                <Link
-                  to="/new-poh-profile"
-                  className="button is-primary"
-                  style={{ textDecoration: "none" }}
-                >
-                  Continue
-                </Link>
-              )}
-            </Modal.Card.Footer>
-          </Modal.Card>
-        </Modal>
-      )}
+      {!user?.role?.hasOwnProperty("admin") && status && status != "verified" &&
+        <UserIncompleteModal status={status} rejectionReasons={rejectionReasons} />
+      }
       <Columns className="container" marginless multiline={false}>
         <Sidebar />
 

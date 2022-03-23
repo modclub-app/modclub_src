@@ -50,11 +50,14 @@ export default function NewPohProfile({ match }) {
     const challenges = await retrieveChallengesForUser(token[0].token);
     setLoading(false);``
     setSteps(challenges["ok"]);
+    console.log("challenges", challenges);
 
     const uncompleted = challenges["ok"].find(challenge => {
       const status = Object.keys(challenge.status)[0];
       return status === "notSubmitted"
     })
+
+    console.log("uncompleted", uncompleted);
 
     history.push(`${match.path}/${ uncompleted ? uncompleted.challengeId : "confirm" }`);
   }
