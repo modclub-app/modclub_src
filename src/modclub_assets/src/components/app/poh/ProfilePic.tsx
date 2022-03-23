@@ -14,11 +14,25 @@ export default function ProfilePic({ data } : { data: PohTaskData }) {
       setUrlObject(urlObject);
     };
     fetchData();
-  }, [])  
+  }, []);
 
   return (
     <Card.Content>
-      <img src={urlObject} alt="Image File" style={{ display: "block", margin: "auto" }} />
+      <figure className="image is-5by4">
+        {urlObject ? (
+          <img src={urlObject} alt="Image File" />
+        ) : (
+          <div className="loader is-loading p-6"
+           style={{
+             position: "absolute",
+             top: 0,
+             left: 0,
+             right: 0,
+             bottom: 0
+            }}
+          />
+        )}
+      </figure>
     </Card.Content>
   )
 };

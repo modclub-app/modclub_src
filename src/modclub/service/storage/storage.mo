@@ -3,6 +3,7 @@ import Buffer "mo:base/Buffer";
 import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
+import List "mo:base/List";
 import IC "../../remote_canisters/IC";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";
@@ -16,14 +17,14 @@ import Types "./types";
 module StorageModule {
 
 
-public class StorageSolution(storageStableState : StorageState.DataCanisterStateStable, retiredDataCanisterIds: [Text], mainCanisterInitializer: Principal, 
-          mainCanisterActorPrincipal: Principal, signingKeyFromMain: Text) {
+public class StorageSolution(storageStableState : StorageState.DataCanisterStateStable, retiredDataCanisterIds: [Text], admins: List.List<Principal>, signingKeyFromMain: Text) {
 
     let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
 
     let storageState = StorageState.getState(storageStableState);
     var signingKey = signingKeyFromMain;
     let retiredDataCanisterIdMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+    var adminList = admins;
     for(id in retiredDataCanisterIds.vals()) {
       retiredDataCanisterIdMap.put(id, id);
     };
@@ -68,6 +69,14 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
         buff.add(id);
       };
       return buff.toArray();
+    };
+
+    public func updateBucketControllers(admins: List.List<Principal>) : async () {
+      adminList := admins;
+      for((_, bucket) in storageState.dataCanisters.entries()) {
+        // updateCanisters with new controllers
+        await updateCanister(bucket);
+      };
     };
 
     public func setSigningKey(signingKey1: Text): async () {
@@ -167,7 +176,7 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
       await (IC.IC.update_settings( {
         canister_id = cid.canister_id; 
         settings = { 
-          controllers = ?[mainCanisterInitializer, mainCanisterActorPrincipal]; 
+          controllers = ?List.toArray(adminList);
           compute_allocation = null;
           //  memory_allocation = ?4_294_967_296; // 4GB
           memory_allocation = null; // 4GB

@@ -6,6 +6,7 @@ import State "./state";
 import Error "mo:base/Error";
 import Iter "mo:base/Iter";
 import Debug "mo:base/Debug"; 
+import Buffer "mo:base/Buffer";
 
 module Token {
   public type Map<X, Y> = HashMap.HashMap<X, Y>;
@@ -116,12 +117,12 @@ module Token {
               };
             };
           } else {
-            Debug.print("Insufficient funds: fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount));
-            throw Error.reject("Insufficient funds");
+            Debug.print("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
+            throw Error.reject("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
           };
         };
         case (null) {
-          throw Error.reject("Insufficient funds");
+          throw Error.reject("No balance for Principal: "# Principal.toText(from));
         };
       };
     };
@@ -140,11 +141,11 @@ module Token {
               };
             };
           } else {
-            throw Error.reject("Insufficient funds");
+            throw Error.reject("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
           };
         };
         case (null) {
-          throw Error.reject("Insufficient funds");
+          throw Error.reject("No balance for Principal: "# Principal.toText(from));
         };
       };
     };
@@ -251,9 +252,13 @@ module Token {
       };
     };  
 
-
-
-
+    public func getAllHoldings() : [(Principal, Holdings)] {
+      let rt = Buffer.Buffer<(Principal, Holdings)>(0);
+      for(p in _tokenWallets.keys()) {
+        rt.add((p, getHoldings(p)));
+      };
+      rt.toArray();
+    };
 
     public func getStable() : TokensStable {
       let st = {

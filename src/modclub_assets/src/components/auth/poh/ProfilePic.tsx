@@ -9,7 +9,7 @@ import {
 } from "react-bulma-components";
 import { WebcamWrapper } from "./Webcam"
 import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
-const MAX_CHUNK_SIZE = 1024 * 500;
+import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
 
 export default function ProfilePic() {
   const history = useHistory();
@@ -51,14 +51,24 @@ export default function ProfilePic() {
 
   const submit = async () => {
     setSubmitting(true);
-    const putChunkPromises: Promise<undefined>[] = [];
+    if (file.blob.size <= MIN_FILE_SIZE) {
+      alert("File upload could not be completed. File size is too small. Please try again"); 
+      setSubmitting(false);
+      return;
+    };
+
     let chunk = 1;
     for (let byteStart = 0; byteStart < file.blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
-      putChunkPromises.push(
-        processAndUploadChunk("challenge-profile-pic", MAX_CHUNK_SIZE, file.blob, byteStart, chunk, file.size, file.type)
-      );
+      await processAndUploadChunk(
+        "challenge-profile-pic",
+        MAX_CHUNK_SIZE,
+        file.blob,
+        byteStart,
+        chunk,
+        file.size,
+        file.type
+      )
     }
-    await Promise.all(putChunkPromises);
     setSubmitting(false);
     history.push("/new-poh-profile/challenge-user-video");
   }

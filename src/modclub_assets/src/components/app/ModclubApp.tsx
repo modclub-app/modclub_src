@@ -34,10 +34,10 @@ export default function ModclubApp() {
       setRejectionReasons(result.rejectionReasons);
     }
     const status = Object.keys(result.status)[0];
-
-    refreshJwt();
-    setJwt(true);
     setStatus(status);
+    if(status == "verified" && await refreshJwt()) {
+      setJwt(true);
+    }
   };
 
   useEffect(() => {
@@ -45,10 +45,10 @@ export default function ModclubApp() {
       if (user?.role?.hasOwnProperty("admin")) {
         history.push("/app/admin");
       } else {
-        user && initialCall();
+        isAuthenticated && user && initialCall();
       }
     }
-  }, [user]);
+  }, [user, isAuthenticated]);
 
   if (isAuthReady && !isAuthenticated) return (
     <NotAuthenticatedModal />
