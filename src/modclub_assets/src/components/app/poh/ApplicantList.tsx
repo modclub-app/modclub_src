@@ -16,6 +16,8 @@ import { getPohTasks } from "../../../utils/api";
 import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
+const PAGE_SIZE = 3;
+
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
   const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
@@ -87,19 +89,19 @@ export default function PohApplicantList() {
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
+  const [page, setPage] = useState(1);
 
-  const getApplicants = async () => {
-    setLoading(true);
-    const status = { "new": null };
-    const applicants = await getPohTasks(status);
-    console.log("getPohTasks res", applicants);
-    setApplicants(applicants);
-    setLoading(false);
-  }
 
   useEffect(() => {
+    const getApplicants = async () => {
+      setLoading(true);
+      const status = { "new": null };
+      const newApplicants = await getPohTasks(status, PAGE_SIZE, page);
+      setApplicants([...applicants, ...newApplicants]);
+      setLoading(false);
+    };
     user && !loading && getApplicants();
-  }, [user]);
+  }, [page]);
 
   if (loading) {
     return (
@@ -134,6 +136,24 @@ export default function PohApplicantList() {
             <ApplicantSnippet applicant={applicant} />
           </Columns.Column>
         ))}
+        <Columns.Column size={12}>
+          <Card>
+            <Card.Footer alignItems="center">
+              <div>
+                Showing 1 to {Math.min(page * PAGE_SIZE, applicants.length)} of{" "}
+                {applicants.length} feeds
+              </div>
+              <Button
+                color="primary"
+                onClick={() => setPage(page + 1)}
+                className="ml-4 px-7 py-3"
+                disabled={page * PAGE_SIZE > applicants.length}
+              >
+                See more
+              </Button>
+            </Card.Footer>
+          </Card>
+        </Columns.Column>
       </Columns>
     </>
   )

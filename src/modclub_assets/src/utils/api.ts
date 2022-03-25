@@ -203,9 +203,15 @@ export async function submitChallengeData(
 }
 
 export async function getPohTasks(
-  status: ContentStatus
+  status: ContentStatus,
+  pageSize: number,
+  page: number
 ): Promise<PohTaskPlus[]> {
-  return (await getMC()).getPohTasks(status, BigInt(0), BigInt(20));
+  return (await getMC()).getPohTasks(
+    status,
+    BigInt((page - 1) * pageSize),
+    BigInt(page * pageSize)
+  );
 }
 
 export async function getPohTaskData(packageId: string): Promise<any> {
