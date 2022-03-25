@@ -202,6 +202,13 @@ export async function submitChallengeData(
   return (await getMC()).submitChallengeData(pohDataRequest);
 }
 
+// export async function getPohTasks(
+//   status: ContentStatus,
+//   pageSize: number,
+//    page: number
+// ): Promise<PohTaskPlus[]> {
+//   return (await getMC()).getPohTasks(status, BigInt(0), BigInt(20));
+// }
 export async function getPohTasks(
   status: ContentStatus,
   pageSize: number,
