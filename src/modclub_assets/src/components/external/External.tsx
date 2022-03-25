@@ -6,6 +6,7 @@ import NewProfile from "../auth/new_profile/NewProfile";
 import NewPohProfile from "../auth/poh/NewPohProfile";
 import Airdrop from "./Airdrop";
 import AdminIdentity from "./AdminIdentity";
+import Privacy from "./Privacy";
 
 export default function External() {
   return (
@@ -18,6 +19,7 @@ export default function External() {
         <Route path="/terms" component={Home} />
         <Route path="/airdrop" component={Airdrop} />
         <Route path="/admin-identity" component={AdminIdentity} />
+        <Route path="/privacy" component={Privacy} />
       </Switch>
     </>
   );

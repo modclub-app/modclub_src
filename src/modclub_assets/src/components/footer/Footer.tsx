@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { HashLink } from "react-router-hash-link";
+import { Link } from "react-router-dom";
 import { Footer, Container, Columns, Image, Heading, Level } from "react-bulma-components";
 import modclubImg from "../../../assets/logo.png";
 
@@ -35,6 +36,9 @@ export default function Footer_() {
             <a href="mailto:team@modclub.app" className="is-block has-text-white">
               Contact
             </a>
+            <Link to="/privacy" className="is-block has-text-white">
+              Privacy Policy
+            </Link>
           </Columns.Column>
         </Columns>
 

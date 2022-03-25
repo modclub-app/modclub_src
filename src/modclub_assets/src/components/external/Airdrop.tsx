@@ -75,7 +75,11 @@ export default function Airdrop() {
           {message.value}
         </div>
       )}
-      <div className="landing-page has-background-black" style={{height: '100%'}}>
+
+      <div
+        className="landing-page has-background-black"
+        style={{height: '100%'}}
+      >
         <section className="hero is-black is-medium">
           <div className="hero-body container has-text-centered">
             <h1 className="title is-size-1">
