@@ -39,6 +39,9 @@ export default function Footer_() {
             <Link to="/privacy" className="is-block has-text-white">
               Privacy Policy
             </Link>
+            <Link to="/terms" className="is-block has-text-white">
+              Terms of Service
+            </Link>
           </Columns.Column>
         </Columns>
 
