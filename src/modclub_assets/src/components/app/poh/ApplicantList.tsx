@@ -16,7 +16,7 @@ import { getPohTasks } from "../../../utils/api";
 import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 9;
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
   const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
@@ -88,8 +88,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 };
 
 export default function PohApplicantList() {
-  const { user, isAuthenticated } = useAuth();
-  // const { user } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
   const [page, setPage] = useState(1);
@@ -98,16 +97,20 @@ export default function PohApplicantList() {
     setLoading(true);
     const status = { "new": null };
     const start = applicants.length ? applicants.length : 0
-    const end = applicants.length ? (applicants.length + PAGE_SIZE - 1) : PAGE_SIZE - 1
-    const newApplicants = await getPohTasks(status, start, end);
+    const end = applicants.length ? (applicants.length + PAGE_SIZE) : PAGE_SIZE
+    const newApplicants = await getPohTasks(status, start, end - 1);
     console.log('newApplicants res', newApplicants);
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);
   }
 
   useEffect(() => {
+    user && !loading && !applicants.length && getApplicants();
+  }, [user]);
+
+  useEffect(() => {
     user && !loading && getApplicants();
-  }, [user, page]);
+  }, [page]);
 
   if (loading) {
     return (
