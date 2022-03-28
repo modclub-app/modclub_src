@@ -99,7 +99,6 @@ export default function PohApplicantList() {
     const start = applicants.length ? applicants.length : 0
     const end = applicants.length ? (applicants.length + PAGE_SIZE) : PAGE_SIZE
     const newApplicants = await getPohTasks(status, start, end - 1);
-    console.log('newApplicants res', newApplicants);
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);
   }
