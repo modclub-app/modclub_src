@@ -95,14 +95,11 @@ export default function PohApplicantList() {
   const [page, setPage] = useState(1);
 
   const getApplicants = async () => {
-    // if (!user) return
     setLoading(true);
     const status = { "new": null };
-    // const applicants = await getPohTasks(status, PAGE_SIZE, page);
-    // console.log("getPohTasks res", applicants);
-    // setApplicants(applicants);
-    console.log("getApplicants user", user)
-    const newApplicants = await getPohTasks(status, applicants.length, applicants.length);
+    const start = applicants.length ? applicants.length : 0
+    const end = applicants.length ? (applicants.length + PAGE_SIZE - 1) : PAGE_SIZE - 1
+    const newApplicants = await getPohTasks(status, start, end);
     console.log('newApplicants res', newApplicants);
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);
@@ -110,31 +107,7 @@ export default function PohApplicantList() {
 
   useEffect(() => {
     user && !loading && getApplicants();
-  }, [user]);
-
-  // useEffect(() => {
-  //   // console.log("isAuthenticated useEffect isAuthenticated", isAuthenticated)
-  //   // console.log("isAuthenticated useEffect user", user)
-  //   isAuthenticated && getApplicants();
-  // }, [isAuthenticated]);
-
-  useEffect(() => {
-    console.log("call getApplicants from page user", user)
-    user && getApplicants();
-  }, [page]);
-
-  // useEffect(() => {
-  //   const getApplicants = async () => {
-  //     setLoading(true);
-  //     const status = { "new": null };
-  //     const newApplicants = await getPohTasks(status, PAGE_SIZE, page);
-  //     console.log('newApplicants res', newApplicants);
-  //     setApplicants([...applicants, ...newApplicants]);
-  //     setLoading(false);
-  //   };
-  //   user && !loading && getApplicants();
-  //   // user && getApplicants();
-  // }, [user, page]);
+  }, [user, page]);
 
   if (loading) {
     return (
@@ -161,7 +134,7 @@ export default function PohApplicantList() {
       <Columns>
         {applicants.length && applicants.map((applicant, index) => (
           <Columns.Column
-            key={applicant.packageId}
+            key={index}
             mobile={{ size: 11 }}
             tablet={{ size: 6 }}
             fullhd={{ size: 4 }}
@@ -173,8 +146,7 @@ export default function PohApplicantList() {
           <Card>
             <Card.Footer alignItems="center">
               <div>
-                Showing 1 to {Math.min(page * PAGE_SIZE, applicants.length)} of{" "}
-                {applicants.length} feeds
+                Showing 1 to {applicants.length} feeds
               </div>
               <Button
                 color="primary"

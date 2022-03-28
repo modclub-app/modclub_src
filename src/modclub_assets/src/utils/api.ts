@@ -202,27 +202,17 @@ export async function submitChallengeData(
   return (await getMC()).submitChallengeData(pohDataRequest);
 }
 
-// export async function getPohTasks(
-//   status: ContentStatus,
-//   pageSize: number,
-//   page: number,
-// ): Promise<PohTaskPlus[]> {
-//   console.log("getPohTasks page", page);
-//   console.log("getPohTasks pageSize", pageSize);
-//   return (await getMC()).getPohTasks(status, BigInt(0), BigInt(pageSize - 1));
-// }
 export async function getPohTasks(
   status: ContentStatus,
   start: number,
   end: number
 ): Promise<PohTaskPlus[]> {
+  // console.log("getPohTasks start", start);
+  // console.log("getPohTasks end", end);
   return (await getMC()).getPohTasks(
     status,
     BigInt(start),
     BigInt(end)
-    // CHANGE TO START ADN END
-    // BigInt((page - 1) * pageSize),
-    // BigInt(page * pageSize)
   );
 }
 
