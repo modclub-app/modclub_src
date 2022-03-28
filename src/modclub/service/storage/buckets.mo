@@ -46,7 +46,7 @@ actor class Bucket () = this {
     st;
   };
 
-  stable var signingKey = "signingKey1";
+  stable var signingKey = "";
   var state: DataCanisterState = emptyStateForDataCanister();
 
   let limit = 20_000_000_000_000;
@@ -120,16 +120,6 @@ actor class Bucket () = this {
       state.chunks.get(chunkId(fileId, chunkNum))
   };
 
-  // public func wallet_receive() : async { accepted: Nat64 } {
-  //   let available = Cycles.available();
-  //   let accepted = Cycles.accept(Nat.min(available, limit));
-  //   { accepted = Nat64.fromNat(accepted) };
-  // };
-
-  // public func wallet_balance() : async Nat {
-  //   return Cycles.balance();
-  // };
-
   public type StreamingCallbackToken = {
     key : Text;
     content_encoding : Text;
@@ -142,7 +132,6 @@ actor class Bucket () = this {
     body : Blob;
   };
 
-  // public type StreamingCallback = query StreamingCallbackToken  -> async StreamingCallbackHttpResponse;
   public type StreamingCallback = shared () -> async ();
 
 

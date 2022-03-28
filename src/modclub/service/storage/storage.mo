@@ -173,7 +173,7 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
       await (IC.IC.update_settings( {
         canister_id = cid.canister_id; 
         settings = { 
-          controllers = ?List.toArray(adminList);
+          controllers = ?List.toArray(adminListWithCanister);
           compute_allocation = null;
           //  memory_allocation = ?4_294_967_296; // 4GB
           memory_allocation = null; // 4GB
