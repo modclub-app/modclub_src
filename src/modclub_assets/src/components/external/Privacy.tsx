@@ -3,7 +3,7 @@ import { Section, Hero, Container, Heading } from "react-bulma-components";
 
 export default function Privacy() {
   return (
-    <div className="landing-page has-background-black has-text-silver pb-6">
+    <div className="landing-page info has-background-black has-text-silver pb-6">
       <Hero size="medium" gradient={true}>
         <Hero.Body className="has-text-centered">
           <Container>
