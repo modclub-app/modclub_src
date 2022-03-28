@@ -15,8 +15,8 @@ while [ "$addAnotherPrincipal" = "y" ]
 do
     echo "Enter a bucket id to upgrade"
     read id
-    bucketIds+=","
     bucketIds+=$id
+    bucketIds+=","
  
     echo ""
 
@@ -29,6 +29,8 @@ do
     echo ""
 done
 
+echo $bucketIds
+rm -rf dfx.json
 echo "Generating dfx.json and canister_id.json"
 node generateConfig.cjs "$bucketIds" "$env"
 
@@ -36,9 +38,11 @@ node generateConfig.cjs "$bucketIds" "$env"
 if [ "$env" = "p" ] || [ "$env" = "P" ] || [ "$env" = "s" ] || [ "$env" = "S" ] 
 then
     network="ic"
+    rm -rf canister_ids.json
     echo "*** PRODUCTION BUILD AND DEPLOYMENT ***"
 else
     network="local"
+    rm -rf .dfx/local/canister_ids.json
     echo "*** LOCAL BUILD AND DEPLOYMENT ***"
 fi
 echo "deploying bucket"
