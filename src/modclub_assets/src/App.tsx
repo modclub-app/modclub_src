@@ -32,8 +32,8 @@ export default function App() {
       {/* A <Switch> looks through its children <Route>s and
           renders the first one that matches the current URL. */}
       <Switch>
-        <Route path="/app" component={ModclubApp} />                  
-        <Route path="/" component={External} />            
+        <Route path="/app" component={ModclubApp} />
+        <Route path="/" component={External} />
       </Switch>
     </Router>
   );
