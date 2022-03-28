@@ -16,7 +16,7 @@ import { getPohTasks } from "../../../utils/api";
 import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 3;
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
   const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
@@ -39,7 +39,9 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
       to={`/app/poh/${applicant.packageId}`}
       className="card is-flex is-flex-direction-column is-justify-content-flex-end"
       style={{
-        background: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${urlObject}) no-repeat center`,
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${urlObject})`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
         backgroundSize: "cover"
       }}
     >
@@ -87,38 +89,52 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 
 export default function PohApplicantList() {
   const { user, isAuthenticated } = useAuth();
+  // const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
   const [page, setPage] = useState(1);
 
-  // const getApplicants = async () => {
-  //   console.log('getApplicants')
-  //   setLoading(true);
-  //   const status = { "new": null };
-  //   // const applicants = await getPohTasks(status, PAGE_SIZE, page);
-  //   // console.log("getPohTasks res", applicants);
-  //   // setApplicants(applicants);
-  //   const newApplicants = await getPohTasks(status, PAGE_SIZE, page);
-  //   setApplicants([...applicants, ...newApplicants]);
-  //   setLoading(false);
-  // }
-
-  // useEffect(() => {
-  //   user && !loading && getApplicants();
-  // }, [user, page]);
+  const getApplicants = async () => {
+    // if (!user) return
+    setLoading(true);
+    const status = { "new": null };
+    // const applicants = await getPohTasks(status, PAGE_SIZE, page);
+    // console.log("getPohTasks res", applicants);
+    // setApplicants(applicants);
+    console.log("getApplicants user", user)
+    const newApplicants = await getPohTasks(status, applicants.length, applicants.length);
+    console.log('newApplicants res', newApplicants);
+    setApplicants([...applicants, ...newApplicants]);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    const getApplicants = async () => {
-      setLoading(true);
-      const status = { "new": null };
-      const newApplicants = await getPohTasks(status, PAGE_SIZE, page);
-      console.log('newApplicants res', newApplicants);
-      setApplicants([...applicants, ...newApplicants]);
-      setLoading(false);
-    };
     user && !loading && getApplicants();
-    // user && getApplicants();
-  }, [user, page]);
+  }, [user]);
+
+  // useEffect(() => {
+  //   // console.log("isAuthenticated useEffect isAuthenticated", isAuthenticated)
+  //   // console.log("isAuthenticated useEffect user", user)
+  //   isAuthenticated && getApplicants();
+  // }, [isAuthenticated]);
+
+  useEffect(() => {
+    console.log("call getApplicants from page user", user)
+    user && getApplicants();
+  }, [page]);
+
+  // useEffect(() => {
+  //   const getApplicants = async () => {
+  //     setLoading(true);
+  //     const status = { "new": null };
+  //     const newApplicants = await getPohTasks(status, PAGE_SIZE, page);
+  //     console.log('newApplicants res', newApplicants);
+  //     setApplicants([...applicants, ...newApplicants]);
+  //     setLoading(false);
+  //   };
+  //   user && !loading && getApplicants();
+  //   // user && getApplicants();
+  // }, [user, page]);
 
   if (loading) {
     return (
@@ -143,9 +159,9 @@ export default function PohApplicantList() {
       <Userstats />
 
       <Columns>
-        {applicants.map((applicant, index) => (
+        {applicants.length && applicants.map((applicant, index) => (
           <Columns.Column
-            key={index}
+            key={applicant.packageId}
             mobile={{ size: 11 }}
             tablet={{ size: 6 }}
             fullhd={{ size: 4 }}
@@ -164,7 +180,7 @@ export default function PohApplicantList() {
                 color="primary"
                 onClick={() => setPage(page + 1)}
                 className="ml-4 px-7 py-3"
-                disabled={page * PAGE_SIZE > applicants.length}
+                // disabled={page * PAGE_SIZE > applicants.length}
               >
                 See more
               </Button>
