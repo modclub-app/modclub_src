@@ -16,7 +16,6 @@ import Types "./types";
 
 module StorageModule {
 
-
 public class StorageSolution(storageStableState : StorageState.DataCanisterStateStable, retiredDataCanisterIds: [Text], admins: List.List<Principal>, signingKeyFromMain: Text) {
 
     let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648; //  ~2GB
@@ -151,13 +150,11 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
     };
 
     // dynamically install a new Bucket
-    private func newEmptyBucket(): async Bucket.Bucket {    
+    private func newEmptyBucket(): async Bucket.Bucket {
       Cycles.add(400000000000);
-      let b = await Bucket.Bucket(Iter.toArray(storageState.moderatorsId.entries()), signingKey);
+      let b = await Bucket.Bucket();
       let _ = await updateCanister(b); // update canister permissions and settings
-      let s = await b.getSize();
-      Debug.print("new canister principal is " # debug_show(Principal.toText(Principal.fromActor(b))) );
-      Debug.print("initial size is " # debug_show(s));
+      b.setParams(Iter.toArray(storageState.moderatorsId.keys()), signingKey);
       storageState.dataCanisters.put(Principal.fromActor(b), b);
       return b;
     };
@@ -172,7 +169,7 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
       Debug.print("IC status..."  # debug_show(await IC.IC.canister_status(cid)));
       // let cid = await IC.create_canister(  {
       //    settings = ?{controllers = [?(owner)]; compute_allocation = null; memory_allocation = ?(4294967296); freezing_threshold = null; } } );
-      
+      let adminListWithCanister = List.push(cid.canister_id, adminList);
       await (IC.IC.update_settings( {
         canister_id = cid.canister_id; 
         settings = { 

@@ -7,15 +7,17 @@ import Prim "mo:prim";
 import Cycles "mo:base/ExperimentalCycles";
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
+import Error "mo:base/Error";
 import Iter "mo:base/Iter";
 import Helpers "../../helpers";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
 import LoggerTypesModule "../../canistergeek/logger/typesModule";
-import Types "./types"
+import Types "./types";
+import IC "../../remote_canisters/IC";
 
 
-actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) = this {
+actor class Bucket () = this {
 
   stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
@@ -44,19 +46,38 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
     st;
   };
 
-  stable var signingKey = signingKey1;
+  stable var signingKey = "signingKey1";
   var state: DataCanisterState = emptyStateForDataCanister();
 
   let limit = 20_000_000_000_000;
 
-  for((modId, mId) in moderatorsId.vals()) {
-    Debug.print("Add moderator to new Bucket with modID " # Principal.toText(modId) # " mid: " # Principal.toText(mId));
-    state.moderators.put(modId, modId);
+  func onlyOwners(caller: Principal) : async () {
+    let canisterDetails = await IC.IC.canister_status({ canister_id = Principal.fromActor(this) } );
+    var found = false;
+    label l for(controller in canisterDetails.settings.controllers.vals()) {
+      if(Principal.equal(caller, controller)) {
+        found := true;
+        break l;
+      };
+    };
+    if(not found) {
+      throw Error.reject("Unauthorized Attempt made");
+    };
   };
-  Debug.print("FINISHED ADDING MODERATORS TO BUCKET");
-  
 
-  public func getSize(): async Nat {
+  public shared({caller}) func setParams(moderatorsId : [Principal], signingKey1: Text) {
+    await onlyOwners(caller);
+
+    signingKey := signingKey1;
+    for(modId in moderatorsId.vals()) {
+      Debug.print("Add moderator to new Bucket with modID " # Principal.toText(modId) # " mid: " # Principal.toText(modId));
+      state.moderators.put(modId, modId);
+    };
+    Debug.print("FINISHED ADDING MODERATORS TO BUCKET");
+  };
+
+  public shared({caller}) func getSize(): async Nat {
+    await onlyOwners(caller);
     Debug.print("canister balance: " # Nat.toText(Cycles.balance()));
     Prim.rts_memory_size();
   };
@@ -67,8 +88,10 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
 
   // add chunks 
   // the structure for storing blob chunks is to unse name + chunk num eg: 123a1, 123a2 etc
-  public func putChunks(contentId : Text, chunkNum : Nat, chunkData : Blob,
+  public shared({caller}) func putChunks(contentId : Text, chunkNum : Nat, chunkData : Blob,
           numOfChunks: Nat, contentType: Text) : async ?() {
+    await onlyOwners(caller);
+
     do ? {
       // Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
       if(chunkNum == 1) {
@@ -97,15 +120,15 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
       state.chunks.get(chunkId(fileId, chunkNum))
   };
 
-  public func wallet_receive() : async { accepted: Nat64 } {
-    let available = Cycles.available();
-    let accepted = Cycles.accept(Nat.min(available, limit));
-    { accepted = Nat64.fromNat(accepted) };
-  };
+  // public func wallet_receive() : async { accepted: Nat64 } {
+  //   let available = Cycles.available();
+  //   let accepted = Cycles.accept(Nat.min(available, limit));
+  //   { accepted = Nat64.fromNat(accepted) };
+  // };
 
-  public func wallet_balance() : async Nat {
-    return Cycles.balance();
-  };
+  // public func wallet_balance() : async Nat {
+  //   return Cycles.balance();
+  // };
 
   public type StreamingCallbackToken = {
     key : Text;
@@ -167,25 +190,23 @@ actor class Bucket (moderatorsId : [(Principal, Principal)], signingKey1: Text) 
     };
   };
 
-  public func registerModerators(moderatorIds: [Principal]):  () {
+  public shared({caller}) func registerModerators(moderatorIds: [Principal]):  () {
+    await onlyOwners(caller);
     for(moderatorId in moderatorIds.vals()) {
       state.moderators.put(moderatorId, moderatorId);
     };
   };
 
-  public func deRegisterModerators(moderatorIds: [Principal]): () {
+  public shared({caller}) func deRegisterModerators(moderatorIds: [Principal]): () {
+    await onlyOwners(caller);
     for(moderatorId in moderatorIds.vals()) {
       state.moderators.delete(moderatorId);
     };
   };
 
-  public func setSigningKey(signingKey1: Text): async () {
+  public shared({caller}) func setSigningKey(signingKey1: Text): async () {
+    await onlyOwners(caller);
     signingKey := signingKey1;
-  };
-
-  // Return the principal identifier of this canister.
-  public func whoami () : async Principal {
-        Principal.fromActor(this);
   };
 
   public query({ caller }) func http_request(req: HttpRequest) : async HttpResponse {
