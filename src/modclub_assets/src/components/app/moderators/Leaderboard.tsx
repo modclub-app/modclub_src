@@ -148,7 +148,7 @@ export default function Leaderboard() {
               </table>
             </div>
           </Card.Content>
-          <Card.Footer className="mt-6">
+          <Card.Footer className="mt-6" alignItems="center">
             <div>
               Showing 1 to {Math.min(page * PAGE_SIZE, content.length)} of{" "}
               {content.length} feeds
