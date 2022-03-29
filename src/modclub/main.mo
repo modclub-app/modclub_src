@@ -867,6 +867,16 @@ shared ({caller = initializer}) actor class ModClub () = this {
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
 
+  // To be deleted after one deployment
+    let settings = {
+      minVotes = 2;
+      minStaked = 10;
+    };
+    // Fixing Modclub. It's one of this id which they have used. 
+    // Whatever id is their in our state will get fixed. rest will be ignored in updateProviderSettings logic.
+    ProviderManager.updateProviderSettings(Principal.fromText("qq4ni-qaaaa-aaaaf-qaalq-cai"), settings, state);
+    ProviderManager.updateProviderSettings(Principal.fromText("fmi4m-cyaaa-aaaaf-qadza-cai"), settings, state);
+    ProviderManager.updateProviderSettings(Principal.fromText("qq4ni-qaaaa-aaaaf-qaalq-cai"), settings, state);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 
