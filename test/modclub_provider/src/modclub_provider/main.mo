@@ -48,7 +48,7 @@ shared ({caller = initializer}) actor class ModclubProvider () {
     };
 
     public shared({ caller }) func addAdmin(p: Principal) : async() {
-        await MC.addProviderAdmin(p);
+        await MC.addProviderAdmin(p, "admin", null);
     };
 
     public shared({ caller }) func submitText(id: Text, text: Text, title: ?Text) : async Text  {

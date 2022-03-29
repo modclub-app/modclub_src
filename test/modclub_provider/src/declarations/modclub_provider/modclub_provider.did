@@ -1,5 +1,6 @@
 type ModclubProvider = 
  service {
+   addAdmin: (principal) -> ();
    addRule: (text) -> ();
    deregister: () -> (text);
    greet: (text) -> (text);

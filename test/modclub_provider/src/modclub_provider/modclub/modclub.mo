@@ -34,7 +34,7 @@ module {
       actor "rwlgt-iiaaa-aaaaa-aaaaa-cai" : actor {      
         registerProvider: (Text, Text, ?Image) -> async Text;
         deregisterProvider: () -> async Text;
-        addProviderAdmin:(Text,?Principal, Text) ->  ();
+        addProviderAdmin:(Principal, Text, ?Principal) -> async ();
         addRules: ([Text]) -> async ();
         removeRules: ([Text]) -> async ();
         updateSettings: (ProviderSettings) -> async ();

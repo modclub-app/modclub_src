@@ -4,6 +4,7 @@ export type ContentStatus = { 'approved' : null } |
   { 'rejected' : null } |
   { 'reviewRequired' : null };
 export interface ModclubProvider {
+  'addAdmin' : (arg_0: Principal) => Promise<undefined>,
   'addRule' : (arg_0: string) => Promise<undefined>,
   'deregister' : () => Promise<string>,
   'greet' : (arg_0: string) => Promise<string>,

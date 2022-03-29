@@ -9,6 +9,7 @@ export const idlFactory = ({ IDL }) => {
     'sourceId' : IDL.Text,
   });
   const ModclubProvider = IDL.Service({
+    'addAdmin' : IDL.Func([IDL.Principal], [], []),
     'addRule' : IDL.Func([IDL.Text], [], []),
     'deregister' : IDL.Func([], [IDL.Text], []),
     'greet' : IDL.Func([IDL.Text], [IDL.Text], []),
