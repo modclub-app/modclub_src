@@ -92,6 +92,7 @@ export default function PohApplicantList() {
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
   const [page, setPage] = useState(1);
+  const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
 
   const getApplicants = async () => {
     setLoading(true);
@@ -99,6 +100,7 @@ export default function PohApplicantList() {
     const start = applicants.length ? applicants.length : 0
     const end = applicants.length ? (applicants.length + PAGE_SIZE) : PAGE_SIZE
     const newApplicants = await getPohTasks(status, start, end - 1);
+    if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);
   }
@@ -154,7 +156,7 @@ export default function PohApplicantList() {
                 color="primary"
                 onClick={() => setPage(page + 1)}
                 className="ml-4 px-7 py-3"
-                // disabled={page * PAGE_SIZE > applicants.length}
+                disabled={hasReachedEnd}
               >
                 See more
               </Button>
