@@ -116,6 +116,12 @@ export default function Sidebar() {
             </Icon>
             Leaderboard
           </Link>
+          <Link to="/how-to">
+            <Icon>
+              <span className="material-icons">help</span>
+            </Icon>
+            How To
+          </Link>
           {user && user.role.hasOwnProperty("admin") ? (
             <Link to="/app/admin">
               <Icon>

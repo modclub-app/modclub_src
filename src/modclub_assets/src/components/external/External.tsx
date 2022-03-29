@@ -8,6 +8,7 @@ import Airdrop from "./Airdrop";
 import AdminIdentity from "./AdminIdentity";
 import Privacy from "./Privacy";
 import Terms from "./Terms";
+import HowTo from "./HowTo";
 
 export default function External() {
   return (
@@ -21,6 +22,7 @@ export default function External() {
         <Route path="/admin-identity" component={AdminIdentity} />
         <Route path="/privacy" component={Privacy} />
         <Route path="/terms" component={Terms} />
+        <Route path="/how-to" component={HowTo} />
       </Switch>
     </>
   );

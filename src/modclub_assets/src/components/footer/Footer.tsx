@@ -28,6 +28,9 @@ export default function Footer_() {
             <HashLink to="/#roadmap" className="is-block has-text-white">
               Roadmap
             </HashLink>
+            <Link to="/how-to" className="is-block has-text-white">
+              How To
+            </Link>
           </Columns.Column>
           <Columns.Column size="one-fifth">
             <Heading subtitle>
