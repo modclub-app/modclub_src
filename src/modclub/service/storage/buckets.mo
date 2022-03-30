@@ -9,6 +9,7 @@ import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Error "mo:base/Error";
 import Iter "mo:base/Iter";
+import Time "mo:base/Time";
 import Helpers "../../helpers";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
@@ -404,6 +405,16 @@ actor class Bucket () = this {
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
+  };
+
+  var nextRunTime = Time.now();
+  let TEN_SECOND_NANO = 10000000000;
+  system func heartbeat() : async () {
+    if(Time.now() > nextRunTime) {
+      Debug.print("Running Metrics Collection");
+      canistergeekMonitor.collectMetrics();
+      nextRunTime := Time.now() + TEN_SECOND_NANO;
+    };
   };
 
 };
