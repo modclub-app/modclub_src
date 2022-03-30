@@ -85,8 +85,8 @@ export default function Platform ({ providerId }: { providerId: Principal }) {
         </Heading>
         <ul>
           {loading ? <div className="loader is-loading"></div> : content.rules.map((rule) => (
-            <li key={rule.id} className="is-flex is-align-items-center">
-              <Icon size="small" color="primary" className="mr-2">
+            <li key={rule.id} className="is-flex mb-1">
+              <Icon size="small" color="primary" className="mr-2 mt-1">
                 <span className="material-icons">trending_flat</span>
               </Icon>
               <span>{rule.description}</span>
