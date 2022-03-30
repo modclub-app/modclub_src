@@ -55,7 +55,6 @@ export default function NewProfile() {
 
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
-
     const validEmail = validateEmail(email);
     if (!validEmail) {
       setMessage({ success: false, value: "Email is badly formatted" });
@@ -65,9 +64,9 @@ export default function NewProfile() {
 
     const imageData: ImageData = pic
       ? {
-          src: pic,
-          type: picType,
-        }
+        src: pic,
+        type: picType,
+      }
       : undefined;
 
     const regEx = /Reject text: (.*)/g;

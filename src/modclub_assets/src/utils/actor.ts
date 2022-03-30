@@ -31,6 +31,14 @@ function createActor(identity?: Identity) {
   return { actor, agent };
 }
 
+const createPlugActor = async function () {
+  const actor = await window["ic"].plug.createActor({
+    canisterId: canisterId,
+    interfaceFactory: idlFactory,
+  });
+  return actor;
+}
+
 /*
  * Responsible for keeping track of the actor, whether the user has logged
  * in again or not. A logged in user uses a different actor with their
@@ -44,14 +52,22 @@ class ActorController {
     this._actor = this.initBaseActor();
   }
 
-  async initBaseActor(identity?: Identity) {
-    console.log("Updating anchor");
-    const { agent, actor } = createActor(identity);
-    // The root key only has to be fetched for local development environments
-    if (isLocalEnv) {
-      await agent.fetchRootKey();
+  async initBaseActor(identity?: Identity, authenticatorToUse?: String) {
+    switch (authenticatorToUse) {
+      case 'ii':
+        const { agent, actor } = createActor(identity);
+        // The root key only has to be fetched for local development environments
+        if (isLocalEnv) {
+          await agent.fetchRootKey();
+        }
+        return actor;
+      case 'plug':
+        const plugActor = createPlugActor();
+
+        return plugActor;
+      default:
+        break;
     }
-    return actor;
   }
 
   /*
@@ -66,8 +82,8 @@ class ActorController {
    * Once a user has authenticated and has an identity pass this identity
    * to create a new actor with it, so they pass their Principal to the backend.
    */
-  async authenticateActor(identity: Identity) {
-    this._actor = this.initBaseActor(identity);
+  async authenticateActor(identity: Identity, authenticatorToUse: String) {
+    this._actor = this.initBaseActor(identity, authenticatorToUse);
     this._isAuthenticated = true;
   }
 

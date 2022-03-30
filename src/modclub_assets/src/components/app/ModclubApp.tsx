@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Switch, Route, useHistory } from "react-router-dom";
-import { Columns } from "react-bulma-components";
+import { Switch, Route, Link, useHistory } from "react-router-dom";
+import { Columns, Modal, Heading } from "react-bulma-components";
 import NotAuthenticatedModal from './modals/NotAuthenticated';
 import UserIncompleteModal from './modals/UserIncompleteModal'; 
 import Sidebar from "./sidebar/Sidebar";
@@ -35,7 +35,7 @@ export default function ModclubApp() {
     }
     const status = Object.keys(result.status)[0];
     setStatus(status);
-    if(status == "verified" && await refreshJwt()) {
+    if (status == "verified" && await refreshJwt()) {
       setJwt(true);
     }
   };

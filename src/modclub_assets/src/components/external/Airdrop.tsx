@@ -23,7 +23,7 @@ export default function Airdrop() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await updateMC();    
+        await updateMC();
         setAirdropUser(await isAirdropRegistered());
         setIsRegistered(true);
       } catch (e) {
@@ -62,39 +62,34 @@ export default function Airdrop() {
   };
 
   const spinner = (
-    <div className="loader is-loading is-large mt-10" style={{ width: 80, height:80 }}></div>
+    <div className="loader is-loading is-large mt-10" style={{ width: 80, height: 80 }}></div>
   );
   return (
     <>
       {message && (
         <div
-          className={`notification has-text-centered ${
-            message.success ? "is-success" : "is-danger"
-          }`}
+          className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"
+            }`}
         >
           {message.value}
         </div>
       )}
-
-      <div
-        className="landing-page has-background-black"
-        style={{height: '100%'}}
-      >
+      <div className="landing-page has-background-black" style={{ height: '100%' }}>
         <section className="hero is-black is-medium">
           <div className="hero-body container has-text-centered">
             <h1 className="title is-size-1">
-              MODCLUB Airdrop Registration           
+              MODCLUB Airdrop Registration
             </h1>
             <p className="has-text-silver is-size-4 has-text-centered mb-6">
               Thank you for your interest in MODCLUB. To register for our airdrop please click the register button below. This will register your principal ID with the airdrop service which will be used for gaining access to our testnet.
             </p>
             <div className="is-flex is-justify-content-center	">
               {!isAuthReady || loading ? spinner : (
-              <>
-                    {!isAuthenticated ? (
-                      <SignIn />
-                    ) : isRegistered && aidropUser ? (
-                      <div className="card has-gradient">
+                <>
+                  {!isAuthenticated ? (
+                    <SignIn />
+                  ) : isRegistered && aidropUser ? (
+                    <div className="card has-gradient">
                       <div className="card-content">
                         <label className="label">Principal ID</label>
                         <p>
@@ -102,23 +97,23 @@ export default function Airdrop() {
                         </p>
                       </div>
                     </div>
-                    ) : (
-                      <button
-                        type="submit"
-                        disabled={submitting}
-                        onClick={handleRegister}
-                        className={
-                          "button is-large is-primary is-fullwidth mt-6 " +
-                          (submitting ? "is-loading" : "")
-                        }
-                        value="Submit"
-                      >
-                        Register
-                      </button>
-                    )}       
-             </>           
-           )}
-            </div>  
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      onClick={handleRegister}
+                      className={
+                        "button is-large is-primary is-fullwidth mt-6 " +
+                        (submitting ? "is-loading" : "")
+                      }
+                      value="Submit"
+                    >
+                      Register
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </section>
 

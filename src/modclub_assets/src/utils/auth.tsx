@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { authClient as authenticationClient } from "./authClient";
-import {Usergeek} from "usergeek-ic-js";
+import { Usergeek } from "usergeek-ic-js";
 
 import { actorController } from "./actor";
 import { Identity } from "@dfinity/agent";
@@ -16,13 +16,20 @@ export interface AuthContext {
   hasAccount: boolean;
   identity?: Identity;
   requiresSignUp: boolean;
-  logIn: () => Promise<void>;
+  logIn: (logInMethodToUse: string) => Promise<void>;
   logOut: () => void;
   user: Profile;
   setUser: (user: Profile) => void;
 }
 
-const KEY_LOCALSTORAGE_USER = "user"; 
+const KEY_LOCALSTORAGE_USER = "user"; let walletToUse = localStorage.getItem('_loginType') || "ii";
+
+const canisterId =
+  process.env.DEV_ENV == "dev"
+    ? process.env.MODCLUB_DEV_CANISTER_ID
+    : process.env.MODCLUB_CANISTER_ID;
+const whitelist = [canisterId];
+const host = window.location.hostname;
 
 // Provider hook that creates auth object and handles state
 export function useProvideAuth(authClient): AuthContext {
@@ -43,7 +50,7 @@ export function useProvideAuth(authClient): AuthContext {
 
   // Use the user from local storage if it is set so the flow doesn't have to
   // make an async query.
-  const setUserFromLocalStorage = () => {  
+  const setUserFromLocalStorage = () => {
     console.log("setUserFromLocalStorage");
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
     console.log("lsUser", lsUser);
@@ -77,18 +84,40 @@ export function useProvideAuth(authClient): AuthContext {
   // Once the auth client is initialized, get the identity and check that they
   // are authenticated, then set them to be fully logged in.
   useEffect(() => {
-    if (!authClient.ready) return;
-    Promise.all([authClient.getIdentity(), authClient.isAuthenticated()]).then(
-      ([identity, isAuthenticated]) => {
-        setIsAuthenticatedLocal(isAuthenticated || false);
-        _setIdentity(identity);
-        if (isAuthenticated) {
-          setUserFromLocalStorage();
+    if (walletToUse && walletToUse == 'ii') {
+      if (!authClient.ready) return;
+      Promise.all([authClient.getIdentity(), authClient.isAuthenticated()]).then(
+        ([identity, isAuthenticated]) => {
+          setIsAuthenticatedLocal(isAuthenticated || false);
+          _setIdentity(identity);
+          if (isAuthenticated) {
+            setUserFromLocalStorage();
+          }
+          setAuthClientReady(true);
         }
+      );
+    } else {
+      checkIfPlugWalletIsConnected();
+    }
+  }, [isAuthClientReady]);
+
+  async function checkIfPlugWalletIsConnected() {
+    if (walletToUse) {
+      const connected = await window['ic'].plug.isConnected();
+      let identity;
+      if (connected) {
+        if (!window['ic'].plug.agent) {
+          await window['ic'].plug.createAgent({ whitelist, host });
+          identity = await window['ic'].plug.agent._identity;
+        };
+        setIsAuthenticatedLocal(true);
+        setPlugIdentity(identity);
+        setUserFromLocalStorage();
         setAuthClientReady(true);
       }
-    );
-  }, [isAuthClientReady]);
+      console.log("Using Plug", connected);
+    }
+  }
 
   // For testing environments only, this bypasses the authentication with an
   // identity provider for testing purposes.
@@ -122,8 +151,8 @@ export function useProvideAuth(authClient): AuthContext {
       // The auth client isn't ready to make requests until it's completed the
       // async authenticate actor method.
       setAuthClientReady(false);
-      console.log(" setting authenticaterActor");
-      actorController.authenticateActor(_identity).then(() => {
+      actorController.authenticateActor(_identity, walletToUse).then(() => {
+        console.log("USER AUTHENTICATED");
         setAuthClientReady(true);
       });
       const principal: Principal = _identity.getPrincipal();
@@ -142,17 +171,53 @@ export function useProvideAuth(authClient): AuthContext {
 
   // Login to the identity provider by sending user to Internet Identity
   // and logging them in.
-  const logIn = async function (): Promise<void> {
+  const logIn = async function (logInMethodToUse): Promise<void> {
+    walletToUse = logInMethodToUse;
     if (!authClient) return;
-    await authClient.login();
-    const identity = await authClient.getIdentity();
+    switch (logInMethodToUse) {
+
+      case 'ii':
+        await authClient.login();
+        const identity = await authClient.getIdentity();
+        if (identity) {
+          setIsAuthenticatedLocal(true);
+          _setIdentity(identity);
+        } else {
+          console.error("Could not get identity from internet identity");
+        }
+        break;
+      case 'plug':
+        try {
+          if (!window['ic']) { console.error("Can not find Plug wallet extention. Please Install on the browser"); return; }
+          const result = await window['ic'].plug.requestConnect({
+            whitelist,
+            host
+          });
+          if (result) {
+            if (!window['ic'].plug.agent) {
+              await window['ic'].plug.createAgent({ whitelist });
+            }
+          }
+          const identity = await window['ic'].plug.agent._identity;//.getPrincipal();
+          setPlugIdentity(identity);
+        } catch (error) {
+          console.log("user declined connect request", error);
+        };
+        break;
+
+      default:
+        console.log("default");
+        break;
+    }
+  };
+
+  function setPlugIdentity(identity) {
     if (identity) {
       setIsAuthenticatedLocal(true);
       _setIdentity(identity);
-    } else {
-      console.error("Could not get identity from internet identity");
-    }
-  };
+      localStorage.setItem('_loginType', 'plug');
+    };
+  }
 
   // Clears the authClient of any cached data, and redirects user to root.
   function logOut() {
@@ -160,8 +225,18 @@ export function useProvideAuth(authClient): AuthContext {
     setUser(undefined);
     setIsAuthenticatedLocal(false);
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
-    if (!authClient.ready) return;
-    authClient.logout();
+    localStorage.removeItem('_loginType');
+    switch (walletToUse) {
+      case 'ii':
+        if (!authClient.ready) return;
+        authClient.logout();
+        break;
+      case 'plug':
+        window['ic'].plug.disconnect();
+        break;
+      default:
+        break;
+    }
     Usergeek.setPrincipal(null);
   }
 
