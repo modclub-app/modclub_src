@@ -27,7 +27,7 @@ module ProviderModule {
           createdAt = now;
           updatedAt = now;
           settings = {
-            minVotes = ModClubParams.DEFAULT_MIN_STAKED; // At least 2 votes required to finalize a decision
+            minVotes = ModClubParams.DEFAULT_MIN_VOTES; // At least 2 votes required to finalize a decision
             minStaked = ModClubParams.DEFAULT_MIN_STAKED; // Default amount staked, change when tokens are released
           };
         });
