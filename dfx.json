@@ -41,9 +41,10 @@
     }
   },
   "dfx": "0.9.2",
-  "networks": { 
+  "networks": {
     "local": {
       "bind": "127.0.0.1:8000",
+      "stoicbind": "127.0.0.1:3000",
       "type": "ephemeral"
     }
   },

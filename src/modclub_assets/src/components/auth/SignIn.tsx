@@ -2,6 +2,8 @@ import React, { PropsWithChildren, useEffect } from "react";
 import { useAuth } from "../../utils/auth";
 import { Button, Icon } from "react-bulma-components";
 import dfinitylogo from "../../../assets/dfinity.svg";
+import pluglogo from "../../../assets/plug.png";
+import stoiclogo from "../../../assets/stoic.jpeg";
 
 /*
  * The sign-in process for when a user has not yet authenticated with the
@@ -34,9 +36,15 @@ export function SignIn(props: PropsWithChildren<{}>) {
         </Icon>
       </Button>
       <Button fullwidth color="gradient" className="is-outlined mb-4" onClick={() => handleLogin('plug')} >
-        <span className="mr-2">Login Using Plug</span>
+        <span className="mr-2">Login</span>
         <Icon>
-          <img src={dfinitylogo} alt="dfinity logo" />
+          <img src={pluglogo} alt="plug logo" />
+        </Icon>
+      </Button>
+      <Button fullwidth color="gradient" className="is-outlined mb-4" onClick={() => handleLogin('stoic')} >
+        <span className="mr-2">Login</span>
+        <Icon>
+          <img src={stoiclogo} alt="stoic logo" />
         </Icon>
       </Button>
     </>

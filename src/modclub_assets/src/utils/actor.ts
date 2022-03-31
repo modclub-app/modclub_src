@@ -1,7 +1,7 @@
 import { Actor, HttpAgent, Identity } from "@dfinity/agent";
 // Imports and re-exports candid interface
-import { idlFactory } from "../../../declarations/modclub/index";
-export { idlFactory } from "../../../declarations/modclub/index";
+import { idlFactory, modclub } from "../../../declarations/modclub/index";
+export { idlFactory, modclub } from "../../../declarations/modclub/index";
 import { _SERVICE } from "./types";
 // CANISTER_ID is replaced by webpack based on node environment
 export const canisterId =
@@ -31,14 +31,35 @@ function createActor(identity?: Identity) {
   return { actor, agent };
 }
 
-const createPlugActor = async function () {
-  const actor = await window["ic"].plug.createActor({
+const createPlugActor = async function (identity) {
+
+  //if (isLocalEnv) {
+  const agent = new HttpAgent({ host, identity });
+  const actor = Actor.createActor<_SERVICE>(idlFactory, {
+    agent,
     canisterId: canisterId,
-    interfaceFactory: idlFactory,
+  });
+  return actor;
+  /* } else {
+    const actor = await window["ic"].plug.createActor({
+      canisterId: canisterId,
+      interfaceFactory: idlFactory,
+    });
+    return actor;
+  } */
+}
+
+function createStoicActor(identity?: Identity) {
+  let host = getHost();
+  const agent = new HttpAgent({ host, identity });
+  console.log("STOIC AGENT", agent);
+  console.log("STOIC AGENT", agent['_host']);
+  const actor = Actor.createActor<_SERVICE>(idlFactory, {
+    agent,
+    canisterId: canisterId,
   });
   return actor;
 }
-
 /*
  * Responsible for keeping track of the actor, whether the user has logged
  * in again or not. A logged in user uses a different actor with their
@@ -53,6 +74,8 @@ class ActorController {
   }
 
   async initBaseActor(identity?: Identity, authenticatorToUse?: String) {
+    //Probably should use the same method because once the identity is passed the actor is going to get created using
+    //the identity so should not be using different method for plug
     switch (authenticatorToUse) {
       case 'ii':
         const { agent, actor } = createActor(identity);
@@ -62,9 +85,11 @@ class ActorController {
         }
         return actor;
       case 'plug':
-        const plugActor = createPlugActor();
-
+        const plugActor = createPlugActor(identity);
         return plugActor;
+      case 'stoic':
+        const stoicActor = createStoicActor(identity);
+        return stoicActor;
       default:
         break;
     }

@@ -12,7 +12,7 @@ export default function NotAuthenticated() {
             You need to be logged in<br />to view this page
           </Heading>
         </Modal.Card.Body>
-        <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
+        <Modal.Card.Footer className="pt-0 is-justify-content-flex-end is-block">
           <SignIn />
         </Modal.Card.Footer>
       </Modal.Card>

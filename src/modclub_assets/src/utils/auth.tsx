@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { StoicIdentity } from "ic-stoic-identity";
 import { authClient as authenticationClient } from "./authClient";
 import { Usergeek } from "usergeek-ic-js";
 
@@ -23,7 +24,7 @@ export interface AuthContext {
 }
 
 const KEY_LOCALSTORAGE_USER = "user"; let walletToUse = localStorage.getItem('_loginType') || "ii";
-
+const DFX_NETWORK = process.env.DFX_NETWORK || "local";
 const canisterId =
   process.env.DEV_ENV == "dev"
     ? process.env.MODCLUB_DEV_CANISTER_ID
@@ -84,24 +85,34 @@ export function useProvideAuth(authClient): AuthContext {
   // Once the auth client is initialized, get the identity and check that they
   // are authenticated, then set them to be fully logged in.
   useEffect(() => {
-    if (walletToUse && walletToUse == 'ii') {
-      if (!authClient.ready) return;
-      Promise.all([authClient.getIdentity(), authClient.isAuthenticated()]).then(
-        ([identity, isAuthenticated]) => {
-          setIsAuthenticatedLocal(isAuthenticated || false);
-          _setIdentity(identity);
-          if (isAuthenticated) {
-            setUserFromLocalStorage();
-          }
-          setAuthClientReady(true);
-        }
-      );
-    } else {
-      checkIfPlugWalletIsConnected();
-    }
+    if (walletToUse) {
+      switch (walletToUse) {
+        case 'ii':
+          if (!authClient.ready) return;
+          Promise.all([authClient.getIdentity(), authClient.isAuthenticated()]).then(
+            ([identity, isAuthenticated]) => {
+              setIsAuthenticatedLocal(isAuthenticated || false);
+              _setIdentity(identity);
+              if (isAuthenticated) {
+                setUserFromLocalStorage();
+              }
+              setAuthClientReady(true);
+            }
+          );
+          break;
+        case 'plug':
+          checkAndConnectToPlug();
+          break;
+        case 'stoic':
+          checkAndConnectToStoic();
+          break;
+        default:
+          break;
+      }
+    };
   }, [isAuthClientReady]);
 
-  async function checkIfPlugWalletIsConnected() {
+  async function checkAndConnectToPlug() {
     if (walletToUse) {
       const connected = await window['ic'].plug.isConnected();
       let identity;
@@ -111,7 +122,7 @@ export function useProvideAuth(authClient): AuthContext {
           identity = await window['ic'].plug.agent._identity;
         };
         setIsAuthenticatedLocal(true);
-        setPlugIdentity(identity);
+        setWalletIdentity(identity, 'plug');
         setUserFromLocalStorage();
         setAuthClientReady(true);
       }
@@ -119,9 +130,26 @@ export function useProvideAuth(authClient): AuthContext {
     }
   }
 
+  function checkAndConnectToStoic() {
+    // following needs to change and need to use from webpack config
+    const hostToUse = DFX_NETWORK === 'local' ? "http://localhost:3000" : undefined;
+    StoicIdentity.load(hostToUse).then(async stcIdentity => {
+      if (!stcIdentity) {
+        //No existing connection, lets make one!
+        stcIdentity = await StoicIdentity.connect();
+      }
+      if (stcIdentity) {
+        console.log("STOIC IDENTITY CREATED:", stcIdentity);
+        setWalletIdentity(stcIdentity, walletToUse);
+      } else {
+        console.error("Could not get identity from stoic");
+      }
+    });
+  }
+
   // For testing environments only, this bypasses the authentication with an
   // identity provider for testing purposes.
-  const DFX_NETWORK = process.env.DFX_NETWORK || "local";
+  //const DFX_NETWORK = process.env.DFX_NETWORK || "local";
 
   // When user is set, and is not in local storage yet store the user object
   // from the canister in local storage so the user doesn't need to be fetched
@@ -180,8 +208,7 @@ export function useProvideAuth(authClient): AuthContext {
         await authClient.login();
         const identity = await authClient.getIdentity();
         if (identity) {
-          setIsAuthenticatedLocal(true);
-          _setIdentity(identity);
+          setWalletIdentity(identity, walletToUse);
         } else {
           console.error("Could not get identity from internet identity");
         }
@@ -199,10 +226,13 @@ export function useProvideAuth(authClient): AuthContext {
             }
           }
           const identity = await window['ic'].plug.agent._identity;//.getPrincipal();
-          setPlugIdentity(identity);
+          setWalletIdentity(identity, walletToUse);
         } catch (error) {
           console.log("user declined connect request", error);
         };
+        break;
+      case 'stoic':
+        checkAndConnectToStoic();
         break;
 
       default:
@@ -211,21 +241,17 @@ export function useProvideAuth(authClient): AuthContext {
     }
   };
 
-  function setPlugIdentity(identity) {
+  function setWalletIdentity(identity, wallet) {
     if (identity) {
       setIsAuthenticatedLocal(true);
       _setIdentity(identity);
-      localStorage.setItem('_loginType', 'plug');
+      localStorage.setItem('_loginType', wallet);
     };
   }
 
   // Clears the authClient of any cached data, and redirects user to root.
   function logOut() {
-    console.log("Logged out");
-    setUser(undefined);
-    setIsAuthenticatedLocal(false);
-    localStorage.removeItem(KEY_LOCALSTORAGE_USER);
-    localStorage.removeItem('_loginType');
+    console.log("Logging User out");
     switch (walletToUse) {
       case 'ii':
         if (!authClient.ready) return;
@@ -234,10 +260,18 @@ export function useProvideAuth(authClient): AuthContext {
       case 'plug':
         window['ic'].plug.disconnect();
         break;
+      case 'stoic':
+        StoicIdentity.disconnect();
+        break;
       default:
         break;
     }
+    setUser(undefined);
+    setIsAuthenticatedLocal(false);
+    localStorage.removeItem(KEY_LOCALSTORAGE_USER);
+    localStorage.removeItem('_loginType');
     Usergeek.setPrincipal(null);
+    console.log("User Logged Out");
   }
 
   return {
