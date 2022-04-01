@@ -676,7 +676,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
                 (v.decision == #rejected and decision == #rejected)
               ) {
               //reward only some percentage
-              await tokens.reward(initializer, v.userId, Float.toInt(reward));
+              await tokens.reward(ModClubParam.getModclubWallet(), v.userId, Float.toInt(reward));
             } else {
               // burn only some percentage
               await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
