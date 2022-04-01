@@ -121,7 +121,7 @@ const ConfirmationModal = ({
   }, []);
 
   return (
-    <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
+    <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false} className="scrollable">
       <Modal.Card backgroundColor="circles">
         <Form onSubmit={onFormSubmit} render={({ handleSubmit, values, pristine }) => (
           <form onSubmit={handleSubmit}>
