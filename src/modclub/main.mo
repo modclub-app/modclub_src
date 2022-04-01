@@ -255,14 +255,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
-    // switch(state.airdropWhitelist.get(caller)){
-    //   case(null) throw Error.reject("Unauthorized: user is not in the airdrop whitelist");
-    //   case(_) ();
-    // };
     let profile = await ModeratorManager.registerModerator(caller, userName, email, pic, state);
     // Todo: Remove this after testnet
     // Give new users MOD points
-    await tokens.transfer(initializer, caller, ModClubParam.DEFAULT_TEST_TOKENS);
+    await tokens.transfer(ModClubParam.MODCLUB_WALLET, caller, ModClubParam.DEFAULT_TEST_TOKENS);
     await storageSolution.registerModerators([caller]);
     return profile;
   };
@@ -368,7 +364,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    tokens.getHoldings(initializer);
+    tokens.getHoldings(ModClubParam.MODCLUB_WALLET);
   };
 
   public query({ caller }) func getAllModeratorHoldings() : async [(Principal, Token.Holdings)] {

@@ -10,6 +10,7 @@ import GlobalState "../../state";
 import Helpers "../../helpers";
 import Types "../../types";
 import Tokens "../../token";
+import ModClubParam "../parameters/params";
 
 
 module ContentVotingModule {
@@ -174,7 +175,7 @@ module ContentVotingModule {
                 if(finishedVote) {
                     // Reward / Slash voters ;                      
                     await tokens.voteFinalization(
-                        initializer,
+                        ModClubParam.MODCLUB_WALLET,
                         decision, 
                         state.content2votes.get0(content.id), 
                         provider.settings.minStaked, // TODO: Change this to a percentage

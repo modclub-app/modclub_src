@@ -1,3 +1,4 @@
+import Principal "mo:base/Principal";
 
 module {
     
@@ -10,4 +11,6 @@ module {
     public let STAKE_REWARD_PERCENTAGE = 0.1; // Reward is based on a percentage of the min stake
 
     public let JWT_VALIDITY_MILLI = 86400000; // 1 day
+    
+    public let MODCLUB_WALLET = Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai")
 };
