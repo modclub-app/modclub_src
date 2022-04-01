@@ -12,5 +12,7 @@ module {
 
     public let JWT_VALIDITY_MILLI = 86400000; // 1 day
     
-    public let MODCLUB_WALLET = Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai")
+    public func getModclubWallet() : Principal {
+        return Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai")
+    };
 };

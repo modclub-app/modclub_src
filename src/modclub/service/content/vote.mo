@@ -175,7 +175,7 @@ module ContentVotingModule {
                 if(finishedVote) {
                     // Reward / Slash voters ;                      
                     await tokens.voteFinalization(
-                        ModClubParam.MODCLUB_WALLET,
+                        ModClubParam.getModclubWallet(),
                         decision, 
                         state.content2votes.get0(content.id), 
                         provider.settings.minStaked, // TODO: Change this to a percentage

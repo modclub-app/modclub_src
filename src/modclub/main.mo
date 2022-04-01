@@ -258,7 +258,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     let profile = await ModeratorManager.registerModerator(caller, userName, email, pic, state);
     // Todo: Remove this after testnet
     // Give new users MOD points
-    await tokens.transfer(ModClubParam.MODCLUB_WALLET, caller, ModClubParam.DEFAULT_TEST_TOKENS);
+    await tokens.transfer(ModClubParam.getModclubWallet(), caller, ModClubParam.DEFAULT_TEST_TOKENS);
     await storageSolution.registerModerators([caller]);
     return profile;
   };
@@ -364,7 +364,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    tokens.getHoldings(ModClubParam.MODCLUB_WALLET);
+    tokens.getHoldings(ModClubParam.getModclubWallet());
   };
 
   public query({ caller }) func getAllModeratorHoldings() : async [(Principal, Token.Holdings)] {
@@ -566,10 +566,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
           let taskPlus = {
             packageId = id;
             status = voteManager.getContentStatus(id);
-            userName = userName;
-            email = email;
-            fullName = fullName;
-            aboutUser = aboutUser;
+            userName = null; // Don't expose personal info about POH users
+            email = null;
+            fullName = null;
+            aboutUser = null; 
             profileImageUrlSuffix = profileImageUrlSuffix;
             // TODO: change these vote settings
             voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
@@ -868,10 +868,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
       minVotes = 2;
       minStaked = 10;
     };
-    // Fixing Modclub. It's one of this id which they have used. 
-    // Whatever id is their in our state will get fixed. rest will be ignored in updateProviderSettings logic.
-    ProviderManager.updateProviderSettings(Principal.fromText("qq4ni-qaaaa-aaaaf-qaalq-cai"), settings, state);
-    ProviderManager.updateProviderSettings(Principal.fromText("fmi4m-cyaaa-aaaaf-qadza-cai"), settings, state);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 
