@@ -772,6 +772,11 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return ProviderManager.getAdminProviderIDs(caller, state);
   };
 
+  public query({caller}) func getPohAttempts(): async [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])] {
+    pohEngine.getStableStateV1().pohUserChallengeAttempts;
+    // return ProviderManager.getAdminProviderIDs(caller, state);
+  };
+
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
     let now = Helpers.timeNow();
     let content : Types.Content  = {
