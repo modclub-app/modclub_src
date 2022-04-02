@@ -3,7 +3,7 @@ import { useAuth } from "../../utils/auth";
 import { Button, Icon } from "react-bulma-components";
 import dfinitylogo from "../../../assets/dfinity.svg";
 import pluglogo from "../../../assets/plug.png";
-import stoiclogo from "../../../assets/stoic.jpeg";
+import stoiclogo from "../../../assets/stoic.png";
 
 /*
  * The sign-in process for when a user has not yet authenticated with the

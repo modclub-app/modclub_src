@@ -50,8 +50,7 @@ const createPlugActor = async function (identity) {
 }
 
 function createStoicActor(identity?: Identity) {
-  let host = getHost();
-  const agent = new HttpAgent({ host, identity });
+  const agent = new HttpAgent({ identity });
   console.log("STOIC AGENT", agent);
   console.log("STOIC AGENT", agent['_host']);
   const actor = Actor.createActor<_SERVICE>(idlFactory, {
