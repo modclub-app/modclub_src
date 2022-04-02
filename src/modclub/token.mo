@@ -34,9 +34,9 @@ module Token {
     tokenRewards: [(Principal, Int)];
   };
 
-  public func emptyStable(initializer: Principal) : TokensStable {
+  public func emptyStable(tokenOwner: Principal) : TokensStable {
       let st = {
-        tokenWallets = [(initializer, TOKEN_OWNER_BALANCE)];
+        tokenWallets = [(tokenOwner, TOKEN_OWNER_BALANCE)];
         tokenStakes = [];
         tokenRewards = [];
       };
