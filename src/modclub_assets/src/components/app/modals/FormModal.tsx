@@ -38,13 +38,16 @@ export default function FormModal({
     // const regEx = /Reject text: (.*)/g;
     try {
       const result = await handleSubmit(values)
-      console.log("child result", result);
       setSubmitting(false);
-      setMessage({ success: true, value: result });
+      if (result) {
+        setMessage({ success: true, value: result });
+      } else {
+        setMessage({ success: false, value: "Withdraw and Deposit is not functional in Test Net" });
+      }
     } catch (e) {
       // let errAr = regEx.exec(e.message);
-      setMessage({ success: false, value: e.message });
       setSubmitting(false);
+      setMessage({ success: false, value: e.message });
     }
     setTimeout(() => toggle(), 2000);
   };
