@@ -18,12 +18,12 @@ let
       },
       { name = "encoding"
       , repo = "https://github.com/aviate-labs/encoding.mo"
-      , version = "v0.3.1"
+      , version = "v0.3.2"
       , dependencies = [ "array", "base" ]
       },
       { name = "crypto"
       , repo = "https://github.com/aviate-labs/crypto.mo"
-      , version = "v0.1.0"
+      , version = "v0.2.0"
       , dependencies = ["base"]
       },
   ] : List Package

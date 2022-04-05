@@ -18,7 +18,6 @@ import Option "mo:base/Option";
 import Order "mo:base/Order";
 import Random "mo:base/Random";
 import POH "./service/poh/poh";
-import PohState "./service/poh/state";
 import PohStateV1 "./service/poh/statev1";
 import PohTypes "./service/poh/types";
 import Principal "mo:base/Principal";
@@ -46,7 +45,7 @@ import RelObj "./data_structures/RelObj";
 import Canistergeek "./canistergeek/canistergeek";
 import LoggerTypesModule "./canistergeek/logger/typesModule";
 
-shared ({caller = initializer}) actor class ModClub () = this {
+shared ({caller = deployer}) actor class ModClub() = this {
 
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
@@ -56,7 +55,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
   stable var allowSubmissionFlag : Bool = true;
   // Global Objects 
   var state = State.empty();
-  stable var tokensStable : Token.TokensStable = Token.emptyStable(initializer);
+  stable var tokensStable : Token.TokensStable = Token.emptyStable(ModClubParam.getModclubWallet());
   var tokens = Token.Tokens(
         tokensStable
   );
@@ -65,7 +64,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
   stable var retiredDataCanisterId : [Text] = [];
  
 
-  stable var pohStableState = PohState.emptyStableState();
   stable var pohStableStateV1 = PohStateV1.emptyStableState();
   var pohEngine = POH.PohEngine(pohStableStateV1);
 
@@ -342,7 +340,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       case (_) ();
     };
     var voteCount = getVoteCount(contentId, ?caller);
-    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, initializer, state);
+    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state);
   };
   
   // ----------------------Token Methods------------------------------
@@ -388,7 +386,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
           providerUserId = providerId;
           status = #verified;
           challenges = [];
-          providerId = initializer;
+          providerId = ModClubParam.getModClubProviderId();
           requestedOn = Helpers.timeNow();
       };
     };
@@ -526,7 +524,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
     let pohTaskIds = voteManager.getTasksId(status, start, end);
@@ -596,7 +594,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, initializer).status != #verified) {
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
     let pohTasks = pohEngine.getPohTasks([packageId]);
@@ -676,7 +674,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
                 (v.decision == #rejected and decision == #rejected)
               ) {
               //reward only some percentage
-              await tokens.reward(initializer, v.userId, Float.toInt(reward));
+              await tokens.reward(ModClubParam.getModclubWallet(), v.userId, Float.toInt(reward));
             } else {
               // burn only some percentage
               await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
@@ -755,8 +753,8 @@ shared ({caller = initializer}) actor class ModClub () = this {
         Principal.fromActor(this);
   };
 
-  public query func getInitializer () : async Principal {
-    return initializer;
+  public query func getDeployer () : async Principal {
+    return deployer;
   };
 
   public shared({ caller }) func addProviderAdmin( 
@@ -830,7 +828,6 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
     storageStateStable := storageSolution.getStableState();
     retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
-    //pohStableState := pohEngine.getStableState();
     pohStableStateV1 := pohEngine.getStableState();
     pohVoteStableState := voteManager.getStableState();
     _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
@@ -840,7 +837,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
   system func postupgrade() {
     // Reinitializing storage Solution to add "this" actor as a controller
-    admins := AuthManager.setUpDefaultAdmins(admins, initializer, Principal.fromActor(this));
+    admins := AuthManager.setUpDefaultAdmins(admins, deployer, Principal.fromActor(this));
     storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, admins, signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
@@ -848,7 +845,7 @@ shared ({caller = initializer}) actor class ModClub () = this {
 
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
-    tokensStable := Token.emptyStable(initializer);
+    tokensStable := Token.emptyStable(ModClubParam.getModClubProviderId());
     
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
@@ -862,13 +859,19 @@ shared ({caller = initializer}) actor class ModClub () = this {
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
+    Debug.print("MODCLUB POSTUPGRADE FINISHED");
+  };
 
   // To be deleted after one deployment
-    let settings = {
-      minVotes = 2;
-      minStaked = 10;
+  // call this once after deployment
+  public shared({caller}) func transferTokensToModClubWallet() : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
     };
-    Debug.print("MODCLUB POSTUPGRADE FINISHED");
+    let raheelsInitializerId = Principal.fromText("d2qpe-l63sh-47jxj-2764e-pa6i7-qocm4-icuie-nt2lb-yiwwk-bmq7z-pqe");
+    let amount = tokens.getHoldings(raheelsInitializerId).wallet;
+    await tokens.transfer(raheelsInitializerId, ModClubParam.getModclubWallet(), amount);
+    pohEngine.assignAllPohAuditstoModClub();
   };
 
   var nextRunTime = Time.now();
