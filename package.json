@@ -37,11 +37,11 @@
     "terser-webpack-plugin": "5.1.1",
     "ts-loader": "^9.2.4",
     "typescript": "^4.3.5",
+    "usergeek-ic-js": "github:usergeek/usergeek-ic-js",
     "util": "0.12.3",
     "webpack": "5.24.4",
     "webpack-cli": "4.5.0",
-    "webpack-dev-server": "^3.11.2",
-    "usergeek-ic-js": "github:usergeek/usergeek-ic-js"
+    "webpack-dev-server": "^3.11.2"
   },
   "browserslist": [
     "last 2 chrome version",
@@ -75,6 +75,7 @@
     "react-chartjs-2": "^3.0.5",
     "react-dom": "^17.0.2",
     "react-dropzone": "^11.4.2",
+    "react-easy-crop": "^4.1.4",
     "react-final-form": "^6.5.7",
     "react-router": "^5.2.1",
     "react-router-dom": "^5.3.0",
