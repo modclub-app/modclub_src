@@ -865,6 +865,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
   // To be deleted after one deployment
   // call this once after deployment
   public shared({caller}) func transferTokensToModClubWallet() : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     let raheelsInitializerId = Principal.fromText("d2qpe-l63sh-47jxj-2764e-pa6i7-qocm4-icuie-nt2lb-yiwwk-bmq7z-pqe");
     let amount = tokens.getHoldings(raheelsInitializerId).wallet;
     await tokens.transfer(raheelsInitializerId, ModClubParam.getModclubWallet(), amount);
