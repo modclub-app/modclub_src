@@ -279,7 +279,8 @@ actor class Bucket () = this {
     fromDataCanisterState(state).contentInfo;
   };
 
-  public query ({caller}) func getChunkData() : async [Text] {
+  public shared ({caller}) func getChunkData() : async [Text] {
+    await onlyOwners(caller);
     Iter.toArray(state.chunks.keys());
   };
 

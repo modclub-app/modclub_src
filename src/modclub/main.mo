@@ -772,7 +772,10 @@ shared ({caller = initializer}) actor class ModClub () = this {
     return ProviderManager.getAdminProviderIDs(caller, state);
   };
 
-  public query({caller}) func getPohAttempts(): async [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])] {
+  public shared({caller}) func getPohAttempts(): async [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     pohEngine.getStableStateV1().pohUserChallengeAttempts;
     // return ProviderManager.getAdminProviderIDs(caller, state);
   };
