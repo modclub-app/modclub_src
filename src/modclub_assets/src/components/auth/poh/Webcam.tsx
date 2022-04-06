@@ -75,7 +75,6 @@ export function WebcamWrapper({ setFile, file }) {
 
   const captureWebcam = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
-
     let encoded = imageSrc.toString().replace(/^data:(.*,)?/, '');
     if ((encoded.length % 4) > 0) {
       encoded += '='.repeat(4 - (encoded.length % 4));
@@ -96,11 +95,6 @@ export function WebcamWrapper({ setFile, file }) {
   const [zoom, setZoom] = useState(1);
 
   const cropImage = (imgUri, width = 400, height = 300, xstart = 0, ystart = 0, callback) => {
-
-    console.log('cropImage height', height)
-    console.log('cropImage xstart', xstart)
-    console.log('cropImage ystart', ystart)
-
     try {
       let resize_canvas = document.createElement('canvas');
       let orig_src = new Image();
@@ -120,8 +114,7 @@ export function WebcamWrapper({ setFile, file }) {
     }
   }
 
-  const onCropComplete = useCallback((croppedAreaPixels) => {
-    console.log("croppedAreaPixels", croppedAreaPixels);
+  const onCropComplete = useCallback((_, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
