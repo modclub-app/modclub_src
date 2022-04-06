@@ -70,7 +70,8 @@ export function SaveButton({ file }) {
 export function WebcamWrapper({ setFile, file }) {
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState();
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  // const [croppedFile, setCroppedFile] = useState(null);
 
   const captureWebcam = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -95,6 +96,11 @@ export function WebcamWrapper({ setFile, file }) {
   const [zoom, setZoom] = useState(1);
 
   const cropImage = (imgUri, width = 400, height = 300, xstart = 0, ystart = 0, callback) => {
+
+    console.log('cropImage height', height)
+    console.log('cropImage xstart', xstart)
+    console.log('cropImage ystart', ystart)
+
     try {
       let resize_canvas = document.createElement('canvas');
       let orig_src = new Image();
@@ -141,7 +147,7 @@ export function WebcamWrapper({ setFile, file }) {
         type: blob.type,
         size: blob.size,
         blob: blob,
-        data: imgUri
+        data: file.data
       };
       console.log("fileInfo", fileInfo);
       setFile(fileInfo);
@@ -216,6 +222,7 @@ export function WebcamWrapper({ setFile, file }) {
             left: "calc(50% + 2.5rem)",
             height: "3rem",
             background: "rgba(46, 49, 54, 0.6)",
+            color: "white",
             border: 0
           }}
           onClick={doCropImage}
