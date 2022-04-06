@@ -70,8 +70,10 @@ export function SaveButton({ file }) {
 export function WebcamWrapper({ setFile, file }) {
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [newCrop, setNewCrop] = useState<boolean>(false);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  // const [croppedFile, setCroppedFile] = useState(null);
 
   const captureWebcam = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -90,9 +92,6 @@ export function WebcamWrapper({ setFile, file }) {
     console.log("fileInfo", fileInfo);
     setFile(fileInfo);
   }, [webcamRef, setFile]);
-
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
 
   const cropImage = (imgUri, width = 400, height = 300, xstart = 0, ystart = 0, callback) => {
     try {
@@ -115,6 +114,8 @@ export function WebcamWrapper({ setFile, file }) {
   }
 
   const onCropComplete = useCallback((_, croppedAreaPixels) => {
+    if (!croppedAreaPixels.x) return
+    setNewCrop(true);
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
@@ -144,6 +145,7 @@ export function WebcamWrapper({ setFile, file }) {
       };
       console.log("fileInfo", fileInfo);
       setFile(fileInfo);
+      setNewCrop(false);
     });
   }
 
@@ -218,6 +220,7 @@ export function WebcamWrapper({ setFile, file }) {
             color: "white",
             border: 0
           }}
+          disabled={!newCrop}
           onClick={doCropImage}
         >
           <span>CROP</span>
