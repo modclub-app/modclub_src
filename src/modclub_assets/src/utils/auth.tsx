@@ -23,7 +23,8 @@ export interface AuthContext {
   setUser: (user: Profile) => void;
 }
 
-const KEY_LOCALSTORAGE_USER = "user"; let walletToUse = localStorage.getItem('_loginType') || "ii";
+const KEY_LOCALSTORAGE_USER = "user";
+let walletToUse = localStorage.getItem('_loginType') || "ii";
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
 const canisterId =
   process.env.DEV_ENV == "dev"
@@ -31,7 +32,11 @@ const canisterId =
     : process.env.MODCLUB_CANISTER_ID;
 const whitelist = [canisterId];
 const host = window.location.hostname;
-const hostToUse = DFX_NETWORK === 'local' ? "http://localhost:3000" : undefined;
+const hostToUseForStoicLcl = DFX_NETWORK === 'local' ? "http://localhost:3000" : undefined;
+
+if (process.env.DEV_ENV == "dev") {
+  console.log("CanisterID:", canisterId);
+}
 
 // Provider hook that creates auth object and handles state
 export function useProvideAuth(authClient): AuthContext {
@@ -127,14 +132,13 @@ export function useProvideAuth(authClient): AuthContext {
         setUserFromLocalStorage();
         setAuthClientReady(true);
       }
-      console.log("Using Plug", connected);
     }
   }
 
   async function checkAndConnectToStoic() {
     // following needs to change and need to use from webpack config
     if (walletToUse) {
-      const stcIdentityFromLocalStrg = await StoicIdentity.load(hostToUse);
+      const stcIdentityFromLocalStrg = await StoicIdentity.load(hostToUseForStoicLcl);
       if (stcIdentityFromLocalStrg) {
         setIsAuthenticatedLocal(true);
         if (!_identity) {
@@ -177,7 +181,7 @@ export function useProvideAuth(authClient): AuthContext {
       // The auth client isn't ready to make requests until it's completed the
       // async authenticate actor method.
       setAuthClientReady(false);
-      actorController.authenticateActor(_identity, walletToUse).then(() => {
+      actorController.authenticateActor(_identity, walletToUse, canisterId).then(() => {
         console.log("USER AUTHENTICATED");
         setAuthClientReady(true);
       });
@@ -198,7 +202,6 @@ export function useProvideAuth(authClient): AuthContext {
   // Login to the identity provider by sending user to Internet Identity
   // and logging them in.
   const logIn = async function (logInMethodToUse): Promise<void> {
-    console.log("LOGIN CALLED ON INIT")
     walletToUse = logInMethodToUse;
     if (!authClient) return;
     switch (logInMethodToUse) {
@@ -231,7 +234,7 @@ export function useProvideAuth(authClient): AuthContext {
         };
         break;
       case 'stoic':
-        let stcIdentity = await StoicIdentity.load(hostToUse);
+        let stcIdentity = await StoicIdentity.load(hostToUseForStoicLcl);
         if (!stcIdentity) {
           stcIdentity = await StoicIdentity.connect();
         }
@@ -254,7 +257,6 @@ export function useProvideAuth(authClient): AuthContext {
 
   // Clears the authClient of any cached data, and redirects user to root.
   function logOut() {
-    console.log("Logging User out");
     switch (walletToUse) {
       case 'ii':
         if (!authClient.ready) return;
