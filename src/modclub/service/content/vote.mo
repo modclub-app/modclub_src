@@ -10,6 +10,7 @@ import GlobalState "../../state";
 import Helpers "../../helpers";
 import Types "../../types";
 import Tokens "../../token";
+import ModClubParam "../parameters/params";
 
 
 module ContentVotingModule {
@@ -47,7 +48,7 @@ module ContentVotingModule {
     };
 
     public func vote(userId: Principal, contentId: Types.ContentId, decision: Types.Decision, violatedRules: ?[Types.RuleId], 
-                    voteCount: Types.VoteCount, tokens : Tokens.Tokens, initializer: Principal, state: GlobalState.State) : async Text {
+                    voteCount: Types.VoteCount, tokens : Tokens.Tokens, state: GlobalState.State) : async Text {
 
         let voteId = "vote-" # Principal.toText(userId) # contentId;
         switch(state.votes.get(voteId)){
@@ -115,7 +116,7 @@ module ContentVotingModule {
                 state.votes.put(vote.id, vote);
 
                 // Evaluate and send notification to provider
-                await evaluateVotes(content, voteApproved, voteRejected, tokens, initializer, state);
+                await evaluateVotes(content, voteApproved, voteRejected, tokens, state);
                 return "Vote successful";
             };
             case(_)( throw Error.reject("Content does not exist"));
@@ -145,7 +146,7 @@ module ContentVotingModule {
     };
 
     private func evaluateVotes(content: Types.Content, aCount: Nat, rCount: Nat, tokens: Tokens.Tokens,
-                                initializer: Principal, state: GlobalState.State) : async() {
+                                 state: GlobalState.State) : async() {
         var finishedVote = false;
         var status : Types.ContentStatus = #new;
         var decision : Types.Decision = #approved;
@@ -174,7 +175,7 @@ module ContentVotingModule {
                 if(finishedVote) {
                     // Reward / Slash voters ;                      
                     await tokens.voteFinalization(
-                        initializer,
+                        ModClubParam.getModclubWallet(),
                         decision, 
                         state.content2votes.get0(content.id), 
                         provider.settings.minStaked, // TODO: Change this to a percentage

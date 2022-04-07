@@ -222,7 +222,6 @@ hr {
 .card {
   background: $black;
   color: $light;
-  // overflow: hidden;
 
   &.is-fullheight {
     display: flex;
@@ -252,25 +251,6 @@ hr {
       background: $black;
       margin: 2px;
     }
-
-    // .is-size-1 {
-    //   display: flex;
-    //   align-items: center;
-    //   white-space: nowrap;
-
-    //   span {
-    //     font-size: 1.25rem;
-    //     line-height: 1.25rem;
-    //     margin-left: 0.25rem;
-
-    //     span {
-    //       display: block;
-    //       font-size: 1rem;
-    //       font-weight: 400;
-    //       margin: 0;
-    //     }
-    //   }
-    // }
   }
 }
 
@@ -325,13 +305,10 @@ hr {
   background: none;
   color: $white;
   padding: 3rem 4rem;
-  // padding: 8% 10%;
-
 }
 .modal-card-foot {
   background: none;
   padding: 1rem 4rem 3rem;
-  // padding: 1rem 10% 8%;
   border-top: 0;
   justify-content: space-between;
   border-bottom: 2px solid;
@@ -378,6 +355,25 @@ hr {
   .card-content, .card-footer, .modal-card-body, .modal-card-foot {
     position: relative;
     z-index: 1;
+  }
+}
+
+.modal.scrollable {
+  .modal-card-body {
+    max-height: 80vh;
+  }
+
+  .modal-card-foot {
+    flex-wrap: wrap;
+    margin-top: -2rem;
+
+    &:before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 2rem;
+      background-image: linear-gradient(to top, $black, transparent);
+    }
   }
 }
 
@@ -748,7 +744,8 @@ input[type='number']::-webkit-inner-spin-button {
     }
 
     .dropdown-menu {
-      max-height: 20rem;
+      max-height: 10rem;
+      overflow-y: scroll;
     }
   }
 }

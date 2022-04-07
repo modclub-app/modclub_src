@@ -23,14 +23,15 @@ shared ({caller = initializer}) actor class ModclubProvider () {
 
     public shared({ caller }) func test() : async Text {
         // await onlyOwner(caller);
-        // Register with Modclub
+        // Register with Modclub        
+
         let registerResult = await MC.registerProvider("SocialApp", "The description of your application.", null);
 
         // Sub the callback
         await subscribe();
 
         // Add content rules
-        await MC.addRules(["No violent content", "No drugs"]);
+        await MC.addRules(["No violent content", "No drugs", "This post contains intimate photos or videos of someone that were produced or distributed without their permission", "This post contains other peoples private information (such as home phone number and address) without their express written permission", "This post is excessively gory", "This post threatens or promotes terrorism or violent extremitism"]);
 
         // Update settings
         await MC.updateSettings({minVotes = 2; minStaked = 15});
