@@ -275,6 +275,16 @@ actor class Bucket () = this {
         canistergeekLogger.getLog(request);
   };
 
+  public query ({caller}) func getContentInfo() : async [(Text, Types.ContentInfo)] {
+    fromDataCanisterState(state).contentInfo;
+  };
+
+  public shared ({caller}) func getChunkData() : async [Text] {
+    await onlyOwners(caller);
+    Iter.toArray(state.chunks.keys());
+  };
+
+
   private func isUserAllowed(jwt: Text) : Bool {
     if(jwt == "") {
       return false;

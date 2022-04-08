@@ -15,4 +15,8 @@ module {
     public func getModclubWallet() : Principal {
         return Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai")
     };
+
+    public func getModClubProviderId() : Principal {
+        return Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai");
+    };
 };

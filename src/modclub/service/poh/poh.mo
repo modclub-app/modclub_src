@@ -760,6 +760,18 @@ module PohModule {
         public func getStableStateV1() : PohState.PohStableState {
             return PohState.getStableState(state);
         };
+
+        // to be deleted after a deployment
+        public func assignAllPohAuditstoModClub() : () {
+            for((reqId, pohReq) in state.pohVerificationRequests.entries()) {
+                state.pohVerificationRequests.put(reqId, {
+                    requestId = reqId;
+                    providerUserId = pohReq.providerUserId;
+                    providerId = ModClubParam.getModClubProviderId();
+                });
+
+            };
+        };
     };
 
 };

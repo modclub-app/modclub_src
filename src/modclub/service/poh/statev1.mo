@@ -4,7 +4,6 @@ import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import PohTypes "./types";
-import PohStateV0 "./state";
 
 import Rel "../../data_structures/Rel";
 import RelObj "../../data_structures/RelObj";
@@ -158,10 +157,4 @@ module State {
         };
         return st;
     };
-
-    public func createState(state: PohStateV0.PohState): PohStableState {
-
-        return emptyStableState();
-    };
-
 };
