@@ -245,7 +245,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, ModclubParam.getModClubProviderId()).status != #verified) {
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
     return ContentManager.getAllContent(caller, status, getVoteCount, state);
@@ -312,7 +312,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case (#err(e)) { throw Error.reject("Unauthorized"); };
       case (_) ();
     };
-    if(pohVerificationRequestHelper(caller, ModclubParam.getModClubProviderId()).status != #verified) {
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
     switch(ModeratorManager.getActivity(caller, isComplete, getVoteCount, state)) {
@@ -345,7 +345,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case (#err(e)) { throw Error.reject("Unauthorized"); };
       case (_) ();
     };
-    if(pohVerificationRequestHelper(caller, ModclubParam.getModClubProviderId()).status != #verified) {
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
     var voteCount = getVoteCount(contentId, ?caller);
@@ -358,7 +358,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func stakeTokens(amount: Nat) : async Text {
-    if(pohVerificationRequestHelper(caller, ModclubParam.getModClubProviderId()).status != #verified) {
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
     await tokens.stake(caller, amount);
