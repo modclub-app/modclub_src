@@ -18,6 +18,16 @@ import ModclubApp from "./components/app/ModclubApp";
 export default function App() {
  const history = useHistory();
 
+  
+//  console.log('indow.navigator.userAgent;', window.navigator.userAgent);
+
+ const userAgent = window.navigator.userAgent;
+
+ if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {
+   
+ }
+
+
   useEffect(() => {
     if (process.env.NODE_ENV === "production") {
       Usergeek.init({apiKey: "01C001B685B0F32CFCCEEBAA4C97E390"})
