@@ -127,6 +127,8 @@ export function WebcamWrapper({ setFile, file }) {
       blob: new Blob(),
       data: null
     });
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
   }
 
   const doCropImage = () => {
@@ -141,7 +143,8 @@ export function WebcamWrapper({ setFile, file }) {
         type: blob.type,
         size: blob.size,
         blob: blob,
-        data: file.data
+        data: imgUri,
+        cropped: true
       };
       console.log("fileInfo", fileInfo);
       setFile(fileInfo);
@@ -184,21 +187,26 @@ export function WebcamWrapper({ setFile, file }) {
     </div>
   ) : (
     <div className="is-relative has-text-centered">
-      <div style={{ maxWidth: 640, maxHeight: 480, margin: "auto" }}>
-        <div style={{ paddingBottom: "75%" }}>
-          <Cropper
-            image={file.data}
-            crop={crop}
-            zoom={zoom}
-            aspect={4 / 3}
-            onCropChange={setCrop}
-            onCropComplete={onCropComplete}
-            onZoomChange={setZoom}
-          />
-        </div>
-      </div>
-
       
+      {file.cropped ? (
+        <div style={{ maxWidth: 640, maxHeight: 480, margin: "auto", background: `url(${file.data}) no-repeat center`, backgroundSize: "cover" }}>
+          <div style={{ paddingBottom: "75%" }} />
+        </div>
+      ) : (
+        <div style={{ maxWidth: 640, maxHeight: 480, margin: "auto" }}>
+          <div style={{ paddingBottom: "75%" }}>
+            <Cropper
+              image={file.data}
+              crop={crop}
+              zoom={zoom}
+              aspect={4 / 3}
+              onCropChange={setCrop}
+              onCropComplete={onCropComplete}
+              onZoomChange={setZoom}
+            />
+          </div>
+        </div>
+      )}
 
       {!file.uploaded &&
         <SaveButton file={file} />
