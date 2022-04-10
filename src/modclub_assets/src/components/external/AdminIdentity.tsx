@@ -18,9 +18,8 @@ export default function AdminIdentity() {
     <>
       {message && (
         <div
-          className={`notification has-text-centered ${
-            message.success ? "is-success" : "is-danger"
-          }`}
+          className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"
+            }`}
         >
           {message.value}
         </div>
@@ -38,14 +37,14 @@ export default function AdminIdentity() {
                 spinner
               ) : (
                 <>
-                    {isAuthenticated && identity? (
-                      <div className="card has-gradient">
-                        <div className="card-content">
-                          <label className="label">Principal ID</label>
-                          <p>{identity.getPrincipal().toText()}</p>
-                        </div>
+                  {isAuthenticated && identity ? (
+                    <div className="card has-gradient">
+                      <div className="card-content">
+                        <label className="label">Principal ID</label>
+                        <p>{identity.getPrincipal().toText()}</p>
                       </div>
-                    ) : <SignIn />}
+                    </div>
+                  ) : <SignIn />}
                 </>
               )}
             </div>

@@ -1,15 +1,8 @@
 import { Actor, HttpAgent, Identity } from "@dfinity/agent";
 // Imports and re-exports candid interface
-import { idlFactory } from "../../../declarations/modclub/index";
-export { idlFactory } from "../../../declarations/modclub/index";
+import { idlFactory, modclub } from "../../../declarations/modclub/index";
+export { idlFactory, modclub } from "../../../declarations/modclub/index";
 import { _SERVICE } from "./types";
-// CANISTER_ID is replaced by webpack based on node environment
-export const canisterId =
-  process.env.DEV_ENV == "dev"
-    ? process.env.MODCLUB_DEV_CANISTER_ID
-    : process.env.MODCLUB_CANISTER_ID;
-
-console.log("Canister ID:", canisterId);
 import dfxConfig from "../../../../dfx.json";
 
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
@@ -22,13 +15,31 @@ function getHost() {
 
 const host = getHost();
 
-function createActor(identity?: Identity) {
+function createActor(identity?: Identity, canisterId?: any) {
   const agent = new HttpAgent({ host, identity });
   const actor = Actor.createActor<_SERVICE>(idlFactory, {
     agent,
     canisterId: canisterId,
   });
   return { actor, agent };
+}
+
+const createPlugActor = async function (identity, canisterId) {
+
+  //if (isLocalEnv) {
+  const agent = new HttpAgent({ host, identity });
+  const actor = Actor.createActor<_SERVICE>(idlFactory, {
+    agent,
+    canisterId: canisterId,
+  });
+  return actor;
+  /* } else {
+    const actor = await window["ic"].plug.createActor({
+      canisterId: canisterId,
+      interfaceFactory: idlFactory,
+    });
+    return actor;
+  } */
 }
 
 /*
@@ -44,14 +55,26 @@ class ActorController {
     this._actor = this.initBaseActor();
   }
 
-  async initBaseActor(identity?: Identity) {
-    console.log("Updating anchor");
-    const { agent, actor } = createActor(identity);
-    // The root key only has to be fetched for local development environments
-    if (isLocalEnv) {
-      await agent.fetchRootKey();
+  async initBaseActor(identity?: Identity, authenticatorToUse?: String, canisterId?: String) {
+    //Probably should use the same method because once the identity is passed the actor is going to get created using
+    //the identity so should not be using different method for plug
+    switch (authenticatorToUse) {
+      case 'ii':
+        const { agent, actor } = createActor(identity, canisterId);
+        // The root key only has to be fetched for local development environments
+        if (isLocalEnv) {
+          await agent.fetchRootKey();
+        }
+        return actor;
+      case 'plug':
+        const plugActor = createPlugActor(identity, canisterId);
+        return plugActor;
+      case 'stoic':
+        const stoicActorAgent = createActor(identity, canisterId);
+        return stoicActorAgent.actor;
+      default:
+        break;
     }
-    return actor;
   }
 
   /*
@@ -66,8 +89,8 @@ class ActorController {
    * Once a user has authenticated and has an identity pass this identity
    * to create a new actor with it, so they pass their Principal to the backend.
    */
-  async authenticateActor(identity: Identity) {
-    this._actor = this.initBaseActor(identity);
+  async authenticateActor(identity: Identity, authenticatorToUse: String, canisterId: String) {
+    this._actor = this.initBaseActor(identity, authenticatorToUse, canisterId);
     this._isAuthenticated = true;
   }
 
