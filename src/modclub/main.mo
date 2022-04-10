@@ -384,6 +384,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return tokens.getAllHoldings();
   };
 
+  public shared({ caller }) func distributeAllPendingRewards() : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    for((p,h) in tokens.getAllHoldings().vals()) {
+      Helpers.logMessage(canistergeekLogger, "Distributing reward for " # Principal.toText(p) # " For amount: " # Int.toText(h.pendingRewards), #info);
+      await tokens.distributePendingReward(p, h.pendingRewards);
+    };
+  };
+
   //----------------------POH Methods For Providers------------------------------
 
   public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {

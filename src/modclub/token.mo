@@ -149,6 +149,47 @@ module Token {
         };
       };
     };
+
+    // Transfers tokens from the users reward wallet to their main wallet. 
+    // This should be called after the grace period has passed for each content they voted on successfully.
+    public func distributePendingReward(user: Principal, amount: Int) : async () {
+      switch(_tokenRewards.get(user)) {
+        case (?balance) {
+          if (balance >= amount) {
+            _tokenRewards.put(user, balance - amount);
+            switch(_tokenWallets.get(user)) {
+              case (?walletBalance) {
+                _tokenWallets.put(user, walletBalance + amount);
+              };
+              case (null) {
+                _tokenWallets.put(user, amount);
+              };
+            };
+          } else {
+            throw Error.reject("Insufficient pending rewards: fromP: "# Principal.toText(user) #" pending reward balance : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount));
+          }; 
+        };
+        case (null) {
+          _tokenRewards.put(user, 0);
+        };
+      };
+    };
+
+    public func burnReward(user: Principal, amount: Int) : async () {
+      switch(_tokenRewards.get(user)) {
+        case (?balance) {
+          if (balance >= amount) {
+            _tokenRewards.put(user, balance - amount);
+          } else {
+            _tokenRewards.put(user, 0); // Reset the user to 0
+            // TODO: Maybe we further penalize the user if they lose more tokens than they have.
+          };
+        };
+        case (null) {
+          _tokenRewards.put(user, 0);
+        };
+      };
+    };
     
 
     public func stake(p: Principal, amount: Int) : async () {
