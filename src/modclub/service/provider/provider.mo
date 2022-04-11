@@ -184,7 +184,7 @@ module ProviderModule {
         pic = null;
         role = #admin;
         createdAt = now;
-        updatedAt =now;
+        updatedAt = now;
       };
 
       state.profiles.put(userId, adminProfile);
@@ -203,8 +203,29 @@ module ProviderModule {
       #ok();
   };
 
-    public func getAdminProviderIDs(caller: Principal, state: GlobalState.State): [Principal]{
-      return state.admin2Provider.get0(caller);
-  };
+    public func getAdminProviderIDs(
+      caller: Principal,
+      state: GlobalState.State): [Principal] {
+        return state.admin2Provider.get0(caller);
+    };
 
+    public func getProviderAdmins(
+      providerId: Principal,
+      state: GlobalState.State): [Types.Profile] {
+      let buf = Buffer.Buffer<Types.Profile>(0);
+      switch(state.providerAdmins.get(providerId)) {
+        case (null) ();
+        case (?adminMap) {
+          for(adminId in adminMap.keys()) {
+            switch(state.profiles.get(adminId)) {
+              case (?profile) {
+                buf.add(profile);
+              };
+              case (_)();
+            };
+          };
+        };
+      };
+      buf.toArray();
+    };
 };

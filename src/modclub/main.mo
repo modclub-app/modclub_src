@@ -183,13 +183,21 @@ shared ({caller = deployer}) actor class ModClub() = this {
     await ProviderManager.getProvider(providerId, state);
   };
 
-  public shared({ caller }) func addRules(rules: [Text]) {
-    await AuthManager.checkProviderPermission(caller, state);
-    ProviderManager.addRules(caller, rules, state);
+  public shared({ caller }) func addRules(
+    rules: [Text],
+    providerId: ?Principal,
+  ) : async () {
+    // checkProviderPermission will return either the caller or the passed in providerId depending if the caller is the provider or not
+    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
+    ProviderManager.addRules(_providerId, rules, state);
   };
 
-  public shared({ caller }) func removeRules(ruleIds: [Types.RuleId]) {
-    ProviderManager.removeRules(caller, ruleIds, state);
+  public shared({ caller }) func removeRules(
+    ruleIds: [Types.RuleId],
+    providerId: ?Principal
+    ): async () {
+    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
+    ProviderManager.removeRules(_providerId, ruleIds, state);
   };
 
   public query func getRules(providerId: Principal) : async [Types.Rule] {
@@ -198,7 +206,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // Subscribe function for providers to register their callback after a vote decision has been made
   public shared({caller}) func subscribe(sub: Types.SubscribeMessage) : async() {
-    await AuthManager.checkProviderPermission(caller, state);
+    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
     ProviderManager.subscribe(caller, sub, state);
   };
 
@@ -212,7 +220,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    await AuthManager.checkProviderPermission(caller, state);
+    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
     return ContentManager.submitTextOrHtmlContent(caller, sourceId, text, title, #text, state);
   };
 
@@ -220,7 +228,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    await AuthManager.checkProviderPermission(caller, state);
+    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
 
     ContentManager.submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent, state);
   };
@@ -229,7 +237,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    await AuthManager.checkProviderPermission(caller, state);
+    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
     return ContentManager.submitImage(caller, sourceId, image, imageType, title, state);
   };
 

@@ -11,12 +11,46 @@ import Types "../../types";
 module AuthModule {
     public let Unauthorized = "Unauthorized";
 
-    public func checkProviderPermission(p: Principal, state: GlobalState.State) : async () {
-        switch(state.providers.get(p)){
-        case (null) throw Error.reject("unauthorized");
-        case(_) ();
-        };
+    public func checkProviderPermission(
+        caller: Principal,
+        providerId: ?Principal,
+        state: GlobalState.State
+        ) : async Principal {
+            var authorized = false;
+            var isProvider = false;
+            var _providerId : Principal = do {
+                switch(providerId) {
+                    case(?result) {
+                    isProvider := false;
+                    result;
+                    };
+                    case(_) {
+                    caller;
+                    };
+                };
+            };
+            // Provider check
+            switch(state.providers.get(_providerId)) {
+                case (null) (); // Do nothing check if the caller is an admin for the provider
+                case (?result) {
+                if(caller == result.id) {
+                        authorized := true;
+                        isProvider := true;
+                    };
+                };
+            };
+             // Check if the caller is an admin of this provider
+            if(isProvider == false) {
+                switch(await checkProviderAdminPermission(_providerId, caller, state)) {
+                    case (#err(error)) throw Error.reject("Unauthorized, caller "# Principal.toText(caller) #" is not an admin of the provider" # Principal.toText(_providerId));
+                    case (#ok()) authorized := true;
+                };
+            };
+
+        if(authorized == false) throw Error.reject("unauthorized");
+        return _providerId;
     };
+
 
     public func checkProfilePermission(p: Principal, action: Types.Action, state: GlobalState.State) : Result.Result<(), Types.Error>{
         var unauthorized = true;

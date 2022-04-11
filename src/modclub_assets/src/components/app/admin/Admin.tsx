@@ -481,11 +481,9 @@ export default function Admin() {
                     </td>
                   </tr>
                   <tr>
-                    <td>Example cost per each succesful vote (1% of stake)</td>
+                    <td>Example cost per each successful vote (1% of stake)</td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      {selectedProvider
-                        ? selectedProvider.settings.costPerSuccesfulVote.toString()
-                        : 0}
+                        1
                     </td>
                   </tr>
                   <tr>
@@ -494,9 +492,7 @@ export default function Admin() {
                       majority voters (optional)
                     </td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                      {selectedProvider
-                        ? selectedProvider.settings.distributedTokens.toString()
-                        : 0}
+                        100
                     </td>
                   </tr>
                 </tbody>
