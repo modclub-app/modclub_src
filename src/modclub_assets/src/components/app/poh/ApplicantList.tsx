@@ -138,7 +138,7 @@ export default function PohApplicantList() {
       <Columns>
         {applicants.length && applicants.map((applicant, index) => (
           <Columns.Column
-            key={index}
+            key={applicant.packageId}
             mobile={{ size: 11 }}
             tablet={{ size: 6 }}
             fullhd={{ size: 4 }}
