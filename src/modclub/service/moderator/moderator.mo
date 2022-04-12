@@ -78,7 +78,7 @@ module ModeratorModule {
       for ( (pid, p) in state.profiles.entries()) {
         let holdings = getHolding(p.id);
         rewardsEarnedBuffer.add({
-          rewardsEarned = holdings.pendingRewards;
+          rewardsEarned = holdings.userPoints;
           userId = p.id;
         });
       };
