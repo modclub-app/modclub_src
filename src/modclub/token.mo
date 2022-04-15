@@ -1,12 +1,13 @@
-import Int "mo:base/Int";
-import HashMap "mo:base/HashMap";
-import Principal "mo:base/Principal";
-import Types "./types";
-import State "./state";
-import Error "mo:base/Error";
-import Iter "mo:base/Iter";
-import Debug "mo:base/Debug"; 
 import Buffer "mo:base/Buffer";
+import Debug "mo:base/Debug";
+import Error "mo:base/Error";
+import HashMap "mo:base/HashMap";
+import Int "mo:base/Int";
+import Iter "mo:base/Iter";
+import Option "mo:base/Option";
+import Principal "mo:base/Principal";
+import State "./state";
+import Types "./types";
 
 module Token {
   public type Map<X, Y> = HashMap.HashMap<X, Y>;
@@ -25,6 +26,7 @@ module Token {
     wallet: Int;
     stake: Int;
     pendingRewards: Int;
+    userPoints: Int;
   };
   
   // Todo - Make these into objects insteda of Ints, we should hold rewards pending etc
@@ -34,16 +36,34 @@ module Token {
     tokenRewards: [(Principal, Int)];
   };
 
-  public func emptyStable(tokenOwner: Principal) : TokensStable {
-      let st = {
-        tokenWallets = [(tokenOwner, TOKEN_OWNER_BALANCE)];
-        tokenStakes = [];
-        tokenRewards = [];
-      };
-      st;
-    };
+  public type TokensStableV1 = {
+    tokenWallets: [(Principal, Int)];
+    tokenStakes: [(Principal, Int)];
+    tokenRewards: [(Principal, Int)];
+    userPoints: [(Principal, Int)];
+  };
 
-  public class Tokens(tokensStable: TokensStable) {
+
+  public func emptyStable(tokenOwner: Principal) : TokensStable {
+    let st = {
+      tokenWallets = [(tokenOwner, TOKEN_OWNER_BALANCE)];
+      tokenStakes = [];
+      tokenRewards = [];
+    };
+    st;
+  };
+
+  public func emptyStableV1(tokenOwner: Principal) : TokensStableV1 {
+    let st = {
+      tokenWallets = [(tokenOwner, TOKEN_OWNER_BALANCE)];
+      tokenStakes = [];
+      tokenRewards = [];
+      userPoints = [];
+    };
+    st;
+  };
+
+  public class Tokens(tokensStable: TokensStableV1) {
 
     
     let _tokenWallets: TokenWallets = HashMap.HashMap<Principal, Int>(0, Principal.equal, Principal.hash);
@@ -51,6 +71,9 @@ module Token {
     let _tokenStakes: TokenStakes = HashMap.HashMap<Principal, Int>(0, Principal.equal, Principal.hash);
 
     let _tokenRewards: TokenRewards = HashMap.HashMap<Principal, Int>(0, Principal.equal, Principal.hash);
+
+    let userPoints = HashMap.HashMap<Principal, Int>(0, Principal.equal, Principal.hash);
+
 
     for( (p, val) in tokensStable.tokenWallets.vals()) {
       _tokenWallets.put(p, val);
@@ -61,166 +84,58 @@ module Token {
     for( (p, val) in tokensStable.tokenRewards.vals()) {
       _tokenRewards.put(p, val);
     };
+    for( (p, val) in tokensStable.userPoints.vals()) {
+      userPoints.put(p, val);
+    };
 
     public func mintTo(p: Principal, amount: Int) {
-      switch(_tokenWallets.get(p)) {
-        case (?balance) {
-          _tokenWallets.put(p, balance + amount);
-        };
-        case (null) {
-          _tokenWallets.put(p, amount);
-        };
-      };
+      addToWallet(p, amount, _tokenWallets);
+      // addToWallet(p, amount, userPoints); Not required to mint points, I guess
     };
 
     public func burnFrom(p: Principal, amount: Int) : async () {
-      switch(_tokenWallets.get(p)) {
-        case (?balance) {
-          if (balance >= amount) {
-            _tokenWallets.put(p, balance - amount);
-          } else {
-            throw Error.reject("Not enough tokens");
-          };
-        };
-        case (null) {
-          throw Error.reject("Not enough tokens");
-        };
-      };
+      await subtractFromWallet(p, amount, _tokenWallets, true);
+      // No point distribution/slashing here as well, I believe
     };
 
     public func burnStakeFrom(p: Principal, amount: Int) : async () {
-        switch(_tokenStakes.get(p)) {
-          case (?balance) {
-            if (balance >= amount) {
-              _tokenStakes.put(p, balance - amount);
-            } else {
-              _tokenStakes.put(p, 0); // Reset the user to 0
-            };
-          };
-          case (null) {
-            throw Error.reject("Not enough tokens");
-          };
-      };
+      await subtractFromWallet(p, amount, _tokenStakes, false);
+      await subtractFromWallet(p, amount, userPoints, false);
     };
 
     public func transfer(from: Principal, to: Principal, amount: Int) : async () {
-      switch(_tokenWallets.get(from)) {
-        case (?balance) {
-          if (balance >= amount) {
-            _tokenWallets.put(from, balance - amount);
-            switch(_tokenWallets.get(to)) {
-              case (?balance) {
-                _tokenWallets.put(to, balance + amount);
-              };
-              case (null) {
-                _tokenWallets.put(to, amount);
-              };
-            };
-          } else {
-            Debug.print("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
-            throw Error.reject("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
-          };
-        };
-        case (null) {
-          throw Error.reject("No balance for Principal: "# Principal.toText(from));
-        };
-      };
+      await subtractFromWallet(from, amount, _tokenWallets, true);
+      addToWallet(to, amount, _tokenWallets);
     };
 
     public func reward(from: Principal, to: Principal, amount: Int) : async () {
-      switch(_tokenWallets.get(from)) {
-        case (?balance) {
-          if (balance >= amount) {
-            _tokenWallets.put(from, balance - amount);
-            switch(_tokenRewards.get(to)) {
-              case (?balance) {
-                _tokenRewards.put(to, balance + amount);
-              };
-              case (null) {
-                _tokenRewards.put(to, amount);
-              };
-            };
-          } else {
-            throw Error.reject("Insufficient funds: fromP: "# Principal.toText(from) #" fromBal : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount) # " toP: " # Principal.toText(to));
-          };
-        };
-        case (null) {
-          throw Error.reject("No balance for Principal: "# Principal.toText(from));
-        };
-      };
+      await subtractFromWallet(from, amount, _tokenWallets, true);
+      addToWallet(to, amount, _tokenRewards);
+      addToWallet(to, amount, userPoints);
     };
 
     // Transfers tokens from the users reward wallet to their main wallet. 
     // This should be called after the grace period has passed for each content they voted on successfully.
     public func distributePendingReward(user: Principal, amount: Int) : async () {
-      switch(_tokenRewards.get(user)) {
-        case (?balance) {
-          if (balance >= amount) {
-            _tokenRewards.put(user, balance - amount);
-            switch(_tokenWallets.get(user)) {
-              case (?walletBalance) {
-                _tokenWallets.put(user, walletBalance + amount);
-              };
-              case (null) {
-                _tokenWallets.put(user, amount);
-              };
-            };
-          } else {
-            throw Error.reject("Insufficient pending rewards: fromP: "# Principal.toText(user) #" pending reward balance : "# Int.toText(balance) # " withdraw amount " # Int.toText(amount));
-          }; 
-        };
-        case (null) {
-          _tokenRewards.put(user, 0);
-        };
-      };
+      await subtractFromWallet(user, amount, _tokenRewards, true);
+      addToWallet(user, amount, _tokenWallets);
     };
 
     public func burnReward(user: Principal, amount: Int) : async () {
-      switch(_tokenRewards.get(user)) {
-        case (?balance) {
-          if (balance >= amount) {
-            _tokenRewards.put(user, balance - amount);
-          } else {
-            _tokenRewards.put(user, 0); // Reset the user to 0
-            // TODO: Maybe we further penalize the user if they lose more tokens than they have.
-          };
-        };
-        case (null) {
-          _tokenRewards.put(user, 0);
-        };
-      };
+      await subtractFromWallet(user, amount, _tokenRewards, false);
+      await subtractFromWallet(user, amount, userPoints, false);
     };
     
 
     public func stake(p: Principal, amount: Int) : async () {
       await burnFrom(p, amount);
-      switch(_tokenStakes.get(p)) {
-        case (?balance) {
-          _tokenStakes.put(p, balance + amount);
-        };
-        case (null) {
-          _tokenStakes.put(p, amount);
-        };
-      };
+      addToWallet(p, amount, _tokenStakes);
     };
 
     public func unstake(p: Principal, amount: Int) : async () {
-
       // Todo - Add timer to unstake so that it can be unstaked after a certain time period
-      switch(_tokenStakes.get(p)) {
-        case (?balance) {
-          // Check that there are enough tokens to unstake
-          if (balance >= amount) {
-            _tokenStakes.put(p, balance - amount);
-            mintTo(p, amount);
-          } else {
-            throw Error.reject("Insufficient funds");
-          };
-        };
-        case (null) {
-         throw Error.reject("Insufficient funds");
-        };
-      };
+      await subtractFromWallet(p, amount, _tokenStakes, true);
+      mintTo(p, amount);
     };
 
     public func voteFinalization(
@@ -249,49 +164,13 @@ module Token {
       };
 
     public func getHoldings(p: Principal) : Holdings {
-      switch(_tokenWallets.get(p)) {
-        case (?wbalance) {
-          switch(_tokenStakes.get(p)) {
-            case (?sbalance) {
-              switch(_tokenRewards.get(p)) {
-                case (?rbalance) {
-                  let rt = {
-                    wallet =  wbalance;
-                    stake = sbalance;
-                    pendingRewards = rbalance;
-                  };
-                  rt;
-                };
-                case (null) {
-                  let rt = {
-                    wallet =  wbalance;
-                    stake = sbalance;
-                    pendingRewards = 0;
-                  };
-                  rt;
-                };
-              };
-            };
-            case (null) {
-              let rt = {
-                wallet =  wbalance;
-                stake = 0;
-                pendingRewards = 0;
-              };
-              rt;
-            };
-          };
-        };
-        case (null) {
-          let rt = {
-            wallet =  0;
-            stake = 0;
-            pendingRewards = 0;
-          };
-          rt;
-        };
+      {
+        wallet =  Option.get(_tokenWallets.get(p), 0);
+        stake = Option.get(_tokenStakes.get(p), 0);
+        pendingRewards = Option.get(_tokenRewards.get(p), 0);
+        userPoints = Option.get(userPoints.get(p), 0);
       };
-    };  
+    };
 
     public func getAllHoldings() : [(Principal, Holdings)] {
       let rt = Buffer.Buffer<(Principal, Holdings)>(0);
@@ -308,6 +187,49 @@ module Token {
         tokenRewards = Iter.toArray(_tokenRewards.entries());
       };
       st;
+    };
+
+    public func getStableV1() : TokensStableV1 {
+      let st = {
+        tokenWallets = Iter.toArray(_tokenWallets.entries());
+        tokenStakes = Iter.toArray(_tokenStakes.entries());
+        tokenRewards = Iter.toArray(_tokenRewards.entries());
+        userPoints = Iter.toArray(userPoints.entries());
+      };
+      st;
+    };
+
+     private func putZeroInMapIfAbsent(userId: Principal, rewardsMap: Map<Principal, Int>) {
+      switch(rewardsMap.get(userId)) {
+        case(null) {
+          rewardsMap.put(userId, 0);
+        };
+        case(_)();
+      };
+    };
+
+    private func addToWallet(userId: Principal, amount: Int, wallet: Map<Principal, Int>) {
+      putZeroInMapIfAbsent(userId, wallet);
+      let _ = do ?{
+        let existingBalance = wallet.get(userId)!;
+        wallet.put(userId, existingBalance + amount);
+      };
+    };
+
+    private func subtractFromWallet(userId: Principal, amount: Int, wallet: Map<Principal, Int>, lowBalanceException: Bool) : async () {
+      putZeroInMapIfAbsent(userId, wallet);
+      let _ = do ?{
+        let existingBalance = wallet.get(userId)!;
+        if(existingBalance >= amount) {
+          if(lowBalanceException) {
+            throw Error.reject("Insufficient Funds.");
+          } else {
+            wallet.put(userId, 0);
+          };
+        } else {
+          wallet.put(userId, existingBalance - amount);
+        };
+      };
     };
 
   };
