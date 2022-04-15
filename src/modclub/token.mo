@@ -220,7 +220,7 @@ module Token {
       putZeroInMapIfAbsent(userId, wallet);
       let _ = do ?{
         let existingBalance = wallet.get(userId)!;
-        if(existingBalance >= amount) {
+        if(existingBalance <= amount) {
           if(lowBalanceException) {
             throw Error.reject("Insufficient Funds.");
           } else {
