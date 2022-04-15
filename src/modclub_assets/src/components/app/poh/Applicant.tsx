@@ -10,7 +10,8 @@ import {
   Card,
   Button,
   Modal,
-  Icon
+  Icon,
+  Notification
 } from "react-bulma-components";
 import { Form, Field } from "react-final-form";
 import Userstats from "../profile/Userstats";
@@ -114,8 +115,17 @@ export default function PohApplicant() {
     )
   };
 
+  const isSafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
+  const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
   return (
     <>
+      {isSafari && iOS &&
+        <Notification color="danger" className="has-text-centered">
+          Proof of Humanity is not working on iOS Safari
+        </Notification>
+      }
+
       <Userstats />
       
       <Form

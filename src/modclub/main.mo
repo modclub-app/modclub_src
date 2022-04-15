@@ -1,8 +1,14 @@
+import AirDropManager "./service/airdrop/airdrop";
 import Array "mo:base/Array";
+import Arrays "mo:base/Array";
+import AuthManager "./service/auth/auth";
 import Base32 "mo:encoding/Base32";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
+import Canistergeek "./canistergeek/canistergeek";
+import ContentManager "./service/content/content";
+import ContentVotingManager "./service/content/vote";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
@@ -12,38 +18,30 @@ import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import List "mo:base/List";
+import LoggerTypesModule "./canistergeek/logger/typesModule";
 import ModClubParam "service/parameters/params";
+import ModeratorManager "./service/moderator/moderator";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Order "mo:base/Order";
-import Random "mo:base/Random";
 import POH "./service/poh/poh";
 import PohStateV1 "./service/poh/statev1";
 import PohTypes "./service/poh/types";
+import Prim "mo:prim";
 import Principal "mo:base/Principal";
+import ProviderManager "./service/provider/provider";
+import Random "mo:base/Random";
+import RelObj "./data_structures/RelObj";
 import Result "mo:base/Result";
 import State "./state";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Prim "mo:prim";
 import Token "./token";
 import Types "./types";
-
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
-import AirDropManager "./service/airdrop/airdrop";
-import ProviderManager "./service/provider/provider";
-import ModeratorManager "./service/moderator/moderator";
-import AuthManager "./service/auth/auth";
-import ContentManager "./service/content/content";
-import ContentVotingManager "./service/content/vote";
-
-import RelObj "./data_structures/RelObj";
-
-import Canistergeek "./canistergeek/canistergeek";
-import LoggerTypesModule "./canistergeek/logger/typesModule";
 
 shared ({caller = deployer}) actor class ModClub() = this {
 
@@ -55,9 +53,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
   stable var allowSubmissionFlag : Bool = true;
   // Global Objects 
   var state = State.empty();
+  // Delete next one line after one deployment
   stable var tokensStable : Token.TokensStable = Token.emptyStable(ModClubParam.getModclubWallet());
+  stable var tokensStableV1 : Token.TokensStableV1 = Token.emptyStableV1(ModClubParam.getModclubWallet());
   var tokens = Token.Tokens(
-        tokensStable
+        tokensStableV1
   );
   
   stable var storageStateStable  = StorageState.emptyStableState();
@@ -862,7 +862,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
     Debug.print("MODCLUB PREUPGRRADE");
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
+    //Delete next line after one deployment
     tokensStable := tokens.getStable();
+    tokensStableV1 := tokens.getStableV1();
 
     storageStateStable := storageSolution.getStableState();
     retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
@@ -883,7 +885,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
+    // Delete next three line after one deployment
+    tokensStableV1 := deriveV1StateFromOldState(tokensStable, tokensStableV1);
+    tokens := Token.Tokens(tokensStableV1);
     tokensStable := Token.emptyStable(ModClubParam.getModClubProviderId());
+    tokensStableV1 := Token.emptyStableV1(ModClubParam.getModClubProviderId());
+
     
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
@@ -898,6 +905,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
+  };
+
+  // Delete this function after one deployment
+  private func deriveV1StateFromOldState(tokensStable : Token.TokensStable, tokensStableV1: Token.TokensStableV1) :  Token.TokensStableV1 {
+    return {
+      tokenWallets = Arrays.append(tokensStable.tokenWallets, tokensStableV1.tokenWallets);
+      tokenStakes = Arrays.append(tokensStable.tokenStakes, tokensStableV1.tokenStakes);
+      tokenRewards = Arrays.append(tokensStable.tokenRewards, tokensStableV1.tokenRewards);
+      userPoints = tokensStableV1.userPoints;
+    };
   };
 
   // To be deleted after one deployment
