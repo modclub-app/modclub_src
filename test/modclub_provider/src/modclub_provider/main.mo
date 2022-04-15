@@ -31,10 +31,10 @@ shared ({caller = initializer}) actor class ModclubProvider () {
         await subscribe();
 
         // Add content rules
-        await MC.addRules(["No violent content", "No drugs", "This post contains intimate photos or videos of someone that were produced or distributed without their permission", "This post contains other peoples private information (such as home phone number and address) without their express written permission", "This post is excessively gory", "This post threatens or promotes terrorism or violent extremitism"]);
+        await MC.addRules(["No violent content", "No drugs", "This post contains intimate photos or videos of someone that were produced or distributed without their permission", "This post contains other peoples private information (such as home phone number and address) without their express written permission", "This post is excessively gory", "This post threatens or promotes terrorism or violent extremitism"], null);
 
         // Update settings
-        await MC.updateSettings({minVotes = 2; minStaked = 15});
+        await MC.updateSettings({minVotes = 2; minStaked = 15}, null);
 
         // Submit content to be reviewed by moderators
         let test1 = await MC.submitText("id_1", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas elementum velit sed nibh porttitor efficitur. Maecenas id efficitur risus, et vehicula nisl. Donec pretium eget purus elementum porttitor. Vivamus malesuada, nisi in mollis luctus, massa odio pharetra metus, sed rutrum mi nisl quis justo. Quisque mattis, purus id dapibus sodales, nisl purus aliquam elit, sed lobortis ex augue a eros. Sed dolor justo, ornare auctor fringilla at, sodales non turpis. Aliquam iaculis, erat vel molestie luctus, mauris sapien efficitur nibh, at facilisis nulla ex nec ante. Vestibulum et lorem ac ante accumsan lobortis.", ?"Test 111 Title");
@@ -72,7 +72,7 @@ shared ({caller = initializer}) actor class ModclubProvider () {
     };
 
     public func updateSettings(voteNum: Nat, stakeNum: Nat) : async () {
-        await MC.updateSettings({minVotes = voteNum; minStaked = stakeNum });
+        await MC.updateSettings({minVotes = voteNum; minStaked = stakeNum }, null);
     };
 
     public func subscribe() : async() {
@@ -122,6 +122,6 @@ shared ({caller = initializer}) actor class ModclubProvider () {
     };
 
     public func addRule(rule: Text) : async () {
-        await MC.addRules([rule]);
+        await MC.addRules([rule], null);
     };
 };
