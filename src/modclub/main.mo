@@ -855,6 +855,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
  };
 
+ public shared({caller}) func rewardPoints(p: Principal, amount: Int) : async () {
+   if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+   tokens.rewardPoints(p, amount);
+  };
+
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
 
