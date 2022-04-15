@@ -138,6 +138,10 @@ module Token {
       mintTo(p, amount);
     };
 
+    public func rewardPoints(p: Principal, amount: Int) {
+      addToWallet(p, amount, userPoints);
+    };
+
     public func voteFinalization(
       providerId: Principal,
       decision: Types.Decision,
