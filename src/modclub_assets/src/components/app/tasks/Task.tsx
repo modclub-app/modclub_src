@@ -45,7 +45,7 @@ export default function Task() {
   }
 
   useEffect(() => {
-    user && fetchTask();
+    user && !task && fetchTask();
     setVoted(false);
   }, [user, voted]);
 
