@@ -111,14 +111,17 @@ export default function Tasks() {
   const fetchTasks = async () => {
     const status = { "new": null };
     const content = await getAllContent(status);
-    console.log("content", content);
     setTasks(content);
   }
 
   useEffect(() => {
     user && !tasks && fetchTasks();
+  }, [user]);
+
+  useEffect(() => {
+    user && voted && fetchTasks();
     setVoted(false);
-  }, [user, voted]);
+  }, [voted]);
   
   return (
     <>
