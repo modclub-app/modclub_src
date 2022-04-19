@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { useAuth } from "../../../utils/auth";
 import { getContent } from "../../../utils/api";
 import { Columns, Card, Level, Heading, Icon, Button } from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
@@ -28,6 +29,7 @@ const InfoItem = ({ icon, title, info }) => {
 };
 
 export default function Task() {
+  const { user } = useAuth();
   const { taskId } = useParams();
   const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
@@ -43,9 +45,9 @@ export default function Task() {
   }
 
   useEffect(() => {
-    fetchTask();
+    user && fetchTask();
     setVoted(false);
-  }, [voted]);
+  }, [user, voted]);
 
   return (
     <>
