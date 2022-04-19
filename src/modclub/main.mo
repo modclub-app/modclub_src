@@ -53,8 +53,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   stable var allowSubmissionFlag : Bool = true;
   // Global Objects 
   var state = State.empty();
-  // Delete next one line after one deployment
-  stable var tokensStable : Token.TokensStable = Token.emptyStable(ModClubParam.getModclubWallet());
+
   stable var tokensStableV1 : Token.TokensStableV1 = Token.emptyStableV1(ModClubParam.getModclubWallet());
   var tokens = Token.Tokens(
         tokensStableV1
@@ -869,8 +868,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     Debug.print("MODCLUB PREUPGRRADE");
     Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
-    //Delete next line after one deployment
-    tokensStable := tokens.getStable();
+
     tokensStableV1 := tokens.getStableV1();
 
     storageStateStable := storageSolution.getStableState();
@@ -892,13 +890,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
-    // Delete next three line after one deployment
-    tokensStableV1 := deriveV1StateFromOldState(tokensStable, tokensStableV1);
-    tokens := Token.Tokens(tokensStableV1);
-    tokensStable := Token.emptyStable(ModClubParam.getModClubProviderId());
+
     tokensStableV1 := Token.emptyStableV1(ModClubParam.getModClubProviderId());
 
-    
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
     pohStableStateV1 := PohStateV1.emptyStableState();
@@ -912,28 +906,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
-  };
-
-  // Delete this function after one deployment
-  private func deriveV1StateFromOldState(tokensStable : Token.TokensStable, tokensStableV1: Token.TokensStableV1) :  Token.TokensStableV1 {
-    return {
-      tokenWallets = Arrays.append(tokensStable.tokenWallets, tokensStableV1.tokenWallets);
-      tokenStakes = Arrays.append(tokensStable.tokenStakes, tokensStableV1.tokenStakes);
-      tokenRewards = Arrays.append(tokensStable.tokenRewards, tokensStableV1.tokenRewards);
-      userPoints = tokensStableV1.userPoints;
-    };
-  };
-
-  // To be deleted after one deployment
-  // call this once after deployment
-  public shared({caller}) func transferTokensToModClubWallet() : async () {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let raheelsInitializerId = Principal.fromText("d2qpe-l63sh-47jxj-2764e-pa6i7-qocm4-icuie-nt2lb-yiwwk-bmq7z-pqe");
-    let amount = tokens.getHoldings(raheelsInitializerId).wallet;
-    await tokens.transfer(raheelsInitializerId, ModClubParam.getModclubWallet(), amount);
-    pohEngine.assignAllPohAuditstoModClub();
   };
 
   var nextRunTime = Time.now();
