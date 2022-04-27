@@ -21,6 +21,7 @@ export default function ProfilePic() {
     data: null
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [newCrop, setNewCrop] = useState<boolean>(false);
 
   const handleFileChange = (event: React.FormEvent<HTMLInputElement>) => {    
     // @ts-ignore
@@ -87,6 +88,8 @@ export default function ProfilePic() {
       <WebcamWrapper
         setFile={setFile}
         file={file}
+        newCrop={newCrop}
+        setNewCrop={setNewCrop}
       />
 
       {!file.data &&
@@ -114,7 +117,7 @@ export default function ProfilePic() {
         <Link to="/app/" className="button is-black" disabled={!file.data}>
           Cancel
         </Link>
-        <Button color="primary" disabled={!file.data} onClick={submit}>
+        <Button color="primary" disabled={!file.data || newCrop} onClick={submit}>
           Next
         </Button>
       </Button.Group>
