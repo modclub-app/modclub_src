@@ -219,6 +219,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
+    if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
+      throw Error.reject("Content already submitted");
+    };
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
     return ContentManager.submitTextOrHtmlContent(caller, sourceId, text, title, #text, state);
   };
@@ -228,13 +231,18 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Submissions are disabled");
     };
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
-
+    if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
+      throw Error.reject("Content already submitted");
+    };
     ContentManager.submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent, state);
   };
     
   public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
+    };
+    if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
+      throw Error.reject("Content already submitted");
     };
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
     return ContentManager.submitImage(caller, sourceId, image, imageType, title, state);
@@ -256,6 +264,30 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Proof of Humanity not completed user");
     };
     return ContentManager.getAllContent(caller, status, getVoteCount, state);
+  };
+
+  public query({ caller }) func getTasks(
+        start: Nat,
+        end: Nat,
+        filterVoted: Bool
+  ) : async [Types.ContentPlus] {
+    switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
+    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted)){
+      case(#err(e)) {
+        throw Error.reject(e);
+      };
+      case(#ok(tasks)) {
+        return tasks;
+      };
+    };
   };
   
   // ----------------------Moderator Methods------------------------------

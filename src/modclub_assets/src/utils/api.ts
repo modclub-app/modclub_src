@@ -209,11 +209,7 @@ export async function getPohTasks(
 ): Promise<PohTaskPlus[]> {
   // console.log("getPohTasks start", start);
   // console.log("getPohTasks end", end);
-  return (await getMC()).getPohTasks(
-    status,
-    BigInt(start),
-    BigInt(end)
-  );
+  return (await getMC()).getPohTasks(status, BigInt(start), BigInt(end));
 }
 
 export async function getPohTaskData(packageId: string): Promise<any> {
@@ -234,4 +230,12 @@ export async function getPerformance(): Promise<number> {
 
 export async function issueJwt(): Promise<string> {
   return (await getMC()).issueJwt();
+}
+
+export async function getTasks(
+  start: number,
+  end: number,
+  filterVoted: boolean
+): Promise<ContentPlus[]> {
+  return (await getMC()).getTasks(BigInt(start), BigInt(end), filterVoted);
 }

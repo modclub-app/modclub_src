@@ -103,6 +103,7 @@ export interface Holdings {
   'pendingRewards' : bigint,
   'stake' : bigint,
   'wallet' : bigint,
+  'userPoints' : bigint,
 }
 export interface HourlyMetricsData {
   'updateCalls' : UpdateCallsAggregatedData,
@@ -121,20 +122,25 @@ export interface ModClub {
       arg_1: string,
       arg_2: [] | [Principal],
     ) => Promise<ProviderResult>,
-  'addRules' : (arg_0: Array<string>) => Promise<undefined>,
+  'addRules' : (arg_0: Array<string>, arg_1: [] | [Principal]) => Promise<
+      undefined
+    >,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
   'adminInit' : () => Promise<undefined>,
   'airdropRegister' : () => Promise<AirdropUser>,
   'collectCanisterMetrics' : () => Promise<undefined>,
   'deregisterProvider' : () => Promise<string>,
+  'distributeAllPendingRewards' : () => Promise<undefined>,
   'generateSigningKey' : () => Promise<undefined>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAdminProviderIDs' : () => Promise<Array<Principal>>,
+  'getAdmins' : () => Promise<Result_3>,
   'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
   'getAirdropWhitelist' : () => Promise<Array<Principal>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getAllDataCanisterIds' : () => Promise<[Array<Principal>, Array<string>]>,
+  'getAllModeratorHoldings' : () => Promise<Array<[Principal, Holdings]>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getCanisterLog' : (arg_0: [] | [CanisterLogRequest]) => Promise<
       [] | [CanisterLogResponse]
@@ -143,11 +149,15 @@ export interface ModClub {
       [] | [CanisterMetrics]
     >,
   'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
+  'getDeployer' : () => Promise<Principal>,
   'getModclubHoldings' : () => Promise<Holdings>,
   'getModeratorLeaderboard' : (arg_0: bigint, arg_1: bigint) => Promise<
       Array<ModeratorLeaderboard>
     >,
-  'getPohTaskData' : (arg_0: string) => Promise<Result_1>,
+  'getPohAttempts' : () => Promise<
+      Array<[Principal, Array<[string, Array<PohChallengesAttempt>]>]>
+    >,
+  'getPohTaskData' : (arg_0: string) => Promise<Result_2>,
   'getPohTasks' : (
       arg_0: ContentStatus,
       arg_1: bigint,
@@ -158,6 +168,9 @@ export interface ModClub {
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
+  'getTasks' : (arg_0: bigint, arg_1: bigint, arg_2: boolean) => Promise<
+      Array<ContentPlus>
+    >,
   'getTokenHoldings' : () => Promise<Holdings>,
   'getVotePerformance' : () => Promise<number>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
@@ -167,6 +180,7 @@ export interface ModClub {
       PohVerificationResponse
     >,
   'populateChallenges' : () => Promise<undefined>,
+  'registerAdmin' : (arg_0: Principal) => Promise<Result>,
   'registerModerator' : (
       arg_0: string,
       arg_1: string,
@@ -177,10 +191,13 @@ export interface ModClub {
       arg_1: string,
       arg_2: [] | [Image],
     ) => Promise<string>,
-  'removeRules' : (arg_0: Array<RuleId>) => Promise<undefined>,
-  'resetUserChallengeAttempt' : (arg_0: string) => Promise<Result>,
+  'removeRules' : (arg_0: Array<RuleId>, arg_1: [] | [Principal]) => Promise<
+      undefined
+    >,
+  'resetUserChallengeAttempt' : (arg_0: string) => Promise<Result_1>,
   'retiredDataCanisterIdForWriting' : (arg_0: string) => Promise<undefined>,
-  'retrieveChallengesForUser' : (arg_0: string) => Promise<Result>,
+  'retrieveChallengesForUser' : (arg_0: string) => Promise<Result_1>,
+  'rewardPoints' : (arg_0: Principal, arg_1: bigint) => Promise<undefined>,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,
   'submitChallengeData' : (arg_0: PohChallengeSubmissionRequest) => Promise<
       PohChallengeSubmissionResponse
@@ -204,6 +221,7 @@ export interface ModClub {
   'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
   'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
+  'unregisterAdmin' : (arg_0: string) => Promise<Result>,
   'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
   'verifyUserHumanity' : () => Promise<VerifyHumanityResponse>,
   'vote' : (
@@ -372,10 +390,14 @@ export interface ProviderPlus {
 export type ProviderResult = { 'ok' : null } |
   { 'err' : ProviderError };
 export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
-export type Result = { 'ok' : Array<PohChallengesAttempt> } |
+export type Result = { 'ok' : null } |
+  { 'err' : string };
+export type Result_1 = { 'ok' : Array<PohChallengesAttempt> } |
   { 'err' : PohError };
-export type Result_1 = { 'ok' : PohTaskDataWrapperPlus } |
+export type Result_2 = { 'ok' : PohTaskDataWrapperPlus } |
   { 'err' : PohError };
+export type Result_3 = { 'ok' : Array<Principal> } |
+  { 'err' : string };
 export type Role = { 'admin' : null } |
   { 'moderator' : null } |
   { 'owner' : null };

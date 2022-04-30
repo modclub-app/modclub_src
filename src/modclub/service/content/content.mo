@@ -2,6 +2,8 @@ import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Order "mo:base/Order";
 import Nat "mo:base/Nat";
+import Text "mo:base/Text";
+import Result "mo:base/Result";
 
 import Rel "../../data_structures/Rel";
 import GlobalState "../../state";
@@ -59,8 +61,12 @@ module ContentModule {
       buf.toArray();
     };
 
-    public func getAllContent(caller: Principal, status: Types.ContentStatus, getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount, state: GlobalState.State) : [Types.ContentPlus] {
-        var contentRel : ?Rel.Rel<Principal, Types.ContentId> = null;
+    public func getAllContent(
+            caller: Principal,
+            status: Types.ContentStatus,
+            getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
+            state: GlobalState.State
+        ) : [Types.ContentPlus] {
         let buf = Buffer.Buffer<Types.ContentPlus>(0);
         var count = 0;
         for ( (pid, p) in state.providers.entries()){
@@ -182,4 +188,68 @@ module ContentModule {
         };
     };
 
+    // Retrieves only new content that needs to be approved ( i.e tasks )
+    public func getTasks(
+        caller: Principal,
+        getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
+        state: GlobalState.State,
+        start: Nat,
+        end: Nat,
+        filterVoted: Bool
+    ): Result.Result<[Types.ContentPlus], Text>  {
+        if( start < 0 or end < 0 or start > end) {
+            return #err("Invalid range");
+        };
+        let result = Buffer.Buffer<Types.ContentPlus>(0);
+        let items =  Buffer.Buffer<Text>(0); 
+        var count: Nat = 0;
+        let maxReturn: Nat = end - start;
+        for ( (pid, p) in state.providers.entries()) {
+            // TODO: When we have randomized task generation, fetch tasks from the users task queue instead of fetching all new content
+            for(cid in state.contentNew.get0(pid).vals()) {
+                if ( filterVoted ) {
+                    let voteCount = getVoteCount(cid, ?caller);
+                    if(voteCount.hasVoted != true) {
+                        items.add(cid);
+                    };
+                } else {
+                    items.add(cid);
+                };
+            };
+        };
+
+        var index: Nat = 0;
+        for(cid in items.vals()) {
+            if(index >= start and index <= end  and count < maxReturn) {
+                let voteCount = getVoteCount(cid, ?caller);
+                switch(getContentPlus(cid, ?caller, voteCount, state)) {
+                    case (?content) {
+                        result.add(content);
+                        count := count + 1;
+                    };
+                    case (_) ();
+                };
+            };
+            index := index + 1;
+        };
+
+        return #ok(Array.sort(result.toArray(), compareContent));
+    };
+
+    public func checkIfAlreadySubmitted(
+        sourceId: Text,
+        providerId: Principal,
+        state: GlobalState.State ): Bool {
+        for (cid in state.provider2content.get0(providerId).vals()) {
+             switch(state.content.get(cid)) {
+                 case (?content) {
+                     if ( content.sourceId == sourceId ) {
+                         return true;
+                     };
+                 };
+                case (_) ();
+            };
+        };
+        return false;
+    };
 };

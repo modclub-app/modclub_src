@@ -35,15 +35,25 @@ type Role =
    moderator;
    owner;
  };
-type Result_1 = 
+type Result_3 = 
+ variant {
+   err: text;
+   ok: vec principal;
+ };
+type Result_2 = 
  variant {
    err: PohError;
    ok: PohTaskDataWrapperPlus;
  };
-type Result = 
+type Result_1 = 
  variant {
    err: PohError;
    ok: vec PohChallengesAttempt;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok;
  };
 type ProviderSettings = 
  record {
@@ -239,34 +249,50 @@ type ModeratorLeaderboard =
 type ModClub = 
  service {
    addProviderAdmin: (principal, text, opt principal) -> (ProviderResult);
-   addRules: (vec text) -> () oneway;
+   addRules: (vec text, opt principal) -> ();
    addToAirdropWhitelist: (vec principal) -> ();
    addToApprovedUser: (principal) -> ();
    adminInit: () -> ();
    airdropRegister: () -> (AirdropUser);
    collectCanisterMetrics: () -> ();
    deregisterProvider: () -> (text);
+   distributeAllPendingRewards: () -> ();
    generateSigningKey: () -> ();
    getActivity: (bool) -> (vec Activity) query;
    getAdminProviderIDs: () -> (vec principal) query;
+   getAdmins: () -> (Result_3) query;
    getAirdropUsers: () -> (vec AirdropUser);
    getAirdropWhitelist: () -> (vec principal);
    getAllContent: (ContentStatus) -> (vec ContentPlus) query;
    getAllDataCanisterIds: () -> (vec principal, vec text);
+   getAllModeratorHoldings: () -> (vec record {
+                                         principal;
+                                         Holdings;
+                                       }) query;
    getAllProfiles: () -> (vec Profile) query;
    getCanisterLog: (opt CanisterLogRequest) ->
     (opt CanisterLogResponse) query;
    getCanisterMetrics: (GetMetricsParameters) -> (opt CanisterMetrics) query;
    getContent: (text) -> (opt ContentPlus) query;
+   getDeployer: () -> (principal) query;
    getModclubHoldings: () -> (Holdings) query;
    getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
-   getPohTaskData: (text) -> (Result_1) query;
+   getPohAttempts: () ->
+    (vec record {
+           principal;
+           vec record {
+                 text;
+                 vec PohChallengesAttempt;
+               };
+         });
+   getPohTaskData: (text) -> (Result_2) query;
    getPohTasks: (ContentStatus, nat, nat) -> (vec PohTaskPlus) query;
    getProfile: () -> (Profile) query;
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus);
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
+   getTasks: (nat, nat, bool) -> (vec ContentPlus) query;
    getTokenHoldings: () -> (Holdings) query;
    getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
@@ -274,12 +300,14 @@ type ModClub =
    pohGenerateUniqueToken: (principal) -> (PohUniqueToken);
    pohVerificationRequest: (principal) -> (PohVerificationResponse);
    populateChallenges: () -> ();
+   registerAdmin: (principal) -> (Result);
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
-   removeRules: (vec RuleId) -> () oneway;
-   resetUserChallengeAttempt: (text) -> (Result);
+   removeRules: (vec RuleId, opt principal) -> ();
+   resetUserChallengeAttempt: (text) -> (Result_1);
    retiredDataCanisterIdForWriting: (text) -> () oneway;
-   retrieveChallengesForUser: (text) -> (Result);
+   retrieveChallengesForUser: (text) -> (Result_1);
+   rewardPoints: (principal, int) -> ();
    stakeTokens: (nat) -> (text);
    submitChallengeData: (PohChallengeSubmissionRequest) ->
     (PohChallengeSubmissionResponse);
@@ -289,6 +317,7 @@ type ModClub =
    subscribe: (SubscribeMessage) -> ();
    toggleAllowSubmission: (bool) -> ();
    unStakeTokens: (nat) -> (text);
+   unregisterAdmin: (text) -> (Result);
    updateSettings: (ProviderSettings) -> ();
    verifyUserHumanity: () -> (VerifyHumanityResponse);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
@@ -322,6 +351,7 @@ type Holdings =
  record {
    pendingRewards: int;
    stake: int;
+   userPoints: int;
    wallet: int;
  };
 type GetMetricsParameters = 

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
-import { getAllContent, getProviderRules } from "../../../utils/api";
+import { getAllContent, getProviderRules, getTasks } from "../../../utils/api";
 import {
   Columns,
   Card,
@@ -109,8 +109,7 @@ export default function Tasks() {
   const [voted, setVoted] = useState<boolean>(true);
 
   const fetchTasks = async () => {
-    const status = { "new": null };
-    const content = await getAllContent(status);
+    const content = await getTasks(0, 3, false);
     setTasks(content);
   }
 
