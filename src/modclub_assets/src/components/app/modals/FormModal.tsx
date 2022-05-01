@@ -25,12 +25,13 @@ export default function FormModal({
   title,
   children,
   handleSubmit,
+  formStyle = null,
   updateTable = null,
   footerContent = null
 }) {
-  const [ submitting, setSubmitting ] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
-  
+
   const onFormSubmit = async (values: any) => {
     console.log("FormModal values", values);
     setSubmitting(true);
@@ -39,6 +40,8 @@ export default function FormModal({
     try {
       const result = await handleSubmit(values)
       setSubmitting(false);
+      console.log("RESULT", result);
+
       if (result) {
         setMessage({ success: true, value: result });
       } else {
@@ -57,7 +60,7 @@ export default function FormModal({
       <Modal.Card backgroundColor="circles" className="is-small">
         <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
           <form onSubmit={handleSubmit}>
-            <Modal.Card.Body>
+            <Modal.Card.Body style={formStyle}>
               <Heading subtitle>
                 {title}
               </Heading>
@@ -66,7 +69,7 @@ export default function FormModal({
 
               {updateTable &&
                 React.cloneElement(updateTable, { amount: values.amount })
-              }            
+              }
             </Modal.Card.Body>
             <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
               <Button.Group>
@@ -83,7 +86,7 @@ export default function FormModal({
               </Button.Group>
             </Modal.Card.Footer>
           </form>
-          )}
+        )}
         />
       </Modal.Card>
       {message &&
