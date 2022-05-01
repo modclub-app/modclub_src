@@ -15,6 +15,7 @@ import {
 import FormModal from "../modals/FormModal";
 import {
   addRules,
+  updateRule,
   removeRules,
   getProviderRules,
   getProvider,
@@ -65,7 +66,8 @@ const EditAppModal = ({ toggle }) => {
 
 const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
   const [newRules, setNewRules] = useState(rules);
-
+  let rulesBeingEdited = {};
+  console.log("EDIT principalID", principalID)
   const remove = async (rule) => {
     console.log(rule);
     setNewRules(newRules.filter((item) => item !== rule));
@@ -81,13 +83,29 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
       .catch((e) => console.log(e));
   };
 
+  const addToUpdateRule = (id: any, description: Text) => {
+    if (id && description) {
+      rulesBeingEdited[id.toString()] = description ;
+    };
+    console.log(rulesBeingEdited);
+
+  }
+
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit values", values);
     console.log("parent !!! onFormSubmit newRules", newRules);
+    console.log("PRincipla", principalID);
 
     const { newRule } = values;
-    console.log(newRule);
+    console.log(newRule, Principal.fromText(principalID));
     await addRules([newRule], Principal.fromText(principalID))
+      .then (async () => {
+        let updateRulePromise = [];
+        for (let principalID in rulesBeingEdited) {
+          updateRulePromise.push(updateRule(rulesBeingEdited[principalID], Principal.fromText(principalID)));
+        }
+        await Promise.all(updateRulePromise);
+      })
       .then(async () => {
         let updatedRules = await getProviderRules(
           Principal.fromText(principalID)
@@ -97,30 +115,11 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
         setNewRules(updatedRules);
       })
       .catch((e) => console.log(e));
+    rulesBeingEdited = {};
   };
 
   return (
-    <FormModal title="Edit Rules" toggle={toggle} handleSubmit={onFormSubmit}>
-      {newRules.map((rule) => (
-        <div key={rule.id} className="field level">
-          <Field
-            name={rule.description}
-            component="input"
-            type="text"
-            className="input"
-            placeholder={rule.description}
-            value={rule.description}
-            disabled
-          />
-          <span
-            className="icon has-text-danger is-clickable ml-3"
-            onClick={() => remove(rule.id)}
-          >
-            <span className="material-icons">remove_circle</span>
-          </span>
-        </div>
-      ))}
-
+    <FormModal title="Edit Rules" toggle={toggle} handleSubmit={onFormSubmit} formStyle={{ maxHeight: '500px', overflow: 'auto' }}>
       <div className="field level">
         <Field
           name="newRule"
@@ -134,6 +133,25 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
           {values.newRule && <span className="material-icons is-clickable">add_circle</span>}
         </span> */}
       </div>
+      {newRules.map((rule) => (
+        <div key={rule.id} className="field level">
+          <Field
+            name={rule.description}
+            component="input"
+            type="text"
+            className="input"
+            placeholder={rule.description}
+            initialValue={rule.description}
+            onBlur={(e) => addToUpdateRule(rule.id, e.target.value)}
+          />
+          <span
+            className="icon has-text-danger is-clickable ml-3"
+            onClick={() => remove(rule.id)}
+          >
+            <span className="material-icons">remove_circle</span>
+          </span>
+        </div>
+      ))}
     </FormModal>
   );
 };
@@ -141,8 +159,20 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
 const EditModeratorSettingsModal = ({ toggle, settings }) => {
   console.log("settings", settings);
   const onFormSubmit = async (values: any) => {
-    console.log("parent !!! onFormSubmit values", values);
-    return await updateProviderSettings(values);
+    for (const k in values) {
+      if (!isNaN(values[k] / 1)) {
+        values[k] = values[k] / 1;
+      }
+
+    }
+    values["minStaked"] = values.minTokens;
+    console.log(values, typeof values.minTokens);
+    let values2 = {
+      "minVotes": values.minTokens,
+      "minStaked": values.minTokens
+    };
+    console.log("parent !!! onFormSubmit values", await updateProviderSettings(values2));
+    return await updateProviderSettings(values2);
   };
 
   return (
@@ -183,6 +213,7 @@ const EditModeratorSettingsModal = ({ toggle, settings }) => {
           className="input has-text-centered ml-3"
           initialValue={1}
           style={{ width: 70 }}
+          readOnly={true}
         />
       </div>
 
@@ -198,6 +229,7 @@ const EditModeratorSettingsModal = ({ toggle, settings }) => {
           className="input has-text-centered ml-3"
           initialValue={5}
           style={{ width: 70 }}
+          readOnly={true}
         />
       </div>
     </FormModal>
@@ -226,30 +258,38 @@ export default function Admin() {
   const [providerIdText, setProviderIdText] = useState("");
 
   useEffect(() => {
+    console.log(0);
     let adminInit = async () => {
+      console.log(1);
       let adminProviders = await getAdminProviderIDs();
-      let providerList = [];
+      console.log(adminProviders);
+      console.log(2);
+      let providerListPromise = [];
       for (let provider of adminProviders) {
-        providerList.push(await getProvider(provider));
+        providerListPromise.push(getProvider(provider));
+        console.log(2222);
       }
+      console.log(3);
+      let providerList = await Promise.all(providerListPromise);
+      console.log(4);
       setProviders(providerList);
-      console.log("Data", providerList[0]);
+      console.log(5);
       setProviderIdText(adminProviders[0].toText());
     };
     adminInit();
   }, []);
-
+  const toggle = () => setShowModal(false);
   return (
     <>
       {selectedProvider == null && providers != [] ? (
-        <Modal show={showModal} showClose={true}>
+        <Modal show={showModal} onClose={toggle} showClose={true}>
           <Modal.Card backgroundColor="circles">
             <Modal.Card.Body>
               <Heading subtitle>Available Providers</Heading>
             </Modal.Card.Body>
             {providers.map((provider) => {
               return (
-                <Button
+                <Button key={provider.id}
                   onClick={() => {
                     setSelectedProvider(provider);
                     setShowModal(false);
@@ -483,7 +523,7 @@ export default function Admin() {
                   <tr>
                     <td>Example cost per each successful vote (1% of stake)</td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                        1
+                      1
                     </td>
                   </tr>
                   <tr>
@@ -492,7 +532,7 @@ export default function Admin() {
                       majority voters (optional)
                     </td>
                     <td className="has-text-white is-size-5 has-text-weight-bold">
-                        100
+                      100
                     </td>
                   </tr>
                 </tbody>

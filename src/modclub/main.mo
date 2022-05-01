@@ -51,17 +51,17 @@ shared ({caller = deployer}) actor class ModClub() = this {
   stable var signingKey = "";
   // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
-  // Global Objects 
+  // Global Objects
   var state = State.empty();
 
   stable var tokensStableV1 : Token.TokensStableV1 = Token.emptyStableV1(ModClubParam.getModclubWallet());
   var tokens = Token.Tokens(
         tokensStableV1
   );
-  
+
   stable var storageStateStable  = StorageState.emptyStableState();
   stable var retiredDataCanisterId : [Text] = [];
- 
+
 
   stable var pohStableStateV1 = PohStateV1.emptyStableState();
   var pohEngine = POH.PohEngine(pohStableStateV1);
@@ -165,8 +165,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   // ----------------------Provider Methods------------------------------
-  // todo: Require cylces on provider registration, add provider imageURl, description 
+  // todo: Require cylces on provider registration, add provider imageURl, description
   public shared({ caller }) func registerProvider(name: Text, description: Text, image: ?Types.Image) : async Text {
+    Debug.print("registerProvider caller: " # Principal.toText(caller));
     ProviderManager.registerProvider(caller, name, description, image, state);
   };
 
@@ -174,11 +175,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     ProviderManager.deregisterProvider(caller, state);
   };
 
-  public shared({ caller }) func updateSettings(settings: Types.ProviderSettings) : async () {
-    ProviderManager.updateProviderSettings(caller, settings, state);
+  public shared({ caller }) func updateSettings(providerId : Principal, updatedSettings: Types.ProviderSettings) : async Types.ProviderSettingResult {
+    Debug.print("updateSettings caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
+    return await ProviderManager.updateProviderSettings(providerId, updatedSettings, caller, state);
   };
 
-  public shared func getProvider(providerId: Principal) : async Types.ProviderPlus {
+  public shared({ caller }) func getProvider(providerId: Principal) : async Types.ProviderPlus {
+    Debug.print("getProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
     await ProviderManager.getProvider(providerId, state);
   };
 
@@ -236,7 +239,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
     ContentManager.submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent, state);
   };
-    
+
   public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -252,7 +255,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   public query({ caller }) func getProviderContent() : async [Types.ContentPlus] {
     return ContentManager.getProviderContent(caller, getVoteCount, state);
   };
-  
+
   public query({ caller }) func getAllContent(status: Types.ContentStatus) : async [Types.ContentPlus] {
     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
       case(#err(e)) {
@@ -265,6 +268,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
     return ContentManager.getAllContent(caller, status, getVoteCount, state);
   };
+
 
   public query({ caller }) func getTasks(
         start: Nat,
@@ -314,7 +318,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
   };
 
-  public query func getProfileById(pid: Principal) : async Types.Profile { 
+  public query func getProfileById(pid: Principal) : async Types.Profile {
     switch(ModeratorManager.getProfile(pid, state)) {
       case(#ok(p)) {
         return p;
@@ -322,7 +326,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case(_) {
         throw Error.reject("profile not found")
       };
-    };   
+    };
   };
 
   public query func getAllProfiles() : async [Types.Profile] {
@@ -335,7 +339,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         return leaderboard;
       };
       case(#err(#contentNotFound)) {
-        throw Error.reject("Content does not exist"); 
+        throw Error.reject("Content does not exist");
       };
       case(#err(#voteNotFound)) {
         throw Error.reject("Vote does not exist");
@@ -357,7 +361,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     switch(ModeratorManager.getActivity(caller, isComplete, getVoteCount, state)) {
       case(#ok(activity)) return activity;
       case(#err(#providerNotFound)) throw Error.reject("Provider does not exist");
-      case(#err(#contentNotFound)) throw Error.reject("Content does not exist"); 
+      case(#err(#contentNotFound)) throw Error.reject("Content does not exist");
       case(#err(#voteNotFound)) throw Error.reject("Vote does not exist");
       case(_) throw Error.reject("Something went wrong");
     };
@@ -370,7 +374,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         return vp;
       };
       case(#err(#contentNotFound)) {
-        throw Error.reject("Content does not exist"); 
+        throw Error.reject("Content does not exist");
       };
       case(#err(#voteNotFound)) {
         throw Error.reject("Vote does not exist");
@@ -379,7 +383,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func vote(contentId: Types.ContentId, decision: Types.Decision, violatedRules: ?[Types.RuleId]) : async Text {
-    
+
     switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
       case (#err(e)) { throw Error.reject("Unauthorized"); };
       case (_) ();
@@ -390,7 +394,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     var voteCount = getVoteCount(contentId, ?caller);
     await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state);
   };
-  
+
   // ----------------------Token Methods------------------------------
   public query({ caller }) func getTokenHoldings() : async Token.Holdings {
      tokens.getHoldings(caller);
@@ -459,7 +463,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // validity and rules needs to come from admin dashboard here
     pohEngine.pohVerificationRequest(pohVerificationRequest, 365, CHALLENGE_IDS);
   };
-  
+
   // Method called by provider
   public shared({ caller }) func pohGenerateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
     await pohEngine.pohGenerateUniqueToken(providerUserId, caller);
@@ -481,7 +485,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       let _ = do ? {
         if(pohDataRequest.challengeDataBlob != null) {
           let attemptId = pohEngine.getAttemptId(pohDataRequest.challengeId, caller);
-          let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset, 
+          let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset,
                   pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
           if(pohDataRequest.offset == pohDataRequest.numOfChunks) {//last Chunk coming in
             pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
@@ -567,7 +571,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         await pohEngine.retrieveChallengesForUser(package.userId, CHALLENGE_IDS, 365, true);
       };
     };
-   
+
   };
 
   public shared({ caller }) func populateChallenges() : async () {
@@ -606,7 +610,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
             fullName := data.fullName;
             aboutUser := data.aboutUser;
           };
-          
+
           if(data.challengeId == POH.CHALLENGE_PROFILE_PIC_ID) {
             profileImageUrlSuffix := do ? {
               ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
@@ -628,12 +632,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
             userName = null; // Don't expose personal info about POH users
             email = null;
             fullName = null;
-            aboutUser = null; 
+            aboutUser = null;
             profileImageUrlSuffix = profileImageUrlSuffix;
             // TODO: change these vote settings
             voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
             minVotes = ModClubParam.MIN_VOTE_POH;
-            minStake = ModClubParam.MIN_STAKE_POH; 
+            minStake = ModClubParam.MIN_STAKE_POH;
             title = null;
             hasVoted = ?voteCount.hasVoted;
             reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
@@ -643,7 +647,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
           tasks.add(taskPlus);
         };
       }
-      
+
     };
     return tasks.toArray();
   };
@@ -702,7 +706,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Proof of Humanity not completed user");
     };
     let holdings = tokens.getHoldings(caller);
-    if( holdings.stake < ModClubParam.MIN_STAKE_POH) { 
+    if( holdings.stake < ModClubParam.MIN_STAKE_POH) {
       throw Error.reject("Not enough tokens staked");
     };
     if(voteManager.checkPohUserHasVoted(caller, packageId)) {
@@ -818,13 +822,26 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return deployer;
   };
 
-  public shared({ caller }) func addProviderAdmin( 
+  public shared({ caller }) func addProviderAdmin(
     userId: Principal,
      userName: Text,
       providerId: ?Principal
       ) : async Types.ProviderResult {
+        Debug.print("addProviderAdmin caller: " # Principal.toText(caller));
         let result = await ProviderManager.addProviderAdmin(userId, userName, caller, providerId, state);
     return result;
+  };
+
+  public shared({ caller }) func removeProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeRemoved: Principal) 
+  : async Types.ProviderResult {
+
+    return await ProviderManager.removeProviderAdmin(providerId, providerAdminPrincipalIdToBeRemoved, caller, state);
+  };
+
+  public shared({ caller }) func editProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeEdited: Principal, newUserName: Text) 
+  : async Types.ProviderResult {
+
+    return await ProviderManager.editProviderAdmin(providerId, providerAdminPrincipalIdToBeEdited, newUserName, caller, state);
   };
 
   public query({caller}) func getAdminProviderIDs(): async [Principal] {
@@ -874,7 +891,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
             };
             case(_) ();
           };
-        }; 
+        };
         case(_) ();
       };
   };
@@ -924,12 +941,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
     stateShared := State.emptyShared();
 
     tokensStableV1 := Token.emptyStableV1(ModClubParam.getModClubProviderId());
-
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
     pohStableStateV1 := PohStateV1.emptyStableState();
     pohVoteStableState := VoteState.emptyStableState();
-    
+
     // This statement should be run after the storagestate gets restored from stable state
     storageSolution.setInitialModerators(ModeratorManager.getModerators(state));
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);

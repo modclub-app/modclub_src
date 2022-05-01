@@ -2,6 +2,8 @@ import Error "mo:base/Error";
 import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
+import Option "mo:base/Option";
+import Debug "mo:base/Debug";
 
 import GlobalState "../../state";
 import Types "../../types";
@@ -12,7 +14,7 @@ import AuthManager "../auth/auth";
 
 module ProviderModule {
 
-    public func registerProvider(providerId: Principal, name: Text, description: Text, 
+    public func registerProvider(providerId: Principal, name: Text, description: Text,
                                     image: ?Types.Image, state: GlobalState.State) : Text {
     // Todo remove this after airdrop
     // await onlyOwner(caller);
@@ -49,9 +51,23 @@ module ProviderModule {
     };
   };
 
-  public func updateProviderSettings(providerId : Principal, settings: Types.ProviderSettings, state : GlobalState.State) : () {
+  public func updateProviderSettings(providerId : Principal, 
+                                    updatedSettings: Types.ProviderSettings,
+                                    callerPrincipalId: Principal, 
+                                    state : GlobalState.State) 
+                                    : async Types.ProviderSettingResult {
     // Todo remove this after airdrop
     // await onlyOwner(caller);
+    var authorized = false;
+    Debug.print("Authenticating the caller: " # Principal.toText(callerPrincipalId));
+    switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+      case (#err(error)) return #err(error);
+      case (#ok()) authorized := true;
+    };
+    if(authorized == false) {
+      return #err(#Unauthorized);
+    };
+
     var provider = state.providers.get(providerId);
     switch(provider) {
       case (?result) {
@@ -64,12 +80,13 @@ module ProviderModule {
               image = result.image;
               createdAt = result.createdAt;
               updatedAt = now;
-              settings = settings;
+              settings = updatedSettings;
         });
+       return #ok(updatedSettings);
       };
-      case(null) ();
+      case(null) return #err(#NotFound);
     };
-    // todo: Re-evaluate all new content with votes to determine if a potential decision can be made 
+    // todo: Re-evaluate all new content with votes to determine if a potential decision can be made
   };
 
   public func getProvider(providerId: Principal, state: GlobalState.State) : async Types.ProviderPlus {
@@ -84,14 +101,14 @@ module ProviderModule {
             updatedAt = provider.updatedAt;
             settings = provider.settings;
             rules = getProviderRules(providerId, state);
-            contentCount = state.provider2content.get0Size(provider.id); 
+            contentCount = state.provider2content.get0Size(provider.id);
             activeCount = 100; // Todo calculate active content count
-            rewardsSpent = 5000; // Todo calculate rewards spent           
+            rewardsSpent = 5000; // Todo calculate rewards spent
         };
         return result;
       };
       case(null) {
-        throw Error.reject( "Provider does not exist" );         
+        throw Error.reject( "Provider does not exist" );
       };
     };
   };
@@ -118,7 +135,7 @@ module ProviderModule {
     state.providerSubs.put(providerId, sub);
   };
 
-  
+
   public func getProviderRules(providerId: Principal, state: GlobalState.State) : [Types.Rule] {
       let buf = Buffer.Buffer<Types.Rule>(0);
       for(ruleId in state.provider2rules.get0(providerId).vals()){
@@ -152,7 +169,7 @@ module ProviderModule {
             };
           };
       };
-      
+
       // Provider check
       switch(state.providers.get(_providerId)) {
         case (null) (); // Do nothing check if the caller is an admin for the provider
@@ -187,9 +204,15 @@ module ProviderModule {
         updatedAt = now;
       };
 
+      let IsUserIdAlreadyExist = do? {
+        let currentUserId = state.profiles.get(userId)!;
+      };
+      if(Option.isSome(IsUserIdAlreadyExist)) {
+        return #err(#ProviderAdminIsAlreadyRegistered)
+      };
       state.profiles.put(userId, adminProfile);
       // TODO: Consider adding to username map to preserve uniqueness
-      switch(state.providerAdmins.get(_providerId)) { 
+      switch(state.providerAdmins.get(_providerId)) {
         case (null) {
           let adminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
           adminMap.put(userId, ());
@@ -227,5 +250,66 @@ module ProviderModule {
         };
       };
       buf.toArray();
+    };
+
+    public func removeProviderAdmin(providerId: Principal, 
+                                    providerAdminPrincipalIdToBeRemoved: Principal, 
+                                    callerPrincipalId: Principal, 
+                                    state: GlobalState.State) : async Types.ProviderResult {
+
+      var authorized = false;
+      Debug.print("Authenticating the caller: " # Principal.toText(callerPrincipalId));
+      switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+        case (#err(error)) return #err(error);
+        case (#ok()) authorized := true;
+      };
+      if(authorized == false) {
+        return #err(#Unauthorized);
+      };
+      
+      switch(state.providerAdmins.get(providerId)) {
+        case (null) return #err(#NotFound);
+        case (?adminMap) {
+          adminMap.delete(providerAdminPrincipalIdToBeRemoved);
+          state.profiles.delete(providerAdminPrincipalIdToBeRemoved);
+          return #ok();
+        };
+      };
+    };
+
+    public func editProviderAdmin(providerId: Principal,
+                                  providerAdminPrincipalIdToBeEdited: Principal,
+                                  newUserName: Text,
+                                  callerPrincipalId: Principal,
+                                  state: GlobalState.State) 
+                                  : async Types.ProviderResult {
+
+      var authorized = false;
+      Debug.print("Authenticating the caller: " # Principal.toText(callerPrincipalId));
+      switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+        case (#err(error)) return #err(error);
+        case (#ok()) authorized := true;
+      };
+      if(authorized == false) {
+        return #err(#Unauthorized);
+      };
+
+      let editProviderAdminStatus = do? {
+        state.providerAdmins.get(providerId)!.get(providerAdminPrincipalIdToBeEdited)!;
+        let currentAdminProfile = state.profiles.get(providerAdminPrincipalIdToBeEdited)!;
+        state.profiles.put(providerAdminPrincipalIdToBeEdited, {
+          id = currentAdminProfile.id;
+          userName = newUserName;
+          email = currentAdminProfile.email;
+          pic = null;
+          role = currentAdminProfile.role;
+          createdAt = currentAdminProfile.createdAt;
+          updatedAt = Helpers.timeNow();
+        });
+      };
+      if(Option.isNull(editProviderAdminStatus)) {
+        return #err(#NotFound);
+      };
+      return #ok();
     };
 };

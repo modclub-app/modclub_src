@@ -67,16 +67,45 @@ export async function getUserFromCanister(): Promise<Profile | null> {
   }
 }
 
-export async function addProviderAdmin(userId, principalId): Promise<boolean> {
+export async function addProviderAdmin(userId, principalId, userName): Promise<boolean> {
   try {
+    console.log("USERID", userId, principalId);
+
     let result = await (
       await getMC()
     )
-      .addProviderAdmin(userId, principalId)
-      .then((data) => console.log(data))
-      .catch((e) => console.log(e));
-
+      .addProviderAdmin(userId, userName, [principalId]);
+    return result.hasOwnProperty("ok") ? true : false;
+  } catch (e) {
+    console.log("error", e);
     return false;
+  }
+}
+
+export async function removeProviderAdmin(userId, principalId): Promise<boolean> {
+  try {
+    console.log("USERID", userId, principalId);
+
+    let result = await (
+      await getMC()
+    )
+      .removeProviderAdmin(principalId, userId);
+    return result.hasOwnProperty("ok") ? true : false;
+  } catch (e) {
+    console.log("error", e);
+    return false;
+  }
+}
+
+export async function editProviderAdmin(userId, principalId, userName): Promise<boolean> {
+  try {
+    console.log("USERID", userId, principalId);
+
+    let result = await (
+      await getMC()
+    )
+      .editProviderAdmin(principalId, userId, userName);
+    return result.hasOwnProperty("ok") ? true : false;
   } catch (e) {
     console.log("error", e);
     return false;
@@ -166,16 +195,25 @@ export async function updateMC(): Promise<void> {
 // Admin API's / Need to be a provider admin to call these
 export async function addRules(
   rules: string[],
-  provider: Principal
+  providerId: Principal
 ): Promise<void> {
-  return (await getMC()).addRules(rules, provider);
+  var testActor = await getMC();
+  return (await getMC()).addRules(rules, [providerId]);
+}
+
+export async function updateRule(
+  rules: string[],
+  providerId: Principal
+): Promise<void> {
+  var testActor = await getMC();
+  return (await getMC()).updateRule(rules, [providerId]);
 }
 
 export async function removeRules(
   rules: RuleId[],
   providerId: Principal
 ): Promise<void> {
-  return (await getMC()).removeRules(rules, providerId);
+  return (await getMC()).removeRules(rules, [providerId]);
 }
 
 export async function updateProviderSettings(

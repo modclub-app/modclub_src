@@ -31,13 +31,13 @@ module {
     #approved;
     #rejected;
   };
-  
+
   public type ContentStatus = {
     #approved;
     #rejected;
     #new;
   };
-  
+
   public type ContentType = {
     // Simple plain text
     #text;
@@ -73,7 +73,7 @@ module {
     status: ContentStatus;
     voteCount: Nat;
     minVotes: Nat;
-    minStake: Nat; 
+    minStake: Nat;
     title: ?Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
@@ -87,7 +87,7 @@ module {
     providerId: Principal;
     contentType: ContentType;
     sourceId: Text;
-    status: ContentStatus; 
+    status: ContentStatus;
     title: ?Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
@@ -113,14 +113,14 @@ module {
     image: Image;
   };
 
-  public type Image = {   
+  public type Image = {
     data: [Nat8];
     imageType: Text;
   };
 
   public type Provider = {
     id: Principal;
-    name: Text;    
+    name: Text;
     description: Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
@@ -130,7 +130,7 @@ module {
 
   public type ProviderPlus = {
     id: Principal;
-    name: Text;    
+    name: Text;
     description: Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
@@ -176,7 +176,7 @@ module {
     contentId: Text;
     userId: UserId;
     decision: Decision;
-    violatedRules: ?[RuleId];  
+    violatedRules: ?[RuleId];
     createdAt: Timestamp;
   };
 
@@ -186,9 +186,9 @@ module {
   };
 
   public type SubscribeMessage = {
-    callback: shared (ContentResult) -> (); 
+    callback: shared (ContentResult) -> ();
     };
-  
+
   public type GetContentParams = {
     status: ContentStatus;
     provider: Principal;
@@ -204,14 +204,14 @@ module {
     vote: Vote;
     providerId: ProviderId;
     providerName: Text;
-    contentType: ContentType;    
+    contentType: ContentType;
     status: ContentStatus;
     title: ?Text;
     createdAt: Timestamp;
     updatedAt: Timestamp;
     voteCount: Nat;
     minVotes: Nat;
-    minStake: Nat;    
+    minStake: Nat;
     reward: Float;
     rewardRelease: Timestamp;
   };
@@ -236,10 +236,10 @@ module {
 
   public type StagedWrite = {
       #Init : {
-          size     : Nat; 
+          size     : Nat;
           callback : ?Callback};
       #Chunk : {
-          chunk    : Blob; 
+          chunk    : Blob;
           callback : ?Callback
       };
   };
@@ -265,6 +265,7 @@ module {
         #InvalidProvider;
         #InvalidContentType;
         #InvalidContentStatus;
+        #ProviderAdminIsAlreadyRegistered;
     };
 
     public type ProviderSettingResult = Result.Result<ProviderSettings, ProviderError>;

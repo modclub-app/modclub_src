@@ -132,6 +132,11 @@ export interface ModClub {
   'collectCanisterMetrics' : () => Promise<undefined>,
   'deregisterProvider' : () => Promise<string>,
   'distributeAllPendingRewards' : () => Promise<undefined>,
+  'editProviderAdmin' : (
+      arg_0: Principal,
+      arg_1: Principal,
+      arg_2: string,
+    ) => Promise<ProviderResult>,
   'generateSigningKey' : () => Promise<undefined>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAdminProviderIDs' : () => Promise<Array<Principal>>,
@@ -191,6 +196,9 @@ export interface ModClub {
       arg_1: string,
       arg_2: [] | [Image],
     ) => Promise<string>,
+  'removeProviderAdmin' : (arg_0: Principal, arg_1: Principal) => Promise<
+      ProviderResult
+    >,
   'removeRules' : (arg_0: Array<RuleId>, arg_1: [] | [Principal]) => Promise<
       undefined
     >,
@@ -222,7 +230,9 @@ export interface ModClub {
   'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'unregisterAdmin' : (arg_0: string) => Promise<Result>,
-  'updateSettings' : (arg_0: ProviderSettings) => Promise<undefined>,
+  'updateSettings' : (arg_0: Principal, arg_1: ProviderSettings) => Promise<
+      ProviderSettingResult
+    >,
   'verifyUserHumanity' : () => Promise<VerifyHumanityResponse>,
   'vote' : (
       arg_0: ContentId,
@@ -366,7 +376,8 @@ export interface Profile {
   'email' : string,
   'updatedAt' : Timestamp,
 }
-export type ProviderError = { 'InvalidContentType' : null } |
+export type ProviderError = { 'ProviderAdminIsAlreadyRegistered' : null } |
+  { 'InvalidContentType' : null } |
   { 'NotFound' : null } |
   { 'Unauthorized' : null } |
   { 'RequiresWhitelisting' : null } |
@@ -388,6 +399,8 @@ export interface ProviderPlus {
   'rules' : Array<Rule>,
 }
 export type ProviderResult = { 'ok' : null } |
+  { 'err' : ProviderError };
+export type ProviderSettingResult = { 'ok' : ProviderSettings } |
   { 'err' : ProviderError };
 export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
 export type Result = { 'ok' : null } |
