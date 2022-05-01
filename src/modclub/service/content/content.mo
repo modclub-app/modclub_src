@@ -4,6 +4,8 @@ import Order "mo:base/Order";
 import Nat "mo:base/Nat";
 import Text "mo:base/Text";
 import Result "mo:base/Result";
+import Debug "mo:base/Debug";
+import Principal "mo:base/Principal";
 
 import Rel "../../data_structures/Rel";
 import GlobalState "../../state";
@@ -204,6 +206,7 @@ module ContentModule {
         let items =  Buffer.Buffer<Text>(0); 
         var count: Nat = 0;
         let maxReturn: Nat = end - start;
+
         for ( (pid, p) in state.providers.entries()) {
             // TODO: When we have randomized task generation, fetch tasks from the users task queue instead of fetching all new content
             for(cid in state.contentNew.get0(pid).vals()) {

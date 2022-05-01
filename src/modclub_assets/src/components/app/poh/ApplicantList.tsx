@@ -91,27 +91,57 @@ export default function PohApplicantList() {
   const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState({
+    page: 1,
+    startIndex: 0,
+    endIndex: PAGE_SIZE - 1
+  });
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
+  const [firstLoad, setFirstLoad] = useState(true);
+  const [voted, setVoted] = useState<boolean>(false);
 
   const getApplicants = async () => {
     setLoading(true);
-    const status = { "new": null };
-    const start = applicants.length ? applicants.length : 0
-    const end = applicants.length ? (applicants.length + PAGE_SIZE) : PAGE_SIZE
-    const newApplicants = await getPohTasks(status, start, end - 1);
+    const status = { "new": null };    
+    const newApplicants = await getPohTasks(status, page.startIndex, page.endIndex);
     if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);
   }
 
   useEffect(() => {
-    user && !loading && !applicants.length && getApplicants();
+    if (user && firstLoad && !loading && !applicants.length && getApplicants()) {
+      setFirstLoad(false);
+    }
   }, [user]);
 
   useEffect(() => {
     user && !loading && getApplicants();
   }, [page]);
+
+  const refetchAll = async () => {
+    setLoading(true);
+    const status = { "new": null };
+    setApplicants(await getPohTasks(status, 0, page.endIndex));
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI. 
+    // TODO: We should use Redux to manage this.
+    user && voted && !loading && refetchAll()
+    setVoted(false);
+  }, [voted]);
+
+  const nextPage = () => {
+    let nextPageNum = page.page + 1;
+    let start = (nextPageNum - 1) * PAGE_SIZE;
+    setPage({
+      page: nextPageNum,
+      startIndex: start,
+      endIndex: start + PAGE_SIZE - 1
+    });
+  }
 
   if (loading) {
     return (
@@ -154,7 +184,7 @@ export default function PohApplicantList() {
               </div>
               <Button
                 color="primary"
-                onClick={() => setPage(page + 1)}
+                onClick={() => nextPage()}
                 className="ml-4 px-7 py-3"
                 disabled={hasReachedEnd}
               >

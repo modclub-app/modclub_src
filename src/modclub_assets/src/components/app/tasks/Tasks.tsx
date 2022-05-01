@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { getAllContent, getProviderRules, getTasks } from "../../../utils/api";
 import {
+  Modal,
   Columns,
   Card,
   Heading,
@@ -17,6 +18,9 @@ import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
+
+const PAGE_SIZE = 5;
+const FILTER_VOTES = false;
 
 const Task = ({ task, setVoted }) => {
   const [rules, setRules] = useState([]);
@@ -36,7 +40,7 @@ const Task = ({ task, setVoted }) => {
   }, []);
 
   return (
-    <Columns.Column key={task.id} size={12}>
+    <Columns.Column size={12}>
       <Card>
         <Card.Header>
           <Card.Header.Title>
@@ -105,22 +109,66 @@ const Task = ({ task, setVoted }) => {
 
 export default function Tasks() {
   const { user, isAuthenticated } = useAuth();
-  const [tasks, setTasks] = useState(null);
-  const [voted, setVoted] = useState<boolean>(true);
+  const [tasks, setTasks] = useState([]);
+  const [voted, setVoted] = useState<boolean>(false);
+  const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [page, setPage] = useState({
+    page: 1,
+    startIndex: 0,
+    endIndex: PAGE_SIZE
+  });
+  const [firstLoad, setFirstLoad] = useState(true);
 
-  const fetchTasks = async () => {
-    const content = await getTasks(0, 3, false);
-    setTasks(content);
-  }
 
   useEffect(() => {
-    user && !tasks && fetchTasks();
+    if (user && firstLoad && !loading && fetchTasks()) {
+      setFirstLoad(false) 
+    }
   }, [user]);
 
   useEffect(() => {
-    user && voted && fetchTasks();
+    // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI. 
+    // TODO: We should use Redux to manage this.
+    user && voted && !loading && refetchAll()
     setVoted(false);
   }, [voted]);
+
+  useEffect(() => {
+    user && !loading && fetchTasks();
+}, [page]);
+  
+  const nextPage = () => {
+    let nextPageNum = page.page + 1;
+    let start = (nextPageNum - 1) * PAGE_SIZE;
+    setPage({
+      page: nextPageNum,
+      startIndex: start,
+      endIndex: start + PAGE_SIZE
+    });
+  }
+
+  const refetchAll = async () => {
+    setLoading(true);
+    setTasks(await getTasks(0, page.endIndex, FILTER_VOTES));
+    setLoading(false);
+  }
+
+  const fetchTasks = async () => {
+    setLoading(true);
+    const newTasks = await getTasks(page.startIndex, page.endIndex, FILTER_VOTES);
+    if (newTasks.length < PAGE_SIZE) setHasReachedEnd(true)
+    setTasks([...tasks, ...newTasks]);
+    setLoading(false);
+  }
+
+  if (loading) {
+    return (
+      <Modal show={true} showClose={false}>
+      <div className="loader is-loading p-5"></div>
+      </Modal>
+    )
+  }
   
   return (
     <>
@@ -130,12 +178,31 @@ export default function Tasks() {
         {!tasks ? (
           <div className="loader is-loading p-4 mt-6" />
         ) : tasks.map((task) => (
+
           <Task
             key={task.id}
             task={task}
             setVoted={setVoted}
-          />
+            />
+
         ))}
+      {tasks != null &&  <Columns.Column size={12}>
+            <Card>
+              <Card.Footer alignItems="center">
+                <div>
+                  Showing 1 to {tasks.length} feeds
+                </div>
+                <Button
+                  color="primary"
+                onClick={() => nextPage()}
+                  className="ml-4 px-7 py-3"
+                  disabled={hasReachedEnd}
+                >
+                  See more
+                </Button>
+              </Card.Footer>
+            </Card>
+          </Columns.Column>}
       </Columns>
     </>
   )

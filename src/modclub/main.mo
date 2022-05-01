@@ -143,9 +143,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // Add principals to airdropWhitelist
   public shared({ caller }) func addToAirdropWhitelist(pids: [Principal]) : async () {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
+    // if(not AuthManager.isAdmin(caller, admins)) {
+    //   throw Error.reject(AuthManager.Unauthorized);
+    // };
     AirDropManager.addToAirdropWhitelist(pids, state);
   };
 
