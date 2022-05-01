@@ -98,7 +98,6 @@ export default function PohApplicantList() {
   });
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
   const [firstLoad, setFirstLoad] = useState(true);
-  const [voted, setVoted] = useState<boolean>(false);
 
   const getApplicants = async () => {
     setLoading(true);
@@ -118,20 +117,6 @@ export default function PohApplicantList() {
   useEffect(() => {
     user && !loading && getApplicants();
   }, [page]);
-
-  const refetchAll = async () => {
-    setLoading(true);
-    const status = { "new": null };
-    setApplicants(await getPohTasks(status, 0, page.endIndex));
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI. 
-    // TODO: We should use Redux to manage this.
-    user && voted && !loading && refetchAll()
-    setVoted(false);
-  }, [voted]);
 
   const nextPage = () => {
     let nextPageNum = page.page + 1;
