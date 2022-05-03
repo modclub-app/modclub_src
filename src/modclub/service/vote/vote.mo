@@ -10,6 +10,7 @@ import Time "mo:base/Time";
 import Types "../../types";
 import VoteState "./state";
 import VoteTypes "./types";
+import Helpers "../../helpers";
 
 module VoteModule {
 
