@@ -1,5 +1,4 @@
 import * as React from 'react'
-import React from "react";
 import { useState } from "react";
 import { Modal, Heading, Button, Notification } from "react-bulma-components";
 import { Form } from "react-final-form";
@@ -27,7 +26,8 @@ export default function FormModal({
   handleSubmit,
   formStyle = null,
   updateTable = null,
-  footerContent = null
+  footerContent = null,
+  loader = null
 }) {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
@@ -41,20 +41,23 @@ export default function FormModal({
       const result = await handleSubmit(values)
       setSubmitting(false);
       console.log("RESULT", result);
-
+      
       if (result) {
-        setMessage({ success: true, value: result });
+        if (typeof result == "string" &&  (result == "Values entered not valid") || (result.includes("checksum")))
+          setMessage({ success: false, value: result });
+        else
+          setMessage({ success: true, value: result });
       } else {
         setMessage({ success: false, value: "Withdraw and Deposit is not functional in Test Net" });
       }
     } catch (e) {
       // let errAr = regEx.exec(e.message);
+      console.log(e);
       setSubmitting(false);
       setMessage({ success: false, value: e.message });
     }
     setTimeout(() => toggle(), 2000);
   };
-
   return (
     <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
       <Modal.Card backgroundColor="circles" className="is-small">
@@ -78,8 +81,8 @@ export default function FormModal({
                 </Button>
                 <Button
                   color="primary"
-                  disabled={message || submitting}
-                  className={submitting && "is-loading"}
+                  disabled={message || submitting || loader}
+                  className={ (submitting || loader) && "is-loading"}
                 >
                   Submit
                 </Button>

@@ -163,7 +163,14 @@ module ProviderModule {
     ) {
     for(ruleId in ruleIds.vals()) {
     Helpers.logMessage(logger, "removeRules - Provider " # Principal.toText(providerId) # "removing rule, ruleId:  " # ruleId, #info); 
+      state.rules.delete(ruleId);
       state.provider2rules.delete(providerId, ruleId);
+    };
+  };
+
+  public func updateRules(providerId: Principal, rulesList: [Types.Rule], state: GlobalState.State) {
+    for(rule in rulesList.vals()) {
+      state.rules.put(rule.id, rule);
     };
   };
 
@@ -261,6 +268,7 @@ module ProviderModule {
         Helpers.logMessage(logger, "addProviderAdmin - failed: UserId already exists" , #info);
         return #err(#ProviderAdminIsAlreadyRegistered)
       };
+
       state.profiles.put(userId, adminProfile);
       // TODO: Consider adding to username map to preserve uniqueness
       switch(state.providerAdmins.get(_providerId)) {
@@ -272,6 +280,7 @@ module ProviderModule {
           };
         case (?adminMap) {
           adminMap.put(userId, ());
+          state.admin2Provider.put(userId,_providerId);
         };
       };
       Helpers.logMessage(logger, "addProviderAdmin - SUCCESS:  Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(caller) # " new admin principal ID " # Principal.toText(userId) , #info);

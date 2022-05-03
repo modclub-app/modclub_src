@@ -297,6 +297,7 @@ type ModClub =
    getProfile: () -> (Profile) query;
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus);
+   getProviderAdmins: (principal) -> (vec Profile);
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTasks: (nat, nat, bool) -> (vec ContentPlus) query;
@@ -326,6 +327,7 @@ type ModClub =
    toggleAllowSubmission: (bool) -> ();
    unStakeTokens: (nat) -> (text);
    unregisterAdmin: (text) -> (Result);
+   updateRules: (vec Rule, opt principal) -> ();
    updateSettings: (principal, ProviderSettings) -> (ProviderSettingResult);
    verifyUserHumanity: () -> (VerifyHumanityResponse);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);

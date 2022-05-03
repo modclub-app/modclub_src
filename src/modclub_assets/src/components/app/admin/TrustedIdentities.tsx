@@ -6,7 +6,7 @@ import FormModal from "../modals/FormModal";
 
 import { Link } from "react-router-dom";
 
-import { addProviderAdmin, getAllProfiles, removeProviderAdmin, editProviderAdmin } from "../../../utils/api";
+import { addProviderAdmin, getAllProfiles, removeProviderAdmin, editProviderAdmin, getProviderAdmins } from "../../../utils/api";
 import { Principal } from "@dfinity/principal";
 
 const principalIDValidationForInput = (ID, principalIDS) => {
@@ -177,7 +177,7 @@ const RemoveModal = ({
   );
 };
 
-export default function TrustedIdentities({ provider }) {
+export default function TrustedIdentities({ provider, selectedProvider }) {
   const [checked, setChecked] = useState([]);
 
   const [showAdd, setAdd] = useState(false);
@@ -206,12 +206,13 @@ export default function TrustedIdentities({ provider }) {
 
   useEffect(() => {
     let trustedIdentitiesInit = async () => {
-      let allProfiles = await getAllProfiles();
-      console.log(allProfiles);
+      console.log("Before call", selectedProvider);
+      let allProfiles = await getProviderAdmins(selectedProvider.id);
+      console.log("After call" , allProfiles);
       setTrustedPrincipleIDs(allProfiles);
     };
     trustedIdentitiesInit();
-  }, []);
+  }, [selectedProvider]);
   console.log(trustedPrincipleIDs);
 
   const handleCheck = (e) => {
@@ -229,8 +230,9 @@ export default function TrustedIdentities({ provider }) {
   //CALL THIS ON INIT TO GET ALL PROFILES AND FILTER ADMIN TO DISPLAT UNDER TRUSTED IDENTITIES
   //console.log("THISIS TESTING", getAllProfiles());
 
-  return (
+  return (    
     <>
+    {selectedProvider != null &&
       <Card>
         <Card.Content>
           <Heading className="mb-2">Trusted identities</Heading>
@@ -316,7 +318,7 @@ export default function TrustedIdentities({ provider }) {
           </div>
         </Card.Content>
       </Card>
-
+    }
       {showAdd && (
         <AddModal
           toggle={toggleAdd}
@@ -343,7 +345,7 @@ export default function TrustedIdentities({ provider }) {
           toRemove={entryToRemove}
           Provider={provider}
         />
-      )}
+      )}    
     </>
   );
 }

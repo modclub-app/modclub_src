@@ -202,6 +202,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
     ProviderManager.removeRules(_providerId, ruleIds, state, canistergeekLogger);
   };
 
+  public shared({ caller }) func updateRules(
+    rulesList: [Types.Rule],
+    providerId: ?Principal
+  ): async () {
+    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
+    ProviderManager.updateRules(_providerId, rulesList, state);
+  };
+
   public query func getRules(providerId: Principal) : async [Types.Rule] {
     ProviderManager.getProviderRules(providerId, state);
   };
@@ -837,6 +845,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
           canistergeekLogger
         );
     return result;
+  };
+
+  public shared({ caller }) func getProviderAdmins(providerId: Principal) : async [Types.Profile] {
+    Debug.print("getProviderAdmins caller: " # Principal.toText(caller));
+    return ProviderManager.getProviderAdmins(providerId, state);
   };
 
   public shared({ caller }) func removeProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeRemoved: Principal) 
