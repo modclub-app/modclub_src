@@ -154,6 +154,10 @@ export async function getAdminProviderIDs(): Promise<Principal[]> {
   return await (await getMC()).getAdminProviderIDs();
 }
 
+export async function getProviderAdmins(provider: Principal): Promise<Profile[]> {
+  return await (await getMC()).getProviderAdmins(provider);
+}
+
 export async function stakeTokens(amount: number): Promise<string> {
   return (await getMC()).stakeTokens(BigInt(amount));
 }
@@ -198,15 +202,17 @@ export async function addRules(
   providerId: Principal
 ): Promise<void> {
   var testActor = await getMC();
-  return (await getMC()).addRules(rules, [providerId]);
+  console.log(rules);
+  if(rules[0] != undefined) 
+    return (await getMC()).addRules(rules, [providerId]);
 }
 
 export async function updateRule(
-  rules: string[],
+  rules: Rule[],
   providerId: Principal
 ): Promise<void> {
   var testActor = await getMC();
-  return (await getMC()).updateRule(rules, [providerId]);
+  return (await getMC()).updateRules(rules, [providerId]);
 }
 
 export async function removeRules(
@@ -217,9 +223,10 @@ export async function removeRules(
 }
 
 export async function updateProviderSettings(
+  providerId: Principal,
   settings: ProviderSettings
 ): Promise<void> {
-  return (await getMC()).updateSettings(settings);
+  return (await getMC()).updateSettings(providerId, settings);
 }
 
 // POH Methods

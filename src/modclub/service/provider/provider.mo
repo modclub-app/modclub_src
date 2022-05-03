@@ -126,7 +126,14 @@ module ProviderModule {
 
   public func removeRules(providerId: Principal, ruleIds: [Types.RuleId], state: GlobalState.State) {
     for(ruleId in ruleIds.vals()) {
+      state.rules.delete(ruleId);
       state.provider2rules.delete(providerId, ruleId);
+    };
+  };
+
+  public func updateRules(providerId: Principal, rulesList: [Types.Rule], state: GlobalState.State) {
+    for(rule in rulesList.vals()) {
+      state.rules.put(rule.id, rule);
     };
   };
 
@@ -210,6 +217,7 @@ module ProviderModule {
       if(Option.isSome(IsUserIdAlreadyExist)) {
         return #err(#ProviderAdminIsAlreadyRegistered)
       };
+
       state.profiles.put(userId, adminProfile);
       // TODO: Consider adding to username map to preserve uniqueness
       switch(state.providerAdmins.get(_providerId)) {
@@ -221,6 +229,7 @@ module ProviderModule {
           };
         case (?adminMap) {
           adminMap.put(userId, ());
+          state.admin2Provider.put(userId,_providerId);
         };
       };
       #ok();

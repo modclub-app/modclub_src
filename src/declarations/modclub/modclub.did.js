@@ -445,6 +445,7 @@ export const idlFactory = ({ IDL }) => {
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], []),
+    'getProviderAdmins' : IDL.Func([IDL.Principal], [IDL.Vec(Profile)], []),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTasks' : IDL.Func(
@@ -509,6 +510,7 @@ export const idlFactory = ({ IDL }) => {
     'toggleAllowSubmission' : IDL.Func([IDL.Bool], [], []),
     'unStakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'unregisterAdmin' : IDL.Func([IDL.Text], [Result], []),
+    'updateRules' : IDL.Func([IDL.Vec(Rule), IDL.Opt(IDL.Principal)], [], []),
     'updateSettings' : IDL.Func(
         [IDL.Principal, ProviderSettings],
         [ProviderSettingResult],

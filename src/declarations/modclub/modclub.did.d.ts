@@ -171,6 +171,7 @@ export interface ModClub {
   'getProfile' : () => Promise<Profile>,
   'getProfileById' : (arg_0: Principal) => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
+  'getProviderAdmins' : (arg_0: Principal) => Promise<Array<Profile>>,
   'getProviderContent' : () => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'getTasks' : (arg_0: bigint, arg_1: bigint, arg_2: boolean) => Promise<
@@ -230,6 +231,9 @@ export interface ModClub {
   'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'unregisterAdmin' : (arg_0: string) => Promise<Result>,
+  'updateRules' : (arg_0: Array<Rule>, arg_1: [] | [Principal]) => Promise<
+      undefined
+    >,
   'updateSettings' : (arg_0: Principal, arg_1: ProviderSettings) => Promise<
       ProviderSettingResult
     >,
