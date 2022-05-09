@@ -11,6 +11,7 @@ import Helpers "../../helpers";
 import Types "../../types";
 import Tokens "../../token";
 import ModClubParam "../parameters/params";
+import Canistergeek "../../canistergeek/canistergeek";
 
 
 module ContentVotingModule {
@@ -47,9 +48,16 @@ module ContentVotingModule {
         return #ok(performance);
     };
 
-    public func vote(userId: Principal, contentId: Types.ContentId, decision: Types.Decision, violatedRules: ?[Types.RuleId], 
-                    voteCount: Types.VoteCount, tokens : Tokens.Tokens, state: GlobalState.State) : async Text {
-
+    public func vote(
+        userId: Principal,
+        contentId: Types.ContentId,
+        decision: Types.Decision,
+        violatedRules: ?[Types.RuleId], 
+        voteCount: Types.VoteCount,
+        tokens : Tokens.Tokens,
+        state: GlobalState.State, 
+        logger: Canistergeek.Logger 
+        ) : async Text {
         let voteId = "vote-" # Principal.toText(userId) # contentId;
         switch(state.votes.get(voteId)){
             case(?v){
@@ -116,7 +124,7 @@ module ContentVotingModule {
                 state.votes.put(vote.id, vote);
 
                 // Evaluate and send notification to provider
-                await evaluateVotes(content, voteApproved, voteRejected, tokens, state);
+                await evaluateVotes(content, voteApproved, voteRejected, tokens, state,   logger );
                 return "Vote successful";
             };
             case(_)( throw Error.reject("Content does not exist"));
@@ -145,8 +153,14 @@ module ContentVotingModule {
         return true;
     };
 
-    private func evaluateVotes(content: Types.Content, aCount: Nat, rCount: Nat, tokens: Tokens.Tokens,
-                                 state: GlobalState.State) : async() {
+    private func evaluateVotes(
+        content: Types.Content,
+        aCount: Nat,
+        rCount: Nat,
+        tokens: Tokens.Tokens,
+        state: GlobalState.State,
+        logger: Canistergeek.Logger 
+        ) : async() {
         var finishedVote = false;
         var status : Types.ContentStatus = #new;
         var decision : Types.Decision = #approved;
@@ -204,9 +218,11 @@ module ContentVotingModule {
                         status = status;
                         });
                         Debug.print("Called callback for provider " # Principal.toText(content.providerId) );
+                        Helpers.logMessage(logger, "Called callback for provider " # Principal.toText(content.providerId), #info);
                     };
                     case(_){
                         Debug.print("Provider " # Principal.toText(content.providerId) # " has not subscribed a callback");
+                        Helpers.logMessage(logger, "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback", #info);
                     }
                 };
             };

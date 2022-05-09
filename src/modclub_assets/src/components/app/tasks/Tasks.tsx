@@ -19,7 +19,7 @@ import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 20;
 const FILTER_VOTES = false;
 
 const Task = ({ task, setVoted }) => {

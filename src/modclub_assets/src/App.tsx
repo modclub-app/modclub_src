@@ -26,7 +26,6 @@ export default function App() {
     }
   }, []);
 
-
   return (
     <Router history={history}>
       {/* A <Switch> looks through its children <Route>s and
