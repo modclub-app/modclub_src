@@ -122,7 +122,18 @@ module ContentModule {
         return Array.sort(buf.toArray(), compareContent);
     };
 
-    func compareContent(a : Types.ContentPlus, b: Types.ContentPlus) : Order.Order {
+    func compareContent(a : Types.Content, b: Types.Content) : Order.Order {
+      if(a.updatedAt > b.updatedAt) {
+        #greater;
+      } else if ( a.updatedAt < b.updatedAt) {
+        #less;
+      } else {
+        #equal;
+      }
+    };
+
+
+    func compareContentPlus(a : Types.ContentPlus, b: Types.ContentPlus) : Order.Order {
       if(a.updatedAt > b.updatedAt) {
         #greater;
       } else if ( a.updatedAt < b.updatedAt) {
@@ -203,29 +214,34 @@ module ContentModule {
             return #err("Invalid range");
         };
         let result = Buffer.Buffer<Types.ContentPlus>(0);
-        let items =  Buffer.Buffer<Text>(0); 
+        let items =  Buffer.Buffer<Types.Content>(0); 
         var count: Nat = 0;
         let maxReturn: Nat = end - start;
 
         for ( (pid, p) in state.providers.entries()) {
             // TODO: When we have randomized task generation, fetch tasks from the users task queue instead of fetching all new content
             for(cid in state.contentNew.get0(pid).vals()) {
-                if ( filterVoted ) {
-                    let voteCount = getVoteCount(cid, ?caller);
-                    if(voteCount.hasVoted != true) {
-                        items.add(cid);
+                switch(state.content.get(cid)) {
+                    case (?content) {
+                        if ( filterVoted ) {
+                            let voteCount = getVoteCount(cid, ?caller);
+                            if(voteCount.hasVoted != true) {
+                                items.add(content);
+                            };
+                        } else {
+                            items.add(content);
+                        };
                     };
-                } else {
-                    items.add(cid);
+                    case (_) ();
                 };
             };
         };
 
         var index: Nat = 0;
-        for(cid in items.vals()) {
+        for(content in Array.sort(items.toArray(), compareContent).vals()) {
             if(index >= start and index <= end  and count < maxReturn) {
-                let voteCount = getVoteCount(cid, ?caller);
-                switch(getContentPlus(cid, ?caller, voteCount, state)) {
+                let voteCount = getVoteCount(content.id, ?caller);
+                switch(getContentPlus(content.id, ?caller, voteCount, state)) {
                     case (?content) {
                         result.add(content);
                         count := count + 1;
@@ -236,7 +252,7 @@ module ContentModule {
             index := index + 1;
         };
 
-        return #ok(Array.sort(result.toArray(), compareContent));
+        return #ok(result.toArray());
     };
 
     public func checkIfAlreadySubmitted(
