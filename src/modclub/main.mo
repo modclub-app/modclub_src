@@ -143,9 +143,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // Add principals to airdropWhitelist
   public shared({ caller }) func addToAirdropWhitelist(pids: [Principal]) : async () {
-    // if(not AuthManager.isAdmin(caller, admins)) {
-    //   throw Error.reject(AuthManager.Unauthorized);
-    // };
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     AirDropManager.addToAirdropWhitelist(pids, state);
   };
 
@@ -168,16 +168,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
   // todo: Require cylces on provider registration, add provider imageURl, description
   public shared({ caller }) func registerProvider(name: Text, description: Text, image: ?Types.Image) : async Text {
     Debug.print("registerProvider caller: " # Principal.toText(caller));
-    ProviderManager.registerProvider(caller, name, description, image, state);
+    ProviderManager.registerProvider(caller, name, description, image, state, canistergeekLogger);
   };
 
   public shared({ caller }) func deregisterProvider() : async Text {
-    ProviderManager.deregisterProvider(caller, state);
+    ProviderManager.deregisterProvider(caller, state, canistergeekLogger);
   };
 
   public shared({ caller }) func updateSettings(providerId : Principal, updatedSettings: Types.ProviderSettings) : async Types.ProviderSettingResult {
     Debug.print("updateSettings caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
-    return await ProviderManager.updateProviderSettings(providerId, updatedSettings, caller, state);
+    return await ProviderManager.updateProviderSettings(providerId, updatedSettings, caller, state, canistergeekLogger);
   };
 
   public shared({ caller }) func getProvider(providerId: Principal) : async Types.ProviderPlus {
@@ -191,7 +191,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   ) : async () {
     // checkProviderPermission will return either the caller or the passed in providerId depending if the caller is the provider or not
     let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
-    ProviderManager.addRules(_providerId, rules, state);
+    ProviderManager.addRules(_providerId, rules, state, canistergeekLogger);
   };
 
   public shared({ caller }) func removeRules(
@@ -199,7 +199,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     providerId: ?Principal
     ): async () {
     let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
-    ProviderManager.removeRules(_providerId, ruleIds, state);
+    ProviderManager.removeRules(_providerId, ruleIds, state, canistergeekLogger);
   };
 
   public shared({ caller }) func updateRules(
@@ -217,7 +217,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   // Subscribe function for providers to register their callback after a vote decision has been made
   public shared({caller}) func subscribe(sub: Types.SubscribeMessage) : async() {
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
-    ProviderManager.subscribe(caller, sub, state);
+    ProviderManager.subscribe(caller, sub, state, canistergeekLogger);
   };
 
   // ----------------------Content Related Methods------------------------------
@@ -400,7 +400,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Proof of Humanity not completed user");
     };
     var voteCount = getVoteCount(contentId, ?caller);
-    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state);
+    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger);
   };
 
   // ----------------------Token Methods------------------------------
@@ -836,7 +836,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
       providerId: ?Principal
       ) : async Types.ProviderResult {
         Debug.print("addProviderAdmin caller: " # Principal.toText(caller));
-        let result = await ProviderManager.addProviderAdmin(userId, userName, caller, providerId, state);
+        let result = await ProviderManager.addProviderAdmin(
+          userId,
+          userName,
+          caller,
+          providerId,
+          state,
+          canistergeekLogger
+        );
     return result;
   };
 
@@ -848,7 +855,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   public shared({ caller }) func removeProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeRemoved: Principal) 
   : async Types.ProviderResult {
 
-    return await ProviderManager.removeProviderAdmin(providerId, providerAdminPrincipalIdToBeRemoved, caller, state);
+    return await ProviderManager.removeProviderAdmin(providerId, providerAdminPrincipalIdToBeRemoved, caller, state, canistergeekLogger);
   };
 
   public shared({ caller }) func editProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeEdited: Principal, newUserName: Text) 
@@ -858,7 +865,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public query({caller}) func getAdminProviderIDs(): async [Principal] {
-    return ProviderManager.getAdminProviderIDs(caller, state);
+    return ProviderManager.getAdminProviderIDs(caller, state, canistergeekLogger);
   };
 
   public shared({caller}) func getPohAttempts(): async [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])] {
