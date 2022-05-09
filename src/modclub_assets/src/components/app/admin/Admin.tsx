@@ -15,6 +15,7 @@ import {
 import FormModal from "../modals/FormModal";
 import {
   addRules,
+  updateRule,
   removeRules,
   getProviderRules,
   getProvider,
@@ -65,29 +66,57 @@ const EditAppModal = ({ toggle }) => {
 
 const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
   const [newRules, setNewRules] = useState(rules);
-
+  const [loader, setLoader] = useState(false);
+  let rulesBeingEdited = {};
+  console.log("EDIT principalID", principalID)
   const remove = async (rule) => {
     console.log(rule);
+    setLoader(true);
     setNewRules(newRules.filter((item) => item !== rule));
     await removeRules([rule], Principal.fromText(principalID))
       .then(async () => {
-        let updatedRules = await getProviderRules(
+          let updatedRules = await getProviderRules(
           Principal.fromText(principalID)
         );
         console.log(updatedRules);
         updateState(updatedRules);
         setNewRules(updatedRules);
       })
-      .catch((e) => console.log(e));
+      .catch((e) => console.log(e))
+      .finally(()=> setLoader(false));      
   };
+
+  // const add = async (rules) => {
+  //   console.log(rules);
+  //   setNewRules([...rules,{"id": rules.length, "description": ""}]);
+  //   console.log(rules)
+  // };
+
+  const addToUpdateRule = (id: any, description: Text) => {
+    if (id && description) {
+      rulesBeingEdited[id.toString()] = description ;
+    };
+    console.log(rulesBeingEdited);
+
+  }
 
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit values", values);
     console.log("parent !!! onFormSubmit newRules", newRules);
+    console.log("PRincipla", principalID);
 
     const { newRule } = values;
-    console.log(newRule);
+    let result;
+    console.log(newRule, Principal.fromText(principalID));
     await addRules([newRule], Principal.fromText(principalID))
+      .then (async () => {
+        let updateRulePromise = [];
+        for (let principalID in rulesBeingEdited) {
+          updateRulePromise.push(updateRule(rulesBeingEdited[principalID], Principal.fromText(principalID)));
+        }
+        await Promise.all(updateRulePromise);
+        result = "Rules updated successfully";
+      })
       .then(async () => {
         let updatedRules = await getProviderRules(
           Principal.fromText(principalID)
@@ -96,31 +125,16 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
         updateState(updatedRules);
         setNewRules(updatedRules);
       })
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        console.log(e);
+        result = e.message;
+      });
+      rulesBeingEdited = {};
+      return result;
   };
 
   return (
-    <FormModal title="Edit Rules" toggle={toggle} handleSubmit={onFormSubmit}>
-      {newRules.map((rule) => (
-        <div key={rule.id} className="field level">
-          <Field
-            name={rule.description}
-            component="input"
-            type="text"
-            className="input"
-            placeholder={rule.description}
-            value={rule.description}
-            disabled
-          />
-          <span
-            className="icon has-text-danger is-clickable ml-3"
-            onClick={() => remove(rule.id)}
-          >
-            <span className="material-icons">remove_circle</span>
-          </span>
-        </div>
-      ))}
-
+    <FormModal title="Edit Rules" toggle={toggle} handleSubmit={onFormSubmit} loader={loader} formStyle={{ maxHeight: '500px', overflow: 'auto' }}>
       <div className="field level">
         <Field
           name="newRule"
@@ -133,18 +147,59 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
         {/* <span className="icon has-text-success ml-3" onClick={() => [add(values.newRule), values.newRule = null]}>
           {values.newRule && <span className="material-icons is-clickable">add_circle</span>}
         </span> */}
+
+        <span className="icon has-text-success ml-3">
+          <span className="material-icons">add_circle</span>
+        </span>
       </div>
+      {newRules.map((rule) => (
+        <div key={rule.id} className="field level">
+          <Field
+            name={rule.description}
+            component="input"
+            type="text"
+            className="input"
+            placeholder={rule.description}
+            initialValue={rule.description}
+            onBlur={(e) => addToUpdateRule(rule.id, e.target.value)}
+          />
+          <span
+            className="icon has-text-danger is-clickable ml-3"
+            onClick={() => remove(rule.id)}
+          >
+            <span className="material-icons">remove_circle</span>
+          </span>
+        </div>
+      ))}
     </FormModal>
   );
 };
 
-const EditModeratorSettingsModal = ({ toggle, settings }) => {
+const EditModeratorSettingsModal = ({ toggle, principalID, settings, minVotes, minTokens, setMinVotes, setMinTokens }) => {
   console.log("settings", settings);
+  // const [minVotes, setMinVotes] = useState(settings.minVotes ? parseInt(settings.minVotes) : 0);
+  // const [minTokens, setMinTokens] = useState(settings.minStaked ? parseInt(settings.minStaked) : 0);
   const onFormSubmit = async (values: any) => {
-    console.log("parent !!! onFormSubmit values", values);
-    return await updateProviderSettings(values);
-  };
+    for (const k in values) {
+      if (!isNaN(values[k] / 1)) {
+        values[k] = values[k] / 1;
+      }
 
+    }
+    values["minStaked"] = values.minTokens;
+    console.log(values, typeof values.minTokens);
+    // let values2 = {
+    //   "minVotes": values.minTokens,
+    //   "minStaked": values.minTokens
+    // };
+    //console.log("parent !!! onFormSubmit values", await updateProviderSettings(Principal.fromText(principalID), values2));
+    await updateProviderSettings(Principal.fromText(principalID), values);
+    setMinVotes(parseInt(values.minVotes));
+    setMinTokens(parseInt(values.minTokens));
+    console.log("test2");
+    return "Moderator settings updated successfully";    
+  };
+console.log("SETTINGS", settings);
   return (
     <FormModal
       title="Edit Moderator Settings"
@@ -157,7 +212,7 @@ const EditModeratorSettingsModal = ({ toggle, settings }) => {
           name="minVotes"
           component="input"
           className="input has-text-centered ml-3"
-          initialValue={settings.minVotes ? settings.minVotes : 0}
+          initialValue={minVotes}
           style={{ width: 70 }}
         />
       </div>
@@ -169,12 +224,12 @@ const EditModeratorSettingsModal = ({ toggle, settings }) => {
           component="input"
           type="number"
           className="input has-text-centered ml-3"
-          initialValue={settings.minStaked ? settings.minStaked : 0}
+          initialValue={minTokens}
           style={{ width: 70 }}
         />
       </div>
 
-      <div className="field level">
+      {/* <div className="field level">
         <p>Example cost per each succesful vote (1% of stake):</p>
         <Field
           name="cost"
@@ -183,6 +238,7 @@ const EditModeratorSettingsModal = ({ toggle, settings }) => {
           className="input has-text-centered ml-3"
           initialValue={1}
           style={{ width: 70 }}
+          readOnly={true}
         />
       </div>
 
@@ -198,8 +254,9 @@ const EditModeratorSettingsModal = ({ toggle, settings }) => {
           className="input has-text-centered ml-3"
           initialValue={5}
           style={{ width: 70 }}
+          readOnly={true}
         />
-      </div>
+      </div> */}
     </FormModal>
   );
 };
@@ -225,33 +282,46 @@ export default function Admin() {
 
   const [providerIdText, setProviderIdText] = useState("");
 
+  const [minVotes, setMinVotes] = useState(0);
+  const [minTokens, setMinTokens] = useState(0);
+
   useEffect(() => {
+    console.log(0);
     let adminInit = async () => {
+      console.log(1);
       let adminProviders = await getAdminProviderIDs();
-      let providerList = [];
+      console.log(adminProviders);      
+      console.log(2);
+      let providerListPromise = [];
       for (let provider of adminProviders) {
-        providerList.push(await getProvider(provider));
+        providerListPromise.push(getProvider(provider));
       }
+      console.log(3);
+      let providerList = await Promise.all(providerListPromise);
+      console.log(4, providerList);
       setProviders(providerList);
-      console.log("Data", providerList[0]);
+      console.log(5);
       setProviderIdText(adminProviders[0].toText());
     };
     adminInit();
   }, []);
-
+  const toggle = () => setShowModal(false);
   return (
     <>
       {selectedProvider == null && providers != [] ? (
-        <Modal show={showModal} showClose={true}>
+        <Modal show={showModal} onClose={toggle} showClose={true}>
           <Modal.Card backgroundColor="circles">
             <Modal.Card.Body>
               <Heading subtitle>Available Providers</Heading>
             </Modal.Card.Body>
             {providers.map((provider) => {
               return (
-                <Button
+                <Button key={provider.id}
                   onClick={() => {
                     setSelectedProvider(provider);
+                    setMinVotes(provider.settings.minVotes ? parseInt(provider.settings.minVotes) : 0);
+                    setMinTokens(provider.settings.minStaked ? parseInt(provider.settings.minStaked) : 0);
+                    console.log("test");
                     setShowModal(false);
                     setRules(provider.rules);
                   }}
@@ -268,241 +338,244 @@ export default function Admin() {
         </Modal>
       ) : (
         ""
-      )}
-
+      )}      
       <Notification color="danger" textAlign="center">
         Administrator Dashboard DEMO
       </Notification>
-      <Columns>
-        <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
-          <Card className="is-fullheight">
-            <Card.Content>
-              <Media>
-                <Media.Item
-                  renderAs="figure"
-                  align="left"
-                  style={{ marginRight: "1.5rem" }}
+      {selectedProvider != null &&
+        <Columns>
+          <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
+            <Card className="is-fullheight">
+              <Card.Content>
+                <Media>
+                  <Media.Item
+                    renderAs="figure"
+                    align="left"
+                    style={{ marginRight: "1.5rem" }}
+                  >
+                    <Image
+                      size={128}
+                      src="http://bulma.io/images/placeholders/128x128.png"
+                      className="has-gradient"
+                    />
+                  </Media.Item>
+                  <Media.Item>
+                    <table className="table is-label">
+                      <tbody>
+                        <tr>
+                          <td>App Name:</td>
+                          <td>
+                            {!!selectedProvider ? selectedProvider.name : ""}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Description:</td>
+                          <td>
+                            {!!selectedProvider
+                              ? selectedProvider.description
+                              : ""}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <Button color="dark" onClick={toggleEditApp}>
+                      Edit App
+                    </Button>
+                  </Media.Item>
+                </Media>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
+
+          <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
+            <Card className="is-fullheight">
+              <Card.Content>
+                <Heading subtitle>Stats</Heading>
+                <table className="table is-striped has-text-left">
+                  <tbody>
+                    <tr>
+                      <td>Total Feeds Posted</td>
+                      <td>
+                        {!!selectedProvider
+                          ? selectedProvider.contentCount.toString()
+                          : ""}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Active Posts</td>
+                      <td>
+                        {!!selectedProvider
+                          ? selectedProvider.activeCount.toString()
+                          : ""}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Rewards Spent</td>
+                      <td>
+                        {" "}
+                        {!!selectedProvider
+                          ? selectedProvider.rewardsSpent.toString()
+                          : ""}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Avg. Stakes</td>
+                      <td>100</td>
+                    </tr>
+                    <tr>
+                      <td>Humans Verified</td>
+                      <td>3434</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
+
+          <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
+            <Card backgroundColor="circles" className="is-fullheight">
+              <Card.Content>
+                <Heading className="mb-2">Token Reserve</Heading>
+                <p>The tokens used to found moderators.</p>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
+
+          <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
+            <Card backgroundColor="circles" className="is-fullheight">
+              <Card.Content className="is-flex is-align-items-center pb-0">
+                <img src={walletImg} />
+                <div
+                  className="mt-3 ml-3"
+                  style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
                 >
-                  <Image
-                    size={128}
-                    src="http://bulma.io/images/placeholders/128x128.png"
-                    className="has-gradient"
-                  />
-                </Media.Item>
-                <Media.Item>
-                  <table className="table is-label">
-                    <tbody>
-                      <tr>
-                        <td>App Name:</td>
-                        <td>
-                          {!!selectedProvider ? selectedProvider.name : ""}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Description:</td>
-                        <td>
-                          {!!selectedProvider
-                            ? selectedProvider.description
-                            : ""}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <Button color="dark" onClick={toggleEditApp}>
-                    Edit App
+                  <p className="is-size-7 has-text-light">min 100000 tokens</p>
+                  <Heading size={1} className="level">
+                    <span>55k</span>
+                    <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
+                      MOD
+                      <br />
+                      tokens
+                    </span>
+                  </Heading>
+                </div>
+              </Card.Content>
+              <Card.Footer style={{ border: 0 }}>
+                <Button.Group>
+                  <Button color="dark" fullwidth>
+                    Buy
                   </Button>
-                </Media.Item>
-              </Media>
-            </Card.Content>
-          </Card>
-        </Columns.Column>
+                  <Button color="dark" fullwidth>
+                    Deposit
+                  </Button>
+                </Button.Group>
+              </Card.Footer>
+            </Card>
+          </Columns.Column>
 
-        <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-          <Card className="is-fullheight">
-            <Card.Content>
-              <Heading subtitle>Stats</Heading>
-              <table className="table is-striped has-text-left">
-                <tbody>
-                  <tr>
-                    <td>Total Feeds Posted</td>
-                    <td>
-                      {!!selectedProvider
-                        ? selectedProvider.contentCount.toString()
-                        : ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Active Posts</td>
-                    <td>
-                      {!!selectedProvider
-                        ? selectedProvider.activeCount.toString()
-                        : ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Rewards Spent</td>
-                    <td>
-                      {" "}
-                      {!!selectedProvider
-                        ? selectedProvider.rewardsSpent.toString()
-                        : ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Avg. Stakes</td>
-                    <td>100</td>
-                  </tr>
-                  <tr>
-                    <td>Humans Verified</td>
-                    <td>3434</td>
-                  </tr>
-                </tbody>
-              </table>
-            </Card.Content>
-          </Card>
-        </Columns.Column>
-
-        <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-          <Card backgroundColor="circles" className="is-fullheight">
-            <Card.Content>
-              <Heading className="mb-2">Token Reserve</Heading>
-              <p>The tokens used to found moderators.</p>
-            </Card.Content>
-          </Card>
-        </Columns.Column>
-
-        <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-          <Card backgroundColor="circles" className="is-fullheight">
-            <Card.Content className="is-flex is-align-items-center pb-0">
-              <img src={walletImg} />
-              <div
-                className="mt-3 ml-3"
-                style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
-              >
-                <p className="is-size-7 has-text-light">min 100000 tokens</p>
-                <Heading size={1} className="level">
-                  <span>55k</span>
-                  <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
-                    MOD
-                    <br />
-                    tokens
-                  </span>
-                </Heading>
-              </div>
-            </Card.Content>
-            <Card.Footer style={{ border: 0 }}>
-              <Button.Group>
-                <Button color="dark" fullwidth>
-                  Buy
-                </Button>
-                <Button color="dark" fullwidth>
+          <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
+            <Card backgroundColor="circles" className="is-fullheight">
+              <Card.Content className="is-flex is-align-items-center pb-0">
+                <img src={stakedImg} />
+                <div
+                  className="mt-3 ml-3"
+                  style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
+                >
+                  <Heading size={1} className="level">
+                    <span>5</span>
+                    <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
+                      DSCVR
+                      <br />
+                      tokens
+                    </span>
+                  </Heading>
+                </div>
+              </Card.Content>
+              <Card.Footer style={{ border: 0 }}>
+                <Button color="dark" style={{ width: "50%" }}>
                   Deposit
                 </Button>
-              </Button.Group>
-            </Card.Footer>
-          </Card>
-        </Columns.Column>
+              </Card.Footer>
+            </Card>
+          </Columns.Column>
 
-        <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-          <Card backgroundColor="circles" className="is-fullheight">
-            <Card.Content className="is-flex is-align-items-center pb-0">
-              <img src={stakedImg} />
-              <div
-                className="mt-3 ml-3"
-                style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
-              >
-                <Heading size={1} className="level">
-                  <span>5</span>
-                  <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
-                    DSCVR
-                    <br />
-                    tokens
-                  </span>
-                </Heading>
-              </div>
-            </Card.Content>
-            <Card.Footer style={{ border: 0 }}>
-              <Button color="dark" style={{ width: "50%" }}>
-                Deposit
-              </Button>
-            </Card.Footer>
-          </Card>
-        </Columns.Column>
+          <Columns.Column tablet={{ size: 12 }} desktop={{ size: 6 }}>
+            <Card className="is-fullheight">
+              <Card.Header>
+                <Card.Header.Title textSize={5}>Rules</Card.Header.Title>
+                <Button color="dark" onClick={toggleEditRules}>
+                  Edit Rules
+                </Button>
+              </Card.Header>
+              <Card.Content>
+                <table className="table is-striped has-text-left">
+                  <tbody>
+                    {rules.map((rule) => (
+                      <tr key={rule.id}>
+                        <td className="has-text-left">{rule.description}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
 
-        <Columns.Column tablet={{ size: 12 }} desktop={{ size: 6 }}>
-          <Card className="is-fullheight">
-            <Card.Header>
-              <Card.Header.Title textSize={5}>Rules</Card.Header.Title>
-              <Button color="dark" onClick={toggleEditRules}>
-                Edit Rules
-              </Button>
-            </Card.Header>
-            <Card.Content>
-              <table className="table is-striped has-text-left">
-                <tbody>
-                  {rules.map((rule) => (
-                    <tr key={rule.id}>
-                      <td className="has-text-left">{rule.description}</td>
+          <Columns.Column tablet={{ size: 12 }} desktop={{ size: 6 }}>
+            <Card className="is-fullheight">
+              <Card.Header>
+                <Card.Header.Title textSize={5}>
+                  Moderator Settings
+                </Card.Header.Title>
+                <Button color="dark" onClick={toggleModeratorSettings}>
+                  Edit Settings
+                </Button>
+              </Card.Header>
+              <Card.Content>
+                <table className="table is-striped has-text-left">
+                  <tbody>
+                    <tr>
+                      <td>Number of votes required to finalize decision:</td>
+                      <td className="has-text-white is-size-5 has-text-weight-bold">
+                        {/* {selectedProvider
+                          ? selectedProvider.settings.minVotes.toString()
+                          : 0} */}
+                        {minVotes.toString()}
+                      </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card.Content>
-          </Card>
-        </Columns.Column>
-
-        <Columns.Column tablet={{ size: 12 }} desktop={{ size: 6 }}>
-          <Card className="is-fullheight">
-            <Card.Header>
-              <Card.Header.Title textSize={5}>
-                Moderator Settings
-              </Card.Header.Title>
-              <Button color="dark" onClick={toggleModeratorSettings}>
-                Edit Settings
-              </Button>
-            </Card.Header>
-            <Card.Content>
-              <table className="table is-striped has-text-left">
-                <tbody>
-                  <tr>
-                    <td>Number of votes required to finalize decision:</td>
-                    <td className="has-text-white is-size-5 has-text-weight-bold">
-                      {selectedProvider
-                        ? selectedProvider.settings.minVotes.toString()
-                        : 0}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Required number of staked MOD tokens to vote:</td>
-                    <td className="has-text-white is-size-5 has-text-weight-bold">
-                      {selectedProvider
-                        ? selectedProvider.settings.minStaked.toString()
-                        : 0}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Example cost per each successful vote (1% of stake)</td>
-                    <td className="has-text-white is-size-5 has-text-weight-bold">
+                    <tr>
+                      <td>Required number of staked MOD tokens to vote:</td>
+                      <td className="has-text-white is-size-5 has-text-weight-bold">
+                        {/* {selectedProvider
+                          ? selectedProvider.settings.minStaked.toString()
+                          : 0} */}
+                        {minTokens.toString()}
+                      </td>
+                    </tr>
+                    {/* <tr>
+                      <td>Example cost per each successful vote (1% of stake)</td>
+                      <td className="has-text-white is-size-5 has-text-weight-bold">
                         1
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      Number of your platform tokens to be distributed to the
-                      majority voters (optional)
-                    </td>
-                    <td className="has-text-white is-size-5 has-text-weight-bold">
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Number of your platform tokens to be distributed to the
+                        majority voters (optional)
+                      </td>
+                      <td className="has-text-white is-size-5 has-text-weight-bold">
                         100
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </Card.Content>
-          </Card>
-        </Columns.Column>
-      </Columns>
+                      </td>
+                    </tr> */}
+                  </tbody>
+                </table>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
+        </Columns>
+      }
 
-      <TrustedIdentities provider={providerIdText} />
+      <TrustedIdentities provider={providerIdText} selectedProvider={selectedProvider}/>
 
       {showEditApp && <EditAppModal toggle={toggleEditApp} />}
 
@@ -517,7 +590,12 @@ export default function Admin() {
       {showModeratorSettings && (
         <EditModeratorSettingsModal
           toggle={toggleModeratorSettings}
+          principalID={providerIdText}
           settings={selectedProvider.settings}
+          minVotes={minVotes}
+          minTokens={minTokens}
+          setMinVotes={setMinVotes}
+          setMinTokens={setMinTokens}
         />
       )}
     </>

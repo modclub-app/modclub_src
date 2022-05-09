@@ -60,6 +60,11 @@ type ProviderSettings =
    minStaked: nat;
    minVotes: nat;
  };
+type ProviderSettingResult = 
+ variant {
+   err: ProviderError;
+   ok: ProviderSettings;
+ };
 type ProviderResult = 
  variant {
    err: ProviderError;
@@ -86,6 +91,7 @@ type ProviderError =
    InvalidContentType;
    InvalidProvider;
    NotFound;
+   ProviderAdminIsAlreadyRegistered;
    ProviderIsRegistered;
    RequiresWhitelisting;
    Unauthorized;
@@ -257,6 +263,7 @@ type ModClub =
    collectCanisterMetrics: () -> ();
    deregisterProvider: () -> (text);
    distributeAllPendingRewards: () -> ();
+   editProviderAdmin: (principal, principal, text) -> (ProviderResult);
    generateSigningKey: () -> ();
    getActivity: (bool) -> (vec Activity) query;
    getAdminProviderIDs: () -> (vec principal) query;
@@ -290,6 +297,7 @@ type ModClub =
    getProfile: () -> (Profile) query;
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus);
+   getProviderAdmins: (principal) -> (vec Profile);
    getProviderContent: () -> (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTasks: (nat, nat, bool) -> (vec ContentPlus) query;
@@ -303,6 +311,7 @@ type ModClub =
    registerAdmin: (principal) -> (Result);
    registerModerator: (text, text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
+   removeProviderAdmin: (principal, principal) -> (ProviderResult);
    removeRules: (vec RuleId, opt principal) -> ();
    resetUserChallengeAttempt: (text) -> (Result_1);
    retiredDataCanisterIdForWriting: (text) -> () oneway;
@@ -318,7 +327,8 @@ type ModClub =
    toggleAllowSubmission: (bool) -> ();
    unStakeTokens: (nat) -> (text);
    unregisterAdmin: (text) -> (Result);
-   updateSettings: (ProviderSettings) -> ();
+   updateRules: (vec Rule, opt principal) -> ();
+   updateSettings: (principal, ProviderSettings) -> (ProviderSettingResult);
    verifyUserHumanity: () -> (VerifyHumanityResponse);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
    votePohContent: (text, Decision, vec PohRulesViolated) -> ();

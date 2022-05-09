@@ -6,10 +6,12 @@ import FormModal from "../modals/FormModal";
 
 import { Link } from "react-router-dom";
 
-import { addProviderAdmin } from "../../../utils/api";
+import { addProviderAdmin, getAllProfiles, removeProviderAdmin, editProviderAdmin, getProviderAdmins } from "../../../utils/api";
 import { Principal } from "@dfinity/principal";
 
 const principalIDValidationForInput = (ID, principalIDS) => {
+  console.log("principalIDS", principalIDS);
+
   if (
     principalIDS.filter(function (e) {
       return e.id === ID;
@@ -21,7 +23,7 @@ const principalIDValidationForInput = (ID, principalIDS) => {
 };
 
 const principalIDValidationForEditAndRemove = (ID, principalIDS) => {
-  if (ID.length !== 28) return false;
+  // if (ID.length !== 28) return false;   - CHECK THIS
 
   if (
     principalIDS.filter(function (e) {
@@ -35,15 +37,17 @@ const principalIDValidationForEditAndRemove = (ID, principalIDS) => {
 
 const AddModal = ({ toggle, principalIDS, setPrincipleIDs, Provider }) => {
   const onFormSubmit = async (values: any) => {
-    console.log("onFormSubmit", values);
     if (
       principalIDValidationForInput(values.id, principalIDS) &&
-      (await addProviderAdmin(
+      await addProviderAdmin(
         Principal.fromText(values.id),
-        Principal.fromText(Provider)
-      ))
+        Principal.fromText(Provider),
+        values.userName
+      )
     ) {
+      values.id = Principal.fromText(values.id);
       setPrincipleIDs([...principalIDS, values]);
+      console.log([...principalIDS, values]);
       return "Add Trust Identity form submitted";
     }
 
@@ -80,7 +84,7 @@ const AddModal = ({ toggle, principalIDS, setPrincipleIDs, Provider }) => {
   );
 };
 
-const EditModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
+const EditModal = ({ toggle, principalIDS, setPrincipleIDs, Provider, userId, userName }) => {
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
     const { amount } = values;
@@ -90,8 +94,15 @@ const EditModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
         return e.id === values.id;
       });
       items[index].userName = values.userName;
-      setPrincipleIDs([...items]);
-      return "Edit Trusted Identity form submitted";
+
+      if (await editProviderAdmin(
+        values.id,
+        Principal.fromText(Provider),
+        values.userName
+      )) {
+        setPrincipleIDs([...items]);
+        return "Edit Trusted Identity form submitted";
+      }
     }
     return "Values entered not valid";
   };
@@ -109,7 +120,9 @@ const EditModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
             component="input"
             type="text"
             className="input"
+            initialValue={userId}
             placeholder="Principal ID"
+            disabled={true}
           />
         </div>
         <div className="field">
@@ -118,6 +131,7 @@ const EditModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
             component="input"
             type="text"
             className="input"
+            initialValue={userName}
             placeholder="User Name"
           />
         </div>
@@ -134,14 +148,22 @@ const RemoveModal = ({
   Provider,
 }) => {
   const onFormSubmit = async (values: any) => {
+    console.log(values);
     let items = [...principalIDS];
     let index = principalIDS.findIndex(function (e) {
       return e.id === toRemove;
     });
     items[index].userName = values.userName;
     items.splice(index, 1);
-    setPrincipleIDs([...items]);
-    return "Remove Trusted Identity form submitted";
+    console.log(toRemove, Provider);
+    if (await removeProviderAdmin(
+      toRemove,
+      Principal.fromText(Provider)
+    )) {
+      setPrincipleIDs([...items]);
+      return "Remove Trusted Identity form submitted";
+    }
+    return "Values entered not valid";
   };
 
   return (
@@ -155,17 +177,25 @@ const RemoveModal = ({
   );
 };
 
-export default function TrustedIdentities({ provider }) {
+export default function TrustedIdentities({ provider, selectedProvider }) {
   const [checked, setChecked] = useState([]);
 
   const [showAdd, setAdd] = useState(false);
   const toggleAdd = () => setAdd(!showAdd);
 
   const [showEdit, setEdit] = useState(false);
-  const toggleEdit = () => setEdit(!showEdit);
+  const [editUserId, setEditUserId] = useState("");
+  const [editUserName, setEditUserName] = useState("");
+  const toggleEdit = (userId, userName) => {
+    setEditUserId(typeof userId == "string" ? Principal.fromText(userId) : userId);
+    setEditUserName(userName);
+    setEdit(!showEdit);
+  };
 
   const [showRemove, setRemove] = useState(false);
   const toggleRemove = (id) => {
+    console.log("toggle remove", id);
+
     setRemove(!showRemove);
     setEntryToRemove(id);
   };
@@ -173,6 +203,17 @@ export default function TrustedIdentities({ provider }) {
   const [entryToRemove, setEntryToRemove] = useState("");
 
   const [trustedPrincipleIDs, setTrustedPrincipleIDs] = useState([]);
+
+  useEffect(() => {
+    let trustedIdentitiesInit = async () => {
+      console.log("Before call", selectedProvider);
+      let allProfiles = await getProviderAdmins(selectedProvider.id);
+      console.log("After call" , allProfiles);
+      setTrustedPrincipleIDs(allProfiles);
+    };
+    trustedIdentitiesInit();
+  }, [selectedProvider]);
+  console.log(trustedPrincipleIDs);
 
   const handleCheck = (e) => {
     const item = e.target.id;
@@ -186,8 +227,12 @@ export default function TrustedIdentities({ provider }) {
     setChecked([...checked, trustedPrincipleIDs]);
   };
 
-  return (
+  //CALL THIS ON INIT TO GET ALL PROFILES AND FILTER ADMIN TO DISPLAT UNDER TRUSTED IDENTITIES
+  //console.log("THISIS TESTING", getAllProfiles());
+
+  return (    
     <>
+    {selectedProvider != null &&
       <Card>
         <Card.Content>
           <Heading className="mb-2">Trusted identities</Heading>
@@ -214,23 +259,25 @@ export default function TrustedIdentities({ provider }) {
                   {trustedPrincipleIDs.map((item) => (
                     <tr>
                       <td>
-                        <label className="checkbox">
+                        {/* <label className="checkbox">
                           <input
                             type="checkbox"
-                            id={item.id}
+                            id={typeof item.id == "string" ? item.id : item.id.toText()}
                             onClick={handleCheck}
                           />
                           <Icon size="small" className="check">
                             <span className="material-icons">done</span>
                           </Icon>
-                        </label>
+                        </label> */}
                       </td>
-                      <td>{item.id}</td>
+                      <td>{typeof item.id == "string" ? item.id : item.id.toText()}</td>
                       <td>{item.userName}</td>
                       <td className="has-text-left">
-                        <span className="is-clickable" onClick={toggleEdit}>
+                        {/* <span className="is-clickable" onClick={() => {
+                          toggleEdit(item.id, item.userName)
+                        }}>
                           Edit
-                        </span>
+                        </span> */}
                         <span
                           className="is-clickable ml-5"
                           onClick={() => {
@@ -242,7 +289,7 @@ export default function TrustedIdentities({ provider }) {
                       </td>
                     </tr>
                   ))}
-                  <tr>
+                  {/* <tr>
                     <td>
                       <label className="checkbox">
                         <input
@@ -256,14 +303,14 @@ export default function TrustedIdentities({ provider }) {
                       </label>
                     </td>
                     <td className="has-text-left">Check All</td>
-                  </tr>
+                  </tr> */}
                 </tbody>
               </table>
             </div>
             <Button.Group>
-              <Button color="danger" disabled={!checked.length}>
+              {/* <Button color="danger" disabled={!checked.length}>
                 Remove
-              </Button>
+              </Button> */}
               <Button color="primary" onClick={toggleAdd}>
                 Add new
               </Button>
@@ -271,7 +318,7 @@ export default function TrustedIdentities({ provider }) {
           </div>
         </Card.Content>
       </Card>
-
+    }
       {showAdd && (
         <AddModal
           toggle={toggleAdd}
@@ -285,6 +332,9 @@ export default function TrustedIdentities({ provider }) {
           toggle={toggleEdit}
           principalIDS={trustedPrincipleIDs}
           setPrincipleIDs={setTrustedPrincipleIDs}
+          Provider={provider}
+          userId={editUserId}
+          userName={editUserName}
         />
       )}
       {showRemove && (
@@ -295,7 +345,7 @@ export default function TrustedIdentities({ provider }) {
           toRemove={entryToRemove}
           Provider={provider}
         />
-      )}
+      )}    
     </>
   );
 }

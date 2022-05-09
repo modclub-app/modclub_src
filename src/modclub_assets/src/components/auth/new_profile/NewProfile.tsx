@@ -70,6 +70,7 @@ export default function NewProfile() {
       : undefined;
 
     const regEx = /Reject text: (.*)/g;
+    console.log("username, email, imageData", username, email, imageData);
     try {
       setSubmitting(true);
       const user = await registerModerator(username, email, imageData);
@@ -82,6 +83,7 @@ export default function NewProfile() {
         history.push("/new-poh-profile");
       }, 2000);
     } catch (e) {
+      console.log("user ERRORR", e);
       let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr[1] });
       setSubmitting(false);

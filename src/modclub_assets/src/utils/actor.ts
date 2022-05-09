@@ -65,6 +65,7 @@ class ActorController {
         if (isLocalEnv) {
           await agent.fetchRootKey();
         }
+        console.log("ACTOR", actor)
         return actor;
       case 'plug':
         const plugActor = createPlugActor(identity, canisterId);

@@ -32,7 +32,6 @@ const canisterId =
     : process.env.MODCLUB_CANISTER_ID;
 const whitelist = [canisterId];
 const host = window.location.hostname;
-const hostToUseForStoicLcl = DFX_NETWORK === 'local' ? "http://localhost:3000" : undefined;
 
 if (process.env.DEV_ENV == "dev") {
   console.log("CanisterID:", canisterId);
@@ -138,7 +137,7 @@ export function useProvideAuth(authClient): AuthContext {
   async function checkAndConnectToStoic() {
     // following needs to change and need to use from webpack config
     if (walletToUse) {
-      const stcIdentityFromLocalStrg = await StoicIdentity.load(hostToUseForStoicLcl);
+      const stcIdentityFromLocalStrg = await StoicIdentity.load();
       if (stcIdentityFromLocalStrg) {
         setIsAuthenticatedLocal(true);
         if (!_identity) {
@@ -234,7 +233,7 @@ export function useProvideAuth(authClient): AuthContext {
         };
         break;
       case 'stoic':
-        let stcIdentity = await StoicIdentity.load(hostToUseForStoicLcl);
+        let stcIdentity = await StoicIdentity.load();
         if (!stcIdentity) {
           stcIdentity = await StoicIdentity.connect();
         }

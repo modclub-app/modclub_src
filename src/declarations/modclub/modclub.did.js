@@ -1,5 +1,6 @@
 export const idlFactory = ({ IDL }) => {
   const ProviderError = IDL.Variant({
+    'ProviderAdminIsAlreadyRegistered' : IDL.Null,
     'InvalidContentType' : IDL.Null,
     'NotFound' : IDL.Null,
     'Unauthorized' : IDL.Null,
@@ -351,6 +352,10 @@ export const idlFactory = ({ IDL }) => {
   const SubscribeMessage = IDL.Record({
     'callback' : IDL.Func([ContentResult], [], ['oneway']),
   });
+  const ProviderSettingResult = IDL.Variant({
+    'ok' : ProviderSettings,
+    'err' : ProviderError,
+  });
   const VerifyHumanityResponse = IDL.Record({
     'status' : PohChallengeStatus,
     'token' : IDL.Opt(PohUniqueToken),
@@ -374,6 +379,11 @@ export const idlFactory = ({ IDL }) => {
     'collectCanisterMetrics' : IDL.Func([], [], []),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'distributeAllPendingRewards' : IDL.Func([], [], []),
+    'editProviderAdmin' : IDL.Func(
+        [IDL.Principal, IDL.Principal, IDL.Text],
+        [ProviderResult],
+        [],
+      ),
     'generateSigningKey' : IDL.Func([], [], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAdminProviderIDs' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
@@ -435,6 +445,7 @@ export const idlFactory = ({ IDL }) => {
     'getProfile' : IDL.Func([], [Profile], ['query']),
     'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], []),
+    'getProviderAdmins' : IDL.Func([IDL.Principal], [IDL.Vec(Profile)], []),
     'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTasks' : IDL.Func(
@@ -462,6 +473,11 @@ export const idlFactory = ({ IDL }) => {
     'registerProvider' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(Image)],
         [IDL.Text],
+        [],
+      ),
+    'removeProviderAdmin' : IDL.Func(
+        [IDL.Principal, IDL.Principal],
+        [ProviderResult],
         [],
       ),
     'removeRules' : IDL.Func([IDL.Vec(RuleId), IDL.Opt(IDL.Principal)], [], []),
@@ -494,7 +510,12 @@ export const idlFactory = ({ IDL }) => {
     'toggleAllowSubmission' : IDL.Func([IDL.Bool], [], []),
     'unStakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'unregisterAdmin' : IDL.Func([IDL.Text], [Result], []),
-    'updateSettings' : IDL.Func([ProviderSettings], [], []),
+    'updateRules' : IDL.Func([IDL.Vec(Rule), IDL.Opt(IDL.Principal)], [], []),
+    'updateSettings' : IDL.Func(
+        [IDL.Principal, ProviderSettings],
+        [ProviderSettingResult],
+        [],
+      ),
     'verifyUserHumanity' : IDL.Func([], [VerifyHumanityResponse], []),
     'vote' : IDL.Func(
         [ContentId, Decision, IDL.Opt(IDL.Vec(RuleId))],
