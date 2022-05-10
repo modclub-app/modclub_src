@@ -5,6 +5,7 @@ import Principal "mo:base/Principal";
 import Option "mo:base/Option";
 import Debug "mo:base/Debug";
 import Bool "mo:base/Bool";
+import List "mo:base/List";
 
 import GlobalState "../../state";
 import Types "../../types";
@@ -207,6 +208,7 @@ module ProviderModule {
       caller: Principal,
       providerId: ?Principal,
       state: GlobalState.State,
+      modClubAmins: List.List<Principal>,
       logger: Canistergeek.Logger 
       ) : async Types.ProviderResult {
       var authorized = false;
@@ -238,13 +240,18 @@ module ProviderModule {
 
       Helpers.logMessage(logger, "addProviderAdmin - Is caller provider:  " # Bool.toText(isProvider) , #info);
 
+      // Allow Modclub Admins
+      if(authorized == false) {
+        authorized := AuthManager.isAdmin(caller, modClubAmins);
+      };
+
       // Check if the caller is an admin of this provider
-      if(isProvider == false) {
+      if(authorized == false) {
           switch(await AuthManager.checkProviderAdminPermission(_providerId, caller, state)) {
             case (#err(error)) return #err(error);
             case (#ok()) authorized := true;
           };
-        };
+      };
       
       if(authorized == false) return #err(#Unauthorized);
 
@@ -319,14 +326,18 @@ module ProviderModule {
                                     providerAdminPrincipalIdToBeRemoved: Principal, 
                                     callerPrincipalId: Principal, 
                                     state: GlobalState.State,
+                                    modClubAmins: List.List<Principal>,
                                     logger: Canistergeek.Logger 
                                     ) : async Types.ProviderResult {
 
-      var authorized = false;
       Debug.print("Authenticating the caller: " # Principal.toText(callerPrincipalId));
-      switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
-        case (#err(error)) return #err(error);
-        case (#ok()) authorized := true;
+      // Allow Modclub Admins
+      var authorized = AuthManager.isAdmin(callerPrincipalId, modClubAmins);
+      if(authorized == false) {
+        switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+          case (#err(error)) return #err(error);
+          case (#ok()) authorized := true;
+        };
       };
       if(authorized == false) {
         return #err(#Unauthorized);
@@ -346,15 +357,20 @@ module ProviderModule {
                                   providerAdminPrincipalIdToBeEdited: Principal,
                                   newUserName: Text,
                                   callerPrincipalId: Principal,
+                                  modClubAmins: List.List<Principal>,
                                   state: GlobalState.State) 
                                   : async Types.ProviderResult {
 
-      var authorized = false;
+      var authorized = AuthManager.isAdmin(callerPrincipalId, modClubAmins);
       Debug.print("Authenticating the caller: " # Principal.toText(callerPrincipalId));
-      switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
-        case (#err(error)) return #err(error);
-        case (#ok()) authorized := true;
+
+      if(authorized == false) {
+        switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+          case (#err(error)) return #err(error);
+          case (#ok()) authorized := true;
+        };
       };
+      
       if(authorized == false) {
         return #err(#Unauthorized);
       };

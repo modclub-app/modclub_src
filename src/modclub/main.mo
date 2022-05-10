@@ -842,6 +842,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
           caller,
           providerId,
           state,
+          admins,
           canistergeekLogger
         );
     return result;
@@ -855,13 +856,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
   public shared({ caller }) func removeProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeRemoved: Principal) 
   : async Types.ProviderResult {
 
-    return await ProviderManager.removeProviderAdmin(providerId, providerAdminPrincipalIdToBeRemoved, caller, state, canistergeekLogger);
+    return await ProviderManager.removeProviderAdmin(providerId, providerAdminPrincipalIdToBeRemoved, caller, state, admins, canistergeekLogger);
   };
 
   public shared({ caller }) func editProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeEdited: Principal, newUserName: Text) 
   : async Types.ProviderResult {
 
-    return await ProviderManager.editProviderAdmin(providerId, providerAdminPrincipalIdToBeEdited, newUserName, caller, state);
+    return await ProviderManager.editProviderAdmin(providerId, providerAdminPrincipalIdToBeEdited, newUserName, caller, admins, state);
   };
 
   public query({caller}) func getAdminProviderIDs(): async [Principal] {
