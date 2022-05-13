@@ -291,15 +291,15 @@ module ProviderModule {
           };
         };
       };
-
-      if(IsUserAlreadyAdminOfProvider == true) {
+      
+   if(IsUserAlreadyAdminOfProvider == true) {
+        Helpers.logMessage(logger, "addProviderAdmin - FAILED:  Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(caller) # " admin principal ID is already exist" # Principal.toText(userId) , #info);
         #err(#ProviderAdminIsAlreadyRegistered);
       } else {
+           Helpers.logMessage(logger, "addProviderAdmin - SUCCESS:  Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(caller) # " new admin principal ID " # Principal.toText(userId) , #info);
         #ok();
-      }
+      };
 
-      Helpers.logMessage(logger, "addProviderAdmin - SUCCESS:  Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(caller) # " new admin principal ID " # Principal.toText(userId) , #info);
-      #ok();
 
   };
 
