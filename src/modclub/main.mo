@@ -301,7 +301,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
     };
   };
-  
+
   // ----------------------Moderator Methods------------------------------
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Types.Image) : async Types.Profile {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -339,6 +339,23 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   public query func getAllProfiles() : async [Types.Profile] {
     return ModeratorManager.getAllProfiles(state);
+  };
+
+  public func convertAllToModerator() : async (){
+    var allProfiles = ModeratorManager.getAllProfiles(state);
+    for(user in allProfiles.vals()){
+      if(user.role == #admin){
+        state.profiles.put(user.id, {
+            id = user.id;
+            userName = user.userName;
+            email = user.email;
+            pic = user.pic;
+            role = #moderator;
+            createdAt = user.createdAt;
+            updatedAt = Helpers.timeNow();
+          });
+      }
+    };
   };
 
   public query func getModeratorLeaderboard(start: Nat, end: Nat) : async [Types.ModeratorLeaderboard] {
@@ -845,13 +862,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return ProviderManager.getProviderAdmins(providerId, state);
   };
 
-  public shared({ caller }) func removeProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeRemoved: Principal) 
+  public shared({ caller }) func removeProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeRemoved: Principal)
   : async Types.ProviderResult {
 
     return await ProviderManager.removeProviderAdmin(providerId, providerAdminPrincipalIdToBeRemoved, caller, state);
   };
 
-  public shared({ caller }) func editProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeEdited: Principal, newUserName: Text) 
+  public shared({ caller }) func editProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeEdited: Principal, newUserName: Text)
   : async Types.ProviderResult {
 
     return await ProviderManager.editProviderAdmin(providerId, providerAdminPrincipalIdToBeEdited, newUserName, caller, state);

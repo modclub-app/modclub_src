@@ -8,7 +8,7 @@ import { Identity } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { getUserFromStorage } from "./util";
 import { Profile } from "./types";
-import { getUserFromCanister } from "./api";
+import { getUserFromCanister, getAdminProviderIDs, getProvider } from "./api";
 
 
 export interface AuthContext {
@@ -21,6 +21,10 @@ export interface AuthContext {
   logOut: () => void;
   user: Profile;
   setUser: (user: Profile) => void;
+  setSelectedProvider: (provider: Object) => void;
+  selectedProvider: Object;
+  providers: Array<Object>;
+  providerIdText: string;
 }
 
 const KEY_LOCALSTORAGE_USER = "user";
@@ -32,6 +36,7 @@ const canisterId =
     : process.env.MODCLUB_CANISTER_ID;
 const whitelist = [canisterId];
 const host = window.location.hostname;
+let isFetchingProviderAdmins = false;
 
 if (process.env.DEV_ENV == "dev") {
   console.log("CanisterID:", canisterId);
@@ -46,6 +51,9 @@ export function useProvideAuth(authClient): AuthContext {
   const [_identity, _setIdentity] = useState<Identity | undefined>();
   const [isAuthClientReady, setAuthClientReady] = useState(false);
   const [shouldSignup, setShouldSignup] = useState(false);
+  const [providers, setProviders] = useState([]);
+  const [providerIdText, setProviderIdText] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState<Object | undefined>();
 
 
   // Creating the auth client is async and no auth related checks can happen
@@ -173,6 +181,25 @@ export function useProvideAuth(authClient): AuthContext {
         }
       })();
     }
+
+
+    if (user && !isFetchingProviderAdmins) {
+      let adminInitProperties = async () => {
+        isFetchingProviderAdmins = true;
+        console.log("ADMIN INTI PROPERTIES FETCHING DATA");
+        let adminProviders = await getAdminProviderIDs();
+        console.log("ADMIN INTI PROPERTIES FETCHING DATA AFTER AAIT");
+        isFetchingProviderAdmins = false;
+        let providerListPromise = [];
+        for (let provider of adminProviders) {
+          providerListPromise.push(getProvider(provider));
+        };
+        let providerList = await Promise.all(providerListPromise);
+        setProviders(providerList);
+        setProviderIdText(adminProviders[0].toText());
+      };
+      adminInitProperties();
+    }
   }, [user]);
 
   useEffect(() => {
@@ -272,6 +299,8 @@ export function useProvideAuth(authClient): AuthContext {
     }
     setUser(undefined);
     setIsAuthenticatedLocal(false);
+    setSelectedProvider(undefined);
+    setProviders([]);
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
     localStorage.removeItem('_loginType');
     Usergeek.setPrincipal(null);
@@ -287,7 +316,11 @@ export function useProvideAuth(authClient): AuthContext {
     user,
     identity,
     setUser,
+    setSelectedProvider,
+    selectedProvider,
     requiresSignUp: shouldSignup,
+    providers: providers,
+    providerIdText: providerIdText,
   };
 }
 

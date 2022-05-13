@@ -205,11 +205,13 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
   const [trustedPrincipleIDs, setTrustedPrincipleIDs] = useState([]);
 
   useEffect(() => {
+    const controller = new AbortController();
     let trustedIdentitiesInit = async () => {
       console.log("Before call", selectedProvider);
       let allProfiles = await getProviderAdmins(selectedProvider.id);
-      console.log("After call" , allProfiles);
+      console.log("After call", allProfiles, controller);
       setTrustedPrincipleIDs(allProfiles);
+      return () => controller.abort();
     };
     trustedIdentitiesInit();
   }, [selectedProvider]);
@@ -230,36 +232,36 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
   //CALL THIS ON INIT TO GET ALL PROFILES AND FILTER ADMIN TO DISPLAT UNDER TRUSTED IDENTITIES
   //console.log("THISIS TESTING", getAllProfiles());
 
-  return (    
+  return (
     <>
-    {selectedProvider != null &&
-      <Card>
-        <Card.Content>
-          <Heading className="mb-2">Trusted identities</Heading>
+      {selectedProvider != null &&
+        <Card>
+          <Card.Content>
+            <Heading className="mb-2">Trusted identities</Heading>
 
-          <p className="mb-6">
-            Add the principal IDs for other members of your team so they can
-            manage your Modclub account <br />
-            To get principal ID please visit this{" "}
-            <Link to="/admin-identity">page</Link>
-          </p>
+            <p className="mb-6">
+              Add the principal IDs for other members of your team so they can
+              manage your Modclub account <br />
+              To get principal ID please visit this{" "}
+              <Link to="/admin-identity">page</Link>
+            </p>
 
-          <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
-            <div className="table-container">
-              <table className="table is-striped has-text-left is-checked">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Principal ID</th>
-                    <th>Name</th>
-                    <th className="has-text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trustedPrincipleIDs.map((item) => (
+            <div className="has-background-dark p-5" style={{ borderRadius: 4 }}>
+              <div className="table-container">
+                <table className="table is-striped has-text-left is-checked">
+                  <thead>
                     <tr>
-                      <td>
-                        {/* <label className="checkbox">
+                      <th></th>
+                      <th>Principal ID</th>
+                      <th>Name</th>
+                      <th className="has-text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trustedPrincipleIDs.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          {/* <label className="checkbox">
                           <input
                             type="checkbox"
                             id={typeof item.id == "string" ? item.id : item.id.toText()}
@@ -269,27 +271,27 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
                             <span className="material-icons">done</span>
                           </Icon>
                         </label> */}
-                      </td>
-                      <td>{typeof item.id == "string" ? item.id : item.id.toText()}</td>
-                      <td>{item.userName}</td>
-                      <td className="has-text-left">
-                        {/* <span className="is-clickable" onClick={() => {
+                        </td>
+                        <td>{typeof item.id == "string" ? item.id : item.id.toText()}</td>
+                        <td>{item.userName}</td>
+                        <td className="has-text-left">
+                          {/* <span className="is-clickable" onClick={() => {
                           toggleEdit(item.id, item.userName)
                         }}>
                           Edit
                         </span> */}
-                        <span
-                          className="is-clickable ml-5"
-                          onClick={() => {
-                            toggleRemove(item.id);
-                          }}
-                        >
-                          Remove
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                  {/* <tr>
+                          <span
+                            className="is-clickable ml-5"
+                            onClick={() => {
+                              toggleRemove(item.id);
+                            }}
+                          >
+                            Remove
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {/* <tr>
                     <td>
                       <label className="checkbox">
                         <input
@@ -304,21 +306,21 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
                     </td>
                     <td className="has-text-left">Check All</td>
                   </tr> */}
-                </tbody>
-              </table>
-            </div>
-            <Button.Group>
-              {/* <Button color="danger" disabled={!checked.length}>
+                  </tbody>
+                </table>
+              </div>
+              <Button.Group>
+                {/* <Button color="danger" disabled={!checked.length}>
                 Remove
               </Button> */}
-              <Button color="primary" onClick={toggleAdd}>
-                Add new
-              </Button>
-            </Button.Group>
-          </div>
-        </Card.Content>
-      </Card>
-    }
+                <Button color="primary" onClick={toggleAdd}>
+                  Add new
+                </Button>
+              </Button.Group>
+            </div>
+          </Card.Content>
+        </Card>
+      }
       {showAdd && (
         <AddModal
           toggle={toggleAdd}
@@ -345,7 +347,7 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
           toRemove={entryToRemove}
           Provider={provider}
         />
-      )}    
+      )}
     </>
   );
 }

@@ -8,6 +8,7 @@ import {
   Icon,
   Button,
   Modal,
+  Dropdown
 } from "react-bulma-components";
 import LogoImg from "../../../../assets/logo.png";
 import SidebarUser from "./SidebarUser";
@@ -64,12 +65,34 @@ const InviteModerator = ({ toggle }) => {
   );
 };
 
+const DropdownLabel = ({ toggle }) => {
+  return (
+    <>
+      <Icon style={{ marginLeft: "3px" }}>
+        <span className="material-icons">assignment_ind</span>
+      </Icon>
+      <div className="is-flex" onClick={toggle}>
+        <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center has-text-left">
+          <Heading size={6} >
+            Switch to Provider Dashboard
+          </Heading>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function Sidebar() {
   const history = useHistory();
-  const { isAuthReady, user, isAuthenticated, requiresSignUp } = useAuth();
-
+  const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const toggleModal = () => setShowModal(!showModal);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const toggle = () => setShowDropdown(!showDropdown);
+  const setProvider = (provider) => {
+    setSelectedProvider(provider);
+  }
+
 
   useEffect(() => {
     if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
@@ -122,13 +145,57 @@ export default function Sidebar() {
             </Icon>
             How To
           </Link>
-          {user && user.role.hasOwnProperty("admin") ? (
-            <Link to="/app/admin">
+          {providers.length > 0 ? (
+            <>
+              {selectedProvider ? (
+                <Link to="/app" onClick={() => setProvider(null)} style={{ position: "absolute", top: "0px", right: "2.5em", maxWidth: "18em" }}>
+                  <Icon>
+                    <span className="material-icons">playlist_add_check</span>
+                  </Icon>
+                  Switch to Moderator Dashboard
+                </Link>
+                /* <Link to="/app/admin">
+                  <Icon>
+                    <span className="material-icons">assignment_ind</span>
+                  </Icon>
+                  Admin
+                </Link> */
+
+              ) : (
+                <Dropdown
+                  className="mb-5"
+                  color="ghost"
+                  style={{ position: "absolute", top: "0.5em", right: "1em", maxWidth: "18em" }}
+                  icon={
+                    <Icon color="white">
+                      <span className="material-icons">expand_more</span>
+                    </Icon>
+                  }
+                  label={<DropdownLabel
+                    toggle={toggle}
+                  />}
+                >
+
+                  {providers.map((provider) => {
+                    return (
+                      <Link to="/app/admin" key={provider['id']} className="dropdown-item" onClick={() => setProvider(provider)}>
+                        {provider['name']}
+                      </Link>
+                      /*  <div key={provider['id']} onMouseDown={() => setProvider(provider)}>
+                        {provider['name']}
+                      </div> */
+                    );
+                  })}
+                </Dropdown>
+              )}
+            </>
+            /* <Link to="/app/admin">
               <Icon>
                 <span className="material-icons">assignment_ind</span>
               </Icon>
               Admin
-            </Link>
+            </Link> */
+
           ) : (
             ""
           )}

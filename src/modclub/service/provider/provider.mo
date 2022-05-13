@@ -51,10 +51,10 @@ module ProviderModule {
     };
   };
 
-  public func updateProviderSettings(providerId : Principal, 
+  public func updateProviderSettings(providerId : Principal,
                                     updatedSettings: Types.ProviderSettings,
-                                    callerPrincipalId: Principal, 
-                                    state : GlobalState.State) 
+                                    callerPrincipalId: Principal,
+                                    state : GlobalState.State)
                                     : async Types.ProviderSettingResult {
     // Todo remove this after airdrop
     // await onlyOwner(caller);
@@ -206,20 +206,18 @@ module ProviderModule {
         userName = username; // Todo accept username as a paramater
         email = "";
         pic = null;
-        role = #admin;
+        role = #moderator;
         createdAt = now;
         updatedAt = now;
       };
 
-      let IsUserIdAlreadyExist = do? {
-        let currentUserId = state.profiles.get(userId)!;
-      };
-      if(Option.isSome(IsUserIdAlreadyExist)) {
-        return #err(#ProviderAdminIsAlreadyRegistered)
+      if(Option.isNull(state.profiles.get(userId))) {
+        state.profiles.put(userId, adminProfile);
       };
 
       state.profiles.put(userId, adminProfile);
       // TODO: Consider adding to username map to preserve uniqueness
+      var IsUserAlreadyAdminOfProvider = false;
       switch(state.providerAdmins.get(_providerId)) {
         case (null) {
           let adminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
@@ -228,11 +226,19 @@ module ProviderModule {
           state.admin2Provider.put(userId,_providerId);
           };
         case (?adminMap) {
-          adminMap.put(userId, ());
-          state.admin2Provider.put(userId,_providerId);
+          if(Option.isSome(adminMap.get(userId))) {
+            IsUserAlreadyAdminOfProvider := true;
+          } else {
+            adminMap.put(userId, ());
+            state.admin2Provider.put(userId,_providerId);
+          };
         };
       };
-      #ok();
+      if(IsUserAlreadyAdminOfProvider == true) {
+        #err(#ProviderAdminIsAlreadyRegistered);
+      } else {
+        #ok();
+      }
   };
 
     public func getAdminProviderIDs(
@@ -261,9 +267,9 @@ module ProviderModule {
       buf.toArray();
     };
 
-    public func removeProviderAdmin(providerId: Principal, 
-                                    providerAdminPrincipalIdToBeRemoved: Principal, 
-                                    callerPrincipalId: Principal, 
+    public func removeProviderAdmin(providerId: Principal,
+                                    providerAdminPrincipalIdToBeRemoved: Principal,
+                                    callerPrincipalId: Principal,
                                     state: GlobalState.State) : async Types.ProviderResult {
 
       var authorized = false;
@@ -275,7 +281,7 @@ module ProviderModule {
       if(authorized == false) {
         return #err(#Unauthorized);
       };
-      
+
       switch(state.providerAdmins.get(providerId)) {
         case (null) return #err(#NotFound);
         case (?adminMap) {
@@ -290,7 +296,7 @@ module ProviderModule {
                                   providerAdminPrincipalIdToBeEdited: Principal,
                                   newUserName: Text,
                                   callerPrincipalId: Principal,
-                                  state: GlobalState.State) 
+                                  state: GlobalState.State)
                                   : async Types.ProviderResult {
 
       var authorized = false;

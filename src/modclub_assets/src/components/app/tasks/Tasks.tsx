@@ -61,7 +61,7 @@ const Task = ({ task, setVoted }) => {
           )}
           {'htmlContent' in task.contentType && (
             <div className="htmlContent content preview">
-              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text) }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(task.text) }} />
             </div>
           )}
 
@@ -107,21 +107,31 @@ export default function Tasks() {
   const { user, isAuthenticated } = useAuth();
   const [tasks, setTasks] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
+  const [fetchingTasks, setFetchingTasks] = useState<boolean>(false);
 
   const fetchTasks = async () => {
-    const content = await getTasks(0, 3, false);
-    setTasks(content);
+    //To Prevent fetching multiple times
+    setFetchingTasks(true);
+    try {
+      const content = await getTasks(0, 3, false);
+      setTasks(content);
+      setFetchingTasks(false);
+    } catch (e) {
+      //Prevent errors
+      setFetchingTasks(false);
+      setTasks([]);
+    }
   }
 
   useEffect(() => {
-    user && !tasks && fetchTasks();
+    user && !tasks && !fetchingTasks && fetchTasks();
   }, [user]);
 
   useEffect(() => {
-    user && voted && fetchTasks();
+    user && voted && !tasks && !fetchingTasks && fetchTasks();
     setVoted(false);
   }, [voted]);
-  
+
   return (
     <>
       <Userstats />

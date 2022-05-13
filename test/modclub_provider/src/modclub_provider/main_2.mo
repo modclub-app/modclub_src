@@ -25,7 +25,7 @@ shared ({caller = initializer}) actor class ModclubProvider () = this {
         // await onlyOwner(caller);
         // Register with Modclub        
 
-        let registerResult = await MC.registerProvider("SocialApp-1", "The description of your application-1.", null);
+        let registerResult = await MC.registerProvider("SocialApp-2", "The description of your application-2.", null);
 
         // Sub the callback
         await subscribe();
@@ -48,7 +48,7 @@ shared ({caller = initializer}) actor class ModclubProvider () = this {
         await MC.addProviderAdmin(
 
             Principal.fromText("YOUR_STOIC_PRINCIPAL_ID"), "admin",
-             null
+            ?Principal.fromActor(this)
              );
 
         return registerResult # "\n " # test1 # "\n" # test2 # "\n" # test3;
