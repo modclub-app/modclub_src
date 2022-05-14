@@ -974,7 +974,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
-
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
 

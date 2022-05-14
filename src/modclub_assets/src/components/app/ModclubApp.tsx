@@ -60,7 +60,7 @@ export default function ModclubApp() {
   return (
     <>
       {/* {!user?.role?.hasOwnProperty("admin") && status && status != "verified" && */}
-      {user && status && status != "verified" &&
+      {user && status && status != "verified" && !selectedProvider &&
         <UserIncompleteModal status={status} rejectionReasons={rejectionReasons} />
       }
       <Columns className="container" marginless multiline={false} style={{ position: 'static' }}>

@@ -66,6 +66,7 @@ const InviteModerator = ({ toggle }) => {
 };
 
 const DropdownLabel = ({ toggle }) => {
+
   return (
     <>
       <Icon style={{ marginLeft: "3px" }}>
@@ -165,7 +166,7 @@ export default function Sidebar() {
                 <Dropdown
                   className="mb-5"
                   color="ghost"
-                  style={{ position: "absolute", top: "0.5em", right: "1em", maxWidth: "18em" }}
+                  style={{ position: "absolute", top: "0.5em", right: "1em", maxWidth: "18em", zIndex: "999" }}
                   icon={
                     <Icon color="white">
                       <span className="material-icons">expand_more</span>
@@ -189,12 +190,6 @@ export default function Sidebar() {
                 </Dropdown>
               )}
             </>
-            /* <Link to="/app/admin">
-              <Icon>
-                <span className="material-icons">assignment_ind</span>
-              </Icon>
-              Admin
-            </Link> */
 
           ) : (
             ""
@@ -213,6 +208,6 @@ export default function Sidebar() {
       </Menu>
 
       {showModal && <InviteModerator toggle={toggleModal} />}
-    </Columns.Column>
+    </Columns.Column >
   );
 }
