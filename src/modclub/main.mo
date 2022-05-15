@@ -42,6 +42,8 @@ import Token "./token";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
+import QueueManager "./service/queue/queue";
+
 
 shared ({caller = deployer}) actor class ModClub() = this {
 
