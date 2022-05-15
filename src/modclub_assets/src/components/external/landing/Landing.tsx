@@ -28,11 +28,12 @@ const data = {
     "Marketing",
     "Reserve",
     "Airdrop",
+    "Seed"
   ],
   datasets: [
     {
       label: "Allocation",      
-      data: [20, 15, 10, 5, 10, 39, 1],
+      data: [16, 15, 10, 5, 5, 41.75, 1, 6.25],
       backgroundColor: [
         "#FB6A00", // Team
         "#5EBEE1", // Private
@@ -41,6 +42,7 @@ const data = {
         "#CB339C", // Marketing
         "#3D52FA", // Reserve
         "#007CE0", // Airdrop
+        "#CB439C", // Seed
       ],
       borderColor: "#000",
       borderWidth: 1,  
@@ -289,11 +291,9 @@ export default function Landing() {
               <div className="card-content">
                 <h4 className="subtitle">Q4 2021</h4>
                 <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
-                  <li>Web Application MVP</li>
-                  <li>Content Moderation</li>
-                  <li>Proof of Humanity</li>
-                  <li>Launch SDK</li>
-                  <li>Fundraising</li>
+                <li>Web Application MVP</li>
+                <li>Content Moderation</li>
+                <li>Launch SDK</li>
                 </ul>
               </div>
             </div>
@@ -301,9 +301,10 @@ export default function Landing() {
               <div className="card-content">
                 <h4 className="subtitle">Q2 2022</h4>
                 <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
-                  <li>Content labelling support</li>
-                  <li>Public sale &amp; Token launch</li>
-                  <li>Enable moderators to receive partner tokens</li>
+                <li>Stoic and Plug wallet support</li>
+                <li>Moderator peer review system</li>
+                  <li>Automatic reward distribution</li>
+                  <li>Pseudo random task distribution</li>
                 </ul>
               </div>
             </div>
@@ -311,8 +312,10 @@ export default function Landing() {
               <div className="card-content">
                 <h4 className="subtitle">Q4 2022</h4>
                 <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
-                  <li>AI content filtering</li>
-                  <li>AI image detection</li>
+                <li>Content labeling</li>
+                <li>AI content filtering</li>
+                <li>AI image detection</li>
+                <li>Expand language support</li>
                 </ul>
               </div>
             </div>
@@ -323,11 +326,9 @@ export default function Landing() {
               <div className="card-content" style={{ marginTop: 100 }}>
                 <h4 className="subtitle">Q1 2022</h4>
                 <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
-                  <li>UGC Pre-approval</li>
-                  <li>Programatic scripting</li>
-                  <li>Plug wallet support</li>
-                  <li>Complete raise</li>
-                  <li>Team buildout</li>
+                <li>UGC Pre-approval</li>
+                <li>Proof of Humanity</li>
+                <li>Educational content for Moderators</li>
                 </ul>
               </div>
             </div>
@@ -335,10 +336,10 @@ export default function Landing() {
               <div className="card-content">
                 <h4 className="subtitle">Q3 2022</h4>
                 <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
-                  <li>KYC</li>
-                  <li>Governance System</li>
-                  <li>Multi-language support</li>
-                  <li>Moderator educational content</li>
+                <li>KYC</li>
+                <li>Governance System via SNS</li>
+                <li>Multi-language support</li>
+                <li>Enable 3rd party partner token rewards</li>
                 </ul>
               </div>
             </div>
@@ -354,9 +355,7 @@ export default function Landing() {
               <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
                 <li>Web Application MVP</li>
                 <li>Content Moderation</li>
-                <li>Proof of Humanity</li>
                 <li>Launch SDK</li>
-                <li>Fundraising</li>
               </ul>
             </div>
           </div>
@@ -365,10 +364,8 @@ export default function Landing() {
               <h4 className="subtitle">Q1 2022</h4>
               <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
                 <li>UGC Pre-approval</li>
-                <li>Programatic scripting</li>
-                <li>Plug wallet support</li>
-                <li>Complete raise</li>
-                <li>Team buildout</li>
+                <li>Proof of Humanity</li>
+                <li>Educational content for Moderators</li>
               </ul>
             </div>
           </div>
@@ -376,9 +373,10 @@ export default function Landing() {
             <div className="card-content">
               <h4 className="subtitle">Q2 2022</h4>
               <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
-                <li>Content labelling support</li>
-                <li>Public sale &amp; Token launch</li>
-                <li>Enable moderators to receive partner tokens</li>
+                <li>Stoic and Plug wallet support</li>
+                <li>Moderator peer review system</li>
+                  <li>Automatic reward distribution</li>
+                  <li>Pseudo random task distribution</li>
               </ul>
             </div>
           </div>
@@ -387,18 +385,20 @@ export default function Landing() {
               <h4 className="subtitle">Q3 2022</h4>
               <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
                 <li>KYC</li>
-                <li>Governance System</li>
+                <li>Governance System via SNS</li>
                 <li>Multi-language support</li>
-                <li>Moderator educational content</li>
+                <li>Enable 3rd party partner token rewards</li>
               </ul>
             </div>
           </div>
           <div className="card has-background-dark mb-6">
             <div className="card-content">
               <h4 className="subtitle">Q4 2022</h4>
-              <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                <ul className="has-text-silver" style={{ listStyleType: 'disc', paddingLeft: 16 }}>
+                <li>Content labeling</li>
                 <li>AI content filtering</li>
                 <li>AI image detection</li>
+                <li>Expand language support</li>
               </ul>
             </div>
           </div>          
