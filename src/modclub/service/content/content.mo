@@ -1,24 +1,24 @@
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
-import Order "mo:base/Order";
-import Nat "mo:base/Nat";
-import Text "mo:base/Text";
-import Result "mo:base/Result";
 import Debug "mo:base/Debug";
-import Principal "mo:base/Principal";
-
-import Rel "../../data_structures/Rel";
 import GlobalState "../../state";
 import Helpers "../../helpers";
+import Nat "mo:base/Nat";
+import Order "mo:base/Order";
+import Principal "mo:base/Principal";
+import QueueManager "../queue/queue";
+import Rel "../../data_structures/Rel";
+import Result "mo:base/Result";
+import Text "mo:base/Text";
 import Types "../../types";
 
 module ContentModule {
 
-    public func getContent(userId: Principal, id: Text, voteCount: Types.VoteCount, state: GlobalState.State) : ?Types.ContentPlus {
-        return getContentPlus(id, ?userId, voteCount, state);  
+    public func getContent(userId: Principal, contentId: Text, voteCount: Types.VoteCount, state: GlobalState.State) : ?Types.ContentPlus {
+        return getContentPlus(contentId, ?userId, voteCount, state);  
     };
 
-    public func submitTextOrHtmlContent(caller: Principal, sourceId: Text, text: Text, title: ?Text, contentType: Types.ContentType, state: GlobalState.State) : Text {
+    public func submitTextOrHtmlContent(caller: Principal, sourceId: Text, text: Text, title: ?Text, contentType: Types.ContentType, contentQueueManager: QueueManager.QueueManager, state: GlobalState.State) : Text {
         let content = createContentObj(sourceId, caller, contentType, title, state);
         let textContent : Types.TextContent = {
         id = content.id;
@@ -28,11 +28,11 @@ module ContentModule {
         state.content.put(content.id, content);
         state.textContent.put(content.id, textContent);
         state.provider2content.put(caller, content.id);
-        state.contentNew.put(caller, content.id);
+        contentQueueManager.addContent(content.id, #new);
         return content.id;
     };
 
-    public func submitImage(caller: Principal, sourceId: Text, image: [Nat8], imageType: Text, title: ?Text, state: GlobalState.State) : Text {
+    public func submitImage(caller: Principal, sourceId: Text, image: [Nat8], imageType: Text, title: ?Text, contentQueueManager: QueueManager.QueueManager, state: GlobalState.State) : Text {
         let content = createContentObj(sourceId, caller, #imageBlob, title, state);
         let imageContent : Types.ImageContent = {
             id = content.id;
@@ -45,7 +45,7 @@ module ContentModule {
         state.content.put(content.id, content);
         state.imageContent.put(content.id, imageContent);
         state.provider2content.put(caller, content.id);
-        state.contentNew.put(caller, content.id);
+        contentQueueManager.addContent(content.id, #new);
         return content.id;
     };
 
@@ -67,55 +67,22 @@ module ContentModule {
             caller: Principal,
             status: Types.ContentStatus,
             getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
+            contentQueueManager: QueueManager.QueueManager,
             state: GlobalState.State
         ) : [Types.ContentPlus] {
         let buf = Buffer.Buffer<Types.ContentPlus>(0);
         var count = 0;
-        for ( (pid, p) in state.providers.entries()){
+        let contentQueue = contentQueueManager.getUserContentQueue(caller, status);
+
+        for(cid in contentQueue.keys()) {
             if( count < 11) {
-                switch(status){
-                    case(#new){
-                        for(cid in state.contentNew.get0(pid).vals()){
-                            if( count < 11) {
-                                let voteCount = getVoteCount(cid, ?caller);
-                                switch(getContentPlus(cid, ?caller, voteCount, state)) {
-                                    case (?result) {
-                                        buf.add(result);
-                                        count := count + 1;
-                                    };
-                                    case (_) ();
-                                };
-                            };
-                        };
+                let voteCount = getVoteCount(cid, ?caller);
+                switch(getContentPlus(cid, ?caller, voteCount, state)) {
+                    case (?result) {
+                        buf.add(result);
+                        count := count + 1;
                     };
-                    case(#approved){
-                        for(cid in state.contentApproved.get0(pid).vals()){
-                            if( count < 11) {
-                                let voteCount = getVoteCount(cid, ?caller);
-                                switch(getContentPlus(cid, ?caller, voteCount, state)) {
-                                    case (?result) {
-                                        buf.add(result);
-                                        count := count + 1;
-                                    };
-                                    case (_) ();
-                                };
-                            };
-                        };
-                    };
-                    case(#rejected){
-                        for(cid in state.contentRejected.get0(pid).vals()){
-                            if( count < 11) {
-                                let voteCount = getVoteCount(cid, ?caller);
-                                switch(getContentPlus(cid, ?caller, voteCount, state)) {
-                                    case (?result) {
-                                        buf.add(result);
-                                        count := count + 1;
-                                    };
-                                    case (_) ();
-                                };
-                            };
-                        };
-                    };
+                    case (_) ();
                 };
             };
         };
@@ -208,7 +175,8 @@ module ContentModule {
         state: GlobalState.State,
         start: Nat,
         end: Nat,
-        filterVoted: Bool
+        filterVoted: Bool,
+        contentQueueManager: QueueManager.QueueManager
     ): Result.Result<[Types.ContentPlus], Text>  {
         if( start < 0 or end < 0 or start > end) {
             return #err("Invalid range");
@@ -217,23 +185,22 @@ module ContentModule {
         let items =  Buffer.Buffer<Types.Content>(0); 
         var count: Nat = 0;
         let maxReturn: Nat = end - start;
+        let contentQueue = contentQueueManager.getUserContentQueue(caller, #new);
 
-        for ( (pid, p) in state.providers.entries()) {
             // TODO: When we have randomized task generation, fetch tasks from the users task queue instead of fetching all new content
-            for(cid in state.contentNew.get0(pid).vals()) {
-                switch(state.content.get(cid)) {
-                    case (?content) {
-                        if ( filterVoted ) {
-                            let voteCount = getVoteCount(cid, ?caller);
-                            if(voteCount.hasVoted != true) {
-                                items.add(content);
-                            };
-                        } else {
+        for(cid in contentQueue.keys()) {
+            switch(state.content.get(cid)) {
+                case (?content) {
+                    if ( filterVoted ) {
+                        let voteCount = getVoteCount(cid, ?caller);
+                        if(voteCount.hasVoted != true) {
                             items.add(content);
                         };
+                    } else {
+                        items.add(content);
                     };
-                    case (_) ();
                 };
+                case (_) ();
             };
         };
 

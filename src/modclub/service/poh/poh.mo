@@ -257,7 +257,7 @@ module PohModule {
                     completedOn = -1; // -1 means not completed
                     wordList = do ?{
                         switch(state.pohChallenges.get(challengeId)!.challengeType) {
-                            case(#selfVideo) generateRandomWordList(6);
+                            case(#selfVideo) Helpers.generateRandomWordList(6, state.wordList.toArray());
                             case(_) [];
                         };
                     };
@@ -725,32 +725,6 @@ module PohModule {
             state.wordList.add("Lace");
             state.wordList.add("Gaze");
             state.wordList.add("Kill");
-        };
-
-        // range should always be greater than 3 for this implementation
-        func psuedoRandom(seed: Nat, range: Nat) : Nat {
-            // Every third number, first number decided by seed
-            return (seed + 3) % range;
-        };
-
-        func generateRandomWordList(size: Nat) : [Text] {
-            let randomWords = Buffer.Buffer<Text>(size);
-
-            // using hashmap since hashset is not available
-            let allAvailableWordIndices  = HashMap.HashMap<Int, Nat>(1, Int.equal, Int.hash);
-            for(i in Iter.range(0, state.wordList.size() - 1)) {
-                allAvailableWordIndices.put(i, 1); //value is useless here
-            };
-            // using abs to convert Int to Nat
-            var seed = Int.abs(Time.now());
-            var wordListLength = state.wordList.size();
-            while(randomWords.size() < size) {
-                seed := psuedoRandom(seed, allAvailableWordIndices.size());
-                // same word index shouldn't be chosen again
-                allAvailableWordIndices.delete(seed);
-                randomWords.add(state.wordList.get(seed));
-            };
-            randomWords.toArray();
         };
 
         public func getStableState() : PohState.PohStableState {

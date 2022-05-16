@@ -43,6 +43,7 @@ import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
 import QueueManager "./service/queue/queue";
+import QueueState "./service/queue/state";
 
 
 shared ({caller = deployer}) actor class ModClub() = this {
@@ -64,18 +65,20 @@ shared ({caller = deployer}) actor class ModClub() = this {
   stable var storageStateStable  = StorageState.emptyStableState();
   stable var retiredDataCanisterId : [Text] = [];
 
-
   stable var pohStableStateV1 = PohStateV1.emptyStableState();
   var pohEngine = POH.PohEngine(pohStableStateV1);
 
   stable var pohVoteStableState = VoteState.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
 
-  stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
+  stable var _canistergeekMonitorUD: ?Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
 
-  stable var _canistergeekLoggerUD: ? Canistergeek.LoggerUpgradeData = null;
+  stable var _canistergeekLoggerUD: ?Canistergeek.LoggerUpgradeData = null;
   private let canistergeekLogger = Canistergeek.Logger();
+
+  stable var contentQueueStateStable: ?QueueState.QueueStateStable = null;
+  private let contentQueueManager = QueueManager.QueueManager();
 
   stable var admins : List.List<Principal> = List.nil<Principal>();
   // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
@@ -236,7 +239,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Content already submitted");
     };
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
-    return ContentManager.submitTextOrHtmlContent(caller, sourceId, text, title, #text, state);
+    return ContentManager.submitTextOrHtmlContent(caller, sourceId, text, title, #text, contentQueueManager, state);
   };
 
   public shared({ caller }) func submitHtmlContent(sourceId: Text, htmlContent: Text, title: ?Text) : async Text {
@@ -247,7 +250,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
       throw Error.reject("Content already submitted");
     };
-    ContentManager.submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent, state);
+    ContentManager.submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent, contentQueueManager, state);
   };
 
   public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
@@ -258,7 +261,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Content already submitted");
     };
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
-    return ContentManager.submitImage(caller, sourceId, image, imageType, title, state);
+    return ContentManager.submitImage(caller, sourceId, image, imageType, title, contentQueueManager, state);
   };
 
   // Retreives all content for the calling Provider
@@ -276,7 +279,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    return ContentManager.getAllContent(caller, status, getVoteCount, state);
+    return ContentManager.getAllContent(caller, status, getVoteCount, contentQueueManager, state);
   };
 
 
@@ -294,7 +297,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted)){
+    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, contentQueueManager)){
       case(#err(e)) {
         throw Error.reject(e);
       };
@@ -402,7 +405,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Proof of Humanity not completed user");
     };
     var voteCount = getVoteCount(contentId, ?caller);
-    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger);
+    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger, contentQueueManager);
   };
 
   // ----------------------Token Methods------------------------------
@@ -898,7 +901,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
    var voteApproved : Nat = 0;
    var voteRejected : Nat  = 0;
    var hasVoted : Bool = false;
-    for(vid in state.content2votes.get0(contentId).vals()){
+    for(vid in state.content2votes.get0(contentId).vals()) {
       switch(state.votes.get(vid)){
         case(?v){
           if(v.decision == #approved){
@@ -947,8 +950,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
     retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
     pohStableStateV1 := pohEngine.getStableState();
     pohVoteStableState := voteManager.getStableState();
-    _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
-    _canistergeekLoggerUD := ? canistergeekLogger.preupgrade();
+    _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
+    _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
+    contentQueueStateStable := ?contentQueueManager.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -975,6 +979,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := null;
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
+    contentQueueManager.postupgrade(contentQueueStateStable);
+    contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };

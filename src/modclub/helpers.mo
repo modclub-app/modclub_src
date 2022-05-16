@@ -1,5 +1,9 @@
 import Array "mo:base/Array";
 import Blob "mo:base/Blob";
+import Buffer "mo:base/Buffer";
+import HashMap "mo:base/HashMap";
+import Int "mo:base/Int";
+import Iter "mo:base/Iter";
 import GlobalState "state";
 import Char "mo:base/Char";
 import Nat32 "mo:base/Nat32";
@@ -52,6 +56,34 @@ module Helpers {
     count := count + 1;
     state.GLOBAL_ID_MAP.put(category, count);
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
+  };
+
+  func psuedoRandom(seed: Nat, range: Nat) : Nat {
+    // Every third number, first number decided by seed
+    return (seed + 3) % range;
+  };
+
+  public func generateRandomWordList(size: Nat, wordList: [Text]) : [Text] {
+      if(wordList.size() <= size) {
+        return wordList;
+      };
+      let randomWords = Buffer.Buffer<Text>(size);
+
+      // using hashmap since hashset is not available
+      let allAvailableWordIndices  = HashMap.HashMap<Int, Nat>(1, Int.equal, Int.hash);
+      for(i in Iter.range(0, wordList.size() - 1)) {
+          allAvailableWordIndices.put(i, 1); //value is useless here
+      };
+      // using abs to convert Int to Nat
+      var seed = Int.abs(Time.now());
+      var wordListLength = wordList.size();
+      while(randomWords.size() < size) {
+          seed := psuedoRandom(seed, allAvailableWordIndices.size());
+          // same word index shouldn't be chosen again
+          allAvailableWordIndices.delete(seed);
+          randomWords.add(wordList.get(seed));
+      };
+      randomWords.toArray();
   };
   
     public func encodeBase32(content: Text) : ?Text {

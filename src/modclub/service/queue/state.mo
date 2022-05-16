@@ -7,60 +7,78 @@ import HashMap "mo:base/HashMap";
 module State {
 
     public type QueueState = {
-        newContentQueues: HashMap.HashMap<Text, Buffer.Buffer<Text>>;
-        approvedContentQueue: Buffer.Buffer<Text>;
-        rejectedContentQueue: Buffer.Buffer<Text>;
+        newContentQueues: HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>;
+        allNewContentQueue: HashMap.HashMap<Text, ?Text>;
+        approvedContentQueue: HashMap.HashMap<Text, ?Text>;
+        rejectedContentQueue: HashMap.HashMap<Text, ?Text>;
+        queueIds: Buffer.Buffer<Text>;
         userId2QueueId: HashMap.HashMap<Principal, Text>;
+        var userIndex: Int;
     };
 
     public type QueueStateStable = {
         newContentQueues: [(Text, [Text])];
+        allNewContentQueue: [Text];
         approvedContentQueue: [Text];
         rejectedContentQueue: [Text];
+        queueIds: [Text];
         userId2QueueId: [(Principal, Text)];
+        var userIndex: Int;
     };
 
     public func emptyState(): QueueState {
         return {
-            newContentQueues = HashMap.HashMap<Text, Buffer.Buffer<Text>>(1, Text.equal, Text.hash);
-            approvedContentQueue = Buffer.Buffer<Text>(1);
-            rejectedContentQueue = Buffer.Buffer<Text>(1);
+            newContentQueues = HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(1, Text.equal, Text.hash);
+            allNewContentQueue = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
+            approvedContentQueue = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
+            rejectedContentQueue = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
+            queueIds = Buffer.Buffer<Text>(1);
             userId2QueueId = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
+            var userIndex = -1;
         };
     };
 
     public func getState(stableState: QueueStateStable): QueueState {
         let state = emptyState();
         for( (qId, q) in stableState.newContentQueues.vals()) {
-            let buff = Buffer.Buffer<Text>(1);
+            let qMap = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
             for(qItem in q.vals()) {
-                buff.add(qItem);
+                qMap.put(qItem, null);
             };
-            state.newContentQueues.put(qId, buff);
+            state.newContentQueues.put(qId, qMap);
         };
-        for(package in stableState.approvedContentQueue.vals()) {
-            state.approvedContentQueue.add(package);
+        for(qItem in stableState.allNewContentQueue.vals()) {
+            state.allNewContentQueue.put(qItem, null);
         };
-        for(package in stableState.rejectedContentQueue.vals()) {
-            state.rejectedContentQueue.add(package);
+        for(qItem in stableState.approvedContentQueue.vals()) {
+            state.approvedContentQueue.put(qItem, null);
+        };
+        for(qItem in stableState.rejectedContentQueue.vals()) {
+            state.rejectedContentQueue.put(qItem, null);
+        };
+        for(qItem in stableState.queueIds.vals()) {
+            state.queueIds.add(qItem);
         };
         for( (userId, qId) in stableState.userId2QueueId.vals()) {
             state.userId2QueueId.put(userId, qId);
         };
-
+        state.userIndex := stableState.userIndex;
         return state;
     };
 
     public func getStableState(state: QueueState): QueueStateStable {
         let newContentQBuff = Buffer.Buffer<(Text, [Text])>(1);
-        for( (qId, q) in state.newContentQueues.entries()) {
-            newContentQBuff.add((qId, q.toArray()));
+        for( (qId, qMap) in state.newContentQueues.entries()) {
+            newContentQBuff.add((qId, Iter.toArray(qMap.keys())));
         };
         let stableState : QueueStateStable = {
             newContentQueues = newContentQBuff.toArray();
-            approvedContentQueue = state.approvedContentQueue.toArray();
-            rejectedContentQueue = state.rejectedContentQueue.toArray();
+            allNewContentQueue = Iter.toArray(state.allNewContentQueue.keys());
+            approvedContentQueue = Iter.toArray(state.approvedContentQueue.keys());
+            rejectedContentQueue = Iter.toArray(state.rejectedContentQueue.keys());
+            queueIds = state.queueIds.toArray();
             userId2QueueId = Iter.toArray(state.userId2QueueId.entries());
+            var userIndex = state.userIndex;
         };
         return stableState;
     };
