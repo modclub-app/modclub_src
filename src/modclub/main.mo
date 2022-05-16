@@ -32,6 +32,7 @@ import Principal "mo:base/Principal";
 import ProviderManager "./service/provider/provider";
 import Random "mo:base/Random";
 import RelObj "./data_structures/RelObj";
+import Rel "./data_structures/Rel";
 import Result "mo:base/Result";
 import State "./state";
 import StorageSolution "./service/storage/storage";
@@ -979,6 +980,31 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := null;
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
+    // Below Lines to be deleted after deployment
+    let newContentBuff = Buffer.Buffer<Text>(1);
+    for ( (pid, p) in state.providers.entries()) {
+      for(cid in state.contentNew.get0(pid).vals()){
+        newContentBuff.add(cid);
+      };
+    };
+    let approvedBuff = Buffer.Buffer<Text>(1);
+    for ( (pid, p) in state.providers.entries()) {
+      for(cid in state.contentNew.get0(pid).vals()){
+        approvedBuff.add(cid);
+      };
+    };
+    let rejectBuff = Buffer.Buffer<Text>(1);
+    for ( (pid, p) in state.providers.entries()) {
+      for(cid in state.contentNew.get0(pid).vals()){
+        rejectBuff.add(cid);
+      };
+    };
+    contentQueueManager.moveContentIds(newContentBuff.toArray(), approvedBuff.toArray(), rejectBuff.toArray());
+    // removing content Queues from main state
+    state.contentNew.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+    state.contentRejected.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+    state.contentApproved.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+    // Above Lines to be deleted after deployment
     contentQueueManager.postupgrade(contentQueueStateStable);
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
