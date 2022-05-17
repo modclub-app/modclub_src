@@ -5285,6 +5285,10 @@ button.dropdown-item.is-active {
   z-index: 40;
 }
 
+.modal.userIncompleteModal{
+  z-index: 50;
+}
+
 .modal.is-active {
   display: flex;
 }

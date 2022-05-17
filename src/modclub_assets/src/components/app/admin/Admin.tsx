@@ -268,8 +268,8 @@ const RemoveRuleModal = ({
     //setNewRules(newRules.filter((item) => item !== rule));
     let result;
     console.log(values, rule, principalID)
-    if (rule) {
-      await removeRules([rule], Principal.fromText(principalID))
+    if (rule && rule.id) {
+      await removeRules([rule.id], Principal.fromText(principalID))
         .then(async () => {
           let updatedRules = await getProviderRules(
             Principal.fromText(principalID)
@@ -292,7 +292,8 @@ const RemoveRuleModal = ({
       toggle={toggle}
       handleSubmit={onRemoveRuleFormSubmit}
     >
-      <p>Are you really sure to remove {rule}?</p>
+      <strong style={{"color":"#fff"}}>Are you really sure to remove following rule?</strong>
+      <p style={{marginTop:8}}>"{rule.description}"</p>
     </FormModal>
   );
 };
@@ -305,10 +306,10 @@ export default function Admin(args) {
   const toggleEditRules = () => setShowEditRules(!showEditRules);
 
   const [showRemoveRule, setShowRemoveRule] = useState(false);
-  const [ruleIDToRemove, setRuleIDToRemove] = useState("");
-  const toggleRemoveRule = (ruleIdToRemove) => {
+  const [ruleToRemove, setRuleToRemove] = useState({});
+  const toggleRemoveRule = (ruleToRemove) => {
     setShowRemoveRule(!showRemoveRule);
-    setRuleIDToRemove(ruleIdToRemove);
+    setRuleToRemove(ruleToRemove);
   }
 
 
@@ -584,7 +585,7 @@ export default function Admin(args) {
                         <td className="has-text-left">
                           <span
                             className="icon has-text-danger is-clickable ml-3"
-                            onClick={() => toggleRemoveRule(rule.id)}
+                            onClick={() => toggleRemoveRule(rule)}
                           >
                             {loader ? (<span className="is-loading button"></span>) : (<span className="material-icons">remove_circle</span>)}
                           </span>
@@ -678,7 +679,7 @@ export default function Admin(args) {
       {showRemoveRule && (
         <RemoveRuleModal
           toggle={toggleRemoveRule}
-          rule={ruleIDToRemove}
+          rule={ruleToRemove}
           principalID={providerIdText}
           updateState={setRules}
         />

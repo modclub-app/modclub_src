@@ -166,7 +166,7 @@ export default function Sidebar() {
                 <Dropdown
                   className="mb-5"
                   color="ghost"
-                  style={{ position: "absolute", top: "0.5em", right: "1em", maxWidth: "18em", zIndex: "999" }}
+                  style={{ position: "absolute", top: "0.5em", right: "1em", maxWidth: "18em", zIndex: 999 }}
                   icon={
                     <Icon color="white">
                       <span className="material-icons">expand_more</span>
