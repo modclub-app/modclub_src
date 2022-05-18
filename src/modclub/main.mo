@@ -989,13 +989,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
     let approvedBuff = Buffer.Buffer<Text>(1);
     for ( (pid, p) in state.providers.entries()) {
-      for(cid in state.contentNew.get0(pid).vals()){
+      for(cid in state.contentApproved.get0(pid).vals()){
         approvedBuff.add(cid);
       };
     };
     let rejectBuff = Buffer.Buffer<Text>(1);
     for ( (pid, p) in state.providers.entries()) {
-      for(cid in state.contentNew.get0(pid).vals()){
+      for(cid in state.contentRejected.get0(pid).vals()){
         rejectBuff.add(cid);
       };
     };
