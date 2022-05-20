@@ -58,6 +58,14 @@ module QueueManager {
             }
         };
 
+        public func isContentAssignedToUser(userId: Principal, contentId: Text) : Bool {
+            let queue = getUserContentQueue(userId, #new);
+            switch(queue.get(contentId)) {
+                case(null) return false;
+                case(_) return true;
+            }
+        };
+
         private func submitContentToNewQueue(contentId: Text) {
             let queueList = Helpers.generateRandomList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray());
             for(qId in queueList.vals()) {
