@@ -28,7 +28,7 @@ module ContentModule {
         state.content.put(content.id, content);
         state.textContent.put(content.id, textContent);
         state.provider2content.put(caller, content.id);
-        contentQueueManager.addContent(content.id, #new);
+        contentQueueManager.changeContentStatus(content.id, #new);
         return content.id;
     };
 
@@ -45,7 +45,7 @@ module ContentModule {
         state.content.put(content.id, content);
         state.imageContent.put(content.id, imageContent);
         state.provider2content.put(caller, content.id);
-        contentQueueManager.addContent(content.id, #new);
+        contentQueueManager.changeContentStatus(content.id, #new);
         return content.id;
     };
 

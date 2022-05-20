@@ -63,7 +63,7 @@ module Helpers {
     return (seed + 3) % range;
   };
 
-  public func generateRandomWordList(size: Nat, wordList: [Text]) : [Text] {
+  public func generateRandomList(size: Nat, wordList: [Text]) : [Text] {
       if(wordList.size() <= size) {
         return wordList;
       };

@@ -257,7 +257,7 @@ module PohModule {
                     completedOn = -1; // -1 means not completed
                     wordList = do ?{
                         switch(state.pohChallenges.get(challengeId)!.challengeType) {
-                            case(#selfVideo) Helpers.generateRandomWordList(6, state.wordList.toArray());
+                            case(#selfVideo) Helpers.generateRandomList(6, state.wordList.toArray());
                             case(_) [];
                         };
                     };

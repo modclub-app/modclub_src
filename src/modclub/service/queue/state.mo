@@ -7,13 +7,13 @@ import HashMap "mo:base/HashMap";
 module State {
 
     public type QueueState = {
-        newContentQueues: HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>;
+        var newContentQueues: HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>;
         allNewContentQueue: HashMap.HashMap<Text, ?Text>;
         approvedContentQueue: HashMap.HashMap<Text, ?Text>;
         rejectedContentQueue: HashMap.HashMap<Text, ?Text>;
         queueIds: Buffer.Buffer<Text>;
         userId2QueueId: HashMap.HashMap<Principal, Text>;
-        var userIndex: Int;
+        var lastUserQueueIndex: Int;
     };
 
     public type QueueStateStable = {
@@ -23,18 +23,18 @@ module State {
         rejectedContentQueue: [Text];
         queueIds: [Text];
         userId2QueueId: [(Principal, Text)];
-        var userIndex: Int;
+        var lastUserQueueIndex: Int;
     };
 
     public func emptyState(): QueueState {
         return {
-            newContentQueues = HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(1, Text.equal, Text.hash);
+            var newContentQueues = HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(1, Text.equal, Text.hash);
             allNewContentQueue = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
             approvedContentQueue = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
             rejectedContentQueue = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
             queueIds = Buffer.Buffer<Text>(1);
             userId2QueueId = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
-            var userIndex = -1;
+            var lastUserQueueIndex = -1;
         };
     };
 
@@ -62,7 +62,7 @@ module State {
         for( (userId, qId) in stableState.userId2QueueId.vals()) {
             state.userId2QueueId.put(userId, qId);
         };
-        state.userIndex := stableState.userIndex;
+        state.lastUserQueueIndex := stableState.lastUserQueueIndex;
         return state;
     };
 
@@ -78,7 +78,7 @@ module State {
             rejectedContentQueue = Iter.toArray(state.rejectedContentQueue.keys());
             queueIds = state.queueIds.toArray();
             userId2QueueId = Iter.toArray(state.userId2QueueId.entries());
-            var userIndex = state.userIndex;
+            var lastUserQueueIndex = state.lastUserQueueIndex;
         };
         return stableState;
     };

@@ -883,6 +883,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // return ProviderManager.getAdminProviderIDs(caller, state);
   };
 
+  public query({caller}) func shuffleContent() : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    contentQueueManager.shuffleContent();
+  };
+
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
     let now = Helpers.timeNow();
     let content : Types.Content  = {
@@ -930,12 +937,44 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
  };
 
- public shared({caller}) func rewardPoints(p: Principal, amount: Int) : async () {
+  public shared({caller}) func rewardPoints(p: Principal, amount: Int) : async () {
    if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
    tokens.rewardPoints(p, amount);
   };
+
+  // Below Lines to be deleted after deployment
+  stable var runOnce = false;
+  private func setUpContentQueue() {
+    if(not runOnce) {
+      let newContentBuff = Buffer.Buffer<Text>(1);
+      for ( (pid, p) in state.providers.entries()) {
+        for(cid in state.contentNew.get0(pid).vals()){
+          newContentBuff.add(cid);
+        };
+      };
+      let approvedBuff = Buffer.Buffer<Text>(1);
+      for ( (pid, p) in state.providers.entries()) {
+        for(cid in state.contentApproved.get0(pid).vals()){
+          approvedBuff.add(cid);
+        };
+      };
+      let rejectBuff = Buffer.Buffer<Text>(1);
+      for ( (pid, p) in state.providers.entries()) {
+        for(cid in state.contentRejected.get0(pid).vals()){
+          rejectBuff.add(cid);
+        };
+      };
+      contentQueueManager.moveContentIds(newContentBuff.toArray(), approvedBuff.toArray(), rejectBuff.toArray());
+      // removing content Queues from main state
+      state.contentNew.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+      state.contentRejected.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+      state.contentApproved.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+      runOnce := true;
+    };
+  };
+  // Above Lines to be deleted after deployment
 
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
@@ -981,29 +1020,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
     // Below Lines to be deleted after deployment
-    let newContentBuff = Buffer.Buffer<Text>(1);
-    for ( (pid, p) in state.providers.entries()) {
-      for(cid in state.contentNew.get0(pid).vals()){
-        newContentBuff.add(cid);
-      };
-    };
-    let approvedBuff = Buffer.Buffer<Text>(1);
-    for ( (pid, p) in state.providers.entries()) {
-      for(cid in state.contentApproved.get0(pid).vals()){
-        approvedBuff.add(cid);
-      };
-    };
-    let rejectBuff = Buffer.Buffer<Text>(1);
-    for ( (pid, p) in state.providers.entries()) {
-      for(cid in state.contentRejected.get0(pid).vals()){
-        rejectBuff.add(cid);
-      };
-    };
-    contentQueueManager.moveContentIds(newContentBuff.toArray(), approvedBuff.toArray(), rejectBuff.toArray());
-    // removing content Queues from main state
-    state.contentNew.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
-    state.contentRejected.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
-    state.contentApproved.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+    setUpContentQueue();
     // Above Lines to be deleted after deployment
     contentQueueManager.postupgrade(contentQueueStateStable);
     contentQueueStateStable := null;
@@ -1012,12 +1029,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   var nextRunTime = Time.now();
-  let TEN_SECOND_NANO = 10000000000;
+  let FIVE_MIN_NANO_SECS = 300000000000;
   system func heartbeat() : async () {
     if(Time.now() > nextRunTime) {
       Debug.print("Running Metrics Collection");
       canistergeekMonitor.collectMetrics();
-      nextRunTime := Time.now() + TEN_SECOND_NANO;
+      nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
     };
   };
 

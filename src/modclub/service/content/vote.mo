@@ -176,17 +176,13 @@ module ContentVotingModule {
                     finishedVote := true;
                     status := #approved;
                     decision := #approved;
-                    contentQueueManager.addContent(content.id, #approved);
-                    // state.contentNew.delete(content.providerId, content.id);
-                    // state.contentApproved.put(content.providerId, content.id);
+                    contentQueueManager.changeContentStatus(content.id, #approved);
                 } else if ( rCount >= minVotes) {
                     // Rejected
                     status := #rejected;
                     decision := #rejected;
                     finishedVote := true;
-                    contentQueueManager.addContent(content.id, #rejected);
-                    // state.contentNew.delete(content.providerId, content.id);
-                    // state.contentRejected.put(content.providerId, content.id);
+                    contentQueueManager.changeContentStatus(content.id, #rejected);
                 } else {
                     return;
                 };

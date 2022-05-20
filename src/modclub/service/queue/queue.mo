@@ -4,7 +4,6 @@ import Iter "mo:base/Iter";
 import Int "mo:base/Int";
 import Text "mo:base/Text";
 import HashMap "mo:base/HashMap";
-import QueueTypes "./types";
 import QueueState "./state";
 import Types "../../types";
 import Params "../parameters/params";
@@ -16,7 +15,7 @@ module QueueManager {
 
         var state : QueueState.QueueState = QueueState.emptyState();
 
-        public func addContent(contentId: Text, contentStatus: Types.ContentStatus) {
+        public func changeContentStatus(contentId: Text, contentStatus: Types.ContentStatus) {
             switch(contentStatus) {
                 case(#new) {
                     submitContentToNewQueue(contentId);
@@ -60,9 +59,8 @@ module QueueManager {
         };
 
         private func submitContentToNewQueue(contentId: Text) {
-            let queueList = Helpers.generateRandomWordList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray());
+            let queueList = Helpers.generateRandomList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray());
             for(qId in queueList.vals()) {
-                initializeQueue(qId);
                 let _ = do ? {
                     let q = state.newContentQueues.get(qId)!;
                     q.put(contentId, null);
@@ -72,37 +70,38 @@ module QueueManager {
         };
 
         private func submitContentToApprovedQueue(contentId: Text) {
-            for((qId, q) in state.newContentQueues.entries()) {
-                q.delete(contentId);
-            };
-            state.allNewContentQueue.delete(contentId);
+            removeContentFromNewQueue(contentId);
             state.approvedContentQueue.put(contentId, null);
         };
 
         private func submitContentToRejectedQueue(contentId: Text) {
+            removeContentFromNewQueue(contentId);
+            state.rejectedContentQueue.put(contentId, null);
+        };
+
+         private func removeContentFromNewQueue(contentId: Text) {
             for((qId, q) in state.newContentQueues.entries()) {
                 q.delete(contentId);
             };
             state.allNewContentQueue.delete(contentId);
-            state.rejectedContentQueue.put(contentId, null);
-        };
+         };
 
         private func assignUserIds2QueueId(allUserIds: [Principal]) {
-            for(i in Iter.range(0, allUserIds.size())) {
-                state.userIndex := (state.userIndex + 1) % Params.TOTAL_QUEUES;
-                if(state.queueIds.size() <= state.userIndex + 1) {
-                    let qId = "Queue: " # Int.toText(state.userIndex);
+            for(i in Iter.range(0, allUserIds.size() - 1)) {
+                state.lastUserQueueIndex := (state.lastUserQueueIndex + 1) % Params.TOTAL_QUEUES;
+                if(state.queueIds.size() <= state.lastUserQueueIndex + 1) {
+                    let qId = "Queue: " # Int.toText(state.lastUserQueueIndex);
                     state.queueIds.add(qId);
                     state.userId2QueueId.put(allUserIds.get(i), qId);
                 } else {
-                    let qId = state.queueIds.get(Int.abs(state.userIndex));
+                    let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
                     state.userId2QueueId.put(allUserIds.get(i), qId);
                 }
             };
         };
 
         private func createAllQueues() {
-            for(i in Iter.range(0, Params.TOTAL_QUEUES)) {
+            for(i in Iter.range(0, Params.TOTAL_QUEUES - 1)) {
                 let qId = "Queue: " # Int.toText(i);
                 initializeQueue(qId);
                 state.queueIds.add(qId);
@@ -111,7 +110,7 @@ module QueueManager {
 
         private func assignAllContentToQueues() {
             for(contentId in state.allNewContentQueue.keys()) {
-                let queueList = Helpers.generateRandomWordList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray());
+                let queueList = Helpers.generateRandomList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray());
                 for(qId in queueList.vals()) {
                     initializeQueue(qId);
                     let _ = do ? {
@@ -130,6 +129,13 @@ module QueueManager {
                 case(_) ();
             };
         };
+
+        public func shuffleContent() {
+            state.newContentQueues := HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(1, Text.equal, Text.hash);
+            createAllQueues();
+            assignAllContentToQueues();
+        };
+
 
         public func moveContentIds(allNewContentIds: [Text], approvedContentIds: [Text], rejectedContentIds: [Text]) {
             for(id in allNewContentIds.vals()) {
