@@ -114,6 +114,10 @@ module Token {
       addToWallet(to, amount, userPoints);
     };
 
+    public func getUserPointForUser(userId: Principal) : Int {
+      Option.get(userPoints.get(userId), 0);
+    };
+
     // Transfers tokens from the users reward wallet to their main wallet. 
     // This should be called after the grace period has passed for each content they voted on successfully.
     public func distributePendingReward(user: Principal, amount: Int) : async () {

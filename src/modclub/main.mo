@@ -737,12 +737,15 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
     let finishedVoting = voteManager.votePohContent(caller, packageId, decision, violatedRules);
     if(finishedVoting == #ok(true)) {
-      let decision = voteManager.getContentStatus(packageId);
+      Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId, #info);
+      let finalDecision = voteManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
-      if(decision == #approved) {
+      if(finalDecision == #approved) {
         pohEngine.changeChallengePackageStatus(packageId, #verified);
+        Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId # " Final decision: approved" , #info);
       } else {
         pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId # " Final decision: rejected" , #info);
       };
       for(id in votesId.vals()) {
         let vote = voteManager.getPOHVote(id);
@@ -750,14 +753,20 @@ shared ({caller = deployer}) actor class ModClub() = this {
           case(null)();
           case(?v) {
             let reward = (ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH));
-            if((v.decision == #approved and decision == #approved) or
-                (v.decision == #rejected and decision == #rejected)
+            if((v.decision == #approved and finalDecision == #approved) or
+                (v.decision == #rejected and finalDecision == #rejected)
               ) {
+               Helpers.logMessage(canistergeekLogger, "User Point before distribution: " # Int.toText(tokens.getUserPointForUser(v.userId)) , #info);
+               Helpers.logMessage(canistergeekLogger, "Distributing reward to user: " # Principal.toText(v.userId) , #info);
               //reward only some percentage
               await tokens.reward(ModClubParam.getModclubWallet(), v.userId, Float.toInt(reward));
+               Helpers.logMessage(canistergeekLogger, "User Point after distribution: " # Int.toText(tokens.getUserPointForUser(v.userId)) , #info);
             } else {
               // burn only some percentage
+              Helpers.logMessage(canistergeekLogger, "User Point before distribution: " # Int.toText(tokens.getUserPointForUser(v.userId)) , #info);
+              Helpers.logMessage(canistergeekLogger, "Burning reward from user: " # Principal.toText(v.userId) , #info);
               await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
+              Helpers.logMessage(canistergeekLogger, "User Point after distribution: " # Int.toText(tokens.getUserPointForUser(v.userId)) , #info);
             };
           };
         };
