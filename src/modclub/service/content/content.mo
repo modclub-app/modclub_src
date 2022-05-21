@@ -1,5 +1,6 @@
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
+import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
 import GlobalState "../../state";
 import Helpers "../../helpers";
@@ -68,6 +69,7 @@ module ContentModule {
             status: Types.ContentStatus,
             getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
             contentQueueManager: QueueManager.QueueManager,
+            logger: Canistergeek.Logger,
             state: GlobalState.State
         ) : [Types.ContentPlus] {
         let buf = Buffer.Buffer<Types.ContentPlus>(0);
@@ -176,6 +178,7 @@ module ContentModule {
         start: Nat,
         end: Nat,
         filterVoted: Bool,
+        logger: Canistergeek.Logger,
         contentQueueManager: QueueManager.QueueManager
     ): Result.Result<[Types.ContentPlus], Text>  {
         if( start < 0 or end < 0 or start > end) {
@@ -185,7 +188,12 @@ module ContentModule {
         let items =  Buffer.Buffer<Types.Content>(0); 
         var count: Nat = 0;
         let maxReturn: Nat = end - start;
+        Debug.print( "Retrieveing #new Queue for user: " # Principal.toText(caller));
+        Helpers.logMessage(logger, "Retrieveing #new Queue for user: " # Principal.toText(caller), #info);
         let contentQueue = contentQueueManager.getUserContentQueue(caller, #new);
+        Helpers.logMessage(logger, "Retrieved #new Queue for user: " # Principal.toText(caller), #info);
+        Debug.print( "Retrieved #new Queue for user: " # Principal.toText(caller));
+
 
             // TODO: When we have randomized task generation, fetch tasks from the users task queue instead of fetching all new content
         for(cid in contentQueue.keys()) {
@@ -218,7 +226,7 @@ module ContentModule {
             };
             index := index + 1;
         };
-
+        Debug.print( "Sending getTasks Resposnse for user: " # Principal.toText(caller));
         return #ok(result.toArray());
     };
 

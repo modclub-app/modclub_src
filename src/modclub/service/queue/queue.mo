@@ -1,19 +1,23 @@
 import Buffer "mo:base/Buffer";
-import Option "mo:base/Option";
-import Iter "mo:base/Iter";
-import Int "mo:base/Int";
-import Text "mo:base/Text";
+import Canistergeek "../../canistergeek/canistergeek";
 import HashMap "mo:base/HashMap";
-import QueueState "./state";
-import Types "../../types";
-import Params "../parameters/params";
+import Debug "mo:base/Debug";
 import Helpers "../../helpers";
+import Int "mo:base/Int";
+import Iter "mo:base/Iter";
+import Option "mo:base/Option";
+import Params "../parameters/params";
+import Principal "mo:base/Principal";
+import QueueState "./state";
+import Text "mo:base/Text";
+import Types "../../types";
 
 module QueueManager {
 
     public class QueueManager() {
 
         var state : QueueState.QueueState = QueueState.emptyState();
+        var logger: ?Canistergeek.Logger = null;
 
         public func changeContentStatus(contentId: Text, contentStatus: Types.ContentStatus) {
             switch(contentStatus) {
@@ -39,8 +43,10 @@ module QueueManager {
                 case(#rejected) {
                     return state.rejectedContentQueue;
                 };
-                case(_) {
+                case(#new) {
                     let qId = getUserQueueId(userId);
+                    Debug.print( "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
+                    logMessage(logger, "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
                     return Option.get(state.newContentQueues.get(qId), HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash));
                 };
             };
@@ -49,16 +55,20 @@ module QueueManager {
         private func getUserQueueId(userId: Principal) : Text {
             switch(state.userId2QueueId.get(userId)) {
                 case(null) {
+                    Debug.print( "No qId was assigned to user: " # Principal.toText(userId));
+                    logMessage(logger, "No qId was assigned to user: " # Principal.toText(userId));
                     assignUserIds2QueueId([userId]);
-                    return getUserQueueId(userId);
+                    return Option.get(state.userId2QueueId.get(userId), "");
                 };
                 case(?qId) {
+                    Debug.print( "QueueId: " # qId # "was already assigned to user: " # Principal.toText(userId));
+                    logMessage(logger, "QueueId: " # qId # "was already assigned to user: " # Principal.toText(userId));
                     return qId;
                 };
             }
         };
 
-        public func isContentAssignedToUser(userId: Principal, contentId: Text) : Bool {
+        public func isContentAssignedToUser(userId: Principal, contentId: Text, logger: Canistergeek.Logger) : Bool {
             let queue = getUserContentQueue(userId, #new);
             switch(queue.get(contentId)) {
                 case(null) return false;
@@ -96,15 +106,14 @@ module QueueManager {
 
         private func assignUserIds2QueueId(allUserIds: [Principal]) {
             for(i in Iter.range(0, allUserIds.size() - 1)) {
+                Debug.print("Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
+                            # " lastUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
                 state.lastUserQueueIndex := (state.lastUserQueueIndex + 1) % Params.TOTAL_QUEUES;
-                if(state.queueIds.size() <= state.lastUserQueueIndex + 1) {
-                    let qId = "Queue: " # Int.toText(state.lastUserQueueIndex);
-                    state.queueIds.add(qId);
-                    state.userId2QueueId.put(allUserIds.get(i), qId);
-                } else {
-                    let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
-                    state.userId2QueueId.put(allUserIds.get(i), qId);
-                }
+                Debug.print("Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
+                            # " currentUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
+                let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
+                Debug.print( "QueueId: " # qId # " and state.lastUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
+                state.userId2QueueId.put(allUserIds.get(i), qId);
             };
         };
 
@@ -158,7 +167,7 @@ module QueueManager {
         };
 
         // It assumes that all contentIds are already moved into this class
-        public func postupgrade(_stableStateOpt : ?QueueState.QueueStateStable) {
+        public func postupgrade(_stableStateOpt : ?QueueState.QueueStateStable, _logger: Canistergeek.Logger) {
             switch(_stableStateOpt) {
                 case(null) {
                     createAllQueues();
@@ -167,11 +176,18 @@ module QueueManager {
                 case(?_stableState) {
                     state := QueueState.getState(_stableState);
                 };
-            }
+            };
+            logger := ?_logger;
         };
 
         public func preupgrade() : QueueState.QueueStateStable {
             QueueState.getStableState(state);
+        };
+
+        private func logMessage(logger: ?Canistergeek.Logger, message: Text) {
+            let _ = do?{
+                Helpers.logMessage(logger!, message, #info);
+            };     
         };
     };
 };

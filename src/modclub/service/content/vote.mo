@@ -60,7 +60,7 @@ module ContentVotingModule {
         logger: Canistergeek.Logger,
         contentQueueManager: QueueManager.QueueManager 
         ) : async Text {
-        if(not contentQueueManager.isContentAssignedToUser(userId, contentId)) {
+        if(not contentQueueManager.isContentAssignedToUser(userId, contentId, logger)) {
             throw Error.reject("User voted on Unauthorized Content.");
         };
         let voteId = "vote-" # Principal.toText(userId) # contentId;

@@ -280,7 +280,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    return ContentManager.getAllContent(caller, status, getVoteCount, contentQueueManager, state);
+    return ContentManager.getAllContent(caller, status, getVoteCount, contentQueueManager, canistergeekLogger, state);
   };
 
 
@@ -298,7 +298,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, contentQueueManager)){
+    Helpers.logMessage(canistergeekLogger, "Getting Tasks", #info);
+    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager)){
       case(#err(e)) {
         throw Error.reject(e);
       };
@@ -986,6 +987,35 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
   // Above Lines to be deleted after deployment
 
+  public shared func stableQState() : async [(Principal, Text)] {
+    let qStableState = contentQueueManager.preupgrade();
+    qStableState.userId2QueueId;
+  };
+
+  public shared func stableQIds() : async [Text] {
+    let qStableState = contentQueueManager.preupgrade();
+    qStableState.queueIds;
+  };
+
+  public shared func allNewContent() : async [Text] {
+    let qStableState = contentQueueManager.preupgrade();
+    qStableState.allNewContentQueue;
+  };
+
+  public shared func newContentQueues() : async [(Text, [Text])] {
+    let qStableState = contentQueueManager.preupgrade();
+    qStableState.newContentQueues;
+  };
+
+  public shared func lastUserQueueIndex() : async Int {
+    let qStableState = contentQueueManager.preupgrade();
+    qStableState.lastUserQueueIndex;
+  };
+
+  public shared func runON() : async Bool {
+    runOnce;
+  };
+
   // Upgrade logic / code
   stable var stateShared : State.StateShared = State.emptyShared();
 
@@ -1032,7 +1062,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // Below Lines to be deleted after deployment
     setUpContentQueue();
     // Above Lines to be deleted after deployment
-    contentQueueManager.postupgrade(contentQueueStateStable);
+    contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
@@ -1042,7 +1072,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   let FIVE_MIN_NANO_SECS = 300000000000;
   system func heartbeat() : async () {
     if(Time.now() > nextRunTime) {
-      Debug.print("Running Metrics Collection");
+      Debug.print("Running Metrics Collection.");
       canistergeekMonitor.collectMetrics();
       nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
     };
