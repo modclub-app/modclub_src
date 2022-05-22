@@ -65,7 +65,10 @@ const Task = ({ task, setVoted }) => {
           )}
           {'htmlContent' in task.contentType && (
             <div className="htmlContent content preview">
-              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text) }} />
+              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text, {
+                allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ])
+                })
+              }} />
             </div>
           )}
 
