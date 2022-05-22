@@ -1,10 +1,11 @@
 import Buffer "mo:base/Buffer";
 import Canistergeek "../../canistergeek/canistergeek";
-import HashMap "mo:base/HashMap";
 import Debug "mo:base/Debug";
+import HashMap "mo:base/HashMap";
 import Helpers "../../helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
+import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Params "../parameters/params";
 import Principal "mo:base/Principal";
@@ -44,7 +45,8 @@ module QueueManager {
                     return state.rejectedContentQueue;
                 };
                 case(#new) {
-                    let qId = getUserQueueId(userId);
+                    // there will always be queue assigned to user
+                    let qId = Option.get(state.userId2QueueId.get(userId), "");
                     Debug.print( "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
                     logMessage(logger, "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
                     return Option.get(state.newContentQueues.get(qId), HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash));
@@ -52,21 +54,21 @@ module QueueManager {
             };
         };
 
-        private func getUserQueueId(userId: Principal) : Text {
-            switch(state.userId2QueueId.get(userId)) {
-                case(null) {
-                    Debug.print( "No qId was assigned to user: " # Principal.toText(userId));
-                    logMessage(logger, "No qId was assigned to user: " # Principal.toText(userId));
-                    assignUserIds2QueueId([userId]);
-                    return Option.get(state.userId2QueueId.get(userId), "");
-                };
-                case(?qId) {
-                    Debug.print( "QueueId: " # qId # "was already assigned to user: " # Principal.toText(userId));
-                    logMessage(logger, "QueueId: " # qId # "was already assigned to user: " # Principal.toText(userId));
-                    return qId;
-                };
-            }
-        };
+        // private func getUserQueueId(userId: Principal) : Text {
+        //     switch(state.userId2QueueId.get(userId)) {
+        //         case(null) {
+        //             Debug.print( "No qId was assigned to user: " # Principal.toText(userId));
+        //             logMessage(logger, "No qId was assigned to user: " # Principal.toText(userId));
+        //             assignUserIds2QueueId([userId]);
+        //             return Option.get(state.userId2QueueId.get(userId), "");
+        //         };
+        //         case(?qId) {
+        //             Debug.print( "QueueId: " # qId # "was already assigned to user: " # Principal.toText(userId));
+        //             logMessage(logger, "QueueId: " # qId # "was already assigned to user: " # Principal.toText(userId));
+        //             return qId;
+        //         };
+        //     }
+        // };
 
         public func isContentAssignedToUser(userId: Principal, contentId: Text, logger: Canistergeek.Logger) : Bool {
             let queue = getUserContentQueue(userId, #new);
@@ -104,12 +106,15 @@ module QueueManager {
             state.allNewContentQueue.delete(contentId);
          };
 
-        private func assignUserIds2QueueId(allUserIds: [Principal]) {
+        public func assignUserIds2QueueId(allUserIds: [Principal]) {
             for(i in Iter.range(0, allUserIds.size() - 1)) {
-                Debug.print("Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
-                            # " lastUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
+                // Debug.print("Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
+                //             # " lastUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
                 state.lastUserQueueIndex := (state.lastUserQueueIndex + 1) % Params.TOTAL_QUEUES;
                 Debug.print("Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
+                            # " currentUserQueueIndex: " # Int.toText(state.lastUserQueueIndex)
+                            # "size: " # Nat.toText(state.queueIds.size()));
+                logMessage(logger, "Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
                             # " currentUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
                 let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
                 Debug.print( "QueueId: " # qId # " and state.lastUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
@@ -117,7 +122,12 @@ module QueueManager {
             };
         };
 
+        public func getQIds() : [Text] {
+            state.queueIds.toArray();
+        };
+
         private func createAllQueues() {
+            // Emptying the queueIds
             for(i in Iter.range(0, Params.TOTAL_QUEUES - 1)) {
                 let qId = "Queue: " # Int.toText(i);
                 initializeQueue(qId);
@@ -149,10 +159,11 @@ module QueueManager {
 
         public func shuffleContent() {
             state.newContentQueues := HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(1, Text.equal, Text.hash);
+            // removing all element from queueIds to generate new ones
+            while(state.queueIds.removeLast() != null) {};
             createAllQueues();
             assignAllContentToQueues();
         };
-
 
         public func moveContentIds(allNewContentIds: [Text], approvedContentIds: [Text], rejectedContentIds: [Text]) {
             for(id in allNewContentIds.vals()) {
@@ -169,10 +180,7 @@ module QueueManager {
         // It assumes that all contentIds are already moved into this class
         public func postupgrade(_stableStateOpt : ?QueueState.QueueStateStable, _logger: Canistergeek.Logger) {
             switch(_stableStateOpt) {
-                case(null) {
-                    createAllQueues();
-                    assignAllContentToQueues();
-                };
+                case(null) ();
                 case(?_stableState) {
                     state := QueueState.getState(_stableState);
                 };

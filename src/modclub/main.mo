@@ -319,6 +319,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // Give new users MOD points
     await tokens.transfer(ModClubParam.getModclubWallet(), caller, ModClubParam.DEFAULT_TEST_TOKENS);
     await storageSolution.registerModerators([caller]);
+    contentQueueManager.assignUserIds2QueueId([caller]);
     return profile;
   };
 
@@ -894,11 +895,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // return ProviderManager.getAdminProviderIDs(caller, state);
   };
 
-  public query({caller}) func shuffleContent() : async () {
+  public shared({caller}) func shuffleContent() : async () {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
     contentQueueManager.shuffleContent();
+    contentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
   };
 
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
@@ -982,12 +984,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
       state.contentNew.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
       state.contentRejected.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
       state.contentApproved.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+      contentQueueManager.shuffleContent();
       runOnce := true;
     };
+    contentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
   };
   // Above Lines to be deleted after deployment
 
-  public shared func stableQState() : async [(Principal, Text)] {
+  public query func stableQState() : async [(Principal, Text)] {
     let qStableState = contentQueueManager.preupgrade();
     qStableState.userId2QueueId;
   };
@@ -997,9 +1001,22 @@ shared ({caller = deployer}) actor class ModClub() = this {
     qStableState.queueIds;
   };
 
+  public shared func assignUserIds2QueueId() : async () {
+    contentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
+  };
+
+  public shared func getQIds() : async [Text] {
+    contentQueueManager.getQIds();
+  };
+
   public shared func allNewContent() : async [Text] {
     let qStableState = contentQueueManager.preupgrade();
     qStableState.allNewContentQueue;
+  };
+
+  public shared func newContentQueuesqId(qId: Nat) : async [Text] {
+    let qStableState = contentQueueManager.preupgrade();
+      qStableState.newContentQueues.get(qId).1;
   };
 
   public shared func newContentQueues() : async [(Text, [Text])] {
@@ -1059,10 +1076,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := null;
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
+    
+    contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
     // Below Lines to be deleted after deployment
     setUpContentQueue();
     // Above Lines to be deleted after deployment
-    contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
@@ -1072,7 +1090,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   let FIVE_MIN_NANO_SECS = 300000000000;
   system func heartbeat() : async () {
     if(Time.now() > nextRunTime) {
-      Debug.print("Running Metrics Collection.");
+      Debug.print("Running Metrics Collection");
       canistergeekMonitor.collectMetrics();
       nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
     };
