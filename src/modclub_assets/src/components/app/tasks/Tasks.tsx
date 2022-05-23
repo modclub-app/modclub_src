@@ -31,6 +31,7 @@ const Task = ({ task, setVoted }) => {
   }
 
   const fetchRules = async () => {
+    console.log(task);
     const rules = await getProviderRules(task.providerId);
     setRules(rules);
   };

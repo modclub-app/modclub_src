@@ -11,6 +11,9 @@ module {
     public let STAKE_REWARD_PERCENTAGE = 0.1; // Reward is based on a percentage of the min stake
 
     public let JWT_VALIDITY_MILLI = 86400000; // 1 day
+
+    public let TOTAL_QUEUES = 100;
+    public let ASSIGN_CONTENT_QUEUES = 70;
     
     public func getModclubWallet() : Principal {
         return Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai")
