@@ -32,6 +32,7 @@ import Principal "mo:base/Principal";
 import ProviderManager "./service/provider/provider";
 import Random "mo:base/Random";
 import RelObj "./data_structures/RelObj";
+import Rel "./data_structures/Rel";
 import Result "mo:base/Result";
 import State "./state";
 import StorageSolution "./service/storage/storage";
@@ -42,6 +43,9 @@ import Token "./token";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
+import QueueManager "./service/queue/queue";
+import QueueState "./service/queue/state";
+
 
 shared ({caller = deployer}) actor class ModClub() = this {
 
@@ -62,18 +66,20 @@ shared ({caller = deployer}) actor class ModClub() = this {
   stable var storageStateStable  = StorageState.emptyStableState();
   stable var retiredDataCanisterId : [Text] = [];
 
-
   stable var pohStableStateV1 = PohStateV1.emptyStableState();
   var pohEngine = POH.PohEngine(pohStableStateV1);
 
   stable var pohVoteStableState = VoteState.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
 
-  stable var _canistergeekMonitorUD: ? Canistergeek.UpgradeData = null;
+  stable var _canistergeekMonitorUD: ?Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
 
-  stable var _canistergeekLoggerUD: ? Canistergeek.LoggerUpgradeData = null;
+  stable var _canistergeekLoggerUD: ?Canistergeek.LoggerUpgradeData = null;
   private let canistergeekLogger = Canistergeek.Logger();
+
+  stable var contentQueueStateStable: ?QueueState.QueueStateStable = null;
+  private let contentQueueManager = QueueManager.QueueManager();
 
   stable var admins : List.List<Principal> = List.nil<Principal>();
   // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
@@ -234,7 +240,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Content already submitted");
     };
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
-    return ContentManager.submitTextOrHtmlContent(caller, sourceId, text, title, #text, state);
+    return ContentManager.submitTextOrHtmlContent(caller, sourceId, text, title, #text, contentQueueManager, state);
   };
 
   public shared({ caller }) func submitHtmlContent(sourceId: Text, htmlContent: Text, title: ?Text) : async Text {
@@ -245,7 +251,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
       throw Error.reject("Content already submitted");
     };
-    ContentManager.submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent, state);
+    ContentManager.submitTextOrHtmlContent(caller, sourceId, htmlContent, title, #htmlContent, contentQueueManager, state);
   };
 
   public shared({ caller }) func submitImage(sourceId: Text, image: [Nat8], imageType: Text, title: ?Text ) : async Text {
@@ -256,7 +262,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Content already submitted");
     };
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
-    return ContentManager.submitImage(caller, sourceId, image, imageType, title, state);
+    return ContentManager.submitImage(caller, sourceId, image, imageType, title, contentQueueManager, state);
   };
 
   // Retreives all content for the calling Provider
@@ -274,7 +280,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    return ContentManager.getAllContent(caller, status, getVoteCount, state);
+    return ContentManager.getAllContent(caller, status, getVoteCount, contentQueueManager, canistergeekLogger, state);
   };
 
 
@@ -292,7 +298,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted)){
+    Helpers.logMessage(canistergeekLogger, "Getting Tasks", #info);
+    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager)){
       case(#err(e)) {
         throw Error.reject(e);
       };
@@ -312,6 +319,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // Give new users MOD points
     await tokens.transfer(ModClubParam.getModclubWallet(), caller, ModClubParam.DEFAULT_TEST_TOKENS);
     await storageSolution.registerModerators([caller]);
+    contentQueueManager.assignUserIds2QueueId([caller]);
     return profile;
   };
 
@@ -416,8 +424,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
+    
     var voteCount = getVoteCount(contentId, ?caller);
-    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger);
+    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger, contentQueueManager);
   };
 
   // ----------------------Token Methods------------------------------
@@ -747,12 +756,15 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
     let finishedVoting = voteManager.votePohContent(caller, packageId, decision, violatedRules);
     if(finishedVoting == #ok(true)) {
-      let decision = voteManager.getContentStatus(packageId);
+      Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId, #info);
+      let finalDecision = voteManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
-      if(decision == #approved) {
+      if(finalDecision == #approved) {
         pohEngine.changeChallengePackageStatus(packageId, #verified);
+        Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId # " Final decision: approved" , #info);
       } else {
         pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId # " Final decision: rejected" , #info);
       };
       for(id in votesId.vals()) {
         let vote = voteManager.getPOHVote(id);
@@ -760,14 +772,20 @@ shared ({caller = deployer}) actor class ModClub() = this {
           case(null)();
           case(?v) {
             let reward = (ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH));
-            if((v.decision == #approved and decision == #approved) or
-                (v.decision == #rejected and decision == #rejected)
+            if((v.decision == #approved and finalDecision == #approved) or
+                (v.decision == #rejected and finalDecision == #rejected)
               ) {
+               Helpers.logMessage(canistergeekLogger, "User Point before distribution: " # Int.toText(tokens.getUserPointForUser(v.userId)) , #info);
+               Helpers.logMessage(canistergeekLogger, "Distributing reward to user: " # Principal.toText(v.userId) , #info);
               //reward only some percentage
               await tokens.reward(ModClubParam.getModclubWallet(), v.userId, Float.toInt(reward));
+               Helpers.logMessage(canistergeekLogger, "User Point after distribution: " # Int.toText(tokens.getUserPointForUser(v.userId)) , #info);
             } else {
               // burn only some percentage
+              Helpers.logMessage(canistergeekLogger, "User Point before distribution: " # Int.toText(tokens.getUserPointForUser(v.userId)) , #info);
+              Helpers.logMessage(canistergeekLogger, "Burning reward from user: " # Principal.toText(v.userId) , #info);
               await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
+              Helpers.logMessage(canistergeekLogger, "User Point after distribution: " # Int.toText(tokens.getUserPointForUser(v.userId)) , #info);
             };
           };
         };
@@ -894,6 +912,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // return ProviderManager.getAdminProviderIDs(caller, state);
   };
 
+  public shared({caller}) func shuffleContent() : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    contentQueueManager.shuffleContent();
+    contentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
+  };
+
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
     let now = Helpers.timeNow();
     let content : Types.Content  = {
@@ -913,7 +939,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
    var voteApproved : Nat = 0;
    var voteRejected : Nat  = 0;
    var hasVoted : Bool = false;
-    for(vid in state.content2votes.get0(contentId).vals()){
+    for(vid in state.content2votes.get0(contentId).vals()) {
       switch(state.votes.get(vid)){
         case(?v){
           if(v.decision == #approved){
@@ -941,11 +967,81 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
  };
 
- public shared({caller}) func rewardPoints(p: Principal, amount: Int) : async () {
+  public shared({caller}) func rewardPoints(p: Principal, amount: Int) : async () {
    if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
    tokens.rewardPoints(p, amount);
+  };
+
+  // Below Lines to be deleted after deployment
+  stable var runOnce = false;
+  private func setUpContentQueue() {
+    if(not runOnce) {
+      let newContentBuff = Buffer.Buffer<Text>(1);
+      for ( (pid, p) in state.providers.entries()) {
+        for(cid in state.contentNew.get0(pid).vals()){
+          newContentBuff.add(cid);
+        };
+      };
+      let approvedBuff = Buffer.Buffer<Text>(1);
+      for ( (pid, p) in state.providers.entries()) {
+        for(cid in state.contentApproved.get0(pid).vals()){
+          approvedBuff.add(cid);
+        };
+      };
+      let rejectBuff = Buffer.Buffer<Text>(1);
+      for ( (pid, p) in state.providers.entries()) {
+        for(cid in state.contentRejected.get0(pid).vals()){
+          rejectBuff.add(cid);
+        };
+      };
+      contentQueueManager.moveContentIds(newContentBuff.toArray(), approvedBuff.toArray(), rejectBuff.toArray());
+      // removing content Queues from main state
+      state.contentNew.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+      state.contentRejected.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+      state.contentApproved.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
+      contentQueueManager.shuffleContent();
+      runOnce := true;
+    };
+  };
+  // Above Lines to be deleted after deployment
+
+  // Methods to debug and look into Queues state
+  public query({caller}) func userId2QueueId() : async [(Principal, Text)] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    let qStableState = contentQueueManager.preupgrade();
+    qStableState.userId2QueueId;
+  };
+
+  public shared({caller}) func allNewContent() : async [Text] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    let qStableState = contentQueueManager.preupgrade();
+    qStableState.allNewContentQueue;
+  };
+
+  public shared({caller}) func newContentQueuesByqId(qId: Nat) : async [Text] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    let qStableState = contentQueueManager.preupgrade();
+    qStableState.newContentQueues.get(qId).1;
+  };
+
+  public shared({caller}) func newContentQueuesqIdCount() : async [Nat] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    let qStableState = contentQueueManager.preupgrade();
+      let res = Buffer.Buffer<Nat>(1);
+      for( (id, q) in qStableState.newContentQueues.vals()) {
+        res.add(q.size());
+      };
+    return res.toArray();
   };
 
   // Upgrade logic / code
@@ -962,8 +1058,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
     retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
     pohStableStateV1 := pohEngine.getStableState();
     pohVoteStableState := voteManager.getStableState();
-    _canistergeekMonitorUD := ? canistergeekMonitor.preupgrade();
-    _canistergeekLoggerUD := ? canistergeekLogger.preupgrade();
+    _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
+    _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
+    contentQueueStateStable := ?contentQueueManager.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -989,17 +1086,23 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := null;
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
+    
+    contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
+    // Below Lines to be deleted after deployment
+    setUpContentQueue();
+    // Above Lines to be deleted after deployment
+    contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 
   var nextRunTime = Time.now();
-  let TEN_SECOND_NANO = 10000000000;
+  let FIVE_MIN_NANO_SECS = 300000000000;
   system func heartbeat() : async () {
     if(Time.now() > nextRunTime) {
       Debug.print("Running Metrics Collection");
       canistergeekMonitor.collectMetrics();
-      nextRunTime := Time.now() + TEN_SECOND_NANO;
+      nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
     };
   };
 

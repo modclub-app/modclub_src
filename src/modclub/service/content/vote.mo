@@ -12,6 +12,7 @@ import Types "../../types";
 import Tokens "../../token";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
+import QueueManager "../queue/queue";
 
 
 module ContentVotingModule {
@@ -56,8 +57,12 @@ module ContentVotingModule {
         voteCount: Types.VoteCount,
         tokens : Tokens.Tokens,
         state: GlobalState.State, 
-        logger: Canistergeek.Logger 
+        logger: Canistergeek.Logger,
+        contentQueueManager: QueueManager.QueueManager 
         ) : async Text {
+        if(not contentQueueManager.isContentAssignedToUser(userId, contentId, logger)) {
+            throw Error.reject("User voted on Unauthorized Content.");
+        };
         let voteId = "vote-" # Principal.toText(userId) # contentId;
         switch(state.votes.get(voteId)){
             case(?v){
@@ -124,7 +129,7 @@ module ContentVotingModule {
                 state.votes.put(vote.id, vote);
 
                 // Evaluate and send notification to provider
-                await evaluateVotes(content, voteApproved, voteRejected, tokens, state,   logger );
+                await evaluateVotes(content, voteApproved, voteRejected, tokens, state,   logger, contentQueueManager );
                 return "Vote successful";
             };
             case(_)( throw Error.reject("Content does not exist"));
@@ -159,7 +164,8 @@ module ContentVotingModule {
         rCount: Nat,
         tokens: Tokens.Tokens,
         state: GlobalState.State,
-        logger: Canistergeek.Logger 
+        logger: Canistergeek.Logger,
+        contentQueueManager: QueueManager.QueueManager 
         ) : async() {
         var finishedVote = false;
         var status : Types.ContentStatus = #new;
@@ -173,15 +179,13 @@ module ContentVotingModule {
                     finishedVote := true;
                     status := #approved;
                     decision := #approved;
-                    state.contentNew.delete(content.providerId, content.id);
-                    state.contentApproved.put(content.providerId, content.id);
+                    contentQueueManager.changeContentStatus(content.id, #approved);
                 } else if ( rCount >= minVotes) {
                     // Rejected
                     status := #rejected;
                     decision := #rejected;
                     finishedVote := true;
-                    state.contentNew.delete(content.providerId, content.id);
-                    state.contentRejected.put(content.providerId, content.id);
+                    contentQueueManager.changeContentStatus(content.id, #rejected);
                 } else {
                     return;
                 };

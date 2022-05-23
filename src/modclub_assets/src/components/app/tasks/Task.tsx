@@ -41,6 +41,7 @@ export default function Task() {
 
   const fetchTask = async () => {
     const content = await getContent(taskId);
+    console.log(content);
     setTask(content);
   }
 
@@ -87,8 +88,12 @@ export default function Task() {
                   <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
                 )}
                 {'htmlContent' in task.contentType && (
+                  
                   <div className="htmlContent content">
-                    <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text) }} />
+                    <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text, {
+                      allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ])
+                      })
+                    }} />
                   </div>
                 )}
 

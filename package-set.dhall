@@ -26,6 +26,16 @@ let
       , version = "v0.2.0"
       , dependencies = ["base"]
       },
+      { name = "io"
+      , repo = "https://github.com/aviate-labs/io.mo"
+      , version = "v0.3.1"
+      , dependencies = ["base"]
+      },
+      { name = "rand"
+      , repo = "https://github.com/aviate-labs/rand.mo"
+      , version = "v0.2.2"
+      , dependencies = ["base", "io"]
+      },
   ] : List Package
 
 let
