@@ -987,50 +987,44 @@ shared ({caller = deployer}) actor class ModClub() = this {
       contentQueueManager.shuffleContent();
       runOnce := true;
     };
-    contentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
   };
   // Above Lines to be deleted after deployment
 
-  public query func stableQState() : async [(Principal, Text)] {
+  // Methods to debug and look into Queues state
+  public query({caller}) func userId2QueueId() : async [(Principal, Text)] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     let qStableState = contentQueueManager.preupgrade();
     qStableState.userId2QueueId;
   };
 
-  public shared func stableQIds() : async [Text] {
-    let qStableState = contentQueueManager.preupgrade();
-    qStableState.queueIds;
-  };
-
-  public shared func assignUserIds2QueueId() : async () {
-    contentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
-  };
-
-  public shared func getQIds() : async [Text] {
-    contentQueueManager.getQIds();
-  };
-
-  public shared func allNewContent() : async [Text] {
+  public shared({caller}) func allNewContent() : async [Text] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     let qStableState = contentQueueManager.preupgrade();
     qStableState.allNewContentQueue;
   };
 
-  public shared func newContentQueuesqId(qId: Nat) : async [Text] {
+  public shared({caller}) func newContentQueuesByqId(qId: Nat) : async [Text] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     let qStableState = contentQueueManager.preupgrade();
-      qStableState.newContentQueues.get(qId).1;
+    qStableState.newContentQueues.get(qId).1;
   };
 
-  public shared func newContentQueues() : async [(Text, [Text])] {
+  public shared({caller}) func newContentQueuesqIdCount() : async [Nat] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     let qStableState = contentQueueManager.preupgrade();
-    qStableState.newContentQueues;
-  };
-
-  public shared func lastUserQueueIndex() : async Int {
-    let qStableState = contentQueueManager.preupgrade();
-    qStableState.lastUserQueueIndex;
-  };
-
-  public shared func runON() : async Bool {
-    runOnce;
+      let res = Buffer.Buffer<Nat>(1);
+      for( (id, q) in qStableState.newContentQueues.vals()) {
+        res.add(q.size());
+      };
+    return res.toArray();
   };
 
   // Upgrade logic / code

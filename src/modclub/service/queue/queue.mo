@@ -11,6 +11,9 @@ import Params "../parameters/params";
 import Principal "mo:base/Principal";
 import QueueState "./state";
 import Text "mo:base/Text";
+import LFSR "mo:rand/LFSR";
+import Time "mo:base/Time";
+import Nat8 "mo:base/Nat8";
 import Types "../../types";
 
 module QueueManager {
@@ -54,22 +57,6 @@ module QueueManager {
             };
         };
 
-        // private func getUserQueueId(userId: Principal) : Text {
-        //     switch(state.userId2QueueId.get(userId)) {
-        //         case(null) {
-        //             Debug.print( "No qId was assigned to user: " # Principal.toText(userId));
-        //             logMessage(logger, "No qId was assigned to user: " # Principal.toText(userId));
-        //             assignUserIds2QueueId([userId]);
-        //             return Option.get(state.userId2QueueId.get(userId), "");
-        //         };
-        //         case(?qId) {
-        //             Debug.print( "QueueId: " # qId # "was already assigned to user: " # Principal.toText(userId));
-        //             logMessage(logger, "QueueId: " # qId # "was already assigned to user: " # Principal.toText(userId));
-        //             return qId;
-        //         };
-        //     }
-        // };
-
         public func isContentAssignedToUser(userId: Principal, contentId: Text, logger: Canistergeek.Logger) : Bool {
             let queue = getUserContentQueue(userId, #new);
             switch(queue.get(contentId)) {
@@ -79,7 +66,7 @@ module QueueManager {
         };
 
         private func submitContentToNewQueue(contentId: Text) {
-            let queueList = Helpers.generateRandomList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray());
+            let queueList = Helpers.generateRandomList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray(), Helpers.getRandomFeedGenerator());
             for(qId in queueList.vals()) {
                 let _ = do ? {
                     let q = state.newContentQueues.get(qId)!;
@@ -108,12 +95,7 @@ module QueueManager {
 
         public func assignUserIds2QueueId(allUserIds: [Principal]) {
             for(i in Iter.range(0, allUserIds.size() - 1)) {
-                // Debug.print("Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
-                //             # " lastUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
                 state.lastUserQueueIndex := (state.lastUserQueueIndex + 1) % Params.TOTAL_QUEUES;
-                Debug.print("Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
-                            # " currentUserQueueIndex: " # Int.toText(state.lastUserQueueIndex)
-                            # "size: " # Nat.toText(state.queueIds.size()));
                 logMessage(logger, "Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
                             # " currentUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
                 let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
@@ -136,8 +118,9 @@ module QueueManager {
         };
 
         private func assignAllContentToQueues() {
+            let randomFeedGenerator = Helpers.getRandomFeedGenerator();
             for(contentId in state.allNewContentQueue.keys()) {
-                let queueList = Helpers.generateRandomList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray());
+                let queueList = Helpers.generateRandomList(Params.ASSIGN_CONTENT_QUEUES, state.queueIds.toArray(), randomFeedGenerator);
                 for(qId in queueList.vals()) {
                     initializeQueue(qId);
                     let _ = do ? {

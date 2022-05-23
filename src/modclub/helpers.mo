@@ -1,25 +1,28 @@
 import Array "mo:base/Array";
+import Base32 "mo:encoding/Base32";
 import Blob "mo:base/Blob";
 import Buffer "mo:base/Buffer";
+import Canistergeek "./canistergeek/canistergeek";
+import Char "mo:base/Char";
+import GlobalState "state";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
+import Int64 "mo:base/Int64";
 import Iter "mo:base/Iter";
-import GlobalState "state";
-import Char "mo:base/Char";
+import LFSR "mo:rand/LFSR";
+import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
 import Nat64 "mo:base/Nat64";
-import Int64 "mo:base/Int64";
+import Nat8 "mo:base/Nat8";
+import Nat16 "mo:base/Nat16";
 import Prim "mo:prim";
+import Principal "mo:base/Principal";
 import SHA256 "mo:crypto/SHA/SHA256";
 import Source "mo:uuid/async/SourceV4";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Principal "mo:base/Principal";
-import Nat "mo:base/Nat";
 import Types "./types";
 import UUID "mo:uuid/UUID";
-import Base32 "mo:encoding/Base32";
-import Canistergeek "./canistergeek/canistergeek";
 
 module Helpers {
 
@@ -58,12 +61,7 @@ module Helpers {
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
-  func psuedoRandom(seed: Nat, range: Nat) : Nat {
-    // Every third number, first number decided by seed
-    return (seed + 3) % range;
-  };
-
-  public func generateRandomList(size: Nat, wordList: [Text]) : [Text] {
+  public func generateRandomList(size: Nat, wordList: [Text], randomFeed: LFSR.LFSR32) : [Text] {
       if(wordList.size() <= size) {
         return wordList;
       };
@@ -75,15 +73,21 @@ module Helpers {
           allAvailableWordIndices.put(i, 1); //value is useless here
       };
       // using abs to convert Int to Nat
-      var seed = Int.abs(Time.now());
+      var seed = Int.abs(Time.now()) % 255;
       var wordListLength = wordList.size();
+      // let feed = LFSR.LFSR8(?Nat8.fromNat(seed));
       while(randomWords.size() < size) {
-          seed := psuedoRandom(seed, allAvailableWordIndices.size());
+          seed := Nat32.toNat(randomFeed.next().0) % allAvailableWordIndices.size();
           // same word index shouldn't be chosen again
           allAvailableWordIndices.delete(seed);
           randomWords.add(wordList.get(seed));
       };
       randomWords.toArray();
+  };
+
+  public func getRandomFeedGenerator() : LFSR.LFSR32 {
+      var seed = Int.abs(Time.now()) % 65536;
+      let feed = LFSR.LFSR32(?Nat32.fromNat(seed));
   };
   
     public func encodeBase32(content: Text) : ?Text {
