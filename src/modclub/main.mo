@@ -174,6 +174,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
   // todo: Require cylces on provider registration, add provider imageURl, description
   public shared({ caller }) func registerProvider(name: Text, description: Text, image: ?Types.Image) : async Text {
     Debug.print("registerProvider caller: " # Principal.toText(caller));
+    switch(state.providersWhitelist.get(caller)) {
+      case(null) {
+         Helpers.logMessage(canistergeekLogger, "registerProvider - Provider not in allow list with provider ID: " # Principal.toText(caller), #info);
+        return "Not in providers whitelist";
+      };
+      case(?_) ();
+    };
     ProviderManager.registerProvider(caller, name, description, image, state, canistergeekLogger);
   };
 
@@ -225,6 +232,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
     ProviderManager.subscribe(caller, sub, state, canistergeekLogger);
   };
+
+  public shared({caller}) func addToAllowList(providerId: Principal): async() {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+   await ProviderManager.addToAllowList(providerId, state, canistergeekLogger);
+  };
+  
 
   // ----------------------Content Related Methods------------------------------
   public query({caller}) func getContent(id: Text) : async ?Types.ContentPlus {

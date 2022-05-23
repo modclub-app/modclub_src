@@ -393,4 +393,23 @@ module ProviderModule {
       };
       return #ok();
     };
+
+    public func addToAllowList(
+      providerId: Principal,
+      state: GlobalState.State,
+      logger: Canistergeek.Logger 
+    ) : async () {
+    switch(state.providersWhitelist.get(providerId)) {
+      case (?result) {
+        Helpers.logMessage(logger, "addToAllowList - Provider " # Principal.toText(providerId) # " already added to allow list ", #info);  
+        throw Error.reject("Provider already added to allow list");
+        return;
+      };
+      case (_) {
+        Helpers.logMessage(logger, "addToAllowList - Provider " # Principal.toText(providerId) # "added to allow list ", #info); 
+        state.providersWhitelist.put(providerId, true);
+      };
+    };
+  };
+  
 };

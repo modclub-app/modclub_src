@@ -31,7 +31,7 @@ module {
       #Unauthorized;
       #ProviderIsRegistered;
       #NotFound;
-      #RequiresWhitelisting;
+      #NotInAllowList;
       #InvalidProvider;
       #InvalidContentType;
       #InvalidContentStatus;
