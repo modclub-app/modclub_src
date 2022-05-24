@@ -1019,6 +1019,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({caller}) func setRandomization(isRandom: Bool) : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     randomizationEnabled := isRandom;
   };
 
