@@ -80,6 +80,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   stable var contentQueueStateStable: ?QueueState.QueueStateStable = null;
   private let contentQueueManager = QueueManager.QueueManager();
+  stable var randomizationEnabled = true;
+
+  // stable var pohContentQueueStateStable: ?QueueState.QueueStateStable = null;
+  // private let pohContentQueueManager = QueueManager.QueueManager();
 
   stable var admins : List.List<Principal> = List.nil<Principal>();
   // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
@@ -295,9 +299,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    return ContentManager.getAllContent(caller, status, getVoteCount, contentQueueManager, canistergeekLogger, state);
+    return ContentManager.getAllContent(caller, status, getVoteCount, contentQueueManager, canistergeekLogger, state, randomizationEnabled);
   };
-
 
   public query({ caller }) func getTasks(
         start: Nat,
@@ -314,7 +317,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Proof of Humanity not completed user");
     };
     Helpers.logMessage(canistergeekLogger, "Getting Tasks", #info);
-    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager)){
+    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager, randomizationEnabled)){
       case(#err(e)) {
         throw Error.reject(e);
       };
@@ -424,7 +427,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
     
     var voteCount = getVoteCount(contentId, ?caller);
-    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger, contentQueueManager);
+    await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger, contentQueueManager, randomizationEnabled);
   };
 
   // ----------------------Token Methods------------------------------
@@ -1030,16 +1033,48 @@ shared ({caller = deployer}) actor class ModClub() = this {
     qStableState.newContentQueues.get(qId).1;
   };
 
-  public shared({caller}) func newContentQueuesqIdCount() : async [Nat] {
+  public shared({caller}) func setRandomization(isRandom: Bool) : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    randomizationEnabled := isRandom;
+  };
+
+  public shared({caller}) func newContentQueuesqIdCount() : async ([Nat], [Nat]) {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
     let qStableState = contentQueueManager.preupgrade();
-      let res = Buffer.Buffer<Nat>(1);
-      for( (id, q) in qStableState.newContentQueues.vals()) {
-        res.add(q.size());
+    let res = Buffer.Buffer<Nat>(1);
+    for( (id, q) in qStableState.newContentQueues.vals()) {
+      res.add(q.size());
+    };
+
+    let userInQueueCount =  HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+    for((userId, qId) in qStableState.userId2QueueId.vals()) {
+      switch(userInQueueCount.get(qId)) {
+        case(null) {
+          userInQueueCount.put(qId, 1);
+        };
+        case(?count) {
+          userInQueueCount.put(qId, count + 1);
+        };
       };
-    return res.toArray();
+    };
+
+    let userCount = Buffer.Buffer<Nat>(1);
+    for(i in Iter.range(0, ModClubParam.TOTAL_QUEUES - 1)) {
+      let qId = "Queue: " # Int.toText(i);
+      switch(userInQueueCount.get(qId)) {
+        case(null) {
+          userCount.add(0);
+        };
+        case(?count) {
+          userCount.add(count);
+        };
+      };
+    };
+    return (res.toArray(), userCount.toArray());
   };
 
   // Upgrade logic / code
@@ -1059,6 +1094,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
     contentQueueStateStable := ?contentQueueManager.preupgrade();
+    // pohContentQueueStateStable := ?pohContentQueueManager.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -1087,6 +1123,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekLoggerUD := null;
     
     contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
+    // pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
+
     // Below Lines to be deleted after deployment
     setUpContentQueue();
     // Above Lines to be deleted after deployment

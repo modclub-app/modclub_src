@@ -58,9 +58,10 @@ module ContentVotingModule {
         tokens : Tokens.Tokens,
         state: GlobalState.State, 
         logger: Canistergeek.Logger,
-        contentQueueManager: QueueManager.QueueManager 
+        contentQueueManager: QueueManager.QueueManager,
+        randomizationEnabled: Bool
         ) : async Text {
-        if(not contentQueueManager.isContentAssignedToUser(userId, contentId, logger)) {
+        if(not contentQueueManager.isContentAssignedToUser(userId, contentId, logger, randomizationEnabled) ) {
             throw Error.reject("User voted on Unauthorized Content.");
         };
         let voteId = "vote-" # Principal.toText(userId) # contentId;

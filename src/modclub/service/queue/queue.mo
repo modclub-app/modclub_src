@@ -39,7 +39,7 @@ module QueueManager {
         // This function returns a queue for reading purpose
         // Don't modify/remove any element of the queue while calling this method
         // Call addContent method with arguments if you want to remove
-        public func getUserContentQueue(userId: Principal, status: Types.ContentStatus) : HashMap.HashMap<Text, ?Text> {
+        public func getUserContentQueue(userId: Principal, status: Types.ContentStatus, randomizationEnabled: Bool) : HashMap.HashMap<Text, ?Text> {
             switch(status) {
                 case(#approved) {
                     return state.approvedContentQueue;
@@ -48,6 +48,9 @@ module QueueManager {
                     return state.rejectedContentQueue;
                 };
                 case(#new) {
+                    if(not randomizationEnabled) {
+                        return state.allNewContentQueue;
+                    };
                     // there will always be queue assigned to user
                     let qId = Option.get(state.userId2QueueId.get(userId), "");
                     Debug.print( "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
@@ -57,8 +60,8 @@ module QueueManager {
             };
         };
 
-        public func isContentAssignedToUser(userId: Principal, contentId: Text, logger: Canistergeek.Logger) : Bool {
-            let queue = getUserContentQueue(userId, #new);
+        public func isContentAssignedToUser(userId: Principal, contentId: Text, logger: Canistergeek.Logger, randomizationEnabled: Bool) : Bool {
+            let queue = getUserContentQueue(userId, #new, randomizationEnabled);
             switch(queue.get(contentId)) {
                 case(null) return false;
                 case(_) return true;
