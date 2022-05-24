@@ -70,11 +70,12 @@ module ContentModule {
             getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
             contentQueueManager: QueueManager.QueueManager,
             logger: Canistergeek.Logger,
-            state: GlobalState.State
+            state: GlobalState.State,
+            randomizationEnabled: Bool
         ) : [Types.ContentPlus] {
         let buf = Buffer.Buffer<Types.ContentPlus>(0);
         var count = 0;
-        let contentQueue = contentQueueManager.getUserContentQueue(caller, status);
+        let contentQueue = contentQueueManager.getUserContentQueue(caller, status, randomizationEnabled);
 
         for(cid in contentQueue.keys()) {
             if( count < 11) {
@@ -179,7 +180,8 @@ module ContentModule {
         end: Nat,
         filterVoted: Bool,
         logger: Canistergeek.Logger,
-        contentQueueManager: QueueManager.QueueManager
+        contentQueueManager: QueueManager.QueueManager,
+        randomizationEnabled: Bool
     ): Result.Result<[Types.ContentPlus], Text>  {
         if( start < 0 or end < 0 or start > end) {
             return #err("Invalid range");
@@ -190,7 +192,7 @@ module ContentModule {
         let maxReturn: Nat = end - start;
         Debug.print( "Retrieveing #new Queue for user: " # Principal.toText(caller));
         Helpers.logMessage(logger, "Retrieveing #new Queue for user: " # Principal.toText(caller), #info);
-        let contentQueue = contentQueueManager.getUserContentQueue(caller, #new);
+        let contentQueue = contentQueueManager.getUserContentQueue(caller, #new, randomizationEnabled);
         Helpers.logMessage(logger, "Retrieved #new Queue for user: " # Principal.toText(caller), #info);
         Debug.print( "Retrieved #new Queue for user: " # Principal.toText(caller));
 
