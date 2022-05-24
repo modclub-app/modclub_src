@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Switch, Route, Link, useHistory } from "react-router-dom";
 import { Columns, Modal, Heading } from "react-bulma-components";
 import NotAuthenticatedModal from './modals/NotAuthenticated';
-import UserIncompleteModal from './modals/UserIncompleteModal'; 
+import UserIncompleteModal from './modals/UserIncompleteModal';
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
@@ -22,7 +22,7 @@ import { getUserFromCanister } from "../../utils/api";
 
 export default function ModclubApp() {
   const history = useHistory();
-  const { isAuthenticated, isAuthReady, user } = useAuth();
+  const { isAuthenticated, isAuthReady, user, selectedProvider, providerIdText, providers } = useAuth();
   const [status, setStatus] = useState(null);
   const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([])
 
@@ -48,6 +48,9 @@ export default function ModclubApp() {
         isAuthenticated && user && initialCall();
       }
     }
+    /* if (isAuthReady && isAuthenticated && user && user.email == "") {
+      history.push("/signup");
+    } */
   }, [user, isAuthenticated]);
 
   if (isAuthReady && !isAuthenticated) return (
@@ -56,10 +59,11 @@ export default function ModclubApp() {
 
   return (
     <>
-      {!user?.role?.hasOwnProperty("admin") && status && status != "verified" &&
+      {/* {!user?.role?.hasOwnProperty("admin") && status && status != "verified" && */}
+      {user && status && status != "verified" && !selectedProvider &&
         <UserIncompleteModal status={status} rejectionReasons={rejectionReasons} />
       }
-      <Columns className="container" marginless multiline={false}>
+      <Columns className="container" marginless multiline={false} style={{ position: 'static' }}>
         <Sidebar />
 
         <Columns.Column id="main-content" className="mt-6 pb-6">
@@ -85,12 +89,24 @@ export default function ModclubApp() {
             <Route exact path="/app/leaderboard">
               <Leaderboard />
             </Route>
-            {user && user?.role?.hasOwnProperty("admin") ? (
+            {/* {user && user?.role?.hasOwnProperty("admin") ? (
               <Route exact path="/app/admin">
-                <Admin />
+                <Admin selectedProvider={selectedProvider} />
               </Route>
             ) : (
               ""
+            )} */}
+            {user ? (
+              <Route exact path="/app/admin">
+                {
+                  selectedProvider ? (<Admin selectedProvider={selectedProvider} providerIdText={providerIdText} />) : (<Tasks />)
+                }
+                {/*  <Admin selectedProvider={selectedProvider} /> */}
+              </Route>
+            ) : (
+              <Route exact path="/app">
+                <Tasks />
+              </Route>
             )}
           </Switch>
         </Columns.Column>

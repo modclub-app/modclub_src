@@ -11,7 +11,7 @@ export default function UserIncompleteModal({
   rejectionReasons: Array<String>;
 }) {
   return (
-    <Modal show={true} showClose={false}>
+    <Modal show={true} showClose={false} className="userIncompleteModal">
       <Modal.Card backgroundColor="circles">
         <Modal.Card.Body>
           <Heading subtitle>Proof of Humanity</Heading>

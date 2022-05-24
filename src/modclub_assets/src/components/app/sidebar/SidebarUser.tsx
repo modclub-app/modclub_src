@@ -28,7 +28,7 @@ const DropdownLabel = ({ pic, user, toggle }) => {
         />
       </Media>
       <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center has-text-left">
-        <Heading size={6}  marginless>
+        <Heading size={6} marginless>
           {snippet(user.userName, 15)}
         </Heading>
         <p className="has-text-white is-size-7">
