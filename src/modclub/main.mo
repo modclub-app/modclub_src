@@ -177,7 +177,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     switch(state.providersWhitelist.get(caller)) {
       case(null) {
          Helpers.logMessage(canistergeekLogger, "registerProvider - Provider not in allow list with provider ID: " # Principal.toText(caller), #info);
-        return "Not in providers whitelist";
+        return "Caller " # Principal.toText(caller) # " not in allow list";
       };
       case(?_) ();
     };
