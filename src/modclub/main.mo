@@ -489,6 +489,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
   };
 
+  // TODO Delete this function
+  public shared({ caller}) func adminTransferTokens(to: Principal, amount: Nat) : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    await tokens.transfer(ModClubParam.getModclubWallet(), to, amount);
+  };
+
   //----------------------POH Methods For Providers------------------------------
 
   public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {

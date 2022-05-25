@@ -92,10 +92,20 @@ module ContentModule {
         return Array.sort(buf.toArray(), compareContent);
     };
 
-    func compareContent(a : Types.Content, b: Types.Content) : Order.Order {
+    func sortAsc(a : Types.Content, b: Types.Content) : Order.Order {
       if(a.updatedAt > b.updatedAt) {
         #greater;
       } else if ( a.updatedAt < b.updatedAt) {
+        #less;
+      } else {
+        #equal;
+      }
+    };
+
+    func sortDesc(a : Types.Content, b: Types.Content) : Order.Order {
+      if(a.updatedAt < b.updatedAt) {
+        #greater;
+      } else if ( a.updatedAt > b.updatedAt) {
         #less;
       } else {
         #equal;
@@ -215,7 +225,7 @@ module ContentModule {
         };
 
         var index: Nat = 0;
-        for(content in Array.sort(items.toArray(), compareContent).vals()) {
+        for(content in Array.sort(items.toArray(), sortAsc).vals()) {
             if(index >= start and index <= end  and count < maxReturn) {
                 let voteCount = getVoteCount(content.id, ?caller);
                 switch(getContentPlus(content.id, ?caller, voteCount, state)) {
