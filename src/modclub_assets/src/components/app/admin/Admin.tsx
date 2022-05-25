@@ -408,9 +408,6 @@ export default function Admin(args) {
       ) : (
         ""
       )}
-      <Notification color="danger" textAlign="center">
-        Administrator Dashboard DEMO
-      </Notification>
       {selectedProvider != null &&
         <Columns>
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
