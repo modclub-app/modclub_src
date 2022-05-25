@@ -13,6 +13,7 @@ import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
+import UserPhrases from "./UserPhrases";
 import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
 
 const Confirmation = () => {
@@ -102,8 +103,11 @@ export default function NewPohProfile({ match }) {
               <Card.Content>                
                 <Switch>
                   <Route path={`${match.path}/:challenge-profile-pic`} component={ProfilePic}/>
-                  <Route path={`${match.path}/:challenge-user-video`}>
+                  {/* <Route path={`${match.path}/:challenge-user-video`}>
                     {steps && <UserVideo steps={steps} />}
+                  </Route> */}
+                  <Route path={`${match.path}/:challenge-user-video`}>
+                    {steps && <UserPhrases steps={steps} />}
                   </Route>
                   <Route path={`${match.path}/:confirm`} component={Confirmation}/>
                 </Switch>
