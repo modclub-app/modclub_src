@@ -203,7 +203,7 @@ export async function addRules(
 ): Promise<void> {
   var testActor = await getMC();
   console.log(rules);
-  if(rules[0] != undefined) 
+  if (rules[0] != undefined)
     return (await getMC()).addRules(rules, [providerId]);
 }
 

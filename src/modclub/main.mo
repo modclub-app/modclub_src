@@ -178,6 +178,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
   // todo: Require cylces on provider registration, add provider imageURl, description
   public shared({ caller }) func registerProvider(name: Text, description: Text, image: ?Types.Image) : async Text {
     Debug.print("registerProvider caller: " # Principal.toText(caller));
+    switch(state.providersWhitelist.get(caller)) {
+      case(null) {
+         Helpers.logMessage(canistergeekLogger, "registerProvider - Provider not in allow list with provider ID: " # Principal.toText(caller), #info);
+        return "Caller " # Principal.toText(caller) # " not in allow list";
+      };
+      case(?_) ();
+    };
     ProviderManager.registerProvider(caller, name, description, image, state, canistergeekLogger);
   };
 
@@ -229,6 +236,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
     let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
     ProviderManager.subscribe(caller, sub, state, canistergeekLogger);
   };
+
+  public shared({caller}) func addToAllowList(providerId: Principal): async() {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+   await ProviderManager.addToAllowList(providerId, state, canistergeekLogger);
+  };
+  
 
   // ----------------------Content Related Methods------------------------------
   public query({caller}) func getContent(id: Text) : async ?Types.ContentPlus {
@@ -311,7 +326,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
     };
   };
-  
+
   // ----------------------Moderator Methods------------------------------
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Types.Image) : async Types.Profile {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -350,6 +365,23 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   public query func getAllProfiles() : async [Types.Profile] {
     return ModeratorManager.getAllProfiles(state);
+  };
+
+  public func convertAllToModerator() : async (){
+    var allProfiles = ModeratorManager.getAllProfiles(state);
+    for(user in allProfiles.vals()){
+      if(user.role == #admin){
+        state.profiles.put(user.id, {
+            id = user.id;
+            userName = user.userName;
+            email = user.email;
+            pic = user.pic;
+            role = #moderator;
+            createdAt = user.createdAt;
+            updatedAt = Helpers.timeNow();
+          });
+      }
+    };
   };
 
   public query func getModeratorLeaderboard(start: Nat, end: Nat) : async [Types.ModeratorLeaderboard] {
@@ -455,6 +487,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
       Helpers.logMessage(canistergeekLogger, "Distributing reward for " # Principal.toText(p) # " For amount: " # Int.toText(h.pendingRewards), #info);
       await tokens.distributePendingReward(p, h.pendingRewards);
     };
+  };
+
+  // TODO Delete this function
+  public shared({ caller}) func adminTransferTokens(to: Principal, amount: Nat) : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    await tokens.transfer(ModClubParam.getModclubWallet(), to, amount);
   };
 
   //----------------------POH Methods For Providers------------------------------
@@ -874,13 +914,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return ProviderManager.getProviderAdmins(providerId, state);
   };
 
-  public shared({ caller }) func removeProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeRemoved: Principal) 
+  public shared({ caller }) func removeProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeRemoved: Principal)
   : async Types.ProviderResult {
 
     return await ProviderManager.removeProviderAdmin(providerId, providerAdminPrincipalIdToBeRemoved, caller, state, admins, canistergeekLogger);
   };
 
-  public shared({ caller }) func editProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeEdited: Principal, newUserName: Text) 
+  public shared({ caller }) func editProviderAdmin(providerId: Principal, providerAdminPrincipalIdToBeEdited: Principal, newUserName: Text)
   : async Types.ProviderResult {
 
     return await ProviderManager.editProviderAdmin(providerId, providerAdminPrincipalIdToBeEdited, newUserName, caller, admins, state);
@@ -1132,7 +1172,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     Debug.print("MODCLUB POSTUPGRADE");
     Debug.print("MODCLUB POSTUPGRADE");
     state := State.toState(stateShared);
-
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
 

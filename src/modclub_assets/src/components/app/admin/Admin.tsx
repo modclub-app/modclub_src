@@ -29,7 +29,7 @@ import stakedImg from "../../../../assets/staked.svg";
 import { Principal } from "@dfinity/principal";
 import AdminIdentity from "../../external/AdminIdentity";
 
-const EditAppModal = ({ toggle }) => {
+const EditAppModal = ({ toggle, selectedProvider }) => {
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit parent!", values);
     const { address, amount } = values;
@@ -37,7 +37,7 @@ const EditAppModal = ({ toggle }) => {
   };
 
   return (
-    <FormModal title="Edit App" toggle={toggle} handleSubmit={onFormSubmit}>
+    <FormModal title="Edit App" toggle={toggle} selectedProvider={selectedProvider} handleSubmit={onFormSubmit}>
       <div className="field">
         <div className="control">
           <Field
@@ -46,6 +46,7 @@ const EditAppModal = ({ toggle }) => {
             type="text"
             className="input"
             placeholder="App Name"
+            initialValue={!!selectedProvider ? selectedProvider.name : ""}
           />
         </div>
       </div>
@@ -57,6 +58,7 @@ const EditAppModal = ({ toggle }) => {
             component="textarea"
             className="textarea"
             placeholder="App Description"
+            initialValue={!!selectedProvider ? selectedProvider.description : ""}
           />
         </div>
       </div>
@@ -68,23 +70,11 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
   const [newRules, setNewRules] = useState(rules);
   const [loader, setLoader] = useState(false);
   let rulesBeingEdited = {};
+
+  let addNewRuleField = [{ id: 1, description: "" }];
+  const [newRulesFieldArr, setNewRulesFieldArr] = useState(addNewRuleField);
+
   console.log("EDIT principalID", principalID)
-  const remove = async (rule) => {
-    console.log(rule);
-    setLoader(true);
-    setNewRules(newRules.filter((item) => item !== rule));
-    await removeRules([rule], Principal.fromText(principalID))
-      .then(async () => {
-          let updatedRules = await getProviderRules(
-          Principal.fromText(principalID)
-        );
-        console.log(updatedRules);
-        updateState(updatedRules);
-        setNewRules(updatedRules);
-      })
-      .catch((e) => console.log(e))
-      .finally(()=> setLoader(false));      
-  };
 
   // const add = async (rules) => {
   //   console.log(rules);
@@ -94,22 +84,46 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
 
   const addToUpdateRule = (id: any, description: Text) => {
     if (id && description) {
-      rulesBeingEdited[id.toString()] = description ;
+      rulesBeingEdited[id.toString()] = description;
     };
     console.log(rulesBeingEdited);
 
   }
 
+  const createNewAddRuleField = (e) => {
+    e.preventDefault();
+    setNewRulesFieldArr(nfr => {
+      return [
+        ...nfr, { id: newRulesFieldArr.length + 1, description: "" }
+      ];
+    });
+  }
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    const index = e.target.id;
+    setNewRulesFieldArr(s => {
+      const newArr = s.slice();
+      newArr[index].description = e.target.value;
+
+      return newArr;
+    });
+  };
+
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit values", values);
     console.log("parent !!! onFormSubmit newRules", newRules);
     console.log("PRincipla", principalID);
+    let newRulesToAdd = [];
+    for (const [key, value] of Object.entries(values)) {
+      if (key.split("_")[0] == "newRule" && value !== "") {
+        newRulesToAdd.push(value);
+      }
+    }
 
-    const { newRule } = values;
     let result;
-    console.log(newRule, Principal.fromText(principalID));
-    await addRules([newRule], Principal.fromText(principalID))
-      .then (async () => {
+    await addRules(newRulesToAdd, Principal.fromText(principalID))
+      .then(async () => {
         let updateRulePromise = [];
         for (let principalID in rulesBeingEdited) {
           updateRulePromise.push(updateRule(rulesBeingEdited[principalID], Principal.fromText(principalID)));
@@ -129,46 +143,28 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
         console.log(e);
         result = e.message;
       });
-      rulesBeingEdited = {};
-      return result;
+    rulesBeingEdited = {};
+    return result;
   };
 
   return (
-    <FormModal title="Edit Rules" toggle={toggle} handleSubmit={onFormSubmit} loader={loader} formStyle={{ maxHeight: '500px', overflow: 'auto' }}>
-      <div className="field level">
-        <Field
-          name="newRule"
-          component="input"
-          type="text"
-          className="input"
-          placeholder="Add New Restriction"
-        />
-
-        {/* <span className="icon has-text-success ml-3" onClick={() => [add(values.newRule), values.newRule = null]}>
-          {values.newRule && <span className="material-icons is-clickable">add_circle</span>}
-        </span> */}
-
-        <span className="icon has-text-success ml-3">
-          <span className="material-icons">add_circle</span>
-        </span>
-      </div>
-      {newRules.map((rule) => (
-        <div key={rule.id} className="field level">
+    <FormModal title="Add Rules" toggle={toggle} handleSubmit={onFormSubmit} loader={loader} formStyle={{ maxHeight: '500px', overflow: 'auto' }}>
+      {newRulesFieldArr.map((rule, idx) => (
+        <div className="field level" key={rule.id}>
           <Field
-            name={rule.description}
+            name={"newRule_" + idx.toString()}
             component="input"
+            id={idx}
             type="text"
             className="input"
-            placeholder={rule.description}
+            placeholder="Add New Restriction"
+            onBlur={handleChange}
             initialValue={rule.description}
-            onBlur={(e) => addToUpdateRule(rule.id, e.target.value)}
           />
-          <span
-            className="icon has-text-danger is-clickable ml-3"
-            onClick={() => remove(rule.id)}
-          >
-            <span className="material-icons">remove_circle</span>
-          </span>
+          {(idx == newRulesFieldArr.length - 1) ?
+            (<span className="icon has-text-success ml-3">
+              <span className="material-icons" onClick={createNewAddRuleField}>add_circle</span>
+            </span>) : ("")}
         </div>
       ))}
     </FormModal>
@@ -197,9 +193,9 @@ const EditModeratorSettingsModal = ({ toggle, principalID, settings, minVotes, m
     setMinVotes(parseInt(values.minVotes));
     setMinTokens(parseInt(values.minTokens));
     console.log("test2");
-    return "Moderator settings updated successfully";    
+    return "Moderator settings updated successfully";
   };
-console.log("SETTINGS", settings);
+  console.log("SETTINGS", settings);
   return (
     <FormModal
       title="Edit Moderator Settings"
@@ -261,12 +257,61 @@ console.log("SETTINGS", settings);
   );
 };
 
-export default function Admin() {
+const RemoveRuleModal = ({
+  toggle,
+  rule,
+  principalID,
+  updateState
+}) => {
+  const onRemoveRuleFormSubmit = async (values: any) => {
+    //setLoader(true);
+    //setNewRules(newRules.filter((item) => item !== rule));
+    let result;
+    console.log(values, rule, principalID)
+    if (rule && rule.id) {
+      await removeRules([rule.id], Principal.fromText(principalID))
+        .then(async () => {
+          let updatedRules = await getProviderRules(
+            Principal.fromText(principalID)
+          );
+          console.log(updatedRules);
+          updateState(updatedRules);
+          result = "Rule Removed Successfully!"
+        })
+        .catch((e) => { console.log(e); result = e.message })
+        .finally(() => console.log("removed"));
+      return result;
+    } else {
+      result = "Error in removing rule. RuleID is not provided."
+    }
+  };
+
+  return (
+    <FormModal
+      title="Remove rule"
+      toggle={toggle}
+      handleSubmit={onRemoveRuleFormSubmit}
+    >
+      <strong style={{"color":"#fff"}}>Are you really sure to remove following rule?</strong>
+      <p style={{marginTop:8}}>"{rule.description}"</p>
+    </FormModal>
+  );
+};
+
+export default function Admin(args) {
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
 
   const [showEditRules, setShowEditRules] = useState(false);
   const toggleEditRules = () => setShowEditRules(!showEditRules);
+
+  const [showRemoveRule, setShowRemoveRule] = useState(false);
+  const [ruleToRemove, setRuleToRemove] = useState({});
+  const toggleRemoveRule = (ruleToRemove) => {
+    setShowRemoveRule(!showRemoveRule);
+    setRuleToRemove(ruleToRemove);
+  }
+
 
   const [showModeratorSettings, setShowModeratorSettings] = useState(false);
   const toggleModeratorSettings = () =>
@@ -276,7 +321,9 @@ export default function Admin() {
 
   const [providers, setProviders] = useState([]);
 
-  const [selectedProvider, setSelectedProvider] = useState(null);
+  /* const [selectedProvider, setSelectedProvider] = useState(null); */
+
+  const selectedProvider = args.selectedProvider;
 
   const [showModal, setShowModal] = useState(true);
 
@@ -284,13 +331,18 @@ export default function Admin() {
 
   const [minVotes, setMinVotes] = useState(0);
   const [minTokens, setMinTokens] = useState(0);
+  /* if(selectedProvider){
+    setMinVotes(selectedProvider.settings.minVotes ? parseInt(selectedProvider.settings.minVotes) : 0);
+    setMinTokens(selectedProvider.settings.minStaked ? parseInt(selectedProvider.settings.minStaked) : 0);
+    setRules(selectedProvider.rules);
+  } */
 
   useEffect(() => {
-    console.log(0);
-    let adminInit = async () => {
-      console.log(1);
+    //console.log(0);
+    let adminInit = () => {
+      /* console.log(1);
       let adminProviders = await getAdminProviderIDs();
-      console.log(adminProviders);      
+      console.log(adminProviders);
       console.log(2);
       let providerListPromise = [];
       for (let provider of adminProviders) {
@@ -301,11 +353,28 @@ export default function Admin() {
       console.log(4, providerList);
       setProviders(providerList);
       console.log(5);
-      setProviderIdText(adminProviders[0].toText());
+      setProviderIdText(adminProviders[0].toText()); */
+      console.log("minVotes", minVotes);
+
+      if (selectedProvider) {
+        setMinVotes(selectedProvider.settings.minVotes ? parseInt(selectedProvider.settings.minVotes) : 0);
+        setMinTokens(selectedProvider.settings.minStaked ? parseInt(selectedProvider.settings.minStaked) : 0);
+        setRules(selectedProvider.rules);
+      }
+      if (args.providerIdText) {
+        console.log("providerIdTextFromDropDown", args.providerIdText);
+
+        setProviderIdText(args.providerIdText);
+      }
     };
     adminInit();
   }, []);
   const toggle = () => setShowModal(false);
+
+
+
+  const [loader, setLoader] = useState(false);
+  const [newRules, setNewRules] = useState(rules);
   return (
     <>
       {selectedProvider == null && providers != [] ? (
@@ -338,10 +407,7 @@ export default function Admin() {
         </Modal>
       ) : (
         ""
-      )}      
-      <Notification color="danger" textAlign="center">
-        Administrator Dashboard DEMO
-      </Notification>
+      )}
       {selectedProvider != null &&
         <Columns>
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
@@ -504,7 +570,7 @@ export default function Admin() {
               <Card.Header>
                 <Card.Header.Title textSize={5}>Rules</Card.Header.Title>
                 <Button color="dark" onClick={toggleEditRules}>
-                  Edit Rules
+                  Add Rules
                 </Button>
               </Card.Header>
               <Card.Content>
@@ -513,6 +579,14 @@ export default function Admin() {
                     {rules.map((rule) => (
                       <tr key={rule.id}>
                         <td className="has-text-left">{rule.description}</td>
+                        <td className="has-text-left">
+                          <span
+                            className="icon has-text-danger is-clickable ml-3"
+                            onClick={() => toggleRemoveRule(rule)}
+                          >
+                            {loader ? (<span className="is-loading button"></span>) : (<span className="material-icons">remove_circle</span>)}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -575,9 +649,9 @@ export default function Admin() {
         </Columns>
       }
 
-      <TrustedIdentities provider={providerIdText} selectedProvider={selectedProvider}/>
+      <TrustedIdentities provider={providerIdText} selectedProvider={selectedProvider} />
 
-      {showEditApp && <EditAppModal toggle={toggleEditApp} />}
+      {showEditApp && <EditAppModal toggle={toggleEditApp} selectedProvider={selectedProvider} />}
 
       {showEditRules && (
         <EditRulesModal
@@ -598,6 +672,28 @@ export default function Admin() {
           setMinTokens={setMinTokens}
         />
       )}
+
+      {showRemoveRule && (
+        <RemoveRuleModal
+          toggle={toggleRemoveRule}
+          rule={ruleToRemove}
+          principalID={providerIdText}
+          updateState={setRules}
+        />
+      )}
     </>
   );
 }
+
+/*  await removeRules([rule], Principal.fromText(principalID))
+       .then(async () => {
+         let updatedRules = await getProviderRules(
+           Principal.fromText(principalID)
+         );
+         console.log(updatedRules);
+         setRules(updatedRules);
+         setNewRules(updatedRules);
+       })
+       .catch((e) => console.log(e))
+       .finally(() => setLoader(false)); */
+
