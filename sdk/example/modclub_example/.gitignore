@@ -9,7 +9,3 @@
 
 # dfx temporary files
 .dfx/
-
-# frontend code
-node_modules/
-dist/
