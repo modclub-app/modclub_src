@@ -89,7 +89,7 @@ module ContentModule {
                 };
             };
         };
-        return Array.sort(buf.toArray(), compareContent);
+        return Array.sort(buf.toArray(), sortAsc);
     };
 
     func sortAsc(a : Types.Content, b: Types.Content) : Order.Order {
