@@ -295,14 +295,17 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   // Retreives all content for the calling Provider
-  public query({ caller }) func getProviderContent(providerId: Principal, status: Types.ContentStatus) : async [Types.ContentPlus] {
+  public query({ caller }) func getProviderContent(providerId: Principal, status: Types.ContentStatus, start: Nat, end: Nat) : async [Types.ContentPlus] {
     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
       };
       case(_)();
     };
-    return ContentManager.getProviderContent(providerId, getVoteCount, state, status);
+    if( start < 0 or end < 0 or start > end) {
+      return throw Error.reject("Invalid range");
+    };
+    return ContentManager.getProviderContent(providerId, getVoteCount, state, status, start, end);
   };
 
   public query({ caller }) func getAllContent(status: Types.ContentStatus) : async [Types.ContentPlus] {

@@ -312,7 +312,8 @@ type ModClub =
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus);
    getProviderAdmins: (principal) -> (vec Profile);
-   getProviderContent: (principal, ContentStatus) -> (vec ContentPlus) query;
+   getProviderContent: (principal, ContentStatus, nat, nat) ->
+    (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTasks: (nat, nat, bool) -> (vec ContentPlus) query;
    getTokenHoldings: () -> (Holdings) query;

@@ -178,9 +178,12 @@ export interface ModClub {
   'getProfileById' : (arg_0: Principal) => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderAdmins' : (arg_0: Principal) => Promise<Array<Profile>>,
-  'getProviderContent' : (arg_0: Principal, arg_1: ContentStatus) => Promise<
-      Array<ContentPlus>
-    >,
+  'getProviderContent' : (
+      arg_0: Principal,
+      arg_1: ContentStatus,
+      arg_2: bigint,
+      arg_3: bigint,
+    ) => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'getTasks' : (arg_0: bigint, arg_1: bigint, arg_2: boolean) => Promise<
       Array<ContentPlus>

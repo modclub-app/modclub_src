@@ -242,9 +242,12 @@ export async function updateProviderLogo(
 
 export async function fetchProviderContent(
   providerId: Principal,
-  status: any
+  status: any,
+  startIndex: number,
+  endIndex: number,
 ): Promise<ContentPlus[]> {
-  return (await getMC()).getProviderContent(providerId,status);
+  console.log(startIndex,endIndex,status)
+  return (await getMC()).getProviderContent(providerId,status,BigInt(startIndex),BigInt(endIndex));
 }
 
 // POH Methods

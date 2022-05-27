@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import { fetchProviderContent } from "../../../utils/api";
@@ -10,14 +10,11 @@ import {
   Heading,
   Button,
   Dropdown,
-  Icon,
-  Pagination
+  Icon
 } from "react-bulma-components";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
-import { Activity,ContentPlus } from "../../../utils/types";
-import { ContentStatus } from '../../../../../declarations/modclub_staging/modclub_staging.did';
-
+import { ContentPlus } from "../../../utils/types";
 const Table = (
   {
     loading,
@@ -74,8 +71,8 @@ const Table = (
                     {/* style={{"border-radius: 5px","background: -webkit-linear-gradient(right,#3d52fa, #c91988)"}} */}
                   </td>
                   <td>{formatDate(item.createdAt)}</td>
-                  <td>{("new" in item.status) ? "-" : Number(item.voteCount)}</td>
-                  <td>{("new" in item.status) ? "-" : formatDate(item.updatedAt)}</td>
+                  <td>20</td>
+                  <td>{formatDate(item.updatedAt)}</td>
                 </tr>
               )
             )
@@ -94,43 +91,89 @@ const Table = (
 
 }
 
+
 export default function AdminActivity() {
   const { selectedProvider } = useAuth();
-  const [completedActivity, setCompletedActivity] = useState<Activity[]>([]);
-  const [inProgressActivity, setInProgressActivity] = useState<ContentPlus[]>([]);
+  const [approvedActivity,setApprovedActivity] = useState([]);
+  const [inProgressActivity,setInProgressActivity] = useState([]);
+  const [rejectedActivity,setRejectedActivity] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
-  const pages = 10;
-  const [currentPage,setCurrentPage] = useState<number>(1);
   const filters = ["approved", "new", "rejected"];
+  const PAGE_SIZE = 20;
+  const parentPageObj = {
+    page: 1,
+    startIndex: 0,
+    endIndex: PAGE_SIZE
+  };
+  const [page, setPage] = useState({
+    "approved":{...parentPageObj},
+    "new":{...parentPageObj},
+    "rejected":{...parentPageObj},
+  });
+  const [hasReachedEnd, setHasReachedEnd] = useState({
+    "approved":false,
+    "new":false,
+    "rejected":false
+  });
 
+  const history = useHistory();
+  if(!selectedProvider){
+    history.push('/app');
+  }
   const getLabel = (label: string) => {
     if (label === "new") return "In Progress"
     if (label === "approved") return "Approved"
     if (label === "rejected") return "Rejected"
   }
 
-  const getProviderContent = async (selectedProvider) => {
+  const getProviderContent = async (selectedProvider,selectedFilter) => {
     let status = {};
-    status[currentFilter] = null;
-    let providerContents = await fetchProviderContent(selectedProvider.id,status);
-    console.log("providerContents",providerContents);
+    status[selectedFilter] = null;
+    const startIndex = page[selectedFilter].startIndex;
+    const endIndex = page[selectedFilter].endIndex;
 
+    let providerContents = hasReachedEnd[selectedFilter] ? []:await fetchProviderContent(selectedProvider.id,status,startIndex,endIndex);
+    if (providerContents.length < PAGE_SIZE) {
+      status[selectedFilter] = true;
+      setHasReachedEnd({...hasReachedEnd,...status});
+    }
     setLoading(true);
-    setInProgressActivity(providerContents);
-   /*  if (currentFilter === "new") {
-    } else {
-      //setCompletedActivity(await getActivity(true));
-    } */
+
+    switch (selectedFilter) {
+      case "new":
+        if(providerContents.length>0) setInProgressActivity([...inProgressActivity,...providerContents]);
+        break;
+      case "approved":
+        if(providerContents.length>0) setApprovedActivity([...approvedActivity,...providerContents]);
+        break;
+      case "rejected":
+        if(providerContents.length>0) setRejectedActivity([...rejectedActivity,...providerContents]);
+        break;
+      default:
+        if(providerContents.length>0) setInProgressActivity([...inProgressActivity,...providerContents]);
+        break;
+    };
     setLoading(false);
   };
 
-  const changeToPage = (page)=>{
-    setCurrentPage(page);
-  }
+  const nextPage = () => {
+    let nextPageNum = page[currentFilter].page + 1;
+    let start = (nextPageNum - 1) * PAGE_SIZE;
+    page[currentFilter] = {
+      page: nextPageNum,
+      startIndex: start,
+      endIndex: start + PAGE_SIZE
+    };
+    setPage({...page,...page});
+    selectedProvider && !loading && getProviderContent(selectedProvider,currentFilter);
+  };
+
 
   useEffect(() => {
-    getProviderContent(selectedProvider);
+    if(selectedProvider){
+      getProviderContent(selectedProvider,"new");
+    }
   }, [selectedProvider]);
 
   return (
@@ -161,7 +204,7 @@ export default function AdminActivity() {
                       value={filter}
                       renderAs="a"
                       className={currentFilter === filter && "is-active"}
-                      onMouseDown={() => setCurrentFilter(filter)}
+                      onClick={() => {setCurrentFilter(filter);getProviderContent(selectedProvider,filter)}}
                     >
                       {getLabel(filter)}
                     </Dropdown.Item>
@@ -174,7 +217,7 @@ export default function AdminActivity() {
                       key={filter}
                       color={currentFilter === filter ? "primary" : "ghost"}
                       className="has-text-white mr-0"
-                      onClick={() => setCurrentFilter(filter)}
+                      onClick={() => {setCurrentFilter(filter);getProviderContent(selectedProvider,filter)}}
                     >
                       {getLabel(filter)}
                     </Button>
@@ -189,20 +232,31 @@ export default function AdminActivity() {
               <Card.Content>
                 <Table
                   loading={loading}
-                  filteredActivity={inProgressActivity}
+                  filteredActivity={currentFilter == "new" ? inProgressActivity : currentFilter=="approved"?approvedActivity:rejectedActivity}
                   getLabel={getLabel}
                   currentFilter={currentFilter}
                 />
               </Card.Content>
             </Card>
           </Columns.Column>
+          {(currentFilter == "new" ? inProgressActivity : currentFilter=="approved"?approvedActivity:rejectedActivity).length > 0 &&  <Columns.Column size={12}>
+            <Card>
+              <Card.Footer alignItems="center">
+                <div>
+                  Showing 1 to {(currentFilter == "new" ? inProgressActivity : currentFilter=="approved"?approvedActivity:rejectedActivity).length} activities
+                </div>
+                <Button
+                  color="primary"
+                  onClick={() => nextPage()}
+                  className="ml-4 px-7 py-3"
+                  disabled={hasReachedEnd[currentFilter]}
+                >
+                  See more
+                </Button>
+              </Card.Footer>
+            </Card>
+          </Columns.Column>}
         </Columns>
-        <Pagination total={pages}
-      current={currentPage}
-      align="right"
-      showPrevNext={false}
-      autoHide={false}
-      onChange={(page) => changeToPage(page)} className="has-text-white" />
     </>
   )
 }

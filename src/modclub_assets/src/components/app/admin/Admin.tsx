@@ -507,10 +507,10 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
                           : ""}
                       </td>
                     </tr>
-                    <tr>
+                    {/* <tr>
                       <td>Humans Verified</td>
                       <td>3434</td>
-                    </tr>
+                    </tr> */}
                   </tbody>
                 </table>
               </Card.Content>

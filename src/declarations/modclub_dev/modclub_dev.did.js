@@ -459,7 +459,7 @@ export const idlFactory = ({ IDL }) => {
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], []),
     'getProviderAdmins' : IDL.Func([IDL.Principal], [IDL.Vec(Profile)], []),
     'getProviderContent' : IDL.Func(
-        [IDL.Principal, ContentStatus],
+        [IDL.Principal, ContentStatus, IDL.Nat, IDL.Nat],
         [IDL.Vec(ContentPlus)],
         ['query'],
       ),
