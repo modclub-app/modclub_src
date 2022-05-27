@@ -16,7 +16,7 @@ import Types "../../types";
 module ContentModule {
 
     public func getContent(userId: Principal, contentId: Text, voteCount: Types.VoteCount, state: GlobalState.State) : ?Types.ContentPlus {
-        return getContentPlus(contentId, ?userId, voteCount, state);  
+        return getContentPlus(contentId, ?userId, voteCount, state);
     };
 
     public func submitTextOrHtmlContent(caller: Principal, sourceId: Text, text: Text, title: ?Text, contentType: Types.ContentType, contentQueueManager: QueueManager.QueueManager, state: GlobalState.State) : Text {
@@ -50,13 +50,15 @@ module ContentModule {
         return content.id;
     };
 
-    public func getProviderContent(providerId: Principal, getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount, state: GlobalState.State) : [Types.ContentPlus] {
+    public func getProviderContent(providerId: Principal, getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount, state: GlobalState.State, status:Types.ContentStatus) : [Types.ContentPlus] {
       let buf = Buffer.Buffer<Types.ContentPlus>(0);
       for (cid in state.provider2content.get0(providerId).vals()) {
         let voteCount = getVoteCount(cid, ?providerId);
         switch(getContentPlus(cid, ?providerId, voteCount, state)) {
           case (?result) {
-            buf.add(result);
+            if(result.status == status){
+              buf.add(result);
+            }
           };
           case (_) ();
         };
@@ -92,6 +94,15 @@ module ContentModule {
         return Array.sort(buf.toArray(), compareContent);
     };
 
+    func compareContent(a : Types.Content, b: Types.Content) : Order.Order {
+      if(a.updatedAt > b.updatedAt) {
+        #greater;
+      } else if ( a.updatedAt < b.updatedAt) {
+        #less;
+      } else {
+        #equal;
+      }
+    };
     func sortAsc(a : Types.Content, b: Types.Content) : Order.Order {
       if(a.updatedAt > b.updatedAt) {
         #greater;
@@ -155,21 +166,21 @@ module ContentModule {
                             status = content.status;
                             sourceId = content.sourceId;
                             title = content.title;
-                            createdAt = content.createdAt; 
-                            updatedAt = content.updatedAt; 
-                            text = do  ?{
-                            switch(state.textContent.get(content.id)) {
+                            createdAt = content.createdAt;
+                            updatedAt = content.updatedAt;
+                            text = do ? {
+                              switch(state.textContent.get(content.id)) {
                                 case(?x) x.text;
                                 case(_) "";
+                              };
                             };
-                            };
-                            image = do  ?{
-                            switch(state.imageContent.get(content.id)) {
+                            image = do ? {
+                              switch(state.imageContent.get(content.id)) {
                                 case(?x) x.image;
-                                case(null) { 
+                                case(null) {
                                     { data = []; imageType = ""};
                                 };
-                            };
+                              };
                             };
                         };
                     return ?result;
@@ -197,7 +208,7 @@ module ContentModule {
             return #err("Invalid range");
         };
         let result = Buffer.Buffer<Types.ContentPlus>(0);
-        let items =  Buffer.Buffer<Types.Content>(0); 
+        let items =  Buffer.Buffer<Types.Content>(0);
         var count: Nat = 0;
         let maxReturn: Nat = end - start;
         Debug.print( "Retrieveing #new Queue for user: " # Principal.toText(caller));

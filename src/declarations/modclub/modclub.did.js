@@ -352,6 +352,14 @@ export const idlFactory = ({ IDL }) => {
   const SubscribeMessage = IDL.Record({
     'callback' : IDL.Func([ContentResult], [], ['oneway']),
   });
+  const ProviderMeta = IDL.Record({
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+  });
+  const ProviderMetaResult = IDL.Variant({
+    'ok' : ProviderMeta,
+    'err' : ProviderError,
+  });
   const ProviderSettingResult = IDL.Variant({
     'ok' : ProviderSettings,
     'err' : ProviderError,
@@ -373,10 +381,14 @@ export const idlFactory = ({ IDL }) => {
       ),
     'addRules' : IDL.Func([IDL.Vec(IDL.Text), IDL.Opt(IDL.Principal)], [], []),
     'addToAirdropWhitelist' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
+    'addToAllowList' : IDL.Func([IDL.Principal], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'adminInit' : IDL.Func([], [], []),
+    'adminTransferTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
+    'allNewContent' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
     'collectCanisterMetrics' : IDL.Func([], [], []),
+    'convertAllToModerator' : IDL.Func([], [], []),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'distributeAllPendingRewards' : IDL.Func([], [], []),
     'editProviderAdmin' : IDL.Func(
@@ -446,7 +458,11 @@ export const idlFactory = ({ IDL }) => {
     'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], []),
     'getProviderAdmins' : IDL.Func([IDL.Principal], [IDL.Vec(Profile)], []),
-    'getProviderContent' : IDL.Func([], [IDL.Vec(ContentPlus)], ['query']),
+    'getProviderContent' : IDL.Func(
+        [IDL.Principal, ContentStatus],
+        [IDL.Vec(ContentPlus)],
+        ['query'],
+      ),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTasks' : IDL.Func(
         [IDL.Nat, IDL.Nat, IDL.Bool],
@@ -457,6 +473,12 @@ export const idlFactory = ({ IDL }) => {
     'getVotePerformance' : IDL.Func([], [IDL.Float64], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
     'issueJwt' : IDL.Func([], [IDL.Text], []),
+    'newContentQueuesByqId' : IDL.Func([IDL.Nat], [IDL.Vec(IDL.Text)], []),
+    'newContentQueuesqIdCount' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Nat), IDL.Vec(IDL.Nat)],
+        [],
+      ),
     'pohGenerateUniqueToken' : IDL.Func([IDL.Principal], [PohUniqueToken], []),
     'pohVerificationRequest' : IDL.Func(
         [IDL.Principal],
@@ -485,6 +507,8 @@ export const idlFactory = ({ IDL }) => {
     'retiredDataCanisterIdForWriting' : IDL.Func([IDL.Text], [], ['oneway']),
     'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result_1], []),
     'rewardPoints' : IDL.Func([IDL.Principal, IDL.Int], [], []),
+    'setRandomization' : IDL.Func([IDL.Bool], [], []),
+    'shuffleContent' : IDL.Func([], [], []),
     'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'submitChallengeData' : IDL.Func(
         [PohChallengeSubmissionRequest],
@@ -510,11 +534,26 @@ export const idlFactory = ({ IDL }) => {
     'toggleAllowSubmission' : IDL.Func([IDL.Bool], [], []),
     'unStakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'unregisterAdmin' : IDL.Func([IDL.Text], [Result], []),
+    'updateProvider' : IDL.Func(
+        [IDL.Principal, ProviderMeta],
+        [ProviderMetaResult],
+        [],
+      ),
+    'updateProviderLogo' : IDL.Func(
+        [IDL.Principal, IDL.Vec(IDL.Nat8), IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'updateRules' : IDL.Func([IDL.Vec(Rule), IDL.Opt(IDL.Principal)], [], []),
     'updateSettings' : IDL.Func(
         [IDL.Principal, ProviderSettings],
         [ProviderSettingResult],
         [],
+      ),
+    'userId2QueueId' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text))],
+        ['query'],
       ),
     'verifyUserHumanity' : IDL.Func([], [VerifyHumanityResponse], []),
     'vote' : IDL.Func(

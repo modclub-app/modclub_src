@@ -168,9 +168,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
-    if(not AuthManager.isAdmin(caller, admins)) {
+    /* if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
-    };
+    }; */
     voteManager.addToAutoApprovedPOHUser(userId);
   };
 
@@ -186,6 +186,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case(?_) ();
     };
     ProviderManager.registerProvider(caller, name, description, image, state, canistergeekLogger);
+  };
+
+  public shared({ caller }) func updateProvider(providerId: Principal, updatedProviderVal:Types.ProviderMeta) : async Types.ProviderMetaResult {
+    Debug.print("updateProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
+    return await ProviderManager.updateProviderMetaData(providerId, updatedProviderVal, caller, state, canistergeekLogger);
+  };
+
+  public shared({ caller }) func updateProviderLogo(providerId: Principal, logoToUpload: [Nat8], logoType: Text) : async Text {
+    Debug.print("updateProviderLogo caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
+    return await ProviderManager.updateProviderLogo(providerId, logoToUpload, logoType, caller, state, canistergeekLogger);
   };
 
   public shared({ caller }) func deregisterProvider() : async Text {
@@ -243,7 +253,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
    await ProviderManager.addToAllowList(providerId, state, canistergeekLogger);
   };
-  
+
 
   // ----------------------Content Related Methods------------------------------
   public query({caller}) func getContent(id: Text) : async ?Types.ContentPlus {
@@ -285,8 +295,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   // Retreives all content for the calling Provider
-  public query({ caller }) func getProviderContent() : async [Types.ContentPlus] {
-    return ContentManager.getProviderContent(caller, getVoteCount, state);
+  public query({ caller }) func getProviderContent(providerId: Principal, status: Types.ContentStatus) : async [Types.ContentPlus] {
+    switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
+      case(#err(e)) {
+        throw Error.reject("Unauthorized");
+      };
+      case(_)();
+    };
+    return ContentManager.getProviderContent(providerId, getVoteCount, state, status);
   };
 
   public query({ caller }) func getAllContent(status: Types.ContentStatus) : async [Types.ContentPlus] {
@@ -442,7 +458,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    
+
     var voteCount = getVoteCount(contentId, ?caller);
     await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger, contentQueueManager, randomizationEnabled);
   };
@@ -1107,7 +1123,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   system func preupgrade() {
     Debug.print("MODCLUB PREUPGRRADE");
-    Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
 
     tokensStableV1 := tokens.getStableV1();
@@ -1145,7 +1160,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := null;
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
-    
+
     contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
     // pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
 

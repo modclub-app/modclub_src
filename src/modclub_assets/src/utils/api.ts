@@ -1,4 +1,4 @@
-import { /* convertImage, */ convertObj, unwrap } from "./util";
+import {  fileToImgSrc,  convertObj, unwrap } from "./util";
 import { actorController } from "./actor";
 import {
   ContentPlus,
@@ -26,6 +26,7 @@ import {
   ModeratorLeaderboard,
   VerifyHumanityResponse,
   Result_1,
+  ProviderMeta
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -42,10 +43,6 @@ export async function registerModerator(
   email: string,
   imageData?: ImageData
 ): Promise<Profile> {
-  // const imgResult: Image = imageData
-  //   ? { data: await convertImage(imageData), imageType: imageData.type }
-  //   : undefined;
-
   const imgResult = null;
   const response = await (
     await getMC()
@@ -202,7 +199,6 @@ export async function addRules(
   providerId: Principal
 ): Promise<void> {
   var testActor = await getMC();
-  console.log(rules);
   if (rules[0] != undefined)
     return (await getMC()).addRules(rules, [providerId]);
 }
@@ -229,6 +225,28 @@ export async function updateProviderSettings(
   return (await getMC()).updateSettings(providerId, settings);
 }
 
+
+export async function updateProviderMetaData(
+  providerId: Principal,
+  providerData: ProviderMeta
+): Promise<void> {
+  return (await getMC()).updateProvider(providerId, providerData);
+}
+
+export async function updateProviderLogo(
+  providerId: Principal,
+  imageData?:ImageData
+): Promise<void> {
+  return (await getMC()).updateProviderLogo(providerId, imageData.picUInt8Arr, imageData.type);
+}
+
+export async function fetchProviderContent(
+  providerId: Principal,
+  status: any
+): Promise<ContentPlus[]> {
+  return (await getMC()).getProviderContent(providerId,status);
+}
+
 // POH Methods
 export async function verifyUserHumanity(): Promise<VerifyHumanityResponse> {
   return (await getMC()).verifyUserHumanity();
@@ -252,8 +270,6 @@ export async function getPohTasks(
   start: number,
   end: number
 ): Promise<PohTaskPlus[]> {
-  // console.log("getPohTasks start", start);
-  // console.log("getPohTasks end", end);
   return (await getMC()).getPohTasks(status, BigInt(start), BigInt(end));
 }
 

@@ -90,9 +90,6 @@ export default function Sidebar() {
   const toggleModal = () => setShowModal(!showModal);
   const [showDropdown, setShowDropdown] = useState(false);
   const toggle = () => setShowDropdown(!showDropdown);
-  const setProvider = (provider) => {
-    setSelectedProvider(provider);
-  }
 
 
   useEffect(() => {
@@ -149,19 +146,12 @@ export default function Sidebar() {
           {providers.length > 0 ? (
             <>
               {selectedProvider ? (
-                <Link to="/app" onClick={() => setProvider(null)} style={{ position: "absolute", top: "0px", right: "2.5em", maxWidth: "18em" }}>
+                <Link to="/app" onClick={() => setSelectedProvider(null)} style={{ position: "absolute", top: "0px", right: "2.5em", maxWidth: "18em" }}>
                   <Icon>
                     <span className="material-icons">playlist_add_check</span>
                   </Icon>
                   Switch to Moderator Dashboard
                 </Link>
-                /* <Link to="/app/admin">
-                  <Icon>
-                    <span className="material-icons">assignment_ind</span>
-                  </Icon>
-                  Admin
-                </Link> */
-
               ) : (
                 <Dropdown
                   className="mb-5"
@@ -179,12 +169,9 @@ export default function Sidebar() {
 
                   {providers.map((provider) => {
                     return (
-                      <Link to="/app/admin" key={provider['id']} className="dropdown-item" onClick={() => setProvider(provider)}>
+                      <Link to="/app/admin" key={provider['id']} className="dropdown-item" onClick={() => setSelectedProvider(provider)}>
                         {provider['name']}
                       </Link>
-                      /*  <div key={provider['id']} onMouseDown={() => setProvider(provider)}>
-                        {provider['name']}
-                      </div> */
                     );
                   })}
                 </Dropdown>

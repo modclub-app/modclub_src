@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Field } from "react-final-form";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Columns,
@@ -11,7 +11,9 @@ import {
   Media,
   Image,
   Notification,
+  Icon,
 } from "react-bulma-components";
+import { Link } from "react-router-dom";
 import FormModal from "../modals/FormModal";
 import {
   addRules,
@@ -20,25 +22,35 @@ import {
   getProviderRules,
   getProvider,
   updateProviderSettings,
+  updateProviderMetaData,
   getUserFromCanister,
   getAdminProviderIDs,
+  updateProviderLogo,
 } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
+import placeholder from "../../../../assets/user_placeholder.png";
+import { ImageData } from "../../../utils/types";
 import { Principal } from "@dfinity/principal";
 import AdminIdentity from "../../external/AdminIdentity";
 
-const EditAppModal = ({ toggle, selectedProvider }) => {
+const EditAppModal = ({ toggle, principalID, selectedProvider, providers }) => {
   const onFormSubmit = async (values: any) => {
-    console.log("onFormSubmit parent!", values);
-    const { address, amount } = values;
-    return "EditAppModal success return";
+    await updateProviderMetaData(Principal.fromText(principalID), values);
+    selectedProvider.name = values.name;
+    selectedProvider.description = values.description;
+    providers.map(prvd => {
+      if(prvd.id === selectedProvider.id || prvd.id.toString() ==  selectedProvider.id.toString()){
+        prvd = selectedProvider;
+      }
+    });
+    return "App Edited Successfully";
   };
 
   return (
-    <FormModal title="Edit App" toggle={toggle} selectedProvider={selectedProvider} handleSubmit={onFormSubmit}>
-      <div className="field">
+    <FormModal title="Edit App" toggle={toggle} handleSubmit={onFormSubmit}>
+      <div className="field" style={{marginTop:"10px"}}>
         <div className="control">
           <Field
             name="name"
@@ -66,6 +78,99 @@ const EditAppModal = ({ toggle, selectedProvider }) => {
   );
 };
 
+const getUrlFromArray = (imgData,imgType):string => {
+  const arrayBufferView = new Uint8Array(imgData);
+  const blob = new Blob([arrayBufferView], { type: imgType });
+  const urlCreator = window.URL || window.webkitURL;
+  const imageUrl = urlCreator.createObjectURL(blob);
+  return imageUrl;
+}
+
+const EditProviderLogo = ({ principalID, selectedProvider, setImageUploadedMsg }) =>{
+  const inputFile = useRef(null);
+  const [logoPicSrc, setLogoPicSrc] = useState("");
+  const handleUploadProviderLogo = async (e) => {
+    const files  = e.target.files;
+    if (files.length > 0) {
+      const flToUpload = files[0];
+      const reader = new FileReader();//.readAsArrayBuffer();
+      let imageData:ImageData;
+      reader.onload = async (evt) => {
+        const data = typeof evt.target.result == "string" ? evt.target.result : null;
+        const buffer = await flToUpload.arrayBuffer();
+        imageData = {
+          src: data,
+          picUInt8Arr:Array.from(new Uint8Array(buffer)),
+          type: flToUpload.type,
+        };
+
+        try {
+          await updateProviderLogo(Principal.fromText(principalID), imageData);
+          const imgSrcFromImgData = getUrlFromArray(imageData.picUInt8Arr,imageData.type);
+          const updatedImg = [{
+            data:imageData.picUInt8Arr,
+            imageType:imageData.type,
+            src: imgSrcFromImgData
+          }];
+          setLogoPicSrc(imgSrcFromImgData);
+          selectedProvider.image = updatedImg;
+          setImageUploadedMsg({ success: true, value: "Logo uploaded Successfully!" });
+        } catch (e) {
+          setImageUploadedMsg({ success: false, value: "Error in uploading logo. Try again." });
+        }
+        setTimeout(() => setImageUploadedMsg(), 3000);
+      };
+      reader.readAsDataURL(flToUpload);
+    }
+  };
+
+  return (
+    <>
+      <input
+        style={{ display: "none" }}
+        ref={inputFile}
+        onChange={(e)=>handleUploadProviderLogo(e)}
+        accept="image/*"
+        type="file"
+      />
+
+      <Media
+        justifyContent="center"
+        onClick={() => inputFile.current.click()}
+      >
+        <Image
+          src={logoPicSrc ? logoPicSrc : (selectedProvider.image[0]?.src ? selectedProvider.image[0].src : placeholder)}
+          alt="profile"
+          size={128}
+          className="is-clickable is-hover-reduced"
+          style={{ overflow: "hidden" }}
+        />
+        {!selectedProvider.image[0]?.src && (
+          <div
+            style={{
+              position: "absolute",
+              backgroundColor: "rgba(0, 0, 0, .5)",
+              width: 128,
+              height: 128,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            <Icon color="white">
+              <span className="material-icons">backup</span>
+            </Icon>
+            <p>Click to add Logo</p>
+          </div>
+        )}
+      </Media>
+    </>
+  )
+}
+
 const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
   const [newRules, setNewRules] = useState(rules);
   const [loader, setLoader] = useState(false);
@@ -73,14 +178,6 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
 
   let addNewRuleField = [{ id: 1, description: "" }];
   const [newRulesFieldArr, setNewRulesFieldArr] = useState(addNewRuleField);
-
-  console.log("EDIT principalID", principalID)
-
-  // const add = async (rules) => {
-  //   console.log(rules);
-  //   setNewRules([...rules,{"id": rules.length, "description": ""}]);
-  //   console.log(rules)
-  // };
 
   const addToUpdateRule = (id: any, description: Text) => {
     if (id && description) {
@@ -111,9 +208,6 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
   };
 
   const onFormSubmit = async (values: any) => {
-    console.log("onFormSubmit values", values);
-    console.log("parent !!! onFormSubmit newRules", newRules);
-    console.log("PRincipla", principalID);
     let newRulesToAdd = [];
     for (const [key, value] of Object.entries(values)) {
       if (key.split("_")[0] == "newRule" && value !== "") {
@@ -172,9 +266,6 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
 };
 
 const EditModeratorSettingsModal = ({ toggle, principalID, settings, minVotes, minTokens, setMinVotes, setMinTokens }) => {
-  console.log("settings", settings);
-  // const [minVotes, setMinVotes] = useState(settings.minVotes ? parseInt(settings.minVotes) : 0);
-  // const [minTokens, setMinTokens] = useState(settings.minStaked ? parseInt(settings.minStaked) : 0);
   const onFormSubmit = async (values: any) => {
     for (const k in values) {
       if (!isNaN(values[k] / 1)) {
@@ -183,19 +274,14 @@ const EditModeratorSettingsModal = ({ toggle, principalID, settings, minVotes, m
 
     }
     values["minStaked"] = values.minTokens;
-    console.log(values, typeof values.minTokens);
-    // let values2 = {
-    //   "minVotes": values.minTokens,
-    //   "minStaked": values.minTokens
-    // };
-    //console.log("parent !!! onFormSubmit values", await updateProviderSettings(Principal.fromText(principalID), values2));
+
     await updateProviderSettings(Principal.fromText(principalID), values);
     setMinVotes(parseInt(values.minVotes));
     setMinTokens(parseInt(values.minTokens));
-    console.log("test2");
+
     return "Moderator settings updated successfully";
   };
-  console.log("SETTINGS", settings);
+
   return (
     <FormModal
       title="Edit Moderator Settings"
@@ -224,35 +310,6 @@ const EditModeratorSettingsModal = ({ toggle, principalID, settings, minVotes, m
           style={{ width: 70 }}
         />
       </div>
-
-      {/* <div className="field level">
-        <p>Example cost per each succesful vote (1% of stake):</p>
-        <Field
-          name="cost"
-          component="input"
-          type="number"
-          className="input has-text-centered ml-3"
-          initialValue={1}
-          style={{ width: 70 }}
-          readOnly={true}
-        />
-      </div>
-
-      <div className="field level">
-        <p>
-          Number of your platform tokens to be distributed to the majority
-          voters (optional):
-        </p>
-        <Field
-          name="tokens"
-          component="input"
-          type="number"
-          className="input has-text-centered ml-3"
-          initialValue={5}
-          style={{ width: 70 }}
-          readOnly={true}
-        />
-      </div> */}
     </FormModal>
   );
 };
@@ -264,8 +321,6 @@ const RemoveRuleModal = ({
   updateState
 }) => {
   const onRemoveRuleFormSubmit = async (values: any) => {
-    //setLoader(true);
-    //setNewRules(newRules.filter((item) => item !== rule));
     let result;
     console.log(values, rule, principalID)
     if (rule && rule.id) {
@@ -298,7 +353,7 @@ const RemoveRuleModal = ({
   );
 };
 
-export default function Admin(args) {
+export default function Admin({selectedProvider,providerIdText,setSelectedProvider, providers}) {
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
 
@@ -319,52 +374,23 @@ export default function Admin(args) {
 
   const [rules, setRules] = useState([]);
 
-  const [providers, setProviders] = useState([]);
-
-  /* const [selectedProvider, setSelectedProvider] = useState(null); */
-
-  const selectedProvider = args.selectedProvider;
-
+  const imgMetaData = selectedProvider.image[0];
+  if(imgMetaData){
+    selectedProvider.image[0].src = getUrlFromArray(imgMetaData.data,imgMetaData.imageType);
+  }
   const [showModal, setShowModal] = useState(true);
-
-  const [providerIdText, setProviderIdText] = useState("");
 
   const [minVotes, setMinVotes] = useState(0);
   const [minTokens, setMinTokens] = useState(0);
-  /* if(selectedProvider){
-    setMinVotes(selectedProvider.settings.minVotes ? parseInt(selectedProvider.settings.minVotes) : 0);
-    setMinTokens(selectedProvider.settings.minStaked ? parseInt(selectedProvider.settings.minStaked) : 0);
-    setRules(selectedProvider.rules);
-  } */
+
+  const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
 
   useEffect(() => {
-    //console.log(0);
     let adminInit = () => {
-      /* console.log(1);
-      let adminProviders = await getAdminProviderIDs();
-      console.log(adminProviders);
-      console.log(2);
-      let providerListPromise = [];
-      for (let provider of adminProviders) {
-        providerListPromise.push(getProvider(provider));
-      }
-      console.log(3);
-      let providerList = await Promise.all(providerListPromise);
-      console.log(4, providerList);
-      setProviders(providerList);
-      console.log(5);
-      setProviderIdText(adminProviders[0].toText()); */
-      console.log("minVotes", minVotes);
-
       if (selectedProvider) {
         setMinVotes(selectedProvider.settings.minVotes ? parseInt(selectedProvider.settings.minVotes) : 0);
         setMinTokens(selectedProvider.settings.minStaked ? parseInt(selectedProvider.settings.minStaked) : 0);
         setRules(selectedProvider.rules);
-      }
-      if (args.providerIdText) {
-        console.log("providerIdTextFromDropDown", args.providerIdText);
-
-        setProviderIdText(args.providerIdText);
       }
     };
     adminInit();
@@ -390,7 +416,6 @@ export default function Admin(args) {
                     setSelectedProvider(provider);
                     setMinVotes(provider.settings.minVotes ? parseInt(provider.settings.minVotes) : 0);
                     setMinTokens(provider.settings.minStaked ? parseInt(provider.settings.minStaked) : 0);
-                    console.log("test");
                     setShowModal(false);
                     setRules(provider.rules);
                   }}
@@ -408,6 +433,14 @@ export default function Admin(args) {
       ) : (
         ""
       )}
+      <Notification color="danger" textAlign="center">
+        Administrator Dashboard DEMO
+      </Notification>
+      {imageUploadedMsg &&
+        <Notification color={imageUploadedMsg.success ? "success" : "danger"} className="has-text-centered">
+          {imageUploadedMsg.value}
+        </Notification>
+      }
       {selectedProvider != null &&
         <Columns>
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
@@ -419,11 +452,7 @@ export default function Admin(args) {
                     align="left"
                     style={{ marginRight: "1.5rem" }}
                   >
-                    <Image
-                      size={128}
-                      src="http://bulma.io/images/placeholders/128x128.png"
-                      className="has-gradient"
-                    />
+                    <EditProviderLogo principalID={providerIdText} selectedProvider={selectedProvider} setImageUploadedMsg={setImageUploadedMsg}/>
                   </Media.Item>
                   <Media.Item>
                     <table className="table is-label">
@@ -447,6 +476,9 @@ export default function Admin(args) {
                     <Button color="dark" onClick={toggleEditApp}>
                       Edit App
                     </Button>
+                    <Link to="/app/admin/activity/" className="button ml-6" >
+                      See Recent Activity
+                    </Link>
                   </Media.Item>
                 </Media>
               </Card.Content>
@@ -474,19 +506,6 @@ export default function Admin(args) {
                           ? selectedProvider.activeCount.toString()
                           : ""}
                       </td>
-                    </tr>
-                    <tr>
-                      <td>Rewards Spent</td>
-                      <td>
-                        {" "}
-                        {!!selectedProvider
-                          ? selectedProvider.rewardsSpent.toString()
-                          : ""}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Avg. Stakes</td>
-                      <td>100</td>
                     </tr>
                     <tr>
                       <td>Humans Verified</td>
@@ -611,36 +630,15 @@ export default function Admin(args) {
                     <tr>
                       <td>Number of votes required to finalize decision:</td>
                       <td className="has-text-white is-size-5 has-text-weight-bold">
-                        {/* {selectedProvider
-                          ? selectedProvider.settings.minVotes.toString()
-                          : 0} */}
                         {minVotes.toString()}
                       </td>
                     </tr>
                     <tr>
                       <td>Required number of staked MOD tokens to vote:</td>
                       <td className="has-text-white is-size-5 has-text-weight-bold">
-                        {/* {selectedProvider
-                          ? selectedProvider.settings.minStaked.toString()
-                          : 0} */}
                         {minTokens.toString()}
                       </td>
                     </tr>
-                    {/* <tr>
-                      <td>Example cost per each successful vote (1% of stake)</td>
-                      <td className="has-text-white is-size-5 has-text-weight-bold">
-                        1
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        Number of your platform tokens to be distributed to the
-                        majority voters (optional)
-                      </td>
-                      <td className="has-text-white is-size-5 has-text-weight-bold">
-                        100
-                      </td>
-                    </tr> */}
                   </tbody>
                 </table>
               </Card.Content>
@@ -651,7 +649,7 @@ export default function Admin(args) {
 
       <TrustedIdentities provider={providerIdText} selectedProvider={selectedProvider} />
 
-      {showEditApp && <EditAppModal toggle={toggleEditApp} selectedProvider={selectedProvider} />}
+      {showEditApp && <EditAppModal toggle={toggleEditApp} principalID={providerIdText} selectedProvider={selectedProvider} providers={providers}/>}
 
       {showEditRules && (
         <EditRulesModal
@@ -684,16 +682,4 @@ export default function Admin(args) {
     </>
   );
 }
-
-/*  await removeRules([rule], Principal.fromText(principalID))
-       .then(async () => {
-         let updatedRules = await getProviderRules(
-           Principal.fromText(principalID)
-         );
-         console.log(updatedRules);
-         setRules(updatedRules);
-         setNewRules(updatedRules);
-       })
-       .catch((e) => console.log(e))
-       .finally(() => setLoader(false)); */
 
