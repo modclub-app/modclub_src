@@ -209,7 +209,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   public shared({ caller }) func getProvider(providerId: Principal) : async Types.ProviderPlus {
     Debug.print("getProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
-    await ProviderManager.getProvider(providerId, state);
+    await ProviderManager.getProvider(providerId, state, contentQueueManager);
   };
 
   public shared({ caller }) func addRules(
@@ -305,7 +305,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if( start < 0 or end < 0 or start > end) {
       return throw Error.reject("Invalid range");
     };
-    return ContentManager.getProviderContent(providerId, getVoteCount, state, status, start, end);
+    return ContentManager.getProviderContent(providerId, getVoteCount, state, status, start, end, contentQueueManager);
   };
 
   public query({ caller }) func getAllContent(status: Types.ContentStatus) : async [Types.ContentPlus] {

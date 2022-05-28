@@ -98,9 +98,10 @@ export default function AdminActivity() {
   const [inProgressActivity,setInProgressActivity] = useState([]);
   const [rejectedActivity,setRejectedActivity] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingAdditional, setLoadingAdditional] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
   const filters = ["approved", "new", "rejected"];
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 2;
   const parentPageObj = {
     page: 1,
     startIndex: 0,
@@ -132,7 +133,7 @@ export default function AdminActivity() {
     status[selectedFilter] = null;
     const startIndex = page[selectedFilter].startIndex;
     const endIndex = page[selectedFilter].endIndex;
-
+    setLoadingAdditional(true);
     let providerContents = hasReachedEnd[selectedFilter] ? []:await fetchProviderContent(selectedProvider.id,status,startIndex,endIndex);
     if (providerContents.length < PAGE_SIZE) {
       status[selectedFilter] = true;
@@ -155,6 +156,7 @@ export default function AdminActivity() {
         break;
     };
     setLoading(false);
+    setLoadingAdditional(false);
   };
 
   const nextPage = () => {
@@ -248,8 +250,8 @@ export default function AdminActivity() {
                 <Button
                   color="primary"
                   onClick={() => nextPage()}
-                  className="ml-4 px-7 py-3"
                   disabled={hasReachedEnd[currentFilter]}
+                  className={ loadingAdditional && "is-loading" }
                 >
                   See more
                 </Button>

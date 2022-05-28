@@ -88,6 +88,7 @@ const getUrlFromArray = (imgData,imgType):string => {
 
 const EditProviderLogo = ({ principalID, selectedProvider, setImageUploadedMsg }) =>{
   const inputFile = useRef(null);
+  const [logoBeingUploaded, setLogoBeingUploaded] = useState<boolean>(false);
   const [logoPicSrc, setLogoPicSrc] = useState("");
   const handleUploadProviderLogo = async (e) => {
     const files  = e.target.files;
@@ -105,6 +106,7 @@ const EditProviderLogo = ({ principalID, selectedProvider, setImageUploadedMsg }
         };
 
         try {
+          setLogoBeingUploaded(true);
           await updateProviderLogo(Principal.fromText(principalID), imageData);
           const imgSrcFromImgData = getUrlFromArray(imageData.picUInt8Arr,imageData.type);
           const updatedImg = [{
@@ -118,6 +120,7 @@ const EditProviderLogo = ({ principalID, selectedProvider, setImageUploadedMsg }
         } catch (e) {
           setImageUploadedMsg({ success: false, value: "Error in uploading logo. Try again." });
         }
+        setLogoBeingUploaded(false);
         setTimeout(() => setImageUploadedMsg(), 3000);
       };
       reader.readAsDataURL(flToUpload);
@@ -133,7 +136,6 @@ const EditProviderLogo = ({ principalID, selectedProvider, setImageUploadedMsg }
         accept="image/*"
         type="file"
       />
-
       <Media
         justifyContent="center"
         onClick={() => inputFile.current.click()}
@@ -143,9 +145,11 @@ const EditProviderLogo = ({ principalID, selectedProvider, setImageUploadedMsg }
           alt="profile"
           size={128}
           className="is-clickable is-hover-reduced"
-          style={{ overflow: "hidden" }}
+          style={{ overflow: "hidden", opacity:logoBeingUploaded?0.2:1}}
         />
-        {!selectedProvider.image[0]?.src && (
+        {logoBeingUploaded?
+          (<div className="loader is-loading" style={{position: 'absolute',top: '50%'}}></div>):
+          !selectedProvider.image[0]?.src && (
           <div
             style={{
               position: "absolute",
@@ -178,14 +182,6 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
 
   let addNewRuleField = [{ id: 1, description: "" }];
   const [newRulesFieldArr, setNewRulesFieldArr] = useState(addNewRuleField);
-
-  const addToUpdateRule = (id: any, description: Text) => {
-    if (id && description) {
-      rulesBeingEdited[id.toString()] = description;
-    };
-    console.log(rulesBeingEdited);
-
-  }
 
   const createNewAddRuleField = (e) => {
     e.preventDefault();
@@ -229,7 +225,6 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
         let updatedRules = await getProviderRules(
           Principal.fromText(principalID)
         );
-        console.log(updatedRules);
         updateState(updatedRules);
         setNewRules(updatedRules);
       })
@@ -322,14 +317,13 @@ const RemoveRuleModal = ({
 }) => {
   const onRemoveRuleFormSubmit = async (values: any) => {
     let result;
-    console.log(values, rule, principalID)
+
     if (rule && rule.id) {
       await removeRules([rule.id], Principal.fromText(principalID))
         .then(async () => {
           let updatedRules = await getProviderRules(
             Principal.fromText(principalID)
           );
-          console.log(updatedRules);
           updateState(updatedRules);
           result = "Rule Removed Successfully!"
         })

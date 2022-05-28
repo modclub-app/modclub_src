@@ -50,22 +50,27 @@ module ContentModule {
         return content.id;
     };
 
-    public func getProviderContent(providerId: Principal, getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount, state: GlobalState.State, status:Types.ContentStatus, start: Nat, end: Nat) : [Types.ContentPlus] {
+    public func getProviderContent(providerId: Principal, getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount, state: GlobalState.State, status:Types.ContentStatus, start: Nat, end: Nat, contentQueueManager: QueueManager.QueueManager) : [Types.ContentPlus] {
       let buf = Buffer.Buffer<Types.ContentPlus>(0);
       let maxReturn: Nat = end - start;
       var count: Nat = 0;
       var index: Nat = 0;
       for (cid in state.provider2content.get0(providerId).vals()) {
         if((index >= start and index <= end  and count < maxReturn)) {
-          let voteCount = getVoteCount(cid, ?providerId);
-          switch(getContentPlus(cid, ?providerId, voteCount, state)) {
+          switch(contentQueueManager.getContentQueueByStatus(status).get(cid)) {
+            case (null) ();
             case (?result) {
-              if(result.status == status){
-                buf.add(result);
-                count := count + 1;
-              }
+              let voteCount = getVoteCount(cid, ?providerId);
+              switch(getContentPlus(cid, ?providerId, voteCount, state)) {
+                case (?result) {
+                  if(result.status == status){
+                    buf.add(result);
+                    count := count + 1;
+                  }
+                };
+                case (_) ();
+              };
             };
-            case (_) ();
           };
         };
         index := index + 1;

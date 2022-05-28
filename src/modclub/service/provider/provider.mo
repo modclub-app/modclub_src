@@ -8,6 +8,7 @@ import Bool "mo:base/Bool";
 import List "mo:base/List";
 
 import GlobalState "../../state";
+import QueueManager "../queue/queue";
 import Types "../../types";
 import Helpers "../../helpers";
 import ModClubParams "../parameters/params";
@@ -193,7 +194,7 @@ module ProviderModule {
     // todo: Re-evaluate all new content with votes to determine if a potential decision can be made
   };
 
-  public func getProvider(providerId: Principal, state: GlobalState.State) : async Types.ProviderPlus {
+  public func getProvider(providerId: Principal, state: GlobalState.State, contentQueueManager: QueueManager.QueueManager) : async Types.ProviderPlus {
     switch(state.providers.get(providerId)) {
       case(?provider) {
         let result : Types.ProviderPlus = {
@@ -206,7 +207,7 @@ module ProviderModule {
             settings = provider.settings;
             rules = getProviderRules(providerId, state);
             contentCount = state.provider2content.get0Size(provider.id);
-            activeCount = 100; // Todo calculate active content count
+            activeCount = getNewContentCount(provider.id, state: GlobalState.State, contentQueueManager: QueueManager.QueueManager); // Todo calculate active content count
             rewardsSpent = 5000; // Todo calculate rewards spent
         };
         return result;
@@ -496,6 +497,25 @@ module ProviderModule {
         state.providersWhitelist.put(providerId, true);
       };
     };
+  };
+
+  private func getNewContentCount(
+    providerId:Principal,
+    state: GlobalState.State,
+    contentQueueManager:QueueManager.QueueManager
+  ) : Nat {
+    var count = 0;
+    // var qStableState = QueueState.emptyStableState();
+
+    for (cid in state.provider2content.get0(providerId).vals()) {
+      switch(contentQueueManager.getContentQueueByStatus(#new).get(cid)) {
+        case (null) ();
+        case (?result) {
+          count := count + 1;
+        };
+      };
+    };
+    return count;
   };
 
 };

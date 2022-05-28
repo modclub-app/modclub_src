@@ -60,6 +60,20 @@ module QueueManager {
             };
         };
 
+        public func getContentQueueByStatus(status: Types.ContentStatus) : HashMap.HashMap<Text, ?Text> {
+            switch(status) {
+                case(#approved) {
+                    return state.approvedContentQueue;
+                };
+                case(#rejected) {
+                    return state.rejectedContentQueue;
+                };
+                case(#new) {
+                    return state.allNewContentQueue;
+                };
+            };
+        };
+
         public func isContentAssignedToUser(userId: Principal, contentId: Text, logger: Canistergeek.Logger, randomizationEnabled: Bool) : Bool {
             let queue = getUserContentQueue(userId, #new, randomizationEnabled);
             switch(queue.get(contentId)) {
@@ -99,7 +113,7 @@ module QueueManager {
         public func assignUserIds2QueueId(allUserIds: [Principal]) {
             for(i in Iter.range(0, allUserIds.size() - 1)) {
                 state.lastUserQueueIndex := (state.lastUserQueueIndex + 1) % Params.TOTAL_QUEUES;
-                logMessage(logger, "Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
+                logMessage(logger, "Assiging qId to user: " # Principal.toText(allUserIds.get(i))
                             # " currentUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
                 let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
                 Debug.print( "QueueId: " # qId # " and state.lastUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
@@ -181,7 +195,7 @@ module QueueManager {
         private func logMessage(logger: ?Canistergeek.Logger, message: Text) {
             let _ = do?{
                 Helpers.logMessage(logger!, message, #info);
-            };     
+            };
         };
     };
 };
