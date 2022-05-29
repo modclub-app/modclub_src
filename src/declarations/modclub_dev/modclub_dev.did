@@ -84,6 +84,16 @@ type ProviderPlus =
    settings: ProviderSettings;
    updatedAt: Timestamp;
  };
+type ProviderMetaResult = 
+ variant {
+   err: ProviderError;
+   ok: ProviderMeta;
+ };
+type ProviderMeta = 
+ record {
+   description: text;
+   name: text;
+ };
 type ProviderId = principal;
 type ProviderError = 
  variant {
@@ -257,10 +267,14 @@ type ModClub =
    addProviderAdmin: (principal, text, opt principal) -> (ProviderResult);
    addRules: (vec text, opt principal) -> ();
    addToAirdropWhitelist: (vec principal) -> ();
+   addToAllowList: (principal) -> ();
    addToApprovedUser: (principal) -> ();
    adminInit: () -> ();
+   adminTransferTokens: (principal, nat) -> ();
    airdropRegister: () -> (AirdropUser);
+   allNewContent: () -> (vec text);
    collectCanisterMetrics: () -> ();
+   convertAllToModerator: () -> ();
    deregisterProvider: () -> (text);
    distributeAllPendingRewards: () -> ();
    editProviderAdmin: (principal, principal, text) -> (ProviderResult);
@@ -298,13 +312,16 @@ type ModClub =
    getProfileById: (principal) -> (Profile) query;
    getProvider: (principal) -> (ProviderPlus);
    getProviderAdmins: (principal) -> (vec Profile);
-   getProviderContent: () -> (vec ContentPlus) query;
+   getProviderContent: (principal, ContentStatus, nat, nat) ->
+    (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
    getTasks: (nat, nat, bool) -> (vec ContentPlus) query;
    getTokenHoldings: () -> (Holdings) query;
    getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
    issueJwt: () -> (text);
+   newContentQueuesByqId: (nat) -> (vec text);
+   newContentQueuesqIdCount: () -> (vec nat, vec nat);
    pohGenerateUniqueToken: (principal) -> (PohUniqueToken);
    pohVerificationRequest: (principal) -> (PohVerificationResponse);
    populateChallenges: () -> ();
@@ -317,6 +334,8 @@ type ModClub =
    retiredDataCanisterIdForWriting: (text) -> () oneway;
    retrieveChallengesForUser: (text) -> (Result_1);
    rewardPoints: (principal, int) -> ();
+   setRandomization: (bool) -> ();
+   shuffleContent: () -> ();
    stakeTokens: (nat) -> (text);
    submitChallengeData: (PohChallengeSubmissionRequest) ->
     (PohChallengeSubmissionResponse);
@@ -327,8 +346,14 @@ type ModClub =
    toggleAllowSubmission: (bool) -> ();
    unStakeTokens: (nat) -> (text);
    unregisterAdmin: (text) -> (Result);
+   updateProvider: (principal, ProviderMeta) -> (ProviderMetaResult);
+   updateProviderLogo: (principal, vec nat8, text) -> (text);
    updateRules: (vec Rule, opt principal) -> ();
    updateSettings: (principal, ProviderSettings) -> (ProviderSettingResult);
+   userId2QueueId: () -> (vec record {
+                                principal;
+                                text;
+                              }) query;
    verifyUserHumanity: () -> (VerifyHumanityResponse);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
    votePohContent: (text, Decision, vec PohRulesViolated) -> ();

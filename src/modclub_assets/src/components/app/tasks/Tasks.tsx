@@ -31,7 +31,6 @@ const Task = ({ task, setVoted }) => {
   }
 
   const fetchRules = async () => {
-    console.log(task);
     const rules = await getProviderRules(task.providerId);
     setRules(rules);
   };
@@ -127,12 +126,12 @@ export default function Tasks() {
 
   useEffect(() => {
     if (user && firstLoad && !loading && fetchTasks()) {
-      setFirstLoad(false) 
+      setFirstLoad(false)
     }
   }, [user]);
 
   useEffect(() => {
-    // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI. 
+    // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI.
     // TODO: We should use Redux to manage this.
     user && voted && !loading && refetchAll()
     setVoted(false);
@@ -141,7 +140,7 @@ export default function Tasks() {
   useEffect(() => {
     user && !loading && fetchTasks();
 }, [page]);
-  
+
   const nextPage = () => {
     let nextPageNum = page.page + 1;
     let start = (nextPageNum - 1) * PAGE_SIZE;
@@ -173,7 +172,7 @@ export default function Tasks() {
       </Modal>
     )
   }
-  
+
   return (
     <>
       <Userstats />

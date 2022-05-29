@@ -128,6 +128,11 @@ module {
     image: ?Image;
   };
 
+  public type ProviderMeta = {
+    name: Text;
+    description: Text;
+  };
+
   public type ProviderPlus = {
     id: Principal;
     name: Text;
@@ -268,6 +273,7 @@ module {
         #ProviderAdminIsAlreadyRegistered;
     };
 
+    public type ProviderMetaResult = Result.Result<ProviderMeta, ProviderError>;
     public type ProviderSettingResult = Result.Result<ProviderSettings, ProviderError>;
     public type ProviderResult = Result.Result<(), ProviderError>;
     public type ProviderTextResult = Result.Result<Text, ProviderError>;

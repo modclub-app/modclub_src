@@ -126,10 +126,16 @@ export interface ModClub {
       undefined
     >,
   'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
+  'addToAllowList' : (arg_0: Principal) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
   'adminInit' : () => Promise<undefined>,
+  'adminTransferTokens' : (arg_0: Principal, arg_1: bigint) => Promise<
+      undefined
+    >,
   'airdropRegister' : () => Promise<AirdropUser>,
+  'allNewContent' : () => Promise<Array<string>>,
   'collectCanisterMetrics' : () => Promise<undefined>,
+  'convertAllToModerator' : () => Promise<undefined>,
   'deregisterProvider' : () => Promise<string>,
   'distributeAllPendingRewards' : () => Promise<undefined>,
   'editProviderAdmin' : (
@@ -172,7 +178,12 @@ export interface ModClub {
   'getProfileById' : (arg_0: Principal) => Promise<Profile>,
   'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
   'getProviderAdmins' : (arg_0: Principal) => Promise<Array<Profile>>,
-  'getProviderContent' : () => Promise<Array<ContentPlus>>,
+  'getProviderContent' : (
+      arg_0: Principal,
+      arg_1: ContentStatus,
+      arg_2: bigint,
+      arg_3: bigint,
+    ) => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
   'getTasks' : (arg_0: bigint, arg_1: bigint, arg_2: boolean) => Promise<
       Array<ContentPlus>
@@ -181,6 +192,8 @@ export interface ModClub {
   'getVotePerformance' : () => Promise<number>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
   'issueJwt' : () => Promise<string>,
+  'newContentQueuesByqId' : (arg_0: bigint) => Promise<Array<string>>,
+  'newContentQueuesqIdCount' : () => Promise<[Array<bigint>, Array<bigint>]>,
   'pohGenerateUniqueToken' : (arg_0: Principal) => Promise<PohUniqueToken>,
   'pohVerificationRequest' : (arg_0: Principal) => Promise<
       PohVerificationResponse
@@ -207,6 +220,8 @@ export interface ModClub {
   'retiredDataCanisterIdForWriting' : (arg_0: string) => Promise<undefined>,
   'retrieveChallengesForUser' : (arg_0: string) => Promise<Result_1>,
   'rewardPoints' : (arg_0: Principal, arg_1: bigint) => Promise<undefined>,
+  'setRandomization' : (arg_0: boolean) => Promise<undefined>,
+  'shuffleContent' : () => Promise<undefined>,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,
   'submitChallengeData' : (arg_0: PohChallengeSubmissionRequest) => Promise<
       PohChallengeSubmissionResponse
@@ -231,12 +246,21 @@ export interface ModClub {
   'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'unregisterAdmin' : (arg_0: string) => Promise<Result>,
+  'updateProvider' : (arg_0: Principal, arg_1: ProviderMeta) => Promise<
+      ProviderMetaResult
+    >,
+  'updateProviderLogo' : (
+      arg_0: Principal,
+      arg_1: Array<number>,
+      arg_2: string,
+    ) => Promise<string>,
   'updateRules' : (arg_0: Array<Rule>, arg_1: [] | [Principal]) => Promise<
       undefined
     >,
   'updateSettings' : (arg_0: Principal, arg_1: ProviderSettings) => Promise<
       ProviderSettingResult
     >,
+  'userId2QueueId' : () => Promise<Array<[Principal, string]>>,
   'verifyUserHumanity' : () => Promise<VerifyHumanityResponse>,
   'vote' : (
       arg_0: ContentId,
@@ -389,6 +413,9 @@ export type ProviderError = { 'ProviderAdminIsAlreadyRegistered' : null } |
   { 'InvalidProvider' : null } |
   { 'ProviderIsRegistered' : null };
 export type ProviderId = Principal;
+export interface ProviderMeta { 'name' : string, 'description' : string }
+export type ProviderMetaResult = { 'ok' : ProviderMeta } |
+  { 'err' : ProviderError };
 export interface ProviderPlus {
   'id' : Principal,
   'contentCount' : bigint,
