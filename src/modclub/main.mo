@@ -294,7 +294,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return ContentManager.submitImage(caller, sourceId, image, imageType, title, contentQueueManager, state);
   };
 
-  // Retreives all content for the calling Provider
+  // Retrieve all content for the calling Provider
   public query({ caller }) func getProviderContent(providerId: Principal, status: Types.ContentStatus, start: Nat, end: Nat) : async [Types.ContentPlus] {
     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
       case(#err(e)) {
@@ -303,7 +303,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case(_)();
     };
     if( start < 0 or end < 0 or start > end) {
-      return throw Error.reject("Invalid range");
+       throw Error.reject("Invalid range");
     };
     return ContentManager.getProviderContent(providerId, getVoteCount, state, status, start, end, contentQueueManager);
   };
