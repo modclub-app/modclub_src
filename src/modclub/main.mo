@@ -168,9 +168,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
-    /* if(not AuthManager.isAdmin(caller, admins)) {
+     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
-    }; */
+    };
     voteManager.addToAutoApprovedPOHUser(userId);
   };
 
@@ -194,7 +194,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func updateProviderLogo(providerId: Principal, logoToUpload: [Nat8], logoType: Text) : async Text {
-    Debug.print("updateProviderLogo caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
+
     return await ProviderManager.updateProviderLogo(providerId, logoToUpload, logoType, caller, state, canistergeekLogger);
   };
 
@@ -296,12 +296,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // Retrieve all content for the calling Provider
   public query({ caller }) func getProviderContent(providerId: Principal, status: Types.ContentStatus, start: Nat, end: Nat) : async [Types.ContentPlus] {
-    switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
-      case(#err(e)) {
-        throw Error.reject("Unauthorized");
-      };
-      case(_)();
-    };
     if( start < 0 or end < 0 or start > end) {
        throw Error.reject("Invalid range");
     };
@@ -1188,7 +1182,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     admins := AuthManager.setUpDefaultAdmins(admins, deployer, Principal.fromActor(this));
     storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, admins, signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
-    Debug.print("MODCLUB POSTUPGRADE");
+
     state := State.toState(stateShared);
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
