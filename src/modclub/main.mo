@@ -1084,6 +1084,48 @@ shared ({caller = deployer}) actor class ModClub() = this {
     randomizationEnabled := isRandom;
   };
 
+  public shared({caller}) func getTaskStats(from: Int) : async (Nat, Nat, Nat, Nat) {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    let approvedStats = getContentCountFrom(contentQueueManager.getUserContentQueue(caller, #approved, false), from);
+    let rejectedStats = getContentCountFrom(contentQueueManager.getUserContentQueue(caller, #rejected, false), from);
+    let newStats = getContentCountFrom(contentQueueManager.getUserContentQueue(caller, #new, false), from);
+
+    for(userId in rejectedStats.1.keys()) {
+      approvedStats.1.put(userId, null);
+    };
+    for(userId in newStats.1.keys()) {
+      approvedStats.1.put(userId, null);
+    };
+    
+    (approvedStats.0, rejectedStats.0, newStats.0, approvedStats.1.size());
+  };
+
+  func getContentCountFrom(contentQueue: HashMap.HashMap<Text, ?Text>, from: Int) : (Nat, HashMap.HashMap<Principal, ?Text>) {
+    var count = 0;
+    let distinctUsersVoted = HashMap.HashMap<Principal, ?Text>(1, Principal.equal, Principal.hash);
+    for(cid in contentQueue.keys()) {
+      switch(state.content.get(cid)) {
+        case(null)();
+        case(?con) {
+          if(con.createdAt >= from) {
+            count := count + 1;
+            for(vId in state.content2votes.get0(con.id).vals()) {
+              switch(state.votes.get(vId)) {
+                case(null)();
+                case(?v) {
+                  distinctUsersVoted.put(v.userId, null);
+                };
+              }
+            };
+          };
+        };
+      };
+    };
+    return (count, distinctUsersVoted);
+  };
+
   public shared({caller}) func newContentQueuesqIdCount() : async ([Nat], [Nat]) {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
