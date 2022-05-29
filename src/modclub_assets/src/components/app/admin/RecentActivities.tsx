@@ -101,11 +101,12 @@ export default function AdminActivity() {
   const [loadingAdditional, setLoadingAdditional] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
   const filters = ["approved", "new", "rejected"];
-  const PAGE_SIZE = 2;
+  const PAGE_SIZE = 20;
   const parentPageObj = {
     page: 1,
     startIndex: 0,
-    endIndex: PAGE_SIZE
+    endIndex: PAGE_SIZE,
+    hasDataFetched: false
   };
   const [page, setPage] = useState({
     "approved":{...parentPageObj},
@@ -128,14 +129,20 @@ export default function AdminActivity() {
     if (label === "rejected") return "Rejected"
   }
 
-  const getProviderContent = async (selectedProvider,selectedFilter) => {
+  const getProviderContent = async (selectedProvider,selectedFilter,doNotFetchExisting) => {
     let status = {};
     status[selectedFilter] = null;
     const startIndex = page[selectedFilter].startIndex;
     const endIndex = page[selectedFilter].endIndex;
     setLoadingAdditional(true);
-    let providerContents = hasReachedEnd[selectedFilter] ? []:await fetchProviderContent(selectedProvider.id,status,startIndex,endIndex);
-    if (providerContents.length < PAGE_SIZE) {
+    /*  Get provider contents if selectedFilter has not reached to the end or selected filter data has not previously fetched
+        that's to make sure each filter fetches data atleast once when user switches to different tabs AND make sure each
+        filter data was fetched atleast once and based on passed flag to prevent fetching same data on switching tabs.
+    */
+    let providerContents = ((hasReachedEnd[selectedFilter] || page[selectedFilter].hasDataFetched) && (page[selectedFilter].hasDataFetched && doNotFetchExisting)) ? []:await fetchProviderContent(selectedProvider.id,status,startIndex,endIndex);
+    page[selectedFilter].hasDataFetched = true;
+    setPage({...page,...page});
+    if (providerContents.length < PAGE_SIZE && !doNotFetchExisting) {
       status[selectedFilter] = true;
       setHasReachedEnd({...hasReachedEnd,...status});
     }
@@ -168,13 +175,13 @@ export default function AdminActivity() {
       endIndex: start + PAGE_SIZE
     };
     setPage({...page,...page});
-    selectedProvider && !loading && getProviderContent(selectedProvider,currentFilter);
+    selectedProvider && !loading && getProviderContent(selectedProvider,currentFilter,false);
   };
 
 
   useEffect(() => {
     if(selectedProvider){
-      getProviderContent(selectedProvider,"new");
+      getProviderContent(selectedProvider,"new",false);
     }
   }, [selectedProvider]);
 
@@ -206,7 +213,7 @@ export default function AdminActivity() {
                       value={filter}
                       renderAs="a"
                       className={currentFilter === filter && "is-active"}
-                      onClick={() => {setCurrentFilter(filter);getProviderContent(selectedProvider,filter)}}
+                      onClick={() => {setCurrentFilter(filter);getProviderContent(selectedProvider,filter,true)}}
                     >
                       {getLabel(filter)}
                     </Dropdown.Item>
@@ -219,7 +226,7 @@ export default function AdminActivity() {
                       key={filter}
                       color={currentFilter === filter ? "primary" : "ghost"}
                       className="has-text-white mr-0"
-                      onClick={() => {setCurrentFilter(filter);getProviderContent(selectedProvider,filter)}}
+                      onClick={() => {setCurrentFilter(filter);getProviderContent(selectedProvider,filter,true)}}
                     >
                       {getLabel(filter)}
                     </Button>
