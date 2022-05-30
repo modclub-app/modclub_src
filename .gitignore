@@ -16,3 +16,5 @@ generated.config.json
 # frontend code
 node_modules/
 dist/
+
+.history/

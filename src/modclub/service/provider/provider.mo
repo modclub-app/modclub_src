@@ -63,7 +63,7 @@ module ProviderModule {
     //Check if user is authorized to perform the action
     var authorized = false;
     Debug.print("Authenticating the caller: " # Principal.toText(callerPrincipalId));
-    switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+    switch(AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
       case (#err(error)) {
         Helpers.logMessage(logger, "updateProviderMetaData - Provider " # Principal.toText(providerId) # " permission check failed ", #info);
         return #err(error);
@@ -156,11 +156,9 @@ module ProviderModule {
                                     logger: Canistergeek.Logger
                                     )
                                     : async Types.ProviderSettingResult {
-    // Todo remove this after airdrop
-    // await onlyOwner(caller);
     var authorized = false;
     Debug.print("Authenticating the caller: " # Principal.toText(callerPrincipalId));
-    switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+    switch(AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
       case (#err(error)) {
         Helpers.logMessage(logger, "updateProviderSettings - Provider " # Principal.toText(providerId) # " permission check failed ", #info);
         return #err(error);
@@ -207,7 +205,10 @@ module ProviderModule {
             settings = provider.settings;
             rules = getProviderRules(providerId, state);
             contentCount = state.provider2content.get0Size(provider.id);
-            activeCount = getNewContentCount(provider.id, state: GlobalState.State, contentQueueManager: QueueManager.QueueManager); // Todo calculate active content count
+            activeCount = getNewContentCount(
+              provider.id,
+              state: GlobalState.State, contentQueueManager: QueueManager.QueueManager
+            );
             rewardsSpent = 5000; // Todo calculate rewards spent
         };
         return result;
@@ -326,7 +327,7 @@ module ProviderModule {
 
       // Check if the caller is an admin of this provider
       if(authorized == false) {
-          switch(await AuthManager.checkProviderAdminPermission(_providerId, caller, state)) {
+          switch(AuthManager.checkProviderAdminPermission(_providerId, caller, state)) {
             case (#err(error)) return #err(error);
             case (#ok()) authorized := true;
           };
@@ -421,7 +422,7 @@ module ProviderModule {
       // Allow Modclub Admins
       var authorized = AuthManager.isAdmin(callerPrincipalId, modClubAmins);
       if(authorized == false) {
-        switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+        switch(AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
           case (#err(error)) return #err(error);
           case (#ok()) authorized := true;
         };
@@ -452,7 +453,7 @@ module ProviderModule {
       Debug.print("Authenticating the caller: " # Principal.toText(callerPrincipalId));
 
       if(authorized == false) {
-        switch(await AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
+        switch(AuthManager.checkProviderAdminPermission(providerId, callerPrincipalId, state)) {
           case (#err(error)) return #err(error);
           case (#ok()) authorized := true;
         };

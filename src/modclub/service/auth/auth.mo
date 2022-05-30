@@ -15,7 +15,7 @@ module AuthModule {
         caller: Principal,
         providerId: ?Principal,
         state: GlobalState.State
-        ) : async Principal {
+        ) : Result.Result<(Principal), Types.Error> {
             var authorized = false;
             var isProvider = false;
             var _providerId : Principal = do {
@@ -41,14 +41,13 @@ module AuthModule {
             };
              // Check if the caller is an admin of this provider
             if(isProvider == false) {
-                switch(await checkProviderAdminPermission(_providerId, caller, state)) {
-                    case (#err(error)) throw Error.reject("Unauthorized, caller "# Principal.toText(caller) #" is not an admin of the provider" # Principal.toText(_providerId));
+                switch(checkProviderAdminPermission(_providerId, caller, state)) {
+                    case (#err(error)) return #err(#Unauthorized);
                     case (#ok()) authorized := true;
                 };
             };
-
-        if(authorized == false) throw Error.reject("unauthorized");
-        return _providerId;
+        if(authorized == false) return #err(#Unauthorized);     
+        return #ok(_providerId);
     };
 
 
@@ -89,7 +88,7 @@ module AuthModule {
         #ok();
   }; 
 
-    public func checkProviderAdminPermission(p: Principal, admin: Principal, state: GlobalState.State) : async Types.ProviderResult {
+    public func checkProviderAdminPermission(p: Principal, admin: Principal, state: GlobalState.State) : Types.ProviderResult {
         switch(state.providerAdmins.get(p)) {
             case (null) return #err(#NotFound);
             case (?adminMap) {

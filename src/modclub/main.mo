@@ -217,24 +217,36 @@ shared ({caller = deployer}) actor class ModClub() = this {
     providerId: ?Principal,
   ) : async () {
     // checkProviderPermission will return either the caller or the passed in providerId depending if the caller is the provider or not
-    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
-    ProviderManager.addRules(_providerId, rules, state, canistergeekLogger);
+    switch(AuthManager.checkProviderPermission(caller, providerId, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)){
+        ProviderManager.addRules(p, rules, state, canistergeekLogger);
+      }
+    };
   };
 
   public shared({ caller }) func removeRules(
     ruleIds: [Types.RuleId],
     providerId: ?Principal
     ): async () {
-    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
-    ProviderManager.removeRules(_providerId, ruleIds, state, canistergeekLogger);
+    switch(AuthManager.checkProviderPermission(caller, providerId, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)){
+        ProviderManager.removeRules(p, ruleIds, state, canistergeekLogger);
+      }
+    };
   };
 
   public shared({ caller }) func updateRules(
     rulesList: [Types.Rule],
     providerId: ?Principal
   ): async () {
-    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
-    ProviderManager.updateRules(_providerId, rulesList, state);
+    switch(AuthManager.checkProviderPermission(caller, providerId, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)){
+        ProviderManager.updateRules(p, rulesList, state);
+      }
+    };
   };
 
   public query func getRules(providerId: Principal) : async [Types.Rule] {
@@ -243,7 +255,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // Subscribe function for providers to register their callback after a vote decision has been made
   public shared({caller}) func subscribe(sub: Types.SubscribeMessage) : async() {
-    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
+    switch(AuthManager.checkProviderPermission(caller, null, state)) {
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p))();
+    };
     ProviderManager.subscribe(caller, sub, state, canistergeekLogger);
   };
 
@@ -268,7 +283,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
       throw Error.reject("Content already submitted");
     };
-    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
+    switch(AuthManager.checkProviderPermission(caller, null, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)) ();
+    };
     return ContentManager.submitTextOrHtmlContent(caller, sourceId, text, title, #text, contentQueueManager, state);
   };
 
@@ -276,7 +294,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
+    switch(AuthManager.checkProviderPermission(caller, null, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)) ();
+    };
     if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
       throw Error.reject("Content already submitted");
     };
@@ -290,12 +311,24 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
       throw Error.reject("Content already submitted");
     };
-    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
+    switch(AuthManager.checkProviderPermission(caller, null, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)) ();
+    };
     return ContentManager.submitImage(caller, sourceId, image, imageType, title, contentQueueManager, state);
   };
 
   // Retrieve all content for the calling Provider
-  public query({ caller }) func getProviderContent(providerId: Principal, status: Types.ContentStatus, start: Nat, end: Nat) : async [Types.ContentPlus] {
+  public query({ caller }) func getProviderContent(
+    providerId: Principal,
+    status: Types.ContentStatus,
+    start: Nat,
+    end: Nat
+    ) : async [Types.ContentPlus] {
+    switch(AuthManager.checkProviderPermission(caller, ?providerId, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)) ();
+    };
     if( start < 0 or end < 0 or start > end) {
        throw Error.reject("Invalid range");
     };
