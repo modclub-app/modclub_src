@@ -427,9 +427,6 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
       ) : (
         ""
       )}
-      <Notification color="danger" textAlign="center">
-        Administrator Dashboard DEMO
-      </Notification>
       {imageUploadedMsg &&
         <Notification color={imageUploadedMsg.success ? "success" : "danger"} className="has-text-centered">
           {imageUploadedMsg.value}
