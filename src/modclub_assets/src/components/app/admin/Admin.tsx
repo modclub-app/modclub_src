@@ -467,9 +467,6 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
                     <Button color="dark" onClick={toggleEditApp}>
                       Edit App
                     </Button>
-                    <Link to="/app/admin/activity/" className="button ml-6" >
-                      See Recent Activity
-                    </Link>
                   </Media.Item>
                 </Media>
               </Card.Content>
@@ -483,27 +480,38 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
                 <table className="table is-striped has-text-left">
                   <tbody>
                     <tr>
-                      <td>Total Feeds Posted</td>
+                      <td>Total Content Submitted</td>
                       <td>
                         {!!selectedProvider
                           ? selectedProvider.contentCount.toString()
-                          : ""}
+                          : "0"}
                       </td>
                     </tr>
                     <tr>
-                      <td>Active Posts</td>
+                      <td>Content in Review</td>
                       <td>
                         {!!selectedProvider
                           ? selectedProvider.activeCount.toString()
-                          : ""}
+                          : "0"}
                       </td>
                     </tr>
+                    <tr>
+                      <td>Content Reviewed</td>
+                      <td>
+                        {!!selectedProvider
+                          ? (selectedProvider.contentCount - selectedProvider.activeCount).toString()
+                          : "0"}
+                      </td>
+                    </tr> 
                     {/* <tr>
                       <td>Humans Verified</td>
                       <td>3434</td>
                     </tr> */}
                   </tbody>
                 </table>
+                <Link to="/app/admin/activity/" className="button ml-6" >
+                      See Recent Activity
+                </Link>
               </Card.Content>
             </Card>
           </Columns.Column>
