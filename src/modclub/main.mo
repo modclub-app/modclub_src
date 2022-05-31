@@ -413,23 +413,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return ModeratorManager.getAllProfiles(state);
   };
 
-  public func convertAllToModerator() : async (){
-    var allProfiles = ModeratorManager.getAllProfiles(state);
-    for(user in allProfiles.vals()){
-      if(user.role == #admin){
-        state.profiles.put(user.id, {
-            id = user.id;
-            userName = user.userName;
-            email = user.email;
-            pic = user.pic;
-            role = #moderator;
-            createdAt = user.createdAt;
-            updatedAt = Helpers.timeNow();
-          });
-      }
-    };
-  };
-
   public query func getModeratorLeaderboard(start: Nat, end: Nat) : async [Types.ModeratorLeaderboard] {
     switch(ModeratorManager.getModeratorLeaderboard(start, end, state, tokens.getHoldings)) {
       case(#ok(leaderboard)) {
@@ -1046,39 +1029,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
    tokens.rewardPoints(p, amount);
   };
 
-  // Below Lines to be deleted after deployment
-  stable var runOnce = false;
-  private func setUpContentQueue() {
-    if(not runOnce) {
-      let newContentBuff = Buffer.Buffer<Text>(1);
-      for ( (pid, p) in state.providers.entries()) {
-        for(cid in state.contentNew.get0(pid).vals()){
-          newContentBuff.add(cid);
-        };
-      };
-      let approvedBuff = Buffer.Buffer<Text>(1);
-      for ( (pid, p) in state.providers.entries()) {
-        for(cid in state.contentApproved.get0(pid).vals()){
-          approvedBuff.add(cid);
-        };
-      };
-      let rejectBuff = Buffer.Buffer<Text>(1);
-      for ( (pid, p) in state.providers.entries()) {
-        for(cid in state.contentRejected.get0(pid).vals()){
-          rejectBuff.add(cid);
-        };
-      };
-      contentQueueManager.moveContentIds(newContentBuff.toArray(), approvedBuff.toArray(), rejectBuff.toArray());
-      // removing content Queues from main state
-      state.contentNew.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
-      state.contentRejected.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
-      state.contentApproved.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
-      contentQueueManager.shuffleContent();
-      runOnce := true;
-    };
-  };
-  // Above Lines to be deleted after deployment
-
   // Methods to debug and look into Queues state
   public query({caller}) func userId2QueueId() : async [(Principal, Text)] {
     if(not AuthManager.isAdmin(caller, admins)) {
@@ -1236,9 +1186,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
     // pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
 
-    // Below Lines to be deleted after deployment
-    setUpContentQueue();
-    // Above Lines to be deleted after deployment
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
