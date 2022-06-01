@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Section, Hero, Container, Heading } from "react-bulma-components";
+import { HashLink } from "react-router-hash-link";
 
 export default function HowTo() {
   return (
@@ -10,11 +11,29 @@ export default function HowTo() {
             <Heading>
               How to Use MODCLUB
             </Heading>
+
+            <HashLink to="/how-to#Getting" className="is-block has-text-white">
+              1. Getting your Internet Identity
+            </HashLink>
+            <HashLink to="/how-to#Getting" className="is-block has-text-white">
+              1. Signing up to MODCLUB
+            </HashLink>
+            <HashLink to="/how-to#Getting" className="is-block has-text-white">
+              1. Getting
+            </HashLink>
+            <HashLink to="/how-to#Getting" className="is-block has-text-white">
+              1. Getting
+            </HashLink>
+            <HashLink to="/how-to#Getting" className="is-block has-text-white">
+              1. Getting
+            </HashLink>
+
+
           </Container>
         </Hero.Body>
       </Hero>
 
-      <Section>
+      <Section id="Getting">
         <Container>
           <Heading subtitle>
             Getting your Internet Identity 
@@ -24,7 +43,7 @@ export default function HowTo() {
         </Container>
       </Section>
 
-      <Section>
+      <Section id="Signing">
         <Container>
           <Heading subtitle>
             Signing up to MODCLUB 
@@ -39,7 +58,7 @@ export default function HowTo() {
         </Container>
       </Section>
 
-      <Section>
+      <Section id="POH">
         <Container>
           <Heading subtitle>
             POH 
@@ -55,7 +74,7 @@ export default function HowTo() {
         </Container>
       </Section>
 
-      <Section>
+      <Section id="Moderating">
         <Container>
           <Heading subtitle>
             Moderating content 
@@ -73,7 +92,7 @@ export default function HowTo() {
         </Container>
       </Section>
 
-      <Section className="mb-6">
+      <Section id="Receiving" className="mb-6">
         <Container>
           <Heading subtitle>
             Receiving rewards 
