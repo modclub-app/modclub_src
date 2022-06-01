@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Section, Hero, Container, Heading } from "react-bulma-components";
+import { HashLink } from "react-router-hash-link";
 
 export default function HowTo() {
   return (
@@ -14,7 +15,25 @@ export default function HowTo() {
         </Hero.Body>
       </Hero>
 
-      <Section>
+      <Container>
+        <HashLink to="/how-to#Getting" className="is-block has-text-white">
+          1. Getting your Internet Identity
+        </HashLink>
+        <HashLink to="/how-to#Signing" className="is-block has-text-white">
+          2. Signing up to MODCLUB
+        </HashLink>
+        <HashLink to="/how-to#POH" className="is-block has-text-white">
+          3. Proof of Humanity
+        </HashLink>
+        <HashLink to="/how-to#Moderating" className="is-block has-text-white">
+          4. Moderating content
+        </HashLink>
+        <HashLink to="/how-to#Receiving" className="is-block has-text-white">
+          5. Receiving rewards
+        </HashLink>
+      </Container>
+
+      <Section id="Getting">
         <Container>
           <Heading subtitle>
             Getting your Internet Identity 
@@ -24,7 +43,7 @@ export default function HowTo() {
         </Container>
       </Section>
 
-      <Section>
+      <Section id="Signing">
         <Container>
           <Heading subtitle>
             Signing up to MODCLUB 
@@ -39,10 +58,10 @@ export default function HowTo() {
         </Container>
       </Section>
 
-      <Section>
+      <Section id="POH">
         <Container>
           <Heading subtitle>
-            POH 
+            Proof of Humanity 
           </Heading>
           <p className="mb-4">Once you are registered you will be directed to the POH feature of our platform</p>
           <ul style={{ listStyle: "disc" }}>
@@ -55,7 +74,7 @@ export default function HowTo() {
         </Container>
       </Section>
 
-      <Section>
+      <Section id="Moderating">
         <Container>
           <Heading subtitle>
             Moderating content 
@@ -73,7 +92,7 @@ export default function HowTo() {
         </Container>
       </Section>
 
-      <Section className="mb-6">
+      <Section id="Receiving" className="mb-6">
         <Container>
           <Heading subtitle>
             Receiving rewards 
