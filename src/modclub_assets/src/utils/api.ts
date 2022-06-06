@@ -324,5 +324,11 @@ export async function getTasks(
   end: number,
   filterVoted: boolean
 ): Promise<ContentPlus[]> {
-  return (await getMC()).getTasks(BigInt(start), BigInt(end), filterVoted);
+  try {
+    return (await getMC()).getTasks(BigInt(start), BigInt(end), filterVoted);
+  } catch (e) {
+    // Temp fix for the issue where the MC is not ready yet
+    console.log(e);
+    return [];
+  }
 }
