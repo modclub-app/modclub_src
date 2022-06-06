@@ -223,14 +223,7 @@ module ContentModule {
         let items =  Buffer.Buffer<Types.Content>(0);
         var count: Nat = 0;
         let maxReturn: Nat = end - start;
-        Debug.print( "Retrieveing #new Queue for user: " # Principal.toText(caller));
-        Helpers.logMessage(logger, "Retrieveing #new Queue for user: " # Principal.toText(caller), #info);
         let contentQueue = contentQueueManager.getUserContentQueue(caller, #new, randomizationEnabled);
-        Helpers.logMessage(logger, "Retrieved #new Queue for user: " # Principal.toText(caller), #info);
-        Debug.print( "Retrieved #new Queue for user: " # Principal.toText(caller));
-
-
-            // TODO: When we have randomized task generation, fetch tasks from the users task queue instead of fetching all new content
         for(cid in contentQueue.keys()) {
             switch(state.content.get(cid)) {
                 case (?content) {
