@@ -204,8 +204,24 @@ module ContentModule {
         };
     };
 
-    // Retrieves only new content that needs to be approved ( i.e tasks )
+     // Retrieves only new content that needs to be approved ( i.e tasks )
     public func getTasks(
+        caller: Principal,
+        getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
+        state: GlobalState.State,
+        start: Nat,
+        end: Nat,
+        filterVoted: Bool,
+        logger: Canistergeek.Logger,
+        contentQueueManager: QueueManager.QueueManager,
+        randomizationEnabled: Bool
+    ): Result.Result<[Types.ContentPlus], Text>  {
+        let result = Buffer.Buffer<Types.ContentPlus>(0);
+        return #ok(result.toArray());
+    };
+
+    // Retrieves only new content that needs to be approved ( i.e tasks )
+    public func getTasks_v0(
         caller: Principal,
         getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
         state: GlobalState.State,
