@@ -36,7 +36,8 @@ const canisterId =
     : process.env.MODCLUB_CANISTER_ID;
 const whitelist = [canisterId];
 const host = window.location.hostname;
-let isFetchingProviderAdmins = false;
+let fetchedProviders = false;
+let checkAndConnectStoicCounter = 0;
 
 if (process.env.DEV_ENV == "dev") {
   console.log("CanisterID:", canisterId);
@@ -117,7 +118,7 @@ export function useProvideAuth(authClient): AuthContext {
           checkAndConnectToPlug();
           break;
         case 'stoic':
-          checkAndConnectToStoic();
+          if(checkAndConnectStoicCounter==0)checkAndConnectToStoic();
           break;
         default:
           break;
@@ -143,6 +144,8 @@ export function useProvideAuth(authClient): AuthContext {
   }
 
   async function checkAndConnectToStoic() {
+    //Counter is to prevent multiple calls to stoic and then subsequent calls on useEffect.
+    checkAndConnectStoicCounter++;
     // following needs to change and need to use from webpack config
     if (walletToUse) {
       const stcIdentityFromLocalStrg = await StoicIdentity.load();
@@ -182,14 +185,12 @@ export function useProvideAuth(authClient): AuthContext {
       })();
     }
 
-
-    if (user && !isFetchingProviderAdmins) {
+    if (user && !fetchedProviders) {
       let adminInitProperties = async () => {
-        isFetchingProviderAdmins = true;
+        fetchedProviders = true;
         console.log("ADMIN INTI PROPERTIES FETCHING DATA");
         let adminProviders = await getAdminProviderIDs();
         console.log("ADMIN INTI PROPERTIES FETCHING DATA AFTER AAIT");
-        isFetchingProviderAdmins = false;
         let providerListPromise = [];
         for (let provider of adminProviders) {
           providerListPromise.push(getProvider(provider));
@@ -305,6 +306,8 @@ export function useProvideAuth(authClient): AuthContext {
     setProviders([]);
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
     localStorage.removeItem('_loginType');
+    fetchedProviders = false;
+    checkAndConnectStoicCounter = 0;
     Usergeek.setPrincipal(null);
     console.log("User Logged Out");
   }
