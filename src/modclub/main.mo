@@ -535,6 +535,17 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   private func pohVerificationRequestHelper(providerUserId: Principal, providerId: Principal) : PohTypes.PohVerificationResponse  {
+
+    // TODO DELETE THIS
+    return
+    {
+          requestId = "null";
+          providerUserId = providerId;
+          status = #verified;
+          challenges = [];
+          providerId = ModClubParam.getModClubProviderId();
+          requestedOn = Helpers.timeNow();
+    };
     if(voteManager.isAutoApprovedPOHUser(providerUserId)) {
       return
       {
