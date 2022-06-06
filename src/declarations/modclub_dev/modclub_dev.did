@@ -274,7 +274,6 @@ type ModClub =
    airdropRegister: () -> (AirdropUser);
    allNewContent: () -> (vec text);
    collectCanisterMetrics: () -> ();
-   convertAllToModerator: () -> ();
    deregisterProvider: () -> (text);
    distributeAllPendingRewards: () -> ();
    editProviderAdmin: (principal, principal, text) -> (ProviderResult);
@@ -315,6 +314,7 @@ type ModClub =
    getProviderContent: (principal, ContentStatus, nat, nat) ->
     (vec ContentPlus) query;
    getRules: (principal) -> (vec Rule) query;
+   getTaskStats: (int) -> (nat, nat, nat, nat);
    getTasks: (nat, nat, bool) -> (vec ContentPlus) query;
    getTokenHoldings: () -> (Holdings) query;
    getVotePerformance: () -> (float64) query;

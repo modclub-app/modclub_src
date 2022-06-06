@@ -388,7 +388,6 @@ export const idlFactory = ({ IDL }) => {
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'allNewContent' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
     'collectCanisterMetrics' : IDL.Func([], [], []),
-    'convertAllToModerator' : IDL.Func([], [], []),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'distributeAllPendingRewards' : IDL.Func([], [], []),
     'editProviderAdmin' : IDL.Func(
@@ -464,6 +463,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
+    'getTaskStats' : IDL.Func(
+        [IDL.Int],
+        [IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat],
+        [],
+      ),
     'getTasks' : IDL.Func(
         [IDL.Nat, IDL.Nat, IDL.Bool],
         [IDL.Vec(ContentPlus)],
