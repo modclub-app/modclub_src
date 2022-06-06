@@ -1211,11 +1211,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
   var nextRunTime = Time.now();
   let FIVE_MIN_NANO_SECS = 300000000000;
   system func heartbeat() : async () {
-    // if(Time.now() > nextRunTime) {
-    //   Debug.print("Running Metrics Collection");
-    //   canistergeekMonitor.collectMetrics();
-    //   nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
-    // };
+    if(Time.now() > nextRunTime) {
+      Debug.print("Running Metrics Collection");
+      canistergeekMonitor.collectMetrics();
+      nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
+    };
   };
 
 };
