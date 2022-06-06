@@ -84,6 +84,7 @@ module.exports = {
         options: {
           loader: "tsx", // Or 'ts' if you don't need tsx
           target: "ES2020",
+          sourceMap: true,
         },
       },
       {

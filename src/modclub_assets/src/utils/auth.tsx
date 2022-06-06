@@ -196,7 +196,9 @@ export function useProvideAuth(authClient): AuthContext {
         };
         let providerList = await Promise.all(providerListPromise);
         setProviders(providerList);
-        setProviderIdText(adminProviders[0].toText());
+        if (adminProviders.length > 0) {
+          setProviderIdText(adminProviders[0].toText());
+        }
       };
       adminInitProperties();
     }
