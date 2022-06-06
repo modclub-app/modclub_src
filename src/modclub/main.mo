@@ -360,9 +360,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    // if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-    //   throw Error.reject("Proof of Humanity not completed user");
-    // };
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
     switch(ContentManager.getTasks_v0(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager, randomizationEnabled)){
       case(#err(e)) {
         throw Error.reject(e);
@@ -696,9 +696,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    // if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-    //   throw Error.reject("Proof of Humanity not completed user");
-    // };
+    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
+      throw Error.reject("Proof of Humanity not completed user");
+    };
     let pohTaskIds = voteManager.getTasksId(status, start, end);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
