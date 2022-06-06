@@ -474,6 +474,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
 
     var voteCount = getVoteCount(contentId, ?caller);
+    Helpers.logMessage(canistergeekLogger, "vote - User ID: " #
+    Principal.toText(caller) #
+    " approved: " # Bool.toText( decision == #approved) #
+    " voting on content ID : " # contentId #
+    " approve count : " # Nat.toText(voteCount.approvedCount) #
+    " rejected count : " # Nat.toText(voteCount.rejectedCount)
+    , #info);
     await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger, contentQueueManager, randomizationEnabled);
   };
 
