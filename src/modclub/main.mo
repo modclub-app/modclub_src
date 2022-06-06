@@ -353,20 +353,22 @@ shared ({caller = deployer}) actor class ModClub() = this {
         end: Nat,
         filterVoted: Bool
   ) : async [Types.ContentPlus] {
+    Helpers.logMessage(canistergeekLogger, "getTasks - provider called with provider ID: " # Principal.toText(caller), #info);
     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
-    };
-    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager, randomizationEnabled)){
+    // if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
+    //   throw Error.reject("Proof of Humanity not completed user");
+    // };
+    switch(ContentManager.getTasks_v0(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager, randomizationEnabled)){
       case(#err(e)) {
         throw Error.reject(e);
       };
       case(#ok(tasks)) {
+        Helpers.logMessage(canistergeekLogger, "getTasks - FINISHED - provider called with provider ID: " # Principal.toText(caller), #info);
         return tasks;
       };
     };
@@ -374,6 +376,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // ----------------------Moderator Methods------------------------------
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Types.Image) : async Types.Profile {
+    throw Error.reject("Unauthorized, registration is disabled");
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
@@ -610,6 +613,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func verifyUserHumanity() : async PohTypes.VerifyHumanityResponse {
+    Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - Profile ID: " # Principal.toText(caller), #info);
     var rejectionReasons: [Text] = [];
     if(voteManager.isAutoApprovedPOHUser(caller)) {
       return {
@@ -619,6 +623,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
     } else {
       let result = await pohVerificationRequest(caller);
+      Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - after pohVerificationRequest Profile ID: " # Principal.toText(caller), #info);
       if(result.status == #rejected) {
         let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, CHALLENGE_IDS, voteManager.getContentStatus);
         switch(rejectedPackageId) {
@@ -636,8 +641,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
           rejectionReasons = rejectionReasons;
         };
       };
+      Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - after right before last return Profile ID: " # Principal.toText(caller), #info);
       return {status = result.status; token = null; rejectionReasons = rejectionReasons;};
-    }
+    };
   };
 
 
@@ -674,9 +680,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
-    };
+    // if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
+    //   throw Error.reject("Proof of Humanity not completed user");
+    // };
     let pohTaskIds = voteManager.getTasksId(status, start, end);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
@@ -1190,11 +1196,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
   var nextRunTime = Time.now();
   let FIVE_MIN_NANO_SECS = 300000000000;
   system func heartbeat() : async () {
-    if(Time.now() > nextRunTime) {
-      Debug.print("Running Metrics Collection");
-      canistergeekMonitor.collectMetrics();
-      nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
-    };
+    // if(Time.now() > nextRunTime) {
+    //   Debug.print("Running Metrics Collection");
+    //   canistergeekMonitor.collectMetrics();
+    //   nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
+    // };
   };
 
 };

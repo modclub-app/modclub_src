@@ -275,7 +275,16 @@ export async function fetchProviderContent(
 // POH Methods
 export async function verifyUserHumanity(): Promise<VerifyHumanityResponse> {
   let mc = await getMC();
-  return mc.verifyUserHumanity();
+  try {
+    return mc.verifyUserHumanity();
+  } catch (e) {
+    console.log("POH error", e);
+    return {
+      status: { notSubmitted: null },
+      token: [],
+      rejectionReasons: [],
+    };
+  }
 }
 
 export async function retrieveChallengesForUser(
