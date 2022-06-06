@@ -15,6 +15,7 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
+import Canistergeek "../../canistergeek/canistergeek";
 
 module PohModule {
 
@@ -124,6 +125,21 @@ module PohModule {
                     };
                 };
             };
+        };
+
+        public func testPoh(globalState: GlobalState.State, caller: Principal) : async (Nat, Nat) {
+                let modclubId = ModClubParam.getModClubProviderId();
+                let requestId = Helpers.generateId(modclubId, "poh-mod-testing", globalState);
+                let pohVerificationRequest: PohTypes.PohVerificationRequest = {
+                    requestId = requestId;
+                    providerUserId = caller;
+                    providerId = modclubId;  
+                };
+                let size1 = state.pohVerificationRequests.size();
+                let size2 = state.provider2PohVerificationRequests.size();
+                // state.pohVerificationRequests.put(requestId, pohVerificationRequest);
+                // state.provider2PohVerificationRequests.put(modclubId, pohVerificationRequest.requestId);
+                return (size1, size2);
         };
 
             // User A
@@ -733,18 +749,6 @@ module PohModule {
 
         public func getStableStateV1() : PohState.PohStableState {
             return PohState.getStableState(state);
-        };
-
-        // to be deleted after a deployment
-        public func assignAllPohAuditstoModClub() : () {
-            for((reqId, pohReq) in state.pohVerificationRequests.entries()) {
-                state.pohVerificationRequests.put(reqId, {
-                    requestId = reqId;
-                    providerUserId = pohReq.providerUserId;
-                    providerId = ModClubParam.getModClubProviderId();
-                });
-
-            };
         };
     };
 
