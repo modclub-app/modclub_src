@@ -45,7 +45,7 @@ function initCanisterIds() {
 }
 initCanisterIds();
 
-const isDevelopment = process.env.NODE_ENV !== "production";
+const isDevelopment = true; // process.env.NODE_ENV !== "production";
 const asset_entry = path.join("src", "modclub_assets", "src", "index.html");
 
 module.exports = {
@@ -84,7 +84,6 @@ module.exports = {
         options: {
           loader: "tsx", // Or 'ts' if you don't need tsx
           target: "ES2020",
-          sourceMap: true,
         },
       },
       {
