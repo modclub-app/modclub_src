@@ -135,7 +135,6 @@ export interface ModClub {
   'airdropRegister' : () => Promise<AirdropUser>,
   'allNewContent' : () => Promise<Array<string>>,
   'collectCanisterMetrics' : () => Promise<undefined>,
-  'convertAllToModerator' : () => Promise<undefined>,
   'deregisterProvider' : () => Promise<string>,
   'distributeAllPendingRewards' : () => Promise<undefined>,
   'editProviderAdmin' : (
@@ -185,6 +184,7 @@ export interface ModClub {
       arg_3: bigint,
     ) => Promise<Array<ContentPlus>>,
   'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
+  'getTaskStats' : (arg_0: bigint) => Promise<[bigint, bigint, bigint, bigint]>,
   'getTasks' : (arg_0: bigint, arg_1: bigint, arg_2: boolean) => Promise<
       Array<ContentPlus>
     >,

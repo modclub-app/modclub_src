@@ -1,4 +1,4 @@
-import {  fileToImgSrc,  convertObj, unwrap } from "./util";
+import { fileToImgSrc, convertObj, unwrap } from "./util";
 import { actorController } from "./actor";
 import {
   ContentPlus,
@@ -26,7 +26,9 @@ import {
   ModeratorLeaderboard,
   VerifyHumanityResponse,
   Result_1,
-  ProviderMeta
+  ProviderMeta,
+  ProviderMetaResult,
+  ProviderSettingResult,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 
@@ -34,8 +36,11 @@ export type Optional<Type> = [Type] | [];
 
 var actor: _SERVICE = null;
 
-function getMC(): Promise<_SERVICE> {
-  return actorController.actor;
+async function getMC(): Promise<_SERVICE> {
+  if (!actor) {
+    actor = await actorController.actor;
+  }
+  return actor;
 }
 
 export async function registerModerator(
@@ -64,14 +69,17 @@ export async function getUserFromCanister(): Promise<Profile | null> {
   }
 }
 
-export async function addProviderAdmin(userId, principalId, userName): Promise<boolean> {
+export async function addProviderAdmin(
+  userId,
+  principalId,
+  userName
+): Promise<boolean> {
   try {
     console.log("USERID", userId, principalId);
 
     let result = await (
       await getMC()
-    )
-      .addProviderAdmin(userId, userName, [principalId]);
+    ).addProviderAdmin(userId, userName, [principalId]);
     return result.hasOwnProperty("ok") ? true : false;
   } catch (e) {
     console.log("error", e);
@@ -79,14 +87,14 @@ export async function addProviderAdmin(userId, principalId, userName): Promise<b
   }
 }
 
-export async function removeProviderAdmin(userId, principalId): Promise<boolean> {
+export async function removeProviderAdmin(
+  userId,
+  principalId
+): Promise<boolean> {
   try {
     console.log("USERID", userId, principalId);
 
-    let result = await (
-      await getMC()
-    )
-      .removeProviderAdmin(principalId, userId);
+    let result = await (await getMC()).removeProviderAdmin(principalId, userId);
     return result.hasOwnProperty("ok") ? true : false;
   } catch (e) {
     console.log("error", e);
@@ -94,14 +102,17 @@ export async function removeProviderAdmin(userId, principalId): Promise<boolean>
   }
 }
 
-export async function editProviderAdmin(userId, principalId, userName): Promise<boolean> {
+export async function editProviderAdmin(
+  userId,
+  principalId,
+  userName
+): Promise<boolean> {
   try {
     console.log("USERID", userId, principalId);
 
     let result = await (
       await getMC()
-    )
-      .editProviderAdmin(principalId, userId, userName);
+    ).editProviderAdmin(principalId, userId, userName);
     return result.hasOwnProperty("ok") ? true : false;
   } catch (e) {
     console.log("error", e);
@@ -151,7 +162,9 @@ export async function getAdminProviderIDs(): Promise<Principal[]> {
   return await (await getMC()).getAdminProviderIDs();
 }
 
-export async function getProviderAdmins(provider: Principal): Promise<Profile[]> {
+export async function getProviderAdmins(
+  provider: Principal
+): Promise<Profile[]> {
   return await (await getMC()).getProviderAdmins(provider);
 }
 
@@ -221,43 +234,53 @@ export async function removeRules(
 export async function updateProviderSettings(
   providerId: Principal,
   settings: ProviderSettings
-): Promise<void> {
+): Promise<ProviderSettingResult> {
   return (await getMC()).updateSettings(providerId, settings);
 }
-
 
 export async function updateProviderMetaData(
   providerId: Principal,
   providerData: ProviderMeta
-): Promise<void> {
+): Promise<ProviderMetaResult> {
   return (await getMC()).updateProvider(providerId, providerData);
 }
 
 export async function updateProviderLogo(
   providerId: Principal,
-  imageData?:ImageData
+  imageData?: ImageData
 ): Promise<void> {
-  return (await getMC()).updateProviderLogo(providerId, imageData.picUInt8Arr, imageData.type);
+  return;
+  // return (await getMC()).updateProviderLogo(
+  //   providerId,
+  //   imageData.picUInt8Arr,
+  //   imageData.type
+  // );
 }
 
 export async function fetchProviderContent(
   providerId: Principal,
   status: any,
   startIndex: number,
-  endIndex: number,
+  endIndex: number
 ): Promise<ContentPlus[]> {
-  console.log(startIndex,endIndex,status)
-  return (await getMC()).getProviderContent(providerId,status,BigInt(startIndex),BigInt(endIndex));
+  console.log(startIndex, endIndex, status);
+  return (await getMC()).getProviderContent(
+    providerId,
+    status,
+    BigInt(startIndex),
+    BigInt(endIndex)
+  );
 }
 
 // POH Methods
 export async function verifyUserHumanity(): Promise<VerifyHumanityResponse> {
-  return (await getMC()).verifyUserHumanity();
+  let mc = await getMC();
+  return mc.verifyUserHumanity();
 }
 
 export async function retrieveChallengesForUser(
   token: string
-): Promise<Result> {
+): Promise<Result_1> {
   return (await getMC()).retrieveChallengesForUser(token);
 }
 
@@ -301,5 +324,11 @@ export async function getTasks(
   end: number,
   filterVoted: boolean
 ): Promise<ContentPlus[]> {
-  return (await getMC()).getTasks(BigInt(start), BigInt(end), filterVoted);
+  try {
+    return (await getMC()).getTasks(BigInt(start), BigInt(end), filterVoted);
+  } catch (e) {
+    // Temp fix for the issue where the MC is not ready yet
+    console.log(e);
+    return [];
+  }
 }

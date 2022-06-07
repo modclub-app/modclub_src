@@ -16,7 +16,7 @@ import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
-import { Image__1 } from "../../../utils/types";
+import { Image } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
 
 const PAGE_SIZE = 20;
@@ -26,7 +26,7 @@ const Task = ({ task, setVoted }) => {
   const [rules, setRules] = useState([]);
 
   const getImage = (data: any) => {
-    const image = unwrap<Image__1>(data);
+    const image = unwrap<Image>(data);
     return fileToImgSrc(image.data, image.imageType);
   }
 

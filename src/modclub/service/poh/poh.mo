@@ -15,6 +15,7 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
+import Canistergeek "../../canistergeek/canistergeek";
 
 module PohModule {
 
@@ -36,7 +37,6 @@ module PohModule {
             // TODO: Audit Fixing
             // state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
             // state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
-
             let modClubUserIdOption = do? {state.providerToModclubUser.get(pohVerificationRequest.providerUserId)!};
             if(modClubUserIdOption == null) {
                 // No user in our record, Hence we can't comment on his humanity. 

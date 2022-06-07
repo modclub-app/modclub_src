@@ -53,8 +53,6 @@ module QueueManager {
                     };
                     // there will always be queue assigned to user
                     let qId = Option.get(state.userId2QueueId.get(userId), "");
-                    Debug.print( "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
-                    logMessage(logger, "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
                     return Option.get(state.newContentQueues.get(qId), HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash));
                 };
             };
