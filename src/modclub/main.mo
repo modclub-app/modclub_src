@@ -376,6 +376,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // ----------------------Moderator Methods------------------------------
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Types.Image) : async Types.Profile {
+    throw Error.reject("Unauthorized, sign up is disabled");
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
@@ -541,17 +542,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   private func pohVerificationRequestHelper(providerUserId: Principal, providerId: Principal) : PohTypes.PohVerificationResponse  {
-
-    // TODO DELETE THIS
-    return
-    {
-          requestId = "null";
-          providerUserId = providerId;
-          status = #verified;
-          challenges = [];
-          providerId = ModClubParam.getModClubProviderId();
-          requestedOn = Helpers.timeNow();
-    };
     if(voteManager.isAutoApprovedPOHUser(providerUserId)) {
       return
       {
