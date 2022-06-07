@@ -363,7 +363,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    switch(ContentManager.getTasks_v0(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager, randomizationEnabled)){
+    switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager, randomizationEnabled)){
       case(#err(e)) {
         throw Error.reject(e);
       };
