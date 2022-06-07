@@ -45,7 +45,7 @@ function initCanisterIds() {
 }
 initCanisterIds();
 
-const isDevelopment = true; // process.env.NODE_ENV !== "production";
+const isDevelopment = process.env.NODE_ENV !== "production";
 const asset_entry = path.join("src", "modclub_assets", "src", "index.html");
 
 module.exports = {

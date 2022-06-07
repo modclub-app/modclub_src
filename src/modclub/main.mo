@@ -353,6 +353,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         end: Nat,
         filterVoted: Bool
   ) : async [Types.ContentPlus] {
+    Helpers.logMessage(canistergeekLogger, "getTasks - provider called with provider ID: " # Principal.toText(caller), #info);
     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
@@ -367,6 +368,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         throw Error.reject(e);
       };
       case(#ok(tasks)) {
+        Helpers.logMessage(canistergeekLogger, "getTasks - FINISHED - provider called with provider ID: " # Principal.toText(caller), #info);
         return tasks;
       };
     };
@@ -374,6 +376,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // ----------------------Moderator Methods------------------------------
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Types.Image) : async Types.Profile {
+    throw Error.reject("Unauthorized, sign up is disabled");
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
@@ -472,6 +475,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
 
     var voteCount = getVoteCount(contentId, ?caller);
+    Helpers.logMessage(canistergeekLogger, "vote - User ID: " #
+    Principal.toText(caller) #
+    " approved: " # Bool.toText( decision == #approved) #
+    " voting on content ID : " # contentId #
+    " approve count : " # Nat.toText(voteCount.approvedCount) #
+    " rejected count : " # Nat.toText(voteCount.rejectedCount)
+    , #info);
     await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger, contentQueueManager, randomizationEnabled);
   };
 
@@ -610,6 +620,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func verifyUserHumanity() : async PohTypes.VerifyHumanityResponse {
+    Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - Profile ID: " # Principal.toText(caller), #info);
     var rejectionReasons: [Text] = [];
     if(voteManager.isAutoApprovedPOHUser(caller)) {
       return {
@@ -619,6 +630,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
     } else {
       let result = await pohVerificationRequest(caller);
+      Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - after pohVerificationRequest Profile ID: " # Principal.toText(caller), #info);
       if(result.status == #rejected) {
         let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, CHALLENGE_IDS, voteManager.getContentStatus);
         switch(rejectedPackageId) {
@@ -636,8 +648,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
           rejectionReasons = rejectionReasons;
         };
       };
+      Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - after right before last return Profile ID: " # Principal.toText(caller), #info);
       return {status = result.status; token = null; rejectionReasons = rejectionReasons;};
-    }
+    };
   };
 
 

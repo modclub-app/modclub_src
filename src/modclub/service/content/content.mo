@@ -204,24 +204,8 @@ module ContentModule {
         };
     };
 
-     // Retrieves only new content that needs to be approved ( i.e tasks )
-    public func getTasks(
-        caller: Principal,
-        getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
-        state: GlobalState.State,
-        start: Nat,
-        end: Nat,
-        filterVoted: Bool,
-        logger: Canistergeek.Logger,
-        contentQueueManager: QueueManager.QueueManager,
-        randomizationEnabled: Bool
-    ): Result.Result<[Types.ContentPlus], Text>  {
-        let result = Buffer.Buffer<Types.ContentPlus>(0);
-        return #ok(result.toArray());
-    };
-
     // Retrieves only new content that needs to be approved ( i.e tasks )
-    public func getTasks_v0(
+    public func getTasks(
         caller: Principal,
         getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
         state: GlobalState.State,
@@ -241,14 +225,9 @@ module ContentModule {
         let maxReturn: Nat = end - start;
         let contentQueue = contentQueueManager.getUserContentQueue(caller, #new, randomizationEnabled);
 
-        //Adding a temp max limit because we are timing out in this call
-        //NEED to optimize this 
-        let TEMP_MAX_LIMIT = 25;
-        var TEMP_MAX_COUNT = 0;
         for(cid in contentQueue.keys()) {
             switch(state.content.get(cid)) {
                 case (?content) {
-                    if(TEMP_MAX_COUNT <= TEMP_MAX_LIMIT) {
                       if ( filterVoted ) {
                           let voteCount = getVoteCount(cid, ?caller);
                           if(voteCount.hasVoted != true) {
@@ -257,8 +236,6 @@ module ContentModule {
                       } else {
                           items.add(content);
                       };
-                      TEMP_MAX_COUNT := TEMP_MAX_COUNT + 1;
-                    };
                 };
                 case (_) ();
             };
