@@ -1,6 +1,6 @@
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
-import GlobalState "../../state";
+import GlobalState "../../stateV1";
 import HashMap "mo:base/HashMap";
 import Helpers "../../helpers";
 import Int "mo:base/Int";
@@ -33,6 +33,10 @@ module PohModule {
 
         public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
         : PohTypes.PohVerificationResponse {
+            // request audit
+            // TODO: Audit Fixing
+            // state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
+            // state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
             let modClubUserIdOption = do? {state.providerToModclubUser.get(pohVerificationRequest.providerUserId)!};
             if(modClubUserIdOption == null) {
                 // No user in our record, Hence we can't comment on his humanity. 

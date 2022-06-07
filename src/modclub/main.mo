@@ -35,6 +35,7 @@ import RelObj "./data_structures/RelObj";
 import Rel "./data_structures/Rel";
 import Result "mo:base/Result";
 import State "./state";
+import StateV1 "./statev1";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
@@ -56,7 +57,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
   // Global Objects
-  var state = State.empty();
+  var state = StateV1.empty();
 
   stable var tokensStableV1 : Token.TokensStableV1 = Token.emptyStableV1(ModClubParam.getModclubWallet());
   var tokens = Token.Tokens(
@@ -1148,13 +1149,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return (res.toArray(), userCount.toArray());
   };
 
-  // Upgrade logic / code
+  // To be deleted next one line
   stable var stateShared : State.StateShared = State.emptyShared();
+  // Upgrade logic / code
+  stable var stateSharedV1 : StateV1.StateShared = StateV1.emptyShared();
 
   system func preupgrade() {
     Debug.print("MODCLUB PREUPGRRADE");
-    stateShared := State.fromState(state);
-
+    stateSharedV1 := StateV1.fromState(state);
     tokensStableV1 := tokens.getStableV1();
 
     storageStateStable := storageSolution.getStableState();
@@ -1168,15 +1170,22 @@ shared ({caller = deployer}) actor class ModClub() = this {
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
+  stable var ranOnce = false;
   system func postupgrade() {
     // Reinitializing storage Solution to add "this" actor as a controller
     admins := AuthManager.setUpDefaultAdmins(admins, deployer, Principal.fromActor(this));
     storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, admins, signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
-
-    state := State.toState(stateShared);
-    // Reducing memory footprint by assigning empty stable state
+    // To be deleted this if block
+    if(not ranOnce) {
+      stateSharedV1 := StateV1.migrateFromStateToStateV1(stateShared, stateSharedV1);
+      ranOnce := true;
+    };
+    state := StateV1.toState(stateSharedV1);
+    // To be deleted next one line
     stateShared := State.emptyShared();
+    // Reducing memory footprint by assigning empty stable state
+    stateSharedV1 := StateV1.emptyShared();
 
     tokensStableV1 := Token.emptyStableV1(ModClubParam.getModClubProviderId());
     storageStateStable := StorageState.emptyStableState();
@@ -1193,6 +1202,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
     contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
     // pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
+    
 
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
