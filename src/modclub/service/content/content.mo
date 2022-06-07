@@ -241,14 +241,9 @@ module ContentModule {
         let maxReturn: Nat = end - start;
         let contentQueue = contentQueueManager.getUserContentQueue(caller, #new, randomizationEnabled);
 
-        //Adding a temp max limit because we are timing out in this call
-        //NEED to optimize this 
-        let TEMP_MAX_LIMIT = 25;
-        var TEMP_MAX_COUNT = 0;
         for(cid in contentQueue.keys()) {
             switch(state.content.get(cid)) {
                 case (?content) {
-                    if(TEMP_MAX_COUNT <= TEMP_MAX_LIMIT) {
                       if ( filterVoted ) {
                           let voteCount = getVoteCount(cid, ?caller);
                           if(voteCount.hasVoted != true) {
@@ -257,8 +252,6 @@ module ContentModule {
                       } else {
                           items.add(content);
                       };
-                      TEMP_MAX_COUNT := TEMP_MAX_COUNT + 1;
-                    };
                 };
                 case (_) ();
             };
