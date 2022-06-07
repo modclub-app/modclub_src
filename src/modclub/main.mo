@@ -376,7 +376,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // ----------------------Moderator Methods------------------------------
   public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Types.Image) : async Types.Profile {
-    throw Error.reject("Unauthorized, sign up is disabled");
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
