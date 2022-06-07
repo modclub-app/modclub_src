@@ -567,11 +567,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     await pohEngine.pohGenerateUniqueToken(providerUserId, caller);
   };
 
-  // Method to test POH verification Request
-  public shared({ caller }) func pohVerificationRequestTest() : async (Nat, Nat) {
-    return  await pohEngine.testPoh(state, caller);
-  };
-
   //----------------------POH Methods For ModClub------------------------------
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
     let tokenResponse = pohEngine.decodeToken(caller, token);

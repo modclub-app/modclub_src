@@ -123,21 +123,6 @@ module PohModule {
             };
         };
 
-        public func testPoh(globalState: GlobalState.State, caller: Principal) : async (Nat, Nat) {
-                let modclubId = ModClubParam.getModClubProviderId();
-                let requestId = Helpers.generateId(modclubId, "poh-mod-testing", globalState);
-                let pohVerificationRequest: PohTypes.PohVerificationRequest = {
-                    requestId = requestId;
-                    providerUserId = caller;
-                    providerId = modclubId;  
-                };
-                let size1 = state.pohVerificationRequests.size();
-                let size2 = state.provider2PohVerificationRequests.size();
-                // state.pohVerificationRequests.put(requestId, pohVerificationRequest);
-                // state.provider2PohVerificationRequests.put(modclubId, pohVerificationRequest.requestId);
-                return (size1, size2);
-        };
-
             // User A
             // 4 years back	 3 years back	2 year back	
             // rejected	      verified	     verified	pending
