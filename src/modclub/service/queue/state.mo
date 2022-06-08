@@ -38,6 +38,18 @@ module State {
         };
     };
 
+     public func emptyStableState(): QueueStateStable {
+        return {
+            newContentQueues = [];
+            allNewContentQueue = [];
+            approvedContentQueue = [];
+            rejectedContentQueue = [];
+            queueIds = [];
+            userId2QueueId = [];
+            var lastUserQueueIndex = -1;
+        };
+    };
+
     public func getState(stableState: QueueStateStable): QueueState {
         let state = emptyState();
         for( (qId, q) in stableState.newContentQueues.vals()) {

@@ -2,6 +2,7 @@ export * from "../../../declarations/modclub/modclub.did.d";
 
 export interface ImageData {
   src: string;
+  picUInt8Arr: Array<Number>;
   type: string;
 }
 

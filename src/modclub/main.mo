@@ -168,7 +168,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func addToApprovedUser(userId: Principal) : async () {
-    if(not AuthManager.isAdmin(caller, admins)) {
+     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
     voteManager.addToAutoApprovedPOHUser(userId);
@@ -188,6 +188,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
     ProviderManager.registerProvider(caller, name, description, image, state, canistergeekLogger);
   };
 
+  public shared({ caller }) func updateProvider(providerId: Principal, updatedProviderVal:Types.ProviderMeta) : async Types.ProviderMetaResult {
+    Debug.print("updateProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
+    return await ProviderManager.updateProviderMetaData(providerId, updatedProviderVal, caller, state, canistergeekLogger);
+  };
+
+  public shared({ caller }) func updateProviderLogo(providerId: Principal, logoToUpload: [Nat8], logoType: Text) : async Text {
+
+    return await ProviderManager.updateProviderLogo(providerId, logoToUpload, logoType, caller, state, canistergeekLogger);
+  };
+
   public shared({ caller }) func deregisterProvider() : async Text {
     ProviderManager.deregisterProvider(caller, state, canistergeekLogger);
   };
@@ -199,7 +209,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   public shared({ caller }) func getProvider(providerId: Principal) : async Types.ProviderPlus {
     Debug.print("getProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
-    await ProviderManager.getProvider(providerId, state);
+    await ProviderManager.getProvider(providerId, state, contentQueueManager);
   };
 
   public shared({ caller }) func addRules(
@@ -207,24 +217,36 @@ shared ({caller = deployer}) actor class ModClub() = this {
     providerId: ?Principal,
   ) : async () {
     // checkProviderPermission will return either the caller or the passed in providerId depending if the caller is the provider or not
-    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
-    ProviderManager.addRules(_providerId, rules, state, canistergeekLogger);
+    switch(AuthManager.checkProviderPermission(caller, providerId, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)){
+        ProviderManager.addRules(p, rules, state, canistergeekLogger);
+      }
+    };
   };
 
   public shared({ caller }) func removeRules(
     ruleIds: [Types.RuleId],
     providerId: ?Principal
     ): async () {
-    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
-    ProviderManager.removeRules(_providerId, ruleIds, state, canistergeekLogger);
+    switch(AuthManager.checkProviderPermission(caller, providerId, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)){
+        ProviderManager.removeRules(p, ruleIds, state, canistergeekLogger);
+      }
+    };
   };
 
   public shared({ caller }) func updateRules(
     rulesList: [Types.Rule],
     providerId: ?Principal
   ): async () {
-    let _providerId = await AuthManager.checkProviderPermission(caller, providerId, state);
-    ProviderManager.updateRules(_providerId, rulesList, state);
+    switch(AuthManager.checkProviderPermission(caller, providerId, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)){
+        ProviderManager.updateRules(p, rulesList, state);
+      }
+    };
   };
 
   public query func getRules(providerId: Principal) : async [Types.Rule] {
@@ -233,7 +255,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // Subscribe function for providers to register their callback after a vote decision has been made
   public shared({caller}) func subscribe(sub: Types.SubscribeMessage) : async() {
-    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
+    switch(AuthManager.checkProviderPermission(caller, null, state)) {
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p))();
+    };
     ProviderManager.subscribe(caller, sub, state, canistergeekLogger);
   };
 
@@ -243,7 +268,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
    await ProviderManager.addToAllowList(providerId, state, canistergeekLogger);
   };
-  
+
 
   // ----------------------Content Related Methods------------------------------
   public query({caller}) func getContent(id: Text) : async ?Types.ContentPlus {
@@ -258,7 +283,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
       throw Error.reject("Content already submitted");
     };
-    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
+    switch(AuthManager.checkProviderPermission(caller, null, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)) ();
+    };
     return ContentManager.submitTextOrHtmlContent(caller, sourceId, text, title, #text, contentQueueManager, state);
   };
 
@@ -266,7 +294,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
+    switch(AuthManager.checkProviderPermission(caller, null, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)) ();
+    };
     if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
       throw Error.reject("Content already submitted");
     };
@@ -280,13 +311,28 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if ( ContentManager.checkIfAlreadySubmitted(sourceId, caller, state) ) {
       throw Error.reject("Content already submitted");
     };
-    let _providerId = await AuthManager.checkProviderPermission(caller, null, state);
+    switch(AuthManager.checkProviderPermission(caller, null, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)) ();
+    };
     return ContentManager.submitImage(caller, sourceId, image, imageType, title, contentQueueManager, state);
   };
 
-  // Retreives all content for the calling Provider
-  public query({ caller }) func getProviderContent() : async [Types.ContentPlus] {
-    return ContentManager.getProviderContent(caller, getVoteCount, state);
+  // Retrieve all content for the calling Provider
+  public query({ caller }) func getProviderContent(
+    providerId: Principal,
+    status: Types.ContentStatus,
+    start: Nat,
+    end: Nat
+    ) : async [Types.ContentPlus] {
+    switch(AuthManager.checkProviderPermission(caller, ?providerId, state)){
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p)) ();
+    };
+    if( start < 0 or end < 0 or start > end) {
+       throw Error.reject("Invalid range");
+    };
+    return ContentManager.getProviderContent(providerId, getVoteCount, state, status, start, end, contentQueueManager);
   };
 
   public query({ caller }) func getAllContent(status: Types.ContentStatus) : async [Types.ContentPlus] {
@@ -307,6 +353,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         end: Nat,
         filterVoted: Bool
   ) : async [Types.ContentPlus] {
+    Helpers.logMessage(canistergeekLogger, "getTasks - provider called with provider ID: " # Principal.toText(caller), #info);
     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
       case(#err(e)) {
         throw Error.reject("Unauthorized");
@@ -316,12 +363,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    Helpers.logMessage(canistergeekLogger, "Getting Tasks", #info);
     switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager, randomizationEnabled)){
       case(#err(e)) {
         throw Error.reject(e);
       };
       case(#ok(tasks)) {
+        Helpers.logMessage(canistergeekLogger, "getTasks - FINISHED - provider called with provider ID: " # Principal.toText(caller), #info);
         return tasks;
       };
     };
@@ -365,23 +412,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   public query func getAllProfiles() : async [Types.Profile] {
     return ModeratorManager.getAllProfiles(state);
-  };
-
-  public func convertAllToModerator() : async (){
-    var allProfiles = ModeratorManager.getAllProfiles(state);
-    for(user in allProfiles.vals()){
-      if(user.role == #admin){
-        state.profiles.put(user.id, {
-            id = user.id;
-            userName = user.userName;
-            email = user.email;
-            pic = user.pic;
-            role = #moderator;
-            createdAt = user.createdAt;
-            updatedAt = Helpers.timeNow();
-          });
-      }
-    };
   };
 
   public query func getModeratorLeaderboard(start: Nat, end: Nat) : async [Types.ModeratorLeaderboard] {
@@ -442,8 +472,15 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
       throw Error.reject("Proof of Humanity not completed user");
     };
-    
+
     var voteCount = getVoteCount(contentId, ?caller);
+    Helpers.logMessage(canistergeekLogger, "vote - User ID: " #
+    Principal.toText(caller) #
+    " approved: " # Bool.toText( decision == #approved) #
+    " voting on content ID : " # contentId #
+    " approve count : " # Nat.toText(voteCount.approvedCount) #
+    " rejected count : " # Nat.toText(voteCount.rejectedCount)
+    , #info);
     await ContentVotingManager.vote(caller, contentId, decision, violatedRules, voteCount, tokens, state, canistergeekLogger, contentQueueManager, randomizationEnabled);
   };
 
@@ -487,6 +524,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
       Helpers.logMessage(canistergeekLogger, "Distributing reward for " # Principal.toText(p) # " For amount: " # Int.toText(h.pendingRewards), #info);
       await tokens.distributePendingReward(p, h.pendingRewards);
     };
+  };
+
+  // TODO Delete this function
+  public shared({ caller}) func adminTransferTokens(to: Principal, amount: Nat) : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    await tokens.transfer(ModClubParam.getModclubWallet(), to, amount);
   };
 
   //----------------------POH Methods For Providers------------------------------
@@ -574,8 +619,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func verifyUserHumanity() : async PohTypes.VerifyHumanityResponse {
-    // TODO add security check
-    Debug.print("Verifying humanity called by: " # Principal.toText(caller));
+    Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - Profile ID: " # Principal.toText(caller), #info);
     var rejectionReasons: [Text] = [];
     if(voteManager.isAutoApprovedPOHUser(caller)) {
       return {
@@ -584,8 +628,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
         rejectionReasons = rejectionReasons;
       };
     } else {
-      Debug.print("Calling pohVerificationRequest");
       let result = await pohVerificationRequest(caller);
+      Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - after pohVerificationRequest Profile ID: " # Principal.toText(caller), #info);
       if(result.status == #rejected) {
         let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, CHALLENGE_IDS, voteManager.getContentStatus);
         switch(rejectedPackageId) {
@@ -603,8 +647,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
           rejectionReasons = rejectionReasons;
         };
       };
+      Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - after right before last return Profile ID: " # Principal.toText(caller), #info);
       return {status = result.status; token = null; rejectionReasons = rejectionReasons;};
-    }
+    };
   };
 
 
@@ -992,39 +1037,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
    tokens.rewardPoints(p, amount);
   };
 
-  // Below Lines to be deleted after deployment
-  stable var runOnce = false;
-  private func setUpContentQueue() {
-    if(not runOnce) {
-      let newContentBuff = Buffer.Buffer<Text>(1);
-      for ( (pid, p) in state.providers.entries()) {
-        for(cid in state.contentNew.get0(pid).vals()){
-          newContentBuff.add(cid);
-        };
-      };
-      let approvedBuff = Buffer.Buffer<Text>(1);
-      for ( (pid, p) in state.providers.entries()) {
-        for(cid in state.contentApproved.get0(pid).vals()){
-          approvedBuff.add(cid);
-        };
-      };
-      let rejectBuff = Buffer.Buffer<Text>(1);
-      for ( (pid, p) in state.providers.entries()) {
-        for(cid in state.contentRejected.get0(pid).vals()){
-          rejectBuff.add(cid);
-        };
-      };
-      contentQueueManager.moveContentIds(newContentBuff.toArray(), approvedBuff.toArray(), rejectBuff.toArray());
-      // removing content Queues from main state
-      state.contentNew.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
-      state.contentRejected.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
-      state.contentApproved.setRel(Rel.empty<Principal, Text>((Principal.hash, Text.hash), (Principal.equal, Text.equal)));
-      contentQueueManager.shuffleContent();
-      runOnce := true;
-    };
-  };
-  // Above Lines to be deleted after deployment
-
   // Methods to debug and look into Queues state
   public query({caller}) func userId2QueueId() : async [(Principal, Text)] {
     if(not AuthManager.isAdmin(caller, admins)) {
@@ -1055,6 +1067,48 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject(AuthManager.Unauthorized);
     };
     randomizationEnabled := isRandom;
+  };
+
+  public shared({caller}) func getTaskStats(from: Int) : async (Nat, Nat, Nat, Nat) {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    let approvedStats = getContentCountFrom(contentQueueManager.getUserContentQueue(caller, #approved, false), from);
+    let rejectedStats = getContentCountFrom(contentQueueManager.getUserContentQueue(caller, #rejected, false), from);
+    let newStats = getContentCountFrom(contentQueueManager.getUserContentQueue(caller, #new, false), from);
+
+    for(userId in rejectedStats.1.keys()) {
+      approvedStats.1.put(userId, null);
+    };
+    for(userId in newStats.1.keys()) {
+      approvedStats.1.put(userId, null);
+    };
+    
+    (approvedStats.0, rejectedStats.0, newStats.0, approvedStats.1.size());
+  };
+
+  func getContentCountFrom(contentQueue: HashMap.HashMap<Text, ?Text>, from: Int) : (Nat, HashMap.HashMap<Principal, ?Text>) {
+    var count = 0;
+    let distinctUsersVoted = HashMap.HashMap<Principal, ?Text>(1, Principal.equal, Principal.hash);
+    for(cid in contentQueue.keys()) {
+      switch(state.content.get(cid)) {
+        case(null)();
+        case(?con) {
+          if(con.createdAt >= from) {
+            count := count + 1;
+            for(vId in state.content2votes.get0(con.id).vals()) {
+              switch(state.votes.get(vId)) {
+                case(null)();
+                case(?v) {
+                  distinctUsersVoted.put(v.userId, null);
+                };
+              }
+            };
+          };
+        };
+      };
+    };
+    return (count, distinctUsersVoted);
   };
 
   public shared({caller}) func newContentQueuesqIdCount() : async ([Nat], [Nat]) {
@@ -1099,7 +1153,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   system func preupgrade() {
     Debug.print("MODCLUB PREUPGRRADE");
-    Debug.print("MODCLUB PREUPGRRADE");
     stateShared := State.fromState(state);
 
     tokensStableV1 := tokens.getStableV1();
@@ -1120,7 +1173,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     admins := AuthManager.setUpDefaultAdmins(admins, deployer, Principal.fromActor(this));
     storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, admins, signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
-    Debug.print("MODCLUB POSTUPGRADE");
+
     state := State.toState(stateShared);
     // Reducing memory footprint by assigning empty stable state
     stateShared := State.emptyShared();
@@ -1137,13 +1190,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := null;
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
-    
+
     contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
     // pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
 
-    // Below Lines to be deleted after deployment
-    setUpContentQueue();
-    // Above Lines to be deleted after deployment
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");

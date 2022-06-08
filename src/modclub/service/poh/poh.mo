@@ -15,6 +15,7 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
+import Canistergeek "../../canistergeek/canistergeek";
 
 module PohModule {
 
@@ -32,10 +33,6 @@ module PohModule {
 
         public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
         : PohTypes.PohVerificationResponse {
-            // request audit
-            state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
-            state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
-
             let modClubUserIdOption = do? {state.providerToModclubUser.get(pohVerificationRequest.providerUserId)!};
             if(modClubUserIdOption == null) {
                 // No user in our record, Hence we can't comment on his humanity. 
@@ -733,18 +730,6 @@ module PohModule {
 
         public func getStableStateV1() : PohState.PohStableState {
             return PohState.getStableState(state);
-        };
-
-        // to be deleted after a deployment
-        public func assignAllPohAuditstoModClub() : () {
-            for((reqId, pohReq) in state.pohVerificationRequests.entries()) {
-                state.pohVerificationRequests.put(reqId, {
-                    requestId = reqId;
-                    providerUserId = pohReq.providerUserId;
-                    providerId = ModClubParam.getModClubProviderId();
-                });
-
-            };
         };
     };
 

@@ -16,7 +16,7 @@ import Types "../../types";
 module ContentModule {
 
     public func getContent(userId: Principal, contentId: Text, voteCount: Types.VoteCount, state: GlobalState.State) : ?Types.ContentPlus {
-        return getContentPlus(contentId, ?userId, voteCount, state);  
+        return getContentPlus(contentId, ?userId, voteCount, state);
     };
 
     public func submitTextOrHtmlContent(caller: Principal, sourceId: Text, text: Text, title: ?Text, contentType: Types.ContentType, contentQueueManager: QueueManager.QueueManager, state: GlobalState.State) : Text {
@@ -50,16 +50,30 @@ module ContentModule {
         return content.id;
     };
 
-    public func getProviderContent(providerId: Principal, getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount, state: GlobalState.State) : [Types.ContentPlus] {
+    public func getProviderContent(providerId: Principal, getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount, state: GlobalState.State, status:Types.ContentStatus, start: Nat, end: Nat, contentQueueManager: QueueManager.QueueManager) : [Types.ContentPlus] {
       let buf = Buffer.Buffer<Types.ContentPlus>(0);
+      let maxReturn: Nat = end - start;
+      var count: Nat = 0;
+      var index: Nat = 0;
       for (cid in state.provider2content.get0(providerId).vals()) {
-        let voteCount = getVoteCount(cid, ?providerId);
-        switch(getContentPlus(cid, ?providerId, voteCount, state)) {
-          case (?result) {
-            buf.add(result);
+        if((index >= start and index <= end  and count < maxReturn)) {
+          switch(contentQueueManager.getContentQueueByStatus(status).get(cid)) {
+            case (null) ();
+            case (?result) {
+              let voteCount = getVoteCount(cid, ?providerId);
+              switch(getContentPlus(cid, ?providerId, voteCount, state)) {
+                case (?result) {
+                  if(result.status == status){
+                    buf.add(result);
+                    count := count + 1;
+                  }
+                };
+                case (_) ();
+              };
+            };
           };
-          case (_) ();
         };
+        index := index + 1;
       };
       buf.toArray();
     };
@@ -89,13 +103,32 @@ module ContentModule {
                 };
             };
         };
-        return Array.sort(buf.toArray(), compareContent);
+        return Array.sort(buf.toArray(), sortAsc);
     };
 
     func compareContent(a : Types.Content, b: Types.Content) : Order.Order {
       if(a.updatedAt > b.updatedAt) {
         #greater;
       } else if ( a.updatedAt < b.updatedAt) {
+        #less;
+      } else {
+        #equal;
+      }
+    };
+    func sortAsc(a : Types.Content, b: Types.Content) : Order.Order {
+      if(a.updatedAt > b.updatedAt) {
+        #greater;
+      } else if ( a.updatedAt < b.updatedAt) {
+        #less;
+      } else {
+        #equal;
+      }
+    };
+
+    func sortDesc(a : Types.Content, b: Types.Content) : Order.Order {
+      if(a.updatedAt < b.updatedAt) {
+        #greater;
+      } else if ( a.updatedAt > b.updatedAt) {
         #less;
       } else {
         #equal;
@@ -145,21 +178,21 @@ module ContentModule {
                             status = content.status;
                             sourceId = content.sourceId;
                             title = content.title;
-                            createdAt = content.createdAt; 
-                            updatedAt = content.updatedAt; 
-                            text = do  ?{
-                            switch(state.textContent.get(content.id)) {
+                            createdAt = content.createdAt;
+                            updatedAt = content.updatedAt;
+                            text = do ? {
+                              switch(state.textContent.get(content.id)) {
                                 case(?x) x.text;
                                 case(_) "";
+                              };
                             };
-                            };
-                            image = do  ?{
-                            switch(state.imageContent.get(content.id)) {
+                            image = do ? {
+                              switch(state.imageContent.get(content.id)) {
                                 case(?x) x.image;
-                                case(null) { 
+                                case(null) {
                                     { data = []; imageType = ""};
                                 };
-                            };
+                              };
                             };
                         };
                     return ?result;
@@ -187,35 +220,29 @@ module ContentModule {
             return #err("Invalid range");
         };
         let result = Buffer.Buffer<Types.ContentPlus>(0);
-        let items =  Buffer.Buffer<Types.Content>(0); 
+        let items =  Buffer.Buffer<Types.Content>(0);
         var count: Nat = 0;
         let maxReturn: Nat = end - start;
-        Debug.print( "Retrieveing #new Queue for user: " # Principal.toText(caller));
-        Helpers.logMessage(logger, "Retrieveing #new Queue for user: " # Principal.toText(caller), #info);
         let contentQueue = contentQueueManager.getUserContentQueue(caller, #new, randomizationEnabled);
-        Helpers.logMessage(logger, "Retrieved #new Queue for user: " # Principal.toText(caller), #info);
-        Debug.print( "Retrieved #new Queue for user: " # Principal.toText(caller));
 
-
-            // TODO: When we have randomized task generation, fetch tasks from the users task queue instead of fetching all new content
         for(cid in contentQueue.keys()) {
             switch(state.content.get(cid)) {
                 case (?content) {
-                    if ( filterVoted ) {
-                        let voteCount = getVoteCount(cid, ?caller);
-                        if(voteCount.hasVoted != true) {
-                            items.add(content);
-                        };
-                    } else {
-                        items.add(content);
-                    };
+                      if ( filterVoted ) {
+                          let voteCount = getVoteCount(cid, ?caller);
+                          if(voteCount.hasVoted != true) {
+                              items.add(content);
+                          };
+                      } else {
+                          items.add(content);
+                      };
                 };
                 case (_) ();
             };
         };
 
         var index: Nat = 0;
-        for(content in Array.sort(items.toArray(), compareContent).vals()) {
+        for(content in Array.sort(items.toArray(), sortAsc).vals()) {
             if(index >= start and index <= end  and count < maxReturn) {
                 let voteCount = getVoteCount(content.id, ?caller);
                 switch(getContentPlus(content.id, ?caller, voteCount, state)) {

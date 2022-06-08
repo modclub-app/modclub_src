@@ -14,6 +14,7 @@ import Moderators from "./moderators/Moderators";
 import Leaderboard from "./moderators/Leaderboard";
 import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
+import AdminActivity from "./admin/RecentActivities";
 import { useAuth } from "../../utils/auth";
 import { verifyUserHumanity } from "../../utils/api";
 import { refreshJwt } from "../../utils/jwt";
@@ -22,7 +23,7 @@ import { getUserFromCanister } from "../../utils/api";
 
 export default function ModclubApp() {
   const history = useHistory();
-  const { isAuthenticated, isAuthReady, user, selectedProvider, providerIdText, providers } = useAuth();
+  const { isAuthenticated, isAuthReady, user, selectedProvider, providerIdText, providers,setSelectedProvider } = useAuth();
   const [status, setStatus] = useState(null);
   const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([])
 
@@ -48,9 +49,6 @@ export default function ModclubApp() {
         isAuthenticated && user && initialCall();
       }
     }
-    /* if (isAuthReady && isAuthenticated && user && user.email == "") {
-      history.push("/signup");
-    } */
   }, [user, isAuthenticated]);
 
   if (isAuthReady && !isAuthenticated) return (
@@ -59,7 +57,6 @@ export default function ModclubApp() {
 
   return (
     <>
-      {/* {!user?.role?.hasOwnProperty("admin") && status && status != "verified" && */}
       {user && status && status != "verified" && !selectedProvider &&
         <UserIncompleteModal status={status} rejectionReasons={rejectionReasons} />
       }
@@ -86,22 +83,17 @@ export default function ModclubApp() {
             <Route exact path="/app/activity">
               <Activity />
             </Route>
+            <Route exact path="/app/admin/activity/">
+              <AdminActivity />
+            </Route>
             <Route exact path="/app/leaderboard">
               <Leaderboard />
             </Route>
-            {/* {user && user?.role?.hasOwnProperty("admin") ? (
-              <Route exact path="/app/admin">
-                <Admin selectedProvider={selectedProvider} />
-              </Route>
-            ) : (
-              ""
-            )} */}
             {user ? (
               <Route exact path="/app/admin">
                 {
-                  selectedProvider ? (<Admin selectedProvider={selectedProvider} providerIdText={providerIdText} />) : (<Tasks />)
+                  selectedProvider ? (<Admin selectedProvider={selectedProvider} providerIdText={providerIdText} setSelectedProvider={setSelectedProvider} providers={providers} />) : (<Tasks />)
                 }
-                {/*  <Admin selectedProvider={selectedProvider} /> */}
               </Route>
             ) : (
               <Route exact path="/app">

@@ -53,9 +53,21 @@ module QueueManager {
                     };
                     // there will always be queue assigned to user
                     let qId = Option.get(state.userId2QueueId.get(userId), "");
-                    Debug.print( "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
-                    logMessage(logger, "QueueId: " # qId # " assigned to user: " # Principal.toText(userId));
                     return Option.get(state.newContentQueues.get(qId), HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash));
+                };
+            };
+        };
+
+        public func getContentQueueByStatus(status: Types.ContentStatus) : HashMap.HashMap<Text, ?Text> {
+            switch(status) {
+                case(#approved) {
+                    return state.approvedContentQueue;
+                };
+                case(#rejected) {
+                    return state.rejectedContentQueue;
+                };
+                case(#new) {
+                    return state.allNewContentQueue;
                 };
             };
         };
@@ -99,7 +111,7 @@ module QueueManager {
         public func assignUserIds2QueueId(allUserIds: [Principal]) {
             for(i in Iter.range(0, allUserIds.size() - 1)) {
                 state.lastUserQueueIndex := (state.lastUserQueueIndex + 1) % Params.TOTAL_QUEUES;
-                logMessage(logger, "Assiging qId to user: " # Principal.toText(allUserIds.get(i)) 
+                logMessage(logger, "Assiging qId to user: " # Principal.toText(allUserIds.get(i))
                             # " currentUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
                 let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
                 Debug.print( "QueueId: " # qId # " and state.lastUserQueueIndex: " # Int.toText(state.lastUserQueueIndex));
@@ -181,7 +193,7 @@ module QueueManager {
         private func logMessage(logger: ?Canistergeek.Logger, message: Text) {
             let _ = do?{
                 Helpers.logMessage(logger!, message, #info);
-            };     
+            };
         };
     };
 };
