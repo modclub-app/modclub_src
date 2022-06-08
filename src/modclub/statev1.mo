@@ -3,7 +3,6 @@ import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
-import OldState "./state";
 import Principal "mo:base/Principal";
 import Rel "data_structures/Rel";
 import RelObj "data_structures/RelObj";
@@ -299,35 +298,6 @@ module StateV1 {
       state.provider2PohExpiry.put(pid, expiry);
     };
     return state;
-  };
-
-  // To be deleted
-  public func migrateFromStateToStateV1(state: OldState.StateShared, stateV1: StateShared) : StateShared {
-    return {
-      GLOBAL_ID_MAP = Array.append(state.GLOBAL_ID_MAP, stateV1.GLOBAL_ID_MAP);
-      providers = Array.append(state.providers, stateV1.providers);
-      providerSubs = stateV1.providerSubs;
-      usernames = stateV1.usernames;
-      providersWhitelist = Array.append(state.providersWhitelist, stateV1.providersWhitelist);
-      profiles = Array.append(state.profiles, stateV1.profiles);
-      content = Array.append(state.content, stateV1.content);
-      rules = Array.append(state.rules, stateV1.rules);
-      votes = Array.append(state.votes, stateV1.votes);
-      textContent = Array.append(state.textContent, stateV1.textContent);
-      imageContent = Array.append(state.imageContent, stateV1.imageContent);
-      airdropUsers = Array.append(state.airdropUsers, stateV1.airdropUsers);
-      providerAdmins = Array.append(state.providerAdmins, stateV1.providerAdmins);
-      airdropWhitelist = Array.append(state.airdropWhitelist, stateV1.airdropWhitelist);
-      content2votes = state.content2votes;
-      mods2votes = state.mods2votes;
-      provider2content = state.provider2content;
-      provider2rules = state.provider2rules;
-      admin2Provider = state.admin2Provider;
-      providerAllowedForAIFiltering = stateV1.providerAllowedForAIFiltering;
-      provider2PohChallengeIds = [];
-      provider2PohExpiry = [];
-      appName = state.appName;
-    };
   };
 
 };
