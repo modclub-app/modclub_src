@@ -116,9 +116,8 @@ export default function UserPhrases({ steps }) {
   }
 
   const formatPhrases = () => {
-    // const { wordList } = steps.find(step => step.wordList[0].length)
-    // setPhrases(wordList[0])
-    setPhrases(['Jolt', 'Live', 'Crop', 'Dead', 'Till', 'Blue'])
+    const { wordList } = steps.find(step => step.wordList[0].length);
+    setPhrases(wordList[0]);
   }
 
 
