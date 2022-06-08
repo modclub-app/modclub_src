@@ -74,6 +74,12 @@ module StateV1 {
 
 
     appName: Text;
+
+    providerAllowedForAIFiltering : Map<Principal, Bool>;
+
+    provider2PohChallengeIds : Map<Principal, Buffer.Buffer<Text>>;
+    provider2PohExpiry : Map<Principal, Nat>;
+
   };
 
   public type StateShared = {    
@@ -97,6 +103,9 @@ module StateV1 {
     provider2rules: RelShared<Types.ProviderId, Types.RuleId>;
     admin2Provider: RelShared<Types.UserId, Types.ProviderId>;
     appName: Text;
+    providerAllowedForAIFiltering: [(Principal, Bool)];
+    provider2PohChallengeIds: [(Principal, [Text])];
+    provider2PohExpiry: [(Principal, Nat)];
   };
 
   public func empty () : State {
@@ -123,6 +132,9 @@ module StateV1 {
       provider2rules = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
       admin2Provider = RelObj.RelObj((Principal.hash, Principal.hash), (Principal.equal, Principal.equal));
       appName = "MODCLUB";
+      providerAllowedForAIFiltering = HashMap.HashMap<Principal, Bool>(1, Principal.equal, Principal.hash);
+      provider2PohChallengeIds =  HashMap.HashMap<Principal, Buffer.Buffer<Text>>(1, Principal.equal, Principal.hash);
+      provider2PohExpiry = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
     };
     st;
   };
@@ -149,6 +161,9 @@ module StateV1 {
       provider2rules = Rel.emptyShared<Principal, Text>();
       admin2Provider = Rel.emptyShared<Principal, Principal>();
       appName = "MODCLUB";
+      providerAllowedForAIFiltering = [];
+      provider2PohChallengeIds = [];
+      provider2PohExpiry = [];
     };
     st;
   };
@@ -158,6 +173,10 @@ module StateV1 {
       for( (pid, admins) in state.providerAdmins.entries()) {
         buf.add((pid, Iter.toArray(admins.entries())));
       };
+    let provider2PohChallengeIdsStable  = Buffer.Buffer<(Principal, [Text])>(1);
+    for((pid : Principal, challengeIdBuffer: Buffer.Buffer<Text>) in state.provider2PohChallengeIds.entries()) {
+      provider2PohChallengeIdsStable.add((pid, challengeIdBuffer.toArray()));
+    };
     let st : StateShared = {
       GLOBAL_ID_MAP = Iter.toArray(state.GLOBAL_ID_MAP.entries());
       providers = Iter.toArray(state.providers.entries());
@@ -179,6 +198,9 @@ module StateV1 {
       provider2rules = Rel.share<Principal, Types.ContentId>(state.provider2rules.getRel());
       admin2Provider = Rel.share<Principal, Types.ProviderId>(state.admin2Provider.getRel());
       appName = state.appName;
+      providerAllowedForAIFiltering = Iter.toArray(state.providerAllowedForAIFiltering.entries());
+      provider2PohChallengeIds = provider2PohChallengeIdsStable.toArray();
+      provider2PohExpiry = Iter.toArray(state.provider2PohExpiry.entries());
     };
     st;
   };
@@ -262,6 +284,20 @@ module StateV1 {
       (Principal.hash, Principal.hash),
       (Principal.equal, Principal.equal)
     ));
+    for( (pid, allowed) in stateShared.providerAllowedForAIFiltering.vals()) {
+      state.providerAllowedForAIFiltering.put(pid, allowed);
+    };
+    for( (pid, challengeIdArray) in stateShared.provider2PohChallengeIds.vals()) {
+      let challengeIdBuff = Buffer.Buffer<Text>(challengeIdArray.size());
+      for(id in challengeIdArray.vals()) {
+        challengeIdBuff.add(id);
+      };
+      state.provider2PohChallengeIds.put(pid, challengeIdBuff);
+    };
+
+    for( (pid, expiry) in stateShared.provider2PohExpiry.vals()) {
+      state.provider2PohExpiry.put(pid, expiry);
+    };
     return state;
   };
 
@@ -287,6 +323,9 @@ module StateV1 {
       provider2content = state.provider2content;
       provider2rules = state.provider2rules;
       admin2Provider = state.admin2Provider;
+      providerAllowedForAIFiltering = stateV1.providerAllowedForAIFiltering;
+      provider2PohChallengeIds = [];
+      provider2PohExpiry = [];
       appName = state.appName;
     };
   };
