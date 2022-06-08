@@ -24,9 +24,9 @@ const RecordButton = styled.div`
   box-sizing: border-box;
   transition: all .2s;
   position: absolute;
-  bottom: 1rem;
   left: 0;
   right: 0;
+  bottom: 0;
 
   i {
     font-size: 0;
@@ -51,6 +51,24 @@ const RecordButton = styled.div`
   }
 `;
 
+const Timer = styled.div`
+  position:absolute;
+  right: 0;
+  top: 84px;
+  width: 40px;
+  margin: auto;
+  display: flex;
+  z-index: 10;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
+  background-color: rgba(46,49,54,.9);
+  border-radius: 35px;
+  padding: 4px 7px;
+  line-height: 1;
+  color: white;
+`;
+
 export default function UserPhrases({ steps }) {
 
   
@@ -62,6 +80,7 @@ export default function UserPhrases({ steps }) {
   const [phrases, setPhrases] = useState([]);
 
   const [capturing, setCapturing] = useState<boolean>(false);
+  const [seconds, setSeconds] = useState<number>(0);
   const [recordState, setRecordState] = useState(null);
   const [audioData, setAudioData] = useState(null);
 
@@ -70,31 +89,29 @@ export default function UserPhrases({ steps }) {
 
 
   const submit = async () => {
-    // setSubmitting(true);
-    // const blob = new Blob(recordedChunks, {
-    //   type: mimeType
-    // });
-    // if (blob.size <= MIN_FILE_SIZE) {
-    //   alert("File upload could not be completed. File size is too small. Please try again"); 
-    //   setSubmitting(false);
-    //   return;
-    // }
+    setSubmitting(true);
+    const blob = audioData.blob;
+    if (blob.size <= MIN_FILE_SIZE) {
+      alert("File upload could not be completed. File size is too small. Please try again"); 
+      setSubmitting(false);
+      return;
+    }
     
-    // let chunk = 1;
-    // for (let byteStart = 0; byteStart < blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
-    //   await processAndUploadChunk(
-    //     "challenge-user-video",
-    //     MAX_CHUNK_SIZE,
-    //     blob,
-    //     byteStart,
-    //     chunk,
-    //     blob.size,
-    //     blob.type
-    //   );
-    // }
+    let chunk = 1;
+    for (let byteStart = 0; byteStart < blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
+      await processAndUploadChunk(
+        "challenge-user-audio",
+        MAX_CHUNK_SIZE,
+        blob,
+        byteStart,
+        chunk,
+        blob.size,
+        blob.type
+      );
+    }
     
-    // setSubmitting(false);
-    // history.push("/new-poh-profile/confirm");
+    setSubmitting(false);
+    history.push("/new-poh-profile/confirm");
   }
 
   const formatPhrases = () => {
@@ -108,17 +125,17 @@ export default function UserPhrases({ steps }) {
     steps && steps.length && formatPhrases();
   }, [steps]);
 
-  // useEffect(() => {
-  //   let interval = null;
-  //   if (capturing) {
-  //     interval = setInterval(() => {
-  //       setSeconds(seconds => seconds + 1);
-  //     }, 1000);
-  //   } else if (!capturing && seconds !== 0) {
-  //     clearInterval(interval);
-  //   }
-  //   return () => clearInterval(interval);
-  // }, [capturing, seconds]);
+  useEffect(() => {
+    let interval = null;
+    if (capturing) {
+      interval = setInterval(() => {
+        setSeconds(seconds => seconds + 1);
+      }, 1000);
+    } else if (!capturing && seconds !== 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [capturing, seconds]);
 
   const handleStartCaptureClick = () => {
     setCapturing(true);
@@ -144,6 +161,12 @@ export default function UserPhrases({ steps }) {
   const resetAudio = () => {
     setAudioData(null);
   };
+
+  const formattedTime = (val) => {
+    const time = new Date(0, 0, 0);
+    time.setSeconds(val);
+    return format(time, 'mm:ss');
+  }
 
   return (
     <>
@@ -192,27 +215,35 @@ export default function UserPhrases({ steps }) {
             </>
           ) : (
             <>
-            <AudioReactRecorder
-              state={recordState}
-              onStop={onStop}
-              backgroundColor="rgb(33, 33, 33)"
-              canvasHeight="100"
-            />
-            <RecordButton
-              capturing={capturing}
-              onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
-            >
-              <svg width="46" height="46" className="btn-record-timer">
-                <defs> <mask id="cirleMask"> <rect height="46" width="46" fill="white"></rect> <circle r="18" cx="23" cy="23" fill="black"></circle> </mask> </defs> <circle r="23" cx="23" cy="23" fill="#64686B" mask="url(#cirleMask)"></circle> <path id="timerArc" fill="#ffffff" strokeWidth="0" mask="url(#cirleMask)" d="M 23 23 L 22.999999999999996 0 A 23 23 0 0 0 22.999999999999996 0 L 23 23"></path>
-              </svg>
-              <i />
-            </RecordButton>
+              <p>Click to start recording</p>
+              <AudioReactRecorder
+                state={recordState}
+                onStop={onStop}
+                backgroundColor="rgb(100, 104, 107)"
+                borderRadius="1rem"
+                canvasHeight="100"
+              />
+
+            {capturing &&
+              <Timer>
+                {formattedTime(seconds)}
+              </Timer>
+            }
+              <RecordButton
+                capturing={capturing}
+                onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
+              >
+                <svg width="46" height="46" className="btn-record-timer">
+                  <defs> <mask id="cirleMask"> <rect height="46" width="46" fill="white"></rect> <circle r="18" cx="23" cy="23" fill="black"></circle> </mask> </defs> <circle r="23" cx="23" cy="23" fill="#64686B" mask="url(#cirleMask)"></circle> <path id="timerArc" fill="#ffffff" strokeWidth="0" mask="url(#cirleMask)" d="M 23 23 L 22.999999999999996 0 A 23 23 0 0 0 22.999999999999996 0 L 23 23"></path>
+                </svg>
+                <i />
+              </RecordButton>
             </>
           )}
         </div>
       </div>
 
-      <Card className="mt-6 mb-5">
+      <Card className="my-5">
         <Card.Content className="columns is-multiline">
           <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
             Record yourself saying the following<br /> words in order:
