@@ -54,7 +54,8 @@ const RecordButton = styled.div`
 const Timer = styled.div`
   position:absolute;
   right: 0;
-  top: 84px;
+  left: 0;
+  top: 60px;
   width: 40px;
   margin: auto;
   display: flex;
@@ -188,8 +189,8 @@ export default function UserPhrases({ steps }) {
               style={{
                 position: "absolute",
                 margin: "auto",
-                bottom: "35%",
                 left: 0,
+                right: 0,
                 width: "85%"
               }}
             ></audio>
@@ -197,8 +198,10 @@ export default function UserPhrases({ steps }) {
               rounded
               style={{
                 position: "absolute",
-                bottom: "42%",
+                bottom: 0,
                 right: 0,
+                left: 0,
+                margin: "auto",
                 width: "3rem",
                 height: "3rem",
                 background: "rgba(46, 49, 54, 0.6)",
@@ -219,7 +222,7 @@ export default function UserPhrases({ steps }) {
               <AudioReactRecorder
                 state={recordState}
                 onStop={onStop}
-                backgroundColor="rgb(100, 104, 107)"
+                backgroundColor="#eee"
                 borderRadius="1rem"
                 canvasHeight="100"
               />
