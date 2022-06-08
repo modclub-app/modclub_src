@@ -34,7 +34,6 @@ import Random "mo:base/Random";
 import RelObj "./data_structures/RelObj";
 import Rel "./data_structures/Rel";
 import Result "mo:base/Result";
-import State "./state";
 import StateV1 "./statev1";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
@@ -1149,8 +1148,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return (res.toArray(), userCount.toArray());
   };
 
-  // To be deleted next one line
-  stable var stateShared : State.StateShared = State.emptyShared();
   // Upgrade logic / code
   stable var stateSharedV1 : StateV1.StateShared = StateV1.emptyShared();
 
@@ -1170,20 +1167,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
-  stable var ranOnce = false;
   system func postupgrade() {
     // Reinitializing storage Solution to add "this" actor as a controller
     admins := AuthManager.setUpDefaultAdmins(admins, deployer, Principal.fromActor(this));
     storageSolution := StorageSolution.StorageSolution(storageStateStable, retiredDataCanisterId, admins, signingKey);
     Debug.print("MODCLUB POSTUPGRADE");
-    // To be deleted this if block
-    if(not ranOnce) {
-      stateSharedV1 := StateV1.migrateFromStateToStateV1(stateShared, stateSharedV1);
-      ranOnce := true;
-    };
+    
     state := StateV1.toState(stateSharedV1);
-    // To be deleted next one line
-    stateShared := State.emptyShared();
     // Reducing memory footprint by assigning empty stable state
     stateSharedV1 := StateV1.emptyShared();
 
