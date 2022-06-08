@@ -1,6 +1,8 @@
 import Buffer "mo:base/Buffer";
+import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
-import GlobalState "../../state";
+import Error "mo:base/Error";
+import GlobalState "../../stateV1";
 import HashMap "mo:base/HashMap";
 import Helpers "../../helpers";
 import Int "mo:base/Int";
@@ -15,13 +17,13 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
-import Canistergeek "../../canistergeek/canistergeek";
 
 module PohModule {
 
-    public let CHALLENGE_PROFILE_DETAILS_ID = "challenge-profile-details";
     public let CHALLENGE_PROFILE_PIC_ID = "challenge-profile-pic";
     public let CHALLENGE_USER_VIDEO_ID = "challenge-user-video";
+    public let CHALLENGE_USER_AUDIO_ID = "challenge-user-audio";
+
 
     public class PohEngine(stableState : PohState.PohStableState) {
 
@@ -33,6 +35,10 @@ module PohModule {
 
         public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
         : PohTypes.PohVerificationResponse {
+            // request audit
+            // TODO: Audit Fixing
+            // state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
+            // state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
             let modClubUserIdOption = do? {state.providerToModclubUser.get(pohVerificationRequest.providerUserId)!};
             if(modClubUserIdOption == null) {
                 // No user in our record, Hence we can't comment on his humanity. 
@@ -171,13 +177,14 @@ module PohModule {
             };
         };
 
-        public func decodeToken(userId: Principal, token: Text) : Result.Result<(), PohTypes.PohError> {
+        public func decodeToken(userId: Principal, token: Text) : Result.Result<PohTypes.PohUserProviderData, PohTypes.PohError> {
             switch(state.pohProviderUserData.get(token)) {
                 case(null) return #err(#invalidToken);
-                case(?pUser)
+                case(?pUser) {
                     state.providerToModclubUser.put(pUser.providerUserId, userId);
+                    #ok(pUser);
+                };
             };
-            #ok();
         };
 
         // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
@@ -254,7 +261,8 @@ module PohModule {
                     completedOn = -1; // -1 means not completed
                     wordList = do ?{
                         switch(state.pohChallenges.get(challengeId)!.challengeType) {
-                            case(#selfVideo) Helpers.generateRandomList(6, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
+                            case(#selfVideo) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_VIDEO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
+                            case(#selfAudio) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_AUDIO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
                             case(_) [];
                         };
                     };
@@ -377,23 +385,6 @@ module PohModule {
                 contentId := attempt.attemptId!;
             };
             return contentId; 
-        };
-
-        public func updatePohUserObject(userId:Principal, fullName:Text, email:Text, userName:Text, aboutUser : Text) : () {
-            switch(state.pohUsers.get(userId)) {
-                case(null) ();
-                case(?user) {
-                    state.pohUsers.put(userId, {
-                        userId = user.userId;
-                        userName = ?userName;
-                        email = ?email;
-                        fullName = ?fullName;
-                        aboutUser = ?aboutUser;
-                        createdAt = user.createdAt;
-                        updatedAt = Helpers.timeNow();
-                    });
-                };
-            };
         };
 
         public func createChallengePackageForVoting(
@@ -594,33 +585,16 @@ module PohModule {
             return Option.get(validRules, false);
         };
 
-        public func populateChallenges() : () {
-            let allowedViolationRules1 = Buffer.Buffer<PohTypes.ViolatedRules>(2);
-            allowedViolationRules1.add( {
-                ruleId= "1";
-                ruleDesc = "The username is not offensive or uses fowl language";
-            }); 
-            allowedViolationRules1.add( {
-                ruleId= "2";
-                ruleDesc = "The fullname is not offensive or uses fowl language";
-            });
-            allowedViolationRules1.add( {
-                ruleId= "3";
-                ruleDesc = "The about section is not offensive or uses fowl language";
-            });
-            state.pohChallenges.put(CHALLENGE_PROFILE_DETAILS_ID, {
-                challengeId = CHALLENGE_PROFILE_DETAILS_ID;
-                challengeName = "Please create a username";
-                challengeDescription = "Please create a username";
-                // assuming there will be no transitive dependencies. else graph needs to be used
-                requiredField = #profileFieldBlobs;
-                dependentChallengeId = null;
-                challengeType =  #userName;
-                allowedViolationRules = allowedViolationRules1.toArray();
-                createdAt = Helpers.timeNow();
-                updatedAt = Helpers.timeNow();
-            });
+        public func getProviderPohConfiguration(providerId: Principal, state: GlobalState.State) : Result.Result<([Text], Nat), PohTypes.PohError> {
+            let challengeIds = Option.get(state.provider2PohChallengeIds.get(providerId), Buffer.Buffer<Text>(0));
+            let expiry = Option.get(state.provider2PohExpiry.get(providerId), 0);
+            if(expiry == 0 or challengeIds.size() == 0) {
+                return #err(#pohNotConfiguredForProvider);
+            };
+            return #ok((challengeIds.toArray(), expiry))
+        };
 
+        public func populateChallenges() : () {
             let allowedViolationRules2 = Buffer.Buffer<PohTypes.ViolatedRules>(3);
             allowedViolationRules2.add({
                 ruleId= "1";
@@ -672,6 +646,29 @@ module PohModule {
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
             });
+
+            let allowedViolationRules4 = Buffer.Buffer<PohTypes.ViolatedRules>(4);
+            allowedViolationRules4.add( {
+                ruleId= "1";
+                ruleDesc = "The person in the audio says all the words in order in the box above";
+            });
+            allowedViolationRules4.add( {
+                ruleId= "2";
+                ruleDesc = "The person in the audio appears to be a real person and not AI generated by voice";
+            });
+            state.pohChallenges.put(CHALLENGE_USER_AUDIO_ID, {
+                challengeId = CHALLENGE_USER_AUDIO_ID;
+                challengeName = "Please record your audio reading these words";
+                challengeDescription = "Please record your audio reading these words";
+                requiredField = #audioBlob;
+                // assuming there will be no transitive dependencies. else graph needs to be used
+                dependentChallengeId = null;
+                challengeType =  #selfAudio;
+                allowedViolationRules = allowedViolationRules4.toArray();
+                createdAt = Helpers.timeNow();
+                updatedAt = Helpers.timeNow();
+            });
+
             state.wordList.add("Cute");
             state.wordList.add("Free");
             state.wordList.add("Pair");
