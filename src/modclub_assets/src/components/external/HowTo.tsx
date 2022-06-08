@@ -14,24 +14,26 @@ export default function HowTo() {
           </Container>
         </Hero.Body>
       </Hero>
-
-      <Container>
-        <HashLink to="/how-to#Getting" className="is-block has-text-white">
-          1. Getting your Internet Identity
-        </HashLink>
-        <HashLink to="/how-to#Signing" className="is-block has-text-white">
-          2. Signing up to MODCLUB
-        </HashLink>
-        <HashLink to="/how-to#POH" className="is-block has-text-white">
-          3. Proof of Humanity
-        </HashLink>
-        <HashLink to="/how-to#Moderating" className="is-block has-text-white">
-          4. Moderating content
-        </HashLink>
-        <HashLink to="/how-to#Receiving" className="is-block has-text-white">
-          5. Receiving rewards
-        </HashLink>
-      </Container>
+      
+      <Section className="no-border">
+        <Container>
+          <HashLink to="/how-to#Getting" className="is-block has-text-white">
+            1. Getting your Internet Identity
+          </HashLink>
+          <HashLink to="/how-to#Signing" className="is-block has-text-white">
+            2. Signing up to MODCLUB
+          </HashLink>
+          <HashLink to="/how-to#POH" className="is-block has-text-white">
+            3. Proof of Humanity
+          </HashLink>
+          <HashLink to="/how-to#Moderating" className="is-block has-text-white">
+            4. Moderating content
+          </HashLink>
+          <HashLink to="/how-to#Receiving" className="is-block has-text-white">
+            5. Receiving rewards
+          </HashLink>
+        </Container>
+      </Section>
 
       <Section id="Getting">
         <Container>
