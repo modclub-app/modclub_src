@@ -4,7 +4,7 @@ import Blob "mo:base/Blob";
 import Buffer "mo:base/Buffer";
 import Canistergeek "./canistergeek/canistergeek";
 import Char "mo:base/Char";
-import GlobalState "state";
+import GlobalState "stateV1";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Int64 "mo:base/Int64";
@@ -68,7 +68,7 @@ module Helpers {
       let randomWords = Buffer.Buffer<Text>(size);
 
       // using hashmap since hashset is not available
-      let allAvailableWordIndices  = HashMap.HashMap<Int, Nat>(1, Int.equal, Int.hash);
+      let allAvailableWordIndices  = HashMap.HashMap<Nat, Nat>(1, Int.equal, Int.hash);
       for(i in Iter.range(0, wordList.size() - 1)) {
           allAvailableWordIndices.put(i, 1); //value is useless here
       };
@@ -79,8 +79,9 @@ module Helpers {
       while(randomWords.size() < size) {
           seed := Nat32.toNat(randomFeed.next().0) % allAvailableWordIndices.size();
           // same word index shouldn't be chosen again
-          allAvailableWordIndices.delete(seed);
-          randomWords.add(wordList.get(seed));
+          let selectedIndex = Iter.toArray(allAvailableWordIndices.keys()).get(seed);
+          allAvailableWordIndices.delete(selectedIndex);
+          randomWords.add(wordList.get(selectedIndex));
       };
       randomWords.toArray();
   };
