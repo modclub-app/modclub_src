@@ -20,6 +20,7 @@ a.navbar-item {
   padding-top: 3rem;
 }
 
+
 .landing-page .section {
   // border-top: 1px solid red;
   margin-top: 6rem;
@@ -27,7 +28,7 @@ a.navbar-item {
   padding-bottom: 0;
   position: relative;
 
-  &:before {
+  &:not(.no-border)::before {
     content: "";
     display: block;
     background: #3e4348;
@@ -38,6 +39,10 @@ a.navbar-item {
     left: 0;
     right: 0;
     margin: auto;
+  }
+
+  &.no-border {
+    padding-top: 0;
   }
 }
 
