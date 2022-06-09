@@ -7,7 +7,7 @@ import Debug "mo:base/Debug";
 import Bool "mo:base/Bool";
 import List "mo:base/List";
 
-import GlobalState "../../stateV1";
+import GlobalState "../../statev1";
 import QueueManager "../queue/queue";
 import Types "../../types";
 import Helpers "../../helpers";

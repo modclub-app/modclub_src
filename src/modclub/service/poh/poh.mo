@@ -1,6 +1,6 @@
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
-import GlobalState "../../stateV1";
+import GlobalState "../../statev1";
 import HashMap "mo:base/HashMap";
 import Helpers "../../helpers";
 import Int "mo:base/Int";
