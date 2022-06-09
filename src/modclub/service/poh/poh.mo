@@ -276,10 +276,11 @@ module PohModule {
                 case(null)
                     return #incorrectChallenge;
                 case(?pohChallenge){
-                    if(pohChallenge.requiredField == #profileFieldBlobs 
-                            and (challengeData.userName == null or challengeData.email == null or challengeData.fullName == null or challengeData.aboutUser == null)) {
-                        return #inputDataMissing;
-                    } else if(pohChallenge.requiredField != #profileFieldBlobs and challengeData.challengeDataBlob == null) {
+                    // if(pohChallenge.requiredField == #profileFieldBlobs 
+                    //         and (challengeData.userName == null or challengeData.email == null or challengeData.fullName == null or challengeData.aboutUser == null)) {
+                    //     return #inputDataMissing;
+                    // } else 
+                    if(pohChallenge.requiredField != #profileFieldBlobs and challengeData.challengeDataBlob == null) {
                         return #inputDataMissing;
                     };
                 }
