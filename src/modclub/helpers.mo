@@ -4,7 +4,7 @@ import Blob "mo:base/Blob";
 import Buffer "mo:base/Buffer";
 import Canistergeek "./canistergeek/canistergeek";
 import Char "mo:base/Char";
-import GlobalState "stateV1";
+import GlobalState "statev1";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Int64 "mo:base/Int64";
