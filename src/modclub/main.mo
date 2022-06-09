@@ -619,7 +619,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func verifyUserHumanity() : async PohTypes.VerifyHumanityResponse {
-    Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - Profile ID: " # Principal.toText(caller), #info);
     var rejectionReasons: [Text] = [];
     if(voteManager.isAutoApprovedPOHUser(caller)) {
       return {
@@ -629,7 +628,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
     } else {
       let result = await pohVerificationRequest(caller);
-      Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - after pohVerificationRequest Profile ID: " # Principal.toText(caller), #info);
       if(result.status == #rejected) {
         let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, CHALLENGE_IDS, voteManager.getContentStatus);
         switch(rejectedPackageId) {
@@ -647,7 +645,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
           rejectionReasons = rejectionReasons;
         };
       };
-      Helpers.logMessage(canistergeekLogger, "verifyUserHumanity - after right before last return Profile ID: " # Principal.toText(caller), #info);
       return {status = result.status; token = null; rejectionReasons = rejectionReasons;};
     };
   };
