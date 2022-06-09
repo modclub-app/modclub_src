@@ -367,7 +367,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    switch(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId())) {
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
       case(#ok(verificationResponse)) {
         if(verificationResponse.status != #verified) {
           throw Error.reject("Proof of Humanity not completed user");
@@ -995,21 +995,21 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   private func getProviderRules(providerId: Principal) : [Types.Rule] {
-      let buf = Buffer.Buffer<Types.Rule>(0);
-      for(ruleId in state.provider2rules.get0(providerId).vals()){
-        switch(state.rules.get(ruleId)){
-          case(?rule){
-            buf.add(rule);
-          };
-          case(_)();
+    let buf = Buffer.Buffer<Types.Rule>(0);
+    for(ruleId in state.provider2rules.get0(providerId).vals()){
+      switch(state.rules.get(ruleId)){
+        case(?rule){
+          buf.add(rule);
         };
+        case(_)();
       };
-      buf.toArray();
+    };
+    buf.toArray();
   };
 
   // Return the principal identifier of this canister.
   public func whoami () : async Principal {
-        Principal.fromActor(this);
+    Principal.fromActor(this);
   };
 
   public query func getDeployer () : async Principal {
