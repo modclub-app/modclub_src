@@ -341,7 +341,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    switch(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId())) {
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
       case(#ok(verificationResponse)) {
         if(verificationResponse.status != #verified) {
           throw Error.reject("Proof of Humanity not completed user");
@@ -451,7 +451,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case (#err(e)) { throw Error.reject("Unauthorized"); };
       case (_) ();
     };
-    switch(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId())) {
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
       case(#ok(verificationResponse)) {
         if(verificationResponse.status != #verified) {
           throw Error.reject("Proof of Humanity not completed user");
@@ -492,7 +492,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case (#err(e)) { throw Error.reject("Unauthorized"); };
       case (_) ();
     };
-    switch(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId())) {
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
       case(#ok(verificationResponse)) {
         if(verificationResponse.status != #verified) {
           throw Error.reject("Proof of Humanity not completed user");
@@ -521,7 +521,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func stakeTokens(amount: Nat) : async Text {
-    switch(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId())) {
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
       case(#ok(verificationResponse)) {
         if(verificationResponse.status != #verified) {
           throw Error.reject("Proof of Humanity not completed user");
@@ -594,7 +594,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
           providerUserId = providerId;
           status = #verified;
           challenges = [];
-          providerId = ModClubParam.getModClubProviderId();
+          providerId = Principal.fromActor(this);
           requestedOn = Helpers.timeNow();
       });
     };
@@ -762,7 +762,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    switch(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId())) {
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
       case(#ok(verificationResponse)) {
         if(verificationResponse.status != #verified) {
           throw Error.reject("Proof of Humanity not completed user");
@@ -833,7 +833,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    switch(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId())) {
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
       case(#ok(verificationResponse)) {
         if(verificationResponse.status != #verified) {
           throw Error.reject("Proof of Humanity not completed user");
@@ -1262,7 +1262,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // Reducing memory footprint by assigning empty stable state
     stateSharedV1 := StateV1.emptyShared();
 
-    tokensStableV1 := Token.emptyStableV1(ModClubParam.getModClubProviderId());
+    tokensStableV1 := Token.emptyStableV1(Principal.fromActor(this));
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
     pohStableStateV1 := PohStateV1.emptyStableState();
