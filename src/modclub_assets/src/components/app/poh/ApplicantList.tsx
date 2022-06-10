@@ -20,18 +20,13 @@ import { PohTaskPlus } from "../../../utils/types";
 const PAGE_SIZE = 9;
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
-
-  // console.log("applicant profileImageUrlSuffix", applicant.profileImageUrlSuffix);
-  // console.log("applicant", applicant);
-
-  // return (<h1>TEMP!</h1>);
-
   const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
   const match = profileImageUrlSuffix.length ? regEx.exec(profileImageUrlSuffix[0]) : null;
   const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
   const [urlObject, setUrlObject] = useState(null);
-  
+  const placeholder = '../assets/user_placeholder.png'
+
   useEffect(() => {
     const fetchData = async () => {
       const urlObject = await fetchObjectUrl(imageUrl);
@@ -46,7 +41,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
       to={`/app/poh/${applicant.packageId}`}
       className="card is-flex is-flex-direction-column is-justify-content-flex-end"
       style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${urlObject})`,
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${imageUrl ? urlObject : placeholder})`,
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundSize: "cover"

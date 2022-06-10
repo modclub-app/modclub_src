@@ -164,7 +164,6 @@ export default function PohApplicant() {
                   }
                   {task.challengeId == "challenge-user-audio" &&
                     <UserAudio data={task} />
-                    // <UserVideo data={task} />
                   }
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
