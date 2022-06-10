@@ -20,10 +20,16 @@ import { PohTaskPlus } from "../../../utils/types";
 const PAGE_SIZE = 9;
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
+
+  // console.log("applicant profileImageUrlSuffix", applicant.profileImageUrlSuffix);
+  // console.log("applicant", applicant);
+
+  // return (<h1>TEMP!</h1>);
+
   const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
-  const match = regEx.exec(profileImageUrlSuffix[0]);
-  const imageUrl = getUrlForData(match[1], match[2]);
+  const match = profileImageUrlSuffix.length ? regEx.exec(profileImageUrlSuffix[0]) : null;
+  const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
   const [urlObject, setUrlObject] = useState(null);
   
   useEffect(() => {
@@ -33,7 +39,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
     };
     fetchData();
     return () => { setUrlObject(null) };
-  }, [])   
+  }, [imageUrl])
   
   return (
     <Link
@@ -107,6 +113,7 @@ export default function PohApplicantList() {
     setLoading(true);
     const status = { "new": null };    
     const newApplicants = await getPohTasks(status, page.startIndex, page.endIndex);
+    console.log("newApplicants", newApplicants);
     if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);
