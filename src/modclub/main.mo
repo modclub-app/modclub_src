@@ -647,29 +647,26 @@ shared ({caller = deployer}) actor class ModClub() = this {
         let attemptId = pohEngine.getAttemptId(pohDataRequest.challengeId, caller);
         let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset,
                 pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
-        if(pohDataRequest.offset == pohDataRequest.numOfChunks) {//last Chunk coming in
+        if(pohDataRequest.offset == pohDataRequest.numOfChunks) {
+          //last Chunk coming in
           pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
           pohEngine.updateDataCanisterId(pohDataRequest.challengeId, caller, dataCanisterId);
-        };
-      };
-      // TODO dynamic list will be fetched from admin dashboard state
-      let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
-      let challengePackage = pohEngine.createChallengePackageForVoting(
-        caller,
-        providerChallenges,
-        voteManager.getContentStatus,
-        state
-      );
-      switch(challengePackage) {
-        case(null)();
-        case(?package) {
-          voteManager.initiateVotingPoh(package.id, caller);
-          if(voteManager.isAutoApprovedPOHUser(caller)) {
-            pohEngine.changeChallengePackageStatus(package.id, #verified);
+
+          let challengePackages = pohEngine.createChallengePackageForVoting(
+            caller,
+            voteManager.getContentStatus,
+            state
+          );
+          for(package in challengePackages.vals()) {
+            voteManager.initiateVotingPoh(package.id, caller);
+            // if(voteManager.isAutoApprovedPOHUser(caller)) {
+            //   pohEngine.changeChallengePackageStatus(package.id, #verified);
+            // };
           };
         };
       };
     };
+      
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = isValid;
