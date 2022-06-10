@@ -606,7 +606,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // validity and rules needs to come from admin dashboard here
     switch(pohEngine.getProviderPohConfiguration(providerId, state)) {
       case(#ok(providerPohConfig)) {
-        #ok(pohEngine.pohVerificationRequest(pohVerificationRequest, providerPohConfig.1, providerPohConfig.0));
+        #ok(pohEngine.pohVerificationRequest(pohVerificationRequest, providerPohConfig.expiry, providerPohConfig.challengeIds));
       };
       case(#err(er)) {
         return #err(er);
@@ -615,13 +615,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   // Method called by provider
-  public shared({ caller }) func pohGenerateUniqueToken(providerUserId: Principal) : async PohTypes.PohUniqueToken {
+  public shared({ caller }) func pohGenerateUniqueToken(providerUserId: Text) : async PohTypes.PohUniqueToken {
+    // Avoiding Id collision of two providers
+    // let uniqueProviderUserId = Principal.toText(caller) # "_" # providerUserId;
     await pohEngine.pohGenerateUniqueToken(providerUserId, caller);
   };
 
   //----------------------POH Methods For ModClub------------------------------
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    let tokenResponse = pohEngine.decodeToken(caller, token);
     switch(pohEngine.decodeToken(caller, token)) {
       case(#err(err)) {
         return #err(err);
@@ -629,7 +630,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case(#ok(tokenResponse)) {
         switch(pohEngine.getProviderPohConfiguration(tokenResponse.providerId, state)) {
           case(#ok(pohConfigForProvider)) {
-            await pohEngine.retrieveChallengesForUser(caller, pohConfigForProvider.0, pohConfigForProvider.1, false);
+            pohEngine.associateProviderUserId2ModclubUserId(tokenResponse.providerUserId, caller);
+            await pohEngine.retrieveChallengesForUser(caller, pohConfigForProvider.challengeIds, pohConfigForProvider.expiry, false);
           };
           case(#err(er)) {
             return #err(er);
@@ -673,6 +675,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
   };
 
+  // for modclub only
   public shared({ caller }) func verifyUserHumanity() : async PohTypes.VerifyHumanityResponse {
     var rejectionReasons: [Text] = [];
     if(voteManager.isAutoApprovedPOHUser(caller)) {
@@ -766,7 +769,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         };
       };
       case(#err(#pohNotConfiguredForProvider)) {
-        throw Error.reject("Poh Not configured for provider.");
+        throw Error.reject("Poh Not configured for Modclub.");
       };
       case(_)();
     };
@@ -775,10 +778,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);
       let taskDataWrapper = pohEngine.getPohTasks([id]);
-      var userName :?Text = null;
-      var email:?Text = null;
-      var fullName :?Text = null;
-      var aboutUser:?Text = null;
       var profileImageUrlSuffix :?Text = null;
       for(wrapper in taskDataWrapper.vals()) {
         for(data in wrapper.pohTaskData.vals()) {
@@ -800,10 +799,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
           let taskPlus = {
             packageId = id;
             status = voteManager.getContentStatus(id);
-            userName = null; // Don't expose personal info about POH users
-            email = null;
-            fullName = null;
-            aboutUser = null;
             profileImageUrlSuffix = profileImageUrlSuffix;
             // TODO: change these vote settings
             voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
@@ -1290,7 +1285,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
       nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
     };
   };
-
 };
 
 

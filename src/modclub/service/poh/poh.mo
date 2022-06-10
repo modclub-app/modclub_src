@@ -6,13 +6,16 @@ import GlobalState "../../stateV1";
 import HashMap "mo:base/HashMap";
 import Order "mo:base/Order";
 import Array "mo:base/Array";
+import TrieMap "mo:base/TrieMap";
 import Helpers "../../helpers";
+import RelObj "../../data_structures/RelObj";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
-import PohState "./statev1";
+import PohStateV1 "./statev1";
+import PohState "./statev2";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
@@ -29,36 +32,52 @@ module PohModule {
 
     public class PohEngine(stableState : PohState.PohStableState) {
 
-        let state = PohState.getState(stableState);
+        // let state = PohState.getState(stableState);
+        let state = PohState.emptyState();
 
         let userToPackageIdState = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
 
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
 
-        public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequest, validForDays: Nat, configuredChallengeIds: [Text]) 
+        public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequestV1, validForDays: Nat, configuredChallengeIds: [Text]) 
         : PohTypes.PohVerificationResponse {
             // request audit
             // TODO: Audit Fixing
             // state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
             // state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
-            let modClubUserIdOption = do? {state.providerToModclubUser.get(pohVerificationRequest.providerUserId)!};
-            if(modClubUserIdOption == null) {
+
+            var modclubUserId : [Principal] = [];
+            let modClubUserIdOption = switch(state.providerUserIdToModclubUserIdByProviderId.get(pohVerificationRequest.providerId)) {
+                case(null){
+                    return
+                    {
+                        requestId = pohVerificationRequest.requestId;
+                        providerUserId = pohVerificationRequest.providerUserId;
+                        status = #startPoh;
+                        challenges = [];
+                        providerId = pohVerificationRequest.providerId;
+                        requestedOn = Helpers.timeNow();
+                    };
+                };
+                case(?providerUserIdToModclubUserId) {
+                    modclubUserId := providerUserIdToModclubUserId.get0(pohVerificationRequest.providerUserId);
+                };
+            };
+
+            if(modclubUserId.size() == 0) {
                 // No user in our record, Hence we can't comment on his humanity. 
                 return
                     {
                         requestId = pohVerificationRequest.requestId;
                         providerUserId = pohVerificationRequest.providerUserId;
-                        status = #notSubmitted;
+                        status = #startPoh;
                         challenges = [];
                         providerId = pohVerificationRequest.providerId;
                         requestedOn = Helpers.timeNow();
                     };
             };
 
-            // if execution is here, modClubUserIdOption
-            // second parameter can be ignored here. It's just to unwrap this option
-            let modClubUserId = Option.get(modClubUserIdOption, pohVerificationRequest.providerUserId);
-            switch(state.pohUserChallengeAttempts.get(modClubUserId)) {
+            switch(state.pohUserChallengeAttempts.get(modclubUserId.get(0))) {
                 case(null) 
                     // If user is in record, but no attempt is not possible in our flow
                     // Extra cautious and sending zero challenges attempted array
@@ -164,53 +183,48 @@ module PohModule {
         };
 
         //Pre Step 4 Generate token
-        public func pohGenerateUniqueToken(providerUserId: Principal, providerId: Principal) : async PohTypes.PohUniqueToken {
+        public func pohGenerateUniqueToken(providerUserId: Text, providerId: Principal) : async PohTypes.PohUniqueToken {
             //using token: as salt instead of time here to keep behavior deterministic for us
-            let hash: Text = Helpers.generateHash("token:" # Principal.toText(providerUserId) # Principal.toText(providerId));
-            // let uuid:Text =  await Helpers.generateUUID(); //generate uuid code here. We can use hash here instead.
-            let providerUser:PohTypes.PohUserProviderData = {
-                token = hash;
-                providerUserId = providerUserId;
-                providerId = providerId;
+            let token: Text = Helpers.generateHash("token:" # providerUserId # Principal.toText(providerId));
+            switch(state.token2ProviderAndUserData.get(token)) {
+                case(null) {
+                    // recording the time when the first time token was generated
+                    let providerUser : PohTypes.PohProviderAndUserData = {
+                        token = token;
+                        providerUserId = providerUserId;
+                        providerId = providerId;
+                        generatedAt = Helpers.timeNow();
+                    };
+                    state.token2ProviderAndUserData.put(token, providerUser);
+                };
+                case(_)();
             };
-            state.pohProviderUserData.put(hash, providerUser);
             {
-                token = hash;
+                token = token;
             };
         };
 
-        public func decodeToken(userId: Principal, token: Text) : Result.Result<PohTypes.PohUserProviderData, PohTypes.PohError> {
-            switch(state.pohProviderUserData.get(token)) {
+        public func decodeToken(modclubUserId: Principal, token: Text) : Result.Result<PohTypes.PohProviderAndUserData, PohTypes.PohError> {
+            switch(state.token2ProviderAndUserData.get(token)) {
                 case(null) return #err(#invalidToken);
                 case(?pUser) {
-                    state.providerToModclubUser.put(pUser.providerUserId, userId);
                     #ok(pUser);
                 };
             };
         };
 
+        public func associateProviderUserId2ModclubUserId(pUser: PohTypes.PohProviderAndUserData, modclubUserId: Principal) : () {
+            let providerUserId2ModclubUserId = Option.get(state.providerUserIdToModclubUserIdByProviderId.get(pUser.providerId), RelObj.RelObj<Text, Principal>((Text.hash, Principal.hash), (Text.equal, Principal.equal)));
+            providerUserId2ModclubUserId.put(pUser.providerUserId, modclubUserId);
+            state.providerUserIdToModclubUserIdByProviderId.put(pUser.providerId, providerUserId2ModclubUserId);
+        };
+
         // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
         // Modclub UI will ask for all the challenge for a user to show
         public func retrieveChallengesForUser(userId: Principal, challengeIds: [Text], validForDays: Nat, forceCreateNewAttempts: Bool) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-            // populate pohUsers but with their modclub user id
-            switch(state.pohUsers.get(userId)) {
-                case(null) {
-                    state.pohUsers.put(userId, {
-                        userId = userId;
-                        userName = null;
-                        fullName = null;
-                        email = null;
-                        aboutUser = null;
-                        createdAt = Helpers.timeNow();
-                        updatedAt = Helpers.timeNow();
-                    });
-                };
-                case(_)();
-            };
-
             switch(state.pohUserChallengeAttempts.get(userId)) {
                 case(null)
-                    state.pohUserChallengeAttempts.put(userId, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttempt>>(5, Text.equal, Text.hash));
+                    state.pohUserChallengeAttempts.put(userId, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttempt>>(challengeIds.size(), Text.equal, Text.hash));
                 case(_)();
             };
 
@@ -500,9 +514,8 @@ module PohModule {
             let pohTasks = Buffer.Buffer<PohTypes.PohTaskDataWrapper>(taskIds.size());
 
             for(id in taskIds.vals()) {
-                let pohChallengePackage = state.pohChallengePackages.get(id);
                 let taskData = Buffer.Buffer<PohTypes.PohTaskData>(taskIds.size());
-                switch(pohChallengePackage) {
+                switch(state.pohChallengePackages.get(id)) {
                     case(null)();
                     case(?package) {
                         for(challengeId in package.challengeIds.vals()) {
@@ -520,10 +533,6 @@ module PohModule {
                                         challengeType  = att.challengeType;
                                         userId = package.userId;
                                         status = att.status;
-                                        userName = do ?{state.pohUsers.get(package.userId)!.userName!};
-                                        email = do ?{state.pohUsers.get(package.userId)!.email!};
-                                        fullName = do ?{state.pohUsers.get(package.userId)!.fullName!};
-                                        aboutUser = do ?{state.pohUsers.get(package.userId)!.aboutUser!};
                                         contentId = att.attemptId; //attemptId is contentId for a challenge
                                         dataCanisterId = att.dataCanisterId;
                                         wordList = att.wordList;
@@ -629,13 +638,16 @@ module PohModule {
             return Option.get(validRules, false);
         };
 
-        public func getProviderPohConfiguration(providerId: Principal, state: GlobalState.State) : Result.Result<([Text], Nat), PohTypes.PohError> {
+        public func getProviderPohConfiguration(providerId: Principal, state: GlobalState.State) : Result.Result<PohTypes.PohConfigurationForProvider, PohTypes.PohError> {
             let challengeIds = Option.get(state.provider2PohChallengeIds.get(providerId), Buffer.Buffer<Text>(0));
             let expiry = Option.get(state.provider2PohExpiry.get(providerId), 0);
             if(expiry == 0 or challengeIds.size() == 0) {
                 return #err(#pohNotConfiguredForProvider);
             };
-            return #ok((challengeIds.toArray(), expiry))
+            return #ok({
+                challengeIds = challengeIds.toArray(); 
+                expiry = expiry
+                });
         };
 
         public func populateChallenges() : () {

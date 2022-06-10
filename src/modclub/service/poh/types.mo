@@ -15,6 +15,23 @@ module {
         #expired;
     };
 
+    public type PohVerificationStatus = {
+        #startPoh;
+        #notSubmitted;
+        #pending;
+        #verified;
+        #rejected;
+        #expired;
+    };
+
+    // public type PohChallengeStatusV1 = {
+    //     #notSubmitted;
+    //     #pending;
+    //     #verified;
+    //     #rejected;
+    //     #expired;
+    // };
+
     //POH Users Ref Data
     public type PohUsers = {
         userId: Principal;
@@ -55,10 +72,31 @@ module {
         token: Text;
     };
 
+    // To be deleted
     public type PohUserProviderData = {
         token: Text;
         providerUserId: Principal;
         providerId: Principal;
+    };
+
+    public type PohProviderAndUserData = {
+        token: Text;
+        providerUserId: Text;
+        providerId: Principal;
+        generatedAt: Int;
+    };
+
+    public type PohRequestData = {
+        requestId: Text;
+        token: Text;
+        providerUserId: Text;
+        providerId: Principal;
+        requestedAt: Int;
+    };
+
+    public type PohConfigurationForProvider = {
+        challengeIds: [Text];
+        expiry: Nat;
     };
 
     // Type representing Challenge attempt
@@ -84,11 +122,18 @@ module {
         providerId: Principal;
     };
 
+    // type representing request for verificaiton
+    public type PohVerificationRequestV1 = {
+        requestId: Text;
+        providerUserId: Text;
+        providerId: Principal;
+    };
+
     // Response sent to provider for verificaitio request
     public type PohVerificationResponse = {
         requestId: Text;
-        providerUserId: Principal;
-        status: PohChallengeStatus;
+        providerUserId: Text;
+        status: PohVerificationStatus;
         // status at each challenge level
         challenges: [ChallengeResponse];
         providerId: Principal;
@@ -106,10 +151,6 @@ module {
         challengeId: Text;
         // response to challenge can be text or image or video
         challengeDataBlob : ?Blob;
-        // userName: ?Text;
-        // email: ?Text;
-        // fullName: ?Text;
-        // aboutUser: ?Text;
         offset: Nat; // default 1
         numOfChunks: Nat; // default 1
         mimeType: Text; // 
@@ -137,10 +178,6 @@ module {
         challengeType: PohChallengeType;
         userId: Principal;
         status: PohChallengeStatus;
-        userName: ?Text;
-        email: ?Text;
-        fullName: ?Text;
-        aboutUser: ?Text;
         contentId: ?Text;
         dataCanisterId: ?Principal;
         wordList: ?[Text];
@@ -171,10 +208,6 @@ module {
         packageId: Text;
         status: Types.ContentStatus;
         voteCount: Nat;
-        userName: ?Text;
-        email: ?Text;
-        fullName: ?Text;
-        aboutUser: ?Text;
         profileImageUrlSuffix: ?Text;
         minVotes: Int;
         minStake: Int; 
