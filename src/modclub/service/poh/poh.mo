@@ -1,17 +1,18 @@
+import Array "mo:base/Array";
+import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import GlobalState "../../stateV1";
 import HashMap "mo:base/HashMap";
-import Order "mo:base/Order";
-import Array "mo:base/Array";
 import Helpers "../../helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
+import Order "mo:base/Order";
 import PohState "./statev1";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
@@ -416,7 +417,6 @@ module PohModule {
 
             let packagesCreated = Buffer.Buffer<PohTypes.PohChallengePackage>(1);
             for((pid, challengeIds) in globalState.provider2PohChallengeIds.entries()) {
-                
                 var packageExist = false;
                 label p for(packageId in state.userToPohChallengePackageId.get0(userId).vals()) {
                     switch(state.pohChallengePackages.get(packageId)) {
@@ -447,8 +447,9 @@ module PohModule {
                         };
                     };
                 };
-
-                if(packageExist) {
+                
+                if(not packageExist) {
+                    Debug.print("Package doesn't exista" );
                     let _ = do? {
                         let challengeIdsForPackage = Buffer.Buffer<Text>(1);
                         let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
