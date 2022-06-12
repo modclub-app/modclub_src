@@ -769,14 +769,20 @@ module PohModule {
                 case(?package) {
                     let modclubUserId = package.userId;
                     for((providerId, callbackSubs) in state.providersCallback.entries()) {
-                        callbackSubs.callback({
-                            providerUserId =  Option.get(findProviderUserId(providerId, modclubUserId), "");
-                            pohStatus = finalDecision;
-                            requestedAt = -1;
-                            submittedAt = -1;
-                            completedAt = -1;
-                            challenges = [];
-                        });
+                        switch(findProviderUserId(providerId, modclubUserId)) {
+                            case(null)();
+                            case(?pUserId) {
+                                    callbackSubs.callback({
+                                    providerUserId =  pUserId;
+                                    pohStatus = finalDecision;
+                                    requestedAt = -1;
+                                    submittedAt = -1;
+                                    completedAt = -1;
+                                    challenges = [];
+                                });
+                            };
+                        }
+                       
                     };
                 };
             };

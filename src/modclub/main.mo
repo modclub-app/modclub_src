@@ -1066,13 +1066,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return ProviderManager.getAdminProviderIDs(caller, state, canistergeekLogger);
   };
 
-  // public shared({caller}) func getPohAttempts(): async [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])] {
-  //   if(not AuthManager.isAdmin(caller, admins)) {
-  //     throw Error.reject(AuthManager.Unauthorized);
-  //   };
-  //   // pohEngine.getStableStateV1().pohUserChallengeAttempts;
-  //   // return ProviderManager.getAdminProviderIDs(caller, state);
-  // };
+  public shared({caller}) func getPohAttempts(): async [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])] {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    pohEngine.getStableState().pohUserChallengeAttempts;
+  };
 
   public shared({caller}) func shuffleContent() : async () {
     if(not AuthManager.isAdmin(caller, admins)) {
@@ -1277,7 +1276,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // Reducing memory footprint by assigning empty stable state
     stateSharedV1 := StateV1.emptyShared();
 
-    tokensStableV1 := Token.emptyStableV1(Principal.fromActor(this));
+    tokensStableV1 := Token.emptyStableV1(ModClubParam.getModclubWallet());
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
     // Delete from here after deployment
