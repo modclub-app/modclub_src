@@ -192,7 +192,7 @@ module {
 
   public type SubscribeMessage = {
     callback: shared (ContentResult) -> ();
-    };
+  };
 
   public type GetContentParams = {
     status: ContentStatus;

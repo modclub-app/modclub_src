@@ -6,7 +6,7 @@ import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 
-import GlobalState "../../stateV1";
+import GlobalState "../../statev1";
 import Helpers "../../helpers";
 import Types "../../types";
 import Tokens "../../token";

@@ -8,7 +8,7 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 
-import GlobalState "../../stateV1";
+import GlobalState "../../statev1";
 import Helpers "../../helpers";
 import Types "../../types";
 import Tokens "../../token";

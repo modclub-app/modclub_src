@@ -24,15 +24,7 @@ module {
         #expired;
     };
 
-    // public type PohChallengeStatusV1 = {
-    //     #notSubmitted;
-    //     #pending;
-    //     #verified;
-    //     #rejected;
-    //     #expired;
-    // };
-
-    //POH Users Ref Data
+    // To be deleted after deployment
     public type PohUsers = {
         userId: Principal;
         userName: ?Text;
@@ -68,11 +60,7 @@ module {
         #ssn; #dl; #selfPic; #selfVideo; #selfAudio; #fullName; #userName; #email;
     };
 
-    public type PohUniqueToken =  {
-        token: Text;
-    };
-
-    // To be deleted
+    // To be deleted after deployment
     public type PohUserProviderData = {
         token: Text;
         providerUserId: Principal;
@@ -116,6 +104,7 @@ module {
     };
 
     // type representing request for verificaiton
+    // to be deleted after deployment
     public type PohVerificationRequest = {
         requestId: Text;
         providerUserId: Principal;
@@ -130,20 +119,30 @@ module {
     };
 
     // Response sent to provider for verificaitio request
-    public type PohVerificationResponse = {
+    public type PohVerificationResponsePlus = {
         requestId: Text;
         providerUserId: Text;
         status: PohVerificationStatus;
         // status at each challenge level
         challenges: [ChallengeResponse];
         providerId: Principal;
+        token: ?Text;
+        rejectionReasons: [Text];
         requestedOn: Int;
+    };
+
+    public type PohVerificationResponse = {
+        status: PohVerificationStatus;
+        // status at each challenge level
+        challenges: [ChallengeResponse];
     };
 
     public type ChallengeResponse = {
         challengeId: Text;
         status : PohChallengeStatus;
-        completedOn : ?Int;
+        requestedAt: ?Int;
+        submittedAt: ?Int;
+        completedAt: ?Int;
     };
 
     // type our UI will use to submit data for a challenge along with offset
@@ -226,9 +225,22 @@ module {
     };
 
     public type VerifyHumanityResponse = {
-        status: PohChallengeStatus;
-        token: ?PohUniqueToken;
+        status: PohVerificationStatus;
+        token: ?Text;
         rejectionReasons: [Text];
+    };
+
+    public type SubscribePohMessage = {
+        callback: shared (PohVoteResult) -> ();
+    };
+
+    public type PohVoteResult = {
+        providerUserId: Text;
+        pohStatus: {#approved; #rejected};
+        requestedAt: Int;
+        submittedAt: Int;
+        completedAt: Int;
+        challenges: [ChallengeResponse];
     };
 
 };
