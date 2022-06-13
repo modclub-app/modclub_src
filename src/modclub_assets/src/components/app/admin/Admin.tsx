@@ -35,16 +35,12 @@ import { ImageData } from "../../../utils/types";
 import { Principal } from "@dfinity/principal";
 import AdminIdentity from "../../external/AdminIdentity";
 
-const EditAppModal = ({ toggle, principalID, selectedProvider, providers }) => {
+const EditAppModal = ({ toggle, principalID, selectedProvider, updateProvider }) => {
   const onFormSubmit = async (values: any) => {
     await updateProviderMetaData(Principal.fromText(principalID), values);
     selectedProvider.name = values.name;
     selectedProvider.description = values.description;
-    providers.map(prvd => {
-      if(prvd.id === selectedProvider.id || prvd.id.toString() ==  selectedProvider.id.toString()){
-        prvd = selectedProvider;
-      }
-    });
+    updateProvider();
     return "App Edited Successfully";
   };
 
@@ -175,7 +171,7 @@ const EditProviderLogo = ({ principalID, selectedProvider, setImageUploadedMsg }
   )
 }
 
-const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
+const EditRulesModal = ({ rules, toggle, principalID, updateState, selectedProvider, updateProvider }) => {
   const [newRules, setNewRules] = useState(rules);
   const [loader, setLoader] = useState(false);
   let rulesBeingEdited = {};
@@ -227,6 +223,8 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
         );
         updateState(updatedRules);
         setNewRules(updatedRules);
+        selectedProvider.rules = updatedRules;
+        updateProvider();
       })
       .catch((e) => {
         console.log(e);
@@ -260,7 +258,7 @@ const EditRulesModal = ({ rules, toggle, principalID, updateState }) => {
   );
 };
 
-const EditModeratorSettingsModal = ({ toggle, principalID, settings, minVotes, minTokens, setMinVotes, setMinTokens }) => {
+const EditModeratorSettingsModal = ({ toggle, principalID, selectedProvider, minVotes, minTokens, setMinVotes, setMinTokens, updateProvider }) => {
   const onFormSubmit = async (values: any) => {
     for (const k in values) {
       if (!isNaN(values[k] / 1)) {
@@ -273,7 +271,9 @@ const EditModeratorSettingsModal = ({ toggle, principalID, settings, minVotes, m
     await updateProviderSettings(Principal.fromText(principalID), values);
     setMinVotes(parseInt(values.minVotes));
     setMinTokens(parseInt(values.minTokens));
-
+    selectedProvider.settings.minVotes = parseInt(values.minVotes);
+    selectedProvider.settings.minTokens = parseInt(values.minTokens);
+    updateProvider();
     return "Moderator settings updated successfully";
   };
 
@@ -313,7 +313,9 @@ const RemoveRuleModal = ({
   toggle,
   rule,
   principalID,
-  updateState
+  updateState,
+  selectedProvider,
+  updateProvider,
 }) => {
   const onRemoveRuleFormSubmit = async (values: any) => {
     let result;
@@ -325,6 +327,8 @@ const RemoveRuleModal = ({
             Principal.fromText(principalID)
           );
           updateState(updatedRules);
+          selectedProvider.rules = updatedRules;
+          updateProvider();
           result = "Rule Removed Successfully!"
         })
         .catch((e) => { console.log(e); result = e.message })
@@ -378,6 +382,14 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
   const [minTokens, setMinTokens] = useState(0);
 
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
+
+  const updateProvider = () => {
+    providers.map(prvd => {
+      if(prvd.id === selectedProvider.id || prvd.id.toString() ==  selectedProvider.id.toString()){
+        prvd = selectedProvider;
+      }
+    });
+  }
 
   useEffect(() => {
     let adminInit = () => {
@@ -648,7 +660,7 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
 
       <TrustedIdentities provider={providerIdText} selectedProvider={selectedProvider} />
 
-      {showEditApp && <EditAppModal toggle={toggleEditApp} principalID={providerIdText} selectedProvider={selectedProvider} providers={providers}/>}
+      {showEditApp && <EditAppModal toggle={toggleEditApp} principalID={providerIdText} selectedProvider={selectedProvider} updateProvider={updateProvider}/>}
 
       {showEditRules && (
         <EditRulesModal
@@ -656,17 +668,20 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
           toggle={toggleEditRules}
           principalID={providerIdText}
           updateState={setRules}
+          selectedProvider={selectedProvider}
+          updateProvider={updateProvider}
         />
       )}
       {showModeratorSettings && (
         <EditModeratorSettingsModal
           toggle={toggleModeratorSettings}
           principalID={providerIdText}
-          settings={selectedProvider.settings}
+          selectedProvider={selectedProvider}
           minVotes={minVotes}
           minTokens={minTokens}
           setMinVotes={setMinVotes}
           setMinTokens={setMinTokens}
+          updateProvider={updateProvider}
         />
       )}
 
@@ -676,6 +691,8 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
           rule={ruleToRemove}
           principalID={providerIdText}
           updateState={setRules}
+          selectedProvider={selectedProvider}
+          updateProvider={updateProvider}
         />
       )}
     </>
