@@ -34,7 +34,7 @@ import Random "mo:base/Random";
 import RelObj "./data_structures/RelObj";
 import Rel "./data_structures/Rel";
 import Result "mo:base/Result";
-import StateV1 "./statev1";
+import StateV1 "./stateV1";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
@@ -209,7 +209,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   public shared({ caller }) func getProvider(providerId: Principal) : async Types.ProviderPlus {
     Debug.print("getProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
-    await ProviderManager.getProvider(providerId, state, contentQueueManager);
+    await ProviderManager.getProvider(providerId, state);
   };
 
   public shared({ caller }) func addRules(
