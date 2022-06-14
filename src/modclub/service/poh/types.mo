@@ -88,6 +88,7 @@ module {
     };
 
     // Type representing Challenge attempt
+    // To be deleted
     public type PohChallengesAttempt = {
         attemptId: ?Text;
         challengeId: Text;
@@ -97,6 +98,22 @@ module {
         userId: Principal;
         status: PohChallengeStatus;
         createdAt: Int;
+        updatedAt: Int;
+        completedOn: Int;
+        dataCanisterId: ?Principal;
+        wordList: ?[Text];
+    };
+
+    public type PohChallengesAttemptV1 = {
+        attemptId: ?Text;
+        challengeId: Text;
+        challengeName: Text;
+        challengeDescription: Text;
+        challengeType: PohChallengeType;
+        userId: Principal;
+        status: PohChallengeStatus;
+        createdAt: Int;
+        submittedAt: Int;
         updatedAt: Int;
         completedOn: Int;
         dataCanisterId: ?Principal;
@@ -118,7 +135,7 @@ module {
         providerId: Principal;
     };
 
-    // Response sent to provider for verificaitio request
+    // Response sent to provider for verificaition request
     public type PohVerificationResponsePlus = {
         requestId: Text;
         providerUserId: Text;
@@ -133,6 +150,9 @@ module {
 
     public type PohVerificationResponse = {
         status: PohVerificationStatus;
+        requestedAt: ?Int;
+        submittedAt: ?Int;
+        completedAt: ?Int;
         // status at each challenge level
         challenges: [ChallengeResponse];
     };
@@ -236,10 +256,10 @@ module {
 
     public type PohVoteResult = {
         providerUserId: Text;
-        pohStatus: {#approved; #rejected};
-        requestedAt: Int;
-        submittedAt: Int;
-        completedAt: Int;
+        pohStatus: {#expired; #verified; #rejected};
+        requestedAt: ?Int;
+        submittedAt: ?Int;
+        completedAt: ?Int;
         challenges: [ChallengeResponse];
     };
 

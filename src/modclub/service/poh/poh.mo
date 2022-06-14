@@ -50,72 +50,116 @@ module PohModule {
             let modclubUserIdOpt = findModclubId(pohVerificationRequest.providerUserId, pohVerificationRequest.providerId);
             switch(modclubUserIdOpt) {
                 case(null) {
-                    return { status = #startPoh; challenges = []};
+                    return { status = #startPoh; challenges = []; requestedAt = null; submittedAt = null; completedAt = null;};
                 };
                 case(?modclubUserId) {
-                    switch(state.pohUserChallengeAttempts.get(modclubUserId)) {
-                        case(null) 
-                            // If user is in record, but no attempt is not possible in our flow
-                            // Extra cautious and sending zero challenges attempted array
-                            return  { status = #notSubmitted; challenges = []};
-                        case(?attemptsByChallenges) {
-                            let challenges = Buffer.Buffer<PohTypes.ChallengeResponse>(configuredChallengeIds.size());
-                            var overAllStatus: ?PohTypes.PohChallengeStatus = null;
-
-                            for(challengeId in configuredChallengeIds.vals()) {
-                                switch(attemptsByChallenges.get(challengeId)) {
-                                    case(null) {
-                                        overAllStatus := ?#notSubmitted;
-                                        challenges.add({
-                                            challengeId = challengeId;
-                                            status = #notSubmitted;
-                                            requestedAt = null;
-                                            submittedAt = null;
-                                            completedAt = null;
-                                        });
-                                    };
-                                    case(?attempts) {
-                                        var status: PohTypes.PohChallengeStatus = #notSubmitted;
-                                        var completedOn: ?Int = null;
-                                        if(attempts.size() != 0) {
-                                            let statusAndDate = findChallengeStatus(attempts, validForDays);
-                                            status := statusAndDate.0;
-                                            completedOn := statusAndDate.1;
-                                        };
-                                        challenges.add({
-                                            challengeId = challengeId;
-                                            status = status;
-                                            requestedAt = null;
-                                            submittedAt = null;
-                                            completedAt = completedOn;
-                                        });
-
-                                        // if any of the challenge is rejected, then overall status is rejected
-                                        if(status == #rejected) {
-                                            overAllStatus := ?#rejected;
-                                        } else if(overAllStatus != ?#rejected and status == #expired) {
-                                        // if any of the challenge is expired and none is rejected, then overall status is expired
-                                            overAllStatus := ?#expired;
-                                        };
-
-                                        // so that rejected or expired overallstatus can't be overidden
-                                        if(overAllStatus != ?#rejected and overAllStatus != ?#expired) {
-                                            // if any of the challenge is not submitted then it's not submitted.
-                                            if(status == #notSubmitted) {
-                                                overAllStatus := ?#notSubmitted;
-                                            } else if(overAllStatus != ?#notSubmitted and status == #pending) {
-                                                overAllStatus := ?#pending;
-                                            };
-                                        };
-                                    };
+                    let resp =  formPohResponse(modclubUserId, configuredChallengeIds, validForDays);
+                    if(resp.status == #verified) {
+                        makeCallbackEntryForProvider(pohVerificationRequest.providerId);
+                        let _ = do ? {
+                            let callbackData = state.callbackIssuedByProvider.get(pohVerificationRequest.providerId)!;
+                            switch(callbackData.get(modclubUserId)) {
+                                case(null) {
+                                    // Saving that user has queried the approved status, so no callback
+                                    callbackData.put(modclubUserId, Helpers.timeNow());
                                 };
+                                case(_)();
                             };
-                            return  { status = Option.get(overAllStatus, #verified); challenges = challenges.toArray()};
                         };
                     };
+                    return resp;
                 };
             };
         };
+
+        func makeCallbackEntryForProvider(providerId: Principal) {
+            switch(state.callbackIssuedByProvider.get(providerId)) {
+                case(null) {
+                    state.callbackIssuedByProvider.put(providerId, HashMap.HashMap<Principal, Int>(1, Principal.equal, Principal.hash));
+                };
+                case(_)();
+            };
+        };
+
+        func formPohResponse(modclubUserId: Principal, configuredChallengeIds: [Text], validForDays: Nat): PohTypes.PohVerificationResponse {
+            switch(state.pohUserChallengeAttempts.get(modclubUserId)) {
+                case(null) 
+                    // If user is in record, but no attempt is not possible in our flow
+                    // Extra cautious and sending zero challenges attempted array
+                    return  { status = #notSubmitted; challenges = []; requestedAt = null; submittedAt = null; completedAt = null;};
+                case(?attemptsByChallenges) {
+                    let challenges = Buffer.Buffer<PohTypes.ChallengeResponse>(configuredChallengeIds.size());
+                    var overAllStatus: ?PohTypes.PohChallengeStatus = null;
+                    var overAllRequestedDate  = -1;
+                    var overAllSubmittedDate  = -1;
+                    var overAllCompletedDate  = -1;
+
+                    for(challengeId in configuredChallengeIds.vals()) {
+                        switch(attemptsByChallenges.get(challengeId)) {
+                            case(null) {
+                                overAllStatus := ?#notSubmitted;
+                                challenges.add({
+                                    challengeId = challengeId;
+                                    status = #notSubmitted;
+                                    requestedAt = null;
+                                    submittedAt = null;
+                                    completedAt = null;
+                                });
+                            };
+                            case(?attempts) {
+                                var status: PohTypes.PohChallengeStatus = #notSubmitted;
+                                var completedOn: ?Int = null;
+                                var requestedAt  = -1;
+                                var submittedAt  = -1;
+                                if(attempts.size() != 0) {
+                                    let statusAndDate = findChallengeStatus(attempts, validForDays);
+                                    status := statusAndDate.0;
+                                    completedOn := statusAndDate.1;
+                                    requestedAt := statusAndDate.2;
+                                    overAllRequestedDate := Helpers.max(overAllRequestedDate, requestedAt);
+                                    overAllSubmittedDate := Helpers.max(overAllRequestedDate, submittedAt);
+                                    overAllCompletedDate := Helpers.max(overAllCompletedDate, Option.get(completedOn, -1));
+                                };
+                                challenges.add({
+                                    challengeId = challengeId;
+                                    status = status;
+                                    requestedAt = ?requestedAt;
+                                    submittedAt = ?submittedAt;
+                                    completedAt = completedOn;
+                                });
+
+                                // if any of the challenge is rejected, then overall status is rejected
+                                if(status == #rejected) {
+                                    overAllStatus := ?#rejected;
+                                } else if(overAllStatus != ?#rejected and status == #expired) {
+                                // if any of the challenge is expired and none is rejected, then overall status is expired
+                                    overAllStatus := ?#expired;
+                                };
+
+                                // so that rejected or expired overallstatus can't be overidden
+                                if(overAllStatus != ?#rejected and overAllStatus != ?#expired) {
+                                    // if any of the challenge is not submitted then it's not submitted.
+                                    if(status == #notSubmitted) {
+                                        overAllStatus := ?#notSubmitted;
+                                    } else if(overAllStatus != ?#notSubmitted and status == #pending) {
+                                        overAllStatus := ?#pending;
+                                    };
+                                };
+                            };
+                        };
+                    };
+                    
+                    return  { status = Option.get(overAllStatus, #verified); 
+                                challenges = challenges.toArray(); 
+                                requestedAt = ?overAllRequestedDate; 
+                                submittedAt = ?overAllSubmittedDate; 
+                                completedAt = ?overAllCompletedDate;
+                            };
+                };
+            };
+        };
+
+        
 
             // User A
             // 4 years back	 3 years back	2 year back	
@@ -127,25 +171,26 @@ module PohModule {
 
             // Provider A expiry: 1 year
             // Provider B expiry: 2 year
-        func findChallengeStatus(attempts: Buffer.Buffer<PohTypes.PohChallengesAttempt>, validForDays: Nat) : 
-        (PohTypes.PohChallengeStatus, ?Int) {
+        func findChallengeStatus(attempts: Buffer.Buffer<PohTypes.PohChallengesAttemptV1>, validForDays: Nat) : 
+        (PohTypes.PohChallengeStatus, ?Int, Int) {
+
             for(i in Iter.revRange(attempts.size() - 1, 0)) {
                 let attempt = attempts.get(Helpers.intToNat(i));
                 // search for a verified and non expired attempt through all attempts in reverse order
                 if(attempt.status == #verified and not isChallengeExpired(attempt, validForDays)) {
-                    return (#verified, ?attempt.completedOn);
+                    return (#verified, ?attempt.completedOn, attempt.createdAt);
                 }
             };
             // if not found, return the status of last attempt whatsoever it is
             // but check for expiry if the last one is verified
             let lastAttempt = attempts.get(attempts.size()-1);
             if(isChallengeExpired(lastAttempt, validForDays)) {
-                return (#expired, ?lastAttempt.completedOn);
+                return (#expired, ?lastAttempt.completedOn, lastAttempt.createdAt);
             };
-            return (lastAttempt.status, ?lastAttempt.completedOn);
+            return (lastAttempt.status, ?lastAttempt.completedOn, lastAttempt.createdAt);
         };
 
-        func isChallengeExpired(attempt: PohTypes.PohChallengesAttempt, validForDays: Nat) : Bool {
+        func isChallengeExpired(attempt: PohTypes.PohChallengesAttemptV1, validForDays: Nat) : Bool {
             return Helpers.timeNow() - attempt.completedOn >= validForDays * MILLI_SECONDS_DAY and attempt.status == #verified;
         };
 
@@ -206,20 +251,20 @@ module PohModule {
 
         // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
         // Modclub UI will ask for all the challenge for a user to show
-        public func retrieveChallengesForUser(userId: Principal, challengeIds: [Text], validForDays: Nat, forceCreateNewAttempts: Bool) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+        public func retrieveChallengesForUser(userId: Principal, challengeIds: [Text], validForDays: Nat, forceCreateNewAttempts: Bool) : async Result.Result<[PohTypes.PohChallengesAttemptV1], PohTypes.PohError> {
             switch(state.pohUserChallengeAttempts.get(userId)) {
                 case(null)
-                    state.pohUserChallengeAttempts.put(userId, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttempt>>(challengeIds.size(), Text.equal, Text.hash));
+                    state.pohUserChallengeAttempts.put(userId, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>(challengeIds.size(), Text.equal, Text.hash));
                 case(_)();
             };
 
-            let challengesCurrent = Buffer.Buffer<PohTypes.PohChallengesAttempt>(challengeIds.size());
+            let challengesCurrent = Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(challengeIds.size());
 
             let _ = do ? {
                 for(challengeId in challengeIds.vals()) {
                     switch((state.pohUserChallengeAttempts.get(userId))!.get(challengeId)) {
                         case(null) {
-                            (state.pohUserChallengeAttempts.get(userId))!.put(challengeId,  Buffer.Buffer<PohTypes.PohChallengesAttempt>(1));
+                            (state.pohUserChallengeAttempts.get(userId))!.put(challengeId,  Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(1));
                         };
                         case(_)();
                     };
@@ -244,7 +289,7 @@ module PohModule {
             #ok(challengesCurrent.toArray());
         };
 
-        func createNewAttempt(userId: Principal, challengeId: Text, nextAttemptIndex: Nat) : ?PohTypes.PohChallengesAttempt {
+        func createNewAttempt(userId: Principal, challengeId: Text, nextAttemptIndex: Nat) : ?PohTypes.PohChallengesAttemptV1 {
             do? 
             {
                 {
@@ -259,6 +304,7 @@ module PohModule {
                     dataCanisterId = null;
                     createdAt = Helpers.timeNow();
                     updatedAt = Helpers.timeNow();
+                    submittedAt = -1;
                     completedOn = -1; // -1 means not completed
                     wordList = do ?{
                         switch(state.pohChallenges.get(challengeId)!.challengeType) {
@@ -349,6 +395,7 @@ module PohModule {
                     dataCanisterId = attempt.dataCanisterId;
                     createdAt = attempt.createdAt;
                     updatedAt = Helpers.timeNow();
+                    submittedAt = attempt.submittedAt;
                     completedOn = completedOn;
                     wordList = attempt.wordList;
                 };
@@ -372,6 +419,7 @@ module PohModule {
                     dataCanisterId = dataCanisterId;
                     createdAt = attempt.createdAt;
                     updatedAt = Helpers.timeNow();
+                    submittedAt = Helpers.timeNow();
                     completedOn = attempt.completedOn;
                     wordList = attempt.wordList;
                 };
@@ -762,26 +810,53 @@ module PohModule {
             state.wordList.add("Kill");
         };
 
-        public func issueCallbackToProviders(packageId: Text, finalDecision: Types.Decision) : async () {
+        public func issueCallbackToProviders(packageId: Text, finalDecision: Types.Decision, globalState: GlobalState.State) : async () {
             // let package = ;
             switch(state.pohChallengePackages.get(packageId)) {
                 case(null)();
                 case(?package) {
                     let modclubUserId = package.userId;
                     for((providerId, callbackSubs) in state.providersCallback.entries()) {
-                        switch(findProviderUserId(providerId, modclubUserId)) {
-                            case(null)();
-                            case(?pUserId) {
-                                    callbackSubs.callback({
-                                    providerUserId =  pUserId;
-                                    pohStatus = finalDecision;
-                                    requestedAt = -1;
-                                    submittedAt = -1;
-                                    completedAt = -1;
-                                    challenges = [];
-                                });
+                        makeCallbackEntryForProvider(providerId);
+                        let _ = do ? {
+                            let callbackData = state.callbackIssuedByProvider.get(providerId)!;
+                            switch(callbackData.get(modclubUserId)) {
+                                case(null) {
+                                    // no record of notification, so notify
+                                    switch(findProviderUserId(providerId, modclubUserId)) {
+                                        case(null)();
+                                        case(?pUserId) {
+                                            switch(getProviderPohConfiguration(providerId, globalState)) {
+                                                case(#ok(config)) {
+                                                    let resp = formPohResponse(modclubUserId, config.challengeIds, config.expiry);
+                                                    if(resp.status == #verified or resp.status == #rejected) {
+                                                        var status : {#expired; #verified; #rejected} = #verified;
+                                                        if(resp.status == #rejected) {
+                                                            status := #rejected;
+                                                        };
+                                                        callbackSubs.callback({
+                                                            providerUserId =  pUserId;
+                                                            pohStatus = status;
+                                                            requestedAt = resp.requestedAt;
+                                                            submittedAt = resp.submittedAt;
+                                                            completedAt = resp.completedAt;
+                                                            challenges = resp.challenges;
+                                                        });
+                                                        // Saving that user has queried the approved status, so no callback
+                                                        callbackData.put(modclubUserId, Helpers.timeNow());
+                                                    };
+                                                };
+                                                case(_)();
+                                            };
+                                           
+                                        };
+                                    };
+                                    
+                                };
+                                case(_)();
                             };
-                        }
+                        };
+                        
                        
                     };
                 };
@@ -814,16 +889,49 @@ module PohModule {
                 relObj.put(Principal.toText(pUserId), mUserId);
             };
             providerUserIdToModclubUserIdByProviderIdBuff.add((modclubCanisterId, Rel.share(relObj.getRel())));
+            
+            let pohUserChallengeAttemptBuff = Buffer.Buffer<(Principal, [(Text, [PohTypes.PohChallengesAttemptV1])])>(1);
+            for((userId, attemptByChallengeId) in pohStableStateV1.pohUserChallengeAttempts.vals()) {
+                let newAttemptByChallengeIdBuff = Buffer.Buffer<(Text, [PohTypes.PohChallengesAttemptV1])>(1);
+
+                for((challengeId, oldAttempts) in attemptByChallengeId.vals()) {
+                    let newAttemptBuff = Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(1);
+                    for(oldAttempt in oldAttempts.vals()) {
+                        newAttemptBuff.add({
+                                attemptId = oldAttempt.attemptId;
+                                challengeId = oldAttempt.challengeId;
+                                challengeName = oldAttempt.challengeName;
+                                challengeDescription = oldAttempt.challengeDescription;
+                                challengeType = oldAttempt.challengeType;
+                                userId = oldAttempt.userId;
+                                status = oldAttempt.status;
+                                createdAt = oldAttempt.createdAt;
+                                //setting new submitted field as last updated field coz of lack of data
+                                submittedAt = oldAttempt.updatedAt;
+                                updatedAt = oldAttempt.updatedAt;
+                                completedOn = oldAttempt.completedOn;
+                                dataCanisterId = oldAttempt.dataCanisterId;
+                                wordList = oldAttempt.wordList;
+                            });
+                    };
+                    newAttemptByChallengeIdBuff.add((challengeId, newAttemptBuff.toArray()));
+                };
+                pohUserChallengeAttemptBuff.add((userId, newAttemptByChallengeIdBuff.toArray()))
+
+            };
+
+
             return
             {
                 pohChallenges = Array.append(pohStableStateV1.pohChallenges, pohStableStateV2.pohChallenges);
-                pohUserChallengeAttempts = Array.append(pohStableStateV1.pohUserChallengeAttempts, pohStableStateV2.pohUserChallengeAttempts);
+                pohUserChallengeAttempts = pohUserChallengeAttemptBuff.toArray();
                 token2ProviderAndUserData = token2ProviderAndUserDataBuff.toArray();
                 providerUserIdToModclubUserIdByProviderId = providerUserIdToModclubUserIdByProviderIdBuff.toArray();
                 pohChallengePackages = Array.append(pohStableStateV1.pohChallengePackages, pohStableStateV2.pohChallengePackages);
                 userToPohChallengePackageId = pohStableStateV1.userToPohChallengePackageId;
                 wordList = Array.append(pohStableStateV1.wordList, pohStableStateV2.wordList);
                 providersCallback = pohStableStateV2.providersCallback;
+                callbackIssuedByProvider = [];
             };
         };
     };

@@ -940,9 +940,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       // inform all providers
       if(finalDecision == #approved) {
-        await pohEngine.issueCallbackToProviders(packageId, #approved);
+        await pohEngine.issueCallbackToProviders(packageId, #approved, state);
       } else {
-        await pohEngine.issueCallbackToProviders(packageId, #rejected);
+        await pohEngine.issueCallbackToProviders(packageId, #rejected, state);
       };
     };
   };

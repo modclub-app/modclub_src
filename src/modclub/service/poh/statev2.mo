@@ -16,7 +16,7 @@ module State {
         pohChallenges: HashMap.HashMap<Text, PohTypes.PohChallenges>;
         // Challenges attempted by each user
         // inner hashmap is for every challenge, how many times challenge user attempted and details
-        pohUserChallengeAttempts: HashMap.HashMap<Principal, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttempt>>>;
+        pohUserChallengeAttempts: HashMap.HashMap<Principal, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>>;
         // POH User data by unique token
         token2ProviderAndUserData: HashMap.HashMap<Text, PohTypes.PohProviderAndUserData>;
         //mapping providerUserId to our userId
@@ -25,6 +25,8 @@ module State {
         userToPohChallengePackageId: RelObj.RelObj<Principal, Text>;
         wordList: Buffer.Buffer<Text>;
         providersCallback: HashMap.HashMap<Principal, PohTypes.SubscribePohMessage>;
+        // Callback issued for all user at what time by provider id
+        callbackIssuedByProvider: HashMap.HashMap<Principal, HashMap.HashMap<Principal, Int>>;
     };
 
     public type PohStableState = {
@@ -32,7 +34,7 @@ module State {
         pohChallenges: [(Text, PohTypes.PohChallenges)];
         // Challenges attempted by each user
         // inner hashmap is for every challenge, how many times challenge user attempted and details
-        pohUserChallengeAttempts: [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])];
+        pohUserChallengeAttempts: [(Principal, [(Text, [PohTypes.PohChallengesAttemptV1])])];
 
         // POH User data by unique token
         token2ProviderAndUserData: [(Text, PohTypes.PohProviderAndUserData)];
@@ -42,18 +44,20 @@ module State {
         userToPohChallengePackageId: Rel.RelShared<Principal, Text>;
         wordList: [Text];
         providersCallback: [(Principal, PohTypes.SubscribePohMessage)];
+        callbackIssuedByProvider: [(Principal,[(Principal, Int)])];
     };
 
     public func emptyState(): PohState {
         return {
             pohChallenges = HashMap.HashMap<Text, PohTypes.PohChallenges>(1, Text.equal, Text.hash);
-            pohUserChallengeAttempts = HashMap.HashMap<Principal, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttempt>>>(10, Principal.equal, Principal.hash);
+            pohUserChallengeAttempts = HashMap.HashMap<Principal, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>>(10, Principal.equal, Principal.hash);
             token2ProviderAndUserData = HashMap.HashMap<Text, PohTypes.PohProviderAndUserData>(1, Text.equal, Text.hash);
             providerUserIdToModclubUserIdByProviderId = HashMap.HashMap<Principal, RelObj.RelObj<Text, Principal>>(1, Principal.equal, Principal.hash);
             pohChallengePackages = HashMap.HashMap<Text, PohTypes.PohChallengePackage>(1, Text.equal, Text.hash);
             userToPohChallengePackageId = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
             wordList = Buffer.Buffer<Text>(1);
             providersCallback = HashMap.HashMap<Principal, PohTypes.SubscribePohMessage>(1, Principal.equal, Principal.hash);
+            callbackIssuedByProvider = HashMap.HashMap<Principal, HashMap.HashMap<Principal, Int>>(1, Principal.equal, Principal.hash);
         };
     };
 
@@ -67,6 +71,7 @@ module State {
             userToPohChallengePackageId = Rel.emptyShared<Principal, Text>();
             wordList = [];
             providersCallback = [];
+            callbackIssuedByProvider = [];
         };
         return st;
     };
@@ -79,9 +84,9 @@ module State {
         };
 
         for( (userId, challenges) in stableState.pohUserChallengeAttempts.vals()) {
-            let attemptsByChallengeIdMap = HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttempt>>(5, Text.equal, Text.hash);
+            let attemptsByChallengeIdMap = HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>(5, Text.equal, Text.hash);
             for((challengeId, attempts) in challenges.vals()) {
-                let attemptsBuffer = Buffer.Buffer<PohTypes.PohChallengesAttempt>(attempts.size());
+                let attemptsBuffer = Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(attempts.size());
                 for(attempt in attempts.vals()) {
                     attemptsBuffer.add(attempt);
                 };
@@ -114,16 +119,21 @@ module State {
         for((pId, callback) in stableState.providersCallback.vals()) {
             state.providersCallback.put(pId, callback);
         };
+
+        for((providerId, callbackByUser) in stableState.callbackIssuedByProvider.vals()) {
+            let callbackDataMap = HashMap.fromIter<Principal, Int> (callbackByUser.vals(), callbackByUser.size(), Principal.equal, Principal.hash);
+            state.callbackIssuedByProvider.put(providerId, callbackDataMap);
+        };
         return state;
     };
 
     public func getStableState(state: PohState): PohStableState {
 
-        let pohUserChallengeAttempts = Buffer.Buffer<(Principal, [(Text, [PohTypes.PohChallengesAttempt])])>(state.pohUserChallengeAttempts.size());
+        let pohUserChallengeAttempts = Buffer.Buffer<(Principal, [(Text, [PohTypes.PohChallengesAttemptV1])])>(state.pohUserChallengeAttempts.size());
         for( (userId, challenges) in state.pohUserChallengeAttempts.entries()) {
-            let challengeMap = Buffer.Buffer<(Text, [PohTypes.PohChallengesAttempt])>(challenges.size());
+            let challengeMap = Buffer.Buffer<(Text, [PohTypes.PohChallengesAttemptV1])>(challenges.size());
             for((challengeId, attempts) in challenges.entries()) {
-                let attemptsBuffer = Buffer.Buffer<PohTypes.PohChallengesAttempt>(attempts.size());
+                let attemptsBuffer = Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(attempts.size());
                 for(attempt in attempts.vals()) {
                     attemptsBuffer.add(attempt);
                 };
@@ -137,6 +147,15 @@ module State {
             providerUserIdToModclubUserIdByProviderIdBuf.add((provider, Rel.share(user2ModclubUserRelObj.getRel())));
         };
 
+        let callbackIssuedByProviderBuff = Buffer.Buffer<(Principal, [(Principal, Int)])>(1);
+        for((providerId, callbackByUser) in state.callbackIssuedByProvider.entries()) {
+            let callbackByUserBuff = Buffer.Buffer<(Principal, Int)>(1);
+            for((userId, time) in callbackByUser.entries()) {
+                callbackByUserBuff.add((userId, time));
+            };
+            callbackIssuedByProviderBuff.add((providerId, callbackByUserBuff.toArray()));
+        };
+
         let st = {
             pohChallenges = Iter.toArray(state.pohChallenges.entries());
             pohUserChallengeAttempts = pohUserChallengeAttempts.toArray();
@@ -146,6 +165,7 @@ module State {
             userToPohChallengePackageId = Rel.share<Principal, Text>(state.userToPohChallengePackageId.getRel());
             wordList = state.wordList.toArray();
             providersCallback = Iter.toArray(state.providersCallback.entries());
+            callbackIssuedByProvider = callbackIssuedByProviderBuff.toArray();
         };
         return st;
     };
