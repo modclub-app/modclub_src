@@ -125,13 +125,6 @@ module Helpers {
 
   public func intToNat(value: Int) : Nat { Nat64.toNat(Int64.toNat64(Int64.fromInt(value))) };
 
-  public func max(a: Int, b: Int) : Int {
-      if(a >= b) {
-          return a;
-      };
-      return b;
-  };
-
   public func logMessage(canistergeekLogger : Canistergeek.Logger, logMessage: Text, logLevel: {#info; #error; #warn; #debugLevel;}) {
     var level = "INFO: ";
     switch(logLevel) {

@@ -116,9 +116,9 @@ module PohModule {
                                     status := statusAndDate.0;
                                     completedOn := statusAndDate.1;
                                     requestedAt := statusAndDate.2;
-                                    overAllRequestedDate := Helpers.max(overAllRequestedDate, requestedAt);
-                                    overAllSubmittedDate := Helpers.max(overAllSubmittedDate, submittedAt);
-                                    overAllCompletedDate := Helpers.max(overAllCompletedDate, Option.get(completedOn, -1));
+                                    overAllRequestedDate := Int.max(overAllRequestedDate, requestedAt);
+                                    overAllSubmittedDate := Int.max(overAllSubmittedDate, submittedAt);
+                                    overAllCompletedDate := Int.max(overAllCompletedDate, Option.get(completedOn, -1));
                                 };
                                 challenges.add({
                                     challengeId = challengeId;
