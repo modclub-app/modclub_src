@@ -13,6 +13,7 @@ import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
+import UserPhrases from "./UserPhrases";
 import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
 
 const Confirmation = () => {
@@ -30,14 +31,18 @@ const Confirmation = () => {
 };
 
 export default function NewPohProfile({ match }) {
-  const { isAuthenticated, isAuthReady } = useAuth();
+  const { isAuthenticated, isAuthReady, user } = useAuth();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)
   const [currentStep, setCurrentStep] = useState<string>('')
 
+  const [hasInitialCall, setHasInitialCall] = useState<boolean>(false);
+
   const initialCall = async () => {
+    setHasInitialCall(true);
     const response = await verifyUserHumanity();
+    console.log("response", response)
 
     if ('verified' in response.status) {
       history.push("/app");
@@ -45,26 +50,26 @@ export default function NewPohProfile({ match }) {
     }
 
     const token = response.token;
+    console.log('token', token)
     if (!token.length) return
 
     const challenges = await retrieveChallengesForUser(token[0].token);
-    setLoading(false);``
-    setSteps(challenges["ok"]);
     console.log("challenges", challenges);
+    setLoading(false);
+    setSteps(challenges["ok"]);
 
     const uncompleted = challenges["ok"].find(challenge => {
       const status = Object.keys(challenge.status)[0];
       return status === "notSubmitted"
     })
-
     console.log("uncompleted", uncompleted);
 
     history.push(`${match.path}/${ uncompleted ? uncompleted.challengeId : "confirm" }`);
   }
 
   useEffect(() => {
-    isAuthenticated && initialCall();
-  }, [isAuthenticated]);
+    user && !hasInitialCall && initialCall();
+  }, [user]);
 
   useEffect(() => {
     return history.listen((location) => { 
@@ -99,11 +104,14 @@ export default function NewPohProfile({ match }) {
             }
 
             <Card backgroundColor="dark" className="mt-6">
-              <Card.Content>                
+              <Card.Content>
                 <Switch>
                   <Route path={`${match.path}/:challenge-profile-pic`} component={ProfilePic}/>
                   <Route path={`${match.path}/:challenge-user-video`}>
                     {steps && <UserVideo steps={steps} />}
+                  </Route>
+                  <Route path={`${match.path}/:challenge-user-audio`}>
+                    {steps && <UserPhrases steps={steps} />}
                   </Route>
                   <Route path={`${match.path}/:confirm`} component={Confirmation}/>
                 </Switch>

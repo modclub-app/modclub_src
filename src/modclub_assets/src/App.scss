@@ -824,3 +824,17 @@ input[type='number']::-webkit-inner-spin-button {
     border-color: #c4c4c4;
   }
 }
+
+.audio-react-recorder {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 84%;
+  margin: auto;
+}
+.audio-react-recorder canvas {
+  width: 100%;
+  border-radius: 1rem;
+}

@@ -309,7 +309,7 @@ module PohModule {
                     wordList = do ?{
                         switch(state.pohChallenges.get(challengeId)!.challengeType) {
                             case(#selfVideo) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_VIDEO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
-                            case(#selfAudio) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_AUDIO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
+                            // case(#selfAudio) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_AUDIO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
                             case(_) [];
                         };
                     };
@@ -749,10 +749,10 @@ module PohModule {
                 challengeId = CHALLENGE_USER_AUDIO_ID;
                 challengeName = "Please record your audio reading these words";
                 challengeDescription = "Please record your audio reading these words";
-                requiredField = #audioBlob;
+                requiredField = #videoBlob;
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 dependentChallengeId = null;
-                challengeType =  #selfAudio;
+                challengeType =  #selfVideo;
                 allowedViolationRules = allowedViolationRules4.toArray();
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
