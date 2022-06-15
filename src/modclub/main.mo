@@ -34,7 +34,7 @@ import Random "mo:base/Random";
 import RelObj "./data_structures/RelObj";
 import Rel "./data_structures/Rel";
 import Result "mo:base/Result";
-import StateV1 "./stateV1";
+import StateV1 "./statev1";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
