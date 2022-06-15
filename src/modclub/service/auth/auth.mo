@@ -4,7 +4,7 @@ import Error "mo:base/Error";
 import Result "mo:base/Result";
 import List "mo:base/List";
 
-import GlobalState "../../stateV1";
+import GlobalState "../../statev1";
 import Types "../../types";
 
 

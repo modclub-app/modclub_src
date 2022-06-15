@@ -4,7 +4,7 @@ import Buffer "mo:base/Buffer";
 import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
-import GlobalState "../../stateV1";
+import GlobalState "../../statev1";
 import HashMap "mo:base/HashMap";
 import Helpers "../../helpers";
 import Int "mo:base/Int";

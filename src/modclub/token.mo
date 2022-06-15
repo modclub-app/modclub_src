@@ -6,7 +6,7 @@ import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import Option "mo:base/Option";
 import Principal "mo:base/Principal";
-import State "./stateV1";
+import State "./statev1";
 import Types "./types";
 
 module Token {
