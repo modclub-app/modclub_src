@@ -45,10 +45,10 @@ module {
         updatedAt: Int;
     };
 
-    public type PohChallengeRequiredField =  {#textBlob; #imageBlob; #videoBlob; #audioBlob; #profileFieldBlobs;};
+    public type PohChallengeRequiredField =  {#textBlob; #imageBlob; #videoBlob; #profileFieldBlobs;};
 
     public type PohChallengeType =  {
-        #ssn; #dl; #selfPic; #selfVideo; #selfAudio; #fullName; #userName; #email;
+        #ssn; #dl; #selfPic; #selfVideo; #fullName; #userName; #email;
     };
 
     public type PohUniqueToken =  {
