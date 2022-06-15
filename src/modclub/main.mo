@@ -209,7 +209,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   public shared({ caller }) func getProvider(providerId: Principal) : async Types.ProviderPlus {
     Debug.print("getProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(providerId));
-    await ProviderManager.getProvider(providerId, state, contentQueueManager);
+    await ProviderManager.getProvider(providerId, state);
   };
 
   public shared({ caller }) func addRules(
