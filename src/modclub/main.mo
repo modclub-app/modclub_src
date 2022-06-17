@@ -599,15 +599,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
   private func pohVerificationRequestHelper(providerUserId: Text, providerId: Principal) : Result.Result<PohTypes.PohVerificationResponsePlus, PohTypes.PohError>  {
     if(Principal.equal(providerId, Principal.fromActor(this)) and voteManager.isAutoApprovedPOHUser(Principal.fromText(providerUserId))) {
       return
-      #ok({
-          requestId = "null";
+    #ok({  
           providerUserId = providerUserId;
-          status = #verified;
-          challenges = [];
           providerId = providerId;
+          status = #verified; 
+          challenges = [];
+          requestedAt = null; 
+          submittedAt = null;
+          completedAt = null;
           token = null;
           rejectionReasons = [];
-          requestedOn = Helpers.timeNow();
       });
     };
     let pohVerificationRequest: PohTypes.PohVerificationRequestV1 = {
@@ -618,28 +619,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // validity and rules needs to come from admin dashboard here
     switch(pohEngine.getProviderPohConfiguration(providerId, state)) {
       case(#ok(providerPohConfig)) {
-        let verificationResponse = pohEngine.pohVerificationRequest(pohVerificationRequest, providerPohConfig.expiry, providerPohConfig.challengeIds);
-        var reasons:[Text] = [];
-        if(verificationResponse.status == #rejected) {
-          let modclubUserId = pohEngine.findModclubId(providerUserId, providerId);
-          // second part of get won't get evaluated so giving random value
-          reasons := findRejectionReasons(Option.get(modclubUserId, Principal.fromText("")), providerPohConfig.challengeIds);
-        };
-        var token: Text = "";
-        if(verificationResponse.status == #startPoh) {
-          token := pohEngine.pohGenerateUniqueToken(providerUserId, providerId);
-        };
-        #ok({
-            requestId = "";
-            providerUserId = providerUserId;
-            status = verificationResponse.status;
-            // status at each challenge level
-            challenges = verificationResponse.challenges;
-            providerId = providerId;
-            token = ?token;
-            rejectionReasons = reasons;
-            requestedOn = Helpers.timeNow();
-        });
+        let verificationResponse = pohEngine.pohVerificationRequest(pohVerificationRequest, providerPohConfig.expiry, 
+                                providerPohConfig.challengeIds,
+                                voteManager.getAllUniqueViolatedRules, 
+                                voteManager.getContentStatus);
+        #ok(verificationResponse);
       };
       case(#err(er)) {
         return #err(er);
@@ -672,7 +656,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    switch(pohEngine.decodeToken(caller, token)) {
+    switch(pohEngine.decodeToken(token)) {
       case(#err(err)) {
         return #err(err);
       };
@@ -939,11 +923,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
         };
       };
       // inform all providers
-      if(finalDecision == #approved) {
-        await pohEngine.issueCallbackToProviders(packageId, #approved, state);
-      } else {
-        await pohEngine.issueCallbackToProviders(packageId, #rejected, state);
-      };
+      await pohEngine.issueCallbackToProviders(packageId, state, 
+                          voteManager.getAllUniqueViolatedRules, 
+                          voteManager.getContentStatus,
+                          canistergeekLogger);
     };
   };
 
