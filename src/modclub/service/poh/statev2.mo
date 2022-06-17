@@ -26,7 +26,7 @@ module State {
         wordList: Buffer.Buffer<Text>;
         providersCallback: HashMap.HashMap<Principal, PohTypes.SubscribePohMessage>;
         // Callback issued for all user at what time by provider id
-        callbackIssuedByProvider: HashMap.HashMap<Principal, HashMap.HashMap<Principal, Int>>;
+        callbackIssuedByProvider: HashMap.HashMap<Principal, TrieMap.TrieMap<Principal, Int>>;
     };
 
     public type PohStableState = {

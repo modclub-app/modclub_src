@@ -137,7 +137,6 @@ module {
 
     // Response sent to provider for verificaition request
     public type PohVerificationResponsePlus = {
-        requestId: Text;
         providerUserId: Text;
         status: PohVerificationStatus;
         // status at each challenge level
@@ -145,7 +144,9 @@ module {
         providerId: Principal;
         token: ?Text;
         rejectionReasons: [Text];
-        requestedOn: Int;
+        requestedAt: ?Int;
+        submittedAt: ?Int;
+        completedAt: ?Int;
     };
 
     public type PohVerificationResponse = {
@@ -251,16 +252,6 @@ module {
     };
 
     public type SubscribePohMessage = {
-        callback: shared (PohVoteResult) -> ();
+        callback: shared (PohVerificationResponsePlus) -> ();
     };
-
-    public type PohVoteResult = {
-        providerUserId: Text;
-        pohStatus: {#expired; #verified; #rejected};
-        requestedAt: ?Int;
-        submittedAt: ?Int;
-        completedAt: ?Int;
-        challenges: [ChallengeResponse];
-    };
-
 };
