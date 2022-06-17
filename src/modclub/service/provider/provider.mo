@@ -192,7 +192,7 @@ module ProviderModule {
     // todo: Re-evaluate all new content with votes to determine if a potential decision can be made
   };
 
-  public func getProvider(providerId: Principal, state: GlobalState.State, contentQueueManager: QueueManager.QueueManager) : async Types.ProviderPlus {
+  public func getProvider(providerId: Principal, state: GlobalState.State) : async Types.ProviderPlus {
     switch(state.providers.get(providerId)) {
       case(?provider) {
         let result : Types.ProviderPlus = {
@@ -207,7 +207,7 @@ module ProviderModule {
             contentCount = state.provider2content.get0Size(provider.id);
             activeCount = getNewContentCount(
               provider.id,
-              state: GlobalState.State, contentQueueManager: QueueManager.QueueManager
+              state: GlobalState.State
             );
             rewardsSpent = 5000; // Todo calculate rewards spent
         };
@@ -502,17 +502,16 @@ module ProviderModule {
 
   private func getNewContentCount(
     providerId:Principal,
-    state: GlobalState.State,
-    contentQueueManager:QueueManager.QueueManager
+    state: GlobalState.State
   ) : Nat {
     var count = 0;
-    // var qStableState = QueueState.emptyStableState();
-
     for (cid in state.provider2content.get0(providerId).vals()) {
-      switch(contentQueueManager.getContentQueueByStatus(#new).get(cid)) {
-        case (null) ();
-        case (?result) {
-          count := count + 1;
+      switch(state.content.get(cid)) {
+        case(null)();
+        case (?content) {
+          if(content.status == #new){
+            count := count + 1;
+          }
         };
       };
     };
