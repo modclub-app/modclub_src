@@ -26,7 +26,7 @@ export default function UserVideo({ data } : { data: PohTaskData }) {
         src={audioObject}
         style={{
           display: "block",
-          margin: "auto",
+          margin: "1rem auto 3rem",
           width: "85%"
         }}
       ></audio>
