@@ -23,10 +23,11 @@ const RecordButton = styled.div`
   height: 46px;
   box-sizing: border-box;
   transition: all .2s;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
+  // position: absolute;
+  // left: 0;
+  // right: 0;
+  // top: 0;
+  position: relative;
 
   i {
     font-size: 0;
@@ -55,7 +56,8 @@ const Timer = styled.div`
   position:absolute;
   right: 0;
   left: 0;
-  bottom: 0;
+  // bottom: 0;
+  top: 50px;
   width: 40px;
   margin: auto;
   display: flex;
@@ -178,7 +180,7 @@ export default function UserPhrases({ steps }) {
 
       
       <div className="is-relative has-text-centered" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
-        <div style={{ paddingTop: audioData || capturing ? "35%" : "15%" }}>
+        <div className="is-flex is-flex-direction-column is-justify-content-flex-end" style={{ height: audioData || capturing ? 124 : 100 }}>
           {audioData ? (
             <>
               <audio
@@ -186,21 +188,13 @@ export default function UserPhrases({ steps }) {
                 controls
                 src={audioData ? audioData.url : null}
                 style={{
-                  position: "absolute",
-                  margin: "auto",
-                  top: 55,
-                  left: 0,
-                  right: 0,
-                  width: "85%"
+                  margin: "0 auto",
+                  width: "85%",
                 }}
               ></audio>
               <Button
                 rounded
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  left: 0,
                   margin: "auto",
                   width: "3rem",
                   height: "3rem",
@@ -240,7 +234,7 @@ export default function UserPhrases({ steps }) {
                 <i />
               </RecordButton>
               {!capturing &&
-                <p>Click to start recording</p>
+                <p className="mt-5 mb-3">Click to start recording</p>
               }
             </>
           )}
