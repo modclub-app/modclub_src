@@ -26,7 +26,7 @@ const RecordButton = styled.div`
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  top: 0;
 
   i {
     font-size: 0;
@@ -55,7 +55,7 @@ const Timer = styled.div`
   position:absolute;
   right: 0;
   left: 0;
-  top: 60px;
+  bottom: 0;
   width: 40px;
   margin: auto;
   display: flex;
@@ -178,46 +178,46 @@ export default function UserPhrases({ steps }) {
 
       
       <div className="is-relative has-text-centered" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
-        <div style={{ paddingBottom: "35%" }}>
+        <div style={{ paddingTop: audioData || capturing ? "35%" : "15%" }}>
           {audioData ? (
             <>
-            <audio
-              id="audio"
-              controls
-              src={audioData ? audioData.url : null}
-              style={{
-                position: "absolute",
-                margin: "auto",
-                left: 0,
-                right: 0,
-                width: "85%"
-              }}
-            ></audio>
-            <Button
-              rounded
-              style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
-                left: 0,
-                margin: "auto",
-                width: "3rem",
-                height: "3rem",
-                background: "rgba(46, 49, 54, 0.6)",
-                border: 0
-              }}
-              onClick={resetAudio}
-            >
-              <Icon color="white">
-                <span className="material-icons">
-                  delete
-                </span>
-              </Icon>
-            </Button>
+              <audio
+                id="audio"
+                controls
+                src={audioData ? audioData.url : null}
+                style={{
+                  position: "absolute",
+                  margin: "auto",
+                  top: 55,
+                  left: 0,
+                  right: 0,
+                  width: "85%"
+                }}
+              ></audio>
+              <Button
+                rounded
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  left: 0,
+                  margin: "auto",
+                  width: "3rem",
+                  height: "3rem",
+                  background: "rgba(46, 49, 54, 0.6)",
+                  border: 0
+                }}
+                onClick={resetAudio}
+              >
+                <Icon color="white">
+                  <span className="material-icons">
+                    delete
+                  </span>
+                </Icon>
+              </Button>
             </>
           ) : (
             <>
-              <p>Click to start recording</p>
               <AudioReactRecorder
                 state={recordState}
                 onStop={onStop}
@@ -225,12 +225,11 @@ export default function UserPhrases({ steps }) {
                 borderRadius="1rem"
                 canvasHeight="100"
               />
-
-            {capturing &&
-              <Timer>
-                {formattedTime(seconds)}
-              </Timer>
-            }
+              {capturing &&
+                <Timer>
+                  {formattedTime(seconds)}
+                </Timer>
+              }
               <RecordButton
                 capturing={capturing}
                 onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
@@ -240,6 +239,9 @@ export default function UserPhrases({ steps }) {
                 </svg>
                 <i />
               </RecordButton>
+              {!capturing &&
+                <p>Click to start recording</p>
+              }
             </>
           )}
         </div>
