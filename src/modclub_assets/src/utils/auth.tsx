@@ -30,18 +30,19 @@ export interface AuthContext {
 const KEY_LOCALSTORAGE_USER = "user";
 let walletToUse = localStorage.getItem('_loginType') || "ii";
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
-const canisterId =
-  process.env.DEV_ENV == "dev"
-    ? process.env.MODCLUB_DEV_CANISTER_ID
-    : process.env.MODCLUB_CANISTER_ID;
+
+let canisterId = process.env.MODCLUB_CANISTER_ID;
+if (process.env.DEV_ENV == "dev") {
+  canisterId = process.env.MODCLUB_DEV_CANISTER_ID;
+} else if (process.env.DEV_ENV == "qa") {
+  canisterId = process.env.MODCLUB_QA_CANISTER_ID;
+}
+
+  
 const whitelist = [canisterId];
 const host = window.location.hostname;
 let fetchedProviders = false;
 let checkAndConnectStoicCounter = 0;
-
-if (process.env.DEV_ENV == "dev") {
-  console.log("CanisterID:", canisterId);
-}
 
 // Provider hook that creates auth object and handles state
 export function useProvideAuth(authClient): AuthContext {

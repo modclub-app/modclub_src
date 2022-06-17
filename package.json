@@ -13,7 +13,8 @@
     "build": "webpack",
     "start": "webpack serve --mode development --env development",
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
-    "deploy_dev": "DEV_ENV=dev dfx deploy --network ic modclub_dev_assets"
+    "deploy_dev": "DEV_ENV=dev dfx deploy --network ic modclub_dev_assets",
+    "deploy_qa": "DEV_ENV=qa dfx deploy --network ic modclub_qa_assets"
   },
   "devDependencies": {
     "@dfinity/agent": "^0.10.1",
