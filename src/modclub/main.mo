@@ -609,6 +609,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
           completedAt = null;
           token = null;
           rejectionReasons = [];
+          isFirstAssociation = true;
       });
     };
     let pohVerificationRequest: PohTypes.PohVerificationRequestV1 = {

@@ -54,7 +54,7 @@ module PohModule {
             let modclubUserIdOpt = findModclubId(pohVerificationRequest.providerUserId, pohVerificationRequest.providerId);
             switch(modclubUserIdOpt) {
                 case(null) {
-                    return {    
+                    return {
                                 providerUserId = pohVerificationRequest.providerUserId;
                                 providerId = pohVerificationRequest.providerId;
                                 status = #startPoh; 
@@ -64,6 +64,7 @@ module PohModule {
                                 completedAt = null;
                                 token = ?pohGenerateUniqueToken(pohVerificationRequest.providerUserId, pohVerificationRequest.providerId);
                                 rejectionReasons = [];
+                                isFirstAssociation = true;
                             };
                 };
                 case(?modclubUserId) {
@@ -121,6 +122,7 @@ module PohModule {
                                 completedAt = null;
                                 token = ?pohGenerateUniqueToken(providerUserId, providerId);
                                 rejectionReasons = [];
+                                isFirstAssociation = true;
                             };
                 case(?attemptsByChallenges) {
                     let challenges = Buffer.Buffer<PohTypes.ChallengeResponse>(configuredChallengeIds.size());
@@ -204,6 +206,7 @@ module PohModule {
                                 completedAt = ?overAllCompletedDate;
                                 token = token;
                                 rejectionReasons = reasons;
+                                isFirstAssociation = checkIfFirstAssoication(modclubUserId, providerUserId, providerId);
                             };
                 };
             };
@@ -314,6 +317,17 @@ module PohModule {
                 };
                 return ?providerUserId.get(0);
             };
+        };
+
+        func checkIfFirstAssoication(modclubUserId: Principal, providerUserId : Text, providerId: Principal) : Bool {
+            var isFirstAssociation = true;
+            let _ = do ? {
+                let providerUserIds = state.providerUserIdToModclubUserIdByProviderId.get(providerId)!.get1(modclubUserId);
+                if(providerUserIds.size() != 0 and providerUserIds.get(0) != providerUserId) {
+                    isFirstAssociation := false;
+                };
+            };
+            return isFirstAssociation;
         };
 
         // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
@@ -883,7 +897,7 @@ module PohModule {
                                 case(null) {
                                     // no record of notification, so notify
                                     Helpers.logMessage(canistergeekLogger, "Finding providerUserId for provider: " # Principal.toText(providerId), #info);
-                                    switch(findProviderUserId(providerId, modclubUserId)) {
+                                    switch(findProviderUserId(modclubUserId, providerId)) {
                                         case(null)();
                                         case(?pUserId) {
                                             switch(getProviderPohConfiguration(providerId, globalState)) {

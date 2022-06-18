@@ -147,6 +147,7 @@ module {
         requestedAt: ?Int;
         submittedAt: ?Int;
         completedAt: ?Int;
+        isFirstAssociation: Bool;
     };
 
     public type PohVerificationResponse = {
