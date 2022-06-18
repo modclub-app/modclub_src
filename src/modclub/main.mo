@@ -650,7 +650,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       let response = await verifyHumanity(Principal.toText(caller));
       return {
         status = response.status;
-        token = null;
+        token = response.token;
         rejectionReasons = response.rejectionReasons;
       };
   };
@@ -721,6 +721,15 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
     };
   };
+  // Don't delete. Need it for testing
+  // public shared func registerPohCallbackForModclub() : async () {
+  //   await subscribePohCallback({callback = pohCallback});
+  // };
+
+  // public shared func pohCallback(message : PohTypes.PohVerificationResponsePlus) {
+  //   Helpers.logMessage(canistergeekLogger, "Calling back provider method", #info);
+  //   Helpers.logMessage(canistergeekLogger, "userId sent in callback: " # message.providerUserId, #info);
+  // };
 
   public shared({ caller }) func populateChallenges() : async () {
     Debug.print("Populating challenges called by: " # Principal.toText(caller));
@@ -768,7 +777,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       var profileImageUrlSuffix :?Text = null;
       for(wrapper in taskDataWrapper.vals()) {
         for(data in wrapper.pohTaskData.vals()) {
-          if(data.challengeId == POH.CHALLENGE_PROFILE_PIC_ID) {
+          if(data.dataCanisterId != null and data.contentId != null) {
             profileImageUrlSuffix := do ? {
               ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
             };
@@ -1049,11 +1058,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return ProviderManager.getAdminProviderIDs(caller, state, canistergeekLogger);
   };
 
-  public shared({caller}) func getPohAttempts(): async [(Principal, [(Text, [PohTypes.PohChallengesAttempt])])] {
+  public shared({caller}) func getPohAttempts(): async PohStateV2.PohStableState {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    pohEngine.getStableState().pohUserChallengeAttempts;
+    pohEngine.getStableStateV2();
   };
 
   public shared({caller}) func shuffleContent() : async () {
@@ -1239,7 +1248,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
     storageStateStable := storageSolution.getStableState();
     retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
-    pohStableStateV2 := pohEngine.getStableState();
+    pohStableStateV2 := pohEngine.getStableStateV2();
     pohVoteStableState := voteManager.getStableState();
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();

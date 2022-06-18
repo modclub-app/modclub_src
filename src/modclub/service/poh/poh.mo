@@ -114,12 +114,12 @@ module PohModule {
                     return {  
                                 providerUserId = providerUserId;
                                 providerId = providerId;
-                                status = #notSubmitted; 
+                                status = #startPoh; 
                                 challenges = [];
                                 requestedAt = null; 
                                 submittedAt = null;
                                 completedAt = null;
-                                token = null;
+                                token = ?pohGenerateUniqueToken(providerUserId, providerId);
                                 rejectionReasons = [];
                             };
                 case(?attemptsByChallenges) {
@@ -189,9 +189,9 @@ module PohModule {
                         // second part of get won't get evaluated so giving random value
                         reasons := findRejectionReasons(modclubUserId, configuredChallengeIds, getAllUniqueViolatedRules, getContentStatus);
                     };
-                    var token: Text = "";
-                    if(overAllStatus == #startPoh) {
-                        token := pohGenerateUniqueToken(providerUserId, providerId);
+                    var token: ?Text = null;
+                    if(overAllStatus == #startPoh or overAllStatus == #notSubmitted) {
+                        token := ?pohGenerateUniqueToken(providerUserId, providerId);
                     };
 
                     return {  
@@ -202,7 +202,7 @@ module PohModule {
                                 requestedAt = ?overAllRequestedDate; 
                                 submittedAt = ?overAllSubmittedDate;
                                 completedAt = ?overAllCompletedDate;
-                                token = ?token;
+                                token = token;
                                 rejectionReasons = reasons;
                             };
                 };
@@ -914,7 +914,7 @@ module PohModule {
             state.providersCallback.put(providerId, sub);
         };
 
-        public func getStableState() : PohStateV2.PohStableState {
+        public func getStableStateV2() : PohStateV2.PohStableState {
             return PohStateV2.getStableState(state);
         };
 

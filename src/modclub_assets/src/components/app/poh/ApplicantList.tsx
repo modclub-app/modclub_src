@@ -20,7 +20,7 @@ import { PohTaskPlus } from "../../../utils/types";
 const PAGE_SIZE = 9;
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
-  const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
+  const {profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
   const match = profileImageUrlSuffix.length ? regEx.exec(profileImageUrlSuffix[0]) : null;
   const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
@@ -54,14 +54,14 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
         />
       </Card.Header>
 
-      <Card.Content style={{ paddingTop: "65%" }}>
+      {/* <Card.Content style={{ paddingTop: "65%" }}>
         <Heading subtitle marginless>
           {userName[0]}
         </Heading>
         <p className="is-size-7 mt-2">
           {aboutUser}
         </p>
-      </Card.Content>
+      </Card.Content> */}
       
       <Card.Footer className="is-block">
         <Card.Header.Title>

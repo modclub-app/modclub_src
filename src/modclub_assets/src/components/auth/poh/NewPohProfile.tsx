@@ -53,7 +53,7 @@ export default function NewPohProfile({ match }) {
     console.log('token', token)
     if (!token.length) return
 
-    const challenges = await retrieveChallengesForUser(token[0].token);
+    const challenges = await retrieveChallengesForUser(token[0]);
     console.log("challenges", challenges);
     setLoading(false);
     setSteps(challenges["ok"]);

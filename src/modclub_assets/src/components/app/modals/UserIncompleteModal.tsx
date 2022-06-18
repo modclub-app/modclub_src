@@ -22,7 +22,7 @@ export default function UserIncompleteModal({
               later to check your status.
             </p>
           )}
-          {status === "notSubmitted" && (
+          {(status === "startPoh" || status === "notSubmitted") && (
             <p>
               You have not submitted your Proof of Humanity. Please do so now.
             </p>
@@ -46,7 +46,7 @@ export default function UserIncompleteModal({
           </>}
         </Modal.Card.Body>
         <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
-          {(status === "notSubmitted" || status === "rejected") && (
+          {(status === "startPoh" || status === "notSubmitted" || status === "rejected") && (
             <Link
               to="/new-poh-profile"
               className="button is-primary"
