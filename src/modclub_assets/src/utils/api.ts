@@ -17,7 +17,6 @@ import {
   AirdropUser,
   ProviderSettings,
   PohChallengeStatus,
-  PohUniqueToken,
   PohChallengeSubmissionRequest,
   PohChallengeSubmissionResponse,
   Result,
@@ -275,7 +274,7 @@ export async function fetchProviderContent(
 // POH Methods
 export async function verifyUserHumanity(): Promise<VerifyHumanityResponse> {
   let mc = await getMC();
-  return mc.verifyUserHumanity();
+  return mc.verifyUserHumanityForModclub();
 }
 
 export async function retrieveChallengesForUser(
