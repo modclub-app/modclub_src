@@ -169,4 +169,21 @@ module State {
         };
         return st;
     };
+
+    //  public func downloadSupport(state: PohState, varName: Text, start: Int, end: Int): () {
+    //     switch(varName) {
+    //         case("pohChallenges") {
+    //             let buff = Buffer.Buffer<[Text]>(1);
+    //             for((challengeId, challenge) in state.pohChallenges.entries()) {
+    //                 buff.add([challengeId, challenge.challengeId, challenge.challengeName, 
+    //                 challenge.challengeDescription, challenge.dependentChallengeId, challenge.requiredField, challenge.challengeType, 
+    //                 challenge.allowedViolationRules, challenge.createdAt, challenge.updatedAt
+    //                 ])
+    //             };
+    //         };
+    //         case(_) {
+
+    //         };
+    //     };
+    // };
 };
