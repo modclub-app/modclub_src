@@ -25,17 +25,22 @@ export default function ModclubApp() {
   const history = useHistory();
   const { isAuthenticated, isAuthReady, user, selectedProvider, providerIdText, providers,setSelectedProvider } = useAuth();
   const [status, setStatus] = useState(null);
-  const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([])
-
+  const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([]);
+  const [token, setToken] = useState(null);
   const [isJwtSet, setJwt] = useState(false);
 
   const initialCall = async () => {
     const result = await verifyUserHumanity();
+
     if (result.rejectionReasons && result.rejectionReasons.length) {
       setRejectionReasons(result.rejectionReasons);
     }
     const status = Object.keys(result.status)[0];
     setStatus(status);
+
+    const token = result.token[0]?.token;
+    setToken(token);
+
     if (status == "verified" && await refreshJwt()) {
       setJwt(true);
     }
@@ -57,8 +62,12 @@ export default function ModclubApp() {
 
   return (
     <>
-      {user && status && status != "verified" && !selectedProvider &&
-        <UserIncompleteModal status={status} rejectionReasons={rejectionReasons} />
+      {user && status && status != "verified" && !selectedProvider && token &&
+        <UserIncompleteModal
+          status={status}
+          rejectionReasons={rejectionReasons}
+          token={token}
+        />
       }
       <Columns className="container" marginless multiline={false} style={{ position: 'static' }}>
         <Sidebar />
