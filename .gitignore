@@ -18,3 +18,7 @@ node_modules/
 dist/
 
 .history/
+
+download_state.iml
+downloads/
+downloads_archive/

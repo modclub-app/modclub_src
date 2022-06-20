@@ -1,14 +1,14 @@
-import Text "mo:base/Text";
-import Principal "mo:base/Principal";
 import Buffer "mo:base/Buffer";
-import HashMap "mo:base/HashMap";
 import Hash "mo:base/Hash";
-import TrieMap "mo:base/TrieMap";
+import HashMap "mo:base/HashMap";
+import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import PohTypes "./types";
-
+import Principal "mo:base/Principal";
 import Rel "../../data_structures/Rel";
 import RelObj "../../data_structures/RelObj";
+import Text "mo:base/Text";
+import TrieMap "mo:base/TrieMap";
 
 module State {
 
@@ -170,20 +170,5 @@ module State {
         return st;
     };
 
-    //  public func downloadSupport(state: PohState, varName: Text, start: Int, end: Int): () {
-    //     switch(varName) {
-    //         case("pohChallenges") {
-    //             let buff = Buffer.Buffer<[Text]>(1);
-    //             for((challengeId, challenge) in state.pohChallenges.entries()) {
-    //                 buff.add([challengeId, challenge.challengeId, challenge.challengeName, 
-    //                 challenge.challengeDescription, challenge.dependentChallengeId, challenge.requiredField, challenge.challengeType, 
-    //                 challenge.allowedViolationRules, challenge.createdAt, challenge.updatedAt
-    //                 ])
-    //             };
-    //         };
-    //         case(_) {
-
-    //         };
-    //     };
-    // };
+    
 };

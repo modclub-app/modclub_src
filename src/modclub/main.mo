@@ -1309,6 +1309,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
       nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
     };
   };
+
+  public query({caller}) func downloadSupport(stateName: Text, varName: Text, start: Nat, end: Nat) : async [[Text]] {
+    pohEngine.downloadSupport(varName, start, end);
+  };
+
 };
 
 

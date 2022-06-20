@@ -24,6 +24,7 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
 import Rel "../../data_structures/Rel";
+import DownloadSupport "./downloadSupport";
 
 module PohModule {
 
@@ -930,6 +931,10 @@ module PohModule {
 
         public func getStableStateV2() : PohStateV2.PohStableState {
             return PohStateV2.getStableState(state);
+        };
+
+        public func downloadSupport(varName: Text, start: Nat, end: Nat) : [[Text]] {
+            DownloadSupport.download(state, varName, start, end);
         };
 
         // Delete this function
