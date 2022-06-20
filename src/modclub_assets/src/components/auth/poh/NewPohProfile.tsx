@@ -70,8 +70,8 @@ export default function NewPohProfile({ match }) {
   }
 
   useEffect(() => {
-    user && !hasInitialCall && initialCall();
-  }, [user]);
+    isAuthenticated && initialCall();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     return history.listen((location) => { 
