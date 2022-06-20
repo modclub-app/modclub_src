@@ -23,6 +23,9 @@ export default function Header() {
         </Navbar.Brand>
         <Navbar.Menu>
           <Navbar.Container align="right">
+            <HashLink className="navbar-item" to="/invest">
+              Investor Interest
+            </HashLink>
             <HashLink className="navbar-item" to="/#developers">
               Developers
             </HashLink>
@@ -32,6 +35,9 @@ export default function Header() {
             <HashLink className="navbar-item" to="/#roadmap">
               Roadmap
             </HashLink>
+            <a className='navbar-item' href="https://docsend.com/view/hxha6r7ciutbgzfc">
+              Whitepaper
+            </a>
           </Navbar.Container>
         </Navbar.Menu>
       </Container>

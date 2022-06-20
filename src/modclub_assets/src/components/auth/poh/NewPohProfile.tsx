@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Switch, Route } from "react-router-dom";
-import { useHistory, Link } from "react-router-dom";
+import { useHistory, Link, useLocation } from "react-router-dom";
 import {
   Modal,
   Columns,
@@ -31,7 +31,9 @@ const Confirmation = () => {
 };
 
 export default function NewPohProfile({ match }) {
-  const { isAuthenticated, isAuthReady, user } = useAuth();
+  const { search } = useLocation();
+  const URLtoken = new URLSearchParams(search).get("token");  
+  const { isAuthenticated, isAuthReady } = useAuth();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)
@@ -40,20 +42,20 @@ export default function NewPohProfile({ match }) {
   const [hasInitialCall, setHasInitialCall] = useState<boolean>(false);
 
   const initialCall = async () => {
-    setHasInitialCall(true);
-    const response = await verifyUserHumanity();
-    console.log("response", response)
-
-    if ('verified' in response.status) {
-      history.push("/app");
-      return
+    let token
+    if (!URLtoken) {
+      const response = await verifyUserHumanity();
+      if ('verified' in response.status) {
+        history.push("/app");
+        return
+      }
+      token = response.token;
+      if (!token.length) return
     }
 
-    const token = response.token;
-    console.log('token', token)
-    if (!token.length) return
-
-    const challenges = await retrieveChallengesForUser(token[0]);
+    const challenges = await retrieveChallengesForUser(URLtoken ? URLtoken : token[0].token);
+    setLoading(false);``
+    setSteps(challenges["ok"]);
     console.log("challenges", challenges);
     setLoading(false);
     setSteps(challenges["ok"]);
