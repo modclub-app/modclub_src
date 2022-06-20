@@ -14,12 +14,11 @@ module {
 
     public let TOTAL_QUEUES = 100;
     public let ASSIGN_CONTENT_QUEUES = 70;
-    
+
+    public let WORD_SIZE_FOR_VIDEO = 6;
+    public let WORD_SIZE_FOR_AUDIO = 6;
+
     public func getModclubWallet() : Principal {
         return Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai")
-    };
-
-    public func getModClubProviderId() : Principal {
-        return Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai");
     };
 };

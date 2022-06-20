@@ -51,7 +51,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000; // In case someone spams us, limit the waitlist
-  let CHALLENGE_IDS = ["challenge-profile-pic", "challenge-user-video"];
   stable var signingKey = "";
   // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
@@ -342,8 +341,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
+      case(#ok(verificationResponse)) {
+        if(verificationResponse.status != #verified) {
+          throw Error.reject("Proof of Humanity not completed user");
+        };
+      };
+      case(#err(#pohNotConfiguredForProvider)) {
+        throw Error.reject("Poh Not configured for provider.");
+      };
+      case(_)();
     };
     return ContentManager.getAllContent(caller, status, getVoteCount, contentQueueManager, canistergeekLogger, state, randomizationEnabled);
   };
@@ -360,8 +367,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
+      case(#ok(verificationResponse)) {
+        if(verificationResponse.status != #verified) {
+          throw Error.reject("Proof of Humanity not completed user");
+        };
+      };
+      case(#err(#pohNotConfiguredForProvider)) {
+        throw Error.reject("Poh Not configured for provider.");
+      };
+      case(_)();
     };
     switch(ContentManager.getTasks(caller, getVoteCount, state, start, end, filterVoted, canistergeekLogger, contentQueueManager, randomizationEnabled)){
       case(#err(e)) {
@@ -436,8 +451,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case (#err(e)) { throw Error.reject("Unauthorized"); };
       case (_) ();
     };
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
+      case(#ok(verificationResponse)) {
+        if(verificationResponse.status != #verified) {
+          throw Error.reject("Proof of Humanity not completed user");
+        };
+      };
+      case(#err(#pohNotConfiguredForProvider)) {
+        throw Error.reject("Poh Not configured for provider.");
+      };
+      case(_)();
     };
     switch(ModeratorManager.getActivity(caller, isComplete, getVoteCount, state)) {
       case(#ok(activity)) return activity;
@@ -469,8 +492,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case (#err(e)) { throw Error.reject("Unauthorized"); };
       case (_) ();
     };
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
+      case(#ok(verificationResponse)) {
+        if(verificationResponse.status != #verified) {
+          throw Error.reject("Proof of Humanity not completed user");
+        };
+      };
+      case(#err(#pohNotConfiguredForProvider)) {
+        throw Error.reject("Poh Not configured for provider.");
+      };
+      case(_)();
     };
 
     var voteCount = getVoteCount(contentId, ?caller);
@@ -490,8 +521,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared({ caller }) func stakeTokens(amount: Nat) : async Text {
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
+      case(#ok(verificationResponse)) {
+        if(verificationResponse.status != #verified) {
+          throw Error.reject("Proof of Humanity not completed user");
+        };
+      };
+      case(#err(#pohNotConfiguredForProvider)) {
+        throw Error.reject("Poh Not configured for provider.");
+      };
+      case(_)();
     };
     await tokens.stake(caller, amount);
     "Staked " # Nat.toText(amount) # " tokens";
@@ -537,20 +576,27 @@ shared ({caller = deployer}) actor class ModClub() = this {
   //----------------------POH Methods For Providers------------------------------
 
   public shared({ caller }) func pohVerificationRequest(providerUserId: Principal) : async PohTypes.PohVerificationResponse {
-    pohVerificationRequestHelper(providerUserId, caller);
+    switch(pohVerificationRequestHelper(providerUserId, caller)) {
+      case(#ok(verificationResponse)) {
+        return verificationResponse;
+      };
+      case(_) {
+        throw Error.reject("Poh Not configured for provider.");
+      };
+    };
   };
 
-  private func pohVerificationRequestHelper(providerUserId: Principal, providerId: Principal) : PohTypes.PohVerificationResponse  {
-    if(voteManager.isAutoApprovedPOHUser(providerUserId)) {
+  private func pohVerificationRequestHelper(providerUserId: Principal, providerId: Principal) : Result.Result<PohTypes.PohVerificationResponse, PohTypes.PohError>  {
+    if(Principal.equal(providerId, Principal.fromActor(this)) and voteManager.isAutoApprovedPOHUser(providerUserId)) {
       return
-      {
+      #ok({
           requestId = "null";
           providerUserId = providerId;
           status = #verified;
           challenges = [];
-          providerId = ModClubParam.getModClubProviderId();
+          providerId = Principal.fromActor(this);
           requestedOn = Helpers.timeNow();
-      };
+      });
     };
     let pohVerificationRequest: PohTypes.PohVerificationRequest = {
         requestId = Helpers.generateId(providerId, "pohRequest", state);
@@ -558,7 +604,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
         providerId = providerId;
     };
     // validity and rules needs to come from admin dashboard here
-    pohEngine.pohVerificationRequest(pohVerificationRequest, 365, CHALLENGE_IDS);
+    switch(pohEngine.getProviderPohConfiguration(providerId, state)) {
+      case(#ok(providerPohConfig)) {
+        #ok(pohEngine.pohVerificationRequest(pohVerificationRequest, providerPohConfig.1, providerPohConfig.0));
+      };
+      case(#err(er)) {
+        return #err(er);
+      };
+    };
   };
 
   // Method called by provider
@@ -569,10 +622,21 @@ shared ({caller = deployer}) actor class ModClub() = this {
   //----------------------POH Methods For ModClub------------------------------
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
     let tokenResponse = pohEngine.decodeToken(caller, token);
-    if(tokenResponse == #err(#invalidToken)) {
-      return #err(#invalidToken);
+    switch(pohEngine.decodeToken(caller, token)) {
+      case(#err(err)) {
+        return #err(err);
+      };
+      case(#ok(tokenResponse)) {
+        switch(pohEngine.getProviderPohConfiguration(tokenResponse.providerId, state)) {
+          case(#ok(pohConfigForProvider)) {
+            await pohEngine.retrieveChallengesForUser(caller, pohConfigForProvider.0, pohConfigForProvider.1, false);
+          };
+          case(#err(er)) {
+            return #err(er);
+          };
+        };
+      };
     };
-    await pohEngine.retrieveChallengesForUser(caller, CHALLENGE_IDS, 365, false);
   };
 
   public shared({ caller }) func submitChallengeData(pohDataRequest : PohTypes.PohChallengeSubmissionRequest) : async PohTypes.PohChallengeSubmissionResponse {
@@ -580,38 +644,29 @@ shared ({caller = deployer}) actor class ModClub() = this {
     let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, caller);
     if(isValid == #ok) {
       let _ = do ? {
-        if(pohDataRequest.challengeDataBlob != null) {
-          let attemptId = pohEngine.getAttemptId(pohDataRequest.challengeId, caller);
-          let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset,
-                  pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
-          if(pohDataRequest.offset == pohDataRequest.numOfChunks) {//last Chunk coming in
-            pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
-            pohEngine.updateDataCanisterId(pohDataRequest.challengeId, caller, dataCanisterId);
-          };
-        } else {
-          // It's a username, email task
-          pohEngine.updatePohUserObject(caller, pohDataRequest.fullName!, pohDataRequest.email!, pohDataRequest.userName!, pohDataRequest.aboutUser!);
+        let attemptId = pohEngine.getAttemptId(pohDataRequest.challengeId, caller);
+        let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset,
+                pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
+        if(pohDataRequest.offset == pohDataRequest.numOfChunks) {
+          //last Chunk coming in
           pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
-        };
-      };
-      // TODO dynamic list will be fetched from admin dashboard state
-      let providerChallenges = ["challenge-profile-pic", "challenge-user-video"];
-      let challengePackage = pohEngine.createChallengePackageForVoting(
-        caller,
-        providerChallenges,
-        voteManager.getContentStatus,
-        state
-      );
-      switch(challengePackage) {
-        case(null)();
-        case(?package) {
-          voteManager.initiateVotingPoh(package.id, caller);
-          if(voteManager.isAutoApprovedPOHUser(caller)) {
-            pohEngine.changeChallengePackageStatus(package.id, #verified);
+          pohEngine.updateDataCanisterId(pohDataRequest.challengeId, caller, dataCanisterId);
+
+          let challengePackages = pohEngine.createChallengePackageForVoting(
+            caller,
+            voteManager.getContentStatus,
+            state
+          );
+          for(package in challengePackages.vals()) {
+            voteManager.initiateVotingPoh(package.id, caller);
+            // if(voteManager.isAutoApprovedPOHUser(caller)) {
+            //   pohEngine.changeChallengePackageStatus(package.id, #verified);
+            // };
           };
         };
       };
     };
+      
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = isValid;
@@ -629,14 +684,22 @@ shared ({caller = deployer}) actor class ModClub() = this {
     } else {
       let result = await pohVerificationRequest(caller);
       if(result.status == #rejected) {
-        let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, CHALLENGE_IDS, voteManager.getContentStatus);
-        switch(rejectedPackageId) {
-          case(null)();
-          case(?id) {
-            let violatedRules = voteManager.getAllUniqueViolatedRules(id);
-            rejectionReasons := pohEngine.resolveViolatedRulesById(violatedRules);
-          }
+        switch(pohEngine.getProviderPohConfiguration(Principal.fromActor(this), state)) {
+          case(#ok(providerPohConfig)) {
+            let rejectedPackageId = pohEngine.retrieveRejectedPackageId(caller, providerPohConfig.0, voteManager.getContentStatus);
+            switch(rejectedPackageId) {
+              case(null)();
+              case(?id) {
+                let violatedRules = voteManager.getAllUniqueViolatedRules(id);
+                rejectionReasons := pohEngine.resolveViolatedRulesById(violatedRules);
+              }
+            };
+          };
+          case(#err(er)) {
+            throw Error.reject("Poh Not configured for Modclub");
+          };
         };
+        
       };
       if(result.status != #verified) {
         return {
@@ -662,7 +725,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case(?package) {
         pohEngine.changeChallengePackageStatus(packageId, #rejected);
         voteManager.changePohPackageVotingStatus(packageId, #rejected);
-        await pohEngine.retrieveChallengesForUser(package.userId, CHALLENGE_IDS, 365, true);
+        // when true is passed, validity is not used in the function. so passing 0
+        await pohEngine.retrieveChallengesForUser(package.userId, package.challengeIds, 0, true);
       };
     };
 
@@ -676,6 +740,18 @@ shared ({caller = deployer}) actor class ModClub() = this {
     pohEngine.populateChallenges();
   };
 
+  public shared({ caller }) func configurePohForProvider(providerId: Principal, challengeId: [Text], expiry: Nat) : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    let challengeBuffer = Buffer.Buffer<Text>(challengeId.size());
+    for(id in challengeId.vals()) {
+      challengeBuffer.add(id);
+    };
+    state.provider2PohChallengeIds.put(providerId, challengeBuffer);
+    state.provider2PohExpiry.put(providerId, expiry);
+  };
+
   public query({ caller }) func getPohTasks(status: Types.ContentStatus, start: Nat, end: Nat) : async [PohTypes.PohTaskPlus] {
     switch(AuthManager.checkProfilePermission(caller, #getContent, state)){
       case(#err(e)) {
@@ -683,8 +759,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
+      case(#ok(verificationResponse)) {
+        if(verificationResponse.status != #verified) {
+          throw Error.reject("Proof of Humanity not completed user");
+        };
+      };
+      case(#err(#pohNotConfiguredForProvider)) {
+        throw Error.reject("Poh Not configured for provider.");
+      };
+      case(_)();
     };
     let pohTaskIds = voteManager.getTasksId(status, start, end);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
@@ -698,13 +782,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
       var profileImageUrlSuffix :?Text = null;
       for(wrapper in taskDataWrapper.vals()) {
         for(data in wrapper.pohTaskData.vals()) {
-          if(data.challengeId == POH.CHALLENGE_PROFILE_DETAILS_ID) {
-            // userName := data.userName;
-            email := data.email;
-            fullName := data.fullName;
-            aboutUser := data.aboutUser;
-          };
-
           if(data.challengeId == POH.CHALLENGE_PROFILE_PIC_ID) {
             profileImageUrlSuffix := do ? {
               ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
@@ -753,8 +830,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    if(pohVerificationRequestHelper(caller, ModClubParam.getModClubProviderId()).status != #verified) {
-      throw Error.reject("Proof of Humanity not completed user");
+    switch(pohVerificationRequestHelper(caller, Principal.fromActor(this))) {
+      case(#ok(verificationResponse)) {
+        if(verificationResponse.status != #verified) {
+          throw Error.reject("Proof of Humanity not completed user");
+        };
+      };
+      case(#err(#pohNotConfiguredForProvider)) {
+        throw Error.reject("Poh Not configured for provider.");
+      };
+      case(_)();
     };
     let pohTasks = pohEngine.getPohTasks([packageId]);
     if(pohTasks.size() == 0) {
@@ -904,21 +989,21 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   private func getProviderRules(providerId: Principal) : [Types.Rule] {
-      let buf = Buffer.Buffer<Types.Rule>(0);
-      for(ruleId in state.provider2rules.get0(providerId).vals()){
-        switch(state.rules.get(ruleId)){
-          case(?rule){
-            buf.add(rule);
-          };
-          case(_)();
+    let buf = Buffer.Buffer<Types.Rule>(0);
+    for(ruleId in state.provider2rules.get0(providerId).vals()){
+      switch(state.rules.get(ruleId)){
+        case(?rule){
+          buf.add(rule);
         };
+        case(_)();
       };
-      buf.toArray();
+    };
+    buf.toArray();
   };
 
   // Return the principal identifier of this canister.
   public func whoami () : async Principal {
-        Principal.fromActor(this);
+    Principal.fromActor(this);
   };
 
   public query func getDeployer () : async Principal {
@@ -1174,7 +1259,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // Reducing memory footprint by assigning empty stable state
     stateSharedV1 := StateV1.emptyShared();
 
-    tokensStableV1 := Token.emptyStableV1(ModClubParam.getModClubProviderId());
+    tokensStableV1 := Token.emptyStableV1(Principal.fromActor(this));
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
     pohStableStateV1 := PohStateV1.emptyStableState();

@@ -1,5 +1,9 @@
+import Array "mo:base/Array";
+import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
+import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
+import Error "mo:base/Error";
 import GlobalState "../../statev1";
 import HashMap "mo:base/HashMap";
 import Helpers "../../helpers";
@@ -8,6 +12,7 @@ import Iter "mo:base/Iter";
 import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
+import Order "mo:base/Order";
 import PohState "./statev1";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
@@ -15,13 +20,13 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
-import Canistergeek "../../canistergeek/canistergeek";
 
 module PohModule {
 
-    public let CHALLENGE_PROFILE_DETAILS_ID = "challenge-profile-details";
     public let CHALLENGE_PROFILE_PIC_ID = "challenge-profile-pic";
     public let CHALLENGE_USER_VIDEO_ID = "challenge-user-video";
+    public let CHALLENGE_USER_AUDIO_ID = "challenge-user-audio";
+
 
     public class PohEngine(stableState : PohState.PohStableState) {
 
@@ -175,13 +180,14 @@ module PohModule {
             };
         };
 
-        public func decodeToken(userId: Principal, token: Text) : Result.Result<(), PohTypes.PohError> {
+        public func decodeToken(userId: Principal, token: Text) : Result.Result<PohTypes.PohUserProviderData, PohTypes.PohError> {
             switch(state.pohProviderUserData.get(token)) {
                 case(null) return #err(#invalidToken);
-                case(?pUser)
+                case(?pUser) {
                     state.providerToModclubUser.put(pUser.providerUserId, userId);
+                    #ok(pUser);
+                };
             };
-            #ok();
         };
 
         // Step 4 The dApp asks the user to perform POH and presents an iFrame which loads MODCLUB’s POH screens.
@@ -258,7 +264,8 @@ module PohModule {
                     completedOn = -1; // -1 means not completed
                     wordList = do ?{
                         switch(state.pohChallenges.get(challengeId)!.challengeType) {
-                            case(#selfVideo) Helpers.generateRandomList(6, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
+                            case(#selfVideo) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_VIDEO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
+                            // case(#selfAudio) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_AUDIO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
                             case(_) [];
                         };
                     };
@@ -272,10 +279,11 @@ module PohModule {
                 case(null)
                     return #incorrectChallenge;
                 case(?pohChallenge){
-                    if(pohChallenge.requiredField == #profileFieldBlobs 
-                            and (challengeData.userName == null or challengeData.email == null or challengeData.fullName == null or challengeData.aboutUser == null)) {
-                        return #inputDataMissing;
-                    } else if(pohChallenge.requiredField != #profileFieldBlobs and challengeData.challengeDataBlob == null) {
+                    // if(pohChallenge.requiredField == #profileFieldBlobs 
+                    //         and (challengeData.userName == null or challengeData.email == null or challengeData.fullName == null or challengeData.aboutUser == null)) {
+                    //     return #inputDataMissing;
+                    // } else 
+                    if(pohChallenge.requiredField != #profileFieldBlobs and challengeData.challengeDataBlob == null) {
                         return #inputDataMissing;
                     };
                 }
@@ -383,86 +391,110 @@ module PohModule {
             return contentId; 
         };
 
-        public func updatePohUserObject(userId:Principal, fullName:Text, email:Text, userName:Text, aboutUser : Text) : () {
-            switch(state.pohUsers.get(userId)) {
-                case(null) ();
-                case(?user) {
-                    state.pohUsers.put(userId, {
-                        userId = user.userId;
-                        userName = ?userName;
-                        email = ?email;
-                        fullName = ?fullName;
-                        aboutUser = ?aboutUser;
-                        createdAt = user.createdAt;
-                        updatedAt = Helpers.timeNow();
-                    });
-                };
+        private func sortByComplexChallengeFirst(a : (Principal, [Text]), b: (Principal, [Text])) : Order.Order {
+            if(a.1.size() > b.1.size()) {
+                return #greater;
+            } else if(a.1.size() < b.1.size()) {
+                return #less;
             };
+            #equal;
         };
 
         public func createChallengePackageForVoting(
             userId: Principal,
-            challengeIds: [Text], 
             getContentStatus: Text -> Types.ContentStatus,
             globalState: GlobalState.State) 
-            : ?PohTypes.PohChallengePackage {
-            for(packageId in state.userToPohChallengePackageId.get0(userId).vals()) {
-                switch(state.pohChallengePackages.get(packageId)) {
-                    case(null)();
-                    case(?package) {
-                        if(package.challengeIds.size() == challengeIds.size()) {
-                            let cIdsMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
-                            for(id in package.challengeIds.vals()) {
-                                cIdsMap.put(id, id);
-                            };
-                            var allMatched = true;
-                            label l for(id in challengeIds.vals()) {
-                                switch(cIdsMap.get(id)) {
-                                    case(null) {
-                                        allMatched := false;
-                                        break l;
-                                    };
-                                    case(_)();
+            : [PohTypes.PohChallengePackage] 
+            {
+            
+            let challengeIdByProviderBuff = Buffer.Buffer<(Principal, [Text])>(1);
+            for((pid, challengeIds) in globalState.provider2PohChallengeIds.entries()) {
+                challengeIdByProviderBuff.add((pid, challengeIds.toArray()));
+            };
+
+            var challengeIdByProviderArr = challengeIdByProviderBuff.toArray();
+            challengeIdByProviderArr := Array.sort(challengeIdByProviderArr, sortByComplexChallengeFirst);
+
+            let packagesCreated = Buffer.Buffer<PohTypes.PohChallengePackage>(1);
+            for((pid, challengeIds) in globalState.provider2PohChallengeIds.entries()) {
+                var packageExist = false;
+                label p for(packageId in state.userToPohChallengePackageId.get0(userId).vals()) {
+                    switch(state.pohChallengePackages.get(packageId)) {
+                        case(null)();
+                        case(?package) {
+                            if(package.challengeIds.size() == challengeIds.size()) {
+                                let cIdsMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
+                                for(id in package.challengeIds.vals()) {
+                                    cIdsMap.put(id, id);
                                 };
-                            };
-                            // if package exists with same challenge and not voted approved/rejected
-                            // don't create a new package
-                            if(allMatched and getContentStatus(package.id) == #new) {
-                                return null;
+                                var allMatched = true;
+                                label l for(id in challengeIds.vals()) {
+                                    switch(cIdsMap.get(id)) {
+                                        case(null) {
+                                            allMatched := false;
+                                            break l;
+                                        };
+                                        case(_)();
+                                    };
+                                };
+                                // if package exists with same challenge and not voted approved/rejected
+                                // don't create a new package
+                                if(allMatched and getContentStatus(package.id) == #new) {
+                                    packageExist := true;
+                                    break p;
+                                };
                             };
                         };
                     };
                 };
-            };
+                
+                if(not packageExist) {
+                    Debug.print("Package doesn't exista" );
+                    let _ = do? {
+                        let challengeIdsForPackage = Buffer.Buffer<Text>(1);
+                        let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
+                        var createPackage = true;
+                        label l for(id in challengeIds.vals()) {
+                            let attempts = challengeAttempts.get(id)!;
+                            if(attempts.size() == 0) {
+                                createPackage := false;
+                                break l;
+                            };
+                            if(attempts.get(attempts.size() - 1).status == #notSubmitted) {
+                                createPackage := false;
+                                break l;
+                            };
+                            if(attempts.get(attempts.size() - 1).status == #rejected) {
+                                createPackage := false;
+                                break l;
+                            };
+                            if(attempts.get(attempts.size() - 1).status == #expired) {
+                                createPackage := false;
+                                break l;
+                            };
+                            if(attempts.get(attempts.size() - 1).status == #pending) {
+                                challengeIdsForPackage.add(id);
+                            };
+                        };
 
-            do? {
-                let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
-                var allChallengeSubmitted = true;
-                for(id in challengeIds.vals()) {
-                    let attempts = challengeAttempts.get(id)!;
-                    if(attempts.size() == 0) {
-                        return null;
+                        if(createPackage and challengeIdsForPackage.size() > 0) {
+                            let pohPackage = {
+                                id = Helpers.generateId(userId, "poh-content", globalState);
+                                challengeIds =  challengeIds.toArray();
+                                userId =  userId;
+                                contentType = #pohPackage;
+                                title = ?("POH Content for User: " # Principal.toText(userId));
+                                createdAt =  Helpers.timeNow();
+                                updatedAt = Helpers.timeNow();
+                            };
+                            state.pohChallengePackages.put(pohPackage.id, pohPackage);
+                            state.userToPohChallengePackageId.put(userId, pohPackage.id);
+                            packagesCreated.add(pohPackage);
+                        };
                     };
-                    if(attempts.get(attempts.size() - 1).status != #pending) {
-                        allChallengeSubmitted:=false;
-                    }
                 };
-                if(allChallengeSubmitted == false) {
-                    return null;
-                };
-                let pohPackage = {
-                    id = Helpers.generateId(userId, "poh-content", globalState);
-                    challengeIds =  challengeIds;
-                    userId =  userId;
-                    contentType = #pohPackage;
-                    title = ?("POH Content for User: " # Principal.toText(userId));
-                    createdAt =  Helpers.timeNow();
-                    updatedAt = Helpers.timeNow();
-                };
-                state.pohChallengePackages.put(pohPackage.id, pohPackage);
-                state.userToPohChallengePackageId.put(userId, pohPackage.id);
-                return ?pohPackage;
             };
+            return packagesCreated.toArray();
         };
 
         public func getPohTasks(taskIds: [Text]) : [PohTypes.PohTaskDataWrapper] {
@@ -598,33 +630,16 @@ module PohModule {
             return Option.get(validRules, false);
         };
 
-        public func populateChallenges() : () {
-            let allowedViolationRules1 = Buffer.Buffer<PohTypes.ViolatedRules>(2);
-            allowedViolationRules1.add( {
-                ruleId= "1";
-                ruleDesc = "The username is not offensive or uses fowl language";
-            }); 
-            allowedViolationRules1.add( {
-                ruleId= "2";
-                ruleDesc = "The fullname is not offensive or uses fowl language";
-            });
-            allowedViolationRules1.add( {
-                ruleId= "3";
-                ruleDesc = "The about section is not offensive or uses fowl language";
-            });
-            state.pohChallenges.put(CHALLENGE_PROFILE_DETAILS_ID, {
-                challengeId = CHALLENGE_PROFILE_DETAILS_ID;
-                challengeName = "Please create a username";
-                challengeDescription = "Please create a username";
-                // assuming there will be no transitive dependencies. else graph needs to be used
-                requiredField = #profileFieldBlobs;
-                dependentChallengeId = null;
-                challengeType =  #userName;
-                allowedViolationRules = allowedViolationRules1.toArray();
-                createdAt = Helpers.timeNow();
-                updatedAt = Helpers.timeNow();
-            });
+        public func getProviderPohConfiguration(providerId: Principal, state: GlobalState.State) : Result.Result<([Text], Nat), PohTypes.PohError> {
+            let challengeIds = Option.get(state.provider2PohChallengeIds.get(providerId), Buffer.Buffer<Text>(0));
+            let expiry = Option.get(state.provider2PohExpiry.get(providerId), 0);
+            if(expiry == 0 or challengeIds.size() == 0) {
+                return #err(#pohNotConfiguredForProvider);
+            };
+            return #ok((challengeIds.toArray(), expiry))
+        };
 
+        public func populateChallenges() : () {
             let allowedViolationRules2 = Buffer.Buffer<PohTypes.ViolatedRules>(3);
             allowedViolationRules2.add({
                 ruleId= "1";
@@ -676,6 +691,29 @@ module PohModule {
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
             });
+
+            let allowedViolationRules4 = Buffer.Buffer<PohTypes.ViolatedRules>(4);
+            allowedViolationRules4.add( {
+                ruleId= "1";
+                ruleDesc = "The person in the audio says all the words in order in the box above";
+            });
+            allowedViolationRules4.add( {
+                ruleId= "2";
+                ruleDesc = "The person in the audio appears to be a real person and not AI generated by voice";
+            });
+            state.pohChallenges.put(CHALLENGE_USER_AUDIO_ID, {
+                challengeId = CHALLENGE_USER_AUDIO_ID;
+                challengeName = "Please record your audio reading these words";
+                challengeDescription = "Please record your audio reading these words";
+                requiredField = #videoBlob;
+                // assuming there will be no transitive dependencies. else graph needs to be used
+                dependentChallengeId = null;
+                challengeType =  #selfVideo;
+                allowedViolationRules = allowedViolationRules4.toArray();
+                createdAt = Helpers.timeNow();
+                updatedAt = Helpers.timeNow();
+            });
+
             state.wordList.add("Cute");
             state.wordList.add("Free");
             state.wordList.add("Pair");

@@ -106,10 +106,10 @@ module {
         challengeId: Text;
         // response to challenge can be text or image or video
         challengeDataBlob : ?Blob;
-        userName: ?Text;
-        email: ?Text;
-        fullName: ?Text;
-        aboutUser: ?Text;
+        // userName: ?Text;
+        // email: ?Text;
+        // fullName: ?Text;
+        // aboutUser: ?Text;
         offset: Nat; // default 1
         numOfChunks: Nat; // default 1
         mimeType: Text; // 
@@ -189,6 +189,7 @@ module {
         #invalidToken;
         #challengeNotPendingForSubmission;
         #invalidPackageId;
+        #pohNotConfiguredForProvider
     };
 
     public type VerifyHumanityResponse = {

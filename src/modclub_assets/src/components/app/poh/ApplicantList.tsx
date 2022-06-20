@@ -22,10 +22,11 @@ const PAGE_SIZE = 9;
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
   const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
-  const match = regEx.exec(profileImageUrlSuffix[0]);
-  const imageUrl = getUrlForData(match[1], match[2]);
+  const match = profileImageUrlSuffix.length ? regEx.exec(profileImageUrlSuffix[0]) : null;
+  const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
   const [urlObject, setUrlObject] = useState(null);
-  
+  const placeholder = '../assets/user_placeholder.png'
+
   useEffect(() => {
     const fetchData = async () => {
       const urlObject = await fetchObjectUrl(imageUrl);
@@ -33,14 +34,14 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
     };
     fetchData();
     return () => { setUrlObject(null) };
-  }, [])   
+  }, [imageUrl])
   
   return (
     <Link
       to={`/app/poh/${applicant.packageId}`}
       className="card is-flex is-flex-direction-column is-justify-content-flex-end"
       style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${urlObject})`,
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${imageUrl ? urlObject : placeholder})`,
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundSize: "cover"
@@ -107,6 +108,7 @@ export default function PohApplicantList() {
     setLoading(true);
     const status = { "new": null };    
     const newApplicants = await getPohTasks(status, page.startIndex, page.endIndex);
+    console.log("newApplicants", newApplicants);
     if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);

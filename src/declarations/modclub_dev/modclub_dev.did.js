@@ -209,6 +209,7 @@ export const idlFactory = ({ IDL }) => {
     'ssn' : IDL.Null,
     'userName' : IDL.Null,
     'fullName' : IDL.Null,
+    'selfAudio' : IDL.Null,
     'email' : IDL.Null,
     'selfVideo' : IDL.Null,
     'selfPic' : IDL.Null,
@@ -259,6 +260,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const PohError = IDL.Variant({
     'invalidPackageId' : IDL.Null,
+    'pohNotConfiguredForProvider' : IDL.Null,
     'challengeNotPendingForSubmission' : IDL.Null,
     'invalidToken' : IDL.Null,
   });
@@ -388,6 +390,11 @@ export const idlFactory = ({ IDL }) => {
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'allNewContent' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
     'collectCanisterMetrics' : IDL.Func([], [], []),
+    'configurePohForProvider' : IDL.Func(
+        [IDL.Principal, IDL.Vec(IDL.Text), IDL.Nat],
+        [],
+        [],
+      ),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
     'distributeAllPendingRewards' : IDL.Func([], [], []),
     'editProviderAdmin' : IDL.Func(
