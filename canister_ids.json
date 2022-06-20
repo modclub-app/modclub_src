@@ -13,6 +13,12 @@
   "modclub_dev_assets": {
     "ic": "ocbvi-5yaaa-aaaah-qcopa-cai"
   },
+  "modclub_qa": {
+    "ic": "f2xjy-4aaaa-aaaah-qc3eq-cai"
+  },
+  "modclub_qa_assets": {
+    "ic": "ftuce-kiaaa-aaaah-qc3fa-cai"
+  },
   "modclub_staging": {
     "ic": "o6fpz-kyaaa-aaaah-qcona-cai"
   },
