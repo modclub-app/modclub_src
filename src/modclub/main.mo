@@ -1311,14 +1311,17 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public query({caller}) func downloadSupport(stateName: Text, varName: Text, start: Nat, end: Nat) : async [[Text]] {
-    switch(stateName) {
-      case("pohState") {
-        pohEngine.downloadSupport(varName, start, end);
-      };
-      case(_) {
-        throw Error.reject("Invalid state");
+    if(Principal.toText(caller) == "edc6a-bltzx-3jexk-vn7wo-xrpzh-hazpe-fibv6-gqgqx-gkff6-la6uj-gae") {
+      switch(stateName) {
+        case("pohState") {
+          return pohEngine.downloadSupport(varName, start, end);
+        };
+        case(_) {
+          throw Error.reject("Invalid state");
+        };
       };
     };
+    throw Error.reject("Unauthorized");
   };
 
 };

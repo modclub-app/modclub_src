@@ -10,8 +10,9 @@ from pathlib import Path
 
 private_key = input("Please enter private key: ")
 canister_id = input("Please enter canister id to download data from: ")
-download_folder = './downloads/'
-download_archive_folder = './downloads_archive/'
+dirpath_this_file = os.path.dirname(__file__)
+download_folder = dirpath_this_file + '/downloads/'
+download_archive_folder = dirpath_this_file + '/downloads_archive/'
 
 
 # create download folder if not exists
