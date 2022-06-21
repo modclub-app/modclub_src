@@ -26,7 +26,7 @@ const Confirmation = ({ redirect_uri }) => {
 
       {redirect_uri ? (
         <a href={redirect_uri} className="button is-large is-primary mt-5">
-          Back to {redirect_uri}
+          Back to App
         </a>
       ) : (
         <Link to="/app" className="button is-large is-primary mt-5">
