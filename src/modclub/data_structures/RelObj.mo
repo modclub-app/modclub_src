@@ -50,5 +50,8 @@ module {
     public func getMap1<Z>(y : Y, f : X -> Z) : [Z] {
       Iter.toArray(Iter.map(Rel.getRelated1(rel, y), f))
     };
+    public func getKeys() : [X] {
+      Rel.getAllKeys(rel);
+    };
   };
 }

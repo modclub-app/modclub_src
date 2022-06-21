@@ -40,7 +40,9 @@ def write_in_csv(file_path, rows, header):
 
 agent = Agent(Identity(privkey=private_key), Client())
 # more variables to be added
-state_to_varName = {'pohState': ['pohChallenges']}
+state_to_varName = {'pohState': ['pohChallenges', 'pohUserChallengeAttempts', 'token2ProviderAndUserData',
+                                 'providerUserIdToModclubUserIdByProviderId', 'pohChallengePackages',
+                                 'userToPohChallengePackageId', 'wordList', 'callbackIssuedByProvider']}
 for (state_name, var_names) in state_to_varName.items():
     for var_name in var_names:
         # 0 and 100 will be provided dynamically with pagination
