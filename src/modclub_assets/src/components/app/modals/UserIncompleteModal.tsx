@@ -5,11 +5,16 @@ import { Modal, Heading, Card } from "react-bulma-components";
 
 export default function UserIncompleteModal({
   status,
-  rejectionReasons
+  rejectionReasons,
+  token
 }: {
   status: String;
   rejectionReasons: Array<String>;
+  token: String;
 }) {
+
+  console.log('token', token);
+  
   return (
     <Modal show={true} showClose={false} className="userIncompleteModal">
       <Modal.Card backgroundColor="circles">
@@ -48,7 +53,7 @@ export default function UserIncompleteModal({
         <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
           {(status === "startPoh" || status === "notSubmitted" || status === "rejected") && (
             <Link
-              to="/new-poh-profile"
+              to={`/new-poh-profile?token=${token}`}
               className="button is-primary"
               style={{ textDecoration: "none" }}
             >
