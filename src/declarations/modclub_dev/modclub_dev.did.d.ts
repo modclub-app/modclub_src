@@ -40,8 +40,10 @@ export type CanisterMetricsData = { 'hourly' : Array<HourlyMetricsData> } |
   { 'daily' : Array<DailyMetricsData> };
 export interface ChallengeResponse {
   'status' : PohChallengeStatus,
-  'completedOn' : [] | [bigint],
+  'completedAt' : [] | [bigint],
+  'submittedAt' : [] | [bigint],
   'challengeId' : string,
+  'requestedAt' : [] | [bigint],
 }
 export type ContentId = string;
 export interface ContentPlus {
@@ -135,6 +137,11 @@ export interface ModClub {
   'airdropRegister' : () => Promise<AirdropUser>,
   'allNewContent' : () => Promise<Array<string>>,
   'collectCanisterMetrics' : () => Promise<undefined>,
+  'configurePohForProvider' : (
+      arg_0: Principal,
+      arg_1: Array<string>,
+      arg_2: bigint,
+    ) => Promise<undefined>,
   'deregisterProvider' : () => Promise<string>,
   'distributeAllPendingRewards' : () => Promise<undefined>,
   'editProviderAdmin' : (
@@ -194,10 +201,6 @@ export interface ModClub {
   'issueJwt' : () => Promise<string>,
   'newContentQueuesByqId' : (arg_0: bigint) => Promise<Array<string>>,
   'newContentQueuesqIdCount' : () => Promise<[Array<bigint>, Array<bigint>]>,
-  'pohGenerateUniqueToken' : (arg_0: Principal) => Promise<PohUniqueToken>,
-  'pohVerificationRequest' : (arg_0: Principal) => Promise<
-      PohVerificationResponse
-    >,
   'populateChallenges' : () => Promise<undefined>,
   'registerAdmin' : (arg_0: Principal) => Promise<Result>,
   'registerModerator' : (
@@ -243,6 +246,7 @@ export interface ModClub {
       arg_2: [] | [string],
     ) => Promise<string>,
   'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
+  'subscribePohCallback' : (arg_0: SubscribePohMessage) => Promise<undefined>,
   'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
   'unStakeTokens' : (arg_0: bigint) => Promise<string>,
   'unregisterAdmin' : (arg_0: string) => Promise<Result>,
@@ -261,7 +265,8 @@ export interface ModClub {
       ProviderSettingResult
     >,
   'userId2QueueId' : () => Promise<Array<[Principal, string]>>,
-  'verifyUserHumanity' : () => Promise<VerifyHumanityResponse>,
+  'verifyHumanity' : (arg_0: string) => Promise<PohVerificationResponsePlus>,
+  'verifyUserHumanityForModclub' : () => Promise<VerifyHumanityResponse>,
   'vote' : (
       arg_0: ContentId,
       arg_1: Decision,
@@ -296,15 +301,11 @@ export type PohChallengeStatus = { 'notSubmitted' : null } |
   { 'pending' : null } |
   { 'rejected' : null };
 export interface PohChallengeSubmissionRequest {
-  'userName' : [] | [string],
   'numOfChunks' : bigint,
   'mimeType' : string,
-  'fullName' : [] | [string],
   'offset' : bigint,
-  'email' : [] | [string],
   'challengeId' : string,
   'dataSize' : bigint,
-  'aboutUser' : [] | [string],
   'challengeDataBlob' : [] | [Array<number>],
 }
 export interface PohChallengeSubmissionResponse {
@@ -340,23 +341,20 @@ export interface PohChallengesAttempt {
   'wordList' : [] | [Array<string>],
 }
 export type PohError = { 'invalidPackageId' : null } |
+  { 'pohNotConfiguredForProvider' : null } |
   { 'challengeNotPendingForSubmission' : null } |
   { 'invalidToken' : null };
 export interface PohRulesViolated { 'ruleId' : string, 'challengeId' : string }
 export interface PohTaskData {
   'dataCanisterId' : [] | [Principal],
   'status' : PohChallengeStatus,
-  'userName' : [] | [string],
   'contentId' : [] | [string],
   'allowedViolationRules' : Array<ViolatedRules>,
   'userId' : Principal,
   'createdAt' : bigint,
-  'fullName' : [] | [string],
-  'email' : [] | [string],
   'updatedAt' : bigint,
   'challengeId' : string,
   'challengeType' : PohChallengeType,
-  'aboutUser' : [] | [string],
   'wordList' : [] | [Array<string>],
 }
 export interface PohTaskDataWrapperPlus {
@@ -372,29 +370,33 @@ export interface PohTaskDataWrapperPlus {
 export interface PohTaskPlus {
   'status' : ContentStatus,
   'reward' : number,
-  'userName' : [] | [string],
   'title' : [] | [string],
   'profileImageUrlSuffix' : [] | [string],
   'voteCount' : bigint,
   'minVotes' : bigint,
   'createdAt' : bigint,
-  'fullName' : [] | [string],
-  'email' : [] | [string],
   'minStake' : bigint,
   'updatedAt' : bigint,
-  'aboutUser' : [] | [string],
   'hasVoted' : [] | [boolean],
   'packageId' : string,
 }
-export interface PohUniqueToken { 'token' : string }
-export interface PohVerificationResponse {
-  'status' : PohChallengeStatus,
-  'requestId' : string,
+export interface PohVerificationResponsePlus {
+  'status' : PohVerificationStatus,
+  'completedAt' : [] | [bigint],
+  'token' : [] | [string],
+  'rejectionReasons' : Array<string>,
+  'submittedAt' : [] | [bigint],
   'providerId' : Principal,
   'challenges' : Array<ChallengeResponse>,
-  'requestedOn' : bigint,
-  'providerUserId' : Principal,
+  'requestedAt' : [] | [bigint],
+  'providerUserId' : string,
 }
+export type PohVerificationStatus = { 'notSubmitted' : null } |
+  { 'verified' : null } |
+  { 'expired' : null } |
+  { 'pending' : null } |
+  { 'startPoh' : null } |
+  { 'rejected' : null };
 export interface Profile {
   'id' : UserId,
   'pic' : [] | [Image],
@@ -448,12 +450,13 @@ export type Role = { 'admin' : null } |
 export interface Rule { 'id' : RuleId, 'description' : string }
 export type RuleId = string;
 export interface SubscribeMessage { 'callback' : [Principal, string] }
+export interface SubscribePohMessage { 'callback' : [Principal, string] }
 export type Timestamp = bigint;
 export type UpdateCallsAggregatedData = Array<bigint>;
 export type UserId = Principal;
 export interface VerifyHumanityResponse {
-  'status' : PohChallengeStatus,
-  'token' : [] | [PohUniqueToken],
+  'status' : PohVerificationStatus,
+  'token' : [] | [string],
   'rejectionReasons' : Array<string>,
 }
 export interface ViolatedRules { 'ruleId' : string, 'ruleDesc' : string }

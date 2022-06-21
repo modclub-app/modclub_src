@@ -19,6 +19,7 @@ import Progress from "../../common/progress/Progress";
 import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
+import UserAudio from "./UserAudio";
 import POHConfirmationModal from "./POHConfirmationModal";
 
 const CheckBox = ({ id, label, values }) => {
@@ -104,6 +105,7 @@ export default function PohApplicant() {
     if (challengeId === "challenge-profile-details") return "Profile Details";
     if (challengeId === "challenge-profile-pic") return "Profile Picture";
     if (challengeId === "challenge-user-video") return "Unique Phrase Video";
+    if (challengeId === "challenge-user-audio") return "Unique Phrase Audio";
     return challengeId;
   };
 
@@ -159,6 +161,9 @@ export default function PohApplicant() {
                   }
                   {task.challengeId == "challenge-user-video" &&
                     <UserVideo data={task} />
+                  }
+                  {task.challengeId == "challenge-user-audio" &&
+                    <UserAudio data={task} />
                   }
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>

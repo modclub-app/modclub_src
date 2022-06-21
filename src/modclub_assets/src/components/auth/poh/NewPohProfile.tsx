@@ -13,6 +13,7 @@ import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
+import UserPhrases from "./UserPhrases";
 import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
 
 const Confirmation = () => {
@@ -38,6 +39,8 @@ export default function NewPohProfile({ match }) {
   const [steps, setSteps] = useState(null)
   const [currentStep, setCurrentStep] = useState<string>('')
 
+  const [hasInitialCall, setHasInitialCall] = useState<boolean>(false);
+
   const initialCall = async () => {
     let token
     if (!URLtoken) {
@@ -54,12 +57,13 @@ export default function NewPohProfile({ match }) {
     setLoading(false);``
     setSteps(challenges["ok"]);
     console.log("challenges", challenges);
+    setLoading(false);
+    setSteps(challenges["ok"]);
 
     const uncompleted = challenges["ok"].find(challenge => {
       const status = Object.keys(challenge.status)[0];
       return status === "notSubmitted"
     })
-
     console.log("uncompleted", uncompleted);
 
     history.push(`${match.path}/${ uncompleted ? uncompleted.challengeId : "confirm" }`);
@@ -102,11 +106,14 @@ export default function NewPohProfile({ match }) {
             }
 
             <Card backgroundColor="dark" className="mt-6">
-              <Card.Content>                
+              <Card.Content>
                 <Switch>
                   <Route path={`${match.path}/:challenge-profile-pic`} component={ProfilePic}/>
                   <Route path={`${match.path}/:challenge-user-video`}>
                     {steps && <UserVideo steps={steps} />}
+                  </Route>
+                  <Route path={`${match.path}/:challenge-user-audio`}>
+                    {steps && <UserPhrases steps={steps} />}
                   </Route>
                   <Route path={`${match.path}/:confirm`} component={Confirmation}/>
                 </Switch>
