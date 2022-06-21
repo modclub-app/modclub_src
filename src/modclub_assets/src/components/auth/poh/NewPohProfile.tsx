@@ -32,29 +32,23 @@ const Confirmation = () => {
 
 export default function NewPohProfile({ match }) {
   const { search } = useLocation();
-  const URLtoken = new URLSearchParams(search).get("token");  
-  const { isAuthenticated, isAuthReady } = useAuth();
+  const URLtoken = new URLSearchParams(search).get("token");
+  const { isAuthenticated, isAuthReady, user } = useAuth();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)
   const [currentStep, setCurrentStep] = useState<string>('')
+  // const [hasInitialCall, setHasInitialCall] = useState<boolean>(false);
+  const [noToken, setNoToken] = useState<boolean>(false);
 
-  const [hasInitialCall, setHasInitialCall] = useState<boolean>(false);
-
-  const initialCall = async () => {
-    let token
-    if (!URLtoken) {
-      const response = await verifyUserHumanity();
-      if ('verified' in response.status) {
-        history.push("/app");
-        return
-      }
-      token = response.token;
-      if (!token.length) return
+  const initialCall = async (token) => {
+    if (!token) {
+      setNoToken(true);
+      return
     }
 
-    const challenges = await retrieveChallengesForUser(URLtoken ? URLtoken : token[0].token);
-    setLoading(false);``
+    const challenges = await retrieveChallengesForUser(token);
+    setLoading(false);
     setSteps(challenges["ok"]);
     console.log("challenges", challenges);
     setLoading(false);
@@ -70,8 +64,8 @@ export default function NewPohProfile({ match }) {
   }
 
   useEffect(() => {
-    isAuthenticated && initialCall();
-  }, [isAuthenticated]);
+    isAuthenticated && user && initialCall(URLtoken);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     return history.listen((location) => { 
@@ -86,6 +80,16 @@ export default function NewPohProfile({ match }) {
 
   return (
   <>
+    {noToken &&
+      <Modal show={true} showClose={false} className="userIncompleteModal">
+        <Modal.Card backgroundColor="circles">
+          <Modal.Card.Body>
+            ERROR no URLtoken
+          </Modal.Card.Body>
+        </Modal.Card>
+      </Modal>
+    }
+
     {loading &&
       <Modal show={true} showClose={false}>
         <div className="loader is-loading p-5"></div>
