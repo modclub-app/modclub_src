@@ -38,7 +38,7 @@ export default function ModclubApp() {
     const status = Object.keys(result.status)[0];
     setStatus(status);
 
-    const token = result.token[0]?.token;
+    const token = result?.token;
     setToken(token);
 
     if (status == "verified" && await refreshJwt()) {
