@@ -80,7 +80,7 @@ export default function NewProfile() {
       setMessage({ success: true, value: "Sign Up Successfull!" });
       setTimeout(() => {
         setMessage(null);
-        history.push("/new-poh-profile");
+        history.push("/app");
       }, 2000);
     } catch (e) {
       console.log("user ERRORR", e);

@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Link } from "react-router-dom";
 import { Modal, Heading, Card } from "react-bulma-components";
 
-
 export default function UserIncompleteModal({
   status,
   rejectionReasons,
@@ -11,10 +10,7 @@ export default function UserIncompleteModal({
   status: String;
   rejectionReasons: Array<String>;
   token: String;
-}) {
-
-  console.log('token', token);
-  
+}) {  
   return (
     <Modal show={true} showClose={false} className="userIncompleteModal">
       <Modal.Card backgroundColor="circles">

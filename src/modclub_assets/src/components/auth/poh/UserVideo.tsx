@@ -1,7 +1,7 @@
 import * as React from 'react'
 import styled from "styled-components";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useHistory, Link } from "react-router-dom";
+import {  Link } from "react-router-dom";
 import {
   Modal,
   Heading,
@@ -70,8 +70,8 @@ const Timer = styled.div`
   color: white;
 `;
 
-export default function UserVideo({ steps }) {
-  const history = useHistory();
+export default function UserVideo({ steps, goToNextStep }) {
+  // const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -152,7 +152,7 @@ export default function UserVideo({ steps }) {
     }
     
     setSubmitting(false);
-    history.push("/new-poh-profile/confirm");
+    goToNextStep("challenge-user-video");
   }
 
   const formatPhrases = () => {

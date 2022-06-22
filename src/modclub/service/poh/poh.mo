@@ -517,9 +517,9 @@ module PohModule {
 
         private func sortByComplexChallengeFirst(a : (Principal, [Text]), b: (Principal, [Text])) : Order.Order {
             if(a.1.size() > b.1.size()) {
-                return #greater;
-            } else if(a.1.size() < b.1.size()) {
                 return #less;
+            } else if(a.1.size() < b.1.size()) {
+                return #greater;
             };
             #equal;
         };
