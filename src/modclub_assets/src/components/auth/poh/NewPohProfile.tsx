@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
+import NewProfile from "../new_profile/NewProfile";
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
@@ -83,24 +84,37 @@ export default function NewPohProfile({ match }) {
       const result = /[^/]*$/.exec(location.pathname)[0];
       setCurrentStep(result);
     })
-  }, [history])
+  }, [history]);
+
+  if (noToken) return (
+    <Modal show={true} showClose={false} className="userIncompleteModal">
+      <Modal.Card backgroundColor="circles">
+        <Modal.Card.Body>
+          ERROR no URLtoken
+        </Modal.Card.Body>
+      </Modal.Card>
+    </Modal>
+  );
 
   if (isAuthReady && !isAuthenticated) return (
     <NotAuthenticatedModal />
   );
 
+  if (isAuthenticated && !user) return (
+    <NewProfile />
+  );
+
+
+  const goToNextStep = (currentStep) => {
+    if (!steps) return
+    console.log("goToNextStep steps", steps);
+    const index = steps.findIndex(step => step.challengeId === currentStep);
+    const nextStep = steps[index + 1];
+    history.push(`${match.path}/${ nextStep ? nextStep.challengeId : "confirm" }`);
+  }
+
   return (
   <>
-    {noToken &&
-      <Modal show={true} showClose={false} className="userIncompleteModal">
-        <Modal.Card backgroundColor="circles">
-          <Modal.Card.Body>
-            ERROR no URLtoken
-          </Modal.Card.Body>
-        </Modal.Card>
-      </Modal>
-    }
-
     {loading &&
       <Modal show={true} showClose={false}>
         <div className="loader is-loading p-5"></div>
@@ -112,30 +126,34 @@ export default function NewPohProfile({ match }) {
         <Card>
           <Card.Content>
             {steps &&
-              <Steps activeStep={currentStep}>
-                {steps.map((step, index) => (
-                  <Step key={step.challengeId} id={index + 1} details={step.challengeName} />
-                ))}
-                <Step key='confirm' id={steps.length + 1} details="Confirm" />
-              </Steps>
-            }
+              <>
+                <Steps activeStep={currentStep}>
+                  {steps.map((step, index) => (
+                    <Step key={step.challengeId} id={index + 1} details={step.challengeName} />
+                  ))}
+                  <Step key='confirm' id={steps.length + 1} details="Confirm" />
+                </Steps>
 
-            <Card backgroundColor="dark" className="mt-6">
-              <Card.Content>
-                <Switch>
-                  <Route path={`${match.path}/:challenge-profile-pic`} component={ProfilePic}/>
-                  <Route path={`${match.path}/:challenge-user-video`}>
-                    {steps && <UserVideo steps={steps} />}
-                  </Route>
-                  <Route path={`${match.path}/:challenge-user-audio`}>
-                    {steps && <UserPhrases steps={steps} />}
-                  </Route>
-                  <Route path={`${match.path}/:confirm`}>
-                    <Confirmation redirect_uri={redirectUri} />
-                  </Route>
-                </Switch>
-              </Card.Content>
-            </Card>
+                <Card backgroundColor="dark" className="mt-6">
+                  <Card.Content>
+                    <Switch>
+                      <Route path={`${match.path}/:challenge-profile-pic`}>
+                        <ProfilePic goToNextStep={goToNextStep} />
+                      </Route>
+                      <Route path={`${match.path}/:challenge-user-video`}>
+                        <UserVideo steps={steps} goToNextStep={goToNextStep} />
+                      </Route>
+                      <Route path={`${match.path}/:challenge-user-audio`}>
+                        <UserPhrases steps={steps} goToNextStep={goToNextStep} />
+                      </Route>
+                      <Route path={`${match.path}/:confirm`}>
+                        <Confirmation redirect_uri={redirectUri} />
+                      </Route>
+                    </Switch>
+                  </Card.Content>
+                </Card>
+              </>
+            }
           </Card.Content>
         </Card>
       </Columns.Column>
