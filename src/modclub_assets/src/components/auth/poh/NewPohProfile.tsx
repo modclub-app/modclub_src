@@ -9,8 +9,8 @@ import {
 } from "react-bulma-components";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
-// import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
-import NewProfile from "./NewProfile";
+import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
+// import NewProfile from "../new_profile/NewProfile";
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
@@ -39,6 +39,7 @@ const Confirmation = ({ redirect_uri }) => {
 };
 
 export default function NewPohProfile({ match }) {
+  
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const URLtoken = params.get("token");
@@ -52,6 +53,9 @@ export default function NewPohProfile({ match }) {
   const [redirectUri, setRedirectUri] = useState<string | null>(null);
 
   const initialCall = async (token) => {
+    alert("initialCall");
+
+
     if (!token) {
       setNoToken(true);
       return
@@ -87,8 +91,8 @@ export default function NewPohProfile({ match }) {
   }, [history])
 
   if (isAuthReady && !isAuthenticated) return (
-    // <NotAuthenticatedModal />
-    <NewProfile />
+    <NotAuthenticatedModal />
+    // <NewProfile />
   );
 
   return (
