@@ -1316,6 +1316,15 @@ shared ({caller = deployer}) actor class ModClub() = this {
         case("pohState") {
           return pohEngine.downloadSupport(varName, start, end);
         };
+        case("contentQueueState") {
+          return contentQueueManager.downloadSupport(varName, start, end);
+        };
+        case("pohVoteState") {
+          return voteManager.downloadSupport(varName, start, end);
+        };
+        case("storageState") {
+          return storageSolution.downloadSupport(varName, start, end);
+        };
         case(_) {
           throw Error.reject("Invalid state");
         };

@@ -38,12 +38,23 @@ def write_in_csv(file_path, rows, header):
             writer.writerow(header)
         for row in rows:
             writer.writerow(row)
-
 agent = Agent(Identity(privkey=private_key), Client())
 # more variables to be added
 state_to_varName = {'pohState': ['pohChallenges', 'pohUserChallengeAttempts', 'token2ProviderAndUserData',
                                  'providerUserIdToModclubUserIdByProviderId', 'pohChallengePackages',
-                                 'userToPohChallengePackageId', 'wordList', 'callbackIssuedByProvider']}
+                                 'userToPohChallengePackageId', 'wordList', 'callbackIssuedByProvider'],
+
+                    'contentQueueState': ['newContentQueues', 'allNewContentQueue', 'approvedContentQueue',
+                                 'rejectedContentQueue', 'queueIds',
+                                 'userId2QueueId', 'userId2QueueId'],
+                    
+                    # 'pohContentQueueState': ['newContentQueues', 'allNewContentQueue', 'approvedContentQueue',
+                    #              'rejectedContentQueue', 'queueIds',
+                    #              'userId2QueueId', 'userId2QueueId'],
+
+                    'pohVoteState' : ['pohVotes', 'pohContent2votes', 'mods2Pohvotes', 'autoApprovePOHUserIds'],
+                    'storageState' : ['dataCanisters', 'contentIdToCanisterId', 'moderatorsId']
+                                 }
 for (state_name, var_names) in state_to_varName.items():
     for var_name in var_names:
         # 0 and 100 will be provided dynamically with pagination

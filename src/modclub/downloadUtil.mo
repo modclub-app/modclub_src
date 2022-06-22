@@ -2,7 +2,9 @@ import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Int "mo:base/Int";
 import Option "mo:base/Option";
+import Types "./types";
 import PohTypes "./service/poh/types";
+import VoteTypes "./service/vote/types";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 
@@ -69,6 +71,41 @@ module {
       buff.add(Option.get(attempt.attemptId, "") # ";" # attempt.challengeId # ";" # attempt.challengeName # ";" # attempt.challengeDescription # ";" # joinArr(toString_PohChallengeType([attempt.challengeType])) 
       # ";" # Principal.toText(attempt.userId) # ";" #  Option.get(attempt.attemptId, "") # ";" #  Int.toText(attempt.createdAt) # ";" #  Int.toText(attempt.submittedAt) # ";" #  Int.toText(attempt.updatedAt) # ";"
       #  Int.toText(attempt.completedOn) # ";" #  Principal.toText(Option.get(attempt.dataCanisterId, Principal.fromText("aaaaa-aa"))) # ";" #  joinArrOpt(attempt.wordList) );
+    };
+    return buff.toArray();
+  };
+
+  public func toString_PohVote(votes: [VoteTypes.Vote]) : [Text] {
+    let buff = Buffer.Buffer<Text>(votes.size());
+
+    for(vote in votes.vals()) {
+      buff.add(vote.id # ";" # vote.contentId # ";" # Principal.toText(vote.userId) # ";" 
+                #  joinArr(toString_Decision([vote.decision])) # ";"
+                #  joinArr(toString_PohRulesViolated(vote.violatedRules)) # ";"
+                #  Int.toText(vote.createdAt));
+    };
+    return buff.toArray();
+  };
+
+  public func toString_Decision(decisions: [VoteTypes.Decision]) : [Text] {
+    let buff = Buffer.Buffer<Text>(decisions.size());
+    for(d in decisions.vals()) {
+      switch(d) {
+        case(#approved) {
+          buff.add("approved");
+        };
+        case(#rejected) {
+          buff.add("rejected");
+        };
+      };
+    };
+    return buff.toArray();
+  };
+
+  public func toString_PohRulesViolated(vRules: [Types.PohRulesViolated]) : [Text] {
+    let buff = Buffer.Buffer<Text>(vRules.size());
+    for(vRule in vRules.vals()) {
+      buff.add(vRule.challengeId # ";" # vRule.ruleId);
     };
     return buff.toArray();
   };
