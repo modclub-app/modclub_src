@@ -2,6 +2,8 @@ import * as React from 'react'
 import { Link } from "react-router-dom";
 import { Modal, Heading, Card } from "react-bulma-components";
 
+import { useAuth } from "../../../utils/auth";
+
 
 export default function UserIncompleteModal({
   status,
@@ -14,6 +16,12 @@ export default function UserIncompleteModal({
 }) {
 
   console.log('token', token);
+
+  const { logOut } = useAuth();
+
+  const handleLogOut = async () => {
+    await logOut();
+  };
   
   return (
     <Modal show={true} showClose={false} className="userIncompleteModal">
@@ -30,6 +38,8 @@ export default function UserIncompleteModal({
           {(status === "startPoh" || status === "notSubmitted") && (
             <p>
               You have not submitted your Proof of Humanity. Please do so now.
+
+              <button onClick={handleLogOut}>handleLogOut</button>
             </p>
           )}
           {status === "rejected" && <>

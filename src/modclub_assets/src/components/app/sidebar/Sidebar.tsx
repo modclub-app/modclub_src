@@ -93,7 +93,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
-      history.push("/new-poh-profile");
+      history.push("/signup");
     }
   }, [isAuthReady, isAuthenticated, user, requiresSignUp]);
   return (
