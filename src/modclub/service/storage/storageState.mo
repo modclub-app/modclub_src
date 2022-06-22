@@ -4,7 +4,6 @@ import Text "mo:base/Text";
 import Iter "mo:base/Iter";
 import Buckets "./buckets";
 import Types "./types";
-// import DownloadSupport "./downloadSupport";
 
 module StorageState {
   type Bucket = Buckets.Bucket;
