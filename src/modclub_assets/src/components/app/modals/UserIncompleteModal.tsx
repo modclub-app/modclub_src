@@ -2,9 +2,6 @@ import * as React from 'react'
 import { Link } from "react-router-dom";
 import { Modal, Heading, Card } from "react-bulma-components";
 
-import { useAuth } from "../../../utils/auth";
-
-
 export default function UserIncompleteModal({
   status,
   rejectionReasons,
@@ -13,16 +10,7 @@ export default function UserIncompleteModal({
   status: String;
   rejectionReasons: Array<String>;
   token: String;
-}) {
-
-  console.log('token', token);
-
-  const { logOut } = useAuth();
-
-  const handleLogOut = async () => {
-    await logOut();
-  };
-  
+}) {  
   return (
     <Modal show={true} showClose={false} className="userIncompleteModal">
       <Modal.Card backgroundColor="circles">
@@ -33,15 +21,11 @@ export default function UserIncompleteModal({
               Your Proof of Humanity approval is in progress. You will be
               able to access MODCLUB once it is approved. Please come back
               later to check your status.
-
-              <button onClick={handleLogOut}>handleLogOut</button>
             </p>
           )}
           {(status === "startPoh" || status === "notSubmitted") && (
             <p>
               You have not submitted your Proof of Humanity. Please do so now.
-
-              <button onClick={handleLogOut}>handleLogOut</button>
             </p>
           )}
           {status === "rejected" && <>
