@@ -9,7 +9,8 @@ import {
 } from "react-bulma-components";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
-import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
+// import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
+import NewProfile from "./NewProfile";
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
@@ -86,7 +87,8 @@ export default function NewPohProfile({ match }) {
   }, [history])
 
   if (isAuthReady && !isAuthenticated) return (
-    <NotAuthenticatedModal />
+    // <NotAuthenticatedModal />
+    <NewProfile />
   );
 
   return (
@@ -112,6 +114,7 @@ export default function NewPohProfile({ match }) {
         <Card>
           <Card.Content>
             {steps &&
+
               <Steps activeStep={currentStep}>
                 {steps.map((step, index) => (
                   <Step key={step.challengeId} id={index + 1} details={step.challengeName} />
