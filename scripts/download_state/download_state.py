@@ -57,6 +57,7 @@ state_to_varName = {'pohState': ['pohChallenges', 'pohUserChallengeAttempts', 't
                                  }
 for (state_name, var_names) in state_to_varName.items():
     for var_name in var_names:
+        print("Download state: " + state_name, " var_name: "+ var_name)
         # 0 and 100 will be provided dynamically with pagination
         params = create_param(state_name, var_name, 0, 100)
         response = agent.query_raw(canister_id, "downloadSupport", params)
