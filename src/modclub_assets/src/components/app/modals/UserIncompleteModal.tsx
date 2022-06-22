@@ -33,6 +33,8 @@ export default function UserIncompleteModal({
               Your Proof of Humanity approval is in progress. You will be
               able to access MODCLUB once it is approved. Please come back
               later to check your status.
+
+              <button onClick={handleLogOut}>handleLogOut</button>
             </p>
           )}
           {(status === "startPoh" || status === "notSubmitted") && (

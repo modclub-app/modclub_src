@@ -12,7 +12,7 @@ import {
 } from "react-bulma-components";
 import { registerModerator } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
-// import { useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useRef, useState } from "react";
 import placeholder from "../../../../assets/user_placeholder.png";
 import { ImageData } from "../../../utils/types";
@@ -21,7 +21,7 @@ import { validateEmail } from "../../../utils/util";
 const MAX_IMAGE_SIZE = 500000; // 500kb
 
 export default function NewProfile() {
-  // const history = useHistory();
+  const history = useHistory();
   const { setUser } = useAuth();
   const [pic, setPic] = useState<string>(null);
   const [picType, setPicType] = useState<string>(null);
