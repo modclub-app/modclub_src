@@ -436,7 +436,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
   };
 
-  public query func getAllProfiles() : async [Types.Profile] {
+  public query({caller}) func getAllProfiles() : async [Types.Profile] {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
