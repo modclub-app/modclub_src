@@ -25,6 +25,8 @@ import Time "mo:base/Time";
 import Types "../../types";
 import Rel "../../data_structures/Rel";
 import DownloadSupport "./downloadSupport";
+import DownloadUtil "../../downloadUtil";
+
 
 module PohModule {
 
@@ -527,8 +529,9 @@ module PohModule {
         public func createChallengePackageForVoting(
             userId: Principal,
             getContentStatus: Text -> Types.ContentStatus,
-            globalState: GlobalState.State) 
-            : [PohTypes.PohChallengePackage] 
+            globalState: GlobalState.State,
+            canistergeekLogger : Canistergeek.Logger) 
+            : [PohTypes.PohChallengePackage]
             {
             
             let challengeIdByProviderBuff = Buffer.Buffer<(Principal, [Text])>(1);
@@ -539,12 +542,18 @@ module PohModule {
             // sort to get provider with more challenges configured as first so that package for them
             // can cover other providers with small list of challenges
             challengeIdByProviderArr := Array.sort(challengeIdByProviderArr, sortByComplexChallengeFirst);
+            Helpers.logMessage(canistergeekLogger, "Creating packages", #info);
 
             let packagesCreated = Buffer.Buffer<PohTypes.PohChallengePackage>(1);
             // Check if a package needs to be created for a provider
             for((pid, challengeIds) in challengeIdByProviderArr.vals()) {
+                Helpers.logMessage(canistergeekLogger, "provider: " # Principal.toText(pid) # " challengeIds: " #
+                DownloadUtil.joinArr(challengeIds), #info);
+
                 // Get all challenges submitted, but not approved. If even one of them is rejected or not submitted, fetch None( blank array[]).
                 let potentialChallengeIdsForPackage = getChallengeIdsToBeVotedForUser(userId, challengeIds);
+                Helpers.logMessage(canistergeekLogger, "provider: " # Principal.toText(pid) # "  potentialChallengeIdsForPackage: " #
+                DownloadUtil.joinArr(potentialChallengeIdsForPackage), #info);
                 // This needs to go for voting now but first check if these are already sent for voting in any
                 // other package. If yes, remove them from double voting.
                 let potentialChallengeIdsForPackageMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
@@ -566,8 +575,13 @@ module PohModule {
                         };
                     };
                 };
+
+                Helpers.logMessage(canistergeekLogger, "provider: " # Principal.toText(pid) 
+                # "  potentialChallengeIdsForPackage after removing already submitted challenge: " #
+                DownloadUtil.joinArr(Iter.toArray(potentialChallengeIdsForPackageMap.keys())), #info);
                 // Now check again if we are left something for voting.
                 if(potentialChallengeIdsForPackageMap.size() > 0) {
+                    
                     Debug.print("Creating Package" );
                     let pohPackage = {
                         id = Helpers.generateId(userId, "poh-content", globalState);
@@ -578,6 +592,8 @@ module PohModule {
                         createdAt =  Helpers.timeNow();
                         updatedAt = Helpers.timeNow();
                     };
+                    Helpers.logMessage(canistergeekLogger, "Creating package finally: " # pohPackage.id
+                    # " for userId: " # Principal.toText(userId), #info);
                     state.pohChallengePackages.put(pohPackage.id, pohPackage);
                     state.userToPohChallengePackageId.put(userId, pohPackage.id);
                     packagesCreated.add(pohPackage);

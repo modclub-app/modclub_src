@@ -694,7 +694,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
           let challengePackages = pohEngine.createChallengePackageForVoting(
             caller,
             voteManager.getContentStatus,
-            state
+            state,
+            canistergeekLogger
           );
           for(package in challengePackages.vals()) {
             voteManager.initiateVotingPoh(package.id, caller);

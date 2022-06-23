@@ -52,7 +52,8 @@ state_to_varName = {'pohState': ['pohChallenges', 'pohUserChallengeAttempts', 't
                     #              'rejectedContentQueue', 'queueIds',
                     #              'userId2QueueId', 'userId2QueueId'],
 
-                    'pohVoteState' : ['pohVotes', 'pohContent2votes', 'mods2Pohvotes', 'autoApprovePOHUserIds'],
+                    'pohVoteState' : ['newPohPackages', 'approvedPohPackages', 'rejectedPohPackages', 'package2Status',
+                     'pohVotes', 'pohContent2votes', 'mods2Pohvotes', 'autoApprovePOHUserIds'],
                     'storageState' : ['dataCanisters', 'contentIdToCanisterId', 'moderatorsId']
                                  }
 for (state_name, var_names) in state_to_varName.items():

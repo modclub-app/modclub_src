@@ -69,7 +69,7 @@ module {
 
     for(attempt in attempts.vals()) {
       buff.add(Option.get(attempt.attemptId, "") # ";" # attempt.challengeId # ";" # attempt.challengeName # ";" # attempt.challengeDescription # ";" # joinArr(toString_PohChallengeType([attempt.challengeType])) 
-      # ";" # Principal.toText(attempt.userId) # ";" #  Option.get(attempt.attemptId, "") # ";" #  Int.toText(attempt.createdAt) # ";" #  Int.toText(attempt.submittedAt) # ";" #  Int.toText(attempt.updatedAt) # ";"
+      # ";" # Principal.toText(attempt.userId) # ";" #  joinArr(toString_PohChallengeStatus([attempt.status])) # ";" #  Int.toText(attempt.createdAt) # ";" #  Int.toText(attempt.submittedAt) # ";" #  Int.toText(attempt.updatedAt) # ";"
       #  Int.toText(attempt.completedOn) # ";" #  Principal.toText(Option.get(attempt.dataCanisterId, Principal.fromText("aaaaa-aa"))) # ";" #  joinArrOpt(attempt.wordList) );
     };
     return buff.toArray();
@@ -106,6 +106,48 @@ module {
     let buff = Buffer.Buffer<Text>(vRules.size());
     for(vRule in vRules.vals()) {
       buff.add(vRule.challengeId # ";" # vRule.ruleId);
+    };
+    return buff.toArray();
+  };
+
+  public func toString_PohChallengeStatus(statuses: [PohTypes.PohChallengeStatus]) : [Text] {
+    let buff = Buffer.Buffer<Text>(statuses.size());
+    for(status in statuses.vals()) {
+      buff.add(switch(status) {
+        case(#notSubmitted) {
+          "notSubmitted";
+        };
+        case(#pending) {
+          "pending";
+        };
+        case(#verified) {
+          "verified";
+        };
+        case(#rejected) {
+          "rejected";
+        };
+        case(#expired) {
+          "expired";
+        };
+      });
+    };
+    return buff.toArray();
+  };
+
+  public func toString_ContentStatus(statuses: [Types.ContentStatus]) : [Text] {
+    let buff = Buffer.Buffer<Text>(statuses.size());
+    for(status in statuses.vals()) {
+      buff.add(switch(status) {
+        case(#new) {
+          "new";
+        };
+        case(#approved) {
+          "approved";
+        };
+        case(#rejected) {
+          "rejected";
+        };
+      });
     };
     return buff.toArray();
   };

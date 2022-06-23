@@ -4,17 +4,32 @@ import DownloadUtil "../../downloadUtil";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Option "mo:base/Option";
-import VoteState "./state";
-import VoteTypes "./types";
 import Principal "mo:base/Principal";
 import RelObj "../../data_structures/RelObj";
 import TrieMap "mo:base/TrieMap";
+import Types "../../types";
+import VoteState "./state";
+import VoteTypes "./types";
 
 
 module {
+
+        // package2Status : HashMap.HashMap<Text, Types.ContentStatus>;
     // [Text] is one row of csv here... whole function return is a row of rows
     public func download(state: VoteState.PohVoteState, varName: Text, start: Int, end: Int): [[Text]] {
         switch(varName) {
+            case("newPohPackages") {
+                return serializeNewPohPackages(state.newPohPackages);
+            };
+            case("approvedPohPackages") {
+                return serializeNewPohPackages(state.approvedPohPackages);
+            };
+            case("rejectedPohPackages") {
+                return serializeNewPohPackages(state.rejectedPohPackages);
+            };
+            case("package2Status") {
+                return serializePackage2Status(state.package2Status);
+            };
             case("pohVotes") {
                 return serializePohVotes(state.pohVotes);
             };
@@ -31,6 +46,16 @@ module {
                 return [];
             };
         };
+    };
+
+    func serializePackage2Status(package2Status : HashMap.HashMap<Text, Types.ContentStatus>) : [[Text]] {
+        let buff = Buffer.Buffer<[Text]>(1);
+        for((pId, status) in package2Status.entries()) {
+            buff.add(
+                [pId, DownloadUtil.joinArr(DownloadUtil.toString_ContentStatus([status]))]
+            );
+        };
+        return buff.toArray();
     };
 
     func serializePohVotes(pohVotes : HashMap.HashMap<Text, VoteTypes.Vote>) : [[Text]] {
@@ -71,6 +96,14 @@ module {
         let buff = Buffer.Buffer<[Text]>(1);
         for((uId, uId1) in autoApprovePOHUserIds.entries()) {
             buff.add([Principal.toText(uId), Principal.toText(uId1)]);
+        };
+        return buff.toArray();
+    };
+
+    func serializeNewPohPackages(newPohPackages : Buffer.Buffer<Text>) : [[Text]] {
+        let buff = Buffer.Buffer<[Text]>(1);
+        for(word in newPohPackages.vals()) {
+            buff.add([word]);
         };
         return buff.toArray();
     };
