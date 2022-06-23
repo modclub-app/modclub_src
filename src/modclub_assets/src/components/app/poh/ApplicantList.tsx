@@ -29,6 +29,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log(profileImageUrlSuffix);
       const urlObject = await fetchObjectUrl(imageUrl);
       setUrlObject(urlObject);
     };
@@ -54,14 +55,14 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
         />
       </Card.Header>
 
-      {/* <Card.Content style={{ paddingTop: "65%" }}>
-        <Heading subtitle marginless>
+       <Card.Content style={{ paddingTop: "65%" }}>
+        {/*<Heading subtitle marginless>
           {userName[0]}
         </Heading>
         <p className="is-size-7 mt-2">
           {aboutUser}
-        </p>
-      </Card.Content> */}
+        </p> */}
+      </Card.Content> 
       
       <Card.Footer className="is-block">
         <Card.Header.Title>
