@@ -29,7 +29,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log(profileImageUrlSuffix);
+      console.log("Applicant: " + applicant.packageId + "suffixURL: " + profileImageUrlSuffix + " imageUrl: " + imageUrl);
       const urlObject = await fetchObjectUrl(imageUrl);
       setUrlObject(urlObject);
     };
@@ -42,7 +42,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
       to={`/app/poh/${applicant.packageId}`}
       className="card is-flex is-flex-direction-column is-justify-content-flex-end"
       style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${urlObject ? urlObject : placeholder})`,
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${imageUrl ? urlObject : placeholder})`,
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundSize: "cover"

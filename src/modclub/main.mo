@@ -782,7 +782,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
       var profileImageUrlSuffix :?Text = null;
       for(wrapper in taskDataWrapper.vals()) {
         for(data in wrapper.pohTaskData.vals()) {
-          if(data.dataCanisterId != null and data.contentId != null) {
+          if (
+            data.challengeType == #selfPic and 
+            data.dataCanisterId != null and
+            data.contentId != null
+          ) {
             profileImageUrlSuffix := do ? {
               ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
             };
