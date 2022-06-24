@@ -7,9 +7,19 @@ import os
 import shutil
 import time
 from pathlib import Path
+import sys
 
 private_key = input("Please enter private key: ")
-canister_id = input("Please enter canister id to download data from: ")
+env = input("Please enter environment to download data from (dev/qa/prod): ")
+canister_id = None
+if "DEV".casefold() == env.casefold():
+    canister_id = "olc6u-lqaaa-aaaah-qcooq-cai"
+elif "QA".casefold() == env.casefold():
+    canister_id = "f2xjy-4aaaa-aaaah-qc3eq-cai"
+elif "PROD".casefold() == env.casefold():
+    canister_id = "la3yy-gaaaa-aaaah-qaiuq-cai"
+if(canister_id is None):
+    canister_id = input("Env not provided correctly. Please enter canister id to download data from: ")
 dirpath_this_file = os.path.dirname(__file__)
 download_folder = dirpath_this_file + '/downloads/'
 download_archive_folder = dirpath_this_file + '/downloads_archive/'
@@ -46,11 +56,11 @@ state_to_varName = {'pohState': ['pohChallenges', 'pohUserChallengeAttempts', 't
 
                     'contentQueueState': ['newContentQueues', 'allNewContentQueue', 'approvedContentQueue',
                                  'rejectedContentQueue', 'queueIds',
-                                 'userId2QueueId', 'userId2QueueId'],
+                                 'userId2QueueId', 'lastUserQueueIndex'],
                     
                     # 'pohContentQueueState': ['newContentQueues', 'allNewContentQueue', 'approvedContentQueue',
                     #              'rejectedContentQueue', 'queueIds',
-                    #              'userId2QueueId', 'userId2QueueId'],
+                    #              'userId2QueueId', 'lastUserQueueIndex'],
 
                     'pohVoteState' : ['newPohPackages', 'approvedPohPackages', 'rejectedPohPackages', 'package2Status',
                      'pohVotes', 'pohContent2votes', 'mods2Pohvotes', 'autoApprovePOHUserIds'],
