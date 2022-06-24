@@ -14,14 +14,36 @@ shared ({caller = deployer}) actor class Provider() = this {
   };
 
 
-  public shared({ caller }) func verifyUserHumanityForProvider(userId: Principal) : async PohTypes.PohVerificationResponsePlus {
+  public shared({ caller }) func verifyUserHumanityForProviderForQA(userId: Principal) : async PohTypes.PohVerificationResponsePlus {
       //qa canister id
       let modclubActor = actor "f2xjy-4aaaa-aaaah-qc3eq-cai" : ModclubActorType;
       await modclubActor.verifyHumanity(Principal.toText(userId));
   };
 
-  public shared func registerPohCallbackForModclub() : async () {
+  public shared func registerPohCallbackForModclubForQA() : async () {
     let modclubActor = actor "f2xjy-4aaaa-aaaah-qc3eq-cai" : ModclubActorType;
+    await modclubActor.subscribePohCallback({callback = pohCallback});
+  };
+
+  public shared({ caller }) func verifyUserHumanityForProviderForDev(userId: Principal) : async PohTypes.PohVerificationResponsePlus {
+      //qa canister id
+      let modclubActor = actor "olc6u-lqaaa-aaaah-qcooq-cai" : ModclubActorType;
+      await modclubActor.verifyHumanity(Principal.toText(userId));
+  };
+
+  public shared func registerPohCallbackForModclubForDev() : async () {
+    let modclubActor = actor "olc6u-lqaaa-aaaah-qcooq-cai" : ModclubActorType;
+    await modclubActor.subscribePohCallback({callback = pohCallback});
+  };
+
+  public shared({ caller }) func verifyUserHumanityForProviderForProd(userId: Principal) : async PohTypes.PohVerificationResponsePlus {
+      //qa canister id
+      let modclubActor = actor "la3yy-gaaaa-aaaah-qaiuq-cai" : ModclubActorType;
+      await modclubActor.verifyHumanity(Principal.toText(userId));
+  };
+
+  public shared func registerPohCallbackForModclubForProd() : async () {
+    let modclubActor = actor "la3yy-gaaaa-aaaah-qaiuq-cai" : ModclubActorType;
     await modclubActor.subscribePohCallback({callback = pohCallback});
   };
 
