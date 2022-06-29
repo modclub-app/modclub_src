@@ -15,7 +15,16 @@ module {
         #expired;
     };
 
-    //POH Users Ref Data
+    public type PohVerificationStatus = {
+        #startPoh;
+        #notSubmitted;
+        #pending;
+        #verified;
+        #rejected;
+        #expired;
+    };
+
+    // To be deleted after deployment
     public type PohUsers = {
         userId: Principal;
         userName: ?Text;
@@ -51,17 +60,35 @@ module {
         #ssn; #dl; #selfPic; #selfVideo; #fullName; #userName; #email;
     };
 
-    public type PohUniqueToken =  {
-        token: Text;
-    };
-
+    // To be deleted after deployment
     public type PohUserProviderData = {
         token: Text;
         providerUserId: Principal;
         providerId: Principal;
     };
 
+    public type PohProviderAndUserData = {
+        token: Text;
+        providerUserId: Text;
+        providerId: Principal;
+        generatedAt: Int;
+    };
+
+    public type PohRequestData = {
+        requestId: Text;
+        token: Text;
+        providerUserId: Text;
+        providerId: Principal;
+        requestedAt: Int;
+    };
+
+    public type PohConfigurationForProvider = {
+        challengeIds: [Text];
+        expiry: Nat;
+    };
+
     // Type representing Challenge attempt
+    // To be deleted
     public type PohChallengesAttempt = {
         attemptId: ?Text;
         challengeId: Text;
@@ -77,28 +104,67 @@ module {
         wordList: ?[Text];
     };
 
+    public type PohChallengesAttemptV1 = {
+        attemptId: ?Text;
+        challengeId: Text;
+        challengeName: Text;
+        challengeDescription: Text;
+        challengeType: PohChallengeType;
+        userId: Principal;
+        status: PohChallengeStatus;
+        createdAt: Int;
+        submittedAt: Int;
+        updatedAt: Int;
+        completedOn: Int;
+        dataCanisterId: ?Principal;
+        wordList: ?[Text];
+    };
+
     // type representing request for verificaiton
+    // to be deleted after deployment
     public type PohVerificationRequest = {
         requestId: Text;
         providerUserId: Principal;
         providerId: Principal;
     };
 
-    // Response sent to provider for verificaitio request
-    public type PohVerificationResponse = {
+    // type representing request for verificaiton
+    public type PohVerificationRequestV1 = {
         requestId: Text;
-        providerUserId: Principal;
-        status: PohChallengeStatus;
+        providerUserId: Text;
+        providerId: Principal;
+    };
+
+    // Response sent to provider for verificaition request
+    public type PohVerificationResponsePlus = {
+        providerUserId: Text;
+        status: PohVerificationStatus;
         // status at each challenge level
         challenges: [ChallengeResponse];
         providerId: Principal;
-        requestedOn: Int;
+        token: ?Text;
+        rejectionReasons: [Text];
+        requestedAt: ?Int;
+        submittedAt: ?Int;
+        completedAt: ?Int;
+        isFirstAssociation: Bool;
+    };
+
+    public type PohVerificationResponse = {
+        status: PohVerificationStatus;
+        requestedAt: ?Int;
+        submittedAt: ?Int;
+        completedAt: ?Int;
+        // status at each challenge level
+        challenges: [ChallengeResponse];
     };
 
     public type ChallengeResponse = {
         challengeId: Text;
         status : PohChallengeStatus;
-        completedOn : ?Int;
+        requestedAt: ?Int;
+        submittedAt: ?Int;
+        completedAt: ?Int;
     };
 
     // type our UI will use to submit data for a challenge along with offset
@@ -106,10 +172,6 @@ module {
         challengeId: Text;
         // response to challenge can be text or image or video
         challengeDataBlob : ?Blob;
-        // userName: ?Text;
-        // email: ?Text;
-        // fullName: ?Text;
-        // aboutUser: ?Text;
         offset: Nat; // default 1
         numOfChunks: Nat; // default 1
         mimeType: Text; // 
@@ -137,10 +199,6 @@ module {
         challengeType: PohChallengeType;
         userId: Principal;
         status: PohChallengeStatus;
-        userName: ?Text;
-        email: ?Text;
-        fullName: ?Text;
-        aboutUser: ?Text;
         contentId: ?Text;
         dataCanisterId: ?Principal;
         wordList: ?[Text];
@@ -171,10 +229,6 @@ module {
         packageId: Text;
         status: Types.ContentStatus;
         voteCount: Nat;
-        userName: ?Text;
-        email: ?Text;
-        fullName: ?Text;
-        aboutUser: ?Text;
         profileImageUrlSuffix: ?Text;
         minVotes: Int;
         minStake: Int; 
@@ -193,9 +247,12 @@ module {
     };
 
     public type VerifyHumanityResponse = {
-        status: PohChallengeStatus;
-        token: ?PohUniqueToken;
+        status: PohVerificationStatus;
+        token: ?Text;
         rejectionReasons: [Text];
     };
 
+    public type SubscribePohMessage = {
+        callback: shared (PohVerificationResponsePlus) -> ();
+    };
 };

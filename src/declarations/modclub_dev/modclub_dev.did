@@ -16,12 +16,16 @@ type ViolatedRules =
 type VerifyHumanityResponse = 
  record {
    rejectionReasons: vec text;
-   status: PohChallengeStatus;
-   token: opt PohUniqueToken;
+   status: PohVerificationStatus;
+   token: opt text;
  };
 type UserId = principal;
 type UpdateCallsAggregatedData = vec nat64;
 type Timestamp = int;
+type SubscribePohMessage = record {
+                             callback:
+                              func (PohVerificationResponsePlus) -> () oneway;
+                           };
 type SubscribeMessage = record {callback: func (ContentResult) -> () oneway;};
 type RuleId = text;
 type Rule = 
@@ -116,22 +120,30 @@ type Profile =
    updatedAt: Timestamp;
    userName: text;
  };
-type PohVerificationResponse = 
+type PohVerificationStatus = 
+ variant {
+   expired;
+   notSubmitted;
+   pending;
+   rejected;
+   startPoh;
+   verified;
+ };
+type PohVerificationResponsePlus = 
  record {
    challenges: vec ChallengeResponse;
+   completedAt: opt int;
    providerId: principal;
-   providerUserId: principal;
-   requestId: text;
-   requestedOn: int;
-   status: PohChallengeStatus;
+   providerUserId: text;
+   rejectionReasons: vec text;
+   requestedAt: opt int;
+   status: PohVerificationStatus;
+   submittedAt: opt int;
+   token: opt text;
  };
-type PohUniqueToken = record {token: text;};
 type PohTaskPlus = 
  record {
-   aboutUser: opt text;
    createdAt: int;
-   email: opt text;
-   fullName: opt text;
    hasVoted: opt bool;
    minStake: int;
    minVotes: int;
@@ -141,7 +153,6 @@ type PohTaskPlus =
    status: ContentStatus;
    title: opt text;
    updatedAt: int;
-   userName: opt text;
    voteCount: nat;
  };
 type PohTaskDataWrapperPlus = 
@@ -157,19 +168,15 @@ type PohTaskDataWrapperPlus =
  };
 type PohTaskData = 
  record {
-   aboutUser: opt text;
    allowedViolationRules: vec ViolatedRules;
    challengeId: text;
    challengeType: PohChallengeType;
    contentId: opt text;
    createdAt: int;
    dataCanisterId: opt principal;
-   email: opt text;
-   fullName: opt text;
    status: PohChallengeStatus;
    updatedAt: int;
    userId: principal;
-   userName: opt text;
    wordList: opt vec text;
  };
 type PohRulesViolated = 
@@ -182,6 +189,7 @@ type PohError =
    challengeNotPendingForSubmission;
    invalidPackageId;
    invalidToken;
+   pohNotConfiguredForProvider;
  };
 type PohChallengesAttempt = 
  record {
@@ -225,16 +233,12 @@ type PohChallengeSubmissionResponse =
  };
 type PohChallengeSubmissionRequest = 
  record {
-   aboutUser: opt text;
    challengeDataBlob: opt blob;
    challengeId: text;
    dataSize: nat;
-   email: opt text;
-   fullName: opt text;
    mimeType: text;
    numOfChunks: nat;
    offset: nat;
-   userName: opt text;
  };
 type PohChallengeStatus = 
  variant {
@@ -274,6 +278,7 @@ type ModClub =
    airdropRegister: () -> (AirdropUser);
    allNewContent: () -> (vec text);
    collectCanisterMetrics: () -> ();
+   configurePohForProvider: (principal, vec text, nat) -> ();
    deregisterProvider: () -> (text);
    distributeAllPendingRewards: () -> ();
    editProviderAdmin: (principal, principal, text) -> (ProviderResult);
@@ -322,8 +327,6 @@ type ModClub =
    issueJwt: () -> (text);
    newContentQueuesByqId: (nat) -> (vec text);
    newContentQueuesqIdCount: () -> (vec nat, vec nat);
-   pohGenerateUniqueToken: (principal) -> (PohUniqueToken);
-   pohVerificationRequest: (principal) -> (PohVerificationResponse);
    populateChallenges: () -> ();
    registerAdmin: (principal) -> (Result);
    registerModerator: (text, text, opt Image) -> (Profile);
@@ -343,6 +346,7 @@ type ModClub =
    submitImage: (text, vec nat8, text, opt text) -> (text);
    submitText: (text, text, opt text) -> (text);
    subscribe: (SubscribeMessage) -> ();
+   subscribePohCallback: (SubscribePohMessage) -> ();
    toggleAllowSubmission: (bool) -> ();
    unStakeTokens: (nat) -> (text);
    unregisterAdmin: (text) -> (Result);
@@ -354,7 +358,8 @@ type ModClub =
                                 principal;
                                 text;
                               }) query;
-   verifyUserHumanity: () -> (VerifyHumanityResponse);
+   verifyHumanity: (text) -> (PohVerificationResponsePlus);
+   verifyUserHumanityForModclub: () -> (VerifyHumanityResponse);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
    votePohContent: (text, Decision, vec PohRulesViolated) -> ();
    whoami: () -> (principal);
@@ -467,8 +472,10 @@ type ContentId = text;
 type ChallengeResponse = 
  record {
    challengeId: text;
-   completedOn: opt int;
+   completedAt: opt int;
+   requestedAt: opt int;
    status: PohChallengeStatus;
+   submittedAt: opt int;
  };
 type CanisterMetricsData = 
  variant {

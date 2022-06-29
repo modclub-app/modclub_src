@@ -11,6 +11,7 @@ import Types "../../types";
 import VoteState "./state";
 import VoteTypes "./types";
 import Helpers "../../helpers";
+import DownloadSupport "./downloadSupport";
 
 module VoteModule {
 
@@ -251,6 +252,10 @@ module VoteModule {
                 }
             };
             return newBuffer;
+        };
+
+        public func downloadSupport(varName: Text, start: Nat, end: Nat) : [[Text]] {
+            DownloadSupport.download(state, varName, start, end);
         };
 
         public func getStableState() : VoteState.PohVoteStableState {

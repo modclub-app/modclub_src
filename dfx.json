@@ -35,6 +35,10 @@
       },
       "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
       "type": "assets"
+    },
+    "provider": {
+      "main": "src/modclub/main2.mo",
+      "type": "motoko"
     }
   },
   "defaults": {

@@ -16,19 +16,20 @@ import { useAuth } from "../../../utils/auth";
 import { getPohTasks } from "../../../utils/api";
 import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
+import placeholder from '../../../../assets/user_placeholder.png';
 
 const PAGE_SIZE = 9;
 
 const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
-  const { userName, fullName, aboutUser, profileImageUrlSuffix, createdAt, reward } = applicant;
+  const {profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
   const match = profileImageUrlSuffix.length ? regEx.exec(profileImageUrlSuffix[0]) : null;
   const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
   const [urlObject, setUrlObject] = useState(null);
-  const placeholder = '../assets/user_placeholder.png'
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("Applicant: " + applicant.packageId + "suffixURL: " + profileImageUrlSuffix + " imageUrl: " + imageUrl);
       const urlObject = await fetchObjectUrl(imageUrl);
       setUrlObject(urlObject);
     };
@@ -54,14 +55,14 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
         />
       </Card.Header>
 
-      <Card.Content style={{ paddingTop: "65%" }}>
-        <Heading subtitle marginless>
+       <Card.Content style={{ paddingTop: "65%" }}>
+        {/*<Heading subtitle marginless>
           {userName[0]}
         </Heading>
         <p className="is-size-7 mt-2">
           {aboutUser}
-        </p>
-      </Card.Content>
+        </p> */}
+      </Card.Content> 
       
       <Card.Footer className="is-block">
         <Card.Header.Title>

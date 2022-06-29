@@ -13,8 +13,15 @@
     "build": "webpack",
     "start": "webpack serve --mode development --env development",
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
-    "deploy_dev": "DEV_ENV=dev dfx deploy --network ic modclub_dev_assets",
-    "deploy_qa": "DEV_ENV=qa dfx deploy --network ic modclub_qa_assets"
+    
+    "deploy_dev": "python3 ./scripts/download_state/download_state.py && DEV_ENV=dev dfx deploy --network ic modclub_dev_assets",
+    "deploy_modclub_dev": "python3 ./scripts/download_state/download_state.py && dfx deploy --network ic modclub_dev",
+
+    "deploy_qa": "python3 ./scripts/download_state/download_state.py &&  DEV_ENV=qa dfx deploy --network ic modclub_qa_assets",
+    "deploy_modclub_qa": "python3 ./scripts/download_state/download_state.py && dfx deploy --network ic modclub_qa",
+
+    "deploy_prod": "python3 ./scripts/download_state/download_state.py && dfx deploy --network ic modclub_assets",
+    "deploy_modclub_prod": "python3 ./scripts/download_state/download_state.py && dfx deploy --network ic modclub"
   },
   "devDependencies": {
     "@dfinity/agent": "^0.10.1",

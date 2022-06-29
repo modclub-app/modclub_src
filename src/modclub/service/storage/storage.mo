@@ -12,7 +12,7 @@ import StorageState "./storageState";
 import StorageTypes "./types";
 import Text "mo:base/Text";
 import Types "./types";
-
+import DownloadSupport "./downloadSupport";
 
 module StorageModule {
 
@@ -179,6 +179,10 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
           memory_allocation = null; // 4GB
           freezing_threshold = ?31_540_000} })
       );
+    };
+
+    public func downloadSupport(varName: Text, start: Nat, end: Nat) : [[Text]] {
+      DownloadSupport.download(storageState, varName, start, end);
     };
 
     public func getStableState() : StorageState.DataCanisterStateStable {

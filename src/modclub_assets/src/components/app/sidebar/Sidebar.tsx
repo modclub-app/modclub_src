@@ -91,7 +91,6 @@ export default function Sidebar() {
   const [showDropdown, setShowDropdown] = useState(false);
   const toggle = () => setShowDropdown(!showDropdown);
 
-
   useEffect(() => {
     if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
       history.push("/signup");

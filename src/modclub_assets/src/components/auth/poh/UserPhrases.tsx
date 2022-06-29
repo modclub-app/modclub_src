@@ -1,7 +1,7 @@
 import * as React from 'react'
 import styled from "styled-components";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useHistory, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Modal,
   Heading,
@@ -72,13 +72,8 @@ const Timer = styled.div`
   color: white;
 `;
 
-export default function UserPhrases({ steps }) {
-
-  
-  console.log("UserPhrases steps", steps);
-
-
-  const history = useHistory();
+export default function UserPhrases({ steps, goToNextStep }) {
+  // const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [phrases, setPhrases] = useState([]);
 
@@ -112,9 +107,10 @@ export default function UserPhrases({ steps }) {
         blob.type
       );
     }
-    
+
     setSubmitting(false);
-    history.push("/new-poh-profile/confirm");
+    // history.push("/new-poh-profile/confirm");
+    goToNextStep("challenge-user-audio");
   }
 
   const formatPhrases = () => {

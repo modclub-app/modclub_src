@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useRef, useState } from "react";
-import { useHistory, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Modal,
   Heading,
@@ -11,8 +11,8 @@ import { WebcamWrapper } from "./Webcam"
 import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
 
-export default function ProfilePic() {
-  const history = useHistory();
+export default function ProfilePic({ goToNextStep }) {
+  // const history = useHistory();
   const inputFile = useRef(null);
   const [file, setFile] = useState({
     type: '',
@@ -71,7 +71,8 @@ export default function ProfilePic() {
       )
     }
     setSubmitting(false);
-    history.push("/new-poh-profile/challenge-user-video");
+    // history.push("/new-poh-profile/challenge-user-video");
+    goToNextStep("challenge-profile-pic");
   }
 
   return (

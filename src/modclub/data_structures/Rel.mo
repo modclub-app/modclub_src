@@ -183,6 +183,10 @@ module {
       );
   };
 
+  public func getAllKeys<X, Y>(rel : Rel<X, Y>): [X] {
+      return getKeys(rel.forw);
+  };
+
   // helper for getRelated{0,1}
   func iterAll<K>(t : Trie.Trie<K, ()>)
     : Iter.Iter<K>
