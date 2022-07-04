@@ -20,7 +20,7 @@ import { validateEmail } from "../../../utils/util";
 
 const MAX_IMAGE_SIZE = 500000; // 500kb
 
-export default function NewProfile() {
+export default function NewProfile({ isPohFlow }: { isPohFlow: boolean}) {
   const history = useHistory();
   const { setUser } = useAuth();
   const [pic, setPic] = useState<string>(null);
@@ -28,6 +28,7 @@ export default function NewProfile() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const inputFile = useRef(null);
   const [message, setMessage] = useState(null);
+  const instructionText = isPohFlow ? "To begin POH create your MODCLUB profile" : "Create your profile"
 
   const handleFileChange = (e) => {
     const { files } = e.target;
@@ -74,14 +75,14 @@ export default function NewProfile() {
     try {
       setSubmitting(true);
       const user = await registerModerator(username, email, imageData);
-      console.log("user", user);
-      // TODO not returning the error here!
       setUser(user);
-      setMessage({ success: true, value: "Sign Up Successfull!" });
-      setTimeout(() => {
-        setMessage(null);
-        history.push("/app");
-      }, 2000);
+      if (!isPohFlow) {
+        setMessage({ success: true, value: "Sign Up Successful!" });
+        setTimeout(() => {
+          setMessage(null);
+          history.push("/app");
+        }, 2000);
+      }
     } catch (e) {
       console.log("user ERRORR", e);
       let errAr = regEx.exec(e.message);
@@ -107,7 +108,7 @@ export default function NewProfile() {
         <Columns.Column size={6}>
           <Card>
             <Card.Content>
-              <Heading textAlign="center">Create your profile</Heading>
+              <Heading textAlign="center">{ instructionText }</Heading>
 
               <input
                 style={{ display: "none" }}
