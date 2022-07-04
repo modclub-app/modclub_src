@@ -101,7 +101,7 @@ export default function NewPohProfile({ match }) {
   );
 
   if (isAuthenticated && !user) return (
-    <NewProfile />
+    <NewProfile isPohFlow={true} />
   );
 
 
