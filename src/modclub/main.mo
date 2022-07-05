@@ -774,7 +774,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
+    Helpers.logMessage(canistergeekLogger, "Retrieving POH Tasks", #info);
     let pohTaskIds = voteManager.getTasksId(status, start, end);
+    Helpers.logMessage(canistergeekLogger, "Retrieved POH Tasks. task size is " # Nat.toText(pohTaskIds.size()), #info);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);
