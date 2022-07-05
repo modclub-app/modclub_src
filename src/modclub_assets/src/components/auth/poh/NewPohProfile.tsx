@@ -49,6 +49,7 @@ export default function NewPohProfile({ match }) {
   const [currentStep, setCurrentStep] = useState<string>('')
   // const [hasInitialCall, setHasInitialCall] = useState<boolean>(false);
   const [noToken, setNoToken] = useState<boolean>(false);
+  const [invalidToken, setInvalidToken] = useState<boolean>(false);
   const [redirectUri, setRedirectUri] = useState<string | null>(null);
 
   const initialCall = async (token) => {
@@ -61,18 +62,22 @@ export default function NewPohProfile({ match }) {
 
     const challenges = await retrieveChallengesForUser(token);
     setLoading(false);
-    setSteps(challenges["ok"]);
-    console.log("challenges", challenges);
-    setLoading(false);
-    setSteps(challenges["ok"]);
+    if (challenges.hasOwnProperty("ok")) {
+      setSteps(challenges["ok"]);
+      console.log("challenges", challenges);
+      setLoading(false);
+      setSteps(challenges["ok"]);
 
-    const uncompleted = challenges["ok"].find(challenge => {
-      const status = Object.keys(challenge.status)[0];
-      return status === "notSubmitted"
-    })
-    console.log("uncompleted", uncompleted);
+      const uncompleted = challenges["ok"].find(challenge => {
+        const status = Object.keys(challenge.status)[0];
+        return status === "notSubmitted"
+      })
+      console.log("uncompleted", uncompleted);
 
-    history.push(`${match.path}/${ uncompleted ? uncompleted.challengeId : "confirm" }`);
+      history.push(`${match.path}/${uncompleted ? uncompleted.challengeId : "confirm"}`);
+    } else {
+      setInvalidToken(true);
+    }
   }
 
   useEffect(() => {
@@ -90,7 +95,17 @@ export default function NewPohProfile({ match }) {
     <Modal show={true} showClose={false} className="userIncompleteModal">
       <Modal.Card backgroundColor="circles">
         <Modal.Card.Body>
-          ERROR no URLtoken
+          Error no URL token
+        </Modal.Card.Body>
+      </Modal.Card>
+    </Modal>
+  );
+
+  if (invalidToken) return (
+    <Modal show={true} showClose={false} className="userIncompleteModal">
+      <Modal.Card backgroundColor="circles">
+        <Modal.Card.Body>
+          Error invalid token
         </Modal.Card.Body>
       </Modal.Card>
     </Modal>
