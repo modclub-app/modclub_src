@@ -243,7 +243,8 @@ module {
         #invalidToken;
         #challengeNotPendingForSubmission;
         #invalidPackageId;
-        #pohNotConfiguredForProvider
+        #pohNotConfiguredForProvider;
+        #pohCallbackNotRegistered;
     };
 
     public type VerifyHumanityResponse = {

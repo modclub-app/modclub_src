@@ -35,11 +35,25 @@ module PohModule {
     public let CHALLENGE_USER_AUDIO_ID = "challenge-user-audio";
 
 
-    public class PohEngine(stableState : PohStateV2.PohStableState) {
+    public class PohEngine(stableState : PohStateV2.PohStableState, pohCallbackDataByProviderStable : [(Principal, [(Text, [(Text, Int)] )] ) ]) {
 
         let state = PohStateV2.getState(stableState);
 
-        let userToPackageIdState = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
+        let pohCallbackByProvider = HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>(1, Principal.equal, Principal.hash);
+
+        for((pId, callBackDataByUserId) in pohCallbackDataByProviderStable.vals()) {
+            
+            let callBackDataByUserIdMap = TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>(Text.equal, Text.hash);
+            for((userId, callBackDataByStatus) in callBackDataByUserId.vals()) {
+                let callBackDataByStatusMap = HashMap.HashMap<Text, Int>(1, Text.equal, Text.hash);
+                for((status, time) in callBackDataByStatus.vals()) {
+                    callBackDataByStatusMap.put(status, time);
+                };
+                callBackDataByUserIdMap.put(userId, callBackDataByStatusMap);
+            };
+
+            pohCallbackByProvider.put(pId, callBackDataByUserIdMap);
+        };
 
         let MILLI_SECONDS_DAY = 3600 * 1000000000;
 
@@ -78,13 +92,16 @@ module PohModule {
                                                     getAllUniqueViolatedRules,
                                                     getContentStatus);
                     if(resp.status == #verified) {
-                        makeCallbackEntryForProvider(pohVerificationRequest.providerId);
+                        // makeCallbackEntryForProvider(pohVerificationRequest.providerId);
+                        makeCallbackEntryForProviderUser(pohVerificationRequest.providerUserId, pohVerificationRequest.providerId);
                         let _ = do ? {
-                            let callbackData = state.callbackIssuedByProvider.get(pohVerificationRequest.providerId)!;
-                            switch(callbackData.get(modclubUserId)) {
+                            let callbackDataByUserId = pohCallbackByProvider.get(pohVerificationRequest.providerId)!;
+                            let callbackData = callbackDataByUserId.get(pohVerificationRequest.providerUserId)!;
+                            let statusText = statusToString(resp.status);
+                            switch(callbackData.get(statusText)) {
                                 case(null) {
                                     // Saving that user has queried the approved status, so no callback
-                                    callbackData.put(modclubUserId, Helpers.timeNow());
+                                    callbackData.put(statusText, Helpers.timeNow());
                                 };
                                 case(_)();
                             };
@@ -96,12 +113,26 @@ module PohModule {
         };
 
         func makeCallbackEntryForProvider(providerId: Principal) {
-            switch(state.callbackIssuedByProvider.get(providerId)) {
+            switch(pohCallbackByProvider.get(providerId)) {
                 case(null) {
-                    state.callbackIssuedByProvider.put(providerId, HashMap.HashMap<Principal, Int>(1, Principal.equal, Principal.hash));
+                    pohCallbackByProvider.put(providerId, HashMap.HashMap<Text, HashMap.HashMap<Text, Int>>(1, Text.equal, Text.hash));
                 };
                 case(_)();
             };
+        };
+
+        func makeCallbackEntryForProviderUser(providerUserId: Text, providerId: Principal) {
+            makeCallbackEntryForProvider(providerId);
+            let _ = do ? {
+                let callbackByProvider = pohCallbackByProvider.get(providerId)!;
+                switch(callbackByProvider.get(providerUserId)) {
+                    case(null) {
+                        callbackByProvider.put(providerUserId, HashMap.HashMap<Text, Int>(1, Text.equal, Text.hash));
+                    };
+                    case(_)();
+                };
+            };
+            
         };
 
         func formPohResponse(modclubUserId: Principal, 
@@ -302,7 +333,7 @@ module PohModule {
             state.providerUserIdToModclubUserIdByProviderId.put(pUser.providerId, providerUserId2ModclubUserId);
         };
 
-        public func findModclubId(providerUserId: Text, providerId: Principal) : ?Principal {
+        func findModclubId(providerUserId: Text, providerId: Principal) : ?Principal {
             do ? {
                 let modclubUserId = state.providerUserIdToModclubUserIdByProviderId.get(providerId)!.get0(providerUserId);
                 if(modclubUserId.size() == 0) {
@@ -312,14 +343,12 @@ module PohModule {
             };
         };
 
-        public func findProviderUserId(modclubUserId: Principal, providerId: Principal) : ?Text {
-            do ? {
-                let providerUserId = state.providerUserIdToModclubUserIdByProviderId.get(providerId)!.get1(modclubUserId);
-                if(providerUserId.size() == 0) {
-                    return null;
-                };
-                return ?providerUserId.get(0);
+        func findProviderUserIds(modclubUserId: Principal, providerId: Principal) : [Text] {
+            var pUserIds : [Text] = [];
+            let _ = do ? {
+                pUserIds := state.providerUserIdToModclubUserIdByProviderId.get(providerId)!.get1(modclubUserId);
             };
+            return pUserIds;
         };
 
         func checkIfFirstAssoication(modclubUserId: Principal, providerUserId : Text, providerId: Principal) : Bool {
@@ -410,7 +439,7 @@ module PohModule {
                     if(pohChallenge.requiredField != #profileFieldBlobs and challengeData.challengeDataBlob == null) {
                         return #inputDataMissing;
                     };
-                }
+                };
             };
             
             switch(state.pohUserChallengeAttempts.get(userId)) {
@@ -895,54 +924,81 @@ module PohModule {
             state.wordList.add("Kill");
         };
 
-        public func issueCallbackToProviders(packageId: Text, 
+        public func issueCallbackToProviders(modclubUserId: Principal, 
                                             globalState: GlobalState.State,
                                             getAllUniqueViolatedRules: Text -> [Types.PohRulesViolated],
                                             getContentStatus: Text -> Types.ContentStatus,
                                             canistergeekLogger : Canistergeek.Logger) : async () {
-            switch(state.pohChallengePackages.get(packageId)) {
-                case(null)();
-                case(?package) {
-                    Helpers.logMessage(canistergeekLogger, "Trying to send notificaiton for package: " # package.id, #info);
-                    let modclubUserId = package.userId;
-                    for((providerId, callbackSubs) in state.providersCallback.entries()) {
-                        makeCallbackEntryForProvider(providerId);
-                        Helpers.logMessage(canistergeekLogger, "Attempting callback for provider: " # Principal.toText(providerId), #info);
-                        let _ = do ? {
-                            let callbackData = state.callbackIssuedByProvider.get(providerId)!;
-                            switch(callbackData.get(modclubUserId)) {
-                                case(null) {
-                                    // no record of notification, so notify
-                                    Helpers.logMessage(canistergeekLogger, "Finding providerUserId for provider: " # Principal.toText(providerId), #info);
-                                    switch(findProviderUserId(modclubUserId, providerId)) {
-                                        case(null)();
-                                        case(?pUserId) {
-                                            switch(getProviderPohConfiguration(providerId, globalState)) {
-                                                case(#ok(config)) {
-                                                    let resp = formPohResponse(modclubUserId, config.challengeIds, pUserId, providerId, config.expiry, getAllUniqueViolatedRules, getContentStatus);
-                                                    Helpers.logMessage(canistergeekLogger, "Succesfully Sending callback to provider: " # Principal.toText(providerId), #info);
-                                                    if(resp.status == #verified or resp.status == #rejected) {
-                                                        callbackSubs.callback(resp);
-                                                        // Saving that user has queried the approved status, so no callback
-                                                        callbackData.put(modclubUserId, Helpers.timeNow());
-                                                    };
-                                                };
-                                                case(_)();
-                                            };
-                                           
+            for((providerId, callbackSubs) in state.providersCallback.entries()) {
+                makeCallbackEntryForProvider(providerId);
+                Helpers.logMessage(canistergeekLogger, "Attempting callback for provider: " # Principal.toText(providerId), #info);
+                let _ = do ? {
+                    let callbackDataByUserId = pohCallbackByProvider.get(providerId)!;
+                    let pUserIds = findProviderUserIds(modclubUserId, providerId);
+                    for(pUserId in pUserIds.vals()) {
+                        makeCallbackEntryForProviderUser(pUserId, providerId);
+                        let callbackData = callbackDataByUserId.get(pUserId)!;
+                        Helpers.logMessage(canistergeekLogger, "Finding providerUserId for provider: " # Principal.toText(providerId), #info);
+                        switch(getProviderPohConfiguration(providerId, globalState)) {
+                            case(#ok(config)) {
+                                let resp = formPohResponse(modclubUserId, config.challengeIds, pUserId, providerId, config.expiry, getAllUniqueViolatedRules, getContentStatus);
+                                Helpers.logMessage(canistergeekLogger, "Succesfully Sending callback to provider: " # Principal.toText(providerId), #info);
+                                if(resp.status == #verified or resp.status == #rejected or resp.status == #pending) {
+                                    let statusText = statusToString(resp.status);
+                                    switch(callbackData.get(statusText)) {
+                                        case(null) {
+                                            callbackSubs.callback(resp);
+                                            // Saving that user has queried the approved status, so no callback
+                                            callbackData.put(statusText, Helpers.timeNow());
                                         };
+                                        case(_)();
                                     };
+                                    
                                 };
-                                case(_)();
                             };
+                            case(_)();
                         };
                     };
                 };
             };
         };
 
+        func statusToString(status: PohTypes.PohVerificationStatus) : Text {
+            switch(status) {
+                case(#verified) {
+                    "verified";
+                };
+                case(#rejected) {
+                    "rejected";
+                };
+                case(#pending) {
+                    "pending";
+                };
+                case(#expired) {
+                    "expired";
+                };
+                case(#notSubmitted) {
+                    "notSubmitted";
+                };
+                case(#startPoh) {
+                    "startPoh";
+                };
+            }
+        };
+
         public func subscribe(providerId: Principal, sub: PohTypes.SubscribePohMessage) {
             state.providersCallback.put(providerId, sub);
+        };
+
+        public func getPohCallback(providerId: Principal) : Result.Result<PohTypes.SubscribePohMessage, PohTypes.PohError> {
+            switch(state.providersCallback.get(providerId)) {
+                case(?sub) {
+                    return #ok(sub);
+                };
+                case(null) {
+                    return #err(#pohCallbackNotRegistered);
+                };
+            };
         };
 
         public func getStableStateV2() : PohStateV2.PohStableState {
@@ -950,7 +1006,7 @@ module PohModule {
         };
 
         public func downloadSupport(varName: Text, start: Nat, end: Nat) : [[Text]] {
-            DownloadSupport.download(state, varName, start, end);
+            DownloadSupport.download(state, pohCallbackByProvider, varName, start, end);
         };
 
         // Delete this function

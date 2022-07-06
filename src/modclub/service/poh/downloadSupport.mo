@@ -13,7 +13,7 @@ import TrieMap "mo:base/TrieMap";
 
 module {
     // [Text] is one row of csv here... whole function return is a row of rows
-    public func download(state: PohStateV2.PohState, varName: Text, start: Int, end: Int): [[Text]] {
+    public func download(state: PohStateV2.PohState, pohCallbackByProvider : HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>, varName: Text, start: Int, end: Int): [[Text]] {
         switch(varName) {
             case("pohChallenges") {
                 return serializePohChallenges(state.pohChallenges);
@@ -37,7 +37,7 @@ module {
                 return serializeWordList(state.wordList);
             };
             case("callbackIssuedByProvider") {
-                return serializeCallbackIssuedByProvider(state.callbackIssuedByProvider);
+                return serializeCallbackIssuedByProvider(pohCallbackByProvider);
             };
             case(_) {
                 return [];
@@ -45,12 +45,14 @@ module {
         };
     };
 
-    func serializeCallbackIssuedByProvider(callbackIssuedByProvider: HashMap.HashMap<Principal, TrieMap.TrieMap<Principal, Int>>) : [[Text]] {
+    func serializeCallbackIssuedByProvider(pohCallbackByProvider: HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>) : [[Text]] {
         let buff = Buffer.Buffer<[Text]>(1);
-        for((pId, calbackByUserId) in callbackIssuedByProvider.entries()) {
-            for((modclubUserId, callbackTime) in calbackByUserId.entries()) {
-                buff.add([Principal.toText(pId), Principal.toText(modclubUserId), Int.toText(callbackTime)
-                ]);
+        for((pId, calbackByUserId) in pohCallbackByProvider.entries()) {
+            for((pUserId, callbackByStatus) in calbackByUserId.entries()) {
+                for((status, callbackTime) in callbackByStatus.entries()) {
+                    buff.add([Principal.toText(pId), pUserId, status, Int.toText(callbackTime)
+                    ]);
+                };
             };
         };
         return buff.toArray();
