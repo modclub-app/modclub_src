@@ -6,6 +6,7 @@ import {
   Columns,
   Card,
   Heading,
+  Button,
 } from "react-bulma-components";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
@@ -42,7 +43,7 @@ export default function NewPohProfile({ match }) {
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const URLtoken = params.get("token");
-  const { isAuthenticated, isAuthReady, user } = useAuth();
+  const { isAuthenticated, isAuthReady, user, logOut } = useAuth();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null)
@@ -128,6 +129,10 @@ export default function NewPohProfile({ match }) {
     history.push(`${match.path}/${ nextStep ? nextStep.challengeId : "confirm" }`);
   }
 
+  const handleLogOut = async () => {
+    await logOut();
+  };
+
   return (
   <>
     {loading &&
@@ -136,7 +141,13 @@ export default function NewPohProfile({ match }) {
       </Modal>
     }
 
-    <Columns centered vCentered className="is-fullheight mt-6">
+    <div className="is-flex is-justify-content-flex-end">
+      <Button className="is-danger m-5" onClick={handleLogOut}>
+        Logout
+      </Button>
+    </div>
+
+    <Columns centered vCentered multiline className="is-fullheight">
       <Columns.Column size={6}>
         <Card>
           <Card.Content>
