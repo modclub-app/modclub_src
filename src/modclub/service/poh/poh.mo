@@ -963,7 +963,7 @@ module PohModule {
             };
         };
 
-        func statusToString(status: PohTypes.PohVerificationStatus) : Text {
+       public func statusToString(status: PohTypes.PohVerificationStatus) : Text {
             switch(status) {
                 case(#verified) {
                     "verified";

@@ -679,6 +679,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(caller != Principal.fromActor(this)) {
       throw Error.reject("Unauthorized");
     };
+    Helpers.logMessage(canistergeekLogger, 
+    "pohCallbackForModclub - status:  " # pohEngine.statusToString(message.status) #
+    " submittedAt: " # Int.toText(Option.get(message.submittedAt,-1)) #
+    " requestedAt: " # Int.toText(Option.get(message.requestedAt,-1)) #
+    " completedAt: " # Int.toText(Option.get(message.completedAt,-1)) 
+    , #info);
   };
 
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
