@@ -663,7 +663,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // if Modclub hasn't subscribed for POHcallback, subscribe it
     switch(pohEngine.getPohCallback(Principal.fromActor(this))) {
       case(#err(er)) {
-        await subscribePohCallback({callback = pohCallbackForModclub});
+        pohEngine.subscribe(Principal.fromActor(this), {callback = pohCallbackForModclub});
       };
       case(_)();
     };
