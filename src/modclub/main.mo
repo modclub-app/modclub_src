@@ -683,7 +683,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
     "pohCallbackForModclub - status:  " # pohEngine.statusToString(message.status) #
     " submittedAt: " # Int.toText(Option.get(message.submittedAt,-1)) #
     " requestedAt: " # Int.toText(Option.get(message.requestedAt,-1)) #
-    " completedAt: " # Int.toText(Option.get(message.completedAt,-1)) 
+    " completedAt: " # Int.toText(Option.get(message.completedAt,-1)) #
+    "isFirstAssociation: " # Bool.toText(message.isFirstAssociation) #
+    "providerUserId: " # message.providerUserId
     , #info);
   };
 
@@ -1127,7 +1129,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    pohEngine.getStableStateV2();
+    pohEngine.getStableStateV2().0;
   };
 
   public shared({caller}) func shuffleContent() : async () {
@@ -1313,7 +1315,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
     storageStateStable := storageSolution.getStableState();
     retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
-    pohStableStateV2 := pohEngine.getStableStateV2();
+    let pohCombinedStableState = pohEngine.getStableStateV2();
+    pohStableStateV2 := pohCombinedStableState.0;
+    pohCallbackDataByProvider := pohCombinedStableState.1;
     pohVoteStableState := voteManager.getStableState();
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();

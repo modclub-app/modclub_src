@@ -187,6 +187,7 @@ module PohModule {
                                     status := statusAndDate.0;
                                     completedOn := statusAndDate.1;
                                     requestedAt := statusAndDate.2;
+                                    submittedAt := statusAndDate.3;
                                     overAllRequestedDate := Int.max(overAllRequestedDate, requestedAt);
                                     overAllSubmittedDate := Int.max(overAllSubmittedDate, submittedAt);
                                     overAllCompletedDate := Int.max(overAllCompletedDate, Option.get(completedOn, -1));
@@ -276,22 +277,22 @@ module PohModule {
             // Provider A expiry: 1 year
             // Provider B expiry: 2 year
         func findChallengeStatus(attempts: Buffer.Buffer<PohTypes.PohChallengesAttemptV1>, validForDays: Nat) : 
-        (PohTypes.PohChallengeStatus, ?Int, Int) {
+        (PohTypes.PohChallengeStatus, ?Int, Int, Int) {
 
             for(i in Iter.revRange(attempts.size() - 1, 0)) {
                 let attempt = attempts.get(Helpers.intToNat(i));
                 // search for a verified and non expired attempt through all attempts in reverse order
                 if(attempt.status == #verified and not isChallengeExpired(attempt, validForDays)) {
-                    return (#verified, ?attempt.completedOn, attempt.createdAt);
+                    return (#verified, ?attempt.completedOn, attempt.createdAt, attempt.submittedAt);
                 }
             };
             // if not found, return the status of last attempt whatsoever it is
             // but check for expiry if the last one is verified
             let lastAttempt = attempts.get(attempts.size()-1);
             if(isChallengeExpired(lastAttempt, validForDays)) {
-                return (#expired, ?lastAttempt.completedOn, lastAttempt.createdAt);
+                return (#expired, ?lastAttempt.completedOn, lastAttempt.createdAt, lastAttempt.submittedAt);
             };
-            return (lastAttempt.status, ?lastAttempt.completedOn, lastAttempt.createdAt);
+            return (lastAttempt.status, ?lastAttempt.completedOn, lastAttempt.createdAt, lastAttempt.submittedAt);
         };
 
         func isChallengeExpired(attempt: PohTypes.PohChallengesAttemptV1, validForDays: Nat) : Bool {
@@ -871,7 +872,7 @@ module PohModule {
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
             });
-
+            state.wordList.clear();
             state.wordList.add("Cute");
             state.wordList.add("Free");
             state.wordList.add("Pair");
@@ -942,11 +943,18 @@ module PohModule {
                         switch(getProviderPohConfiguration(providerId, globalState)) {
                             case(#ok(config)) {
                                 let resp = formPohResponse(modclubUserId, config.challengeIds, pUserId, providerId, config.expiry, getAllUniqueViolatedRules, getContentStatus);
-                                Helpers.logMessage(canistergeekLogger, "Succesfully Sending callback to provider: " # Principal.toText(providerId), #info);
                                 if(resp.status == #verified or resp.status == #rejected or resp.status == #pending) {
                                     let statusText = statusToString(resp.status);
                                     switch(callbackData.get(statusText)) {
                                         case(null) {
+                                            Helpers.logMessage(canistergeekLogger, 
+                                                "issueCallbackToProviders - callback:  " # statusToString(resp.status) #
+                                                " submittedAt: " # Int.toText(Option.get(resp.submittedAt,-1)) #
+                                                " requestedAt: " # Int.toText(Option.get(resp.requestedAt,-1)) #
+                                                " completedAt: " # Int.toText(Option.get(resp.completedAt,-1)) #
+                                                "isFirstAssociation: " # Bool.toText(resp.isFirstAssociation) #
+                                                "providerUserId: " # resp.providerUserId
+                                                , #info);
                                             callbackSubs.callback(resp);
                                             // Saving that user has queried the approved status, so no callback
                                             callbackData.put(statusText, Helpers.timeNow());
@@ -1001,8 +1009,21 @@ module PohModule {
             };
         };
 
-        public func getStableStateV2() : PohStateV2.PohStableState {
-            return PohStateV2.getStableState(state);
+        public func getStableStateV2() : (PohStateV2.PohStableState, [(Principal, [(Text, [(Text, Int)] )])] ) {
+
+            let pohCallbackDataByProviderStableStateBuff =  Buffer.Buffer<(Principal, [(Text, [(Text, Int)] )])>(1);
+            for((providerId, callBackByUser) in pohCallbackByProvider.entries()) {
+                let callBackByUserBuff = Buffer.Buffer<(Text, [(Text, Int)])>(1);
+                for((userId, callbackData) in callBackByUser.entries()) {
+                    let callbackBuff = Buffer.Buffer<(Text, Int)>(1);
+                    for((status, time) in callbackData.entries()) {
+                        callbackBuff.add((status, time));
+                    };
+                    callBackByUserBuff.add(userId, callbackBuff.toArray());
+                };
+                pohCallbackDataByProviderStableStateBuff.add(providerId, callBackByUserBuff.toArray());
+            };
+            return (PohStateV2.getStableState(state), pohCallbackDataByProviderStableStateBuff.toArray());
         };
 
         public func downloadSupport(varName: Text, start: Nat, end: Nat) : [[Text]] {
