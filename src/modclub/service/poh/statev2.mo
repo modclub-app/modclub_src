@@ -53,7 +53,7 @@ module State {
             pohUserChallengeAttempts = HashMap.HashMap<Principal, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>>(10, Principal.equal, Principal.hash);
             token2ProviderAndUserData = HashMap.HashMap<Text, PohTypes.PohProviderAndUserData>(1, Text.equal, Text.hash);
             providerUserIdToModclubUserIdByProviderId = HashMap.HashMap<Principal, RelObj.RelObj<Text, Principal>>(1, Principal.equal, Principal.hash);
-            pohChallengePackages = HashMap.HashMap<Text, PohTypes.PohChallengePackage>(1, Text.equal, Text.hash);
+            pohChallengePackages = TrieMap.TrieMap<Text, PohTypes.PohChallengePackage>(Text.equal, Text.hash);
             userToPohChallengePackageId = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
             wordList = Buffer.Buffer<Text>(1);
             providersCallback = HashMap.HashMap<Principal, PohTypes.SubscribePohMessage>(1, Principal.equal, Principal.hash);

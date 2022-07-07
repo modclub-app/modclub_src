@@ -10,6 +10,7 @@ import Canistergeek "./canistergeek/canistergeek";
 import ContentManager "./service/content/content";
 import ContentVotingManager "./service/content/vote";
 import Debug "mo:base/Debug";
+import DownloadUtil "downloadUtil";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
@@ -31,9 +32,11 @@ import PohTypes "./service/poh/types";
 import Prim "mo:prim";
 import Principal "mo:base/Principal";
 import ProviderManager "./service/provider/provider";
+import QueueManager "./service/queue/queue";
+import QueueState "./service/queue/state";
 import Random "mo:base/Random";
-import RelObj "./data_structures/RelObj";
 import Rel "./data_structures/Rel";
+import RelObj "./data_structures/RelObj";
 import Result "mo:base/Result";
 import StateV1 "./statev1";
 import StorageSolution "./service/storage/storage";
@@ -44,8 +47,6 @@ import Token "./token";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
-import QueueManager "./service/queue/queue";
-import QueueState "./service/queue/state";
 
 
 shared ({caller = deployer}) actor class ModClub() = this {
@@ -69,7 +70,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
   // Delete one line 
   stable var pohStableStateV1 = PohStateV1.emptyStableState();
   stable var pohStableStateV2 = PohStateV2.emptyStableState();
-  var pohEngine = POH.PohEngine(pohStableStateV2);
+  // time when callback was sent by provider, then by provider user, then by status
+  stable var pohCallbackDataByProvider : [(Principal, [(Text, [(Text, Int)] )] ) ] = [];
+  var pohEngine = POH.PohEngine(pohStableStateV2, pohCallbackDataByProvider);
 
   stable var pohVoteStableState = VoteState.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
@@ -264,7 +267,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     ProviderManager.subscribe(caller, sub, state, canistergeekLogger);
   };
 
-  public shared({caller}) func subscribePohCallback(sub: PohTypes.SubscribePohMessage) : async() {
+  public shared({caller}) func subscribePohCallback(sub: PohTypes.SubscribePohMessage) : async () {
     switch(AuthManager.checkProviderPermission(caller, null, state)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
@@ -594,7 +597,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         return verificationResponse;
       };
       case(_) {
-        throw Error.reject("Poh Not configured for provider.");
+        throw Error.reject("Either Poh is not configured or POH Callback is not registered for provider.");
       };
     };
   };
@@ -602,7 +605,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   private func pohVerificationRequestHelper(providerUserId: Text, providerId: Principal) : Result.Result<PohTypes.PohVerificationResponsePlus, PohTypes.PohError>  {
     if(Principal.equal(providerId, Principal.fromActor(this)) and voteManager.isAutoApprovedPOHUser(Principal.fromText(providerUserId))) {
       return
-    #ok({  
+    #ok({
           providerUserId = providerUserId;
           providerId = providerId;
           status = #verified; 
@@ -619,6 +622,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
         requestId = Helpers.generateId(providerId, "pohRequest", state);
         providerUserId = providerUserId;
         providerId = providerId;
+    };
+    switch(pohEngine.getPohCallback(providerId)) {
+      case(#err(er)) {
+        return #err(er);
+      };
+      case(_) ();
     };
     // validity and rules needs to come from admin dashboard here
     switch(pohEngine.getProviderPohConfiguration(providerId, state)) {
@@ -651,12 +660,33 @@ shared ({caller = deployer}) actor class ModClub() = this {
   //----------------------POH Methods For ModClub------------------------------
   // for modclub only
   public shared({ caller }) func verifyUserHumanityForModclub() : async PohTypes.VerifyHumanityResponse {
-      let response = await verifyHumanity(Principal.toText(caller));
-      return {
-        status = response.status;
-        token = response.token;
-        rejectionReasons = response.rejectionReasons;
+    // if Modclub hasn't subscribed for POHcallback, subscribe it
+    switch(pohEngine.getPohCallback(Principal.fromActor(this))) {
+      case(#err(er)) {
+        pohEngine.subscribe(Principal.fromActor(this), {callback = pohCallbackForModclub});
       };
+      case(_)();
+    };
+    let response = await verifyHumanity(Principal.toText(caller));
+    return {
+      status = response.status;
+      token = response.token;
+      rejectionReasons = response.rejectionReasons;
+    };
+  };
+
+  public shared({caller}) func pohCallbackForModclub(message : PohTypes.PohVerificationResponsePlus) : () {
+    if(caller != Principal.fromActor(this)) {
+      throw Error.reject("Unauthorized");
+    };
+    Helpers.logMessage(canistergeekLogger, 
+    "pohCallbackForModclub - status:  " # pohEngine.statusToString(message.status) #
+    " submittedAt: " # Int.toText(Option.get(message.submittedAt,-1)) #
+    " requestedAt: " # Int.toText(Option.get(message.requestedAt,-1)) #
+    " completedAt: " # Int.toText(Option.get(message.completedAt,-1)) #
+    "isFirstAssociation: " # Bool.toText(message.isFirstAssociation) #
+    "providerUserId: " # message.providerUserId
+    , #info);
   };
 
   public shared({ caller }) func retrieveChallengesForUser(token: Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
@@ -668,7 +698,28 @@ shared ({caller = deployer}) actor class ModClub() = this {
         switch(pohEngine.getProviderPohConfiguration(tokenResponse.providerId, state)) {
           case(#ok(pohConfigForProvider)) {
             pohEngine.associateProviderUserId2ModclubUserId(tokenResponse, caller);
-            await pohEngine.retrieveChallengesForUser(caller, pohConfigForProvider.challengeIds, pohConfigForProvider.expiry, false);
+            let attempts = await pohEngine.retrieveChallengesForUser(caller, pohConfigForProvider.challengeIds, pohConfigForProvider.expiry, false);
+            switch(attempts) {
+              case(#ok(atts)) {
+                var atleastOneInNotSubmittedStatus = false;
+                label l for(att in atts.vals()) {
+                  if(att.status == #notSubmitted) {
+                    atleastOneInNotSubmittedStatus := true;
+                    break l;
+                  };
+                };
+                if(not atleastOneInNotSubmittedStatus) {
+
+                  await pohEngine.issueCallbackToProviders(caller,
+                                state,
+                                voteManager.getAllUniqueViolatedRules,
+                                voteManager.getContentStatus,
+                                canistergeekLogger);
+                };
+              };
+              case(_)();
+            };
+            return attempts;
           };
           case(#err(er)) {
             return #err(er);
@@ -699,6 +750,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
           );
           for(package in challengePackages.vals()) {
             voteManager.initiateVotingPoh(package.id, caller);
+            switch(pohEngine.getPohChallengePackage(package.id)) {
+              case(null)();
+              case(?package) {
+                await pohEngine.issueCallbackToProviders(package.userId,
+                                state,
+                                voteManager.getAllUniqueViolatedRules,
+                                voteManager.getContentStatus,
+                                canistergeekLogger);
+              };
+            };
           };
         };
       };
@@ -726,15 +787,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
     };
   };
-  // Don't delete. Need it for testing
-  // public shared func registerPohCallbackForModclub() : async () {
-  //   await subscribePohCallback({callback = pohCallback});
-  // };
-
-  // public shared func pohCallback(message : PohTypes.PohVerificationResponsePlus) {
-  //   Helpers.logMessage(canistergeekLogger, "Calling back provider method", #info);
-  //   Helpers.logMessage(canistergeekLogger, "userId sent in callback: " # message.providerUserId, #info);
-  // };
 
   public shared({ caller }) func populateChallenges() : async () {
     Debug.print("Populating challenges called by: " # Principal.toText(caller));
@@ -941,10 +993,16 @@ shared ({caller = deployer}) actor class ModClub() = this {
         };
       };
       // inform all providers
-      await pohEngine.issueCallbackToProviders(packageId, state, 
+      switch(pohEngine.getPohChallengePackage(packageId)) {
+        case(null)();
+        case(?package) {
+          await pohEngine.issueCallbackToProviders(package.userId, 
+                          state,
                           voteManager.getAllUniqueViolatedRules, 
                           voteManager.getContentStatus,
                           canistergeekLogger);
+        };
+      };
     };
   };
 
@@ -1071,7 +1129,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    pohEngine.getStableStateV2();
+    pohEngine.getStableStateV2().0;
   };
 
   public shared({caller}) func shuffleContent() : async () {
@@ -1257,7 +1315,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
     storageStateStable := storageSolution.getStableState();
     retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
-    pohStableStateV2 := pohEngine.getStableStateV2();
+    let pohCombinedStableState = pohEngine.getStableStateV2();
+    pohStableStateV2 := pohCombinedStableState.0;
+    pohCallbackDataByProvider := pohCombinedStableState.1;
     pohVoteStableState := voteManager.getStableState();
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
@@ -1283,7 +1343,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     // Delete from here after deployment
     if(not pohRunOnce) {
       pohStableStateV2 := pohEngine.migrateV1ToV2(pohStableStateV1, pohStableStateV2, Principal.fromActor(this));
-      pohEngine := POH.PohEngine(pohStableStateV2);
+      pohEngine := POH.PohEngine(pohStableStateV2, pohCallbackDataByProvider);
       pohRunOnce := true;
     };
     pohStableStateV1 := PohStateV1.emptyStableState();
