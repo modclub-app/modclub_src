@@ -67,7 +67,7 @@ export function SaveButton({ file }) {
   )
 }
 
-export function WebcamWrapper({ setFile, file, newCrop, setNewCrop }) {
+export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = true }) {
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -156,7 +156,7 @@ export function WebcamWrapper({ setFile, file, newCrop, setNewCrop }) {
         <Webcam
           audio={false}
           ref={webcamRef}
-          mirrored={true}
+          mirrored={mirrored}
           screenshotFormat="image/jpeg"
           onUserMedia={() => setLoading(false)}
           style={{

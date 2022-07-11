@@ -70,7 +70,7 @@ const Timer = styled.div`
   color: white;
 `;
 
-export default function UserVideo({ steps, goToNextStep }) {
+export default function UserVideo({ step, goToNextStep }) {
   // const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
@@ -78,7 +78,7 @@ export default function UserVideo({ steps, goToNextStep }) {
   const [capturing, setCapturing] = useState<boolean>(false);
   const [seconds, setSeconds] = useState<number>(0);
   const [recordedChunks, setRecordedChunks] = useState([]);
-  const [phrases, setPhrases] = useState([]);
+  const phrases = step.wordList[0];
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [videoUrl, setVideoUrl] = useState(null);
   const supportsWebm = MediaRecorder.isTypeSupported("video/webm")
@@ -154,21 +154,12 @@ export default function UserVideo({ steps, goToNextStep }) {
     setSubmitting(false);
     goToNextStep("challenge-user-video");
   }
-
-  const formatPhrases = () => {
-    const { wordList } = steps.find(step => step.wordList[0].length)
-    setPhrases(wordList[0])
-  }
-
+  
   const formattedTime = (val) => {
     const time = new Date(0, 0, 0);
     time.setSeconds(val);
     return format(time, 'mm:ss');
   }
-
-  useEffect(() => {
-    steps && steps.length && formatPhrases();
-  }, [steps]);
 
   useEffect(() => {
     let interval = null;

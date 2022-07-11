@@ -1,17 +1,26 @@
 import * as React from 'react'
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Modal,
   Heading,
   Button,
-  Icon
+  Icon,
+  Card,
+  Columns,
+  Content
 } from "react-bulma-components";
 import { WebcamWrapper } from "./Webcam"
 import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
+import circle from '../../../../assets/shapes/circle.png';
+import triangle from '../../../../assets/shapes/triangle.png';
+import smiley from '../../../../assets/shapes/smile.png';
+import star from '../../../../assets/shapes/star.png';
+import square from '../../../../assets/shapes/square.png';
 
-export default function ProfilePic({ goToNextStep }) {
+
+export default function DrawingChallenge({ step, goToNextStep }) {
   // const history = useHistory();
   const inputFile = useRef(null);
   const [file, setFile] = useState({
@@ -22,6 +31,7 @@ export default function ProfilePic({ goToNextStep }) {
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [newCrop, setNewCrop] = useState<boolean>(false);
+  const shapes = step.wordList[0];
 
   const handleFileChange = (event: React.FormEvent<HTMLInputElement>) => {    
     // @ts-ignore
@@ -50,6 +60,7 @@ export default function ProfilePic({ goToNextStep }) {
     }
   }
 
+
   const submit = async () => {
     setSubmitting(true);
     if (file.blob.size <= MIN_FILE_SIZE) {
@@ -61,7 +72,7 @@ export default function ProfilePic({ goToNextStep }) {
     let chunk = 1;
     for (let byteStart = 0; byteStart < file.blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
       await processAndUploadChunk(
-        "challenge-profile-pic",
+        "challenge-drawing",
         MAX_CHUNK_SIZE,
         file.blob,
         byteStart,
@@ -71,7 +82,22 @@ export default function ProfilePic({ goToNextStep }) {
       )
     }
     setSubmitting(false);
-    goToNextStep("challenge-profile-pic");
+    goToNextStep("challenge-drawing");
+  }
+
+  let drawShape = (shape: String) => {
+    switch (shape.toLowerCase()) {
+      case "circle":
+        return (<img src={circle} />);
+      case "triangle":
+        return (<img src={triangle} />);
+      case "smile":
+        return (<img src={smiley} />);
+      case "square":
+        return (<img src={square} />);
+      case "star":
+        return (<img src={star} />);
+    }
   }
 
   return (
@@ -81,17 +107,14 @@ export default function ProfilePic({ goToNextStep }) {
           <div className="loader is-loading p-5"></div>
         </Modal>
       }
-      <Heading subtitle textAlign="center">
-        Submit a photo of yourself. It should be well lit and head on.
-      </Heading>
 
       <WebcamWrapper
         setFile={setFile}
         file={file}
         newCrop={newCrop}
         setNewCrop={setNewCrop}
+        mirrored={false}
       />
-
       {!file.data &&
       <>
         <div className="is-divider" data-content="OR"></div>
@@ -112,6 +135,34 @@ export default function ProfilePic({ goToNextStep }) {
         />
       </>
       }
+      <Card className="my-5">
+        <Card.Content className="rows is-multiline">
+          <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
+            Draw the following shapes
+          </Heading>
+          <Card backgroundColor="dark" className="mt-5 mb-5">
+            <Card.Content>
+              <Heading subtitle className="mb-3">
+                Requirements
+              </Heading>
+              <ul style={{ listStyle: "disc", paddingLeft: "2rem", color: "#fff" }}>
+                <li>Draw the shapes in order from left to right on paper</li>
+                <li>You should use a pen or marker so that the drawing is clear</li>
+                <li>Take a photo of the paper</li>
+              </ul>
+            </Card.Content>
+          </Card>
+          <div style={{
+            display: "flex",flexWrap:"nowrap", backgroundColor: "#fff", marginTop: "50"
+          }}>
+          {shapes.map((shape, index) => (
+            <span id={shape} style={{margin:"auto"}}>
+              {drawShape(shape)}
+             </span>
+          ))}
+          </div>
+        </Card.Content>
+      </Card>
 
       <Button.Group align="right" className="mt-4">
         <Link to="/app/" className="button is-black" disabled={!file.data}>

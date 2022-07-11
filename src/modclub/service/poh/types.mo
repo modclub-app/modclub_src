@@ -57,7 +57,13 @@ module {
     public type PohChallengeRequiredField =  {#textBlob; #imageBlob; #videoBlob; #profileFieldBlobs;};
 
     public type PohChallengeType =  {
-        #ssn; #dl; #selfPic; #selfVideo; #fullName; #userName; #email;
+        #ssn; // SSN
+        #dl; // Draw Lines
+        #selfPic; // Profile Pic
+        #selfVideo; // Video 
+        #fullName; // User full name
+        #userName; // User name
+        #email; // Email
     };
 
     // To be deleted after deployment

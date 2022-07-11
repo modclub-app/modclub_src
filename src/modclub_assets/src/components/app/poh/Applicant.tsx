@@ -20,6 +20,7 @@ import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserAudio from "./UserAudio";
+import DrawingChallenge from './DrawingChallenge';
 import POHConfirmationModal from "./POHConfirmationModal";
 
 const CheckBox = ({ id, label, values }) => {
@@ -87,6 +88,7 @@ export default function PohApplicant() {
   const getApplicant = async () => {
     setLoading(true)
     const res = await getPohTaskData(packageId);
+    console.log({pohPackage: res.ok });
     setContent(res.ok);
     setLoading(false);
   }
@@ -102,12 +104,39 @@ export default function PohApplicant() {
   }, [content]);
 
   const formatTitle = (challengeId) => {
-    if (challengeId === "challenge-profile-details") return "Profile Details";
-    if (challengeId === "challenge-profile-pic") return "Profile Picture";
-    if (challengeId === "challenge-user-video") return "Unique Phrase Video";
-    if (challengeId === "challenge-user-audio") return "Unique Phrase Audio";
-    return challengeId;
+    switch (challengeId) {
+      case "challenge-profile-details":
+        return "Profile Details"
+      case "challenge-profile-pic":
+        return "Profile Picture";
+      case "challenge-user-video":
+        return "Unique Phrase (Video)";
+      case "challenge-user-audio":
+        return "Unique Phrase (Audio)";
+      case "challenge-drawing":
+        return "Unique Drawing";
+      default:
+        return challengeId
+    }
   };
+
+  const isSafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
+  const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  const renderChallenge = (challengeId: String, task: any) => {
+    switch (challengeId) {
+      case "challenge-profile-details":
+        return <ProfileDetails data={task} />;
+      case "challenge-profile-pic":
+        return <ProfilePic data={task} />;
+      case "challenge-user-video":
+        return <UserVideo data={task} />;
+      case "challenge-user-audio":
+        return <UserAudio data={task} />;
+      case "challenge-drawing":
+        return <DrawingChallenge data={task} />;
+    }
+  }
 
   if (!content) {
     return (
@@ -116,9 +145,6 @@ export default function PohApplicant() {
       </Modal>
     )
   };
-
-  const isSafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
-  const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   return (
     <>
@@ -153,18 +179,7 @@ export default function PohApplicant() {
                   {formatTitle(task.challengeId)}
                 </Heading>
                 <Card backgroundColor="dark">
-                  {task.challengeId == "challenge-profile-details" &&
-                    <ProfileDetails data={task} />
-                  }
-                  {task.challengeId == "challenge-profile-pic" &&
-                    <ProfilePic data={task} />
-                  }
-                  {task.challengeId == "challenge-user-video" &&
-                    <UserVideo data={task} />
-                  }
-                  {task.challengeId == "challenge-user-audio" &&
-                    <UserAudio data={task} />
-                  }
+                  {renderChallenge(task.challengeId, task)}
                 </Card>
                 <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
                   <table className="table has-text-left">

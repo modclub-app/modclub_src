@@ -17,6 +17,7 @@ module {
 
     public let WORD_SIZE_FOR_VIDEO = 6;
     public let WORD_SIZE_FOR_AUDIO = 6;
+    public let SHAPE_COUNT = 3;
 
     public func getModclubWallet() : Principal {
         return Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai")

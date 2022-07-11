@@ -17,6 +17,7 @@ import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
 import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
+import DrawingChallenge from './DrawingChallenge';
 
 const Confirmation = ({ redirect_uri }) => {
   return (
@@ -75,7 +76,7 @@ export default function NewPohProfile({ match }) {
       })
       console.log("uncompleted", uncompleted);
 
-      history.push(`${match.path}/${uncompleted ? uncompleted.challengeId : "confirm"}`);
+      history.push(`${match.path}/${uncompleted ? uncompleted.challengeId + `?token=${URLtoken}` : "confirm"}`);
     } else {
       setInvalidToken(true);
     }
@@ -126,7 +127,7 @@ export default function NewPohProfile({ match }) {
     console.log("goToNextStep steps", steps);
     const index = steps.findIndex(step => step.challengeId === currentStep);
     const nextStep = steps[index + 1];
-    history.push(`${match.path}/${ nextStep ? nextStep.challengeId : "confirm" }`);
+    history.push(`${match.path}/${ nextStep ? nextStep.challengeId + `?token=${URLtoken}` : "confirm" }`);
   }
 
   const handleLogOut = async () => {
@@ -167,10 +168,13 @@ export default function NewPohProfile({ match }) {
                         <ProfilePic goToNextStep={goToNextStep} />
                       </Route>
                       <Route path={`${match.path}/:challenge-user-video`}>
-                        <UserVideo steps={steps} goToNextStep={goToNextStep} />
+                        <UserVideo step={steps.find(s => s.challengeId == "challenge-user-video")} goToNextStep={goToNextStep} />
                       </Route>
                       <Route path={`${match.path}/:challenge-user-audio`}>
-                        <UserPhrases steps={steps} goToNextStep={goToNextStep} />
+                        <UserPhrases step={steps.find(s => s.challengeId == "challenge-user-audio")} goToNextStep={goToNextStep} />
+                      </Route>
+                      <Route path={`${match.path}/:challenge-drawing`}>
+                        <DrawingChallenge step={steps.find(s => s.challengeId == "challenge-drawing")} goToNextStep={goToNextStep} />
                       </Route>
                       <Route path={`${match.path}/:confirm`}>
                         <Confirmation redirect_uri={redirectUri} />

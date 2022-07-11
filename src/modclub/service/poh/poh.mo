@@ -33,6 +33,9 @@ module PohModule {
     public let CHALLENGE_PROFILE_PIC_ID = "challenge-profile-pic";
     public let CHALLENGE_USER_VIDEO_ID = "challenge-user-video";
     public let CHALLENGE_USER_AUDIO_ID = "challenge-user-audio";
+    public let CHALLENGE_DRAWING_ID = "challenge-drawing";
+
+    let SHAPE_LIST : [Text] = ["Triangle", "Smile", "Circle", "Square", "Star"];
 
 
     public class PohEngine(stableState : PohStateV2.PohStableState, pohCallbackDataByProviderStable : [(Principal, [(Text, [(Text, Int)] )] ) ]) {
@@ -424,6 +427,7 @@ module PohModule {
                         switch(state.pohChallenges.get(challengeId)!.challengeType) {
                             case(#selfVideo) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_VIDEO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
                             // case(#selfAudio) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_AUDIO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
+                            case(#dl) Helpers.generateRandomList(ModClubParam.SHAPE_COUNT, SHAPE_LIST, Helpers.getRandomFeedGenerator());
                             case(_) [];
                         };
                     };
@@ -584,6 +588,7 @@ module PohModule {
                 let potentialChallengeIdsForPackage = getChallengeIdsToBeVotedForUser(userId, challengeIds);
                 Helpers.logMessage(canistergeekLogger, "provider: " # Principal.toText(pid) # "  potentialChallengeIdsForPackage: " #
                 DownloadUtil.joinArr(potentialChallengeIdsForPackage), #info);
+                
                 // This needs to go for voting now but first check if these are already sent for voting in any
                 // other package. If yes, remove them from double voting.
                 let potentialChallengeIdsForPackageMap = HashMap.HashMap<Text, Text>(1, Text.equal, Text.hash);
@@ -864,14 +869,38 @@ module PohModule {
                 challengeId = CHALLENGE_USER_AUDIO_ID;
                 challengeName = "Please record your audio reading these words";
                 challengeDescription = "Please record your audio reading these words";
-                requiredField = #videoBlob;
+                requiredField = #videoBlob; // TODO: Switch to just blob or audio blob
                 // assuming there will be no transitive dependencies. else graph needs to be used
                 dependentChallengeId = null;
-                challengeType =  #selfVideo;
+                challengeType =  #selfVideo; 
                 allowedViolationRules = allowedViolationRules4.toArray();
                 createdAt = Helpers.timeNow();
                 updatedAt = Helpers.timeNow();
             });
+
+            let challengeDrawingRules : [PohTypes.ViolatedRules] = [
+                {
+                    ruleId= "1";
+                    ruleDesc = "All of the shapes are drawn correctly on the paper";
+                },
+                {
+                    ruleId= "2";
+                    ruleDesc = "The shapes are in the correct order from left to right";
+                },
+            ];
+            state.pohChallenges.put(CHALLENGE_DRAWING_ID, {
+                challengeId = CHALLENGE_DRAWING_ID;
+                challengeName = "Draw the unique shapes";
+                challengeDescription = "Draw the following shapes on a piece of paper. Take a photo of the paper.";
+                requiredField = #imageBlob;
+                // assuming there will be no transitive dependencies. else graph needs to be used
+                dependentChallengeId = null;
+                challengeType =  #dl;
+                allowedViolationRules = challengeDrawingRules;
+                createdAt = Helpers.timeNow();
+                updatedAt = Helpers.timeNow();
+            });
+
             state.wordList.clear();
             state.wordList.add("Cute");
             state.wordList.add("Free");

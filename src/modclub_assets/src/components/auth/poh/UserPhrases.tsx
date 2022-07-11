@@ -72,10 +72,10 @@ const Timer = styled.div`
   color: white;
 `;
 
-export default function UserPhrases({ steps, goToNextStep }) {
+export default function UserPhrases({ step, goToNextStep }) {
   // const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
-  const [phrases, setPhrases] = useState([]);
+  const phrases = step.wordList[0];
 
   const [capturing, setCapturing] = useState<boolean>(false);
   const [seconds, setSeconds] = useState<number>(0);
@@ -109,19 +109,8 @@ export default function UserPhrases({ steps, goToNextStep }) {
     }
 
     setSubmitting(false);
-    // history.push("/new-poh-profile/confirm");
     goToNextStep("challenge-user-audio");
   }
-
-  const formatPhrases = () => {
-    const { wordList } = steps.find(step => step.wordList[0].length);
-    setPhrases(wordList[0]);
-  }
-
-
-  useEffect(() => {
-    steps && steps.length && formatPhrases();
-  }, [steps]);
 
   useEffect(() => {
     let interval = null;
