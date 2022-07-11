@@ -83,8 +83,6 @@ for (state_name, var_names) in state_to_varName.items():
         response = agent.query_raw(canister_id, "downloadSupport", params)
         file_path = download_folder + state_name + "_" + var_name + ".csv"
         write_in_csv(file_path, response[0].get('value'), None)
-        write_in_csv(file_path, response[0].get('value'), None)
-
 
 
 
