@@ -115,7 +115,7 @@ export default function DrawingChallenge({ step, goToNextStep }) {
         setNewCrop={setNewCrop}
         mirrored={false}
       />
-      {!file.data &&
+      {/* !file.data &&
       <>
         <div className="is-divider" data-content="OR"></div>
         <Button.Group align="center">
@@ -134,7 +134,7 @@ export default function DrawingChallenge({ step, goToNextStep }) {
           type="file"
         />
       </>
-      }
+    */}
       <Card className="my-5">
         <Card.Content className="rows is-multiline">
           <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
@@ -146,9 +146,9 @@ export default function DrawingChallenge({ step, goToNextStep }) {
                 Requirements
               </Heading>
               <ul style={{ listStyle: "disc", paddingLeft: "2rem", color: "#fff" }}>
-                <li>Draw the shapes in order from left to right on paper</li>
-                <li>You should use a pen or marker so that the drawing is clear</li>
-                <li>Take a photo of the paper</li>
+                <li>Draw the shapes in order from left to right on paper or tablet</li>
+                <li>Try to make the drawing as close to the image as possible ( it does not have to be perfect )</li>
+                <li>Take a photo of the paper or tablet</li>
               </ul>
             </Card.Content>
           </Card>

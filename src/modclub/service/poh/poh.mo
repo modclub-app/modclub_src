@@ -881,10 +881,14 @@ module PohModule {
             let challengeDrawingRules : [PohTypes.ViolatedRules] = [
                 {
                     ruleId= "1";
-                    ruleDesc = "All of the shapes are drawn correctly on the paper";
+                    ruleDesc = "All the shapes are present in the drawing.";
                 },
                 {
                     ruleId= "2";
+                    ruleDesc = "The shapes were drawn on a piece of paper or a tablet device.";
+                },
+                {
+                    ruleId= "3";
                     ruleDesc = "The shapes are in the correct order from left to right";
                 },
             ];
