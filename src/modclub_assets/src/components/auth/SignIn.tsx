@@ -35,12 +35,12 @@ export function SignIn(props: PropsWithChildren<{}>) {
           <img src={dfinitylogo} alt="dfinity logo" />
         </Icon>
       </Button>
-      {/* <Button fullwidth color="gradient" className="is-outlined mb-4" onClick={() => handleLogin('plug')} >
+      <Button fullwidth color="gradient" className="is-outlined mb-4" onClick={() => handleLogin('plug')} >
         <span className="mr-2">Login</span>
         <Icon>
           <img src={pluglogo} alt="plug logo" />
         </Icon>
-      </Button> */}
+      </Button>
       <Button fullwidth color="gradient" className="is-outlined mb-4" onClick={() => handleLogin('stoic')} >
         <span className="mr-2">Login</span>
         <Icon>

@@ -40,7 +40,7 @@ if (process.env.DEV_ENV == "dev") {
 
   
 const whitelist = [canisterId];
-const host = window.location.hostname;
+const host = window.location.origin;
 let fetchedProviders = false;
 let checkAndConnectStoicCounter = 0;
 
@@ -247,7 +247,11 @@ export function useProvideAuth(authClient): AuthContext {
         break;
       case 'plug':
         try {
-          if (!window['ic']) { console.error("Can not find Plug wallet extention. Please Install on the browser"); return; }
+          if (!window['ic']?.plug) {
+            window.open('https://plugwallet.ooo/', '_blank');
+            console.error("Can not find Plug wallet extention. Please Install on the browser");
+            return;
+          };
           const result = await window['ic'].plug.requestConnect({
             whitelist,
             host

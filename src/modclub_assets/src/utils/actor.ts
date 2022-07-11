@@ -25,21 +25,11 @@ function createActor(identity?: Identity, canisterId?: any) {
 }
 
 const createPlugActor = async function (identity, canisterId) {
-
-  //if (isLocalEnv) {
-  const agent = new HttpAgent({ host, identity });
-  const actor = Actor.createActor<_SERVICE>(idlFactory, {
-    agent,
+  const actor = await window["ic"].plug.createActor({
     canisterId: canisterId,
+    interfaceFactory: idlFactory,
   });
   return actor;
-  /* } else {
-    const actor = await window["ic"].plug.createActor({
-      canisterId: canisterId,
-      interfaceFactory: idlFactory,
-    });
-    return actor;
-  } */
 }
 
 /*
