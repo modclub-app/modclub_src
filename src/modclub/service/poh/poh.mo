@@ -570,7 +570,9 @@ module PohModule {
             
             let challengeIdByProviderBuff = Buffer.Buffer<(Principal, [Text])>(1);
             for((pid, challengeIds) in globalState.provider2PohChallengeIds.entries()) {
-                challengeIdByProviderBuff.add((pid, challengeIds.toArray()));
+                if(findProviderUserIds(userId, pid).size() != 0) {
+                    challengeIdByProviderBuff.add((pid, challengeIds.toArray()));
+                };
             };
             var challengeIdByProviderArr = challengeIdByProviderBuff.toArray();
             // sort to get provider with more challenges configured as first so that package for them

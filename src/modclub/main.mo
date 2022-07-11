@@ -47,8 +47,6 @@ import Token "./token";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
-import QueueManager "./service/queue/queue";
-import QueueState "./service/queue/state";
 import DownloadSupport "./downloadSupport";
 
 
