@@ -1,6 +1,8 @@
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Int "mo:base/Int";
+import Nat "mo:base/Nat";
+import Nat8 "mo:base/Nat8";
 import Option "mo:base/Option";
 import Types "./types";
 import PohTypes "./service/poh/types";
@@ -110,6 +112,133 @@ module {
     return buff.toArray();
   };
 
+  public func toString_Provider(providers: [Types.Provider]) : [Text] {
+    let buff = Buffer.Buffer<Text>(providers.size());
+    for(p in providers.vals()) {
+      buff.add(Principal.toText(p.id) # ";" # p.name  # ";" # p.description  # ";" # Int.toText(p.createdAt)
+            # ";" # Int.toText(p.updatedAt)  # ";" # joinArr(toString_ProviderSettings([p.settings]))
+      );
+    };
+    return buff.toArray();
+  };
+
+  public func toString_ProviderSettings(providerSettings: [Types.ProviderSettings]) : [Text] {
+    let buff = Buffer.Buffer<Text>(providerSettings.size());
+    for(p in providerSettings.vals()) {
+      buff.add(Nat.toText(p.minVotes) # ";" # Nat.toText(p.minStaked));
+    };
+    return buff.toArray();
+  };
+
+  public func toString_AirdropUser(airdropUsers: [Types.AirdropUser]) : [Text] {
+    let buff = Buffer.Buffer<Text>(airdropUsers.size());
+    for(aUser in airdropUsers.vals()) {
+      buff.add(Principal.toText(aUser.id) # ";" # Int.toText(aUser.createdAt));
+    };
+    return buff.toArray();
+  };
+
+  public func toString_Rule(rules: [Types.Rule]) : [Text] {
+    let buff = Buffer.Buffer<Text>(rules.size());
+    for(rule in  rules.vals()) {
+      buff.add(rule.id # ";" # rule.description);
+    };
+    return buff.toArray();
+  };
+
+  public func toString_Vote(votes: [Types.Vote]) : [Text] {
+    let buff = Buffer.Buffer<Text>(votes.size());
+    for(vote in  votes.vals()) {
+      buff.add(vote.id # ";" # vote.contentId
+      # ";" # Principal.toText(vote.userId)
+      # ";" # joinArr(toString_Decision([vote.decision]))
+      # ";" # joinArr(Option.get(vote.violatedRules, []:[Text]))
+      # ";" # Int.toText(vote.createdAt));
+    };
+    return buff.toArray();
+  };
+
+  public func toString_TextContent(textContents: [Types.TextContent]) : [Text] {
+    let buff = Buffer.Buffer<Text>(textContents.size());
+    for(textContent in  textContents.vals()) {
+      buff.add(textContent.id # ";" # textContent.text);
+    };
+    return buff.toArray();
+  };
+
+  public func toString_ImageContent(imageContents: [Types.ImageContent]) : [Text] {
+    let buff = Buffer.Buffer<Text>(imageContents.size());
+    for(imageContent in  imageContents.vals()) {
+      buff.add(imageContent.id # ";" # joinArr(toString_Image([imageContent.image])));
+    };
+    return buff.toArray();
+  };
+
+  public func toString_Content(contents: [Types.Content]) : [Text] {
+    let buff = Buffer.Buffer<Text>(contents.size());
+    for(content in contents.vals()) {
+      buff.add(content.id # ";" # Principal.toText(content.providerId) # ";" 
+      # joinArr(toString_ContentType([content.contentType]))
+        # ";" # content.sourceId 
+        # ";" # joinArr(toString_ContentStatus([content.status]))
+        # ";" # Option.get(content.title, "")
+        # ";" # Int.toText(content.createdAt)
+        # ";" # Int.toText(content.updatedAt)
+      );
+    };
+    return buff.toArray();
+  };
+
+  public func toString_Image(images: [Types.Image]) : [Text] {
+    let buff = Buffer.Buffer<Text>(images.size());
+    for(image in images.vals()) {
+      buff.add(joinArr(toString_Nat8(image.data)) # ";" # image.imageType);
+    };
+    return buff.toArray();
+  };
+
+  public func toString_Profile(profiles: [Types.Profile]) : [Text] {
+    let buff = Buffer.Buffer<Text>(profiles.size());
+    for(p in profiles.vals()) {
+      let i = switch(p.pic) {
+        case(null) { []: [Types.Image] };
+        case(?pic) { [pic]};
+      };
+       buff.add(Principal.toText(p.id) # ";" # p.userName  # ";" # p.email  # ";" # joinArr(toString_Image(i))
+            # ";" # joinArr(toString_Role([p.role]))
+            # ";" # Int.toText(p.createdAt)
+            # ";" # Int.toText(p.updatedAt)
+       );
+    };
+    return buff.toArray();
+  };
+
+  public func toString_Nat8(data: [Nat8]) : [Text] {
+    let buff = Buffer.Buffer<Text>(data.size());
+    for(d in data.vals()) {
+      buff.add(Nat8.toText(d));
+    };
+    return buff.toArray();
+  };
+
+  public func toString_Role(roles: [Types.Role]) : [Text] {
+    let buff = Buffer.Buffer<Text>(roles.size());
+    for(role in roles.vals()) {
+      buff.add(switch(role) {
+        case(#moderator) {
+          "moderator";
+        };
+        case(#admin) {
+          "admin";
+        };
+        case(#owner) {
+          "owner";
+        };
+      });
+    };
+    return buff.toArray();
+  };
+
   public func toString_PohChallengeStatus(statuses: [PohTypes.PohChallengeStatus]) : [Text] {
     let buff = Buffer.Buffer<Text>(statuses.size());
     for(status in statuses.vals()) {
@@ -151,5 +280,30 @@ module {
     };
     return buff.toArray();
   };
+
+  public func toString_ContentType(statuses: [Types.ContentType]) : [Text] {
+    let buff = Buffer.Buffer<Text>(statuses.size());
+    for(status in statuses.vals()) {
+      buff.add(switch(status) {
+        case(#text) {
+          "text";
+        };
+        case(#multiText) {
+          "multiText";
+        };
+        case(#imageUrl) {
+          "imageUrl";
+        };
+        case(#imageBlob) {
+          "imageBlob";
+        };
+        case(#htmlContent) {
+          "htmlContent";
+        };
+      });
+    };
+    return buff.toArray();
+  };
+  
     
 }

@@ -47,6 +47,10 @@ import Token "./token";
 import Types "./types";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
+import QueueManager "./service/queue/queue";
+import QueueState "./service/queue/state";
+import DownloadSupport "./downloadSupport";
+
 
 
 shared ({caller = deployer}) actor class ModClub() = this {
@@ -1392,6 +1396,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
         };
         case("storageState") {
           return storageSolution.downloadSupport(varName, start, end);
+        };
+        case("state") {
+          return DownloadSupport.download(state, varName, start, end);
         };
         case(_) {
           throw Error.reject("Invalid state");

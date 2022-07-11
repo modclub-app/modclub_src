@@ -64,8 +64,17 @@ state_to_varName = {'pohState': ['pohChallenges', 'pohUserChallengeAttempts', 't
 
                     'pohVoteState' : ['newPohPackages', 'approvedPohPackages', 'rejectedPohPackages', 'package2Status',
                      'pohVotes', 'pohContent2votes', 'mods2Pohvotes', 'autoApprovePOHUserIds'],
-                    'storageState' : ['dataCanisters', 'contentIdToCanisterId', 'moderatorsId']
+
+                    'storageState' : ['dataCanisters', 'contentIdToCanisterId', 'moderatorsId'],
+
+                    'state' : ['GLOBAL_ID_MAP', 'providersWhitelist', 'providers', 'providerSubs',
+                     'providerAdmins', 'profiles', 'airdropUsers', 'airdropWhitelist', 'usernames',
+                     'content', 'rules', 'votes', 'textContent', 'imageContent' ,'content2votes' ,'mods2votes',
+                     'provider2content', 'provider2rules', 'admin2Provider', 'appName', 'providerAllowedForAIFiltering',
+                     'provider2PohChallengeIds', 'provider2PohExpiry']
+                    
                                  }
+                                 
 for (state_name, var_names) in state_to_varName.items():
     for var_name in var_names:
         print("Download state: " + state_name, " var_name: "+ var_name)
