@@ -20,6 +20,13 @@ import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/ap
 import DrawingChallenge from './DrawingChallenge';
 
 const Confirmation = ({ redirect_uri }) => {
+  const { logOut } = useAuth();
+  const handleRedirect = (e) => {
+    e.preventDefault();
+    logOut();
+    window.location.href = redirect_uri;
+  };
+
   return (
     <div className="has-text-centered">
       <Heading subtitle textAlign="center">
@@ -28,7 +35,7 @@ const Confirmation = ({ redirect_uri }) => {
       <p>Your verification is in progress, please check back soon.</p>
 
       {redirect_uri ? (
-        <a href={redirect_uri} className="button is-large is-primary mt-5">
+        <a href="#" onClick={handleRedirect} className="button is-large is-primary mt-5">
           Back to App
         </a>
       ) : (
@@ -53,17 +60,10 @@ export default function NewPohProfile({ match }) {
   const [noToken, setNoToken] = useState<boolean>(false);
   const [invalidToken, setInvalidToken] = useState<boolean>(false);
   const [redirectUri, setRedirectUri] = useState<string | null>(null);
-  const [shouldLogout, setShouldLogout] = useState<boolean>(params.get("forceLogout") == "true");
 
   const initialCall = async (token) => {
     if (!token) {
       setNoToken(true);
-      return;
-    }
-
-    if (shouldLogout) {
-      logOut();
-      setShouldLogout(false);
       return;
     }
 
