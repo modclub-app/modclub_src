@@ -4,7 +4,7 @@ import { Card, Columns, Button } from "react-bulma-components";
 import { getUrlForData, fetchObjectUrl } from "../../../utils/util";
 import { PohTaskData } from '../../../utils/types';
 
-export default function UserVideo({ data } : { data: PohTaskData }) {
+export default function UserAudio({ data } : { data: PohTaskData }) {
   const audioUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
   const phrases = data.wordList[0]
   const [audioObject, setAudioObject] = useState(null);

@@ -81,10 +81,12 @@ export default function UserPhrases({ step, goToNextStep }) {
   const [seconds, setSeconds] = useState<number>(0);
   const [recordState, setRecordState] = useState(null);
   const [audioData, setAudioData] = useState(null);
-
-
   const [submitting, setSubmitting] = useState<boolean>(false);
 
+  useEffect(() => {
+    //Get user audio permission
+    navigator.mediaDevices.getUserMedia({ audio: true })
+  }, []);
 
   const submit = async () => {
     setSubmitting(true);
