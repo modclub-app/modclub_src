@@ -53,11 +53,18 @@ export default function NewPohProfile({ match }) {
   const [noToken, setNoToken] = useState<boolean>(false);
   const [invalidToken, setInvalidToken] = useState<boolean>(false);
   const [redirectUri, setRedirectUri] = useState<string | null>(null);
+  const [shouldLogout, setShouldLogout] = useState<boolean>(params.get("forceLogout") == "true");
 
   const initialCall = async (token) => {
     if (!token) {
       setNoToken(true);
-      return
+      return;
+    }
+
+    if (shouldLogout) {
+      logOut();
+      setShouldLogout(false);
+      return;
     }
 
     setRedirectUri(params.get("redirect_uri"))
