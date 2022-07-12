@@ -115,7 +115,7 @@ export default function DrawingChallenge({ step, goToNextStep }) {
         setNewCrop={setNewCrop}
         mirrored={false}
       />
-      {/* !file.data &&
+      { !file.data &&
       <>
         <div className="is-divider" data-content="OR"></div>
         <Button.Group align="center">
@@ -134,7 +134,7 @@ export default function DrawingChallenge({ step, goToNextStep }) {
           type="file"
         />
       </>
-    */}
+    }
       <Card className="my-5">
         <Card.Content className="rows is-multiline">
           <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
