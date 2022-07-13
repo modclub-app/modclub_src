@@ -89,10 +89,19 @@ export default function UserPhrases({ step, goToNextStep }) {
   const [blobURL, setBlobUrl] = useState(null);
   const [play, setPlay] = useState(false);
   
+  const [hasAudioPermission, setHasAudioPermission] = useState<boolean>(true);
+
   useEffect(() => {
-    //Get user audio permission
-    navigator.mediaDevices.getUserMedia({ audio: true });
-    recorder.current = new MicRecorder({ bitRate: 128 });
+    const fetch = async () => {
+      try {
+        //Get user audio permission
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder.current = new MicRecorder({ bitRate: 128 });
+      } catch (err) {
+        setHasAudioPermission(false);
+      }
+    }
+    fetch();
   }, []);
 
   const submit = async () => {
@@ -215,6 +224,12 @@ export default function UserPhrases({ step, goToNextStep }) {
             </>
           ) : (
             <>
+              {
+                  !hasAudioPermission &&
+                  <div class="notification is-danger">
+                      Microphone permission not enabled
+                  </div>
+              }
               {capturing &&
                 <Timer>
                   {formattedTime(seconds)}
