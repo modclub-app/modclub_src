@@ -10,7 +10,7 @@ import {
   Card,
   Columns
 } from "react-bulma-components";
-import AudioReactRecorder, { RecordState } from 'audio-react-recorder'
+import MicRecorder from "mic-recorder-to-mp3";
 import { processAndUploadChunk } from "../../../utils/util";
 import { format, formatDuration } from "date-fns";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
@@ -57,17 +57,17 @@ const Timer = styled.div`
   right: 0;
   left: 0;
   // bottom: 0;
-  top: 50px;
+  top: 5px;
   width: 40px;
   margin: auto;
   display: flex;
   z-index: 10;
   justify-content: center;
   align-items: center;
-  font-size: 11px;
+  font-size: 23px;
   background-color: rgba(46,49,54,.9);
   border-radius: 35px;
-  padding: 4px 7px;
+  padding: 12px 60px;
   line-height: 1;
   color: white;
 `;
@@ -79,18 +79,25 @@ export default function UserPhrases({ step, goToNextStep }) {
 
   const [capturing, setCapturing] = useState<boolean>(false);
   const [seconds, setSeconds] = useState<number>(0);
-  const [recordState, setRecordState] = useState(null);
+  // const [recordState, setRecordState] = useState(null);
   const [audioData, setAudioData] = useState(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
+  const recorder = useRef(null); //Recorder
+  const audioPlayer = useRef(null); //Ref for HTML Audio tag
+
+  const [blobURL, setBlobUrl] = useState(null);
+  const [play, setPlay] = useState(false);
+  
   useEffect(() => {
     //Get user audio permission
-    navigator.mediaDevices.getUserMedia({ audio: true })
+    navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder.current = new MicRecorder({ bitRate: 128 });
   }, []);
 
   const submit = async () => {
     setSubmitting(true);
-    const blob = audioData.blob;
+    const blob = audioData;
     if (blob.size <= MIN_FILE_SIZE) {
       alert("File upload could not be completed. File size is too small. Please try again"); 
       setSubmitting(false);
@@ -127,8 +134,9 @@ export default function UserPhrases({ step, goToNextStep }) {
   }, [capturing, seconds]);
 
   const handleStartCaptureClick = () => {
-    setCapturing(true);
-    setRecordState(RecordState.START);
+    recorder.current.start().then(() => {
+      setCapturing(true);
+    });
   };
 
   // const handlePauseCaptureClick = () => {
@@ -138,16 +146,22 @@ export default function UserPhrases({ step, goToNextStep }) {
   // };
 
   const handleStopCaptureClick = () => {
-    setCapturing(false);
-    setRecordState(RecordState.STOP);
-  };
-
-  const onStop = (data) => {
-    setAudioData(data);
-    console.log('onStop: audio data', data)
+    recorder.current
+      .stop()
+      .getMp3()
+      .then(([buffer, blob]) => {
+        const newBlobUrl = URL.createObjectURL(blob);
+        setAudioData(blob);
+        setBlobUrl(newBlobUrl);
+        setCapturing(false);
+      })
+      .catch((e) => console.log(e));
   };
 
   const resetAudio = () => {
+    const newBlobUrl = URL.createObjectURL(new Blob());
+    setBlobUrl(newBlobUrl);
+    setSeconds(0);
     setAudioData(null);
   };
 
@@ -167,18 +181,20 @@ export default function UserPhrases({ step, goToNextStep }) {
 
       
       <div className="is-relative has-text-centered" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
-        <div className="is-flex is-flex-direction-column is-justify-content-flex-end" style={{ height: audioData || capturing ? 124 : 100 }}>
+        <div className="is-flex is-flex-direction-column is-justify-content-flex-end" style={{ height: audioData || capturing ? 110 : 100 }}>
           {audioData ? (
             <>
               <audio
                 id="audio"
+                src={blobURL}
+                ref={audioPlayer}
                 controls
-                src={audioData ? audioData.url : null}
                 style={{
                   margin: "0 auto",
                   width: "85%",
                 }}
-              ></audio>
+                onEnded={() => setPlay(false)} //event handler when audio has stopped playing
+              />
               <Button
                 rounded
                 style={{
@@ -199,13 +215,6 @@ export default function UserPhrases({ step, goToNextStep }) {
             </>
           ) : (
             <>
-              <AudioReactRecorder
-                state={recordState}
-                onStop={onStop}
-                backgroundColor="#eee"
-                borderRadius="1rem"
-                canvasHeight="100"
-              />
               {capturing &&
                 <Timer>
                   {formattedTime(seconds)}
