@@ -331,10 +331,10 @@ module PohModule {
             };
         };
 
-        public func associateProviderUserId2ModclubUserId(pUser: PohTypes.PohProviderAndUserData, modclubUserId: Principal) : () {
-            let providerUserId2ModclubUserId = Option.get(state.providerUserIdToModclubUserIdByProviderId.get(pUser.providerId), RelObj.RelObj<Text, Principal>((Text.hash, Principal.hash), (Text.equal, Principal.equal)));
-            providerUserId2ModclubUserId.put(pUser.providerUserId, modclubUserId);
-            state.providerUserIdToModclubUserIdByProviderId.put(pUser.providerId, providerUserId2ModclubUserId);
+        public func associateProviderUserId2ModclubUserId(providerId: Principal, providerUserId: Text, modclubUserId: Principal) : () {
+            let providerUserId2ModclubUserId = Option.get(state.providerUserIdToModclubUserIdByProviderId.get(providerId), RelObj.RelObj<Text, Principal>((Text.hash, Principal.hash), (Text.equal, Principal.equal)));
+            providerUserId2ModclubUserId.put(providerUserId, modclubUserId);
+            state.providerUserIdToModclubUserIdByProviderId.put(providerId, providerUserId2ModclubUserId);
         };
 
         func findModclubId(providerUserId: Text, providerId: Principal) : ?Principal {
