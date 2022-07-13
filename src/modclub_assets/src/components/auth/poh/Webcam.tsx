@@ -3,7 +3,7 @@ import { useRef, useState, useCallback } from "react";
 import { Button, Icon } from "react-bulma-components";
 import Webcam from "react-webcam";
 import { b64toBlob, getFileExtension } from "../../../utils/util";
-import Cropper from "react-easy-crop";
+// import Cropper from "react-easy-crop";
 
 export function CaptureButton({
   icon,
@@ -70,9 +70,9 @@ export function SaveButton({ file }) {
 export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = true }) {
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  // const [crop, setCrop] = useState({ x: 0, y: 0 });
+  // const [zoom, setZoom] = useState(1);
+  // const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const captureWebcam = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -92,30 +92,30 @@ export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = t
     setFile(fileInfo);
   }, [webcamRef, setFile]);
 
-  const cropImage = (imgUri, width = 400, height = 300, xstart = 0, ystart = 0, callback) => {
-    try {
-      let resize_canvas = document.createElement('canvas');
-      let orig_src = new Image();
-      orig_src.src = imgUri;
-      orig_src.onload = function () {
-        resize_canvas.width = width;
-        resize_canvas.height = height;
-        let cnv = resize_canvas.getContext('2d');
-        cnv.drawImage(orig_src, xstart, ystart, width, height, 0, 0, width, height);
-        let newimgUri = resize_canvas.toDataURL("image/jpeg").toString();
-        callback(newimgUri);
-      }
-    }
-    catch (e) {
-      console.log("Couldn't crop image due to", e);
-      callback(imgUri);
-    }
-  }
+  // const cropImage = (imgUri, width = 400, height = 300, xstart = 0, ystart = 0, callback) => {
+  //   try {
+  //     let resize_canvas = document.createElement('canvas');
+  //     let orig_src = new Image();
+  //     orig_src.src = imgUri;
+  //     orig_src.onload = function () {
+  //       resize_canvas.width = width;
+  //       resize_canvas.height = height;
+  //       let cnv = resize_canvas.getContext('2d');
+  //       cnv.drawImage(orig_src, xstart, ystart, width, height, 0, 0, width, height);
+  //       let newimgUri = resize_canvas.toDataURL("image/jpeg").toString();
+  //       callback(newimgUri);
+  //     }
+  //   }
+  //   catch (e) {
+  //     console.log("Couldn't crop image due to", e);
+  //     callback(imgUri);
+  //   }
+  // }
 
-  const onCropComplete = useCallback((_, croppedAreaPixels) => {
-    setNewCrop(true);
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
+  // const onCropComplete = useCallback((_, croppedAreaPixels) => {
+  //   setNewCrop(true);
+  //   setCroppedAreaPixels(croppedAreaPixels);
+  // }, []);
 
   const clearImage = () => {
     setLoading(true);
@@ -129,26 +129,26 @@ export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = t
     setZoom(1);
   }
 
-  const doCropImage = () => {
-    if (!croppedAreaPixels) return
-    cropImage(file.data, croppedAreaPixels.width, croppedAreaPixels.height, croppedAreaPixels.x, croppedAreaPixels.y, (imgUri) => {
-      let encoded = imgUri.toString().replace(/^data:(.*,)?/, '');
-      if ((encoded.length % 4) > 0) {
-        encoded += '='.repeat(4 - (encoded.length % 4));
-      }
-      const blob = b64toBlob(encoded, "image/jpeg");
-      const fileInfo = {
-        type: blob.type,
-        size: blob.size,
-        blob: blob,
-        data: imgUri,
-        cropped: true
-      };
-      console.log("fileInfo", fileInfo);
-      setFile(fileInfo);
-      setNewCrop(false);
-    });
-  }
+  // const doCropImage = () => {
+  //   if (!croppedAreaPixels) return
+  //   cropImage(file.data, croppedAreaPixels.width, croppedAreaPixels.height, croppedAreaPixels.x, croppedAreaPixels.y, (imgUri) => {
+  //     let encoded = imgUri.toString().replace(/^data:(.*,)?/, '');
+  //     if ((encoded.length % 4) > 0) {
+  //       encoded += '='.repeat(4 - (encoded.length % 4));
+  //     }
+  //     const blob = b64toBlob(encoded, "image/jpeg");
+  //     const fileInfo = {
+  //       type: blob.type,
+  //       size: blob.size,
+  //       blob: blob,
+  //       data: imgUri,
+  //       cropped: true
+  //     };
+  //     console.log("fileInfo", fileInfo);
+  //     setFile(fileInfo);
+  //     setNewCrop(false);
+  //   });
+  // }
 
   return !file.data ? (
     <div className="is-relative has-text-centered" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
@@ -186,7 +186,7 @@ export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = t
   ) : (
     <div className="is-relative has-text-centered">
       
-      {file.cropped ? (
+      {/* {file.cropped ? (
         <div style={{ maxWidth: 640, maxHeight: 480, margin: "auto", background: `url(${file.data}) no-repeat center`, backgroundSize: "cover" }}>
           <div style={{ paddingBottom: "75%" }} />
         </div>
@@ -204,7 +204,11 @@ export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = t
             />
           </div>
         </div>
-      )}
+      )} */}
+
+      <div style={{ maxWidth: 640, maxHeight: 480, margin: "auto", background: `url(${file.data}) no-repeat center`, backgroundSize: "cover" }}>
+        <div style={{ paddingBottom: "75%" }} />
+      </div>
 
       {!file.uploaded &&
         <SaveButton file={file} />
@@ -213,7 +217,7 @@ export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = t
         icon="delete"
         handleClick={clearImage}
       />
-      {croppedAreaPixels &&
+      {/* {croppedAreaPixels &&
         <Button
           renderAs="a"
           rounded
@@ -231,7 +235,7 @@ export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = t
         >
           <span>CROP</span>
         </Button>
-      }
+      } */}
     </div>
   )
 }
