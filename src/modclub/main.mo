@@ -430,10 +430,22 @@ shared ({caller = deployer}) actor class ModClub() = this {
     };
   };
 
-  public query func getProfileById(pid: Principal) : async Types.Profile {
+  public query({ caller }) func getProfileById(pid: Principal) : async Types.Profile {
+    switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
+      case (#err(e)) { throw Error.reject("Unauthorized"); };
+      case (_) ();
+    };
     switch(ModeratorManager.getProfile(pid, state)) {
       case(#ok(p)) {
-        return p;
+        return {
+          id =  p.id;
+          userName = p.userName;
+          email = "";
+          pic = p.pic;
+          role = p.role;
+          createdAt = p.createdAt;
+          updatedAt = p.updatedAt;
+        };
       };
       case(_) {
         throw Error.reject("profile not found")
