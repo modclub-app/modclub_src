@@ -922,19 +922,37 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
-      // validateCaller(caller);
+        if ( not allowedCanistergeekCaller(caller) ) {
+          throw Error.reject("Unauthorized");
+        };
       canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({caller}) func collectCanisterMetrics(): async () {
-      // validateCaller(caller);
+        if ( not allowedCanistergeekCaller(caller) ) {
+          throw Error.reject("Unauthorized");
+        };
       canistergeekMonitor.collectMetrics();
   };
 
   public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
-        // validateCaller(caller);
+        if ( not allowedCanistergeekCaller(caller) ) {
+          throw Error.reject("Unauthorized");
+        };
         Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
         canistergeekLogger.getLog(request);
+  };
+
+  private func allowedCanistergeekCaller(caller: Principal): Bool {
+    let authorizedCallers : [Principal] = [
+      Principal.fromText("hqyof-lxrze-ezy5y-bys4t-dm4bq-7i57t-uisji-lsnmt-5jdma-4ujdb-5qe"),
+      ];
+      var exists = Array.find<Principal>(
+        authorizedCallers,
+        func(val: Principal) : Bool {
+          Principal.equal(val, caller) 
+      });
+      exists != null;
   };
 
   public shared({ caller }) func votePohContent(packageId: Text, decision: Types.Decision, violatedRules: [Types.PohRulesViolated]) : async () {
