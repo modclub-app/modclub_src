@@ -15,6 +15,14 @@ export interface Activity {
   'providerId' : ProviderId,
 }
 export interface AirdropUser { 'id' : Principal, 'createdAt' : Timestamp }
+export type AssocList = [] | [[[Key, Trie_1], List_1]];
+export type AssocList_1 = [] | [[[Key_1, null], List]];
+export type AssocList_2 = [] | [[[Key_1, Trie_3], List_3]];
+export type AssocList_3 = [] | [[[Key, null], List_2]];
+export interface Branch { 'left' : Trie, 'size' : bigint, 'right' : Trie }
+export interface Branch_1 { 'left' : Trie_1, 'size' : bigint, 'right' : Trie_1 }
+export interface Branch_2 { 'left' : Trie_2, 'size' : bigint, 'right' : Trie_2 }
+export interface Branch_3 { 'left' : Trie_3, 'size' : bigint, 'right' : Trie_3 }
 export type CanisterCyclesAggregatedData = Array<bigint>;
 export type CanisterHeapMemoryAggregatedData = Array<bigint>;
 export type CanisterLogFeature = { 'filterMessageByContains' : null } |
@@ -101,6 +109,7 @@ export interface GetMetricsParameters {
   'granularity' : MetricsGranularity,
   'dateFromMillis' : bigint,
 }
+export type Hash = number;
 export interface Holdings {
   'pendingRewards' : bigint,
   'stake' : bigint,
@@ -115,6 +124,16 @@ export interface HourlyMetricsData {
   'timeMillis' : bigint,
 }
 export interface Image { 'imageType' : string, 'data' : Array<number> }
+export interface Key { 'key' : string, 'hash' : Hash }
+export interface Key_1 { 'key' : Principal, 'hash' : Hash }
+export interface Leaf { 'size' : bigint, 'keyvals' : AssocList }
+export interface Leaf_1 { 'size' : bigint, 'keyvals' : AssocList_1 }
+export interface Leaf_2 { 'size' : bigint, 'keyvals' : AssocList_2 }
+export interface Leaf_3 { 'size' : bigint, 'keyvals' : AssocList_3 }
+export type List = [] | [[[Key_1, null], List]];
+export type List_1 = [] | [[[Key, Trie_1], List_1]];
+export type List_2 = [] | [[[Key, null], List_2]];
+export type List_3 = [] | [[[Key_1, Trie_3], List_3]];
 export interface LogMessagesData { 'timeNanos' : Nanos, 'message' : string }
 export type MetricsGranularity = { 'hourly' : null } |
   { 'daily' : null };
@@ -144,6 +163,12 @@ export interface ModClub {
     ) => Promise<undefined>,
   'deregisterProvider' : () => Promise<string>,
   'distributeAllPendingRewards' : () => Promise<undefined>,
+  'downloadSupport' : (
+      arg_0: string,
+      arg_1: string,
+      arg_2: bigint,
+      arg_3: bigint,
+    ) => Promise<Array<Array<string>>>,
   'editProviderAdmin' : (
       arg_0: Principal,
       arg_1: Principal,
@@ -171,9 +196,7 @@ export interface ModClub {
   'getModeratorLeaderboard' : (arg_0: bigint, arg_1: bigint) => Promise<
       Array<ModeratorLeaderboard>
     >,
-  'getPohAttempts' : () => Promise<
-      Array<[Principal, Array<[string, Array<PohChallengesAttempt>]>]>
-    >,
+  'getPohAttempts' : () => Promise<PohStableState>,
   'getPohTaskData' : (arg_0: string) => Promise<Result_2>,
   'getPohTasks' : (
       arg_0: ContentStatus,
@@ -201,6 +224,9 @@ export interface ModClub {
   'issueJwt' : () => Promise<string>,
   'newContentQueuesByqId' : (arg_0: bigint) => Promise<Array<string>>,
   'newContentQueuesqIdCount' : () => Promise<[Array<bigint>, Array<bigint>]>,
+  'pohCallbackForModclub' : (arg_0: PohVerificationResponsePlus) => Promise<
+      undefined
+    >,
   'populateChallenges' : () => Promise<undefined>,
   'registerAdmin' : (arg_0: Principal) => Promise<Result>,
   'registerModerator' : (
@@ -295,6 +321,18 @@ export interface NumericEntity {
   'first' : bigint,
   'last' : bigint,
 }
+export interface PohChallengePackage {
+  'id' : string,
+  'title' : [] | [string],
+  'userId' : Principal,
+  'createdAt' : bigint,
+  'updatedAt' : bigint,
+  'challengeIds' : Array<string>,
+}
+export type PohChallengeRequiredField = { 'imageBlob' : null } |
+  { 'textBlob' : null } |
+  { 'videoBlob' : null } |
+  { 'profileFieldBlobs' : null };
 export type PohChallengeStatus = { 'notSubmitted' : null } |
   { 'verified' : null } |
   { 'expired' : null } |
@@ -326,6 +364,17 @@ export type PohChallengeType = { 'dl' : null } |
   { 'email' : null } |
   { 'selfVideo' : null } |
   { 'selfPic' : null };
+export interface PohChallenges {
+  'allowedViolationRules' : Array<ViolatedRules>,
+  'createdAt' : bigint,
+  'dependentChallengeId' : [] | [Array<string>],
+  'updatedAt' : bigint,
+  'challengeId' : string,
+  'challengeDescription' : string,
+  'challengeName' : string,
+  'challengeType' : PohChallengeType,
+  'requiredField' : PohChallengeRequiredField,
+}
 export interface PohChallengesAttempt {
   'dataCanisterId' : [] | [Principal],
   'status' : PohChallengeStatus,
@@ -340,11 +389,47 @@ export interface PohChallengesAttempt {
   'challengeType' : PohChallengeType,
   'wordList' : [] | [Array<string>],
 }
-export type PohError = { 'invalidPackageId' : null } |
+export interface PohChallengesAttemptV1 {
+  'dataCanisterId' : [] | [Principal],
+  'status' : PohChallengeStatus,
+  'completedOn' : bigint,
+  'attemptId' : [] | [string],
+  'userId' : Principal,
+  'createdAt' : bigint,
+  'submittedAt' : bigint,
+  'updatedAt' : bigint,
+  'challengeId' : string,
+  'challengeDescription' : string,
+  'challengeName' : string,
+  'challengeType' : PohChallengeType,
+  'wordList' : [] | [Array<string>],
+}
+export type PohError = { 'pohCallbackNotRegistered' : null } |
+  { 'invalidPackageId' : null } |
   { 'pohNotConfiguredForProvider' : null } |
   { 'challengeNotPendingForSubmission' : null } |
-  { 'invalidToken' : null };
+  { 'invalidToken' : null } |
+  { 'attemptToAssociateMultipleModclubAccounts' : Principal };
+export interface PohProviderAndUserData {
+  'token' : string,
+  'generatedAt' : bigint,
+  'providerId' : Principal,
+  'providerUserId' : string,
+}
 export interface PohRulesViolated { 'ruleId' : string, 'challengeId' : string }
+export interface PohStableState {
+  'userToPohChallengePackageId' : RelShared_1,
+  'providersCallback' : Array<[Principal, SubscribePohMessage]>,
+  'pohChallenges' : Array<[string, PohChallenges]>,
+  'callbackIssuedByProvider' : Array<[Principal, Array<[Principal, bigint]>]>,
+  'token2ProviderAndUserData' : Array<[string, PohProviderAndUserData]>,
+  'pohChallengePackages' : Array<[string, PohChallengePackage]>,
+  'pohUserChallengeAttempts' : Array<
+    [Principal, Array<[string, Array<PohChallengesAttemptV1>]>]
+  >,
+  'providerUserIdToModclubUserIdByProviderId' : Array<[Principal, RelShared]>,
+  'wordList' : Array<string>,
+}
 export interface PohTaskData {
   'dataCanisterId' : [] | [Principal],
   'status' : PohChallengeStatus,
@@ -386,6 +471,7 @@ export interface PohVerificationResponsePlus {
   'token' : [] | [string],
   'rejectionReasons' : Array<string>,
   'submittedAt' : [] | [bigint],
+  'isFirstAssociation' : boolean,
   'providerId' : Principal,
   'challenges' : Array<ChallengeResponse>,
   'requestedAt' : [] | [bigint],
@@ -436,6 +522,8 @@ export type ProviderResult = { 'ok' : null } |
 export type ProviderSettingResult = { 'ok' : ProviderSettings } |
   { 'err' : ProviderError };
 export interface ProviderSettings { 'minVotes' : bigint, 'minStaked' : bigint }
+export interface RelShared { 'forw' : Trie2D }
+export interface RelShared_1 { 'forw' : Trie2D_1 }
 export type Result = { 'ok' : null } |
   { 'err' : string };
 export type Result_1 = { 'ok' : Array<PohChallengesAttempt> } |
@@ -452,6 +540,24 @@ export type RuleId = string;
 export interface SubscribeMessage { 'callback' : [Principal, string] }
 export interface SubscribePohMessage { 'callback' : [Principal, string] }
 export type Timestamp = bigint;
+export type Trie = { 'branch' : Branch } |
+  { 'leaf' : Leaf } |
+  { 'empty' : null };
+export type Trie2D = { 'branch' : Branch } |
+  { 'leaf' : Leaf } |
+  { 'empty' : null };
+export type Trie2D_1 = { 'branch' : Branch_2 } |
+  { 'leaf' : Leaf_2 } |
+  { 'empty' : null };
+export type Trie_1 = { 'branch' : Branch_1 } |
+  { 'leaf' : Leaf_1 } |
+  { 'empty' : null };
+export type Trie_2 = { 'branch' : Branch_2 } |
+  { 'leaf' : Leaf_2 } |
+  { 'empty' : null };
+export type Trie_3 = { 'branch' : Branch_3 } |
+  { 'leaf' : Leaf_3 } |
+  { 'empty' : null };
 export type UpdateCallsAggregatedData = Array<bigint>;
 export type UserId = Principal;
 export interface VerifyHumanityResponse {

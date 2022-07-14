@@ -11,7 +11,7 @@ try {
   LOCAL_II_CANISTER = `http://${config["IDENTITY_CANISTER"]}.localhost:8000/#authorize`;
 } catch (e) {
   LOCAL_II_CANISTER =
-    "http://qjdve-lqaaa-aaaaa-aaaeq-cai.localhost:8000/#authorize";
+    "http://rwlgt-iiaaa-aaaaa-aaaaa-cai.localhost:8000/#authorize";
 }
 
 let localCanisters, prodCanisters, canisters;

@@ -1,0 +1,52 @@
+type Provider = 
+ service {
+   pohCallback: (PohVerificationResponsePlus) -> () oneway;
+   registerPohCallbackForModclubForDev: () -> ();
+   registerPohCallbackForModclubForProd: () -> ();
+   registerPohCallbackForModclubForQA: () -> ();
+   verifyUserHumanityForProviderForDev: (principal) ->
+    (PohVerificationResponsePlus);
+   verifyUserHumanityForProviderForProd: (principal) ->
+    (PohVerificationResponsePlus);
+   verifyUserHumanityForProviderForQA: (principal) ->
+    (PohVerificationResponsePlus);
+ };
+type PohVerificationStatus = 
+ variant {
+   expired;
+   notSubmitted;
+   pending;
+   rejected;
+   startPoh;
+   verified;
+ };
+type PohVerificationResponsePlus = 
+ record {
+   challenges: vec ChallengeResponse;
+   completedAt: opt int;
+   isFirstAssociation: bool;
+   providerId: principal;
+   providerUserId: text;
+   rejectionReasons: vec text;
+   requestedAt: opt int;
+   status: PohVerificationStatus;
+   submittedAt: opt int;
+   token: opt text;
+ };
+type PohChallengeStatus = 
+ variant {
+   expired;
+   notSubmitted;
+   pending;
+   rejected;
+   verified;
+ };
+type ChallengeResponse = 
+ record {
+   challengeId: text;
+   completedAt: opt int;
+   requestedAt: opt int;
+   status: PohChallengeStatus;
+   submittedAt: opt int;
+ };
+service : () -> Provider

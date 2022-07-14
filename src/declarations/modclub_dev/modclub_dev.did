@@ -21,6 +21,42 @@ type VerifyHumanityResponse =
  };
 type UserId = principal;
 type UpdateCallsAggregatedData = vec nat64;
+type Trie_3 = 
+ variant {
+   branch: Branch_3;
+   "empty";
+   leaf: Leaf_3;
+ };
+type Trie_2 = 
+ variant {
+   branch: Branch_2;
+   "empty";
+   leaf: Leaf_2;
+ };
+type Trie_1 = 
+ variant {
+   branch: Branch_1;
+   "empty";
+   leaf: Leaf_1;
+ };
+type Trie2D_1 = 
+ variant {
+   branch: Branch_2;
+   "empty";
+   leaf: Leaf_2;
+ };
+type Trie2D = 
+ variant {
+   branch: Branch;
+   "empty";
+   leaf: Leaf;
+ };
+type Trie = 
+ variant {
+   branch: Branch;
+   "empty";
+   leaf: Leaf;
+ };
 type Timestamp = int;
 type SubscribePohMessage = record {
                              callback:
@@ -59,6 +95,8 @@ type Result =
    err: text;
    ok;
  };
+type RelShared_1 = record {forw: Trie2D_1;};
+type RelShared = record {forw: Trie2D;};
 type ProviderSettings = 
  record {
    minStaked: nat;
@@ -133,6 +171,7 @@ type PohVerificationResponsePlus =
  record {
    challenges: vec ChallengeResponse;
    completedAt: opt int;
+   isFirstAssociation: bool;
    providerId: principal;
    providerUserId: text;
    rejectionReasons: vec text;
@@ -179,17 +218,84 @@ type PohTaskData =
    userId: principal;
    wordList: opt vec text;
  };
+type PohStableState = 
+ record {
+   callbackIssuedByProvider:
+    vec record {
+          principal;
+          vec record {
+                principal;
+                int;
+              };
+        };
+   pohChallengePackages: vec record {
+                               text;
+                               PohChallengePackage;
+                             };
+   pohChallenges: vec record {
+                        text;
+                        PohChallenges;
+                      };
+   pohUserChallengeAttempts:
+    vec record {
+          principal;
+          vec record {
+                text;
+                vec PohChallengesAttemptV1;
+              };
+        };
+   providerUserIdToModclubUserIdByProviderId:
+    vec record {
+          principal;
+          RelShared;
+        };
+   providersCallback: vec record {
+                            principal;
+                            SubscribePohMessage;
+                          };
+   token2ProviderAndUserData: vec record {
+                                    text;
+                                    PohProviderAndUserData;
+                                  };
+   userToPohChallengePackageId: RelShared_1;
+   wordList: vec text;
+ };
 type PohRulesViolated = 
  record {
    challengeId: text;
    ruleId: text;
  };
+type PohProviderAndUserData = 
+ record {
+   generatedAt: int;
+   providerId: principal;
+   providerUserId: text;
+   token: text;
+ };
 type PohError = 
  variant {
+   attemptToAssociateMultipleModclubAccounts: principal;
    challengeNotPendingForSubmission;
    invalidPackageId;
    invalidToken;
+   pohCallbackNotRegistered;
    pohNotConfiguredForProvider;
+ };
+type PohChallengesAttemptV1 = 
+ record {
+   attemptId: opt text;
+   challengeDescription: text;
+   challengeId: text;
+   challengeName: text;
+   challengeType: PohChallengeType;
+   completedOn: int;
+   createdAt: int;
+   dataCanisterId: opt principal;
+   status: PohChallengeStatus;
+   submittedAt: int;
+   updatedAt: int;
+   userId: principal;
+   wordList: opt vec text;
  };
 type PohChallengesAttempt = 
  record {
@@ -205,6 +311,18 @@ type PohChallengesAttempt =
    updatedAt: int;
    userId: principal;
    wordList: opt vec text;
+ };
+type PohChallenges = 
+ record {
+   allowedViolationRules: vec ViolatedRules;
+   challengeDescription: text;
+   challengeId: text;
+   challengeName: text;
+   challengeType: PohChallengeType;
+   createdAt: int;
+   dependentChallengeId: opt vec text;
+   requiredField: PohChallengeRequiredField;
+   updatedAt: int;
  };
 type PohChallengeType = 
  variant {
@@ -248,6 +366,22 @@ type PohChallengeStatus =
    rejected;
    verified;
  };
+type PohChallengeRequiredField = 
+ variant {
+   imageBlob;
+   profileFieldBlobs;
+   textBlob;
+   videoBlob;
+ };
+type PohChallengePackage = 
+ record {
+   challengeIds: vec text;
+   createdAt: int;
+   id: text;
+   title: opt text;
+   updatedAt: int;
+   userId: principal;
+ };
 type NumericEntity = 
  record {
    avg: nat64;
@@ -281,6 +415,7 @@ type ModClub =
    configurePohForProvider: (principal, vec text, nat) -> ();
    deregisterProvider: () -> (text);
    distributeAllPendingRewards: () -> ();
+   downloadSupport: (text, text, nat, nat) -> (vec vec text) query;
    editProviderAdmin: (principal, principal, text) -> (ProviderResult);
    generateSigningKey: () -> ();
    getActivity: (bool) -> (vec Activity) query;
@@ -302,14 +437,7 @@ type ModClub =
    getDeployer: () -> (principal) query;
    getModclubHoldings: () -> (Holdings) query;
    getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
-   getPohAttempts: () ->
-    (vec record {
-           principal;
-           vec record {
-                 text;
-                 vec PohChallengesAttempt;
-               };
-         });
+   getPohAttempts: () -> (PohStableState);
    getPohTaskData: (text) -> (Result_2) query;
    getPohTasks: (ContentStatus, nat, nat) -> (vec PohTaskPlus) query;
    getProfile: () -> (Profile) query;
@@ -327,6 +455,7 @@ type ModClub =
    issueJwt: () -> (text);
    newContentQueuesByqId: (nat) -> (vec text);
    newContentQueuesqIdCount: () -> (vec nat, vec nat);
+   pohCallbackForModclub: (PohVerificationResponsePlus) -> () oneway;
    populateChallenges: () -> ();
    registerAdmin: (principal) -> (Result);
    registerModerator: (text, text, opt Image) -> (Profile);
@@ -374,6 +503,68 @@ type LogMessagesData =
    message: text;
    timeNanos: Nanos;
  };
+type List_3 = 
+ opt record {
+       record {
+         Key_1;
+         Trie_3;
+       };
+       List_3;
+     };
+type List_2 = 
+ opt record {
+       record {
+         Key;
+         null;
+       };
+       List_2;
+     };
+type List_1 = 
+ opt record {
+       record {
+         Key;
+         Trie_1;
+       };
+       List_1;
+     };
+type List = 
+ opt record {
+       record {
+         Key_1;
+         null;
+       };
+       List;
+     };
+type Leaf_3 = 
+ record {
+   keyvals: AssocList_3;
+   size: nat;
+ };
+type Leaf_2 = 
+ record {
+   keyvals: AssocList_2;
+   size: nat;
+ };
+type Leaf_1 = 
+ record {
+   keyvals: AssocList_1;
+   size: nat;
+ };
+type Leaf = 
+ record {
+   keyvals: AssocList;
+   size: nat;
+ };
+type Key_1 = 
+ record {
+   hash: Hash;
+   key: principal;
+ };
+type Key = 
+ record {
+   hash: Hash;
+   key: text;
+ };
 type Image = 
  record {
    data: vec nat8;
@@ -394,6 +585,7 @@ type Holdings =
    userPoints: int;
    wallet: int;
  };
+type Hash = nat32;
 type GetMetricsParameters = 
  record {
    dateFromMillis: nat;
@@ -514,6 +706,62 @@ type CanisterLogFeature =
  };
 type CanisterHeapMemoryAggregatedData = vec nat64;
 type CanisterCyclesAggregatedData = vec nat64;
+type Branch_3 = 
+ record {
+   left: Trie_3;
+   right: Trie_3;
+   size: nat;
+ };
+type Branch_2 = 
+ record {
+   left: Trie_2;
+   right: Trie_2;
+   size: nat;
+ };
+type Branch_1 = 
+ record {
+   left: Trie_1;
+   right: Trie_1;
+   size: nat;
+ };
+type Branch = 
+ record {
+   left: Trie;
+   right: Trie;
+   size: nat;
+ };
+type AssocList_3 = 
+ opt record {
+       record {
+         Key;
+         null;
+       };
+       List_2;
+     };
+type AssocList_2 = 
+ opt record {
+       record {
+         Key_1;
+         Trie_3;
+       };
+       List_3;
+     };
+type AssocList_1 = 
+ opt record {
+       record {
+         Key_1;
+         null;
+       };
+       List;
+     };
+type AssocList = 
+ opt record {
+       record {
+         Key;
+         Trie_1;
+       };
+       List_1;
+     };
 type AirdropUser = 
  record {
    createdAt: Timestamp;

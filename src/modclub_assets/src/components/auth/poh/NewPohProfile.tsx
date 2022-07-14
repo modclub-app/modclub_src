@@ -18,6 +18,7 @@ import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
 import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
 import DrawingChallenge from './DrawingChallenge';
+import { PohError } from '../../../utils/types';
 
 const Confirmation = ({ redirect_uri }) => {
   const { logOut } = useAuth();
@@ -58,7 +59,7 @@ export default function NewPohProfile({ match }) {
   const [currentStep, setCurrentStep] = useState<string>('')
   // const [hasInitialCall, setHasInitialCall] = useState<boolean>(false);
   const [noToken, setNoToken] = useState<boolean>(false);
-  const [invalidToken, setInvalidToken] = useState<boolean>(false);
+  const [invalidToken, setInvalidToken] = useState<string | null>(null);
   const [redirectUri, setRedirectUri] = useState<string | null>(null);
 
   const initialCall = async (token) => {
@@ -85,7 +86,19 @@ export default function NewPohProfile({ match }) {
 
       history.push(`${match.path}/${uncompleted ? uncompleted.challengeId + `?token=${URLtoken}` : "confirm"}`);
     } else {
-      setInvalidToken(true);
+      if (challenges.hasOwnProperty("err")) {
+        let error: PohError = challenges["err"];
+        if (error.hasOwnProperty('attemptToAssociateMultipleModclubAccounts')) {
+          const originalPrincipal = error['attemptToAssociateMultipleModclubAccounts'];
+          setInvalidToken(
+            `Error - attempting to associate to multiple MODCLUB accounts is not allowed. Please continue your POH with the original principal ID: ${originalPrincipal}
+            `)
+        } else {
+          setInvalidToken("Error invalid token: " + Object.keys(error)[0]);
+        }
+      } else {
+        setInvalidToken("Unknown error");
+      }
     }
   }
 
@@ -114,7 +127,7 @@ export default function NewPohProfile({ match }) {
     <Modal show={true} showClose={false} className="userIncompleteModal">
       <Modal.Card backgroundColor="circles">
         <Modal.Card.Body>
-          Error invalid token
+         {invalidToken}
         </Modal.Card.Body>
       </Modal.Card>
     </Modal>

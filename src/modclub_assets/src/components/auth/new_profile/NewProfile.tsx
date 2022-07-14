@@ -86,7 +86,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean}) {
     } catch (e) {
       console.log("user ERRORR", e);
       let errAr = regEx.exec(e.message);
-      setMessage({ success: false, value: errAr[1] });
+      setMessage({ success: false, value: errAr ? errAr[1] : e });
       setSubmitting(false);
     }
 
