@@ -251,6 +251,7 @@ module {
         #invalidPackageId;
         #pohNotConfiguredForProvider;
         #pohCallbackNotRegistered;
+        #attemptToAssociateMultipleModclubAccounts : Principal;
     };
 
     public type VerifyHumanityResponse = {

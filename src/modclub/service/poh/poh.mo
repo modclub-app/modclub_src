@@ -331,10 +331,16 @@ module PohModule {
             };
         };
 
-        public func associateProviderUserId2ModclubUserId(providerId: Principal, providerUserId: Text, modclubUserId: Principal) : () {
+
+        public func associateProviderUserId2ModclubUserId(providerId: Principal, providerUserId: Text, modclubUserId: Principal) : Result.Result<(), PohTypes.PohError> {
             let providerUserId2ModclubUserId = Option.get(state.providerUserIdToModclubUserIdByProviderId.get(providerId), RelObj.RelObj<Text, Principal>((Text.hash, Principal.hash), (Text.equal, Principal.equal)));
+            let alreadyAssociatedModclubIds = providerUserId2ModclubUserId.get0(providerUserId);
+            if(alreadyAssociatedModclubIds.size() != 0 and alreadyAssociatedModclubIds.get(0) != modclubUserId) {
+                return #err(#attemptToAssociateMultipleModclubAccounts(alreadyAssociatedModclubIds.get(0)));
+            };
             providerUserId2ModclubUserId.put(providerUserId, modclubUserId);
             state.providerUserIdToModclubUserIdByProviderId.put(providerId, providerUserId2ModclubUserId);
+            return #ok();
         };
 
         func findModclubId(providerUserId: Text, providerId: Principal) : ?Principal {

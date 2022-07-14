@@ -681,7 +681,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    pohEngine.associateProviderUserId2ModclubUserId(Principal.fromActor(this), Principal.toText(caller), caller);
+    let _ = pohEngine.associateProviderUserId2ModclubUserId(Principal.fromActor(this), Principal.toText(caller), caller);
     let response = await verifyHumanity(Principal.toText(caller));
     return {
       status = response.status;
@@ -712,7 +712,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case(#ok(tokenResponse)) {
         switch(pohEngine.getProviderPohConfiguration(tokenResponse.providerId, state)) {
           case(#ok(pohConfigForProvider)) {
-            pohEngine.associateProviderUserId2ModclubUserId(tokenResponse.providerId, tokenResponse.providerUserId, caller);
+
+            switch(pohEngine.associateProviderUserId2ModclubUserId(tokenResponse.providerId, tokenResponse.providerUserId, caller)) {
+              case(#err(err)) {
+                return #err(err);
+              };
+              case(_)();
+            };
+
             let attempts = await pohEngine.retrieveChallengesForUser(caller, pohConfigForProvider.challengeIds, pohConfigForProvider.expiry, false);
             switch(attempts) {
               case(#ok(atts)) {
