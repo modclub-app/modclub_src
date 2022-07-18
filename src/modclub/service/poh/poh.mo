@@ -893,12 +893,8 @@ module PohModule {
                 },
                 {
                     ruleId= "2";
-                    ruleDesc = "The shapes were drawn on a piece of paper or a tablet device.";
-                },
-                {
-                    ruleId= "3";
-                    ruleDesc = "The shapes are in the correct order from left to right";
-                },
+                    ruleDesc = "The shapes were drawn on a piece of paper. This has to be a physical piece of paper and not a digital drawing.";
+                }
             ];
             state.pohChallenges.put(CHALLENGE_DRAWING_ID, {
                 challengeId = CHALLENGE_DRAWING_ID;
