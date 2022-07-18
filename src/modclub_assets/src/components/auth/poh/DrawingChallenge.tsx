@@ -115,7 +115,7 @@ export default function DrawingChallenge({ step, goToNextStep }) {
         setNewCrop={setNewCrop}
         mirrored={false}
       />
-      { !file.data &&
+      {!file.data &&
       <>
         <div className="is-divider" data-content="OR"></div>
         <Button.Group align="center">
@@ -168,7 +168,7 @@ export default function DrawingChallenge({ step, goToNextStep }) {
         <Link to="/app/" className="button is-black" disabled={!file.data}>
           Cancel
         </Link>
-        <Button color="primary" disabled={!file.data || newCrop} onClick={submit}>
+        <Button color="primary" disabled={!file.data} onClick={submit}>
           Next
         </Button>
       </Button.Group>
