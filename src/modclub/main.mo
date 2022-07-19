@@ -757,31 +757,42 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(isValid == #ok) {
       let _ = do ? {
         let attemptId = pohEngine.getAttemptId(pohDataRequest.challengeId, caller);
-        let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset,
-                pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
-        if(pohDataRequest.offset == pohDataRequest.numOfChunks) {
-          //last Chunk coming in
-          pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
-          pohEngine.updateDataCanisterId(pohDataRequest.challengeId, caller, dataCanisterId);
+        try {
+          let dataCanisterId = await storageSolution.putBlobsInDataCanister(attemptId, pohDataRequest.challengeDataBlob!, pohDataRequest.offset,
+                  pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
+          if(pohDataRequest.offset == pohDataRequest.numOfChunks) {
+            //last Chunk coming in
+            pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
+            pohEngine.updateDataCanisterId(pohDataRequest.challengeId, caller, dataCanisterId);
 
-          let challengePackages = pohEngine.createChallengePackageForVoting(
-            caller,
-            voteManager.getContentStatus,
-            state,
-            canistergeekLogger
-          );
-          for(package in challengePackages.vals()) {
-            voteManager.initiateVotingPoh(package.id, caller);
-            switch(pohEngine.getPohChallengePackage(package.id)) {
-              case(null)();
-              case(?package) {
-                await pohEngine.issueCallbackToProviders(package.userId,
-                                state,
-                                voteManager.getAllUniqueViolatedRules,
-                                voteManager.getContentStatus,
-                                canistergeekLogger);
+            let challengePackages = pohEngine.createChallengePackageForVoting(
+              caller,
+              voteManager.getContentStatus,
+              state,
+              canistergeekLogger
+            );
+            for(package in challengePackages.vals()) {
+              voteManager.initiateVotingPoh(package.id, caller);
+              switch(pohEngine.getPohChallengePackage(package.id)) {
+                case(null)();
+                case(?package) {
+                  await pohEngine.issueCallbackToProviders(package.userId,
+                                  state,
+                                  voteManager.getAllUniqueViolatedRules,
+                                  voteManager.getContentStatus,
+                                  canistergeekLogger);
+                };
               };
             };
+          };
+        } catch e {
+          if(Text.equal(Error.message(e), ModClubParam.PER_CONTENT_SIZE_EXCEEDED_ERROR)) {
+            return {
+              challengeId = pohDataRequest.challengeId;
+              submissionStatus = #submissionDataLimitExceeded;
+            };
+          } else {
+            throw e;
           };
         };
       };
