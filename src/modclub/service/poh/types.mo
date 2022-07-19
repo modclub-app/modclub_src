@@ -184,7 +184,16 @@ module {
         dataSize: Nat; // whole size of blob
     };
 
-    public type PohChallengeSubmissionStatus = {#ok; #notPendingForSubmission; #alreadySubmitted; #alreadyRejected; #alreadyApproved; #inputDataMissing; #incorrectChallenge;};
+    public type PohChallengeSubmissionStatus = {
+        #ok; 
+        #notPendingForSubmission; 
+        #alreadySubmitted; 
+        #alreadyRejected; 
+        #alreadyApproved; 
+        #inputDataMissing; 
+        #incorrectChallenge;
+        #submissionDataLimitExceeded;
+    };
 
     public type PohChallengeSubmissionResponse = {
         challengeId: Text;

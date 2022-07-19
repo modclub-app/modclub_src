@@ -51,6 +51,7 @@ actor class Bucket () = this {
   var state: DataCanisterState = emptyStateForDataCanister();
 
   let limit = 20_000_000_000_000;
+  let PER_CONTENT_LIMIT = 10 * 1024 * 1024;
 
   func onlyOwners(caller: Principal) : async () {
     let canisterDetails = await IC.IC.canister_status({ canister_id = Principal.fromActor(this) } );
@@ -87,12 +88,53 @@ actor class Bucket () = this {
       contentId # "-" # (Nat.toText(chunkNum))
   };
 
+  func getContentDataSize(contentId : Text) : Nat {
+    var chunkNum = 1;
+    var totalSize = 0;
+    label l while(true) {
+      switch(state.chunks.get(chunkId(contentId, chunkNum))) {
+        case(null) {
+          break l;
+        };
+        case(?chunkData) {
+          totalSize := totalSize + chunkData.size();
+        };
+      };
+      chunkNum := chunkNum + 1;
+    };
+    totalSize;
+  };
+
+  func deleteContent(contentId: Text) {
+    var chunkNum = 1;
+    label l while(true) {
+      switch(state.chunks.get(chunkId(contentId, chunkNum))) {
+        case(null) {
+          break l;
+        };
+        case(?chunkData) {
+          if(chunkNum == 1) {
+            state.contentInfo.delete(contentId);
+          };
+          state.chunks.delete(chunkId(contentId, chunkNum));
+        };
+      };
+      chunkNum := chunkNum + 1;
+    };
+  };
+
   // add chunks 
   // the structure for storing blob chunks is to unse name + chunk num eg: 123a1, 123a2 etc
   public shared({caller}) func putChunks(contentId : Text, chunkNum : Nat, chunkData : Blob,
           numOfChunks: Nat, contentType: Text) : async ?() {
     await onlyOwners(caller);
 
+    if(getContentDataSize(contentId) + chunkData.size() > PER_CONTENT_LIMIT) {
+      Helpers.logMessage(canistergeekLogger, "Size Exceeded. Deleting contentId: " # contentId, #info);
+      deleteContent(contentId);
+      Helpers.logMessage(canistergeekLogger, "Deletion completed for contentId: " # contentId, #info);
+      throw Error.reject(ModClubParam.PER_CONTENT_SIZE_EXCEEDED_ERROR);
+    };
     do ? {
       // Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
       if(chunkNum == 1) {
@@ -418,12 +460,12 @@ actor class Bucket () = this {
   };
 
   var nextRunTime = Time.now();
-  let TEN_SECOND_NANO = 10000000000;
+  let FIVE_MIN_NANO_SECS = 300000000000;
   system func heartbeat() : async () {
     if(Time.now() > nextRunTime) {
       Debug.print("Running Metrics Collection");
       canistergeekMonitor.collectMetrics();
-      nextRunTime := Time.now() + TEN_SECOND_NANO;
+      nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
     };
   };
 
