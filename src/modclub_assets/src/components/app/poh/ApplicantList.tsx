@@ -8,9 +8,9 @@ import {
   Card,
   Button,
   Icon,
-  Dropdown
 } from "react-bulma-components";
 import Userstats from "../profile/Userstats";
+import FilterBar from "../../common/filterbar/FilterBar";
 import Progress from "../../common/progress/Progress";
 import { useAuth } from "../../../utils/auth";
 import { getPohTasks } from "../../../utils/api";
@@ -102,8 +102,17 @@ export default function PohApplicantList() {
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
   const [firstLoad, setFirstLoad] = useState(true);
 
-  const [currentFilter, setCurrentFilter] = useState<string>("All");
+  const apps = ["Reddit", "4chan", "Medium"];
+  const [currentApp, setCurrentApp] = useState<string>(null);
+  const handleAppChange = (app) => {
+    setCurrentApp(app)
+  }
+
   const filters = ["All", "Newest", "Most Voted", "Less Voted"];
+  const [currentFilter, setCurrentFilter] = useState<string>("All");
+  const handleFilterChange = (filter) => {
+    setCurrentFilter(filter)
+  }
 
   const getApplicants = async () => {
     setLoading(true);
@@ -159,65 +168,14 @@ export default function PohApplicantList() {
 
       <Columns>
         <Columns.Column size={12}>
-          <Card>
-            <Card.Content className="level is-justify-content-flex-start">
-
-              <p className="has-text-light mr-5">
-                Choose your favorite app:
-              </p>
-
-              <Dropdown
-                className="mr-5"
-                right
-                label="All Apps"
-                icon={
-                  <Icon color="white">
-                    <span className="material-icons">expand_more</span>
-                  </Icon>
-                }
-                style={{ width: 100 }}
-              >
-              </Dropdown>
-
-              <Dropdown
-                className="is-hidden-tablet"
-                right
-                label="Filter"
-                icon={
-                  <Icon color="white">
-                    <span className="material-icons">expand_more</span>
-                  </Icon>
-                }
-                style={{ width: 100 }}
-              >
-                {filters.map(filter => 
-                  <Dropdown.Item
-                    key={filter}
-                    value={filter}
-                    renderAs="a"
-                    className={currentFilter === filter && "is-active"}
-                    onMouseDown={() => setCurrentFilter(filter)}
-                  >
-                    {filter}
-                  </Dropdown.Item>
-                )}
-              </Dropdown>
-
-              <Button.Group className="is-hidden-mobile">
-                {filters.map(filter => 
-                  <Button
-                    key={filter}
-                    color={currentFilter === filter ? "primary" : "ghost"}
-                    className="has-text-white mr-0"
-                    onClick={() => setCurrentFilter(filter)}
-                  >
-                    {filter}
-                  </Button>
-                )}
-              </Button.Group>
-
-            </Card.Content>
-          </Card>
+          <FilterBar
+            apps={apps}
+            currentApp={currentApp}
+            onAppChange={handleAppChange}
+            filters={filters}
+            currentFilter={currentFilter}
+            onFilterChange={handleFilterChange}
+          />
         </Columns.Column>
 
         {applicants.length && applicants.map((applicant, index) => (
