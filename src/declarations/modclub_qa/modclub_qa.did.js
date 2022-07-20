@@ -480,6 +480,7 @@ export const idlFactory = ({ IDL }) => {
     'alreadySubmitted' : IDL.Null,
     'alreadyApproved' : IDL.Null,
     'alreadyRejected' : IDL.Null,
+    'submissionDataLimitExceeded' : IDL.Null,
     'inputDataMissing' : IDL.Null,
     'incorrectChallenge' : IDL.Null,
   });

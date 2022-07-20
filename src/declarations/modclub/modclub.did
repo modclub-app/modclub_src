@@ -343,6 +343,7 @@ type PohChallengeSubmissionStatus =
    inputDataMissing;
    notPendingForSubmission;
    ok;
+   submissionDataLimitExceeded;
  };
 type PohChallengeSubmissionResponse = 
  record {

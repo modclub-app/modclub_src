@@ -355,6 +355,7 @@ export type PohChallengeSubmissionStatus = { 'ok' : null } |
   { 'alreadySubmitted' : null } |
   { 'alreadyApproved' : null } |
   { 'alreadyRejected' : null } |
+  { 'submissionDataLimitExceeded' : null } |
   { 'inputDataMissing' : null } |
   { 'incorrectChallenge' : null };
 export type PohChallengeType = { 'dl' : null } |
