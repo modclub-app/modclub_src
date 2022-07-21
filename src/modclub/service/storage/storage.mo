@@ -205,7 +205,8 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
           compute_allocation = null;
           //  memory_allocation = ?4_294_967_296; // 4GB
           memory_allocation = null; // 4GB
-          freezing_threshold = ?3_040_000} })
+          freezing_threshold = ?77_760_00; // 90 days
+          } })
       );
     };
 
