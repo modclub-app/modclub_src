@@ -633,7 +633,7 @@ export const idlFactory = ({ IDL }) => {
     'populateChallenges' : IDL.Func([], [], []),
     'registerAdmin' : IDL.Func([IDL.Principal], [Result], []),
     'registerModerator' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(Image)],
+        [IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(Image)],
         [Profile],
         [],
       ),

@@ -7,6 +7,7 @@ import Float "mo:base/Float";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
+import Option "mo:base/Option";
 
 import GlobalState "../../statev1";
 import Helpers "../../helpers";
@@ -18,9 +19,15 @@ module ModeratorModule {
   
   public type ModError = {#notFound; #voteNotFound; #contentNotFound; #providerNotFound};
   
-  public func registerModerator(moderatorId: Principal, userName: Text, email: Text, pic: ?Types.Image, state: GlobalState.State) : async Types.Profile {
+  public func registerModerator(
+    moderatorId: Principal,
+    userName: Text,
+    email: ?Text,
+    pic: ?Types.Image,
+    state: GlobalState.State
+    ) : async Types.Profile {
     var _userName = Text.trim(userName, #text " ");
-    var _email = Text.trim(email, #text " ");
+    var _email = Text.trim(Option.get(email, ""), #text " ");
     if(_email.size() > 320) 
       throw Error.reject("Invalid email, too long");
     if(_userName.size() > 64 or _userName.size() < 3) 

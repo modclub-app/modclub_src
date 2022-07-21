@@ -459,7 +459,7 @@ type ModClub =
    pohCallbackForModclub: (PohVerificationResponsePlus) -> () oneway;
    populateChallenges: () -> ();
    registerAdmin: (principal) -> (Result);
-   registerModerator: (text, text, opt Image) -> (Profile);
+   registerModerator: (text, opt text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    removeProviderAdmin: (principal, principal) -> (ProviderResult);
    removeRules: (vec RuleId, opt principal) -> ();

@@ -44,13 +44,16 @@ async function getMC(): Promise<_SERVICE> {
 
 export async function registerModerator(
   username: string,
-  email: string,
+  email?: string,
   imageData?: ImageData
 ): Promise<Profile> {
   const imgResult = null;
-  const response = await (
-    await getMC()
-  ).registerModerator(username, email, imgResult ? [imgResult] : []);
+  const _mc = await getMC();
+  const response = await _mc.registerModerator(
+    username,
+    email ? [email] : [],
+    imgResult ? [imgResult] : []
+  );
   return response;
 }
 

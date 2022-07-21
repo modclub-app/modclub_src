@@ -231,7 +231,7 @@ export interface ModClub {
   'registerAdmin' : (arg_0: Principal) => Promise<Result>,
   'registerModerator' : (
       arg_0: string,
-      arg_1: string,
+      arg_1: [] | [string],
       arg_2: [] | [Image],
     ) => Promise<Profile>,
   'registerProvider' : (

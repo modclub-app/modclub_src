@@ -57,7 +57,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean}) {
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
     const validEmail = validateEmail(email);
-    if (!validEmail) {
+    if (email && !validEmail) {
       setMessage({ success: false, value: "Email is badly formatted" });
       setTimeout(() => setMessage(null), 2000);
       return;
@@ -178,7 +178,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean}) {
                           name="email"
                           component="input"
                           type="text"
-                          placeholder="Email"
+                          placeholder="Email (Optional)"
                           className="input is-medium"
                         />
                         <Icon align="left">
@@ -189,7 +189,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean}) {
 
                     <Button
                       type="submit"
-                      disabled={!values.username || !values.email || submitting}
+                      disabled={!values.username || submitting}
                       size="large"
                       color="primary"
                       fullwidth

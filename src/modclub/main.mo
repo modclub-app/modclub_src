@@ -406,14 +406,28 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   // ----------------------Moderator Methods------------------------------
-  public shared({ caller }) func registerModerator(userName: Text, email: Text, pic: ?Types.Image) : async Types.Profile {
+  public shared({ caller }) func registerModerator(
+    userName: Text,
+    email: ?Text,
+    pic: ?Types.Image
+  ) : async Types.Profile {
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
-    let profile = await ModeratorManager.registerModerator(caller, userName, email, pic, state);
+    let profile = await ModeratorManager.registerModerator(
+      caller,
+      userName,
+      email,
+      pic,
+      state
+    );
     // Todo: Remove this after testnet
     // Give new users MOD points
-    await tokens.transfer(ModClubParam.getModclubWallet(), caller, ModClubParam.DEFAULT_TEST_TOKENS);
+    await tokens.transfer(
+      ModClubParam.getModclubWallet(),
+      caller,
+      ModClubParam.DEFAULT_TEST_TOKENS
+    );
     await storageSolution.registerModerators([caller]);
     contentQueueManager.assignUserIds2QueueId([caller]);
     return profile;
