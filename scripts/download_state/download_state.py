@@ -58,9 +58,9 @@ state_to_varName = {'pohState': ['pohChallenges', 'pohUserChallengeAttempts', 't
                                  'rejectedContentQueue', 'queueIds',
                                  'userId2QueueId', 'lastUserQueueIndex'],
                     
-                    # 'pohContentQueueState': ['newContentQueues', 'allNewContentQueue', 'approvedContentQueue',
-                    #              'rejectedContentQueue', 'queueIds',
-                    #              'userId2QueueId', 'lastUserQueueIndex'],
+                    'pohContentQueueState': ['newContentQueues', 'allNewContentQueue', 'approvedContentQueue',
+                                 'rejectedContentQueue', 'queueIds',
+                                 'userId2QueueId', 'lastUserQueueIndex'],
 
                     'pohVoteState' : ['newPohPackages', 'approvedPohPackages', 'rejectedPohPackages', 'package2Status',
                      'pohVotes', 'pohContent2votes', 'mods2Pohvotes', 'autoApprovePOHUserIds'],

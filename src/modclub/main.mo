@@ -1194,6 +1194,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
     contentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
   };
 
+  public shared({caller}) func shufflePohContent() : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    pohContentQueueManager.shuffleContent();
+    pohContentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
+  };
+
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
     let now = Helpers.timeNow();
     let content : Types.Content  = {
@@ -1248,31 +1256,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
    tokens.rewardPoints(p, amount);
   };
 
-  // Methods to debug and look into Queues state
-  public query({caller}) func userId2QueueId() : async [(Principal, Text)] {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let qStableState = contentQueueManager.preupgrade();
-    qStableState.userId2QueueId;
-  };
-
-  public shared({caller}) func allNewContent() : async [Text] {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let qStableState = contentQueueManager.preupgrade();
-    qStableState.allNewContentQueue;
-  };
-
-  public shared({caller}) func newContentQueuesByqId(qId: Nat) : async [Text] {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let qStableState = contentQueueManager.preupgrade();
-    qStableState.newContentQueues.get(qId).1;
-  };
-
   public shared({caller}) func setRandomization(isRandom: Bool) : async () {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
@@ -1320,43 +1303,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
     };
     return (count, distinctUsersVoted);
-  };
-
-  public shared({caller}) func newContentQueuesqIdCount() : async ([Nat], [Nat]) {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let qStableState = contentQueueManager.preupgrade();
-    let res = Buffer.Buffer<Nat>(1);
-    for( (id, q) in qStableState.newContentQueues.vals()) {
-      res.add(q.size());
-    };
-
-    let userInQueueCount =  HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-    for((userId, qId) in qStableState.userId2QueueId.vals()) {
-      switch(userInQueueCount.get(qId)) {
-        case(null) {
-          userInQueueCount.put(qId, 1);
-        };
-        case(?count) {
-          userInQueueCount.put(qId, count + 1);
-        };
-      };
-    };
-
-    let userCount = Buffer.Buffer<Nat>(1);
-    for(i in Iter.range(0, ModClubParam.TOTAL_QUEUES - 1)) {
-      let qId = "Queue: " # Int.toText(i);
-      switch(userInQueueCount.get(qId)) {
-        case(null) {
-          userCount.add(0);
-        };
-        case(?count) {
-          userCount.add(count);
-        };
-      };
-    };
-    return (res.toArray(), userCount.toArray());
   };
 
   // Upgrade logic / code
@@ -1423,6 +1369,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       pohContentQueueManager.moveContentIds(pohVoteStableState.newPohPackages, pohVoteStableState.approvedPohPackages, 
         pohVoteStableState.rejectedPohPackages);
       pohContentQueueManager.shuffleContent();
+      pohContentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
       voteManager := VoteManager.VoteManager({
           newPohPackages = [];
           approvedPohPackages = [];
@@ -1461,6 +1408,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
         };
         case("contentQueueState") {
           return contentQueueManager.downloadSupport(varName, start, end);
+        };
+        case("pohContentQueueState") {
+          return pohContentQueueManager.downloadSupport(varName, start, end);
         };
         case("pohVoteState") {
           return voteManager.downloadSupport(varName, start, end);
