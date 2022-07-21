@@ -89,8 +89,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
   private let contentQueueManager = QueueManager.QueueManager();
   stable var randomizationEnabled = true;
 
-  // stable var pohContentQueueStateStable: ?QueueState.QueueStateStable = null;
-  // private let pohContentQueueManager = QueueManager.QueueManager();
+  stable var pohContentQueueStateStable: ?QueueState.QueueStateStable = null;
+  private let pohContentQueueManager = QueueManager.QueueManager();
 
   stable var admins : List.List<Principal> = List.nil<Principal>();
   // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
@@ -416,6 +416,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     await tokens.transfer(ModClubParam.getModclubWallet(), caller, ModClubParam.DEFAULT_TEST_TOKENS);
     await storageSolution.registerModerators([caller]);
     contentQueueManager.assignUserIds2QueueId([caller]);
+    pohContentQueueManager.assignUserIds2QueueId([caller]);
     return profile;
   };
 
@@ -649,7 +650,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         let verificationResponse = pohEngine.pohVerificationRequest(pohVerificationRequest, providerPohConfig.expiry, 
                                 providerPohConfig.challengeIds,
                                 voteManager.getAllUniqueViolatedRules, 
-                                voteManager.getContentStatus);
+                                pohContentQueueManager.getContentStatus);
         #ok(verificationResponse);
       };
       case(#err(er)) {
@@ -659,7 +660,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   private func findRejectionReasons(userId: Principal, challengeIds: [Text]) : [Text] {
-    let rejectedPackageId = pohEngine.retrieveRejectedPackageId(userId, challengeIds, voteManager.getContentStatus);
+    let rejectedPackageId = pohEngine.retrieveRejectedPackageId(userId, challengeIds, pohContentQueueManager.getContentStatus);
     switch(rejectedPackageId) {
       case(null) {
         return [];
@@ -735,7 +736,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
                   await pohEngine.issueCallbackToProviders(caller,
                                 state,
                                 voteManager.getAllUniqueViolatedRules,
-                                voteManager.getContentStatus,
+                                pohContentQueueManager.getContentStatus,
                                 canistergeekLogger);
                 };
               };
@@ -767,19 +768,19 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
             let challengePackages = pohEngine.createChallengePackageForVoting(
               caller,
-              voteManager.getContentStatus,
+              pohContentQueueManager.getContentStatus,
               state,
               canistergeekLogger
             );
             for(package in challengePackages.vals()) {
-              voteManager.initiateVotingPoh(package.id, caller);
+              pohContentQueueManager.changeContentStatus(package.id, #new);
               switch(pohEngine.getPohChallengePackage(package.id)) {
                 case(null)();
                 case(?package) {
                   await pohEngine.issueCallbackToProviders(package.userId,
                                   state,
                                   voteManager.getAllUniqueViolatedRules,
-                                  voteManager.getContentStatus,
+                                  pohContentQueueManager.getContentStatus,
                                   canistergeekLogger);
                 };
               };
@@ -814,7 +815,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(?package) {
         pohEngine.changeChallengePackageStatus(packageId, #rejected);
-        voteManager.changePohPackageVotingStatus(packageId, #rejected);
+        pohContentQueueManager.changeContentStatus(packageId, #rejected);
         // when true is passed, validity is not used in the function. so passing 0
         await pohEngine.retrieveChallengesForUser(package.userId, package.challengeIds, 0, true);
       };
@@ -859,7 +860,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    let pohTaskIds = voteManager.getTasksId(status, start, end);
+    
+    let pohTaskIds = pohContentQueueManager.getContentIds(caller, #new, start, end, randomizationEnabled);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);
@@ -884,7 +886,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         case(?package) {
           let taskPlus = {
             packageId = id;
-            status = voteManager.getContentStatus(id);
+            status = pohContentQueueManager.getContentStatus(id);
             profileImageUrlSuffix = profileImageUrlSuffix;
             // TODO: change these vote settings
             voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
@@ -999,7 +1001,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(voteManager.checkPohUserHasVoted(caller, packageId)) {
       throw Error.reject("You have already voted");
     };
-    if(voteManager.getContentStatus(packageId) != #new) {
+    if(pohContentQueueManager.getContentStatus(packageId) != #new) {
       throw Error.reject("Vote has been finalized.");
     };
 
@@ -1007,10 +1009,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Valid rules not provided.");
     };
 
-    let finishedVoting = voteManager.votePohContent(caller, packageId, decision, violatedRules);
+    let finishedVoting = voteManager.votePohContent(caller, packageId, decision, violatedRules, pohContentQueueManager);
     if(finishedVoting == #ok(true)) {
       Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId, #info);
-      let finalDecision = voteManager.getContentStatus(packageId);
+      let finalDecision = pohContentQueueManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
       if(finalDecision == #approved) {
         pohEngine.changeChallengePackageStatus(packageId, #verified);
@@ -1051,7 +1053,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
           await pohEngine.issueCallbackToProviders(package.userId, 
                           state,
                           voteManager.getAllUniqueViolatedRules, 
-                          voteManager.getContentStatus,
+                          pohContentQueueManager.getContentStatus,
                           canistergeekLogger);
         };
       };
@@ -1374,11 +1376,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
     contentQueueStateStable := ?contentQueueManager.preupgrade();
-    // pohContentQueueStateStable := ?pohContentQueueManager.preupgrade();
+    pohContentQueueStateStable := ?pohContentQueueManager.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
   stable var pohRunOnce = false;
+  stable var pohQueueRunOnce = false;
   system func postupgrade() {
     // Reinitializing storage Solution to add "this" actor as a controller
     admins := AuthManager.setUpDefaultAdmins(admins, deployer, Principal.fromActor(this));
@@ -1412,7 +1415,27 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekLoggerUD := null;
 
     contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
-    // pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
+    pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
+
+    // To be deleted
+    if(not pohQueueRunOnce) {
+      pohVoteStableState := voteManager.getStableState();
+      pohContentQueueManager.moveContentIds(pohVoteStableState.newPohPackages, pohVoteStableState.approvedPohPackages, 
+        pohVoteStableState.rejectedPohPackages);
+      pohContentQueueManager.shuffleContent();
+      voteManager := VoteManager.VoteManager({
+          newPohPackages = [];
+          approvedPohPackages = [];
+          rejectedPohPackages = [];
+          package2Status = [];
+          pohVotes = pohVoteStableState.pohVotes;
+          pohContent2votes= pohVoteStableState.pohContent2votes;
+          mods2Pohvotes = pohVoteStableState.mods2Pohvotes;
+          autoApprovePOHUserIds = pohVoteStableState.autoApprovePOHUserIds;
+      });
+      pohQueueRunOnce := true;
+    };
+    // To Be Deleted
     
 
     contentQueueStateStable := null;

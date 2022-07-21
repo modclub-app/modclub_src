@@ -11,6 +11,8 @@ import Types "../../types";
 import VoteState "./state";
 import VoteTypes "./types";
 import Helpers "../../helpers";
+import QueueManager "../queue/queue";
+
 import DownloadSupport "./downloadSupport";
 
 module VoteModule {
@@ -18,19 +20,6 @@ module VoteModule {
     public class VoteManager(stableState : VoteState.PohVoteStableState) {
 
         var state:VoteState.PohVoteState = VoteState.getState(stableState);
-
-        public func initiateVotingPoh(challengePackageId: Text, userId: Principal) : () {
-            switch(state.autoApprovePOHUserIds.get(userId)) {
-                case(null){
-                    state.package2Status.put(challengePackageId, #new);
-                    state.newPohPackages.add(challengePackageId);
-                };
-                case(approvedUser) {
-                    state.package2Status.put(challengePackageId, #approved);
-                    state.approvedPohPackages.add(challengePackageId);
-                };
-            };
-        };
 
         public func isAutoApprovedPOHUser(userId: Principal) : Bool {
             Debug.print("isAutoApprovedPOHUser: " # Principal.toText(userId));
@@ -49,48 +38,7 @@ module VoteModule {
             state.autoApprovePOHUserIds.put(userId, userId);
         };
 
-        public func getTasksId(status: Types.ContentStatus, start: Nat, end: Nat) : [Text] {
-            if(start > end) {
-                return [];
-            };
-            var sourceBuffer = Buffer.Buffer<Text>(1);
-            switch(status) {
-                case(#new) {
-                    sourceBuffer := state.newPohPackages;
-                };
-                case(#approved) {
-                    sourceBuffer := state.approvedPohPackages;
-                };
-                case(#rejected) {
-                    sourceBuffer := state.rejectedPohPackages;
-                };
-            };
-
-            if(start >= sourceBuffer.size()) {
-                return [];
-            };
-            
-            var fetchSize = end;
-            if(end >= sourceBuffer.size()) {
-                fetchSize := sourceBuffer.size() - 1;
-            };
-            let buf = Buffer.Buffer<Text>(fetchSize);
-            for(i in Iter.range(start, fetchSize)) {
-                buf.add(sourceBuffer.get(i));
-            };
-            return buf.toArray();
-        };
-
-        public func getContentStatus(packageId: Text) : Types.ContentStatus {
-            switch(state.package2Status.get(packageId)) {
-                case(null) {
-                    return #new;
-                };
-                case(?status) {
-                    return status;
-                }
-            };
-        };
+        
 
         public func getPOHVotesId(packageId: Text) : [Text] {
             return state.pohContent2votes.get0(packageId);
@@ -126,20 +74,17 @@ module VoteModule {
             userId: Principal,
             packageId: Text,
             decision: Types.Decision,
-            violatedRules: [Types.PohRulesViolated]
+            violatedRules: [Types.PohRulesViolated],
+            pohContentQueueManager: QueueManager.QueueManager
             )  
         : Result.Result<Bool, VoteTypes.VoteError> {
             Debug.print("votePohContent: " # packageId # " UserId " # Principal.toText(userId));
             if (checkPohUserHasVoted(userId, packageId)) {
                     return #err(#userAlreadyVoted);
             };
-            switch (state.package2Status.get(packageId)) {
-                case (null)();
-                case (?status) {
-                    if (status != #new) {
-                        return #err(#contentAlreadyReviewed);
-                    };
-                };
+            
+            if (pohContentQueueManager.getContentStatus(packageId) != #new) {
+                return #err(#contentAlreadyReviewed);
             };
 
             var voteCount = getVoteCountForPoh(userId, packageId);
@@ -170,7 +115,7 @@ module VoteModule {
             state.pohVotes.put(vote.id, vote);
 
             // Evaluate and send notification to provider
-            let finishedVoting = evaluatePohVotes(packageId, voteApproved, voteRejected);
+            let finishedVoting = evaluatePohVotes(packageId, voteApproved, voteRejected, pohContentQueueManager);
             Debug.print("Finished voting: ");
             #ok(finishedVoting);
         };
@@ -217,31 +162,23 @@ module VoteModule {
             return "vote-poh-" # Principal.toText(userId) # packageId;
         };
 
-        public func evaluatePohVotes(packageId: Text, aCount: Nat, rCount: Nat) : Bool {
+        public func evaluatePohVotes(packageId: Text, aCount: Nat, rCount: Nat,
+                pohContentQueueManager : QueueManager.QueueManager
+        ) : Bool {
             var finishedVote = false;
 
             // var minVotes = ModClubParam.MIN_VOTE_POH;
             if(aCount >= ModClubParam.MIN_VOTE_POH) {
                 // Approved
                 finishedVote := true;
-                changePohPackageVotingStatus(packageId, #approved);
+                pohContentQueueManager.changeContentStatus(packageId, #approved);
             } else if ( rCount >= ModClubParam.MIN_VOTE_POH) {
                 // Rejected
                 finishedVote := true;
-                changePohPackageVotingStatus(packageId, #rejected);
+                pohContentQueueManager.changeContentStatus(packageId, #rejected);
             };
 
             return finishedVote;
-        };
-
-        public func changePohPackageVotingStatus(packageId: Text, status : Types.ContentStatus) {
-            state.newPohPackages := deleteElementFromBuffer(state.newPohPackages, packageId);
-            state.package2Status.put(packageId, status);
-            if(status == #approved) {
-                state.approvedPohPackages.add(packageId);
-            } else if ( status == #rejected) {
-                state.rejectedPohPackages.add(packageId);
-            };
         };
 
         func deleteElementFromBuffer(buff: Buffer.Buffer<Text>, ele: Text) : Buffer.Buffer<Text> {

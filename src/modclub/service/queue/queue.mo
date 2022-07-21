@@ -59,6 +59,46 @@ module QueueManager {
             };
         };
 
+        public func getContentStatus(contentId: Text) : Types.ContentStatus  {
+            switch(state.allNewContentQueue.get(contentId)) {
+                case(null)();
+                case(?v) {
+                    return #new;
+                };
+            };
+
+            switch(state.approvedContentQueue.get(contentId)) {
+                case(null)();
+                case(?v) {
+                    return #approved;
+                };
+            };
+
+            switch(state.rejectedContentQueue.get(contentId)) {
+                case(null)();
+                case(?v) {
+                    return #rejected;
+                };
+            };
+
+            return #new;
+        };
+
+        public func getContentIds(userId: Principal, status: Types.ContentStatus, start: Nat, end: Nat,
+                randomizationEnabled: Bool) : [Text] {
+            var sourceBuffer = getUserContentQueue(userId, status, randomizationEnabled);
+
+            let buf = Buffer.Buffer<Text>(1);
+            var i = 0;
+            for(cId in sourceBuffer.keys()) {
+                if(i >= start and i < end) {
+                    buf.add(cId);
+                };
+                i := i + 1;
+            };
+            return buf.toArray();
+        };
+
         public func getContentQueueByStatus(status: Types.ContentStatus) : HashMap.HashMap<Text, ?Text> {
             switch(status) {
                 case(#approved) {
