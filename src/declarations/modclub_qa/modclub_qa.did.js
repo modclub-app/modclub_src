@@ -529,7 +529,6 @@ export const idlFactory = ({ IDL }) => {
     'adminInit' : IDL.Func([], [], []),
     'adminTransferTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
-    'allNewContent' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
     'collectCanisterMetrics' : IDL.Func([], [], []),
     'configurePohForProvider' : IDL.Func(
         [IDL.Principal, IDL.Vec(IDL.Text), IDL.Nat],
@@ -619,12 +618,6 @@ export const idlFactory = ({ IDL }) => {
     'getVotePerformance' : IDL.Func([], [IDL.Float64], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
     'issueJwt' : IDL.Func([], [IDL.Text], []),
-    'newContentQueuesByqId' : IDL.Func([IDL.Nat], [IDL.Vec(IDL.Text)], []),
-    'newContentQueuesqIdCount' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Nat), IDL.Vec(IDL.Nat)],
-        [],
-      ),
     'pohCallbackForModclub' : IDL.Func(
         [PohVerificationResponsePlus],
         [],
@@ -654,6 +647,7 @@ export const idlFactory = ({ IDL }) => {
     'rewardPoints' : IDL.Func([IDL.Principal, IDL.Int], [], []),
     'setRandomization' : IDL.Func([IDL.Bool], [], []),
     'shuffleContent' : IDL.Func([], [], []),
+    'shufflePohContent' : IDL.Func([], [], []),
     'stakeTokens' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'submitChallengeData' : IDL.Func(
         [PohChallengeSubmissionRequest],
@@ -695,11 +689,6 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Principal, ProviderSettings],
         [ProviderSettingResult],
         [],
-      ),
-    'userId2QueueId' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text))],
-        ['query'],
       ),
     'verifyHumanity' : IDL.Func([IDL.Text], [PohVerificationResponsePlus], []),
     'verifyUserHumanityForModclub' : IDL.Func([], [VerifyHumanityResponse], []),

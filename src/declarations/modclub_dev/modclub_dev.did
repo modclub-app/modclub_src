@@ -411,7 +411,6 @@ type ModClub =
    adminInit: () -> ();
    adminTransferTokens: (principal, nat) -> ();
    airdropRegister: () -> (AirdropUser);
-   allNewContent: () -> (vec text);
    collectCanisterMetrics: () -> ();
    configurePohForProvider: (principal, vec text, nat) -> ();
    deregisterProvider: () -> (text);
@@ -454,8 +453,6 @@ type ModClub =
    getVotePerformance: () -> (float64) query;
    isAirdropRegistered: () -> (AirdropUser);
    issueJwt: () -> (text);
-   newContentQueuesByqId: (nat) -> (vec text);
-   newContentQueuesqIdCount: () -> (vec nat, vec nat);
    pohCallbackForModclub: (PohVerificationResponsePlus) -> () oneway;
    populateChallenges: () -> ();
    registerAdmin: (principal) -> (Result);
@@ -469,6 +466,7 @@ type ModClub =
    rewardPoints: (principal, int) -> ();
    setRandomization: (bool) -> ();
    shuffleContent: () -> ();
+   shufflePohContent: () -> ();
    stakeTokens: (nat) -> (text);
    submitChallengeData: (PohChallengeSubmissionRequest) ->
     (PohChallengeSubmissionResponse);
@@ -484,10 +482,6 @@ type ModClub =
    updateProviderLogo: (principal, vec nat8, text) -> (text);
    updateRules: (vec Rule, opt principal) -> ();
    updateSettings: (principal, ProviderSettings) -> (ProviderSettingResult);
-   userId2QueueId: () -> (vec record {
-                                principal;
-                                text;
-                              }) query;
    verifyHumanity: (text) -> (PohVerificationResponsePlus);
    verifyUserHumanityForModclub: () -> (VerifyHumanityResponse);
    vote: (ContentId, Decision, opt vec RuleId) -> (text);

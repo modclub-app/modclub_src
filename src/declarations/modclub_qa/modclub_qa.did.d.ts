@@ -154,7 +154,6 @@ export interface ModClub {
       undefined
     >,
   'airdropRegister' : () => Promise<AirdropUser>,
-  'allNewContent' : () => Promise<Array<string>>,
   'collectCanisterMetrics' : () => Promise<undefined>,
   'configurePohForProvider' : (
       arg_0: Principal,
@@ -222,8 +221,6 @@ export interface ModClub {
   'getVotePerformance' : () => Promise<number>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
   'issueJwt' : () => Promise<string>,
-  'newContentQueuesByqId' : (arg_0: bigint) => Promise<Array<string>>,
-  'newContentQueuesqIdCount' : () => Promise<[Array<bigint>, Array<bigint>]>,
   'pohCallbackForModclub' : (arg_0: PohVerificationResponsePlus) => Promise<
       undefined
     >,
@@ -251,6 +248,7 @@ export interface ModClub {
   'rewardPoints' : (arg_0: Principal, arg_1: bigint) => Promise<undefined>,
   'setRandomization' : (arg_0: boolean) => Promise<undefined>,
   'shuffleContent' : () => Promise<undefined>,
+  'shufflePohContent' : () => Promise<undefined>,
   'stakeTokens' : (arg_0: bigint) => Promise<string>,
   'submitChallengeData' : (arg_0: PohChallengeSubmissionRequest) => Promise<
       PohChallengeSubmissionResponse
@@ -290,7 +288,6 @@ export interface ModClub {
   'updateSettings' : (arg_0: Principal, arg_1: ProviderSettings) => Promise<
       ProviderSettingResult
     >,
-  'userId2QueueId' : () => Promise<Array<[Principal, string]>>,
   'verifyHumanity' : (arg_0: string) => Promise<PohVerificationResponsePlus>,
   'verifyUserHumanityForModclub' : () => Promise<VerifyHumanityResponse>,
   'vote' : (
