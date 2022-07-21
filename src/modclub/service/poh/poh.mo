@@ -482,20 +482,23 @@ module PohModule {
             };
         };
 
-        public func changeChallengePackageStatus(packageId: Text, status: PohTypes.PohChallengeStatus) : () {
+        public func changeChallengePackageStatus(packageId: Text, status: PohTypes.PohChallengeStatus) : [Text] {
+            let buff = Buffer.Buffer<Text>(1);
             switch(state.pohChallengePackages.get(packageId)) {
                 case(null)();
                 case(?package) {
                     for(id in package.challengeIds.vals()) {
-                        changeChallengeTaskStatus(id, package.userId, status);
+                        let attemptId = changeChallengeTaskStatus(id, package.userId, status);
+                        buff.add(Option.get(attemptId, ""));
                     };
                 };
             };
+            return buff.toArray();
         };
 
         // Step 6 MODCLUB mods verify that user data and approve the user. The 
         // dApp is then notified that the user has verified their POH.
-        public func changeChallengeTaskStatus(challengeId: Text, userId: Principal, status: PohTypes.PohChallengeStatus) {
+        public func changeChallengeTaskStatus(challengeId: Text, userId: Principal, status: PohTypes.PohChallengeStatus) : ?Text {
             let _ = do ?{
                 var completedOn = -1;
                 if(status == #verified or status == #rejected) {
@@ -520,6 +523,7 @@ module PohModule {
                     wordList = attempt.wordList;
                 };
                 attempts.put(attempts.size() - 1, updatedAttempt);
+                return attempt.attemptId;
             };
         };
 

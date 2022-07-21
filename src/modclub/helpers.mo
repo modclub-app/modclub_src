@@ -125,6 +125,19 @@ module Helpers {
 
   public func intToNat(value: Int) : Nat { Nat64.toNat(Int64.toNat64(Int64.fromInt(value))) };
 
+  public func allowedCanistergeekCaller(caller: Principal): Bool {
+    let authorizedCallers : [Principal] = [
+      Principal.fromText("hqyof-lxrze-ezy5y-bys4t-dm4bq-7i57t-uisji-lsnmt-5jdma-4ujdb-5qe"),
+      Principal.fromText("mni5w-twhal-we6re-mvbh2-r3e6x-2djsc-nubmb-hw2ra-avyuu-mu2gj-5qe")
+      ];
+      var exists = Array.find<Principal>(
+        authorizedCallers,
+        func(val: Principal) : Bool {
+          Principal.equal(val, caller) 
+      });
+      exists != null;
+  };
+
   public func logMessage(canistergeekLogger : Canistergeek.Logger, logMessage: Text, logLevel: {#info; #error; #warn; #debugLevel;}) {
     var level = "INFO: ";
     switch(logLevel) {

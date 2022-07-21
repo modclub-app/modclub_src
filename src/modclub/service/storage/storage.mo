@@ -101,6 +101,34 @@ public class StorageSolution(storageStableState : StorageState.DataCanisterState
       };
     };
 
+    public func markContentNotAccessible(contentId : Text) : async () {
+      switch(storageState.contentIdToCanisterId.get(contentId)) {
+        case(null)();
+        case(?dataCanisterId) {
+          switch(storageState.dataCanisters.get(dataCanisterId)) {
+            case(null)();
+            case(?bucket) {
+              await bucket.markContentNotAccessible(contentId);
+            };
+          };
+        };
+      };
+    };
+
+    public func markContentAccessible(contentId : Text) : async () {
+      switch(storageState.contentIdToCanisterId.get(contentId)) {
+        case(null)();
+        case(?dataCanisterId) {
+          switch(storageState.dataCanisters.get(dataCanisterId)) {
+            case(null)();
+            case(?bucket) {
+              await bucket.markContentAccessible(contentId);
+            };
+          };
+        };
+      };
+    };
+
     // persist chunks in bucket
     public func putBlobsInDataCanister(contentId: Text, chunkData : Blob, offset: Nat, numOfChunks: Nat, mimeType: Text, dataSize: Nat) : async ?Principal {
       let contentCanisterId = storageState.contentIdToCanisterId.get(contentId);

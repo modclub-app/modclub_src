@@ -6,6 +6,7 @@ import Debug "mo:base/Debug";
 import Prim "mo:prim";
 import Cycles "mo:base/ExperimentalCycles";
 import HashMap "mo:base/HashMap";
+import Trie "mo:base/Trie";
 import Text "mo:base/Text";
 import Error "mo:base/Error";
 import Iter "mo:base/Iter";
@@ -25,7 +26,8 @@ actor class Bucket () = this {
 
   stable var _canistergeekLoggerUD: ? Canistergeek.LoggerUpgradeData = null;
   private let canistergeekLogger = Canistergeek.Logger();
-
+  // ids only accessible by admins
+  stable var restrictedContentId : Trie.Trie<Text, Int> = Trie.empty();
   public type DataCanisterState = {
       contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
       chunks : HashMap.HashMap<Types.ChunkId, Types.ChunkData>;
@@ -52,8 +54,17 @@ actor class Bucket () = this {
 
   let limit = 20_000_000_000_000;
   let PER_CONTENT_LIMIT = 10 * 1024 * 1024;
+  // 10 DAYS in milliseconds
+  let DAYS_TO_DELETE_DATA = 10 * 86400000000;
 
   func onlyOwners(caller: Principal) : async () {
+    let found = await isOwner(caller);
+    if(not found) {
+      throw Error.reject("Unauthorized Attempt made");
+    };
+  };
+
+  func isOwner(caller: Principal) : async Bool {
     let canisterDetails = await IC.IC.canister_status({ canister_id = Principal.fromActor(this) } );
     var found = false;
     label l for(controller in canisterDetails.settings.controllers.vals()) {
@@ -62,9 +73,10 @@ actor class Bucket () = this {
         break l;
       };
     };
-    if(not found) {
-      throw Error.reject("Unauthorized Attempt made");
+    if(found) {
+      return true;
     };
+    return false;
   };
 
   public shared({caller}) func setParams(moderatorsId : [Principal], signingKey1: Text) {
@@ -121,6 +133,38 @@ actor class Bucket () = this {
       };
       chunkNum := chunkNum + 1;
     };
+    // Removing contentId from restricted list after deletion
+    restrictedContentId := Trie.remove(restrictedContentId, key(contentId), Text.equal).0;
+  };
+
+  func isContentNotAccessible(contentId : Text) : Bool {
+    return Trie.get(restrictedContentId, key(contentId),  Text.equal) != null;
+  };
+
+  public shared({caller}) func markContentNotAccessible(contentId : Text) : async () {
+    await onlyOwners(caller);
+    restrictedContentId := Trie.put(restrictedContentId, key(contentId), Text.equal, Helpers.timeNow()).0;
+  };
+
+  public shared({caller}) func markContentAccessible(contentId : Text) : async () {
+    await onlyOwners(caller);
+    if(isContentNotAccessible(contentId)) {
+      restrictedContentId := Trie.remove(restrictedContentId, key(contentId), Text.equal).0;
+    };
+  };
+
+  public shared({caller}) func markAllContentNotAccessible() : async () {
+    await onlyOwners(caller);
+    for(contentId in state.contentInfo.keys()) {
+      restrictedContentId := Trie.put(restrictedContentId, key(contentId), Text.equal, Helpers.timeNow()).0;
+    };
+  };
+
+  func key(t: Text) : Trie.Key<Text> { 
+    { 
+      key = t; 
+      hash = Text.hash(t) 
+    }; 
   };
 
   // add chunks 
@@ -138,12 +182,20 @@ actor class Bucket () = this {
     do ? {
       // Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
       if(chunkNum == 1) {
-        state.contentInfo.put(contentId, {
-        contentId= contentId;
-        numOfChunks= numOfChunks;
-        contentType= contentType;
-      });
-    };
+          state.contentInfo.put(contentId, {
+          contentId= contentId;
+          numOfChunks= numOfChunks;
+          contentType= contentType;
+        });
+      } else {
+        //previous chunk should be stored.
+        switch(state.chunks.get(chunkId(contentId, chunkNum - 1))) {
+          case(null) {
+            throw Error.reject("Previous data chunk not found.");
+          };
+          case(_)();
+        };
+      };
       state.chunks.put(chunkId(contentId, chunkNum), chunkData);
     }
   };
@@ -241,7 +293,7 @@ actor class Bucket () = this {
     signingKey := signingKey1;
   };
 
-  public query({ caller }) func http_request(req: HttpRequest) : async HttpResponse {
+  public shared({ caller }) func http_request(req: HttpRequest) : async HttpResponse {
     var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
     let self: Principal = Principal.fromActor(this);
     let canisterId: Text = Principal.toText(self);
@@ -265,7 +317,7 @@ actor class Bucket () = this {
         }
       };
 
-      if (not (isUserAllowed(jwt))) {
+      if (not (await isUserAllowed(jwt, contentId!))) {
         Helpers.logMessage(canistergeekLogger, "User "# Principal.toText(caller) #" tried to access data with invalid JWT", #error); 
         return {
           status_code=401;
@@ -303,18 +355,24 @@ actor class Bucket () = this {
   };
 
   public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
-      // validateCaller(caller);
-      canistergeekMonitor.getMetrics(parameters);
+    if ( not Helpers.allowedCanistergeekCaller(caller) ) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({caller}) func collectCanisterMetrics(): async () {
-      // validateCaller(caller);
-      canistergeekMonitor.collectMetrics();
+    if ( not Helpers.allowedCanistergeekCaller(caller) ) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekMonitor.collectMetrics();
   };
 
   public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
-        // validateCaller(caller);
-        canistergeekLogger.getLog(request);
+    if ( not Helpers.allowedCanistergeekCaller(caller) ) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekLogger.getLog(request);
   };
 
   public query ({caller}) func getContentInfo() : async [(Text, Types.ContentInfo)] {
@@ -326,8 +384,13 @@ actor class Bucket () = this {
     Iter.toArray(state.chunks.keys());
   };
 
+  public shared ({caller}) func runDeleteContentJob() : async () {
+    await onlyOwners(caller);
+    deleteContentAfterExpiry();
+  };
 
-  private func isUserAllowed(jwt: Text) : Bool {
+
+  private func isUserAllowed(jwt: Text, contentId: Text) : async Bool {
     if(jwt == "") {
       return false;
     };
@@ -361,6 +424,11 @@ actor class Bucket () = this {
     if(not verifiedSignature(signature, message) or not jwtNotExpired(issueTime) or not (isUserModerator(modId))) {
       return false;
     };
+
+    if(isContentNotAccessible(contentId) and not (await isOwner(Principal.fromText(modId)))) {
+      return false;
+    };
+
     return true;
   };
 
@@ -403,6 +471,16 @@ actor class Bucket () = this {
 
         return true;
       }
+    };
+  };
+
+  func deleteContentAfterExpiry() {
+    let currentTime = Helpers.timeNow();
+    for((contentId, reviewedTime) in Trie.iter(restrictedContentId)) {
+      if(reviewedTime + DAYS_TO_DELETE_DATA >= currentTime) {
+        Helpers.logMessage(canistergeekLogger, "Deleting contentId after expiry: " # contentId, #info);
+        deleteContent(contentId);
+      };
     };
   };
 
@@ -461,11 +539,19 @@ actor class Bucket () = this {
 
   var nextRunTime = Time.now();
   let FIVE_MIN_NANO_SECS = 300000000000;
+
+  var nextRunTimeForContentDeletionJob = Time.now();
+  let TWENTY_FOUR_HOURS_NANO_SECONDS = 86400000000000;
   system func heartbeat() : async () {
     if(Time.now() > nextRunTime) {
       Debug.print("Running Metrics Collection");
       canistergeekMonitor.collectMetrics();
       nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
+    };
+
+    if(Time.now() > nextRunTimeForContentDeletionJob) {
+      Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
+      deleteContentAfterExpiry();
     };
   };
 

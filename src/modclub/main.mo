@@ -777,7 +777,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
                   pohDataRequest.numOfChunks, pohDataRequest.mimeType,  pohDataRequest.dataSize);
           if(pohDataRequest.offset == pohDataRequest.numOfChunks) {
             //last Chunk coming in
-            pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
+            let _ = pohEngine.changeChallengeTaskStatus(pohDataRequest.challengeId, caller, #pending);
             pohEngine.updateDataCanisterId(pohDataRequest.challengeId, caller, dataCanisterId);
 
             let challengePackages = pohEngine.createChallengePackageForVoting(
@@ -828,7 +828,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         throw Error.reject("Package doesn't exist");
       };
       case(?package) {
-        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        let _ = pohEngine.changeChallengePackageStatus(packageId, #rejected);
         pohContentQueueManager.changeContentStatus(packageId, #rejected);
         // when true is passed, validity is not used in the function. so passing 0
         await pohEngine.retrieveChallengesForUser(package.userId, package.challengeIds, 0, true);
@@ -956,39 +956,27 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public query ({caller}) func getCanisterMetrics(parameters: Canistergeek.GetMetricsParameters): async ?Canistergeek.CanisterMetrics {
-        if ( not allowedCanistergeekCaller(caller) ) {
-          throw Error.reject("Unauthorized");
-        };
-      canistergeekMonitor.getMetrics(parameters);
+    if ( not Helpers.allowedCanistergeekCaller(caller) ) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({caller}) func collectCanisterMetrics(): async () {
-        if ( not allowedCanistergeekCaller(caller) ) {
-          throw Error.reject("Unauthorized");
-        };
-      canistergeekMonitor.collectMetrics();
+    if ( not Helpers.allowedCanistergeekCaller(caller) ) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekMonitor.collectMetrics();
   };
 
   public query ({caller}) func getCanisterLog(request: ?LoggerTypesModule.CanisterLogRequest) : async ?LoggerTypesModule.CanisterLogResponse {
-        if ( not allowedCanistergeekCaller(caller) ) {
-          throw Error.reject("Unauthorized");
-        };
-        Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
-        canistergeekLogger.getLog(request);
+    if ( not Helpers.allowedCanistergeekCaller(caller) ) {
+      throw Error.reject("Unauthorized");
+    };
+    Helpers.logMessage(canistergeekLogger, "Log from canister Log method.", #info);
+    canistergeekLogger.getLog(request);
   };
 
-  private func allowedCanistergeekCaller(caller: Principal): Bool {
-    let authorizedCallers : [Principal] = [
-      Principal.fromText("hqyof-lxrze-ezy5y-bys4t-dm4bq-7i57t-uisji-lsnmt-5jdma-4ujdb-5qe"),
-      Principal.fromText("mni5w-twhal-we6re-mvbh2-r3e6x-2djsc-nubmb-hw2ra-avyuu-mu2gj-5qe")
-      ];
-      var exists = Array.find<Principal>(
-        authorizedCallers,
-        func(val: Principal) : Bool {
-          Principal.equal(val, caller) 
-      });
-      exists != null;
-  };
 
   public shared({ caller }) func votePohContent(packageId: Text, decision: Types.Decision, violatedRules: [Types.PohRulesViolated]) : async () {
     switch(AuthManager.checkProfilePermission(caller, #vote, state)){
@@ -1028,12 +1016,17 @@ shared ({caller = deployer}) actor class ModClub() = this {
       Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId, #info);
       let finalDecision = pohContentQueueManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
+      var contentIds : [Text] = [];
       if(finalDecision == #approved) {
-        pohEngine.changeChallengePackageStatus(packageId, #verified);
+        contentIds := pohEngine.changeChallengePackageStatus(packageId, #verified);
         Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId # " Final decision: approved" , #info);
       } else {
-        pohEngine.changeChallengePackageStatus(packageId, #rejected);
+        contentIds := pohEngine.changeChallengePackageStatus(packageId, #rejected);
         Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId # " Final decision: rejected" , #info);
+      };
+      // mark content not accessible
+      for(cId in contentIds.vals()) {
+        await storageSolution.markContentNotAccessible(cId);
       };
       // should be taken out to some job
       for(id in votesId.vals()) {
