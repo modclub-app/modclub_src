@@ -89,8 +89,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
   private let contentQueueManager = QueueManager.QueueManager();
   stable var randomizationEnabled = true;
 
-  // stable var pohContentQueueStateStable: ?QueueState.QueueStateStable = null;
-  // private let pohContentQueueManager = QueueManager.QueueManager();
+  stable var pohContentQueueStateStable: ?QueueState.QueueStateStable = null;
+  private let pohContentQueueManager = QueueManager.QueueManager();
 
   stable var admins : List.List<Principal> = List.nil<Principal>();
   // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
@@ -430,6 +430,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     );
     await storageSolution.registerModerators([caller]);
     contentQueueManager.assignUserIds2QueueId([caller]);
+    pohContentQueueManager.assignUserIds2QueueId([caller]);
     return profile;
   };
 
@@ -663,7 +664,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         let verificationResponse = pohEngine.pohVerificationRequest(pohVerificationRequest, providerPohConfig.expiry, 
                                 providerPohConfig.challengeIds,
                                 voteManager.getAllUniqueViolatedRules, 
-                                voteManager.getContentStatus);
+                                pohContentQueueManager.getContentStatus);
         #ok(verificationResponse);
       };
       case(#err(er)) {
@@ -673,7 +674,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   private func findRejectionReasons(userId: Principal, challengeIds: [Text]) : [Text] {
-    let rejectedPackageId = pohEngine.retrieveRejectedPackageId(userId, challengeIds, voteManager.getContentStatus);
+    let rejectedPackageId = pohEngine.retrieveRejectedPackageId(userId, challengeIds, pohContentQueueManager.getContentStatus);
     switch(rejectedPackageId) {
       case(null) {
         return [];
@@ -749,7 +750,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
                   await pohEngine.issueCallbackToProviders(caller,
                                 state,
                                 voteManager.getAllUniqueViolatedRules,
-                                voteManager.getContentStatus,
+                                pohContentQueueManager.getContentStatus,
                                 canistergeekLogger);
                 };
               };
@@ -781,19 +782,19 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
             let challengePackages = pohEngine.createChallengePackageForVoting(
               caller,
-              voteManager.getContentStatus,
+              pohContentQueueManager.getContentStatus,
               state,
               canistergeekLogger
             );
             for(package in challengePackages.vals()) {
-              voteManager.initiateVotingPoh(package.id, caller);
+              pohContentQueueManager.changeContentStatus(package.id, #new);
               switch(pohEngine.getPohChallengePackage(package.id)) {
                 case(null)();
                 case(?package) {
                   await pohEngine.issueCallbackToProviders(package.userId,
                                   state,
                                   voteManager.getAllUniqueViolatedRules,
-                                  voteManager.getContentStatus,
+                                  pohContentQueueManager.getContentStatus,
                                   canistergeekLogger);
                 };
               };
@@ -828,7 +829,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(?package) {
         pohEngine.changeChallengePackageStatus(packageId, #rejected);
-        voteManager.changePohPackageVotingStatus(packageId, #rejected);
+        pohContentQueueManager.changeContentStatus(packageId, #rejected);
         // when true is passed, validity is not used in the function. so passing 0
         await pohEngine.retrieveChallengesForUser(package.userId, package.challengeIds, 0, true);
       };
@@ -873,7 +874,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
       };
       case(_)();
     };
-    let pohTaskIds = voteManager.getTasksId(status, start, end);
+    
+    let pohTaskIds = pohContentQueueManager.getContentIds(caller, #new, start, end, randomizationEnabled);
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
     for(id in pohTaskIds.vals()) {
       let voteCount = voteManager.getVoteCountForPoh(caller, id);
@@ -898,7 +900,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         case(?package) {
           let taskPlus = {
             packageId = id;
-            status = voteManager.getContentStatus(id);
+            status = pohContentQueueManager.getContentStatus(id);
             profileImageUrlSuffix = profileImageUrlSuffix;
             // TODO: change these vote settings
             voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
@@ -1013,7 +1015,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(voteManager.checkPohUserHasVoted(caller, packageId)) {
       throw Error.reject("You have already voted");
     };
-    if(voteManager.getContentStatus(packageId) != #new) {
+    if(pohContentQueueManager.getContentStatus(packageId) != #new) {
       throw Error.reject("Vote has been finalized.");
     };
 
@@ -1021,10 +1023,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject("Valid rules not provided.");
     };
 
-    let finishedVoting = voteManager.votePohContent(caller, packageId, decision, violatedRules);
+    let finishedVoting = voteManager.votePohContent(caller, packageId, decision, violatedRules, pohContentQueueManager);
     if(finishedVoting == #ok(true)) {
       Helpers.logMessage(canistergeekLogger, "Voting completed for packageId: " # packageId, #info);
-      let finalDecision = voteManager.getContentStatus(packageId);
+      let finalDecision = pohContentQueueManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
       if(finalDecision == #approved) {
         pohEngine.changeChallengePackageStatus(packageId, #verified);
@@ -1065,7 +1067,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
           await pohEngine.issueCallbackToProviders(package.userId, 
                           state,
                           voteManager.getAllUniqueViolatedRules, 
-                          voteManager.getContentStatus,
+                          pohContentQueueManager.getContentStatus,
                           canistergeekLogger);
         };
       };
@@ -1206,6 +1208,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
     contentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
   };
 
+  public shared({caller}) func shufflePohContent() : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    pohContentQueueManager.shuffleContent();
+    pohContentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
+  };
+
   private func createContentObj(sourceId: Text, caller: Principal, contentType: Types.ContentType, title: ?Text): Types.Content {
     let now = Helpers.timeNow();
     let content : Types.Content  = {
@@ -1260,31 +1270,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
    tokens.rewardPoints(p, amount);
   };
 
-  // Methods to debug and look into Queues state
-  public query({caller}) func userId2QueueId() : async [(Principal, Text)] {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let qStableState = contentQueueManager.preupgrade();
-    qStableState.userId2QueueId;
-  };
-
-  public shared({caller}) func allNewContent() : async [Text] {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let qStableState = contentQueueManager.preupgrade();
-    qStableState.allNewContentQueue;
-  };
-
-  public shared({caller}) func newContentQueuesByqId(qId: Nat) : async [Text] {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let qStableState = contentQueueManager.preupgrade();
-    qStableState.newContentQueues.get(qId).1;
-  };
-
   public shared({caller}) func setRandomization(isRandom: Bool) : async () {
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
@@ -1334,43 +1319,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
     return (count, distinctUsersVoted);
   };
 
-  public shared({caller}) func newContentQueuesqIdCount() : async ([Nat], [Nat]) {
-    if(not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    let qStableState = contentQueueManager.preupgrade();
-    let res = Buffer.Buffer<Nat>(1);
-    for( (id, q) in qStableState.newContentQueues.vals()) {
-      res.add(q.size());
-    };
-
-    let userInQueueCount =  HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-    for((userId, qId) in qStableState.userId2QueueId.vals()) {
-      switch(userInQueueCount.get(qId)) {
-        case(null) {
-          userInQueueCount.put(qId, 1);
-        };
-        case(?count) {
-          userInQueueCount.put(qId, count + 1);
-        };
-      };
-    };
-
-    let userCount = Buffer.Buffer<Nat>(1);
-    for(i in Iter.range(0, ModClubParam.TOTAL_QUEUES - 1)) {
-      let qId = "Queue: " # Int.toText(i);
-      switch(userInQueueCount.get(qId)) {
-        case(null) {
-          userCount.add(0);
-        };
-        case(?count) {
-          userCount.add(count);
-        };
-      };
-    };
-    return (res.toArray(), userCount.toArray());
-  };
-
   // Upgrade logic / code
   stable var stateSharedV1 : StateV1.StateShared = StateV1.emptyShared();
 
@@ -1388,11 +1336,12 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
     contentQueueStateStable := ?contentQueueManager.preupgrade();
-    // pohContentQueueStateStable := ?pohContentQueueManager.preupgrade();
+    pohContentQueueStateStable := ?pohContentQueueManager.preupgrade();
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
   stable var pohRunOnce = false;
+  stable var pohQueueRunOnce = false;
   system func postupgrade() {
     // Reinitializing storage Solution to add "this" actor as a controller
     admins := AuthManager.setUpDefaultAdmins(admins, deployer, Principal.fromActor(this));
@@ -1426,7 +1375,28 @@ shared ({caller = deployer}) actor class ModClub() = this {
     _canistergeekLoggerUD := null;
 
     contentQueueManager.postupgrade(contentQueueStateStable, canistergeekLogger);
-    // pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
+    pohContentQueueManager.postupgrade(pohContentQueueStateStable, canistergeekLogger);
+
+    // To be deleted
+    if(not pohQueueRunOnce) {
+      pohVoteStableState := voteManager.getStableState();
+      pohContentQueueManager.moveContentIds(pohVoteStableState.newPohPackages, pohVoteStableState.approvedPohPackages, 
+        pohVoteStableState.rejectedPohPackages);
+      pohContentQueueManager.shuffleContent();
+      pohContentQueueManager.assignUserIds2QueueId(Iter.toArray(state.profiles.keys()));
+      voteManager := VoteManager.VoteManager({
+          newPohPackages = [];
+          approvedPohPackages = [];
+          rejectedPohPackages = [];
+          package2Status = [];
+          pohVotes = pohVoteStableState.pohVotes;
+          pohContent2votes= pohVoteStableState.pohContent2votes;
+          mods2Pohvotes = pohVoteStableState.mods2Pohvotes;
+          autoApprovePOHUserIds = pohVoteStableState.autoApprovePOHUserIds;
+      });
+      pohQueueRunOnce := true;
+    };
+    // To Be Deleted
     
 
     contentQueueStateStable := null;
@@ -1452,6 +1422,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
         };
         case("contentQueueState") {
           return contentQueueManager.downloadSupport(varName, start, end);
+        };
+        case("pohContentQueueState") {
+          return pohContentQueueManager.downloadSupport(varName, start, end);
         };
         case("pohVoteState") {
           return voteManager.downloadSupport(varName, start, end);
