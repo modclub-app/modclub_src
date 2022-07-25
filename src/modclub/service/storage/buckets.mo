@@ -293,7 +293,7 @@ actor class Bucket () = this {
     signingKey := signingKey1;
   };
 
-  public shared({ caller }) func http_request(req: HttpRequest) : async HttpResponse {
+  public query({ caller }) func http_request(req: HttpRequest) : async HttpResponse {
     var _headers = [("Content-Type","text/html"), ("Content-Disposition","inline")];
     let self: Principal = Principal.fromActor(this);
     let canisterId: Text = Principal.toText(self);
@@ -317,7 +317,7 @@ actor class Bucket () = this {
         }
       };
 
-      if (not (await isUserAllowed(jwt, contentId!))) {
+      if (not (isUserAllowed(jwt, contentId!))) {
         Helpers.logMessage(canistergeekLogger, "User "# Principal.toText(caller) #" tried to access data with invalid JWT", #error); 
         return {
           status_code=401;
@@ -390,7 +390,7 @@ actor class Bucket () = this {
   };
 
 
-  private func isUserAllowed(jwt: Text, contentId: Text) : async Bool {
+  private func isUserAllowed(jwt: Text, contentId: Text) : Bool {
     if(jwt == "") {
       return false;
     };
@@ -425,7 +425,7 @@ actor class Bucket () = this {
       return false;
     };
 
-    if(isContentNotAccessible(contentId) and not (await isOwner(Principal.fromText(modId)))) {
+    if(isContentNotAccessible(contentId)) {
       return false;
     };
 
