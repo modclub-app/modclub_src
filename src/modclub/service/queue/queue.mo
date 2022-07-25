@@ -84,17 +84,17 @@ module QueueManager {
             return #new;
         };
 
-        public func getContentIds(userId: Principal, status: Types.ContentStatus, start: Nat, end: Nat,
-                randomizationEnabled: Bool) : [Text] {
+        public func getContentIds(
+            userId: Principal,
+            status: Types.ContentStatus,
+            randomizationEnabled: Bool
+            ) : [Text] {
             var sourceBuffer = getUserContentQueue(userId, status, randomizationEnabled);
 
             let buf = Buffer.Buffer<Text>(1);
             var i = 0;
             for(cId in sourceBuffer.keys()) {
-                if(i >= start and i < end) {
                     buf.add(cId);
-                };
-                i := i + 1;
             };
             return buf.toArray();
         };

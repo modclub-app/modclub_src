@@ -875,47 +875,67 @@ shared ({caller = deployer}) actor class ModClub() = this {
       case(_)();
     };
     
-    let pohTaskIds = pohContentQueueManager.getContentIds(caller, #new, start, end, randomizationEnabled);
-    let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(pohTaskIds.size());
-    for(id in pohTaskIds.vals()) {
-      let voteCount = voteManager.getVoteCountForPoh(caller, id);
-      let taskDataWrapper = pohEngine.getPohTasks([id]);
-      var profileImageUrlSuffix :?Text = null;
-      for(wrapper in taskDataWrapper.vals()) {
-        for(data in wrapper.pohTaskData.vals()) {
-          if (
-            data.challengeType == #selfPic and 
-            data.dataCanisterId != null and
-            data.contentId != null
-          ) {
-            profileImageUrlSuffix := do ? {
-              ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
-            };
-          };
-        }
-      };
-      let pohPackage = pohEngine.getPohChallengePackage(id);
-      switch(pohPackage) {
-        case(null)();
-        case(?package) {
-          let taskPlus = {
-            packageId = id;
-            status = pohContentQueueManager.getContentStatus(id);
-            profileImageUrlSuffix = profileImageUrlSuffix;
-            // TODO: change these vote settings
-            voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
-            minVotes = ModClubParam.MIN_VOTE_POH;
-            minStake = ModClubParam.MIN_STAKE_POH;
-            title = null;
-            hasVoted = ?voteCount.hasVoted;
-            reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
-            createdAt = package.createdAt;
-            updatedAt = package.updatedAt;
-          };
-          tasks.add(taskPlus);
-        };
-      }
+    let pohTaskIds = pohContentQueueManager.getContentIds(
+      caller,
+      #new,
+      randomizationEnabled
+    );
+    var count: Nat = 0;
+    let maxReturn: Nat = end - start + 1;
 
+    // Filter items already voted on
+    let items =  Buffer.Buffer<Text>(0);
+    for(id in pohTaskIds.vals()) {
+        var isVoted = voteManager.getVoteCountForPoh(caller, id).hasVoted;
+        if(not isVoted) {
+          items.add(id);
+        };
+    };
+
+    let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(0);
+    var index: Nat = 0;
+    for(id in items.vals()) {
+      if(index >= start and index <= end  and count < maxReturn) {
+        let voteCount = voteManager.getVoteCountForPoh(caller, id);
+        let taskDataWrapper = pohEngine.getPohTasks([id]);
+        var profileImageUrlSuffix :?Text = null;
+        for(wrapper in taskDataWrapper.vals()) {
+          for(data in wrapper.pohTaskData.vals()) {
+            if (
+              data.challengeType == #selfPic and 
+              data.dataCanisterId != null and
+              data.contentId != null
+            ) {
+              profileImageUrlSuffix := do ? {
+                ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
+              };
+            };
+          }
+        };
+        let pohPackage = pohEngine.getPohChallengePackage(id);
+        switch(pohPackage) {
+          case(null)();
+          case(?package) {
+            let taskPlus = {
+              packageId = id;
+              status = pohContentQueueManager.getContentStatus(id);
+              profileImageUrlSuffix = profileImageUrlSuffix;
+              // TODO: change these vote settings
+              voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+              minVotes = ModClubParam.MIN_VOTE_POH;
+              minStake = ModClubParam.MIN_STAKE_POH;
+              title = null;
+              hasVoted = ?voteCount.hasVoted;
+              reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
+              createdAt = package.createdAt;
+              updatedAt = package.updatedAt;
+            };
+            tasks.add(taskPlus);
+            count := count + 1;
+          };
+        };
+      };
+      index := index + 1;
     };
     return tasks.toArray();
   };
@@ -988,7 +1008,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     switch(pohVerificationRequestHelper(Principal.toText(caller), Principal.fromActor(this))) {
       case(#ok(verificationResponse)) {
         if(verificationResponse.status != #verified) {
-          throw Error.reject("Proof of Humanity not completed user");
+          throw Error.reject("Proof of Humanity not completed user.");
         };
       };
       case(#err(#pohNotConfiguredForProvider)) {
