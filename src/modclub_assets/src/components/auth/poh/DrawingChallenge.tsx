@@ -107,6 +107,34 @@ export default function DrawingChallenge({ step, goToNextStep }) {
           <div className="loader is-loading p-5"></div>
         </Modal>
       }
+      <Card className="my-5">
+        <Card.Content className="rows is-multiline">
+          <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
+            Draw the following shapes
+          </Heading>
+          <Card backgroundColor="dark" className="mt-5 mb-5">
+            <Card.Content>
+              <Heading subtitle className="mb-3">
+                Requirements
+              </Heading>
+              <ul style={{ listStyle: "disc", paddingLeft: "2rem", color: "#fff" }}>
+                <li>Draw the shapes in order from left to right on Paper. Digital drawings will not be accepted.</li>
+                <li>Try to make the drawing as close to the image as possible ( it does not have to be perfect )</li>
+                <li>Take a photo of the paper</li>
+              </ul>
+            </Card.Content>
+          </Card>
+          <div style={{
+            display: "flex",flexWrap:"nowrap", backgroundColor: "#fff", marginTop: "50"
+          }}>
+          {shapes.map((shape, index) => (
+            <span id={shape} style={{margin:"auto"}}>
+              {drawShape(shape)}
+             </span>
+          ))}
+          </div>
+        </Card.Content>
+      </Card>
 
       <WebcamWrapper
         setFile={setFile}
@@ -135,34 +163,6 @@ export default function DrawingChallenge({ step, goToNextStep }) {
         />
       </>
     }
-      <Card className="my-5">
-        <Card.Content className="rows is-multiline">
-          <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
-            Draw the following shapes
-          </Heading>
-          <Card backgroundColor="dark" className="mt-5 mb-5">
-            <Card.Content>
-              <Heading subtitle className="mb-3">
-                Requirements
-              </Heading>
-              <ul style={{ listStyle: "disc", paddingLeft: "2rem", color: "#fff" }}>
-                <li>Draw the shapes in order from left to right on paper or tablet</li>
-                <li>Try to make the drawing as close to the image as possible ( it does not have to be perfect )</li>
-                <li>Take a photo of the paper or tablet</li>
-              </ul>
-            </Card.Content>
-          </Card>
-          <div style={{
-            display: "flex",flexWrap:"nowrap", backgroundColor: "#fff", marginTop: "50"
-          }}>
-          {shapes.map((shape, index) => (
-            <span id={shape} style={{margin:"auto"}}>
-              {drawShape(shape)}
-             </span>
-          ))}
-          </div>
-        </Card.Content>
-      </Card>
 
       <Button.Group align="right" className="mt-4">
         <Link to="/app/" className="button is-black" disabled={!file.data}>

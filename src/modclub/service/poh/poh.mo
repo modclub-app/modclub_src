@@ -845,7 +845,7 @@ module PohModule {
             let allowedViolationRules3 = Buffer.Buffer<PohTypes.ViolatedRules>(4);
             allowedViolationRules3.add( {
                 ruleId= "1";
-                ruleDesc = "The person in the video is the same person in the picture above";
+                ruleDesc = "The person in the video is the same person in the profile picture";
             }); 
             allowedViolationRules3.add( {
                 ruleId= "2";
@@ -897,7 +897,7 @@ module PohModule {
                 },
                 {
                     ruleId= "2";
-                    ruleDesc = "The shapes were drawn on a piece of paper. This has to be a physical piece of paper and not a digital drawing.";
+                    ruleDesc = "The shapes were drawn on a piece of Paper. This has to be a physical piece of paper and not a digital drawing.";
                 }
             ];
             state.pohChallenges.put(CHALLENGE_DRAWING_ID, {
