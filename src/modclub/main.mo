@@ -414,6 +414,8 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
+    throw Error.reject("Sign ups are turned off.");
+
     let profile = await ModeratorManager.registerModerator(
       caller,
       userName,
@@ -899,9 +901,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
         };
     };
 
+    let itemsArr = pohEngine.sortPackagesByCreatedDate(items);
+
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlus>(0);
     var index: Nat = 0;
-    for(id in items.vals()) {
+    for(id in itemsArr.vals()) {
       if(index >= start and index <= end  and count < maxReturn) {
         let voteCount = voteManager.getVoteCountForPoh(caller, id);
         let taskDataWrapper = pohEngine.getPohTasks([id]);

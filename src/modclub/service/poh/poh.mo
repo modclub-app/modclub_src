@@ -1,31 +1,32 @@
 import Array "mo:base/Array";
+import Arrays "mo:base/Array";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
+import DownloadSupport "./downloadSupport";
+import DownloadUtil "../../downloadUtil";
 import Error "mo:base/Error";
 import GlobalState "../../statev1";
 import HashMap "mo:base/HashMap";
-import Order "mo:base/Order";
-import TrieMap "mo:base/TrieMap";
 import Helpers "../../helpers";
-import RelObj "../../data_structures/RelObj";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
+import Order "mo:base/Order";
 import PohStateV1 "./statev1";
 import PohStateV2 "./statev2";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
+import Rel "../../data_structures/Rel";
+import RelObj "../../data_structures/RelObj";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import TrieMap "mo:base/TrieMap";
 import Types "../../types";
-import Rel "../../data_structures/Rel";
-import DownloadSupport "./downloadSupport";
-import DownloadUtil "../../downloadUtil";
 
 
 module PohModule {
@@ -570,6 +571,29 @@ module PohModule {
             #equal;
         };
 
+        private func sortByCreatedDateDesc(packageIdA : Text, packageIdB : Text) : Order.Order {
+            switch(state.pohChallengePackages.get(packageIdA)) {
+                case(null) {
+                    return #greater;
+                };
+                case(?packageA) {
+                    switch(state.pohChallengePackages.get(packageIdB)) {
+                        case(null) {
+                            return #less;
+                        };
+                        case(?packageB) {
+                            if(packageA.createdAt > packageB.createdAt) {
+                                return #greater;
+                            } else if(packageA.createdAt < packageB.createdAt) {
+                                return #less;
+                            };
+                            return #equal;
+                        };
+                    };
+                };
+            };
+        };
+
         public func createChallengePackageForVoting(
             userId: Principal,
             getContentStatus: Text -> Types.ContentStatus,
@@ -778,6 +802,10 @@ module PohModule {
                 };
             };
             return buff.toArray();
+        };
+
+        public func sortPackagesByCreatedDate(items: Buffer.Buffer<Text>) : [Text] {
+            Arrays.sort(items.toArray(), sortByCreatedDateDesc);
         };
 
         public func getPohChallengePackage(packageId: Text) : ?PohTypes.PohChallengePackage {
