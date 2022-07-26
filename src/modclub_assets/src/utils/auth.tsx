@@ -42,6 +42,8 @@ if (process.env.DEV_ENV == "dev") {
 const whitelist = [canisterId];
 const host = window.location.origin;
 let fetchedProviders = false;
+// Safe hook to not connect multiple times using plugin
+let checkAndConnectPlugCounter = 0;
 let checkAndConnectStoicCounter = 0;
 
 // Provider hook that creates auth object and handles state
@@ -116,7 +118,7 @@ export function useProvideAuth(authClient): AuthContext {
           );
           break;
         case 'plug':
-          checkAndConnectToPlug();
+          if(checkAndConnectPlugCounter==0)checkAndConnectToPlug();
           break;
         case 'stoic':
           if(checkAndConnectStoicCounter==0)checkAndConnectToStoic();
@@ -128,6 +130,7 @@ export function useProvideAuth(authClient): AuthContext {
   }, [isAuthClientReady]);
 
   async function checkAndConnectToPlug() {
+    checkAndConnectPlugCounter++;
     if (walletToUse) {
       const connected = await window['ic'].plug.isConnected();
       let identity;
@@ -312,6 +315,7 @@ export function useProvideAuth(authClient): AuthContext {
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
     localStorage.removeItem('_loginType');
     fetchedProviders = false;
+    checkAndConnectPlugCounter = 0;
     checkAndConnectStoicCounter = 0;
     Usergeek.setPrincipal(null);
     console.log("User Logged Out");
