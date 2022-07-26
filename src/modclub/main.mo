@@ -619,6 +619,13 @@ shared ({caller = deployer}) actor class ModClub() = this {
     await tokens.transfer(ModClubParam.getModclubWallet(), to, amount);
   };
 
+  public shared({ caller}) func adminSlashStake(p: Principal, amount: Nat) : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    await tokens.burnStakeFrom(p, amount);
+  };
+
   //----------------------POH Methods For Providers------------------------------
   public shared({ caller }) func verifyHumanity(providerUserId: Text) : async PohTypes.PohVerificationResponsePlus {
     switch(pohVerificationRequestHelper(providerUserId, caller)) {
