@@ -552,6 +552,7 @@ actor class Bucket () = this {
     if(Time.now() > nextRunTimeForContentDeletionJob) {
       Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
       deleteContentAfterExpiry();
+      nextRunTimeForContentDeletionJob := Time.now() + TWENTY_FOUR_HOURS_NANO_SECONDS;
     };
   };
 
