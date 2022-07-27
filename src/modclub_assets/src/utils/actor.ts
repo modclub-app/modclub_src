@@ -10,7 +10,7 @@ const isLocalEnv = DFX_NETWORK === "local";
 
 function getHost() {
   // Setting host to undefined will default to the window location 👍🏻
-  return isLocalEnv ? dfxConfig.networks.local.bind : undefined;
+  return isLocalEnv ? dfxConfig.networks.local.bind : "ic0.app";
 }
 
 const host = getHost();
@@ -30,7 +30,7 @@ const createPlugActor = async function (identity, canisterId) {
     interfaceFactory: idlFactory,
   });
   return actor;
-}
+};
 
 /*
  * Responsible for keeping track of the actor, whether the user has logged
@@ -45,22 +45,26 @@ class ActorController {
     this._actor = this.initBaseActor();
   }
 
-  async initBaseActor(identity?: Identity, authenticatorToUse?: String, canisterId?: String) {
+  async initBaseActor(
+    identity?: Identity,
+    authenticatorToUse?: String,
+    canisterId?: String
+  ) {
     //Probably should use the same method because once the identity is passed the actor is going to get created using
     //the identity so should not be using different method for plug
     switch (authenticatorToUse) {
-      case 'ii':
+      case "ii":
         const { agent, actor } = createActor(identity, canisterId);
         // The root key only has to be fetched for local development environments
         if (isLocalEnv) {
           await agent.fetchRootKey();
         }
-        console.log("ACTOR", actor)
+        console.log("ACTOR", actor);
         return actor;
-      case 'plug':
+      case "plug":
         const plugActor = createPlugActor(identity, canisterId);
         return plugActor;
-      case 'stoic':
+      case "stoic":
         const stoicActorAgent = createActor(identity, canisterId);
         return stoicActorAgent.actor;
       default:
@@ -80,7 +84,11 @@ class ActorController {
    * Once a user has authenticated and has an identity pass this identity
    * to create a new actor with it, so they pass their Principal to the backend.
    */
-  async authenticateActor(identity: Identity, authenticatorToUse: String, canisterId: String) {
+  async authenticateActor(
+    identity: Identity,
+    authenticatorToUse: String,
+    canisterId: String
+  ) {
     this._actor = this.initBaseActor(identity, authenticatorToUse, canisterId);
     this._isAuthenticated = true;
   }
