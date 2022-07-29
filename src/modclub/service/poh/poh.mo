@@ -733,6 +733,8 @@ module PohModule {
                                         };
                                         createdAt =  att.createdAt;
                                         updatedAt = att.updatedAt;
+                                        submittedAt = att.submittedAt;
+                                        completedOn = att.completedOn;
                                     };
                                     taskData.add(pohTaskData);
                                 };

@@ -117,7 +117,14 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared query ({ caller }) func getAdmins() : async Result.Result<[Principal], Text> {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
     AuthManager.getAdmins(caller, admins);
+  };
+
+  public shared query ({ caller }) func isUserAdmin() : async Bool {
+    AuthManager.isAdmin(caller, admins);
   };
 
   //This function should be invoked immediately after the canister is deployed via script.
@@ -983,6 +990,105 @@ shared ({caller = deployer}) actor class ModClub() = this {
         reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
         createdAt = pohTasks[0].createdAt;
         updatedAt = pohTasks[0].updatedAt;
+    });
+  };
+
+  public query({ caller }) func getAllPohTasksForAdminUsers(status: Types.ContentStatus, start: Nat, end: Nat) : async [PohTypes.PohTaskPlusForAdmin] {
+    
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+
+    let pohTaskIds = pohContentQueueManager.getContentIds(
+      caller,
+      status,
+      randomizationEnabled
+    );
+    var count: Nat = 0;
+    let maxReturn: Nat = end - start + 1;
+
+    // Add item id to buffer
+    let items =  Buffer.Buffer<Text>(0);
+    for(id in pohTaskIds.vals()) {
+      items.add(id);
+    };
+
+    let itemsArr = pohEngine.sortPackagesByCreatedDate(items);
+
+    let tasks = Buffer.Buffer<PohTypes.PohTaskPlusForAdmin>(0);
+    var index: Nat = 0;
+    for(id in itemsArr.vals()) {
+      if(index >= start and index <= end  and count < maxReturn) {
+        let voteCount = voteManager.getVoteCountForPoh(caller, id);
+        let taskDataWrapper = pohEngine.getPohTasks([id]);
+        var profileImageUrlSuffix :?Text = null;
+        var userModClubId :Text = "";
+        var userUserName :Text = "";
+        var userEmailId :Text = "";
+        var submittedAt :Int = 0;
+        var completedOn :Int = 0;
+        for(wrapper in taskDataWrapper.vals()) {
+          for(data in wrapper.pohTaskData.vals()) {
+            submittedAt := data.submittedAt;
+            completedOn := data.completedOn;
+            switch(state.profiles.get(data.userId)) {
+              case(null)();
+              case (?result) {
+                userModClubId := Principal.toText(result.id);
+                userUserName := result.userName;
+                userEmailId := result.email;
+              };
+            };
+            if (
+              data.challengeType == #selfPic and 
+              data.dataCanisterId != null and
+              data.contentId != null
+            ) {
+              profileImageUrlSuffix := do ? {
+                ("canisterId=" # Principal.toText(data.dataCanisterId!) # "&contentId=" # data.contentId!)
+              };
+            };
+          }
+        };
+        let pohPackage = pohEngine.getPohChallengePackage(id);
+        switch(pohPackage) {
+          case(null)();
+          case(?package) {
+            let taskPlus = {
+              packageId = id;
+              status = pohContentQueueManager.getContentStatus(id);
+              // TODO: change these vote settings
+              voteCount = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+              profileImageUrlSuffix = profileImageUrlSuffix;
+              userModClubId = userModClubId;
+              userUserName = userUserName;
+              userEmailId = userEmailId;
+              submittedAt = submittedAt;
+              completedOn = completedOn;
+            };
+            tasks.add(taskPlus);
+            count := count + 1;
+          };
+        };
+      };
+      index := index + 1;
+    };
+    return tasks.toArray();
+  };
+  
+  public query({ caller }) func getPohTaskDataForAdminUsers(packageId: Text) : async Result.Result<PohTypes.PohTaskDataAndVotesWrapperPlus, PohTypes.PohError> {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    let pohTasks = pohEngine.getPohTasks([packageId]);
+    if(pohTasks.size() == 0) {
+      return #err(#invalidPackageId);
+    };
+    let voteDetails = voteManager.getVotesForPOHBasedOnPackageId(packageId, state);
+    #ok({
+      packageId = pohTasks[0].packageId;
+      pohTaskData = pohTasks[0].pohTaskData;
+      voteUserDetails = voteDetails;
     });
   };
 

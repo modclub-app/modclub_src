@@ -5,7 +5,7 @@ import { useAuth } from "../../../utils/auth";
 import { formatDate } from "../../../utils/util";
 import { getPohTaskData } from "../../../utils/api";
 import { ViolatedRules } from '../../../utils/types';
-import {
+import { 
   Heading,
   Card,
   Button,
@@ -78,7 +78,7 @@ const CheckBox = ({ id, label, values }) => {
   )
 }
 
-export default function PohApplicant() {
+export default function PohApplicant() { 
   const { user } = useAuth();
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
