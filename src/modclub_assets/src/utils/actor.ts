@@ -11,14 +11,12 @@ let host_url = "ljyte-qiaaa-aaaah-qaiva-cai.ic0.app";
 if (process.env.DEV_ENV == "dev") {
   host_url = "ocbvi-5yaaa-aaaah-qcopa-cai.ic0.app";
 } else if (process.env.DEV_ENV == "qa") {
-  host_url = = "ftuce-kiaaa-aaaah-qc3fa-cai.raw.ic0.app";
+  host_url = "ftuce-kiaaa-aaaah-qc3fa-cai.raw.ic0.app";
 }
 
 function getHost() {
   // Setting host to undefined will default to the window location 👍🏻
-  return isLocalEnv
-    ? dfxConfig.networks.local.bind
-    : host_url;
+  return isLocalEnv ? dfxConfig.networks.local.bind : host_url;
 }
 
 const host = getHost();
