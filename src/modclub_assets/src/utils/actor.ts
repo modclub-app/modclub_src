@@ -7,10 +7,18 @@ import dfxConfig from "../../../../dfx.json";
 
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
 const isLocalEnv = DFX_NETWORK === "local";
+let host_url = "ljyte-qiaaa-aaaah-qaiva-cai.ic0.app";
+if (process.env.DEV_ENV == "dev") {
+  host_url = "ocbvi-5yaaa-aaaah-qcopa-cai.ic0.app";
+} else if (process.env.DEV_ENV == "qa") {
+  host_url = = "ftuce-kiaaa-aaaah-qc3fa-cai.raw.ic0.app";
+}
 
 function getHost() {
   // Setting host to undefined will default to the window location 👍🏻
-  return isLocalEnv ? dfxConfig.networks.local.bind : "ic0.app";
+  return isLocalEnv
+    ? dfxConfig.networks.local.bind
+    : host_url;
 }
 
 const host = getHost();
