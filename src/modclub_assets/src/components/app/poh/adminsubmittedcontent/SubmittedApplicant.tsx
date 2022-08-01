@@ -15,69 +15,12 @@ import {
 } from "react-bulma-components";
 import { Form, Field } from "react-final-form";
 import Userstats from "../../profile/Userstats";
-import Progress from "../../../common/progress/Progress";
 import ProfileDetails from "../ProfileDetails";
 import ProfilePic from "../ProfilePic";
 import UserVideo from "../UserVideo";
 import UserAudio from "../UserAudio";
 import DrawingChallenge from '../DrawingChallenge';
-import POHConfirmationModal from "../POHConfirmationModal";
 import { useHistory } from "react-router-dom";
-
-const CheckBox = ({ id, label, values }) => {
-  return (
-    <>
-      <td className="has-text-left has-text-white has-text-weight-medium">
-        {label}
-      </td>
-      <td>
-        <Button.Group justifyContent="flex-end">
-          <Button
-            renderAs="label"
-            color={values[id] === "confirm" && "primary" }
-            className="is-size-7 has-text-weight-normal"
-            style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
-          >
-            <Field
-              name={id}
-              component="input"
-              type="radio"
-              value="confirm"
-              id={id}
-              checked={values[id] === "confirm"}
-              style={{ display: "none" }}
-            />
-            <Icon color="white" size="small">
-              <span className="material-icons">{values[id] === "confirm" ? "trip_origin" : "fiber_manual_record"}</span>
-            </Icon>
-            <span className="ml-1">Confirm</span>
-          </Button>
-
-          <Button
-            renderAs="label"
-            color={values[id] === label && "danger" }
-            className="is-size-7 has-text-weight-normal"
-            style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
-          >
-            <Field
-              name={id}
-              component="input"
-              type="radio"
-              value={label}
-              id={id}
-              checked={values[id] === label}
-              style={{ display: "none" }}
-            />
-            <Icon color="white" size="small">
-              <span className="material-icons">{values[id] === label ? "trip_origin" : "fiber_manual_record"}</span>
-            </Icon>
-            <span className="ml-1">Reject</span>
-          </Button>
-        </Button.Group>
-      </td>
-    </>
-  )
-}
 
 export default function PohSubmittedApplicant() { 
   const { user, isAdminUser } = useAuth();
@@ -88,7 +31,8 @@ export default function PohSubmittedApplicant() {
   const history = useHistory();
 
   const getApplicant = async () => {
-    !isAdminUser ?? history.push(`/app/poh`);
+    if(!isAdminUser)history.push(`/app/poh`);
+    
     setLoading(true)
     const res = await getPohTaskDataForAdminUsers(packageId);
     console.log({pohPackage: res.ok });
@@ -159,58 +103,54 @@ export default function PohSubmittedApplicant() {
 
       <Userstats />
       
-      <Form
-        onSubmit={() => {}}
-        render={({ handleSubmit, values }) => (
-        <form onSubmit={handleSubmit}>
-          <Card>
-            <Card.Header>
-              <Card.Header.Title>
-                <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-                  Submitted {formatDate(content.updatedAt)}
-                </span>
-              </Card.Header.Title>
-              <Progress
-                value={content.votes}
-                min={content.minVotes}
-              />
-            </Card.Header>
+      
+        <Card>
+        <Card.Header>
+            <Card.Header.Title>
+            <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
+                Submitted {formatDate(content.updatedAt)}
+            </span>
+            </Card.Header.Title>
+            {/* <Progress
+            value={content.votes}
+            min={content.minVotes}
+            /> */}
+        </Card.Header>
 
-            {content.pohTaskData.map((task) => (
-              <Card.Content key={task.challengeId}>
-                <Heading subtitle className="mb-3">
-                  {formatTitle(task.challengeId)}
-                </Heading>
-                <Card backgroundColor="dark">
-                  {renderChallenge(task.challengeId, task)}
-                </Card>
-                <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
-                  <table className="table has-text-left">
-                    <tbody>
-                      {task.allowedViolationRules.map((rule, index) => (
-                        <tr key={index}>
-                          <CheckBox
-                            key={rule.ruleId}
-                            id={`${task.challengeId}-${rule.ruleId}`}
-                            label={rule.ruleDesc}
-                            values={values}
-                          />
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Card.Footer>
-              </Card.Content>
-            ))}
-
-            <POHConfirmationModal
-              formRules={formRules}
-              reward={content.reward}
-            />
-          </Card>
-        </form>
-      )}
-    />
-  </>
+        {content.pohTaskData.map((task) => (
+            <Card.Content key={task.challengeId}>
+            <Heading subtitle className="mb-3">
+                {formatTitle(task.challengeId)}
+            </Heading>
+            <Card backgroundColor="dark">
+                {renderChallenge(task.challengeId, task)}
+            </Card>
+            <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
+                <Heading className="mb-2">Vote Details</Heading>
+                <table className="table">
+                <tbody>
+                    <tr>
+                      <th style={{color:'#FFFF'}}>Modclub ID</th>
+                      <th style={{color:'#FFFF'}}>Username</th>
+                      <th style={{color:'#FFFF'}}>EmailID</th>
+                      <th style={{color:'#FFFF'}}>Vote Decision</th>
+                      <th style={{color:'#FFFF'}}>Voted At</th>
+                    </tr>
+                    {content.voteUserDetails.map((user, index) => (
+                    <tr key={index}>
+                        <td>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</td>
+                        <td>{user.userUserName}</td>
+                        <td>{user.userEmailId}</td>
+                        <td>{user.userVoteDecision}</td>
+                        <td>{formatDate(user.userVoteCreatedAt)}</td>
+                    </tr>
+                    ))}
+                </tbody>
+                </table>
+            </Card.Footer>
+            </Card.Content>
+        ))}
+        </Card>
+    </>
   );
 };

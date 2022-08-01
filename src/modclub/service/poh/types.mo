@@ -273,6 +273,11 @@ module {
         packageId: Text;
         pohTaskData: [PohTaskData];
         voteUserDetails: [VoteTypes.VotePlusUser];
+        minVotes: Int;
+        minStake: Int;
+        reward: Float;
+        createdAt: Int;
+        updatedAt: Int;
     };
 
     public type PohError = {

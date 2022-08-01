@@ -11,17 +11,16 @@ import {
 } from "react-bulma-components";
 import Userstats from "../../profile/Userstats";
 import FilterBar from "./common/AdminFilterBar";
-import Progress from "../../../common/progress/Progress";
 import { useAuth } from "../../../../utils/auth";
-import { getPohTasks } from "../../../../utils/api";
+import { getAllPohTasksForAdminUsers } from "../../../../utils/api";
 import { fetchObjectUrl, formatDate, getUrlForData } from "../../../../utils/util";
-import { PohTaskPlus } from "../../../../utils/types";
+import { PohTaskPlusForAdmin } from "../../../../utils/types";
 import placeholder from '../../../../../assets/user_placeholder.png';
 
 const PAGE_SIZE = 9;
 
-const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
-  const {profileImageUrlSuffix, createdAt, reward } = applicant;
+const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlusForAdmin }) => {
+  const {profileImageUrlSuffix, submittedAt, completedOn } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
   const match = profileImageUrlSuffix.length ? regEx.exec(profileImageUrlSuffix[0]) : null;
   const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
@@ -29,7 +28,6 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("Applicant: " + applicant.packageId + "suffixURL: " + profileImageUrlSuffix + " imageUrl: " + imageUrl);
       const urlObject = await fetchObjectUrl(imageUrl);
       setUrlObject(urlObject);
     };
@@ -49,40 +47,30 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
       }}
     >
       <Card.Header justifyContent="start" style={{ marginBottom: "auto", boxShadow: "none" }}>
-        <Progress
-          value={applicant.voteCount}
-          min={applicant.minVotes}
-        />
+        <strong style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0, color:'#FFFF' }}>
+          {applicant.userModClubId}
+        </strong>
       </Card.Header>
 
        <Card.Content style={{ paddingTop: "65%" }}>
-        {/*<Heading subtitle marginless>
-          {userName[0]}
-        </Heading>
-        <p className="is-size-7 mt-2">
-          {aboutUser}
-        </p> */}
+
       </Card.Content> 
       
       <Card.Footer className="is-block">
         <Card.Header.Title>
-          <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-            Submitted {formatDate(createdAt)}
-          </span>
+          <strong style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0, wordBreak: 'break-all' }}>
+            {applicant.userUserName} | {applicant.userEmailId}
+          </strong>
         </Card.Header.Title>
 
-        <Button.Group className="is-flex-wrap-nowrap mt-5" style={{ paddingBottom: 10 }}>
+        <Button.Group className="is-flex-wrap-nowrap" style={{ paddingBottom: 10 }}>
           <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
-            <Icon align="left" size="small" className="has-text-white">
-              <span className="material-icons">local_atm</span>
-            </Icon>
-            <span>{"Rq Stake: " + applicant.minStake}</span>
+            <span>{"Submitted: " + formatDate(applicant.submittedAt)}</span>
           </Button>
+        </Button.Group>
+        <Button.Group className="is-flex-wrap-nowrap" style={{ paddingBottom: 10 }}>
           <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
-            <Icon align="left" size="small" className="has-text-white">
-              <span className="material-icons">stars</span>
-            </Icon>
-            <span>{"Reward: " + reward}</span>
+            <span>{"Completed: " + formatDate(applicant.completedOn)}</span>
           </Button>
         </Button.Group>
       </Card.Footer>
@@ -91,10 +79,17 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
 };
 
 export default function PohApplicantList() {
-  const { user, isAdminUser } = useAuth();
+  const { user } = useAuth();
+  const isAdminUser = true;
   const [loading, setLoading] = useState<boolean>(false);
-  const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([])
+  const [applicants, setApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
+  const [rejectedApplicants, setRejectedApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
   const [page, setPage] = useState({
+    page: 1,
+    startIndex: 0,
+    endIndex: PAGE_SIZE - 1
+  });
+  const [rejPage, setRejPage] = useState({
     page: 1,
     startIndex: 0,
     endIndex: PAGE_SIZE - 1
@@ -109,38 +104,60 @@ export default function PohApplicantList() {
   }
 
   const filters = ["Approved", "Rejected"];
-  const [currentFilter, setCurrentFilter] = useState<string>("All");
+  const [currentFilter, setCurrentFilter] = useState<string>("Approved");
   const handleFilterChange = (filter) => {
     // Make backend call to get content based on filter and display it.
     setCurrentFilter(filter);
+    getApplicants(filter);
   }
   const history = useHistory();
 
-  const getApplicants = async () => {
+  const getApplicants = async (crrFilter) => {
     if(!isAdminUser)history.push(`/app/poh`);
     setLoading(true);
-    const status = { "new": null };    
-    const newApplicants = await getPohTasks(status, page.startIndex, page.endIndex);
-    console.log("newApplicants", newApplicants);
-    if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
-    setApplicants([...applicants, ...newApplicants]);
+    if(crrFilter == 'Approved'){
+      const status = {'approved':null};  
+      const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex);
+      //const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmaul.coTestEmail@gmaul.coTestEmail@gmaul.coTestEmail@gmaul.com',submittedAt:1659389579393,completedOn:1659379579393}];
+      if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
+      setApplicants([...applicants, ...newApplicants]);
+    }else{
+      const status = {'rejected':null};
+      const newRejectedApplicants = await getAllPohTasksForAdminUsers(status, rejPage.startIndex, rejPage.endIndex);
+      if (newRejectedApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
+      setRejectedApplicants([...rejectedApplicants, ...newRejectedApplicants]);
+    }
     setLoading(false);
   }
 
   useEffect(() => {
-    if (user && firstLoad && !loading && !applicants.length && getApplicants()) {
+    if (user && firstLoad && !loading && !applicants.length && getApplicants('Approved')) {
       setFirstLoad(false);
     }
   }, [user]);
 
   useEffect(() => {
-    user && !loading && getApplicants();
+    user && !loading && getApplicants('Approved');
   }, [page]);
+
+  useEffect(() => {
+    user && !loading && getApplicants('Rejected');
+  }, [rejPage]);
 
   const nextPage = () => {
     let nextPageNum = page.page + 1;
     let start = (nextPageNum - 1) * PAGE_SIZE;
     setPage({
+      page: nextPageNum,
+      startIndex: start,
+      endIndex: start + PAGE_SIZE - 1
+    });
+  }
+
+  const nextRejPage = () => {
+    let nextPageNum = rejPage.page + 1;
+    let start = (nextPageNum - 1) * PAGE_SIZE;
+    setRejPage({
       page: nextPageNum,
       startIndex: start,
       endIndex: start + PAGE_SIZE - 1
@@ -154,7 +171,7 @@ export default function PohApplicantList() {
       </Modal>
     )
   }
-  if (user && applicants.length === 0) {
+  if (user && applicants.length === 0 && rejectedApplicants.length === 0) {
     return (
       <section className="hero is-black is-medium">
         <div className="hero-body container has-text-centered">
@@ -168,45 +185,88 @@ export default function PohApplicantList() {
   return(
     <>
       <Userstats />
-
-      <Columns>
-        <Columns.Column size={12}>
-          <FilterBar
-            isAdminUser={isAdminUser}
-            filters={filters}
-            currentFilter={currentFilter}
-            onFilterChange={handleFilterChange}
-          />
-        </Columns.Column>
-
-        {applicants.length && applicants.map((applicant, index) => (
-          <Columns.Column
-            key={applicant.packageId}
-            mobile={{ size: 11 }}
-            tablet={{ size: 6 }}
-            fullhd={{ size: 4 }}
-          >
-            <ApplicantSnippet applicant={applicant} />
+    ({currentFilter == 'Approved' ?
+      (<>
+        <Columns>
+          <Columns.Column size={12}>
+            <FilterBar
+              isAdminUser={isAdminUser}
+              filters={filters}
+              currentFilter={currentFilter}
+              onFilterChange={handleFilterChange}
+            />
           </Columns.Column>
-        ))}
-        <Columns.Column size={12}>
-          <Card>
-            <Card.Footer alignItems="center">
-              <div>
-                Showing 1 to {applicants.length} feeds
-              </div>
-              <Button
-                color="primary"
-                onClick={() => nextPage()}
-                className="ml-4 px-7 py-3"
-                disabled={hasReachedEnd}
-              >
-                See more
-              </Button>
-            </Card.Footer>
-          </Card>
-        </Columns.Column>
-      </Columns>
+
+          {applicants.length && applicants.map((applicant, index) => (
+            <Columns.Column
+              key={applicant.packageId}
+              mobile={{ size: 11 }}
+              tablet={{ size: 6 }}
+              fullhd={{ size: 4 }}
+            >
+              <ApplicantSnippet applicant={applicant} />
+            </Columns.Column>
+          ))}
+          <Columns.Column size={12}>
+            <Card>
+              <Card.Footer alignItems="center">
+                <div>
+                  Showing 1 to {applicants.length} feeds
+                </div>
+                <Button
+                  color="primary"
+                  onClick={() => nextPage()}
+                  className="ml-4 px-7 py-3"
+                  disabled={hasReachedEnd}
+                >
+                  See more
+                </Button>
+              </Card.Footer>
+            </Card>
+          </Columns.Column>
+        </Columns>
+      </>):
+      (<>
+        <Columns>
+          <Columns.Column size={12}>
+            <FilterBar
+              isAdminUser={isAdminUser}
+              filters={filters}
+              currentFilter={currentFilter}
+              onFilterChange={handleFilterChange}
+            />
+          </Columns.Column>
+
+          {rejectedApplicants.length && rejectedApplicants.map((applicant, index) => (
+            <Columns.Column
+              key={applicant.packageId}
+              mobile={{ size: 11 }}
+              tablet={{ size: 6 }}
+              fullhd={{ size: 4 }}
+            >
+              <ApplicantSnippet applicant={applicant} />
+            </Columns.Column>
+          ))}
+          <Columns.Column size={12}>
+            <Card>
+              <Card.Footer alignItems="center">
+                <div>
+                  Showing 1 to {rejectedApplicants.length} feeds
+                </div>
+                <Button
+                  color="primary"
+                  onClick={() => nextRejPage()}
+                  className="ml-4 px-7 py-3"
+                  disabled={hasReachedEnd}
+                >
+                  See more
+                </Button>
+              </Card.Footer>
+            </Card>
+          </Columns.Column>
+        </Columns>
+      </>)
+    });
     </>
   )
 }

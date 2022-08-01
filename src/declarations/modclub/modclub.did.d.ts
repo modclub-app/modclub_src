@@ -453,6 +453,11 @@ export interface PohTaskData {
   'wordList' : [] | [Array<string>],
 }
 export interface PohTaskDataAndVotesWrapperPlus {
+  'reward' : number,
+  'minVotes' : bigint,
+  'createdAt' : bigint,
+  'minStake' : bigint,
+  'updatedAt' : bigint,
   'pohTaskData' : Array<PohTaskData>,
   'packageId' : string,
   'voteUserDetails' : Array<VotePlusUser>,

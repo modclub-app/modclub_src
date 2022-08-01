@@ -91,7 +91,7 @@ export default function ModclubApp() {
             <Route exact path="/app/admin/poh">
               <PohSubmittedApplicantList />
             </Route>
-            <Route exact path="/app/poh/:packageId">
+            <Route exact path="/app/admin/poh/:packageId">
               <PohSubmittedApplicant />
             </Route>
             <Route exact path="/app/moderators">

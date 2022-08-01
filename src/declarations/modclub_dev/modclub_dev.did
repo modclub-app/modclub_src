@@ -232,8 +232,13 @@ type PohTaskDataWrapperPlus =
  };
 type PohTaskDataAndVotesWrapperPlus = 
  record {
+   createdAt: int;
+   minStake: int;
+   minVotes: int;
    packageId: text;
    pohTaskData: vec PohTaskData;
+   reward: float64;
+   updatedAt: int;
    voteUserDetails: vec VotePlusUser;
  };
 type PohTaskData = 

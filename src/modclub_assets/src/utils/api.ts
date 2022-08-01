@@ -21,6 +21,7 @@ import {
   PohChallengeSubmissionResponse,
   Result,
   PohTaskPlus,
+  PohTaskPlusForAdmin,
   PohRulesViolated,
   ModeratorLeaderboard,
   VerifyHumanityResponse,
@@ -303,6 +304,14 @@ export async function getPohTasks(
   end: number
 ): Promise<PohTaskPlus[]> {
   return (await getMC()).getPohTasks(status, BigInt(start), BigInt(end));
+}
+
+export async function getAllPohTasksForAdminUsers(
+  status: ContentStatus,
+  start: number,
+  end: number
+): Promise<PohTaskPlusForAdmin[]> {
+  return (await getMC()).getAllPohTasksForAdminUsers(status, BigInt(start), BigInt(end));
 }
 
 export async function getPohTaskData(packageId: string): Promise<any> {

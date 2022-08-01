@@ -441,6 +441,11 @@ export const idlFactory = ({ IDL }) => {
     'userVoteCreatedAt' : IDL.Int,
   });
   const PohTaskDataAndVotesWrapperPlus = IDL.Record({
+    'reward' : IDL.Float64,
+    'minVotes' : IDL.Int,
+    'createdAt' : IDL.Int,
+    'minStake' : IDL.Int,
+    'updatedAt' : IDL.Int,
     'pohTaskData' : IDL.Vec(PohTaskData),
     'packageId' : IDL.Text,
     'voteUserDetails' : IDL.Vec(VotePlusUser),

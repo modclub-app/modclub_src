@@ -1089,6 +1089,11 @@ shared ({caller = deployer}) actor class ModClub() = this {
       packageId = pohTasks[0].packageId;
       pohTaskData = pohTasks[0].pohTaskData;
       voteUserDetails = voteDetails;
+      minVotes =  ModClubParam.MIN_VOTE_POH;
+      minStake = ModClubParam.MIN_STAKE_POH;
+      reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(ModClubParam.MIN_STAKE_POH);
+      createdAt = pohTasks[0].createdAt;
+      updatedAt = pohTasks[0].updatedAt;
     });
   };
 
