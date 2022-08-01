@@ -475,13 +475,13 @@ actor class Bucket () = this {
   };
 
   func deleteContentAfterExpiry() {
-    let currentTime = Helpers.timeNow();
-    for((contentId, reviewedTime) in Trie.iter(restrictedContentId)) {
-      if(reviewedTime + DAYS_TO_DELETE_DATA >= currentTime) {
-        Helpers.logMessage(canistergeekLogger, "Deleting contentId after expiry: " # contentId, #info);
-        deleteContent(contentId);
-      };
-    };
+    // let currentTime = Helpers.timeNow();
+    // for((contentId, reviewedTime) in Trie.iter(restrictedContentId)) {
+    //   if(reviewedTime + DAYS_TO_DELETE_DATA >= currentTime) {
+    //     Helpers.logMessage(canistergeekLogger, "Deleting contentId after expiry: " # contentId, #info);
+    //     deleteContent(contentId);
+    //   };
+    // };
   };
 
   private func emptyDataCanisterSharedState(): DataCanisterSharedState {
@@ -550,8 +550,8 @@ actor class Bucket () = this {
     };
 
     if(Time.now() > nextRunTimeForContentDeletionJob) {
-      Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
-      deleteContentAfterExpiry();
+      Helpers.logMessage(canistergeekLogger, "THIS IS STILL RUNNING.", #info);
+      // deleteContentAfterExpiry();
       nextRunTimeForContentDeletionJob := Time.now() + TWENTY_FOUR_HOURS_NANO_SECONDS;
     };
   };
