@@ -182,6 +182,10 @@ export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
 }
 
+export async function checkUserRole(): Promise<boolean> {
+  return (await getMC()).isUserAdmin();
+}
+
 export async function getProfileById(userId: Principal): Promise<Profile> {
   return (await getMC()).getProfileById(userId);
 }
@@ -303,6 +307,10 @@ export async function getPohTasks(
 
 export async function getPohTaskData(packageId: string): Promise<any> {
   return (await getMC()).getPohTaskData(packageId);
+}
+
+export async function getPohTaskDataForAdminUsers(packageId: string): Promise<any> {
+  return (await getMC()).getPohTaskDataForAdminUsers(packageId);
 }
 
 export async function votePohContent(

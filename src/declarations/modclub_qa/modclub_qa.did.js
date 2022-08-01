@@ -69,7 +69,7 @@ export const idlFactory = ({ IDL }) => {
     'providerName' : IDL.Text,
     'providerId' : ProviderId,
   });
-  const Result_3 = IDL.Variant({
+  const Result_4 = IDL.Variant({
     'ok' : IDL.Vec(IDL.Principal),
     'err' : IDL.Text,
   });
@@ -100,6 +100,17 @@ export const idlFactory = ({ IDL }) => {
     'stake' : IDL.Int,
     'wallet' : IDL.Int,
     'userPoints' : IDL.Int,
+  });
+  const PohTaskPlusForAdmin = IDL.Record({
+    'status' : ContentStatus,
+    'completedOn' : IDL.Int,
+    'profileImageUrlSuffix' : IDL.Opt(IDL.Text),
+    'voteCount' : IDL.Nat,
+    'submittedAt' : IDL.Int,
+    'userUserName' : IDL.Text,
+    'userModClubId' : IDL.Text,
+    'userEmailId' : IDL.Text,
+    'packageId' : IDL.Text,
   });
   const Role = IDL.Variant({
     'admin' : IDL.Null,
@@ -385,10 +396,12 @@ export const idlFactory = ({ IDL }) => {
   const PohTaskData = IDL.Record({
     'dataCanisterId' : IDL.Opt(IDL.Principal),
     'status' : PohChallengeStatus,
+    'completedOn' : IDL.Int,
     'contentId' : IDL.Opt(IDL.Text),
     'allowedViolationRules' : IDL.Vec(ViolatedRules),
     'userId' : IDL.Principal,
     'createdAt' : IDL.Int,
+    'submittedAt' : IDL.Int,
     'updatedAt' : IDL.Int,
     'challengeId' : IDL.Text,
     'challengeType' : PohChallengeType,
@@ -412,8 +425,28 @@ export const idlFactory = ({ IDL }) => {
     'invalidToken' : IDL.Null,
     'attemptToAssociateMultipleModclubAccounts' : IDL.Principal,
   });
-  const Result_2 = IDL.Variant({
+  const Result_3 = IDL.Variant({
     'ok' : PohTaskDataWrapperPlus,
+    'err' : PohError,
+  });
+  const Decision__1 = IDL.Variant({
+    'approved' : IDL.Null,
+    'rejected' : IDL.Null,
+  });
+  const VotePlusUser = IDL.Record({
+    'userVoteDecision' : Decision__1,
+    'userUserName' : IDL.Text,
+    'userModClubId' : IDL.Principal,
+    'userEmailId' : IDL.Text,
+    'userVoteCreatedAt' : IDL.Int,
+  });
+  const PohTaskDataAndVotesWrapperPlus = IDL.Record({
+    'pohTaskData' : IDL.Vec(PohTaskData),
+    'packageId' : IDL.Text,
+    'voteUserDetails' : IDL.Vec(VotePlusUser),
+  });
+  const Result_2 = IDL.Variant({
+    'ok' : PohTaskDataAndVotesWrapperPlus,
     'err' : PohError,
   });
   const PohTaskPlus = IDL.Record({
@@ -527,6 +560,7 @@ export const idlFactory = ({ IDL }) => {
     'addToAllowList' : IDL.Func([IDL.Principal], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'adminInit' : IDL.Func([], [], []),
+    'adminSlashStake' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'adminTransferTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
     'collectCanisterMetrics' : IDL.Func([], [], []),
@@ -550,7 +584,7 @@ export const idlFactory = ({ IDL }) => {
     'generateSigningKey' : IDL.Func([], [], []),
     'getActivity' : IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ['query']),
     'getAdminProviderIDs' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
-    'getAdmins' : IDL.Func([], [Result_3], ['query']),
+    'getAdmins' : IDL.Func([], [Result_4], ['query']),
     'getAirdropUsers' : IDL.Func([], [IDL.Vec(AirdropUser)], []),
     'getAirdropWhitelist' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
     'getAllContent' : IDL.Func(
@@ -566,6 +600,11 @@ export const idlFactory = ({ IDL }) => {
     'getAllModeratorHoldings' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Principal, Holdings))],
+        ['query'],
+      ),
+    'getAllPohTasksForAdminUsers' : IDL.Func(
+        [ContentStatus, IDL.Nat, IDL.Nat],
+        [IDL.Vec(PohTaskPlusForAdmin)],
         ['query'],
       ),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
@@ -588,7 +627,8 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getPohAttempts' : IDL.Func([], [PohStableState], []),
-    'getPohTaskData' : IDL.Func([IDL.Text], [Result_2], ['query']),
+    'getPohTaskData' : IDL.Func([IDL.Text], [Result_3], ['query']),
+    'getPohTaskDataForAdminUsers' : IDL.Func([IDL.Text], [Result_2], ['query']),
     'getPohTasks' : IDL.Func(
         [ContentStatus, IDL.Nat, IDL.Nat],
         [IDL.Vec(PohTaskPlus)],
@@ -617,6 +657,7 @@ export const idlFactory = ({ IDL }) => {
     'getTokenHoldings' : IDL.Func([], [Holdings], ['query']),
     'getVotePerformance' : IDL.Func([], [IDL.Float64], ['query']),
     'isAirdropRegistered' : IDL.Func([], [AirdropUser], []),
+    'isUserAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'issueJwt' : IDL.Func([], [IDL.Text], []),
     'pohCallbackForModclub' : IDL.Func(
         [PohVerificationResponsePlus],
