@@ -233,7 +233,7 @@ export default function PohApplicantList() {
                         </td>
                         <td>{user.userUserName}</td>
                         <td>{user.userEmailId}</td>
-                        <td>Approved</td>
+                        <td>Rejected</td>
                         <td>{formatDate(user.submittedAt)}</td>
                         <td>{formatDate(user.completedOn)}</td>
                       </tr>
