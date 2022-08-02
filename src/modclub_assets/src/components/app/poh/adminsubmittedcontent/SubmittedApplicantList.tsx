@@ -80,6 +80,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlusForAdmin }) =
 
 export default function PohApplicantList() {
   const { user } = useAuth();
+  //Need to change
   const isAdminUser = true;
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
@@ -118,7 +119,7 @@ export default function PohApplicantList() {
     if(crrFilter == 'Approved'){
       const status = {'approved':null};  
       const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex);
-      //const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmaul.coTestEmail@gmaul.coTestEmail@gmaul.coTestEmail@gmaul.com',submittedAt:1659389579393,completedOn:1659379579393}];
+      //const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
       if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
       setApplicants([...applicants, ...newApplicants]);
     }else{
@@ -185,9 +186,7 @@ export default function PohApplicantList() {
   return(
     <>
       <Userstats />
-    ({currentFilter == 'Approved' ?
-      (<>
-        <Columns>
+      <Columns>
           <Columns.Column size={12}>
             <FilterBar
               isAdminUser={isAdminUser}
@@ -196,77 +195,68 @@ export default function PohApplicantList() {
               onFilterChange={handleFilterChange}
             />
           </Columns.Column>
-
-          {applicants.length && applicants.map((applicant, index) => (
-            <Columns.Column
-              key={applicant.packageId}
-              mobile={{ size: 11 }}
-              tablet={{ size: 6 }}
-              fullhd={{ size: 4 }}
-            >
-              <ApplicantSnippet applicant={applicant} />
-            </Columns.Column>
-          ))}
-          <Columns.Column size={12}>
-            <Card>
-              <Card.Footer alignItems="center">
-                <div>
-                  Showing 1 to {applicants.length} feeds
-                </div>
-                <Button
-                  color="primary"
-                  onClick={() => nextPage()}
-                  className="ml-4 px-7 py-3"
-                  disabled={hasReachedEnd}
-                >
-                  See more
-                </Button>
-              </Card.Footer>
-            </Card>
-          </Columns.Column>
-        </Columns>
-      </>):
-      (<>
-        <Columns>
-          <Columns.Column size={12}>
-            <FilterBar
-              isAdminUser={isAdminUser}
-              filters={filters}
-              currentFilter={currentFilter}
-              onFilterChange={handleFilterChange}
-            />
-          </Columns.Column>
-
-          {rejectedApplicants.length && rejectedApplicants.map((applicant, index) => (
-            <Columns.Column
-              key={applicant.packageId}
-              mobile={{ size: 11 }}
-              tablet={{ size: 6 }}
-              fullhd={{ size: 4 }}
-            >
-              <ApplicantSnippet applicant={applicant} />
-            </Columns.Column>
-          ))}
-          <Columns.Column size={12}>
-            <Card>
-              <Card.Footer alignItems="center">
-                <div>
-                  Showing 1 to {rejectedApplicants.length} feeds
-                </div>
-                <Button
-                  color="primary"
-                  onClick={() => nextRejPage()}
-                  className="ml-4 px-7 py-3"
-                  disabled={hasReachedEnd}
-                >
-                  See more
-                </Button>
-              </Card.Footer>
-            </Card>
-          </Columns.Column>
-        </Columns>
-      </>)
-    });
+      </Columns>
+      <Card>
+        <Card.Content backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
+        <table className="table">
+          <tbody>
+            <tr>
+              <th style={{color:'#FFFF'}}>Modclub ID</th>
+              <th style={{color:'#FFFF'}}>Username</th>
+              <th style={{color:'#FFFF'}}>EmailID</th>
+              <th style={{color:'#FFFF'}}>Status</th>
+              <th style={{color:'#FFFF'}}>Submission Date</th>
+              <th style={{color:'#FFFF'}}>Completion Date</th>
+            </tr>
+            {currentFilter == 'Approved' ?(<>
+              {applicants.map((user, index) => (
+              <tr key={index}>
+                <td>
+                  <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
+                    <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>
+                  </Link>
+                </td>
+                <td>{user.userUserName}</td>
+                <td>{user.userEmailId}</td>
+                <td>Approved</td>
+                <td>{formatDate(user.submittedAt)}</td>
+                <td>{formatDate(user.completedOn)}</td>
+              </tr>
+              ))}</>):
+              (<>
+                {rejectedApplicants.length && rejectedApplicants.map((user, index) => (
+                      <tr key={index}>
+                        <td>
+                          <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
+                            <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>
+                          </Link>
+                        </td>
+                        <td>{user.userUserName}</td>
+                        <td>{user.userEmailId}</td>
+                        <td>Approved</td>
+                        <td>{formatDate(user.submittedAt)}</td>
+                        <td>{formatDate(user.completedOn)}</td>
+                      </tr>
+                    ))}
+              </>)
+            }
+          </tbody>
+        </table>
+        </Card.Content>
+        <Card.Footer alignItems="center">
+          <div>
+            Showing 1 to {currentFilter == 'Approved'?applicants.length:rejectedApplicants.length} feeds
+          </div>
+          <Button
+            color="primary"
+            onClick={() => currentFilter == 'Approved'?nextPage():nextRejPage()}
+            className="ml-4 px-7 py-3"
+            disabled={hasReachedEnd}
+          >
+            See more
+          </Button>
+        </Card.Footer>
+      </Card>
     </>
   )
 }

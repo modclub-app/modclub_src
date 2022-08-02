@@ -23,7 +23,9 @@ import DrawingChallenge from '../DrawingChallenge';
 import { useHistory } from "react-router-dom";
 
 export default function PohSubmittedApplicant() { 
-  const { user, isAdminUser } = useAuth();
+  const { user } = useAuth();
+  //Need to change
+  const isAdminUser = true;
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
@@ -35,6 +37,28 @@ export default function PohSubmittedApplicant() {
     
     setLoading(true)
     const res = await getPohTaskDataForAdminUsers(packageId);
+    // const res = {ok:{
+    //     packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',
+    //     pohTaskData : [{
+    //         challengeId: 'aihsdfoiasdhf-asdfasdf-asdf-asdf-asdf',
+    //         challengeType: 'challenge-user-audio',
+    //         userId: 'asdf-asdf-asdf',
+    //         status: '#approved',
+    //         contentId: 'asdfasdf-asdfas-df-asdfa-sdf',
+    //         dataCanisterId: 'efrwers-sdfsd-e-sdf',
+    //         allowedViolationRules: [],
+    //         createdAt: 1659379579393,
+    //         updatedAt: 1659379579393,
+    //         submittedAt: 1659379579393,
+    //         completedOn: 1659379579393
+    //     }],
+    //     voteUserDetails: [{
+    //         userModClubId: 'asdfasdf-asdfa-sdf-asdf',
+    //         userUserName: 'Test-1',
+    //         userEmailId: 'TestEmail@gmail.com',
+    //         userVoteDecision: '#approved',
+    //         userVoteCreatedAt: 1659379579393}]
+    // }};
     console.log({pohPackage: res.ok });
     setContent(res.ok);
     setLoading(false);
@@ -105,51 +129,51 @@ export default function PohSubmittedApplicant() {
       
       
         <Card>
-        <Card.Header>
-            <Card.Header.Title>
-            <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-                Submitted {formatDate(content.updatedAt)}
-            </span>
-            </Card.Header.Title>
-            {/* <Progress
-            value={content.votes}
-            min={content.minVotes}
-            /> */}
-        </Card.Header>
+            <Card.Header>
+                <Card.Header.Title>
+                <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
+                    Submitted {formatDate(content.updatedAt)}
+                </span>
+                </Card.Header.Title>
+                {/* <Progress
+                value={content.votes}
+                min={content.minVotes}
+                /> */}
+            </Card.Header>
 
-        {content.pohTaskData.map((task) => (
-            <Card.Content key={task.challengeId}>
-            <Heading subtitle className="mb-3">
-                {formatTitle(task.challengeId)}
-            </Heading>
-            <Card backgroundColor="dark">
-                {renderChallenge(task.challengeId, task)}
-            </Card>
-            <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
-                <Heading className="mb-2">Vote Details</Heading>
-                <table className="table">
-                <tbody>
-                    <tr>
-                      <th style={{color:'#FFFF'}}>Modclub ID</th>
-                      <th style={{color:'#FFFF'}}>Username</th>
-                      <th style={{color:'#FFFF'}}>EmailID</th>
-                      <th style={{color:'#FFFF'}}>Vote Decision</th>
-                      <th style={{color:'#FFFF'}}>Voted At</th>
-                    </tr>
-                    {content.voteUserDetails.map((user, index) => (
-                    <tr key={index}>
-                        <td>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</td>
-                        <td>{user.userUserName}</td>
-                        <td>{user.userEmailId}</td>
-                        <td>{user.userVoteDecision}</td>
-                        <td>{formatDate(user.userVoteCreatedAt)}</td>
-                    </tr>
-                    ))}
-                </tbody>
-                </table>
-            </Card.Footer>
-            </Card.Content>
-        ))}
+            {content.pohTaskData.map((task) => (
+                <Card.Content key={task.challengeId}>
+                <Heading subtitle className="mb-3">
+                    {formatTitle(task.challengeId)}
+                </Heading>
+                <Card backgroundColor="dark">
+                    {renderChallenge(task.challengeId, task)}
+                </Card>
+                <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
+                    <Heading className="mb-2">Vote Details</Heading>
+                    <table className="table">
+                        <tbody>
+                            <tr>
+                            <th style={{color:'#FFFF'}}>Modclub ID</th>
+                            <th style={{color:'#FFFF'}}>Username</th>
+                            <th style={{color:'#FFFF'}}>EmailID</th>
+                            <th style={{color:'#FFFF'}}>Vote Decision</th>
+                            <th style={{color:'#FFFF'}}>Voted At</th>
+                            </tr>
+                            {content.voteUserDetails.map((user, index) => (
+                            <tr key={index}>
+                                <td>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</td>
+                                <td>{user.userUserName}</td>
+                                <td>{user.userEmailId}</td>
+                                <td>{user.userVoteDecision}</td>
+                                <td>{formatDate(user.userVoteCreatedAt)}</td>
+                            </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </Card.Footer>
+                </Card.Content>
+            ))}
         </Card>
     </>
   );
