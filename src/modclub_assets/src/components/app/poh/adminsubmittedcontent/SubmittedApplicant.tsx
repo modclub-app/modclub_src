@@ -37,28 +37,39 @@ export default function PohSubmittedApplicant() {
     
     setLoading(true)
     const res = await getPohTaskDataForAdminUsers(packageId);
-    // const res = {ok:{
-    //     packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',
-    //     pohTaskData : [{
-    //         challengeId: 'aihsdfoiasdhf-asdfasdf-asdf-asdf-asdf',
-    //         challengeType: 'challenge-user-audio',
-    //         userId: 'asdf-asdf-asdf',
-    //         status: '#approved',
-    //         contentId: 'asdfasdf-asdfas-df-asdfa-sdf',
-    //         dataCanisterId: 'efrwers-sdfsd-e-sdf',
-    //         allowedViolationRules: [],
-    //         createdAt: 1659379579393,
-    //         updatedAt: 1659379579393,
-    //         submittedAt: 1659379579393,
-    //         completedOn: 1659379579393
-    //     }],
-    //     voteUserDetails: [{
-    //         userModClubId: 'asdfasdf-asdfa-sdf-asdf',
-    //         userUserName: 'Test-1',
-    //         userEmailId: 'TestEmail@gmail.com',
-    //         userVoteDecision: '#approved',
-    //         userVoteCreatedAt: 1659379579393}]
-    // }};
+    // const res = {ok:{createdAt: 1658724185497,
+    // minStake: 100,
+    // minVotes: 2,
+    // packageId: "fx3lh-v3cir-tdsya-3nacp-ws45h-t7emc-gsrrp-o6p4o-pvoye-pcgpb-qae-poh-content-1197",
+    // pohTaskData: [{challengeId: "challenge-drawing",
+    // challengeType: {dl: null},
+    // completedOn: 1658775260856,
+    // contentId: ['903CED9D8808023924288E4D0B31425F9DB741B7DA4CCB5C89DAA72D15B1429E'],
+    // createdAt: 1658724052298,
+    // dataCanisterId: 'dw7z3-liaaa-aaaah-qc3ta-cai',
+    // status: {rejected: null},
+    // submittedAt: 1658724157219,
+    // updatedAt: 1658775260856,
+    // userId:'fx3lh-v3cir-tdsya-3nacp-ws45h-t7emc-gsrrp-o6p4o-pvoye-pcgpb-qae',
+    // wordList: [['Square', 'Triangle', 'Star']]
+    // }],
+    // reward: 10,
+    // updatedAt: 1658724185497,
+    // voteUserDetails: [{
+    //     userEmailId: "lskjdflksj@lkjsdf.com",
+    //     userModClubId: 'csadh-sjf3u-zhfad-7j3su-ehbhp-qa7af-fsprs-tc2h6-tpv4t-4nabw-xae',
+    //     userUserName: "YOYOYOy",
+    //     userVoteCreatedAt: 1658724447117696929,
+    //     userVoteDecision: {rejected: null}
+    // }, {userEmailId: "lskjdflksj@lkjsdf.com",
+    // userModClubId: 'csadh-sjf3u-zhfad-7j3su-ehbhp-qa7af-fsprs-tc2h6-tpv4t-4nabw-xae',
+    // userUserName: "YOYOYOy",
+    // userVoteCreatedAt: 1658724447117696929,
+    // userVoteDecision: {rejected: null}}, {userEmailId: "lskjdflksj@lkjsdf.com",
+    // userModClubId: 'csadh-sjf3u-zhfad-7j3su-ehbhp-qa7af-fsprs-tc2h6-tpv4t-4nabw-xae',
+    // userUserName: "YOYOYOy",
+    // userVoteCreatedAt: 1658724447117696929,
+    // userVoteDecision: {rejected: null}}]}}
     console.log({pohPackage: res.ok });
     setContent(res.ok);
     setLoading(false);
@@ -67,12 +78,6 @@ export default function PohSubmittedApplicant() {
   useEffect(() => {
     user && !loading && getApplicant();
   }, [user]);
-
-  useEffect(() => {
-    !formRules.length && content && content.pohTaskData && content.pohTaskData.forEach(task => {
-      setFormRules(existingRule => [...existingRule, ...task.allowedViolationRules]);
-    });
-  }, [content]);
 
   const formatTitle = (challengeId) => {
     switch (challengeId) {
@@ -165,7 +170,7 @@ export default function PohSubmittedApplicant() {
                                 <td>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</td>
                                 <td>{user.userUserName}</td>
                                 <td>{user.userEmailId}</td>
-                                <td>{user.userVoteDecision}</td>
+                                <td>{Object.keys(user.userVoteDecision)[0]}</td>
                                 <td>{formatDate(user.userVoteCreatedAt)}</td>
                             </tr>
                             ))}

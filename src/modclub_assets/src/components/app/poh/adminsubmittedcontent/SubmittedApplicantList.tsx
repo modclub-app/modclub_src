@@ -17,66 +17,7 @@ import { fetchObjectUrl, formatDate, getUrlForData } from "../../../../utils/uti
 import { PohTaskPlusForAdmin } from "../../../../utils/types";
 import placeholder from '../../../../../assets/user_placeholder.png';
 
-const PAGE_SIZE = 9;
-
-const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlusForAdmin }) => {
-  const {profileImageUrlSuffix, submittedAt, completedOn } = applicant;
-  const regEx = /canisterId=(.*)&contentId=(.*)/g;
-  const match = profileImageUrlSuffix.length ? regEx.exec(profileImageUrlSuffix[0]) : null;
-  const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
-  const [urlObject, setUrlObject] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const urlObject = await fetchObjectUrl(imageUrl);
-      setUrlObject(urlObject);
-    };
-    fetchData();
-    return () => { setUrlObject(null) };
-  }, [imageUrl])
-  
-  return (
-    <Link
-      to={`/app/admin/poh/${applicant.packageId}`}
-      className="card is-flex is-flex-direction-column is-justify-content-flex-end"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${imageUrl ? urlObject : placeholder})`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundSize: "cover"
-      }}
-    >
-      <Card.Header justifyContent="start" style={{ marginBottom: "auto", boxShadow: "none" }}>
-        <strong style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0, color:'#FFFF' }}>
-          {applicant.userModClubId}
-        </strong>
-      </Card.Header>
-
-       <Card.Content style={{ paddingTop: "65%" }}>
-
-      </Card.Content> 
-      
-      <Card.Footer className="is-block">
-        <Card.Header.Title>
-          <strong style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0, wordBreak: 'break-all' }}>
-            {applicant.userUserName} | {applicant.userEmailId}
-          </strong>
-        </Card.Header.Title>
-
-        <Button.Group className="is-flex-wrap-nowrap" style={{ paddingBottom: 10 }}>
-          <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
-            <span>{"Submitted: " + formatDate(applicant.submittedAt)}</span>
-          </Button>
-        </Button.Group>
-        <Button.Group className="is-flex-wrap-nowrap" style={{ paddingBottom: 10 }}>
-          <Button fullwidth className="is-outlined" style={{ paddingLeft: 0, paddingRight: 0 }}>
-            <span>{"Completed: " + formatDate(applicant.completedOn)}</span>
-          </Button>
-        </Button.Group>
-      </Card.Footer>
-    </Link>
-  )
-};
+const PAGE_SIZE = 20;
 
 export default function PohApplicantList() {
   const { user } = useAuth();
@@ -97,12 +38,6 @@ export default function PohApplicantList() {
   });
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
   const [firstLoad, setFirstLoad] = useState(true);
-
-  const apps = ["Reddit", "4chan", "Medium"];
-  const [currentApp, setCurrentApp] = useState<string>(null);
-  const handleAppChange = (app) => {
-    setCurrentApp(app)
-  }
 
   const filters = ["Approved", "Rejected"];
   const [currentFilter, setCurrentFilter] = useState<string>("Approved");
