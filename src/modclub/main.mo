@@ -421,7 +421,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("Unauthorized, user does not have an identity");
     };
-    throw Error.reject("Sign ups are turned off.");
+    // throw Error.reject("Sign ups are turned off.");
 
     let profile = await ModeratorManager.registerModerator(
       caller,
@@ -1040,7 +1040,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
               };
             };
             if (
-              data.challengeType == #selfPic and 
+              data.challengeType == #dl and 
               data.dataCanisterId != null and
               data.contentId != null
             ) {
