@@ -124,7 +124,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public shared query ({ caller }) func isUserAdmin() : async Bool {
-    AuthManager.isAdmin(caller, admins);
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    return true;
   };
 
   //This function should be invoked immediately after the canister is deployed via script.

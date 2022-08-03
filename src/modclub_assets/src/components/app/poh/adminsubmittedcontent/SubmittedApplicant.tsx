@@ -23,9 +23,9 @@ import DrawingChallenge from '../DrawingChallenge';
 import { useHistory } from "react-router-dom";
 
 export default function PohSubmittedApplicant() { 
-  const { user } = useAuth();
+  const { user, isAdminUser } = useAuth();
   //Need to change
-  const isAdminUser = true;
+  //const isAdminUser = true;
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);

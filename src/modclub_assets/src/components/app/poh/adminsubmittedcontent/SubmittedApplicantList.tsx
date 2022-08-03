@@ -20,9 +20,9 @@ import placeholder from '../../../../../assets/user_placeholder.png';
 const PAGE_SIZE = 20;
 
 export default function PohApplicantList() {
-  const { user } = useAuth();
+  const { user, isAdminUser } = useAuth();
   //Need to change
-  const isAdminUser = true;
+  //const isAdminUser = true;
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
   const [rejectedApplicants, setRejectedApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
