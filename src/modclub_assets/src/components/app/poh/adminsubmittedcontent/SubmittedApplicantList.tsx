@@ -90,6 +90,7 @@ export default function PohApplicantList() {
     setIsUsingSearch(true);
     setSubmitting(true);
     setLoading(true);
+    setSearchedApplicants([...[]]);
     const pidArr = values.pids.split(",").map(function(item) {
       return item.trim();
     });
@@ -244,7 +245,7 @@ export default function PohApplicantList() {
                     </td>
                     <td>{user.userUserName}</td>
                     <td>{user.userEmailId}</td>
-                    <td>Approved</td>
+                    <td>{Object.keys(user.status)[0]}</td>
                     <td>{formatDate(user.submittedAt)}</td>
                     <td>{formatDate(user.completedOn)}</td>
                   </tr>
@@ -264,7 +265,7 @@ export default function PohApplicantList() {
                     </td>
                     <td>{user.userUserName}</td>
                     <td>{user.userEmailId}</td>
-                    <td>Approved</td>
+                    <td>{Object.keys(user.status)[0]}</td>
                     <td>{formatDate(user.submittedAt)}</td>
                     <td>{formatDate(user.completedOn)}</td>
                   </tr>
@@ -282,7 +283,7 @@ export default function PohApplicantList() {
                             </td>
                             <td>{user.userUserName}</td>
                             <td>{user.userEmailId}</td>
-                            <td>Rejected</td>
+                            <td>{Object.keys(user.status)[0]}</td>
                             <td>{formatDate(user.submittedAt)}</td>
                             <td>{formatDate(user.completedOn)}</td>
                           </tr>
