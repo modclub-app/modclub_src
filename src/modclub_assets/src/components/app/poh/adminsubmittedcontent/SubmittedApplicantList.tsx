@@ -181,7 +181,7 @@ export default function PohApplicantList() {
             {currentFilter == 'Approved' ?(<>
               {applicants.map((user, index) => (
               <tr key={index}>
-                <td>
+                <td style={{width:'125px'}}>
                   <ApplicantPOHDrawing applicant={user} />
                 </td>
                 <td>
@@ -199,7 +199,7 @@ export default function PohApplicantList() {
               (<>
                 {rejectedApplicants.length && rejectedApplicants.map((user, index) => (
                       <tr key={index}>
-                        <td>
+                        <td style={{width:'125px'}}>
                           <ApplicantPOHDrawing applicant={user} />
                         </td>
                         <td>

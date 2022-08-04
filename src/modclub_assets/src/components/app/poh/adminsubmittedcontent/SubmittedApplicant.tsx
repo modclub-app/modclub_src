@@ -168,7 +168,7 @@ export default function PohSubmittedApplicant() {
                                 <td>{user.userEmailId}</td>
                                 <td>{Object.keys(user.userVoteDecision)[0]}</td>
                                 {/* Convert nano to milli */}
-                                <td>{formatDate(Math.floor(user.userVoteCreatedAt/(1000*1000)))}</td>
+                                <td>{formatDate(BigInt(Math.floor(Number(user.userVoteCreatedAt/(1000*1000)))))}</td>
                             </tr>
                             ))}
                         </tbody>
