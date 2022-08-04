@@ -1006,6 +1006,15 @@ shared ({caller = deployer}) actor class ModClub() = this {
     let items =  Buffer.Buffer<Text>(0);
     var useIndexes = true;
     if(userToFetchPOHFor.size() == 0) {
+      let pohTaskIds = pohContentQueueManager.getContentIds( 
+        caller,
+        status,
+        randomizationEnabled
+      );
+      for(id in pohTaskIds.vals()) {
+        items.add(id);
+      };
+    } else{
       let userPrincipalBuff =  Buffer.Buffer<Principal>(0);
       for(user in userToFetchPOHFor.vals()) {
         userPrincipalBuff.add(Principal.fromText(user));
@@ -1015,15 +1024,6 @@ shared ({caller = deployer}) actor class ModClub() = this {
         items.add(id);
       };
       useIndexes := false;
-    } else{
-      let pohTaskIds = pohContentQueueManager.getContentIds( 
-        caller,
-        status,
-        randomizationEnabled
-      );
-      for(id in pohTaskIds.vals()) {
-        items.add(id);
-      };
     };
     var count: Nat = 0;
     let maxReturn: Nat = end - start + 1;
