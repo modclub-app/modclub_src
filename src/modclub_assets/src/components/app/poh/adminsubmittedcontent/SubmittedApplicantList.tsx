@@ -90,14 +90,14 @@ export default function PohApplicantList() {
     setIsUsingSearch(true);
     setSubmitting(true);
     setLoading(true);
-    setSearchedApplicants([...[]]);
+    setCurrentFilter('Search');
     const pidArr = values.pids.split(",").map(function(item) {
       return item.trim();
     });
     const status = {'approved':null};
     const newSearchedApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, pidArr);
     console.log("Searched Users:", newSearchedApplicants);
-    setSearchedApplicants([...searchedApplicants, ...newSearchedApplicants]);
+    setSearchedApplicants(newSearchedApplicants);
     setLoading(false);
     setSubmitting(false);
   }
