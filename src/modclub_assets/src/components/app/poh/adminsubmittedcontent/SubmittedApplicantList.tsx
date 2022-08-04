@@ -104,9 +104,9 @@ export default function PohApplicantList() {
     setLoading(true);
     if(crrFilter == 'Approved'){
       const status = {'approved':null};  
-      //const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, []);
+      const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, []);
       //console.log("Appoved users:", newApplicants);
-      const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
+      //const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
       if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
       setApplicants([...applicants, ...newApplicants]);
     }else{
