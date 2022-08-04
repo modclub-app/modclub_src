@@ -31,7 +31,7 @@ import {
   ProviderSettingResult,
 } from "./types";
 import { Principal } from "@dfinity/principal";
-
+import { fetchObjectUrl, formatDate, getUrlForData } from "./util";
 export type Optional<Type> = [Type] | [];
 
 var actor: _SERVICE = null;
@@ -309,9 +309,10 @@ export async function getPohTasks(
 export async function getAllPohTasksForAdminUsers(
   status: ContentStatus,
   start: number,
-  end: number
+  end: number,
+  userPrincipal: any
 ): Promise<PohTaskPlusForAdmin[]> {
-  return (await getMC()).getAllPohTasksForAdminUsers(status, BigInt(start), BigInt(end));
+  return (await getMC()).getAllPohTasksForAdminUsers(status, BigInt(start), BigInt(end),userPrincipal);
 }
 
 export async function getPohTaskData(packageId: string): Promise<any> {

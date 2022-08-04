@@ -3,11 +3,9 @@ import { Link, useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   Modal,
-  Heading,
   Columns,
   Card,
   Button,
-  Icon, 
 } from "react-bulma-components";
 import Userstats from "../../profile/Userstats";
 import FilterBar from "./common/AdminFilterBar";
@@ -19,10 +17,44 @@ import placeholder from '../../../../../assets/user_placeholder.png';
 
 const PAGE_SIZE = 20;
 
+const ApplicantPOHDrawing = ({ applicant } : { applicant : PohTaskPlusForAdmin }) => {
+  const indexForDrawingChallenge = applicant.pohTaskData.findIndex(data=>data.challengeId=='challenge-drawing');
+  const imageUrl = (indexForDrawingChallenge>-1) ? getUrlForData(applicant.pohTaskData[indexForDrawingChallenge].dataCanisterId,applicant.pohTaskData[indexForDrawingChallenge].contentId[0]) : null;
+  const [urlObject, setUrlObject] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      /* applicant.pohTaskData[0].challengeId == 'challenge-drawing' 
+        const imageUrl = getUrlForData(applicant.pohTaskData[0].dataCanisterId, applicant.pohTaskData[0].contentId[0]);
+        const urlObject = await fetchObjectUrl(imageUrl);
+      */
+      console.log(`Applicant imageUrl: ${imageUrl}`);
+      const urlObject = await fetchObjectUrl(imageUrl);
+      setUrlObject(urlObject);
+    };
+    fetchData();
+    return () => { setUrlObject(null) };
+  }, [imageUrl])
+  
+  return (
+      <img
+        src={imageUrl ? urlObject : placeholder}
+        alt="Image File"
+        style={{
+          display: "block",
+          margin: "auto",
+          height: 125,
+          width: 125
+        }}
+      />
+  )
+};
+
 export default function PohApplicantList() {
   const { user, isAdminUser } = useAuth();
   //Need to change
-  //const isAdminUser = true;
+  // const { user } = useAuth();
+  // const isAdminUser = true;
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
   const [rejectedApplicants, setRejectedApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
@@ -53,13 +85,15 @@ export default function PohApplicantList() {
     setLoading(true);
     if(crrFilter == 'Approved'){
       const status = {'approved':null};  
-      const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex);
+      const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, []);
+      console.log("Appoved users:", newApplicants);
       //const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
       if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
       setApplicants([...applicants, ...newApplicants]);
     }else{
       const status = {'rejected':null};
-      const newRejectedApplicants = await getAllPohTasksForAdminUsers(status, rejPage.startIndex, rejPage.endIndex);
+      const newRejectedApplicants = await getAllPohTasksForAdminUsers(status, rejPage.startIndex, rejPage.endIndex, []);
+      console.log("Rejected users:", newRejectedApplicants);
       if (newRejectedApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
       setRejectedApplicants([...rejectedApplicants, ...newRejectedApplicants]);
     }
@@ -136,6 +170,7 @@ export default function PohApplicantList() {
         <table className="table">
           <tbody>
             <tr>
+              <th style={{color:'#FFFF'}}>Profile</th>
               <th style={{color:'#FFFF'}}>Modclub ID</th>
               <th style={{color:'#FFFF'}}>Username</th>
               <th style={{color:'#FFFF'}}>EmailID</th>
@@ -146,6 +181,9 @@ export default function PohApplicantList() {
             {currentFilter == 'Approved' ?(<>
               {applicants.map((user, index) => (
               <tr key={index}>
+                <td>
+                  <ApplicantPOHDrawing applicant={user} />
+                </td>
                 <td>
                   <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
                     <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>
@@ -161,6 +199,9 @@ export default function PohApplicantList() {
               (<>
                 {rejectedApplicants.length && rejectedApplicants.map((user, index) => (
                       <tr key={index}>
+                        <td>
+                          <ApplicantPOHDrawing applicant={user} />
+                        </td>
                         <td>
                           <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
                             <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>

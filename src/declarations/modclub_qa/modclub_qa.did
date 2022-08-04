@@ -197,6 +197,7 @@ type PohTaskPlusForAdmin =
  record {
    completedOn: int;
    packageId: text;
+   pohTaskData: vec PohTaskData;
    profileImageUrlSuffix: opt text;
    status: ContentStatus;
    submittedAt: int;
@@ -468,7 +469,7 @@ type ModClub =
                                          principal;
                                          Holdings;
                                        }) query;
-   getAllPohTasksForAdminUsers: (ContentStatus, nat, nat) ->
+   getAllPohTasksForAdminUsers: (ContentStatus, nat, nat, vec text) ->
     (vec PohTaskPlusForAdmin) query;
    getAllProfiles: () -> (vec Profile) query;
    getCanisterLog: (opt CanisterLogRequest) ->

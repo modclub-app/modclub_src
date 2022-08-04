@@ -562,6 +562,16 @@ module PohModule {
             return contentId; 
         };
 
+        public func getPohPackageIDForUserList(userId: [Principal]) : [Text] {
+            let contenBuff = Buffer.Buffer<Text>(0);
+            for(user in userId.vals()){
+                for(packageId in state.userToPohChallengePackageId.get0(user).vals()) {
+                    contenBuff.add(packageId);
+                };
+            };
+            return contenBuff.toArray(); 
+        };
+
         private func sortByComplexChallengeFirst(a : (Principal, [Text]), b: (Principal, [Text])) : Order.Order {
             if(a.1.size() > b.1.size()) {
                 return #less;

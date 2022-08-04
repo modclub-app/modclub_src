@@ -996,32 +996,43 @@ shared ({caller = deployer}) actor class ModClub() = this {
     });
   };
 
-  public query({ caller }) func getAllPohTasksForAdminUsers(status: Types.ContentStatus, start: Nat, end: Nat) : async [PohTypes.PohTaskPlusForAdmin] {
+  public query({ caller }) func getAllPohTasksForAdminUsers(status: Types.ContentStatus, start: Nat, end: Nat, userToFetchPOHFor: [Text]) : async [PohTypes.PohTaskPlusForAdmin] {
     
     if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
 
-    let pohTaskIds = pohContentQueueManager.getContentIds(
-      caller,
-      status,
-      randomizationEnabled
-    );
-    var count: Nat = 0;
-    let maxReturn: Nat = end - start + 1;
-
     // Add item id to buffer
     let items =  Buffer.Buffer<Text>(0);
-    for(id in pohTaskIds.vals()) {
-      items.add(id);
+    var useIndexes = true;
+    if(userToFetchPOHFor.size() == 0) {
+      let userPrincipalBuff =  Buffer.Buffer<Principal>(0);
+      for(user in userToFetchPOHFor.vals()) {
+        userPrincipalBuff.add(Principal.fromText(user));
+      };
+      let pohTaskIds = pohEngine.getPohPackageIDForUserList(userPrincipalBuff.toArray());
+      for(id in pohTaskIds.vals()) {
+        items.add(id);
+      };
+      useIndexes := false;
+    } else{
+      let pohTaskIds = pohContentQueueManager.getContentIds( 
+        caller,
+        status,
+        randomizationEnabled
+      );
+      for(id in pohTaskIds.vals()) {
+        items.add(id);
+      };
     };
-
-    let itemsArr = pohEngine.sortPackagesByCreatedDate(items);
+    var count: Nat = 0;
+    let maxReturn: Nat = end - start + 1;
+    let itemsArr = pohEngine.sortPackagesByCreatedDate(items); 
 
     let tasks = Buffer.Buffer<PohTypes.PohTaskPlusForAdmin>(0);
     var index: Nat = 0;
     for(id in itemsArr.vals()) {
-      if(index >= start and index <= end  and count < maxReturn) {
+      if((useIndexes == false) or (index >= start and index <= end  and count < maxReturn)) {
         let voteCount = voteManager.getVoteCountForPoh(caller, id);
         let taskDataWrapper = pohEngine.getPohTasks([id]);
         var profileImageUrlSuffix :?Text = null;
@@ -1030,6 +1041,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
         var userEmailId :Text = "";
         var submittedAt :Int = 0;
         var completedOn :Int = 0;
+        var pohTaskData = taskDataWrapper[0].pohTaskData;
         for(wrapper in taskDataWrapper.vals()) {
           for(data in wrapper.pohTaskData.vals()) {
             submittedAt := data.submittedAt;
@@ -1068,6 +1080,7 @@ shared ({caller = deployer}) actor class ModClub() = this {
               userEmailId = userEmailId;
               submittedAt = submittedAt;
               completedOn = completedOn;
+              pohTaskData = pohTaskData;
             };
             tasks.add(taskPlus);
             count := count + 1;

@@ -267,6 +267,7 @@ module {
         userEmailId: Text;
         submittedAt: Int;
         completedOn: Int;
+        pohTaskData: [PohTaskData];
     };
 
     public type PohTaskDataAndVotesWrapperPlus = {

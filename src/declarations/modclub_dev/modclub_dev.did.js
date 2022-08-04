@@ -101,6 +101,40 @@ export const idlFactory = ({ IDL }) => {
     'wallet' : IDL.Int,
     'userPoints' : IDL.Int,
   });
+  const PohChallengeStatus = IDL.Variant({
+    'notSubmitted' : IDL.Null,
+    'verified' : IDL.Null,
+    'expired' : IDL.Null,
+    'pending' : IDL.Null,
+    'rejected' : IDL.Null,
+  });
+  const ViolatedRules = IDL.Record({
+    'ruleId' : IDL.Text,
+    'ruleDesc' : IDL.Text,
+  });
+  const PohChallengeType = IDL.Variant({
+    'dl' : IDL.Null,
+    'ssn' : IDL.Null,
+    'userName' : IDL.Null,
+    'fullName' : IDL.Null,
+    'email' : IDL.Null,
+    'selfVideo' : IDL.Null,
+    'selfPic' : IDL.Null,
+  });
+  const PohTaskData = IDL.Record({
+    'dataCanisterId' : IDL.Opt(IDL.Principal),
+    'status' : PohChallengeStatus,
+    'completedOn' : IDL.Int,
+    'contentId' : IDL.Opt(IDL.Text),
+    'allowedViolationRules' : IDL.Vec(ViolatedRules),
+    'userId' : IDL.Principal,
+    'createdAt' : IDL.Int,
+    'submittedAt' : IDL.Int,
+    'updatedAt' : IDL.Int,
+    'challengeId' : IDL.Text,
+    'challengeType' : PohChallengeType,
+    'wordList' : IDL.Opt(IDL.Vec(IDL.Text)),
+  });
   const PohTaskPlusForAdmin = IDL.Record({
     'status' : ContentStatus,
     'completedOn' : IDL.Int,
@@ -109,6 +143,7 @@ export const idlFactory = ({ IDL }) => {
     'submittedAt' : IDL.Int,
     'userUserName' : IDL.Text,
     'userModClubId' : IDL.Text,
+    'pohTaskData' : IDL.Vec(PohTaskData),
     'userEmailId' : IDL.Text,
     'packageId' : IDL.Text,
   });
@@ -255,13 +290,6 @@ export const idlFactory = ({ IDL }) => {
     'startPoh' : IDL.Null,
     'rejected' : IDL.Null,
   });
-  const PohChallengeStatus = IDL.Variant({
-    'notSubmitted' : IDL.Null,
-    'verified' : IDL.Null,
-    'expired' : IDL.Null,
-    'pending' : IDL.Null,
-    'rejected' : IDL.Null,
-  });
   const ChallengeResponse = IDL.Record({
     'status' : PohChallengeStatus,
     'completedAt' : IDL.Opt(IDL.Int),
@@ -283,19 +311,6 @@ export const idlFactory = ({ IDL }) => {
   });
   const SubscribePohMessage = IDL.Record({
     'callback' : IDL.Func([PohVerificationResponsePlus], [], ['oneway']),
-  });
-  const ViolatedRules = IDL.Record({
-    'ruleId' : IDL.Text,
-    'ruleDesc' : IDL.Text,
-  });
-  const PohChallengeType = IDL.Variant({
-    'dl' : IDL.Null,
-    'ssn' : IDL.Null,
-    'userName' : IDL.Null,
-    'fullName' : IDL.Null,
-    'email' : IDL.Null,
-    'selfVideo' : IDL.Null,
-    'selfPic' : IDL.Null,
   });
   const PohChallengeRequiredField = IDL.Variant({
     'imageBlob' : IDL.Null,
@@ -392,20 +407,6 @@ export const idlFactory = ({ IDL }) => {
       IDL.Tuple(IDL.Principal, RelShared)
     ),
     'wordList' : IDL.Vec(IDL.Text),
-  });
-  const PohTaskData = IDL.Record({
-    'dataCanisterId' : IDL.Opt(IDL.Principal),
-    'status' : PohChallengeStatus,
-    'completedOn' : IDL.Int,
-    'contentId' : IDL.Opt(IDL.Text),
-    'allowedViolationRules' : IDL.Vec(ViolatedRules),
-    'userId' : IDL.Principal,
-    'createdAt' : IDL.Int,
-    'submittedAt' : IDL.Int,
-    'updatedAt' : IDL.Int,
-    'challengeId' : IDL.Text,
-    'challengeType' : PohChallengeType,
-    'wordList' : IDL.Opt(IDL.Vec(IDL.Text)),
   });
   const PohTaskDataWrapperPlus = IDL.Record({
     'reward' : IDL.Float64,
@@ -608,7 +609,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAllPohTasksForAdminUsers' : IDL.Func(
-        [ContentStatus, IDL.Nat, IDL.Nat],
+        [ContentStatus, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)],
         [IDL.Vec(PohTaskPlusForAdmin)],
         ['query'],
       ),

@@ -4,16 +4,12 @@ import { useParams } from "react-router";
 import { useAuth } from "../../../../utils/auth";
 import { formatDate } from "../../../../utils/util";
 import { getPohTaskDataForAdminUsers } from "../../../../utils/api";
-import { ViolatedRules } from '../../../../utils/types';
 import { 
   Heading,
   Card,
-  Button,
   Modal,
-  Icon,
   Notification
 } from "react-bulma-components";
-import { Form, Field } from "react-final-form";
 import Userstats from "../../profile/Userstats";
 import ProfileDetails from "../ProfileDetails";
 import ProfilePic from "../ProfilePic";
@@ -25,11 +21,11 @@ import { useHistory } from "react-router-dom";
 export default function PohSubmittedApplicant() { 
   const { user, isAdminUser } = useAuth();
   //Need to change
-  //const isAdminUser = true;
+//  const { user } = useAuth();
+//  const isAdminUser = true;
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
-  const [formRules, setFormRules] = useState<ViolatedRules[]>([]);
   const history = useHistory();
 
   const getApplicant = async () => {
@@ -42,16 +38,16 @@ export default function PohSubmittedApplicant() {
     // minVotes: 2,
     // packageId: "fx3lh-v3cir-tdsya-3nacp-ws45h-t7emc-gsrrp-o6p4o-pvoye-pcgpb-qae-poh-content-1197",
     // pohTaskData: [{challengeId: "challenge-drawing",
-    // challengeType: {dl: null},
-    // completedOn: 1658775260856,
-    // contentId: ['903CED9D8808023924288E4D0B31425F9DB741B7DA4CCB5C89DAA72D15B1429E'],
-    // createdAt: 1658724052298,
-    // dataCanisterId: 'dw7z3-liaaa-aaaah-qc3ta-cai',
-    // status: {rejected: null},
-    // submittedAt: 1658724157219,
-    // updatedAt: 1658775260856,
-    // userId:'fx3lh-v3cir-tdsya-3nacp-ws45h-t7emc-gsrrp-o6p4o-pvoye-pcgpb-qae',
-    // wordList: [['Square', 'Triangle', 'Star']]
+    //     challengeType: {dl: null},
+    //     completedOn: 1658775260856,
+    //     contentId: ['903CED9D8808023924288E4D0B31425F9DB741B7DA4CCB5C89DAA72D15B1429E'],
+    //     createdAt: 1658724052298,
+    //     dataCanisterId: 'dw7z3-liaaa-aaaah-qc3ta-cai',
+    //     status: {rejected: null},
+    //     submittedAt: 1658724157219,
+    //     updatedAt: 1658775260856,
+    //     userId:'fx3lh-v3cir-tdsya-3nacp-ws45h-t7emc-gsrrp-o6p4o-pvoye-pcgpb-qae',
+    //     wordList: [['Square', 'Triangle', 'Star']]
     // }],
     // reward: 10,
     // updatedAt: 1658724185497,
@@ -171,7 +167,8 @@ export default function PohSubmittedApplicant() {
                                 <td>{user.userUserName}</td>
                                 <td>{user.userEmailId}</td>
                                 <td>{Object.keys(user.userVoteDecision)[0]}</td>
-                                <td>{formatDate(user.userVoteCreatedAt)}</td>
+                                {/* Convert nano to milli */}
+                                <td>{formatDate(Math.floor(user.userVoteCreatedAt/(1000*1000)))}</td>
                             </tr>
                             ))}
                         </tbody>
