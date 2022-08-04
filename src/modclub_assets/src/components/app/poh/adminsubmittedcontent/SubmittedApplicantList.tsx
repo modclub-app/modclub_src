@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Link, useHistory } from "react-router-dom";
+import { Form, Field } from "react-final-form";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -15,7 +16,7 @@ import { fetchObjectUrl, formatDate, getUrlForData } from "../../../../utils/uti
 import { PohTaskPlusForAdmin } from "../../../../utils/types";
 import placeholder from '../../../../../assets/user_placeholder.png';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100;
 
 const ApplicantPOHDrawing = ({ applicant } : { applicant : PohTaskPlusForAdmin }) => {
   const indexForDrawingChallenge = applicant.pohTaskData.findIndex(data=>data.challengeId=='challenge-drawing');
@@ -58,6 +59,8 @@ export default function PohApplicantList() {
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
   const [rejectedApplicants, setRejectedApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
+  const [searchedApplicants, setSearchedApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
+  const [isUsingSearch, setIsUsingSearch] = useState<boolean>(false);
   const [page, setPage] = useState({
     page: 1,
     startIndex: 0,
@@ -75,19 +78,35 @@ export default function PohApplicantList() {
   const [currentFilter, setCurrentFilter] = useState<string>("Approved");
   const handleFilterChange = (filter) => {
     // Make backend call to get content based on filter and display it.
+    setIsUsingSearch(false);
     setCurrentFilter(filter);
     getApplicants(filter);
+    setSearchedApplicants([...[]]);
   }
   const history = useHistory();
-
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  
+  const onFormSubmit = async (values) => {
+    setIsUsingSearch(true);
+    setSubmitting(true);
+    setLoading(true);
+    const pidArr = values.pids.split(",").map(function(item) {
+      return item.trim();
+    });
+    const status = {'approved':null};
+    const newSearchedApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, pidArr);
+    setSearchedApplicants([...searchedApplicants, ...newSearchedApplicants]);
+    setLoading(false);
+    setSubmitting(false);
+  }
   const getApplicants = async (crrFilter) => {
     if(!isAdminUser)history.push(`/app/poh`);
     setLoading(true);
     if(crrFilter == 'Approved'){
       const status = {'approved':null};  
-      const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, []);
-      console.log("Appoved users:", newApplicants);
-      //const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
+      //const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, []);
+      //console.log("Appoved users:", newApplicants);
+      const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
       if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
       setApplicants([...applicants, ...newApplicants]);
     }else{
@@ -157,6 +176,38 @@ export default function PohApplicantList() {
       <Userstats />
       <Columns>
           <Columns.Column size={12}>
+          <Form
+                onSubmit={onFormSubmit}
+                render={({ handleSubmit, values }) => (
+                  <form onSubmit={handleSubmit}>
+                    <div className="field">
+                      <div className="control has-icons-left">
+                        <Field
+                          name="pids"
+                          component="textarea"
+                          type="text"
+                          className="input is-medium"
+                          placeholder="Comma Separated Principals"
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={!values.pids || submitting}
+                      size="large"
+                      color="primary"
+                      fullwidth
+                      value="submit"
+                      className={submitting ? "is-loading" : ""}
+                    >
+                      Submit
+                    </Button>
+                  </form>
+                )}
+              />
+          </Columns.Column>
+          <Columns.Column size={12}>
             <FilterBar
               isAdminUser={isAdminUser}
               filters={filters}
@@ -178,60 +229,85 @@ export default function PohApplicantList() {
               <th style={{color:'#FFFF'}}>Submission Date</th>
               <th style={{color:'#FFFF'}}>Completion Date</th>
             </tr>
-            {currentFilter == 'Approved' ?(<>
-              {applicants.map((user, index) => (
-              <tr key={index}>
-                <td style={{width:'125px'}}>
-                  <ApplicantPOHDrawing applicant={user} />
-                </td>
-                <td>
-                  <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
-                    <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>
-                  </Link>
-                </td>
-                <td>{user.userUserName}</td>
-                <td>{user.userEmailId}</td>
-                <td>Approved</td>
-                <td>{formatDate(user.submittedAt)}</td>
-                <td>{formatDate(user.completedOn)}</td>
-              </tr>
-              ))}</>):
-              (<>
-                {rejectedApplicants.length && rejectedApplicants.map((user, index) => (
-                      <tr key={index}>
-                        <td style={{width:'125px'}}>
-                          <ApplicantPOHDrawing applicant={user} />
-                        </td>
-                        <td>
-                          <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
-                            <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>
-                          </Link>
-                        </td>
-                        <td>{user.userUserName}</td>
-                        <td>{user.userEmailId}</td>
-                        <td>Rejected</td>
-                        <td>{formatDate(user.submittedAt)}</td>
-                        <td>{formatDate(user.completedOn)}</td>
-                      </tr>
-                    ))}
-              </>)
+            { isUsingSearch ? (
+              <>
+                {searchedApplicants.map((user, index) => (
+                  <tr key={index}>
+                    <td style={{width:'125px'}}>
+                      <ApplicantPOHDrawing applicant={user} />
+                    </td>
+                    <td>
+                      <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
+                        <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>
+                      </Link>
+                    </td>
+                    <td>{user.userUserName}</td>
+                    <td>{user.userEmailId}</td>
+                    <td>Approved</td>
+                    <td>{formatDate(user.submittedAt)}</td>
+                    <td>{formatDate(user.completedOn)}</td>
+                  </tr>
+                ))}
+              </>) :
+              (
+                currentFilter == 'Approved' ?(<>
+                  {applicants.map((user, index) => (
+                  <tr key={index}>
+                    <td style={{width:'125px'}}>
+                      <ApplicantPOHDrawing applicant={user} />
+                    </td>
+                    <td>
+                      <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
+                        <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>
+                      </Link>
+                    </td>
+                    <td>{user.userUserName}</td>
+                    <td>{user.userEmailId}</td>
+                    <td>Approved</td>
+                    <td>{formatDate(user.submittedAt)}</td>
+                    <td>{formatDate(user.completedOn)}</td>
+                  </tr>
+                  ))}</>):
+                  (<>
+                    {rejectedApplicants.length && rejectedApplicants.map((user, index) => (
+                          <tr key={index}>
+                            <td style={{width:'125px'}}>
+                              <ApplicantPOHDrawing applicant={user} />
+                            </td>
+                            <td>
+                              <Link to={`/app/admin/poh/${user.packageId}`} style={{color:'#FFFF'}}>
+                                <strong>{typeof user.userModClubId == "string" ? user.userModClubId : user.userModClubId.toText()}</strong>
+                              </Link>
+                            </td>
+                            <td>{user.userUserName}</td>
+                            <td>{user.userEmailId}</td>
+                            <td>Rejected</td>
+                            <td>{formatDate(user.submittedAt)}</td>
+                            <td>{formatDate(user.completedOn)}</td>
+                          </tr>
+                        ))}
+                  </>)
+              )
             }
           </tbody>
         </table>
         </Card.Content>
-        <Card.Footer alignItems="center">
-          <div>
-            Showing 1 to {currentFilter == 'Approved'?applicants.length:rejectedApplicants.length} feeds
-          </div>
-          <Button
-            color="primary"
-            onClick={() => currentFilter == 'Approved'?nextPage():nextRejPage()}
-            className="ml-4 px-7 py-3"
-            disabled={hasReachedEnd}
-          >
-            See more
-          </Button>
-        </Card.Footer>
+        {!isUsingSearch && 
+          <Card.Footer alignItems="center">
+            <div>
+              Showing 1 to {currentFilter == 'Approved'?applicants.length:rejectedApplicants.length} feeds
+            </div>
+            <Button
+              color="primary"
+              onClick={() => currentFilter == 'Approved'?nextPage():nextRejPage()}
+              className="ml-4 px-7 py-3"
+              disabled={hasReachedEnd}
+            >
+              See more
+            </Button>
+          </Card.Footer>
+        }
+        
       </Card>
     </>
   )
