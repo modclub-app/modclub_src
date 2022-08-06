@@ -469,8 +469,8 @@ type ModClub =
                                          principal;
                                          Holdings;
                                        }) query;
-   getAllPohTasksForAdminUsers: (ContentStatus, nat, nat, vec text) ->
-    (vec PohTaskPlusForAdmin) query;
+   getAllPohTasksForAdminUsers: (ContentStatus, nat, nat, vec text, int,
+    int) -> (vec PohTaskPlusForAdmin) query;
    getAllProfiles: () -> (vec Profile) query;
    getCanisterLog: (opt CanisterLogRequest) ->
     (opt CanisterLogResponse) query;

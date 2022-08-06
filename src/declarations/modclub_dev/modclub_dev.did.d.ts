@@ -190,6 +190,8 @@ export interface ModClub {
       arg_1: bigint,
       arg_2: bigint,
       arg_3: Array<string>,
+      arg_4: bigint,
+      arg_5: bigint,
     ) => Promise<Array<PohTaskPlusForAdmin>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getCanisterLog' : (arg_0: [] | [CanisterLogRequest]) => Promise<

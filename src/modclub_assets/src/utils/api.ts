@@ -310,9 +310,13 @@ export async function getAllPohTasksForAdminUsers(
   status: ContentStatus,
   start: number,
   end: number,
-  userPrincipal: any
+  userPrincipal: any,
+  startDate?: number,
+  endDate?: number
 ): Promise<PohTaskPlusForAdmin[]> {
-  return (await getMC()).getAllPohTasksForAdminUsers(status, BigInt(start), BigInt(end),userPrincipal);
+  const startDateToProvide = startDate?startDate:0;
+  const endDateToProvide = endDate?endDate:0;
+  return (await getMC()).getAllPohTasksForAdminUsers(status, BigInt(start), BigInt(end),userPrincipal,startDateToProvide,endDateToProvide);
 }
 
 export async function getPohTaskData(packageId: string): Promise<any> {

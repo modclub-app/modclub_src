@@ -572,6 +572,16 @@ module PohModule {
             return contenBuff.toArray(); 
         };
 
+        public func getAllPohIDsForDateRange(startDate: Int, endDate: Int) : [Text] {
+            let packageIdForDateRangeBuf = Buffer.Buffer<Text>(0);
+            for ( (packageId, package) in state.pohChallengePackages.entries()) {
+                if(package.createdAt > startDate and package.createdAt < endDate) {
+                    packageIdForDateRangeBuf.add(packageId);
+                }                    
+            };
+            return packageIdForDateRangeBuf.toArray();
+        };
+
         private func sortByComplexChallengeFirst(a : (Principal, [Text]), b: (Principal, [Text])) : Order.Order {
             if(a.1.size() > b.1.size()) {
                 return #less;

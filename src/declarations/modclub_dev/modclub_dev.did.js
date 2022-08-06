@@ -609,7 +609,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAllPohTasksForAdminUsers' : IDL.Func(
-        [ContentStatus, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)],
+        [ContentStatus, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text), IDL.Int, IDL.Int],
         [IDL.Vec(PohTaskPlusForAdmin)],
         ['query'],
       ),

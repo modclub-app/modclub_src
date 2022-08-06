@@ -8,6 +8,8 @@ import {
   Card,
   Button,
 } from "react-bulma-components";
+import "../adminsubmittedcontent/common/react-datetime.css";
+import DatePicker from "react-datepicker";
 import Userstats from "../../profile/Userstats";
 import FilterBar from "./common/AdminFilterBar";
 import { useAuth } from "../../../../utils/auth";
@@ -85,17 +87,31 @@ export default function PohApplicantList() {
   }
   const history = useHistory();
   const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const handleStartChange = (newValue: Date | null) => {
+    setStartDate(newValue);
+  };
+  const handleEndChange = (newValue: Date | null) => {
+    setEndDate(newValue);
+  };
   
   const onFormSubmit = async (values) => {
+    searchUsingPIDORDate("pid",values)
+  }
+  const searchUsingPIDORDate = async (searchType: string,values?) => {
     setIsUsingSearch(true);
     setSubmitting(true);
     setLoading(true);
     setCurrentFilter('Search');
-    const pidArr = values.pids.split(",").map(function(item) {
+    const pidArr = searchType=='pid'?values.pids.split(",").map(function(item) {
       return item.trim();
-    });
+    }):[];
+    const stDate = searchType=='dates'? new Date(startDate).getTime():0;
+    const enDate = searchType=='dates'? new Date(endDate).getTime():0;
     const status = {'approved':null};
-    const newSearchedApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, pidArr);
+    const newSearchedApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, pidArr, stDate, enDate);
     console.log("Searched Users:", newSearchedApplicants);
     setSearchedApplicants(newSearchedApplicants);
     setLoading(false);
@@ -108,7 +124,7 @@ export default function PohApplicantList() {
       const status = {'approved':null};  
       const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, []);
       console.log("Appoved users:", newApplicants);
-      //const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
+      // const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
       if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
       setApplicants([...applicants, ...newApplicants]);
     }else{
@@ -178,36 +194,65 @@ export default function PohApplicantList() {
       <Userstats />
       <Columns>
           <Columns.Column size={12}>
-          <Form
-                onSubmit={onFormSubmit}
-                render={({ handleSubmit, values }) => (
-                  <form onSubmit={handleSubmit}>
-                    <div className="field">
-                      <div className="control has-icons-left">
-                        <Field
-                          name="pids"
-                          component="textarea"
-                          type="text"
-                          className="input is-medium"
-                          placeholder="Comma Separated Principals"
-                        />
-                      </div>
+            <Form
+              onSubmit={onFormSubmit}
+              render={({ handleSubmit, values }) => (
+                <form onSubmit={handleSubmit}>
+                  <div className="field">
+                    <div className="control has-icons-left">
+                      <Field
+                        name="pids"
+                        component="textarea"
+                        type="text"
+                        className="input is-medium"
+                        placeholder="Comma Separated Principals"
+                      />
                     </div>
+                  </div>
 
-                    <Button
-                      type="submit"
-                      disabled={!values.pids || submitting}
-                      size="large"
-                      color="primary"
-                      fullwidth
-                      value="submit"
-                      className={submitting ? "is-loading" : ""}
-                    >
-                      Submit
-                    </Button>
-                  </form>
-                )}
-              />
+                  <Button
+                    type="submit"
+                    disabled={!values.pids || submitting}
+                    size="large"
+                    color="primary"
+                    fullwidth
+                    value="submit"
+                    className={submitting ? "is-loading" : ""}
+                  >
+                    Submit
+                  </Button>
+                </form>
+              )}
+            />
+          </Columns.Column>
+          <Columns.Column size={12}>
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => handleStartChange(date)}
+              timeInputLabel="Start Date Time:"
+              placeholderText="Start Date Time"
+              dateFormat="MM/dd/yyyy h:mm aa"
+              showTimeInput
+            />
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => handleEndChange(date)}
+              timeInputLabel="End Date Time:"
+              placeholderText="End Date Time"
+              dateFormat="MM/dd/yyyy h:mm aa"
+              showTimeInput
+            />
+            <Button
+              type="button"
+              disabled={!startDate || !endDate || submitting}
+              size="large"
+              color="primary"
+              fullwidth
+              className={submitting ? "is-loading" : ""}
+              onClick={()=>searchUsingPIDORDate('dates')}
+            >
+              Date Range Search 
+            </Button>
           </Columns.Column>
           <Columns.Column size={12}>
             <FilterBar
