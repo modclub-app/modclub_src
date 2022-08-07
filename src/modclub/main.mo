@@ -997,10 +997,10 @@ shared ({caller = deployer}) actor class ModClub() = this {
   };
 
   public query({ caller }) func getAllPohTasksForAdminUsers(status: Types.ContentStatus, start: Nat, end: Nat, userToFetchPOHFor: [Text], startDate: Int, endDate: Int) : async [PohTypes.PohTaskPlusForAdmin] {
-    // Need to change
-    // if(not AuthManager.isAdmin(caller, admins)) {
-    //   throw Error.reject(AuthManager.Unauthorized);
-    // };
+
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
 
     // Add item id to buffer
     let items =  Buffer.Buffer<Text>(0);
