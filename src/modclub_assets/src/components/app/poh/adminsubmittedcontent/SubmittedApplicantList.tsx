@@ -291,8 +291,8 @@ export default function PohApplicantList() {
                     <td>{user.userUserName}</td>
                     <td>{user.userEmailId}</td>
                     <td>{Object.keys(user.status)[0]}</td>
-                    <td>{formatDate(user.submittedAt)}</td>
-                    <td>{formatDate(user.completedOn)}</td>
+                    <td>{formatDate(user.submittedAt,'PPpp')}</td>
+                    <td>{formatDate(user.completedOn,'PPpp')}</td>
                   </tr>
                 ))}
               </>) :
@@ -311,8 +311,8 @@ export default function PohApplicantList() {
                     <td>{user.userUserName}</td>
                     <td>{user.userEmailId}</td>
                     <td>{Object.keys(user.status)[0]}</td>
-                    <td>{formatDate(user.submittedAt)}</td>
-                    <td>{formatDate(user.completedOn)}</td>
+                    <td>{formatDate(user.submittedAt,'PPpp')}</td>
+                    <td>{formatDate(user.completedOn,'PPpp')}</td>
                   </tr>
                   ))}</>):
                   (<>
@@ -329,8 +329,8 @@ export default function PohApplicantList() {
                             <td>{user.userUserName}</td>
                             <td>{user.userEmailId}</td>
                             <td>{Object.keys(user.status)[0]}</td>
-                            <td>{formatDate(user.submittedAt)}</td>
-                            <td>{formatDate(user.completedOn)}</td>
+                            <td>{formatDate(user.submittedAt,'PPpp')}</td>
+                            <td>{formatDate(user.completedOn,'PPpp')}</td>
                           </tr>
                         ))}
                   </>)

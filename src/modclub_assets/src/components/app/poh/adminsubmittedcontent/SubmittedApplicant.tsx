@@ -133,7 +133,7 @@ export default function PohSubmittedApplicant() {
             <Card.Header>
                 <Card.Header.Title>
                 <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-                    Submitted {formatDate(content.updatedAt)}
+                    Submitted {formatDate(content.updatedAt,'PPpp')}
                 </span>
                 </Card.Header.Title>
                 {/* <Progress
@@ -168,7 +168,7 @@ export default function PohSubmittedApplicant() {
                                 <td>{user.userEmailId}</td>
                                 <td>{Object.keys(user.userVoteDecision)[0]}</td>
                                 {/* Convert nano to milli */}
-                                <td>{formatDate(BigInt(Math.floor(Number(user.userVoteCreatedAt)/(1000*1000))))}</td>
+                                <td>{formatDate(BigInt(Math.floor(Number(user.userVoteCreatedAt)/(1000*1000))),'PPpp')}</td>
                             </tr>
                             ))}
                         </tbody>
