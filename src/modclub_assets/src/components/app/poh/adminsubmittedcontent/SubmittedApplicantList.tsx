@@ -138,10 +138,10 @@ export default function PohApplicantList() {
   }
 
   useEffect(() => {
-    if (user && firstLoad && !loading && !applicants.length && getApplicants('Approved')) {
+    if (user && firstLoad && isAdminUser && !loading && !applicants.length && getApplicants('Approved')) {
       setFirstLoad(false);
     }
-  }, [user]);
+  }, [isAdminUser]);
 
   useEffect(() => {
     user && !loading && getApplicants('Approved');

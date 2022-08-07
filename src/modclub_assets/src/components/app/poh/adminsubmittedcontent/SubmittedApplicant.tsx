@@ -72,8 +72,8 @@ export default function PohSubmittedApplicant() {
   }
 
   useEffect(() => {
-    user && !loading && getApplicant();
-  }, [user]);
+    user && isAdminUser && !loading && getApplicant();
+  }, [isAdminUser]);
 
   const formatTitle = (challengeId) => {
     switch (challengeId) {
