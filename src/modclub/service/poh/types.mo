@@ -4,6 +4,7 @@ import Principal "mo:base/Principal";
 import Buffer "mo:base/Buffer";
 
 import Types "../../types";
+import VoteTypes "../vote/types";
 
 module {
       
@@ -220,6 +221,8 @@ module {
         allowedViolationRules: [ViolatedRules];
         createdAt: Int;
         updatedAt: Int;
+        submittedAt: Int;
+        completedOn: Int;
     };
 
     public type PohTaskDataWrapper = {
@@ -249,6 +252,30 @@ module {
         minStake: Int; 
         title: ?Text;
         hasVoted: ?Bool;
+        reward: Float;
+        createdAt: Int;
+        updatedAt: Int;
+    };
+
+    public type PohTaskPlusForAdmin = {
+        packageId: Text;
+        status: Types.ContentStatus;
+        voteCount: Nat;
+        profileImageUrlSuffix: ?Text;
+        userModClubId: Text;
+        userUserName: Text;
+        userEmailId: Text;
+        submittedAt: Int;
+        completedOn: Int;
+        pohTaskData: [PohTaskData];
+    };
+
+    public type PohTaskDataAndVotesWrapperPlus = {
+        packageId: Text;
+        pohTaskData: [PohTaskData];
+        voteUserDetails: [VoteTypes.VotePlusUser];
+        minVotes: Int;
+        minStake: Int;
         reward: Float;
         createdAt: Int;
         updatedAt: Int;

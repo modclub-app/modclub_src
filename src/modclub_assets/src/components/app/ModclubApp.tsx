@@ -10,6 +10,8 @@ import Tasks from "./tasks/Tasks";
 import Task from "./tasks/Task";
 import PohApplicantList from "./poh/ApplicantList";
 import PohApplicant from "./poh/Applicant";
+import PohSubmittedApplicantList from "./poh/adminsubmittedcontent/SubmittedApplicantList";
+import PohSubmittedApplicant from "./poh/adminsubmittedcontent/SubmittedApplicant";
 import Moderators from "./moderators/Moderators";
 import Leaderboard from "./moderators/Leaderboard";
 import Activity from "./profile/Activity";
@@ -85,6 +87,12 @@ export default function ModclubApp() {
             </Route>
             <Route exact path="/app/poh/:packageId">
               <PohApplicant />
+            </Route>
+            <Route exact path="/app/admin/poh">
+              <PohSubmittedApplicantList />
+            </Route>
+            <Route exact path="/app/admin/poh/:packageId">
+              <PohSubmittedApplicant />
             </Route>
             <Route exact path="/app/moderators">
               <Moderators />

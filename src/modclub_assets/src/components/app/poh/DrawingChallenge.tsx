@@ -71,7 +71,7 @@ export default function DrawingChallenge({ data } : { data: PohTaskData }) {
         marginBottom: 50
           }}>
           {shapes.map((shape, index) => (
-            <span id={shape} style={{margin:"auto"}}>
+            <span key={index} id={shape} style={{margin:"auto"}}>
               {drawShape(shape)}
              </span>
           ))}

@@ -16,6 +16,14 @@ module {
         createdAt: Int;
     };
 
+    public type VotePlusUser = {
+        userModClubId: Principal;
+        userUserName: Text;
+        userEmailId: Text; 
+        userVoteDecision: Decision; 
+        userVoteCreatedAt: Int;
+    };
+
     public type VoteCount = {
         approvedCount: Nat;
         rejectedCount: Nat;

@@ -562,6 +562,26 @@ module PohModule {
             return contentId; 
         };
 
+        public func getPohPackageIDForUserList(userId: [Principal]) : [Text] {
+            let contenBuff = Buffer.Buffer<Text>(0);
+            for(user in userId.vals()){
+                for(packageId in state.userToPohChallengePackageId.get0(user).vals()) {
+                    contenBuff.add(packageId);
+                };
+            };
+            return contenBuff.toArray(); 
+        };
+
+        public func getAllPohIDsForDateRange(startDate: Int, endDate: Int) : [Text] {
+            let packageIdForDateRangeBuf = Buffer.Buffer<Text>(0);
+            for ( (packageId, package) in state.pohChallengePackages.entries()) {
+                if(package.createdAt > startDate and package.createdAt < endDate) {
+                    packageIdForDateRangeBuf.add(packageId);
+                }                    
+            };
+            return packageIdForDateRangeBuf.toArray();
+        };
+
         private func sortByComplexChallengeFirst(a : (Principal, [Text]), b: (Principal, [Text])) : Order.Order {
             if(a.1.size() > b.1.size()) {
                 return #less;
@@ -733,6 +753,8 @@ module PohModule {
                                         };
                                         createdAt =  att.createdAt;
                                         updatedAt = att.updatedAt;
+                                        submittedAt = att.submittedAt;
+                                        completedOn = att.completedOn;
                                     };
                                     taskData.add(pohTaskData);
                                 };

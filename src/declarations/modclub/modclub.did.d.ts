@@ -89,6 +89,8 @@ export interface DailyMetricsData {
 }
 export type Decision = { 'approved' : null } |
   { 'rejected' : null };
+export type Decision__1 = { 'approved' : null } |
+  { 'rejected' : null };
 export interface GetLatestLogMessagesParameters {
   'upToTimeNanos' : [] | [Nanos],
   'count' : number,
@@ -150,6 +152,7 @@ export interface ModClub {
   'addToAllowList' : (arg_0: Principal) => Promise<undefined>,
   'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
   'adminInit' : () => Promise<undefined>,
+  'adminSlashStake' : (arg_0: Principal, arg_1: bigint) => Promise<undefined>,
   'adminTransferTokens' : (arg_0: Principal, arg_1: bigint) => Promise<
       undefined
     >,
@@ -176,12 +179,20 @@ export interface ModClub {
   'generateSigningKey' : () => Promise<undefined>,
   'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
   'getAdminProviderIDs' : () => Promise<Array<Principal>>,
-  'getAdmins' : () => Promise<Result_3>,
+  'getAdmins' : () => Promise<Result_4>,
   'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
   'getAirdropWhitelist' : () => Promise<Array<Principal>>,
   'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
   'getAllDataCanisterIds' : () => Promise<[Array<Principal>, Array<string>]>,
   'getAllModeratorHoldings' : () => Promise<Array<[Principal, Holdings]>>,
+  'getAllPohTasksForAdminUsers' : (
+      arg_0: ContentStatus,
+      arg_1: bigint,
+      arg_2: bigint,
+      arg_3: Array<string>,
+      arg_4: bigint,
+      arg_5: bigint,
+    ) => Promise<Array<PohTaskPlusForAdmin>>,
   'getAllProfiles' : () => Promise<Array<Profile>>,
   'getCanisterLog' : (arg_0: [] | [CanisterLogRequest]) => Promise<
       [] | [CanisterLogResponse]
@@ -196,7 +207,8 @@ export interface ModClub {
       Array<ModeratorLeaderboard>
     >,
   'getPohAttempts' : () => Promise<PohStableState>,
-  'getPohTaskData' : (arg_0: string) => Promise<Result_2>,
+  'getPohTaskData' : (arg_0: string) => Promise<Result_3>,
+  'getPohTaskDataForAdminUsers' : (arg_0: string) => Promise<Result_2>,
   'getPohTasks' : (
       arg_0: ContentStatus,
       arg_1: bigint,
@@ -220,6 +232,7 @@ export interface ModClub {
   'getTokenHoldings' : () => Promise<Holdings>,
   'getVotePerformance' : () => Promise<number>,
   'isAirdropRegistered' : () => Promise<AirdropUser>,
+  'isUserAdmin' : () => Promise<boolean>,
   'issueJwt' : () => Promise<string>,
   'pohCallbackForModclub' : (arg_0: PohVerificationResponsePlus) => Promise<
       undefined
@@ -431,14 +444,26 @@ export interface PohStableState {
 export interface PohTaskData {
   'dataCanisterId' : [] | [Principal],
   'status' : PohChallengeStatus,
+  'completedOn' : bigint,
   'contentId' : [] | [string],
   'allowedViolationRules' : Array<ViolatedRules>,
   'userId' : Principal,
   'createdAt' : bigint,
+  'submittedAt' : bigint,
   'updatedAt' : bigint,
   'challengeId' : string,
   'challengeType' : PohChallengeType,
   'wordList' : [] | [Array<string>],
+}
+export interface PohTaskDataAndVotesWrapperPlus {
+  'reward' : number,
+  'minVotes' : bigint,
+  'createdAt' : bigint,
+  'minStake' : bigint,
+  'updatedAt' : bigint,
+  'pohTaskData' : Array<PohTaskData>,
+  'packageId' : string,
+  'voteUserDetails' : Array<VotePlusUser>,
 }
 export interface PohTaskDataWrapperPlus {
   'reward' : number,
@@ -461,6 +486,18 @@ export interface PohTaskPlus {
   'minStake' : bigint,
   'updatedAt' : bigint,
   'hasVoted' : [] | [boolean],
+  'packageId' : string,
+}
+export interface PohTaskPlusForAdmin {
+  'status' : ContentStatus,
+  'completedOn' : bigint,
+  'profileImageUrlSuffix' : [] | [string],
+  'voteCount' : bigint,
+  'submittedAt' : bigint,
+  'userUserName' : string,
+  'userModClubId' : string,
+  'pohTaskData' : Array<PohTaskData>,
+  'userEmailId' : string,
   'packageId' : string,
 }
 export interface PohVerificationResponsePlus {
@@ -526,9 +563,11 @@ export type Result = { 'ok' : null } |
   { 'err' : string };
 export type Result_1 = { 'ok' : Array<PohChallengesAttempt> } |
   { 'err' : PohError };
-export type Result_2 = { 'ok' : PohTaskDataWrapperPlus } |
+export type Result_2 = { 'ok' : PohTaskDataAndVotesWrapperPlus } |
   { 'err' : PohError };
-export type Result_3 = { 'ok' : Array<Principal> } |
+export type Result_3 = { 'ok' : PohTaskDataWrapperPlus } |
+  { 'err' : PohError };
+export type Result_4 = { 'ok' : Array<Principal> } |
   { 'err' : string };
 export type Role = { 'admin' : null } |
   { 'moderator' : null } |
@@ -573,4 +612,11 @@ export interface Vote {
   'violatedRules' : [] | [Array<RuleId>],
 }
 export type VoteId = string;
+export interface VotePlusUser {
+  'userVoteDecision' : Decision__1,
+  'userUserName' : string,
+  'userModClubId' : Principal,
+  'userEmailId' : string,
+  'userVoteCreatedAt' : bigint,
+}
 export interface _SERVICE extends ModClub {}

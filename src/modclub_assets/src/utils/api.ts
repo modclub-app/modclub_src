@@ -21,6 +21,7 @@ import {
   PohChallengeSubmissionResponse,
   Result,
   PohTaskPlus,
+  PohTaskPlusForAdmin,
   PohRulesViolated,
   ModeratorLeaderboard,
   VerifyHumanityResponse,
@@ -30,7 +31,7 @@ import {
   ProviderSettingResult,
 } from "./types";
 import { Principal } from "@dfinity/principal";
-
+import { fetchObjectUrl, formatDate, getUrlForData } from "./util";
 export type Optional<Type> = [Type] | [];
 
 var actor: _SERVICE = null;
@@ -182,6 +183,10 @@ export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
 }
 
+export async function checkUserRole(): Promise<boolean> {
+  return (await getMC()).isUserAdmin();
+}
+
 export async function getProfileById(userId: Principal): Promise<Profile> {
   return (await getMC()).getProfileById(userId);
 }
@@ -301,8 +306,25 @@ export async function getPohTasks(
   return (await getMC()).getPohTasks(status, BigInt(start), BigInt(end));
 }
 
+export async function getAllPohTasksForAdminUsers(
+  status: ContentStatus,
+  start: number,
+  end: number,
+  userPrincipal: any,
+  startDate?: number,
+  endDate?: number
+): Promise<PohTaskPlusForAdmin[]> {
+  const startDateToProvide = startDate?startDate:0;
+  const endDateToProvide = endDate?endDate:0;
+  return (await getMC()).getAllPohTasksForAdminUsers(status, BigInt(start), BigInt(end),userPrincipal,startDateToProvide,endDateToProvide);
+}
+
 export async function getPohTaskData(packageId: string): Promise<any> {
   return (await getMC()).getPohTaskData(packageId);
+}
+
+export async function getPohTaskDataForAdminUsers(packageId: string): Promise<any> {
+  return (await getMC()).getPohTaskDataForAdminUsers(packageId);
 }
 
 export async function votePohContent(

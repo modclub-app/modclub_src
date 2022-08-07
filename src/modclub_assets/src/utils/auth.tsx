@@ -8,7 +8,7 @@ import { Identity } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { getUserFromStorage } from "./util";
 import { Profile } from "./types";
-import { getUserFromCanister, getAdminProviderIDs, getProvider } from "./api";
+import { getUserFromCanister, getAdminProviderIDs, getProvider, checkUserRole } from "./api";
 
 
 export interface AuthContext {
@@ -20,6 +20,7 @@ export interface AuthContext {
   logIn: (logInMethodToUse: string) => Promise<void>;
   logOut: () => void;
   user: Profile;
+  isAdminUser: boolean;
   setUser: (user: Profile) => void;
   setSelectedProvider: (provider: Object) => void;
   selectedProvider: Object;
@@ -53,6 +54,7 @@ export function useProvideAuth(authClient): AuthContext {
     false
   );
   const [_identity, _setIdentity] = useState<Identity | undefined>();
+  const [isAdminUser, setAdminUser] = useState(false);
   const [isAuthClientReady, setAuthClientReady] = useState(false);
   const [shouldSignup, setShouldSignup] = useState(false);
   const [providers, setProviders] = useState([]);
@@ -79,19 +81,25 @@ export function useProvideAuth(authClient): AuthContext {
       // Check to make sure your local storage user exists on the backend, and
       // log out if it doesn't (this is when you have your user stored in local
       // storage but the user was cleared from the backend)
-      getUserFromCanister().then((user_) => {
+      getUserFromCanister().then(async(user_) => {
         // console.log("getUserFromCanister user_", user_);
+        if(user_){
+          const checkAdmin = await checkUserRole();
+          setAdminUser(checkAdmin);
+        }
         !user_ && logOut()
       });
       return () => void 0;
     } else {
       console.log("no lsUser, fetching and setting from backend");
       // If there is no user in local storage, retrieve from the backend
-      getUserFromCanister().then((user_) => {
+      getUserFromCanister().then(async (user_) => {
         console.log("getUserFromCanister user_", user_);
         // If the user doesn't exist on the backend then we need to sign up
         if (user_) {
           setUser(user_);
+          const checkAdmin = await checkUserRole();
+          setAdminUser(checkAdmin);
         } else {
           setShouldSignup(true);
         }
@@ -309,6 +317,7 @@ export function useProvideAuth(authClient): AuthContext {
         break;
     }
     setUser(undefined);
+    setAdminUser(false);
     setIsAuthenticatedLocal(false);
     setSelectedProvider(undefined);
     setProviders([]);
@@ -328,6 +337,7 @@ export function useProvideAuth(authClient): AuthContext {
     logIn,
     logOut,
     user,
+    isAdminUser,
     identity,
     setUser,
     setSelectedProvider,

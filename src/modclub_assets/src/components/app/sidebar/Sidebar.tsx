@@ -85,7 +85,10 @@ const DropdownLabel = ({ toggle }) => {
 
 export default function Sidebar() {
   const history = useHistory();
-  const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider } = useAuth();
+  const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider, isAdminUser } = useAuth();
+  // Need to change
+  // const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider } = useAuth();
+  // const isAdminUser = true;
   const [showModal, setShowModal] = useState(false);
   const toggleModal = () => setShowModal(!showModal);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -130,6 +133,16 @@ export default function Sidebar() {
             </Icon>
             Human Verification
           </Link>
+          {/* ADMIN POH CONTENT APPROVED AND REJECTED */}
+          { user && isAdminUser &&
+                <Link to="/app/admin/poh">
+                  <Icon>
+                    <span className="material-icons">check_circle_outline</span>
+                  </Icon>
+                  Admin POH Content
+                </Link>
+          }
+          {/* END ADMIN POH CONTENT APPROVED AND REJECTED */}
           <Link to="/app/leaderboard">
             <Icon>
               <span className="material-icons">stars</span>

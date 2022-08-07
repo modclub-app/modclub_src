@@ -7,7 +7,7 @@ import {
   Columns,
   Card,
   Button,
-  Icon,
+  Icon, 
 } from "react-bulma-components";
 import Userstats from "../profile/Userstats";
 import FilterBar from "../../common/filterbar/FilterBar";

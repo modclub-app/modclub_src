@@ -12,7 +12,7 @@ import VoteState "./state";
 import VoteTypes "./types";
 import Helpers "../../helpers";
 import QueueManager "../queue/queue";
-
+import GlobalState "../../statev1";
 import DownloadSupport "./downloadSupport";
 
 module VoteModule {
@@ -189,6 +189,30 @@ module VoteModule {
                 }
             };
             return newBuffer;
+        };
+
+        public func getVotesForPOHBasedOnPackageId(packageId: Text, globalState: GlobalState.State) : [VoteTypes.VotePlusUser] {
+            let buffer = Buffer.Buffer<VoteTypes.VotePlusUser>(0);
+            for(vid in state.pohContent2votes.get0(packageId).vals()){
+                switch(state.pohVotes.get(vid)){
+                    case(null)();
+                    case(?v){
+                        switch(globalState.profiles.get(v.userId)) {
+                            case(null)();
+                            case (?result) {
+                                buffer.add({
+                                    userModClubId = result.id;
+                                    userUserName = result.userName;
+                                    userEmailId = result.email;
+                                    userVoteDecision = v.decision;
+                                    userVoteCreatedAt = v.createdAt;
+                                });
+                            };
+                        };
+                    };
+                };
+            };
+            return buffer.toArray();
         };
 
         public func downloadSupport(varName: Text, start: Nat, end: Nat) : [[Text]] {
