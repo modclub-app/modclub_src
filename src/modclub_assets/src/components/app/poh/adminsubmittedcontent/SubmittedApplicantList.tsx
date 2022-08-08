@@ -27,10 +27,6 @@ const ApplicantPOHDrawing = ({ applicant } : { applicant : PohTaskPlusForAdmin }
 
   useEffect(() => {
     const fetchData = async () => {
-      /* applicant.pohTaskData[0].challengeId == 'challenge-drawing' 
-        const imageUrl = getUrlForData(applicant.pohTaskData[0].dataCanisterId, applicant.pohTaskData[0].contentId[0]);
-        const urlObject = await fetchObjectUrl(imageUrl);
-      */
       console.log(`Applicant imageUrl: ${imageUrl}`);
       const urlObject = await fetchObjectUrl(imageUrl);
       setUrlObject(urlObject);
@@ -124,7 +120,6 @@ export default function PohApplicantList() {
       const status = {'approved':null};  
       const newApplicants = await getAllPohTasksForAdminUsers(status, page.startIndex, page.endIndex, []);
       console.log("Appoved users:", newApplicants);
-      // const newApplicants = [{packageId:'asoidfja-asdfasdf-asdfa-ewrwer-sdfsf',status:{"approved":null},voteCount:10,profileImageUrlSuffix:"",userModClubId:'Mod-1',userUserName:'Test-1',userEmailId:'TestEmail@gmail.com',submittedAt:1659379579393,completedOn:1659389579393}];
       if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true)
       setApplicants([...applicants, ...newApplicants]);
     }else{
@@ -138,10 +133,10 @@ export default function PohApplicantList() {
   }
 
   useEffect(() => {
-    if (user && firstLoad && !loading && !applicants.length && getApplicants('Approved')) {
+    if (user && firstLoad && isAdminUser && !loading && !applicants.length && getApplicants('Approved')) {
       setFirstLoad(false);
     }
-  }, [user]);
+  }, [isAdminUser]);
 
   useEffect(() => {
     user && !loading && getApplicants('Approved');
@@ -291,8 +286,8 @@ export default function PohApplicantList() {
                     <td>{user.userUserName}</td>
                     <td>{user.userEmailId}</td>
                     <td>{Object.keys(user.status)[0]}</td>
-                    <td>{formatDate(user.submittedAt)}</td>
-                    <td>{formatDate(user.completedOn)}</td>
+                    <td>{formatDate(user.submittedAt,'PPpp')}</td>
+                    <td>{formatDate(user.completedOn,'PPpp')}</td>
                   </tr>
                 ))}
               </>) :
@@ -311,8 +306,8 @@ export default function PohApplicantList() {
                     <td>{user.userUserName}</td>
                     <td>{user.userEmailId}</td>
                     <td>{Object.keys(user.status)[0]}</td>
-                    <td>{formatDate(user.submittedAt)}</td>
-                    <td>{formatDate(user.completedOn)}</td>
+                    <td>{formatDate(user.submittedAt,'PPpp')}</td>
+                    <td>{formatDate(user.completedOn,'PPpp')}</td>
                   </tr>
                   ))}</>):
                   (<>
@@ -329,8 +324,8 @@ export default function PohApplicantList() {
                             <td>{user.userUserName}</td>
                             <td>{user.userEmailId}</td>
                             <td>{Object.keys(user.status)[0]}</td>
-                            <td>{formatDate(user.submittedAt)}</td>
-                            <td>{formatDate(user.completedOn)}</td>
+                            <td>{formatDate(user.submittedAt,'PPpp')}</td>
+                            <td>{formatDate(user.completedOn,'PPpp')}</td>
                           </tr>
                         ))}
                   </>)

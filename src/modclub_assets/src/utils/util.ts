@@ -114,13 +114,13 @@ export function unwrap<T>(val: Optional<T>): T | null {
 export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
   Array.from(new Uint8Array(file));
 
-export function formatDate(integer: bigint) {
+export function formatDate(integer: bigint, dateformate?: string) {
   const date = new Date(Number(integer));
   if (!isValid(date)) return "invalid date";
   const same = isSameDay(new Date(), date);
   return same
     ? formatDistanceStrict(new Date(), date) + " ago"
-    : format(date, "PP");
+    : format(date, dateformate?dateformate:"PP");
 }
 
 export function validateEmail(email: string) {

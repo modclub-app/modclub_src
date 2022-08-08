@@ -33,47 +33,14 @@ export default function PohSubmittedApplicant() {
     
     setLoading(true)
     const res = await getPohTaskDataForAdminUsers(packageId);
-    // const res = {ok:{createdAt: 1658724185497,
-    // minStake: 100,
-    // minVotes: 2,
-    // packageId: "fx3lh-v3cir-tdsya-3nacp-ws45h-t7emc-gsrrp-o6p4o-pvoye-pcgpb-qae-poh-content-1197",
-    // pohTaskData: [{challengeId: "challenge-drawing",
-    //     challengeType: {dl: null},
-    //     completedOn: 1658775260856,
-    //     contentId: ['903CED9D8808023924288E4D0B31425F9DB741B7DA4CCB5C89DAA72D15B1429E'],
-    //     createdAt: 1658724052298,
-    //     dataCanisterId: 'dw7z3-liaaa-aaaah-qc3ta-cai',
-    //     status: {rejected: null},
-    //     submittedAt: 1658724157219,
-    //     updatedAt: 1658775260856,
-    //     userId:'fx3lh-v3cir-tdsya-3nacp-ws45h-t7emc-gsrrp-o6p4o-pvoye-pcgpb-qae',
-    //     wordList: [['Square', 'Triangle', 'Star']]
-    // }],
-    // reward: 10,
-    // updatedAt: 1658724185497,
-    // voteUserDetails: [{
-    //     userEmailId: "lskjdflksj@lkjsdf.com",
-    //     userModClubId: 'csadh-sjf3u-zhfad-7j3su-ehbhp-qa7af-fsprs-tc2h6-tpv4t-4nabw-xae',
-    //     userUserName: "YOYOYOy",
-    //     userVoteCreatedAt: 1658724447117696929,
-    //     userVoteDecision: {rejected: null}
-    // }, {userEmailId: "lskjdflksj@lkjsdf.com",
-    // userModClubId: 'csadh-sjf3u-zhfad-7j3su-ehbhp-qa7af-fsprs-tc2h6-tpv4t-4nabw-xae',
-    // userUserName: "YOYOYOy",
-    // userVoteCreatedAt: 1658724447117696929,
-    // userVoteDecision: {rejected: null}}, {userEmailId: "lskjdflksj@lkjsdf.com",
-    // userModClubId: 'csadh-sjf3u-zhfad-7j3su-ehbhp-qa7af-fsprs-tc2h6-tpv4t-4nabw-xae',
-    // userUserName: "YOYOYOy",
-    // userVoteCreatedAt: 1658724447117696929,
-    // userVoteDecision: {rejected: null}}]}}
     console.log({pohPackage: res.ok });
     setContent(res.ok);
     setLoading(false);
   }
 
   useEffect(() => {
-    user && !loading && getApplicant();
-  }, [user]);
+    user && isAdminUser && !loading && getApplicant();
+  }, [isAdminUser]);
 
   const formatTitle = (challengeId) => {
     switch (challengeId) {
@@ -133,7 +100,7 @@ export default function PohSubmittedApplicant() {
             <Card.Header>
                 <Card.Header.Title>
                 <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-                    Submitted {formatDate(content.updatedAt)}
+                    Submitted {formatDate(content.updatedAt,'PPpp')}
                 </span>
                 </Card.Header.Title>
                 {/* <Progress
@@ -168,7 +135,7 @@ export default function PohSubmittedApplicant() {
                                 <td>{user.userEmailId}</td>
                                 <td>{Object.keys(user.userVoteDecision)[0]}</td>
                                 {/* Convert nano to milli */}
-                                <td>{formatDate(BigInt(Math.floor(Number(user.userVoteCreatedAt)/(1000*1000))))}</td>
+                                <td>{formatDate(BigInt(Math.floor(Number(user.userVoteCreatedAt)/(1000*1000))),'PPpp')}</td>
                             </tr>
                             ))}
                         </tbody>
