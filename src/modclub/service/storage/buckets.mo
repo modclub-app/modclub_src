@@ -477,7 +477,7 @@ actor class Bucket () = this {
   func deleteContentAfterExpiry() {
     let currentTime = Helpers.timeNow();
     for((contentId, reviewedTime) in Trie.iter(restrictedContentId)) {
-      if(reviewedTime + DAYS_TO_DELETE_DATA >= currentTime) {
+      if(currentTime > reviewedTime + DAYS_TO_DELETE_DATA) {
         Helpers.logMessage(canistergeekLogger, "Deleting contentId after expiry: " # contentId, #info);
         deleteContent(contentId);
       };
@@ -549,11 +549,11 @@ actor class Bucket () = this {
       nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
     };
 
-    if(Time.now() > nextRunTimeForContentDeletionJob) {
-      Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
-      deleteContentAfterExpiry();
-      nextRunTimeForContentDeletionJob := Time.now() + TWENTY_FOUR_HOURS_NANO_SECONDS;
-    };
+    // if(Time.now() > nextRunTimeForContentDeletionJob) {
+    //   Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
+    //   deleteContentAfterExpiry();
+    //   nextRunTimeForContentDeletionJob := Time.now() + TWENTY_FOUR_HOURS_NANO_SECONDS;
+    // };
   };
 
 };
