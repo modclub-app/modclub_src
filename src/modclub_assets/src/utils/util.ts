@@ -64,6 +64,11 @@ export async function processAndUploadChunk(
     dataSize: BigInt(fileSize),
   });
   console.log("res", res);
+
+  if (res && res.submissionStatus && !("ok" in res.submissionStatus)) {
+    return Object.keys(res.submissionStatus)[0];
+  }
+  return null;
 }
 
 export function getUserFromStorage(
@@ -120,7 +125,7 @@ export function formatDate(integer: bigint, dateformate?: string) {
   const same = isSameDay(new Date(), date);
   return same
     ? formatDistanceStrict(new Date(), date) + " ago"
-    : format(date, dateformate?dateformate:"PP");
+    : format(date, dateformate ? dateformate : "PP");
 }
 
 export function validateEmail(email: string) {

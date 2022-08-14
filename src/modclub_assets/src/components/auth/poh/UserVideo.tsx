@@ -140,7 +140,7 @@ export default function UserVideo({ step, goToNextStep }) {
     
     let chunk = 1;
     for (let byteStart = 0; byteStart < blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
-      await processAndUploadChunk(
+      let res = await processAndUploadChunk(
         "challenge-user-video",
         MAX_CHUNK_SIZE,
         blob,
@@ -149,6 +149,11 @@ export default function UserVideo({ step, goToNextStep }) {
         blob.size,
         blob.type
       );
+      if (res != null) {
+        alert("Error: " + res + " File upload could not be completed. Please try again");
+        setSubmitting(false);
+        return;
+      }
     }
     
     setSubmitting(false);

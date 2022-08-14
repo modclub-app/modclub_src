@@ -71,7 +71,7 @@ export default function DrawingChallenge({ step, goToNextStep }) {
 
     let chunk = 1;
     for (let byteStart = 0; byteStart < file.blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
-      await processAndUploadChunk(
+      let res = await processAndUploadChunk(
         "challenge-drawing",
         MAX_CHUNK_SIZE,
         file.blob,
@@ -79,7 +79,12 @@ export default function DrawingChallenge({ step, goToNextStep }) {
         chunk,
         file.size,
         file.type
-      )
+      );
+      if (res != null) {
+        alert("Error: " + res + " File upload could not be completed. Please try again");
+        setSubmitting(false);
+        return;
+      }
     }
     setSubmitting(false);
     goToNextStep("challenge-drawing");
