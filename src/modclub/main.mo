@@ -618,9 +618,9 @@ shared ({caller = deployer}) actor class ModClub() = this {
       throw Error.reject(AuthManager.Unauthorized);
     };
     for((p,h) in tokens.getAllHoldings().vals()) {
-      Helpers.logMessage(canistergeekLogger, "Distributing reward for " # Principal.toText(p) # " For amount: " # Int.toText(h.pendingRewards), #info);
       await tokens.distributePendingReward(p, h.pendingRewards);
     };
+    Helpers.logMessage(canistergeekLogger, "Distributed all rewards", #info);
   };
 
   // TODO Delete this function
