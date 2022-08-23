@@ -59,7 +59,7 @@ module PohModule {
             pohCallbackByProvider.put(pId, callBackDataByUserIdMap);
         };
 
-        let MILLI_SECONDS_DAY = 3600 * 1000000000;
+        let MILLI_SECONDS_DAY = 86400000;
 
         public func pohVerificationRequest(pohVerificationRequest: PohTypes.PohVerificationRequestV1, 
                                             validForDays: Nat, 

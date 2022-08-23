@@ -707,6 +707,21 @@ shared ({caller = deployer}) actor class ModClub() = this {
 
   //----------------------POH Methods For ModClub------------------------------
   // for modclub only
+
+  public shared({ caller }) func AdminCheckPohVerificationResp(providerUserId: Text, providerId: Principal) : async PohTypes.PohVerificationResponsePlus {
+    if(not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    switch(pohVerificationRequestHelper(providerUserId, providerId)) {
+      case(#ok(verificationResponse)) {
+        return verificationResponse;
+      };
+      case(_) {
+        throw Error.reject("Either Poh is not configured or POH Callback is not registered for provider.");
+      };
+    };
+  };
+
   public shared({ caller }) func verifyUserHumanityForModclub() : async PohTypes.VerifyHumanityResponse {
     // if Modclub hasn't subscribed for POHcallback, subscribe it
     switch(pohEngine.getPohCallback(Principal.fromActor(this))) {
