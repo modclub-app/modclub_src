@@ -9,7 +9,8 @@
     {
       "files": "*.mo",
       "options": {
-        "bracketSpacing": true
+        "bracketSpacing": true,
+        "trailingComma": "none"
       }
     }
   ]
