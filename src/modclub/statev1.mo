@@ -20,7 +20,7 @@ module StateV1 {
   public type ProviderAdminMap = HashMap.HashMap<Types.UserId, ()>;
 
   public type State = {
-    // Global IDs, Keeps track of 
+    // Global IDs, Keeps track of
     GLOBAL_ID_MAP : Map<Text, Nat>;
 
     // Provider whitelist
@@ -30,10 +30,9 @@ module StateV1 {
     providers : Map<Principal, Provider>;
 
     // Pub / Sub for Providers
-    providerSubs: Map<Principal, Types.SubscribeMessage>;
+    providerSubs : Map<Principal, Types.SubscribeMessage>;
 
     providerAdmins : Map<ProviderId, ProviderAdminMap>;
-
 
     /// all profiles.
     profiles : Map<Types.UserId, Profile>;
@@ -50,29 +49,28 @@ module StateV1 {
     /// all content.
     content : Map<Types.ContentId, Types.Content>;
 
-    rules: Map<Types.RuleId, Types.Rule>;
+    rules : Map<Types.RuleId, Types.Rule>;
 
     votes : Map<Types.VoteId, Types.Vote>;
 
-    textContent: Map<Types.ContentId, Types.TextContent>;
+    textContent : Map<Types.ContentId, Types.TextContent>;
 
-    imageContent: Map<Types.ContentId, Types.ImageContent>;
+    imageContent : Map<Types.ContentId, Types.ImageContent>;
 
     // relates content to votes
-    content2votes: Rel<Types.ContentId, Types.VoteId>;
+    content2votes : Rel<Types.ContentId, Types.VoteId>;
 
     // relates users to votes
-    mods2votes: Rel<Types.UserId, Types.VoteId>;
+    mods2votes : Rel<Types.UserId, Types.VoteId>;
 
     // related content to providers
-    provider2content: Rel<Types.ProviderId, Types.ContentId>;
+    provider2content : Rel<Types.ProviderId, Types.ContentId>;
 
-    provider2rules: Rel<Types.ProviderId, Types.RuleId>;
+    provider2rules : Rel<Types.ProviderId, Types.RuleId>;
 
-    admin2Provider: Rel<Types.UserId, Types.ProviderId>;
+    admin2Provider : Rel<Types.UserId, Types.ProviderId>;
 
-
-    appName: Text;
+    appName : Text;
 
     providerAllowedForAIFiltering : Map<Principal, Bool>;
 
@@ -81,71 +79,143 @@ module StateV1 {
 
   };
 
-  public type StateShared = {    
-    GLOBAL_ID_MAP : [(Text, Nat)];    
+  public type StateShared = {
+    GLOBAL_ID_MAP : [(Text, Nat)];
     providers : [(Principal, Provider)];
-    providerSubs: [(Principal, Types.SubscribeMessage)];      
-    providersWhitelist: [(Principal, Bool)];
-    providerAdmins: [(Principal, [(Principal, ())])];
-    airdropUsers : [(Principal, Types.AirdropUser)]; 
-    airdropWhitelist : [(Principal, Principal)];   
+    providerSubs : [(Principal, Types.SubscribeMessage)];
+    providersWhitelist : [(Principal, Bool)];
+    providerAdmins : [(Principal, [(Principal, ())])];
+    airdropUsers : [(Principal, Types.AirdropUser)];
+    airdropWhitelist : [(Principal, Principal)];
     profiles : [(Types.UserId, Profile)];
-    usernames: [(Text, Types.UserId)];
+    usernames : [(Text, Types.UserId)];
     content : [(Types.ContentId, Types.Content)];
-    rules: [(Types.RuleId, Types.Rule)];
-    votes: [(Types.VoteId, Types.Vote)];
-    textContent: [(Types.ContentId, Types.TextContent)];
-    imageContent: [(Types.ContentId, Types.ImageContent)];
-    content2votes: RelShared<Types.ContentId, Types.VoteId>;
-    mods2votes: RelShared<Types.UserId, Types.VoteId>;
-    provider2content: RelShared<Types.ProviderId, Types.ContentId>;
-    provider2rules: RelShared<Types.ProviderId, Types.RuleId>;
-    admin2Provider: RelShared<Types.UserId, Types.ProviderId>;
-    appName: Text;
-    providerAllowedForAIFiltering: [(Principal, Bool)];
-    provider2PohChallengeIds: [(Principal, [Text])];
-    provider2PohExpiry: [(Principal, Nat)];
+    rules : [(Types.RuleId, Types.Rule)];
+    votes : [(Types.VoteId, Types.Vote)];
+    textContent : [(Types.ContentId, Types.TextContent)];
+    imageContent : [(Types.ContentId, Types.ImageContent)];
+    content2votes : RelShared<Types.ContentId, Types.VoteId>;
+    mods2votes : RelShared<Types.UserId, Types.VoteId>;
+    provider2content : RelShared<Types.ProviderId, Types.ContentId>;
+    provider2rules : RelShared<Types.ProviderId, Types.RuleId>;
+    admin2Provider : RelShared<Types.UserId, Types.ProviderId>;
+    appName : Text;
+    providerAllowedForAIFiltering : [(Principal, Bool)];
+    provider2PohChallengeIds : [(Principal, [Text])];
+    provider2PohExpiry : [(Principal, Nat)];
   };
 
-  public func empty () : State {
+  public func empty() : State {
     let equal = (Text.equal, Text.equal);
     let hash = (Text.hash, Text.hash);
     var st : State = {
       GLOBAL_ID_MAP = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-      providers = HashMap.HashMap<Principal, Provider>(1, Principal.equal, Principal.hash);
-      providersWhitelist = HashMap.HashMap<Principal, Bool>(1, Principal.equal, Principal.hash);
-      providerSubs =  HashMap.HashMap<Principal, Types.SubscribeMessage>(1, Principal.equal, Principal.hash);
-      providerAdmins = HashMap.HashMap<Principal, ProviderAdminMap>(1, Principal.equal, Principal.hash);
-      profiles = HashMap.HashMap<Types.UserId, Profile>(1, Principal.equal, Principal.hash);
+      providers = HashMap.HashMap<Principal, Provider>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      providersWhitelist = HashMap.HashMap<Principal, Bool>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      providerSubs = HashMap.HashMap<Principal, Types.SubscribeMessage>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      providerAdmins = HashMap.HashMap<Principal, ProviderAdminMap>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      profiles = HashMap.HashMap<Types.UserId, Profile>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
       usernames = HashMap.HashMap<Text, Types.UserId>(1, Text.equal, Text.hash);
-      airdropUsers =  HashMap.HashMap<Principal, Types.AirdropUser>(1, Principal.equal, Principal.hash);
-      airdropWhitelist =  HashMap.HashMap<Principal, Principal>(1, Principal.equal, Principal.hash);
-      content = HashMap.HashMap<Types.ContentId, Types.Content>(1, Text.equal, Text.hash);
-      votes = HashMap.HashMap<Types.VoteId, Types.Vote>(1, Text.equal, Text.hash);
-      rules = HashMap.HashMap<Types.RuleId, Types.Rule>(1, Text.equal, Text.hash);
-      textContent =  HashMap.HashMap<Types.ContentId, Types.TextContent>(1, Text.equal, Text.hash);
-      imageContent =  HashMap.HashMap<Types.ContentId, Types.ImageContent>(1, Text.equal, Text.hash);
+      airdropUsers = HashMap.HashMap<Principal, Types.AirdropUser>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      airdropWhitelist = HashMap.HashMap<Principal, Principal>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      content = HashMap.HashMap<Types.ContentId, Types.Content>(
+        1,
+        Text.equal,
+        Text.hash,
+      );
+      votes = HashMap.HashMap<Types.VoteId, Types.Vote>(
+        1,
+        Text.equal,
+        Text.hash,
+      );
+      rules = HashMap.HashMap<Types.RuleId, Types.Rule>(
+        1,
+        Text.equal,
+        Text.hash,
+      );
+      textContent = HashMap.HashMap<Types.ContentId, Types.TextContent>(
+        1,
+        Text.equal,
+        Text.hash,
+      );
+      imageContent = HashMap.HashMap<Types.ContentId, Types.ImageContent>(
+        1,
+        Text.equal,
+        Text.hash,
+      );
       content2votes = RelObj.RelObj(hash, equal);
-      mods2votes = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
-      provider2content = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
-      provider2rules = RelObj.RelObj((Principal.hash, Text.hash), (Principal.equal, Text.equal));
-      admin2Provider = RelObj.RelObj((Principal.hash, Principal.hash), (Principal.equal, Principal.equal));
+      mods2votes = RelObj.RelObj(
+        (Principal.hash, Text.hash),
+        (Principal.equal, Text.equal),
+      );
+      provider2content = RelObj.RelObj(
+        (Principal.hash, Text.hash),
+        (Principal.equal, Text.equal),
+      );
+      provider2rules = RelObj.RelObj(
+        (Principal.hash, Text.hash),
+        (Principal.equal, Text.equal),
+      );
+      admin2Provider = RelObj.RelObj(
+        (Principal.hash, Principal.hash),
+        (Principal.equal, Principal.equal),
+      );
       appName = "MODCLUB";
-      providerAllowedForAIFiltering = HashMap.HashMap<Principal, Bool>(1, Principal.equal, Principal.hash);
-      provider2PohChallengeIds =  HashMap.HashMap<Principal, Buffer.Buffer<Text>>(1, Principal.equal, Principal.hash);
-      provider2PohExpiry = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
+      providerAllowedForAIFiltering = HashMap.HashMap<Principal, Bool>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      provider2PohChallengeIds = HashMap.HashMap<Principal, Buffer.Buffer<Text>>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      provider2PohExpiry = HashMap.HashMap<Principal, Nat>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
     };
     st;
   };
 
-  public func emptyShared(): StateShared {
+  public func emptyShared() : StateShared {
     var st : StateShared = {
       GLOBAL_ID_MAP = [];
       profiles = [];
       content = [];
       providerSubs = [];
       usernames = [];
-      providers = [];   
+      providers = [];
       providersWhitelist = [];
       providerAdmins = [];
       rules = [];
@@ -167,13 +237,16 @@ module StateV1 {
     st;
   };
 
-  public func fromState(state: State) : StateShared {
-      let buf = Buffer.Buffer<(Principal, [(Principal, ())])>(0);
-      for( (pid, admins) in state.providerAdmins.entries()) {
-        buf.add((pid, Iter.toArray(admins.entries())));
-      };
-    let provider2PohChallengeIdsStable  = Buffer.Buffer<(Principal, [Text])>(1);
-    for((pid : Principal, challengeIdBuffer: Buffer.Buffer<Text>) in state.provider2PohChallengeIds.entries()) {
+  public func fromState(state : State) : StateShared {
+    let buf = Buffer.Buffer<(Principal, [(Principal, ())])>(0);
+    for ((pid, admins) in state.providerAdmins.entries()) {
+      buf.add((pid, Iter.toArray(admins.entries())));
+    };
+    let provider2PohChallengeIdsStable = Buffer.Buffer<(Principal, [Text])>(1);
+    for (
+      (pid : Principal, challengeIdBuffer : Buffer.Buffer<Text>) 
+        in state.provider2PohChallengeIds.entries()
+    ) {
       provider2PohChallengeIdsStable.add((pid, challengeIdBuffer.toArray()));
     };
     let st : StateShared = {
@@ -191,110 +264,136 @@ module StateV1 {
       airdropUsers = Iter.toArray(state.airdropUsers.entries());
       providerAdmins = buf.toArray();
       airdropWhitelist = Iter.toArray(state.airdropWhitelist.entries());
-      content2votes = Rel.share<Types.ContentId, Types.VoteId>(state.content2votes.getRel());
-      mods2votes = Rel.share<Types.UserId, Types.VoteId>(state.mods2votes.getRel());
-      provider2content = Rel.share<Principal, Types.ContentId>(state.provider2content.getRel());
-      provider2rules = Rel.share<Principal, Types.ContentId>(state.provider2rules.getRel());
-      admin2Provider = Rel.share<Principal, Types.ProviderId>(state.admin2Provider.getRel());
+      content2votes = Rel.share<Types.ContentId, Types.VoteId>(
+        state.content2votes.getRel(),
+      );
+      mods2votes = Rel.share<Types.UserId, Types.VoteId>(
+        state.mods2votes.getRel(),
+      );
+      provider2content = Rel.share<Principal, Types.ContentId>(
+        state.provider2content.getRel(),
+      );
+      provider2rules = Rel.share<Principal, Types.ContentId>(
+        state.provider2rules.getRel(),
+      );
+      admin2Provider = Rel.share<Principal, Types.ProviderId>(
+        state.admin2Provider.getRel(),
+      );
       appName = state.appName;
-      providerAllowedForAIFiltering = Iter.toArray(state.providerAllowedForAIFiltering.entries());
+      providerAllowedForAIFiltering = Iter.toArray(
+        state.providerAllowedForAIFiltering.entries(),
+      );
       provider2PohChallengeIds = provider2PohChallengeIdsStable.toArray();
       provider2PohExpiry = Iter.toArray(state.provider2PohExpiry.entries());
     };
     st;
   };
 
-  public func toState(stateShared: StateShared) : State {
+  public func toState(stateShared : StateShared) : State {
     let state = empty();
     let equal = (Text.equal, Text.equal);
     let hash = (Text.hash, Text.hash);
-    for( (category, val) in stateShared.GLOBAL_ID_MAP.vals()) {
+    for ((category, val) in stateShared.GLOBAL_ID_MAP.vals()) {
       state.GLOBAL_ID_MAP.put(category, val);
     };
-    for( (id, content) in stateShared.content.vals()) {
+    for ((id, content) in stateShared.content.vals()) {
       state.content.put(id, content);
     };
-    for( (pid, callback) in stateShared.providerSubs.vals()) {
+    for ((pid, callback) in stateShared.providerSubs.vals()) {
       state.providerSubs.put(pid, callback);
     };
-    for( (username, uid) in stateShared.usernames.vals()) {
+    for ((username, uid) in stateShared.usernames.vals()) {
       state.usernames.put(username, uid);
     };
-    for( (id, provider) in stateShared.providers.vals()) {
+    for ((id, provider) in stateShared.providers.vals()) {
       state.providers.put(id, provider);
     };
-    for( (id, val) in stateShared.providersWhitelist.vals()) {
+    for ((id, val) in stateShared.providersWhitelist.vals()) {
       state.providersWhitelist.put(id, val);
     };
-    for( (id, profile) in stateShared.profiles.vals()) {
+    for ((id, profile) in stateShared.profiles.vals()) {
       state.profiles.put(id, profile);
     };
-    for( (id, rule) in stateShared.rules.vals()) {
+    for ((id, rule) in stateShared.rules.vals()) {
       state.rules.put(id, rule);
     };
-    for( (id, vote) in stateShared.votes.vals()) {
+    for ((id, vote) in stateShared.votes.vals()) {
       state.votes.put(id, vote);
     };
-    for( (id, text) in stateShared.textContent.vals()) {
+    for ((id, text) in stateShared.textContent.vals()) {
       state.textContent.put(id, text);
     };
-    for( (id, image) in stateShared.imageContent.vals()) {
+    for ((id, image) in stateShared.imageContent.vals()) {
       state.imageContent.put(id, image);
     };
     Debug.print("MODCLUB AIRDROP STATE RESTORING");
-    for( (id, airdropUser) in stateShared.airdropUsers.vals()) {
+    for ((id, airdropUser) in stateShared.airdropUsers.vals()) {
       state.airdropUsers.put(id, airdropUser);
     };
 
-    for( (pid, admins) in stateShared.providerAdmins.vals()) {
-      let adminMap : ProviderAdminMap = HashMap.HashMap<Types.UserId, ()>(1, Principal.equal, Principal.hash);
-      for( (admin, ()) in admins.vals()) {
+    for ((pid, admins) in stateShared.providerAdmins.vals()) {
+      let adminMap : ProviderAdminMap = HashMap.HashMap<Types.UserId, ()>(
+        1,
+        Principal.equal,
+        Principal.hash,
+      );
+      for ((admin, ()) in admins.vals()) {
         adminMap.put(admin, ());
       };
       state.providerAdmins.put(pid, adminMap);
     };
 
-    for( (id, pid) in stateShared.airdropWhitelist.vals()) {
+    for ((id, pid) in stateShared.airdropWhitelist.vals()) {
       state.airdropWhitelist.put(id, pid);
     };
-   
-    state.content2votes.setRel( Rel.fromShare<Types.ContentId, Types.VoteId>(
-      stateShared.content2votes,
-      hash,
-      equal
-    ));
-    state.mods2votes.setRel(Rel.fromShare<Types.UserId, Types.VoteId>(
-      stateShared.mods2votes,
-      (Principal.hash, Text.hash),
-      (Principal.equal, Text.equal)
-    ));
-    state.provider2content.setRel(Rel.fromShare<Principal, Types.ContentId>(
-      stateShared.provider2content,
-      (Principal.hash, Text.hash),
-      (Principal.equal, Text.equal)
-    ));
-    state.provider2rules.setRel( Rel.fromShare<Principal, Types.ContentId>(
-      stateShared.provider2rules,
-      (Principal.hash, Text.hash),
-      (Principal.equal, Text.equal)
-    ));
-    state.admin2Provider.setRel( Rel.fromShare<Principal, Types.ProviderId>(
-      stateShared.admin2Provider,
-      (Principal.hash, Principal.hash),
-      (Principal.equal, Principal.equal)
-    ));
-    for( (pid, allowed) in stateShared.providerAllowedForAIFiltering.vals()) {
+
+    state.content2votes.setRel(
+      Rel.fromShare<Types.ContentId, Types.VoteId>(
+        stateShared.content2votes,
+        hash,
+        equal,
+      ),
+    );
+    state.mods2votes.setRel(
+      Rel.fromShare<Types.UserId, Types.VoteId>(
+        stateShared.mods2votes,
+        (Principal.hash, Text.hash),
+        (Principal.equal, Text.equal),
+      ),
+    );
+    state.provider2content.setRel(
+      Rel.fromShare<Principal, Types.ContentId>(
+        stateShared.provider2content,
+        (Principal.hash, Text.hash),
+        (Principal.equal, Text.equal),
+      ),
+    );
+    state.provider2rules.setRel(
+      Rel.fromShare<Principal, Types.ContentId>(
+        stateShared.provider2rules,
+        (Principal.hash, Text.hash),
+        (Principal.equal, Text.equal),
+      ),
+    );
+    state.admin2Provider.setRel(
+      Rel.fromShare<Principal, Types.ProviderId>(
+        stateShared.admin2Provider,
+        (Principal.hash, Principal.hash),
+        (Principal.equal, Principal.equal),
+      ),
+    );
+    for ((pid, allowed) in stateShared.providerAllowedForAIFiltering.vals()) {
       state.providerAllowedForAIFiltering.put(pid, allowed);
     };
-    for( (pid, challengeIdArray) in stateShared.provider2PohChallengeIds.vals()) {
+    for ((pid, challengeIdArray) in stateShared.provider2PohChallengeIds.vals()) {
       let challengeIdBuff = Buffer.Buffer<Text>(challengeIdArray.size());
-      for(id in challengeIdArray.vals()) {
+      for (id in challengeIdArray.vals()) {
         challengeIdBuff.add(id);
       };
       state.provider2PohChallengeIds.put(pid, challengeIdBuff);
     };
 
-    for( (pid, expiry) in stateShared.provider2PohExpiry.vals()) {
+    for ((pid, expiry) in stateShared.provider2PohExpiry.vals()) {
       state.provider2PohExpiry.put(pid, expiry);
     };
     return state;

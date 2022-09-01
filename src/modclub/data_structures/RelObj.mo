@@ -13,45 +13,45 @@ import Rel "Rel";
 module {
   public class RelObj<X, Y>(
     hash : Rel.HashPair<X, Y>,
-    equal : Rel.EqualPair<X, Y>)
-  {
-    var rel = Rel.empty<X,Y>(hash, equal);
+    equal : Rel.EqualPair<X, Y>,
+  ) {
+    var rel = Rel.empty<X, Y>(hash, equal);
 
-    public func getRel() : Rel.Rel<X,Y> { rel; };
+    public func getRel() : Rel.Rel<X, Y> { rel };
 
-    public func setRel(newRel : Rel.Rel<X,Y>) {
+    public func setRel(newRel : Rel.Rel<X, Y>) {
       rel := newRel;
     };
-  
+
     public func put(x : X, y : Y) {
-      rel := Rel.put(rel, (x, y))
+      rel := Rel.put(rel, (x, y));
     };
     public func delete(x : X, y : Y) {
-      rel := Rel.delete(rel, (x, y))
+      rel := Rel.delete(rel, (x, y));
     };
     public func isMember(x : X, y : Y) : Bool {
-      Rel.isMember(rel, x, y)
+      Rel.isMember(rel, x, y);
     };
     public func get0(x : X) : [Y] {
-      Iter.toArray(Rel.getRelated0(rel, x))
+      Iter.toArray(Rel.getRelated0(rel, x));
     };
     public func get1(y : Y) : [X] {
-      Iter.toArray(Rel.getRelated1(rel, y))
+      Iter.toArray(Rel.getRelated1(rel, y));
     };
     public func get0Size(x : X) : Nat {
-      Iter.size(Rel.getRelated0(rel, x))
+      Iter.size(Rel.getRelated0(rel, x));
     };
     public func get1Size(y : Y) : Nat {
-      Iter.size(Rel.getRelated1(rel, y))
+      Iter.size(Rel.getRelated1(rel, y));
     };
     public func getMap0<Z>(x : X, f : Y -> Z) : [Z] {
-      Iter.toArray(Iter.map(Rel.getRelated0(rel, x), f))
+      Iter.toArray(Iter.map(Rel.getRelated0(rel, x), f));
     };
     public func getMap1<Z>(y : Y, f : X -> Z) : [Z] {
-      Iter.toArray(Iter.map(Rel.getRelated1(rel, y), f))
+      Iter.toArray(Iter.map(Rel.getRelated1(rel, y), f));
     };
     public func getKeys() : [X] {
       Rel.getAllKeys(rel);
     };
   };
-}
+};
