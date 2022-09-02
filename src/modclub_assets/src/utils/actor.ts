@@ -30,8 +30,8 @@ function createActor(identity?: Identity, canisterId?: any) {
   return { actor, agent };
 }
 
-const createPlugActor = async function (identity, canisterId) {
-  const actor = await window["ic"].plug.createActor({
+const createPlugOrISActor = async function (walletToUse, canisterId) {
+  const actor = await window['ic'][walletToUse].createActor({
     canisterId: canisterId,
     interfaceFactory: idlFactory,
   });
@@ -67,9 +67,10 @@ class ActorController {
         }
         console.log("ACTOR", actor);
         return actor;
+      case "infinityWallet":
       case "plug":
-        const plugActor = createPlugActor(identity, canisterId);
-        return plugActor;
+        const plugIWActor = createPlugOrISActor(authenticatorToUse, canisterId);
+        return plugIWActor;
       case "stoic":
         const stoicActorAgent = createActor(identity, canisterId);
         return stoicActorAgent.actor;

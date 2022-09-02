@@ -2,6 +2,7 @@ import React, { PropsWithChildren, useEffect } from "react";
 import { useAuth } from "../../utils/auth";
 import { Button, Icon } from "react-bulma-components";
 import dfinitylogo from "../../../assets/dfinity.svg";
+import infinityswap from "../../../assets/infinityswap.png";
 import pluglogo from "../../../assets/plug.png";
 import stoiclogo from "../../../assets/stoic.png";
 
@@ -33,6 +34,12 @@ export function SignIn(props: PropsWithChildren<{}>) {
         <span className="mr-2">Login</span>
         <Icon>
           <img src={dfinitylogo} alt="dfinity logo" />
+        </Icon>
+      </Button>
+      <Button fullwidth color="gradient" className="is-outlined mb-4" onClick={() => handleLogin('infinityWallet')} >
+        <span className="mr-2">Login</span>
+        <Icon>
+          <img src={infinityswap} alt="infinity swap logo" />
         </Icon>
       </Button>
       <Button fullwidth color="gradient" className="is-outlined mb-4" onClick={() => handleLogin('plug')} >

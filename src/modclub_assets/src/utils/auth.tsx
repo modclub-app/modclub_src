@@ -44,7 +44,7 @@ const whitelist = [canisterId];
 const host = window.location.origin;
 let fetchedProviders = false;
 // Safe hook to not connect multiple times using plugin
-let checkAndConnectPlugCounter = 0;
+let checkAndConnectToPlugOrIWCounter = 0;
 let checkAndConnectStoicCounter = 0;
 
 // Provider hook that creates auth object and handles state
@@ -125,8 +125,9 @@ export function useProvideAuth(authClient): AuthContext {
             }
           );
           break;
+        case 'infinityWallet':
         case 'plug':
-          if(checkAndConnectPlugCounter==0)checkAndConnectToPlug();
+          if(checkAndConnectToPlugOrIWCounter==0)checkAndConnectToPlugOrIW(walletToUse);
           break;
         case 'stoic':
           if(checkAndConnectStoicCounter==0)checkAndConnectToStoic();
@@ -137,20 +138,35 @@ export function useProvideAuth(authClient): AuthContext {
     };
   }, [isAuthClientReady]);
 
-  async function checkAndConnectToPlug() {
-    checkAndConnectPlugCounter++;
+  async function checkAndConnectToPlugOrIW(walletToUse) {
+    checkAndConnectToPlugOrIWCounter++;
     if (walletToUse) {
-      const connected = await window['ic'].plug.isConnected();
-      let identity;
+      const connected = await window['ic'][walletToUse].isConnected();
       if (connected) {
-        if (!window['ic'].plug.agent) {
-          await window['ic'].plug.createAgent({ whitelist, host });
-          identity = await window['ic'].plug.agent._identity;
+        if (!window['ic'][walletToUse].agent) {
+          if (walletToUse == 'plug') {
+            await window['ic'][walletToUse].createAgent({whitelist, host });
+          }else{
+            await window['ic'][walletToUse].requestConnect({
+              whitelist,
+              host
+            });
+          }
+        };
+        const pID = await window['ic'][walletToUse].getPrincipal();
+        const identity = {
+          type : walletToUse,
+          getPrincipal : () => pID
         };
         setIsAuthenticatedLocal(true);
-        setWalletIdentity(identity, 'plug');
+        setWalletIdentity(identity, walletToUse);
         setUserFromLocalStorage();
         setAuthClientReady(true);
+      }else{
+        if(walletToUse == 'infinityWallet'){
+          logOut();
+          logIn(walletToUse);
+        }
       }
     }
   }
@@ -257,24 +273,25 @@ export function useProvideAuth(authClient): AuthContext {
           console.error("Could not get identity from internet identity");
         }
         break;
+      case 'infinityWallet':
       case 'plug':
         try {
-          if (!window['ic']?.plug) {
-            window.open('https://plugwallet.ooo/', '_blank');
-            console.error("Can not find Plug wallet extention. Please Install on the browser");
-            return;
-          };
-          const result = await window['ic'].plug.requestConnect({
-            whitelist,
-            host
-          });
-          if (result) {
-            if (!window['ic'].plug.agent) {
-              await window['ic'].plug.createAgent({ whitelist });
+          if (walletToUse) {
+            const result = await window['ic'][walletToUse].requestConnect({
+              whitelist,
+              host
+            });
+            if (result) {
+              const p = await window['ic'][walletToUse].getPrincipal();
+              const identity = {
+                type : 'is',
+                getPrincipal : () => p
+              };
+              setWalletIdentity(identity, walletToUse);
+            } else {
+              throw new Error("Failed to connect to your wallet");
             }
           }
-          const identity = await window['ic'].plug.agent._identity;//.getPrincipal();
-          setWalletIdentity(identity, walletToUse);
         } catch (error) {
           console.log("user declined connect request", error);
         };
@@ -308,6 +325,7 @@ export function useProvideAuth(authClient): AuthContext {
         if (!authClient.ready) return;
         authClient.logout();
         break;
+      case 'infinityWallet':
       case 'plug':
         window['ic'].plug.disconnect();
         break;
@@ -325,7 +343,7 @@ export function useProvideAuth(authClient): AuthContext {
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
     localStorage.removeItem('_loginType');
     fetchedProviders = false;
-    checkAndConnectPlugCounter = 0;
+    checkAndConnectToPlugOrIWCounter = 0;
     checkAndConnectStoicCounter = 0;
     Usergeek.setPrincipal(null);
     console.log("User Logged Out");
