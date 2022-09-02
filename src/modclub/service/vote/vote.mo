@@ -245,5 +245,9 @@ module VoteModule {
       return VoteState.getStableState(state);
     };
 
+    public func getVoteState() : VoteState.PohVoteState {
+        return state;
+    };
+
   };
 };

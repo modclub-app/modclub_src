@@ -2,6 +2,7 @@ import Buffer "mo:base/Buffer";
 import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
+import Array "mo:base/Array";
 import Helpers "../../helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
@@ -9,13 +10,18 @@ import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Params "../parameters/params";
 import Principal "mo:base/Principal";
+import AuthManager "../auth/auth";
 import QueueState "./state";
+import List "mo:base/List";
 import Text "mo:base/Text";
 import LFSR "mo:rand/LFSR";
 import Time "mo:base/Time";
 import Nat8 "mo:base/Nat8";
 import Types "../../types";
 import DownloadSupport "./downloadSupport";
+import PohTypes "../poh/types";
+import GlobalState "../../statev1";
+import VoteState "../vote/state";
 
 module QueueManager {
 
@@ -67,6 +73,48 @@ module QueueManager {
           );
         };
       };
+    };
+
+    public func getEmailsFromPackageID(voteState: VoteState.PohVoteState, globalState: GlobalState.State, packages: HashMap.HashMap<Text, PohTypes.PohChallengePackage>, startTimeForPOHEmail: Int, endTimeForPOHEmail: Int, modClubAmins: List.List<Principal>) : HashMap.HashMap<Text, ?Text> { 
+        let userEmailIDs = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
+        for(packageID in state.allNewContentQueue.keys()){
+            let usersAlreadyVoted = HashMap.HashMap<Principal, Bool>(1, Principal.equal, Principal.hash);
+            //Remove owner of the content
+            switch(packages.get(packageID)){
+                case(null)();
+                case(?packageExist) {
+                    if(packageExist.createdAt > startTimeForPOHEmail and packageExist.createdAt < endTimeForPOHEmail){
+                        for(voteID in voteState.pohContent2votes.get0(packageID).vals()){
+                            for(votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()){
+                                usersAlreadyVoted.put(votedUserID,true);
+                            };
+                        };
+                    };
+                };
+            };
+            if(usersAlreadyVoted.size() > 0){
+                for((userID, profile) in globalState.profiles.entries()){
+                    var isPOHOwner = Text.startsWith(packageID,#text(Principal.toText(userID)));
+                    switch(usersAlreadyVoted.get(userID)) {
+                        case (?result) {
+                            //Debug.print("User voted already" # Principal.toText(userID));
+                        };
+                        case (_) {
+                            switch(globalState.profiles.get(userID)) {
+                                case(null)();
+                                case (?result) {
+                                    // Add only non Admin users to map
+                                    if(not AuthManager.isAdmin(userID, modClubAmins) and isPOHOwner == false) {
+                                        userEmailIDs.put(result.email,null);
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        return userEmailIDs;
     };
 
     public func getContentStatus(contentId : Text) : Types.ContentStatus {

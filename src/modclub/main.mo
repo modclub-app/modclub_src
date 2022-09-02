@@ -54,6 +54,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000;
   // In case someone spams us, limit the waitlist
+  private stable var startTimeForPOHEmail = Helpers.timeNow();
+  private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
   // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
@@ -131,7 +133,7 @@ shared ({ caller = deployer }) actor class ModClub() = this {
 
   public shared query ({ caller }) func isUserAdmin() : async Bool {
     if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
+      return false;
     };
     return true;
   };
@@ -1474,6 +1476,27 @@ shared ({ caller = deployer }) actor class ModClub() = this {
         updatedAt = pohTasks[0].updatedAt;
       },
     );
+  };
+  
+  public shared ({caller}) func getModeratorEmailsForPOH(): async [Text] {
+    let FIVE_MIN_MILLI_SECS = 300000;
+    var endTimeForPOHEmail = Helpers.timeNow();
+    if(ranPOHUserEmailsOnce){
+      endTimeForPOHEmail := startTimeForPOHEmail + FIVE_MIN_MILLI_SECS;
+      var currentTime = Helpers.timeNow();
+      if(endTimeForPOHEmail > currentTime){
+        endTimeForPOHEmail := currentTime;
+      };
+    }else{
+      ranPOHUserEmailsOnce := true;
+    };
+    if(pohContentQueueManager.getUserContentQueue(caller,#new,false).size() != 0){
+      var emailIdsArr = pohEngine.getModeratorEmailsForPOH(pohContentQueueManager, voteManager.getVoteState(), state, startTimeForPOHEmail, endTimeForPOHEmail, admins);
+      startTimeForPOHEmail := endTimeForPOHEmail;
+      return emailIdsArr;
+    };
+    startTimeForPOHEmail := endTimeForPOHEmail;
+    return [];
   };
 
   public query ({ caller }) func getCanisterMetrics(

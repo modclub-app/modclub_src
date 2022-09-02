@@ -27,6 +27,9 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import Types "../../types";
+import QueueManager "../queue/queue";
+import VoteState "../vote/state";
+import List "mo:base/List";
 
 module PohModule {
 
@@ -1113,6 +1116,10 @@ module PohModule {
 
     public func getPohChallengePackage(packageId : Text) : ?PohTypes.PohChallengePackage {
       return state.pohChallengePackages.get(packageId);
+    };
+    public func getModeratorEmailsForPOH(pohContentQueueManager: QueueManager.QueueManager, voteState: VoteState.PohVoteState, globalState: GlobalState.State, startTimeForPOHEmail:Int, endTimeForPOHEmail: Int, modClubAmins: List.List<Principal> ) : [Text] { 
+        let distinctUserEmailIDs = pohContentQueueManager.getEmailsFromPackageID(voteState, globalState, state.pohChallengePackages, startTimeForPOHEmail, endTimeForPOHEmail, modClubAmins); 
+        return Iter.toArray(distinctUserEmailIDs.keys());
     };
 
     public func validateRules(violatedRules : [Types.PohRulesViolated]) : Bool {
