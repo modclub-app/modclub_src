@@ -207,7 +207,8 @@ export function useProvideAuth(authClient): AuthContext {
         for (let provider of adminProviders) {
           providerListPromise.push(getProvider(provider));
         };
-        let providerList = await Promise.all(providerListPromise);
+        let providerListPrm = await Promise.all(providerListPromise.map((providerPromise)=>providerPromise.catch((error)=>null)));
+        let providerList = providerListPrm.filter(provider=>provider);
         setProviders(providerList);
         if (adminProviders.length > 0) {
           setProviderIdText(adminProviders[0].toText());
