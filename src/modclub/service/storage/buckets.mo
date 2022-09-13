@@ -27,13 +27,13 @@ actor class Bucket() = this {
   private let canistergeekLogger = Canistergeek.Logger();
   // ids only accessible by admins
   stable var restrictedContentId : Trie.Trie<Text, Int> = Trie.empty();
-  public type DataCanisterState = {
+  /* public */ type DataCanisterState = {
     contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
     chunks : HashMap.HashMap<Types.ChunkId, Types.ChunkData>;
     moderators : HashMap.HashMap<Principal, Principal>;
   };
 
-  public type DataCanisterSharedState = {
+  /* public */ type DataCanisterSharedState = {
     contentInfo : [(Text, Types.ContentInfo)];
     chunks : [(Types.ChunkId, Types.ChunkData)];
     moderators : [(Principal, Principal)];
@@ -264,7 +264,7 @@ actor class Bucket() = this {
     state.chunks.get(chunkId(fileId, chunkNum));
   };
 
-  public type StreamingCallbackToken = {
+  /* public */ type StreamingCallbackToken = {
     key : Text;
     content_encoding : Text;
     index : Nat;
@@ -272,27 +272,27 @@ actor class Bucket() = this {
     sha256 : ?[Nat8];
   };
 
-  public type StreamingCallbackHttpResponse = {
+  /* public */ type StreamingCallbackHttpResponse = {
     token : ?StreamingCallbackToken;
     body : Blob;
   };
 
-  public type StreamingCallback = shared () -> async ();
+  /* public */ type StreamingCallback = shared () -> async ();
 
-  public type StreamingStrategy = {
+  /* public */ type StreamingStrategy = {
     #Callback : {
       token : StreamingCallbackToken;
       callback : StreamingCallback;
     };
   };
 
-  public type HttpRequest = {
+  /* public */ type HttpRequest = {
     method : Text;
     url : Text;
     headers : [(Text, Text)];
     body : Blob;
   };
-  public type HttpResponse = {
+  /* public */ type HttpResponse = {
     status_code : Nat16;
     headers : [(Text, Text)];
     body : Blob;
