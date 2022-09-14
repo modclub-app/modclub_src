@@ -22,3 +22,6 @@ dist/
 download_state.iml
 downloads/
 downloads_archive/
+
+#ignore gzipped files
+.gz
