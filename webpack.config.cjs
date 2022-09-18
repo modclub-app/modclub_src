@@ -132,7 +132,8 @@ module.exports = {
       NODE_ENV: "development",
       MODCLUB_CANISTER_ID: canisters["modclub"],
       MODCLUB_DEV_CANISTER_ID: canisters["modclub_dev"],
-      MODCLUB_QA_CANISTER_ID: canisters["modclub_qa"],
+      MODCLUB_QA_CANISTER_ID:
+        canisters["modclub_qa"] || "f2xjy-4aaaa-aaaah-qc3eq-cai",
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
       DEV_ENV: process.env.DEV_ENV || "production",
