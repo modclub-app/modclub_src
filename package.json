@@ -22,7 +22,7 @@
     "deploy_prod_no_dl": "dfx deploy --network ic modclub_assets",
     "deploy_prod": "python3 ./scripts/download_state/download_state.py && dfx deploy --network ic modclub_assets",
     "deploy_modclub_prod": "python3 ./scripts/download_state/download_state.py && dfx deploy --network ic modclub",
-    "deploy_gzip_dev": "dfx build --network ic modclub_dev_assets && gzip .dfx/ic/canisters/modclub_dev/modclub_dev.wasm && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub_dev/modclub_dev.wasm.gz --mode upgrade modclub_dev && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub_dev_assets/modclub_dev_assets.wasm --mode install modclub_dev_assets"
+    "deploy_gzip_dev": "dfx build --network ic modclub_dev && gzip .dfx/ic/canisters/modclub_dev/modclub_dev.wasm && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub_dev/modclub_dev.wasm.gz --mode upgrade modclub_dev && dfx deploy --network ic modclub_dev_assets"
   },
   "devDependencies": {
     "@dfinity/agent": "^0.10.1",

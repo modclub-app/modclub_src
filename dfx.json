@@ -17,7 +17,6 @@
       "type": "motoko"
     },
     "modclub_dev_assets": {
-      "dependencies": ["modclub_dev"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },

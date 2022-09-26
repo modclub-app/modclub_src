@@ -120,14 +120,6 @@ module.exports = {
       template: path.join(__dirname, asset_entry),
       cache: false,
     }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.join(__dirname, "src", "modclub_assets", "assets"),
-          to: path.join(__dirname, "dist", "modclub_assets"),
-        },
-      ],
-    }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       MODCLUB_CANISTER_ID: canisters["modclub"],
