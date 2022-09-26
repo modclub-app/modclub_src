@@ -217,7 +217,7 @@ module StorageModule {
 
     // dynamically install a new Bucket
     private func newEmptyBucket() : async Bucket.Bucket {
-      Cycles.add(1500000000000);
+      Cycles.add(15_000_000_000_000); // 15T
       let b = await Bucket.Bucket();
       let _ = await updateCanister(b);
       // update canister permissions and settings
