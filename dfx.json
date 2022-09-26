@@ -5,7 +5,6 @@
       "type": "motoko"
     },
     "modclub_assets": {
-      "dependencies": ["modclub"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
