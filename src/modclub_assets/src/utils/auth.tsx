@@ -148,8 +148,7 @@ export function useProvideAuth(authClient): AuthContext {
             await window['ic'][walletToUse].createAgent({whitelist, host });
           }else{
             await window['ic'][walletToUse].requestConnect({
-              whitelist,
-              host
+              whitelist
             });
           }
         };
@@ -278,8 +277,7 @@ export function useProvideAuth(authClient): AuthContext {
         try {
           if (walletToUse) {
             const result = await window['ic'][walletToUse].requestConnect({
-              whitelist,
-              host
+              whitelist
             });
             if (result) {
               const p = await window['ic'][walletToUse].getPrincipal();
