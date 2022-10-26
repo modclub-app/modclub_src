@@ -264,16 +264,47 @@ module {
     #Immutable;
   };
 
-  public type ProviderError = {
-    #Unauthorized;
-    #ProviderIsRegistered;
-    #NotFound;
-    #RequiresWhitelisting;
-    #InvalidProvider;
-    #InvalidContentType;
-    #InvalidContentStatus;
-    #ProviderAdminIsAlreadyRegistered;
+  type HeaderField = (Text, Text);
+
+  type Token = {};
+
+  type StreamingCallbackHttpResponse = {
+    body : Blob;
+    token : Token;
   };
+
+  type StreamingStrategy = {
+    #Callback : {
+      callback : shared Token -> async StreamingCallbackHttpResponse;
+      token : Token;
+    };
+  };
+
+  public type HttpRequest = {
+    method : Text;
+    url : Text;
+    headers : [HeaderField];
+    body : Blob;
+  };
+
+  public type HttpResponse = {
+    status_code : Nat16;
+    headers : [HeaderField];
+    body : Blob;
+    streaming_strategy : ?StreamingStrategy;
+    upgrade: ?Bool;
+  };
+
+    public type ProviderError = {
+        #Unauthorized;
+        #ProviderIsRegistered;
+        #NotFound;
+        #RequiresWhitelisting;
+        #InvalidProvider;
+        #InvalidContentType;
+        #InvalidContentStatus;
+        #ProviderAdminIsAlreadyRegistered;
+    };
 
   public type ProviderMetaResult = Result.Result<ProviderMeta, ProviderError>;
   public type ProviderSettingResult = Result.Result<ProviderSettings, ProviderError>;

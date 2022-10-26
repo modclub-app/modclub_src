@@ -273,6 +273,16 @@ module {
     updatedAt : Int;
   };
 
+  public type PohError = {
+      #invalidToken;
+      #challengeNotPendingForSubmission;
+      #invalidPackageId;
+      #pohNotConfiguredForProvider;
+      #pohCallbackNotRegistered;
+      #attemptToAssociateMultipleModclubAccounts : Principal;
+      #attemptToCreateMultipleWalletsWithSameIp;
+  };
+
   public type PohTaskPlusForAdmin = {
     packageId : Text;
     status : Types.ContentStatus;
@@ -295,15 +305,6 @@ module {
     reward : Float;
     createdAt : Int;
     updatedAt : Int;
-  };
-
-  public type PohError = {
-    #invalidToken;
-    #challengeNotPendingForSubmission;
-    #invalidPackageId;
-    #pohNotConfiguredForProvider;
-    #pohCallbackNotRegistered;
-    #attemptToAssociateMultipleModclubAccounts : Principal;
   };
 
   public type VerifyHumanityResponse = {

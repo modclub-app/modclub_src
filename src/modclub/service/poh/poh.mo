@@ -43,36 +43,45 @@ module PohModule {
   public class PohEngine(
     stableState : PohStateV2.PohStableState,
     pohCallbackDataByProviderStable : [(Principal, [(Text, [(Text, Int)])])],
-  ) {
+    provider2ProviderUserId2IpStable: [(Principal, [(Text, Text)])], 
+    provider2Ip2WalletStable: [(Principal, Rel.RelShared<Text, Principal>)]) {
+      let state = PohStateV2.getState(stableState);
 
-    let state = PohStateV2.getState(stableState);
-
-    let pohCallbackByProvider = HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>(
-      1,
-      Principal.equal,
-      Principal.hash,
-    );
-
-    for ((pId, callBackDataByUserId) in pohCallbackDataByProviderStable.vals()) {
-
-      let callBackDataByUserIdMap = TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>(
-        Text.equal,
-        Text.hash,
+      let pohCallbackByProvider = HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>(
+        1,
+        Principal.equal,
+        Principal.hash,
       );
-      for ((userId, callBackDataByStatus) in callBackDataByUserId.vals()) {
-        let callBackDataByStatusMap = HashMap.HashMap<Text, Int>(
-          1,
-          Text.equal,
-          Text.hash,
-        );
-        for ((status, time) in callBackDataByStatus.vals()) {
-          callBackDataByStatusMap.put(status, time);
-        };
-        callBackDataByUserIdMap.put(userId, callBackDataByStatusMap);
+
+      for((pId, callBackDataByUserId) in pohCallbackDataByProviderStable.vals()) {
+          
+          let callBackDataByUserIdMap = TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>(Text.equal, Text.hash);
+          for((userId, callBackDataByStatus) in callBackDataByUserId.vals()) {
+              let callBackDataByStatusMap = HashMap.HashMap<Text, Int>(1, Text.equal, Text.hash);
+              for((status, time) in callBackDataByStatus.vals()) {
+                  callBackDataByStatusMap.put(status, time);
+              };
+              callBackDataByUserIdMap.put(userId, callBackDataByStatusMap);
+          };
+
+          pohCallbackByProvider.put(pId, callBackDataByUserIdMap);
+      };
+      // Keep providerId to token to IP address Mapping.
+      let provider2ProviderUserId2Ip = HashMap.HashMap<Principal, TrieMap.TrieMap<Text, Text>>(1, Principal.equal, Principal.hash);
+      for((providerId, providerUserId2Ip) in provider2ProviderUserId2IpStable.vals()) {
+          let providerUserId2IpMap = TrieMap.fromEntries<Text, Text>(providerUserId2Ip.vals(), Text.equal, Text.hash);
+          provider2ProviderUserId2Ip.put(providerId, providerUserId2IpMap);
       };
 
-      pohCallbackByProvider.put(pId, callBackDataByUserIdMap);
-    };
+      // Keep providerId to ip to Modclub wallet/Principal mapping.
+      let provider2Ip2Wallet = HashMap.HashMap<Principal, RelObj.RelObj<Text, Principal>>(1, Principal.equal, Principal.hash);
+      for((providerId, ip2Wallet) in provider2Ip2WalletStable.vals()) {
+          let ip2WalletRelObj = RelObj.RelObj<Text, Principal> ((Text.hash, Principal.hash), (Text.equal, Principal.equal));
+          ip2WalletRelObj.setRel(
+                  Rel.fromShare<Text, Principal>(ip2Wallet, (Text.hash, Principal.hash), (Text.equal, Principal.equal))
+          );
+          provider2Ip2Wallet.put(providerId, ip2WalletRelObj);
+      };
 
     let MILLI_SECONDS_DAY = 86400000;
 
@@ -1117,6 +1126,7 @@ module PohModule {
     public func getPohChallengePackage(packageId : Text) : ?PohTypes.PohChallengePackage {
       return state.pohChallengePackages.get(packageId);
     };
+
     public func getModeratorEmailsForPOH(pohContentQueueManager: QueueManager.QueueManager, voteState: VoteState.PohVoteState, globalState: GlobalState.State, startTimeForPOHEmail:Int, endTimeForPOHEmail: Int, modClubAmins: List.List<Principal> ) : [Text] { 
         let distinctUserEmailIDs = pohContentQueueManager.getEmailsFromPackageID(voteState, globalState, state.pohChallengePackages, startTimeForPOHEmail, endTimeForPOHEmail, modClubAmins); 
         return Iter.toArray(distinctUserEmailIDs.keys());
@@ -1160,6 +1170,50 @@ module PohModule {
         },
       );
     };
+
+    public func registerIPWithProviderUser(providerUserId: Text, ip: Text, providerId: Principal) : Bool {
+
+            let providerUser2Ip = Option.get(provider2ProviderUserId2Ip.get(providerId), 
+                TrieMap.TrieMap<Text, Text>(Text.equal, Text.hash));
+            switch(providerUser2Ip.get(providerUserId)) {
+                case(null) {
+                    // If there is no association for a token to ip, then add it.
+                    providerUser2Ip.put(providerUserId, ip);
+                    provider2ProviderUserId2Ip.put(providerId, providerUser2Ip);
+                    return true;
+                };
+                case(?storedIp) {
+                    // If there is already an association for a token to ip, then check it's the same.
+                    if(storedIp == ip) {
+                        return true;
+                    };
+                    // else
+                    return false;
+                };
+            };
+        };
+
+        public func registerIPWithWallet(providerUserId: Text, providerId: Principal, modclubUserId: Principal) : Bool {
+            var done = false;
+
+            let _ = do ? {
+                let storedIpForProviderUser = provider2ProviderUserId2Ip.get(providerId)!.get(providerUserId)!;
+                let ip2ModclubId = Option.get(provider2Ip2Wallet.get(providerId), RelObj.RelObj<Text, Principal> ((Text.hash, Principal.hash), (Text.equal, Principal.equal)));
+                let alreadyAssociatedWallets = ip2ModclubId.get0(storedIpForProviderUser);
+                if(alreadyAssociatedWallets.size() == 0) {
+                    ip2ModclubId.put(storedIpForProviderUser, modclubUserId);
+                    provider2Ip2Wallet.put(providerId, ip2ModclubId);
+                    done := true;
+                } else if(alreadyAssociatedWallets.size() == 1) {
+                    if(alreadyAssociatedWallets.get(0) == modclubUserId) {
+                        done := true;
+                    } else {
+                        done := false;
+                    }
+                };
+            };
+            return done;
+        };
 
     public func populateChallenges() : () {
       let allowedViolationRules2 = Buffer.Buffer<PohTypes.ViolatedRules>(3);
@@ -1457,32 +1511,38 @@ module PohModule {
       };
     };
 
-    public func getStableStateV2() : (
-      PohStateV2.PohStableState,
-      [(Principal, [(Text, [(Text, Int)])])],
-    ) {
+    public func getStableStateV2() : (PohStateV2.PohStableState, [(Principal, [(Text, [(Text, Int)] )])],
+        [(Principal, [(Text, Text)])], [(Principal, Rel.RelShared<Text, Principal>)] ) {
 
-      let pohCallbackDataByProviderStableStateBuff = Buffer.Buffer<(Principal, [(Text, [(Text, Int)])])>(
-        1,
-      );
-      for ((providerId, callBackByUser) in pohCallbackByProvider.entries()) {
-        let callBackByUserBuff = Buffer.Buffer<(Text, [(Text, Int)])>(1);
-        for ((userId, callbackData) in callBackByUser.entries()) {
-          let callbackBuff = Buffer.Buffer<(Text, Int)>(1);
-          for ((status, time) in callbackData.entries()) {
-            callbackBuff.add((status, time));
-          };
-          callBackByUserBuff.add(userId, callbackBuff.toArray());
+        let pohCallbackDataByProviderStableStateBuff =  Buffer.Buffer<(Principal, [(Text, [(Text, Int)] )])>(1);
+        for((providerId, callBackByUser) in pohCallbackByProvider.entries()) {
+            let callBackByUserBuff = Buffer.Buffer<(Text, [(Text, Int)])>(1);
+            for((userId, callbackData) in callBackByUser.entries()) {
+                let callbackBuff = Buffer.Buffer<(Text, Int)>(1);
+                for((status, time) in callbackData.entries()) {
+                    callbackBuff.add((status, time));
+                };
+                callBackByUserBuff.add(userId, callbackBuff.toArray());
+            };
+            pohCallbackDataByProviderStableStateBuff.add(providerId, callBackByUserBuff.toArray());
         };
-        pohCallbackDataByProviderStableStateBuff.add(
-          providerId,
-          callBackByUserBuff.toArray(),
-        );
-      };
-      return (
-        PohStateV2.getStableState(state),
-        pohCallbackDataByProviderStableStateBuff.toArray(),
-      );
+
+        let provider2ProviderUserId2IpBuff =  Buffer.Buffer<(Principal, [(Text, Text)])>(1);
+        for((providerId, providerUserId2Ip) in provider2ProviderUserId2Ip.entries()) {
+            let providerUserId2IpBuff = Buffer.Buffer<(Text, Text)>(1);
+            for((pUserId, ip) in providerUserId2Ip.entries()) {
+                providerUserId2IpBuff.add(pUserId, ip);
+            };
+            provider2ProviderUserId2IpBuff.add(providerId, providerUserId2IpBuff.toArray());
+        };
+
+        let provider2Ip2WalletBuff = Buffer.Buffer<(Principal, Rel.RelShared<Text, Principal>)>(1);
+        for((providerId, ip2Wallets) in provider2Ip2Wallet.entries()) {
+            provider2Ip2WalletBuff.add((providerId, Rel.share(ip2Wallets.getRel())));
+        };
+
+        return (PohStateV2.getStableState(state), pohCallbackDataByProviderStableStateBuff.toArray(),
+        provider2ProviderUserId2IpBuff.toArray(), provider2Ip2WalletBuff.toArray());
     };
 
     public func downloadSupport(varName : Text, start : Nat, end : Nat) : [
@@ -1539,6 +1599,7 @@ module PohModule {
       let pohUserChallengeAttemptBuff = Buffer.Buffer<(Principal, [(Text, [PohTypes.PohChallengesAttemptV1])])>(
         1,
       );
+
       for (
         (userId, attemptByChallengeId) 
             in pohStableStateV1.pohUserChallengeAttempts.vals()
@@ -1569,6 +1630,7 @@ module PohModule {
               },
             );
           };
+
           newAttemptByChallengeIdBuff.add(
             (challengeId, newAttemptBuff.toArray()),
           );
@@ -1576,7 +1638,6 @@ module PohModule {
         pohUserChallengeAttemptBuff.add(
           (userId, newAttemptByChallengeIdBuff.toArray()),
         )
-
       };
 
       return {
@@ -1601,5 +1662,4 @@ module PohModule {
       };
     };
   };
-
 };

@@ -14,6 +14,7 @@ import DownloadUtil "downloadUtil";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
+import Trie "mo:base/Trie";
 import Helpers "./helpers";
 import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
@@ -76,8 +77,10 @@ shared ({ caller = deployer }) actor class ModClub() = this {
   stable var pohStableStateV1 = PohStateV1.emptyStableState();
   stable var pohStableStateV2 = PohStateV2.emptyStableState();
   // time when callback was sent by provider, then by provider user, then by status
-  stable var pohCallbackDataByProvider : [(Principal, [(Text, [(Text, Int)])])] = [];
-  var pohEngine = POH.PohEngine(pohStableStateV2, pohCallbackDataByProvider);
+  stable var pohCallbackDataByProvider : [(Principal, [(Text, [(Text, Int)] )] ) ] = [];
+  stable var provider2ProviderUserId2Ip: [(Principal, [(Text, Text)])] = [];
+  stable var provider2Ip2Wallet: [(Principal, Rel.RelShared<Text, Principal>)] = [];
+  var pohEngine = POH.PohEngine(pohStableStateV2, pohCallbackDataByProvider, provider2ProviderUserId2Ip, provider2Ip2Wallet);
 
   stable var pohVoteStableState = VoteState.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
@@ -1002,11 +1005,17 @@ shared ({ caller = deployer }) actor class ModClub() = this {
       case (#err(err)) {
         return #err(err);
       };
-      case (#ok(tokenResponse)) {
-        switch (
-          pohEngine.getProviderPohConfiguration(tokenResponse.providerId, state),
-        ) {
-          case (#ok(pohConfigForProvider)) {
+      case(#ok(tokenResponse)) {
+        let ipRestrictionConfigured = Option.get(Trie.get(provider2IpRestriction,
+                            key(tokenResponse.providerId), Principal.equal), false);
+        if(ipRestrictionConfigured) {
+          let registered = pohEngine.registerIPWithWallet(tokenResponse.providerUserId, tokenResponse.providerId, caller);
+          if(not registered) {
+            return #err(#attemptToCreateMultipleWalletsWithSameIp);
+          };
+        };
+        switch(pohEngine.getProviderPohConfiguration(tokenResponse.providerId, state)) {
+          case(#ok(pohConfigForProvider)) {
 
             switch (
               pohEngine.associateProviderUserId2ModclubUserId(
@@ -1168,12 +1177,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     pohEngine.populateChallenges();
   };
 
-  public shared ({ caller }) func configurePohForProvider(
-    providerId : Principal,
-    challengeId : [Text],
-    expiry : Nat,
-  ) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
+  public shared({ caller }) func configurePohForProvider(providerId: Principal, challengeId: [Text], expiry: Nat, ipRestriction: Bool) : async () {
+    if(not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
     let challengeBuffer = Buffer.Buffer<Text>(challengeId.size());
@@ -1182,6 +1187,14 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     };
     state.provider2PohChallengeIds.put(providerId, challengeBuffer);
     state.provider2PohExpiry.put(providerId, expiry);
+    provider2IpRestriction := Trie.put(provider2IpRestriction, key(providerId), Principal.equal, ipRestriction).0;
+  };
+
+  func key(t: Principal) : Trie.Key<Principal> { 
+    { 
+      key = t; 
+      hash = Principal.hash(t) 
+    }; 
   };
 
   public query ({ caller }) func getPohTasks(
@@ -2006,6 +2019,7 @@ shared ({ caller = deployer }) actor class ModClub() = this {
   };
 
   // Upgrade logic / code
+  stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   stable var stateSharedV1 : StateV1.StateShared = StateV1.emptyShared();
 
   system func preupgrade() {
@@ -2018,6 +2032,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     let pohCombinedStableState = pohEngine.getStableStateV2();
     pohStableStateV2 := pohCombinedStableState.0;
     pohCallbackDataByProvider := pohCombinedStableState.1;
+    provider2ProviderUserId2Ip := pohCombinedStableState.2;
+    provider2Ip2Wallet := pohCombinedStableState.3;
     pohVoteStableState := voteManager.getStableState();
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
@@ -2057,7 +2073,7 @@ shared ({ caller = deployer }) actor class ModClub() = this {
         pohStableStateV2,
         Principal.fromActor(this),
       );
-      pohEngine := POH.PohEngine(pohStableStateV2, pohCallbackDataByProvider);
+      pohEngine := POH.PohEngine(pohStableStateV2, pohCallbackDataByProvider, provider2ProviderUserId2Ip, provider2Ip2Wallet);
       pohRunOnce := true;
     };
     pohStableStateV1 := PohStateV1.emptyStableState();
@@ -2122,17 +2138,94 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     };
   };
 
-  public query ({ caller }) func downloadSupport(
-    stateName : Text,
-    varName : Text,
-    start : Nat,
-    end : Nat,
-  ) : async [[Text]] {
-    if (
-      Principal.toText(caller) == "edc6a-bltzx-3jexk-vn7wo-xrpzh-hazpe-fibv6-gqgqx-gkff6-la6uj-gae",
-    ) {
-      switch (stateName) {
-        case ("pohState") {
+  public query({ caller }) func http_request(request: Types.HttpRequest) : async Types.HttpResponse {
+    return {
+        status_code = 200;
+        headers = [];
+        body = Text.encodeUtf8("Upgrading");
+        streaming_strategy = null;
+        upgrade=?true;
+      };
+  };
+
+  public shared({ caller }) func http_request_update(request: Types.HttpRequest) : async Types.HttpResponse {
+    var ip = "";
+    for((name, value) in request.headers.vals()) {
+      if (name == "x-real-ip") {
+        ip := value;
+      };
+    };
+
+    var token = "";
+
+    switch(Text.stripStart(request.url, #text("/ipRegister?"))) {
+      case(null) ();
+      case(?params) {
+        let fields:Iter.Iter<Text> = Text.split(params, #text("&"));
+        for (field:Text in fields) {
+          let kv:[Text] = Iter.toArray<Text>(Text.split(field, #text("=")));
+          if (kv[0]=="token"){
+            token := kv[1];
+          };
+        };
+      };
+    };
+    if(ip == "" or token == "") {
+      return {
+        status_code = 400;
+        headers = [];
+        body = Text.encodeUtf8("IP or token couldn't be found");
+        streaming_strategy = null;
+        upgrade=null;
+      }
+    };
+    Debug.print(ip);
+    Debug.print(token);
+    var ipRestrictionConfigured = false;
+    var providerId = Principal.fromText("aaaaa-aa");
+    var providerUserId = "";
+    switch(pohEngine.decodeToken(token)) {
+      case(#err(err)) {
+        return {
+          status_code = 400;
+          headers = [];
+          body = Text.encodeUtf8("Invalid token.");
+          streaming_strategy = null;
+          upgrade=null;
+        }; 
+      };
+      case(#ok(providerAndUserData)) {
+        providerId := providerAndUserData.providerId;
+        providerUserId := providerAndUserData.providerUserId;
+        ipRestrictionConfigured := Option.get(Trie.get(provider2IpRestriction,
+                            key(providerId), Principal.equal), false);
+      };
+    };
+    if(ipRestrictionConfigured) {
+      let registed = pohEngine.registerIPWithProviderUser(providerUserId, ip, providerId);
+      if(not registed) {
+        return {
+          status_code = 500;
+          headers = [];
+          body = Text.encodeUtf8("Token is already associated.");
+          streaming_strategy = null;
+          upgrade=null;
+        };
+      };
+    };
+    {
+      status_code = 200;
+      headers = [];
+      body = Text.encodeUtf8("Token Associated with IP.");
+      streaming_strategy = null;
+      upgrade=null;
+    };
+  };
+
+  public query({caller}) func downloadSupport(stateName: Text, varName: Text, start: Nat, end: Nat) : async [[Text]] {
+    if(Principal.toText(caller) == "edc6a-bltzx-3jexk-vn7wo-xrpzh-hazpe-fibv6-gqgqx-gkff6-la6uj-gae") {
+      switch(stateName) {
+        case("pohState") {
           return pohEngine.downloadSupport(varName, start, end);
         };
         case ("contentQueueState") {
