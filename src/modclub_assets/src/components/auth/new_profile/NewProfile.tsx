@@ -20,7 +20,7 @@ import { validateEmail } from "../../../utils/util";
 
 const MAX_IMAGE_SIZE = 500000; // 500kb
 
-export default function NewProfile({ isPohFlow }: { isPohFlow: boolean}) {
+export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
   const { setUser } = useAuth();
   const [pic, setPic] = useState<string>(null);
@@ -108,7 +108,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean}) {
         <Columns.Column size={6}>
           <Card>
             <Card.Content>
-              <Heading textAlign="center">{ instructionText }</Heading>
+              <Heading textAlign="center">{instructionText}</Heading>
 
               <input
                 style={{ display: "none" }}
@@ -186,7 +186,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean}) {
                         </Icon>
                       </div>
                     </div>
-
+                    <div className="has-text-centered">Please provide your email in order to receive email alerts</div>
                     <Button
                       type="submit"
                       disabled={!values.username || submitting}

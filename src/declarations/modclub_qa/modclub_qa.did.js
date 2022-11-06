@@ -7,6 +7,40 @@ export const idlFactory = ({ IDL }) => {
   const List_3 = IDL.Rec();
   const Trie_1 = IDL.Rec();
   const Trie_3 = IDL.Rec();
+  const PohVerificationStatus = IDL.Variant({
+    'notSubmitted' : IDL.Null,
+    'verified' : IDL.Null,
+    'expired' : IDL.Null,
+    'pending' : IDL.Null,
+    'startPoh' : IDL.Null,
+    'rejected' : IDL.Null,
+  });
+  const PohChallengeStatus = IDL.Variant({
+    'notSubmitted' : IDL.Null,
+    'verified' : IDL.Null,
+    'expired' : IDL.Null,
+    'pending' : IDL.Null,
+    'rejected' : IDL.Null,
+  });
+  const ChallengeResponse = IDL.Record({
+    'status' : PohChallengeStatus,
+    'completedAt' : IDL.Opt(IDL.Int),
+    'submittedAt' : IDL.Opt(IDL.Int),
+    'challengeId' : IDL.Text,
+    'requestedAt' : IDL.Opt(IDL.Int),
+  });
+  const PohVerificationResponsePlus = IDL.Record({
+    'status' : PohVerificationStatus,
+    'completedAt' : IDL.Opt(IDL.Int),
+    'token' : IDL.Opt(IDL.Text),
+    'rejectionReasons' : IDL.Vec(IDL.Text),
+    'submittedAt' : IDL.Opt(IDL.Int),
+    'isFirstAssociation' : IDL.Bool,
+    'providerId' : IDL.Principal,
+    'challenges' : IDL.Vec(ChallengeResponse),
+    'requestedAt' : IDL.Opt(IDL.Int),
+    'providerUserId' : IDL.Text,
+  });
   const ProviderError = IDL.Variant({
     'ProviderAdminIsAlreadyRegistered' : IDL.Null,
     'InvalidContentType' : IDL.Null,
@@ -100,13 +134,6 @@ export const idlFactory = ({ IDL }) => {
     'stake' : IDL.Int,
     'wallet' : IDL.Int,
     'userPoints' : IDL.Int,
-  });
-  const PohChallengeStatus = IDL.Variant({
-    'notSubmitted' : IDL.Null,
-    'verified' : IDL.Null,
-    'expired' : IDL.Null,
-    'pending' : IDL.Null,
-    'rejected' : IDL.Null,
   });
   const ViolatedRules = IDL.Record({
     'ruleId' : IDL.Text,
@@ -282,33 +309,6 @@ export const idlFactory = ({ IDL }) => {
     'empty' : IDL.Null,
   });
   const RelShared_1 = IDL.Record({ 'forw' : Trie2D_1 });
-  const PohVerificationStatus = IDL.Variant({
-    'notSubmitted' : IDL.Null,
-    'verified' : IDL.Null,
-    'expired' : IDL.Null,
-    'pending' : IDL.Null,
-    'startPoh' : IDL.Null,
-    'rejected' : IDL.Null,
-  });
-  const ChallengeResponse = IDL.Record({
-    'status' : PohChallengeStatus,
-    'completedAt' : IDL.Opt(IDL.Int),
-    'submittedAt' : IDL.Opt(IDL.Int),
-    'challengeId' : IDL.Text,
-    'requestedAt' : IDL.Opt(IDL.Int),
-  });
-  const PohVerificationResponsePlus = IDL.Record({
-    'status' : PohVerificationStatus,
-    'completedAt' : IDL.Opt(IDL.Int),
-    'token' : IDL.Opt(IDL.Text),
-    'rejectionReasons' : IDL.Vec(IDL.Text),
-    'submittedAt' : IDL.Opt(IDL.Int),
-    'isFirstAssociation' : IDL.Bool,
-    'providerId' : IDL.Principal,
-    'challenges' : IDL.Vec(ChallengeResponse),
-    'requestedAt' : IDL.Opt(IDL.Int),
-    'providerUserId' : IDL.Text,
-  });
   const SubscribePohMessage = IDL.Record({
     'callback' : IDL.Func([PohVerificationResponsePlus], [], ['oneway']),
   });
@@ -556,6 +556,11 @@ export const idlFactory = ({ IDL }) => {
     'challengeId' : IDL.Text,
   });
   const ModClub = IDL.Service({
+    'AdminCheckPohVerificationResp' : IDL.Func(
+        [IDL.Text, IDL.Principal],
+        [PohVerificationResponsePlus],
+        [],
+      ),
     'addProviderAdmin' : IDL.Func(
         [IDL.Principal, IDL.Text, IDL.Opt(IDL.Principal)],
         [ProviderResult],
@@ -569,6 +574,7 @@ export const idlFactory = ({ IDL }) => {
     'adminSlashStake' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'adminTransferTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'airdropRegister' : IDL.Func([], [AirdropUser], []),
+    'checkIfUserOptToReciveAlerts' : IDL.Func([], [IDL.Bool], ['query']),
     'collectCanisterMetrics' : IDL.Func([], [], []),
     'configurePohForProvider' : IDL.Func(
         [IDL.Principal, IDL.Vec(IDL.Text), IDL.Nat],
@@ -614,6 +620,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
+    'getAllUsersWantToReceiveAlerts' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Text)],
+        ['query'],
+      ),
     'getCanisterLog' : IDL.Func(
         [IDL.Opt(CanisterLogRequest)],
         [IDL.Opt(CanisterLogResponse)],
@@ -627,6 +638,7 @@ export const idlFactory = ({ IDL }) => {
     'getContent' : IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ['query']),
     'getDeployer' : IDL.Func([], [IDL.Principal], ['query']),
     'getModclubHoldings' : IDL.Func([], [Holdings], ['query']),
+    'getModeratorEmailsForPOH' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
     'getModeratorLeaderboard' : IDL.Func(
         [IDL.Nat, IDL.Nat],
         [IDL.Vec(ModeratorLeaderboard)],
@@ -682,6 +694,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'registerUserToReceiveAlerts' : IDL.Func(
+        [IDL.Principal, IDL.Bool],
+        [IDL.Bool],
+        [],
+      ),
     'removeProviderAdmin' : IDL.Func(
         [IDL.Principal, IDL.Principal],
         [ProviderResult],
@@ -692,6 +709,7 @@ export const idlFactory = ({ IDL }) => {
     'retiredDataCanisterIdForWriting' : IDL.Func([IDL.Text], [], ['oneway']),
     'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result_1], []),
     'rewardPoints' : IDL.Func([IDL.Principal, IDL.Int], [], []),
+    'sendVerificationEmail' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'setRandomization' : IDL.Func([IDL.Bool], [], []),
     'shuffleContent' : IDL.Func([], [], []),
     'shufflePohContent' : IDL.Func([], [], []),

@@ -1,4 +1,6 @@
 import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
+
 export interface ChallengeResponse {
   'status' : PohChallengeStatus,
   'completedAt' : [] | [bigint],
@@ -30,18 +32,21 @@ export type PohVerificationStatus = { 'notSubmitted' : null } |
   { 'startPoh' : null } |
   { 'rejected' : null };
 export interface Provider {
-  'pohCallback' : (arg_0: PohVerificationResponsePlus) => Promise<undefined>,
-  'registerPohCallbackForModclubForDev' : () => Promise<undefined>,
-  'registerPohCallbackForModclubForProd' : () => Promise<undefined>,
-  'registerPohCallbackForModclubForQA' : () => Promise<undefined>,
-  'verifyUserHumanityForProviderForDev' : (arg_0: Principal) => Promise<
-      PohVerificationResponsePlus
-    >,
-  'verifyUserHumanityForProviderForProd' : (arg_0: Principal) => Promise<
-      PohVerificationResponsePlus
-    >,
-  'verifyUserHumanityForProviderForQA' : (arg_0: Principal) => Promise<
-      PohVerificationResponsePlus
-    >,
+  'pohCallback' : ActorMethod<[PohVerificationResponsePlus], undefined>,
+  'registerPohCallbackForModclubForDev' : ActorMethod<[], undefined>,
+  'registerPohCallbackForModclubForProd' : ActorMethod<[], undefined>,
+  'registerPohCallbackForModclubForQA' : ActorMethod<[], undefined>,
+  'verifyUserHumanityForProviderForDev' : ActorMethod<
+    [Principal],
+    PohVerificationResponsePlus,
+  >,
+  'verifyUserHumanityForProviderForProd' : ActorMethod<
+    [Principal],
+    PohVerificationResponsePlus,
+  >,
+  'verifyUserHumanityForProviderForQA' : ActorMethod<
+    [Principal],
+    PohVerificationResponsePlus,
+  >,
 }
 export interface _SERVICE extends Provider {}

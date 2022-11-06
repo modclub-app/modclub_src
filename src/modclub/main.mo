@@ -32,6 +32,8 @@ import PohStateV2 "./service/poh/statev2";
 import PohTypes "./service/poh/types";
 import Prim "mo:prim";
 import Principal "mo:base/Principal";
+import Cycles "mo:base/ExperimentalCycles";
+import JSON "mo:json/JSON";
 import ProviderManager "./service/provider/provider";
 import QueueManager "./service/queue/queue";
 import QueueState "./service/queue/state";
@@ -46,6 +48,8 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Token "./token";
 import Types "./types";
+import EmailManager "./service/email/email";
+import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/state";
 import DownloadSupport "./downloadSupport";
@@ -84,6 +88,9 @@ shared ({ caller = deployer }) actor class ModClub() = this {
 
   stable var pohVoteStableState = VoteState.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
+  
+  stable var emailStableState = EmailState.emptyStableState();
+  var emailManager = EmailManager.EmailManager(emailStableState);
 
   stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
@@ -164,6 +171,46 @@ shared ({ caller = deployer }) actor class ModClub() = this {
       };
     };
   };
+
+  // ---------------------- Email Methods------------------------------
+  public shared ({ caller }) func registerUserToReceiveAlerts(id : Principal, wantsToGetAlerts: Bool) : async Bool {
+    return await emailManager.registerUserToReceiveAlerts(id,wantsToGetAlerts);
+  };
+
+  public shared query ({ caller }) func getAllUsersWantToReceiveAlerts() : async [Text] {
+    return emailManager.getAllUsersWantToReceiveAlerts();
+  };
+
+  public shared query ({ caller }) func checkIfUserOptToReciveAlerts() : async Bool {
+    return emailManager.checkIfUserOptToReciveAlerts(caller);
+  };
+
+  // public shared ({ caller }) func addUserToQueueToReceiveAlerts(
+  //   userPrincipal: Principal
+  // ) : async Bool {
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     throw Error.reject("Unauthorized, user does not have an identity");
+  //   };
+  //   return await emailManager.addUserToQueueToReceiveAlerts(userPrincipal);
+  // };
+
+  public shared ({ caller }) func sendVerificationEmail(
+    envForBaseURL : Text
+  ) : async Bool {
+    if(Principal.toText(caller)=="2vxsx-fae"){
+      throw Error.reject("Unauthorized, user does not have an identity");
+    };
+    var userEmail = await emailManager.sendVerificationEmail(caller,envForBaseURL,state);
+    var callResult : Bool = false;
+    var pid = Principal.toText(caller);
+    if(userEmail == ""){
+      throw Error.reject("User has not provided email id")
+    };
+    //Make HTTP REQUEST TO LAMBDA TO SEND EMAIL
+    callResult := await callLambdaToSendEmail(userEmail,envForBaseURL,pid,false);
+    return callResult;
+  };
+  // ---------------------- END Email Methods------------------------------
 
   // ----------------------Airdrop Methods------------------------------
   public shared ({ caller }) func airdropRegister() : async Types.AirdropUser {
@@ -1140,6 +1187,7 @@ shared ({ caller = deployer }) actor class ModClub() = this {
         };
       };
     };
+    var sendEmail = getModeratorEmailsForPOHAndSendEmail();
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = isValid;
@@ -1491,25 +1539,14 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     );
   };
   
-  public shared ({caller}) func getModeratorEmailsForPOH(): async [Text] {
-    let FIVE_MIN_MILLI_SECS = 300000;
-    var endTimeForPOHEmail = Helpers.timeNow();
-    if(ranPOHUserEmailsOnce){
-      endTimeForPOHEmail := startTimeForPOHEmail + FIVE_MIN_MILLI_SECS;
-      var currentTime = Helpers.timeNow();
-      if(endTimeForPOHEmail > currentTime){
-        endTimeForPOHEmail := currentTime;
-      };
-    }else{
-      ranPOHUserEmailsOnce := true;
+  public shared ({caller}) func getModeratorEmailsForPOHAndSendEmail(): async () {
+    // As email is going to send to all the users who opted in to receive at the time of content submission
+    // So no need to check content again just fetch users email and send emails
+    var emailIdsMap = emailManager.getAllUsersEmailWhoWantsToReceiveAlerts(state);
+    for (email in emailIdsMap.keys()){
+      // "prod" and principal are just place holders to prevent idempotency
+      let callResult = await callLambdaToSendEmail(email,"prod",Principal.toText(caller),true);
     };
-    if(pohContentQueueManager.getUserContentQueue(caller,#new,false).size() != 0){
-      var emailIdsArr = pohEngine.getModeratorEmailsForPOH(pohContentQueueManager, voteManager.getVoteState(), state, startTimeForPOHEmail, endTimeForPOHEmail, admins);
-      startTimeForPOHEmail := endTimeForPOHEmail;
-      return emailIdsArr;
-    };
-    startTimeForPOHEmail := endTimeForPOHEmail;
-    return [];
   };
 
   public query ({ caller }) func getCanisterMetrics(
@@ -2035,6 +2072,7 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     provider2ProviderUserId2Ip := pohCombinedStableState.2;
     provider2Ip2Wallet := pohCombinedStableState.3;
     pohVoteStableState := voteManager.getStableState();
+    emailStableState := emailManager.getStableState();
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
     contentQueueStateStable := ?contentQueueManager.preupgrade();
@@ -2081,6 +2119,7 @@ shared ({ caller = deployer }) actor class ModClub() = this {
 
     pohStableStateV2 := PohStateV2.emptyStableState();
     pohVoteStableState := VoteState.emptyStableState();
+    emailStableState := EmailState.emptyStableState();
 
     // This statement should be run after the storagestate gets restored from stable state
     storageSolution.setInitialModerators(ModeratorManager.getModerators(state));
@@ -2249,6 +2288,79 @@ shared ({ caller = deployer }) actor class ModClub() = this {
       };
     };
     throw Error.reject("Unauthorized");
+  };
+
+  public query func transform(raw : Types.CanisterHttpResponsePayload) : async Types.CanisterHttpResponsePayload {
+    let transformed : Types.CanisterHttpResponsePayload = {
+      status = raw.status;
+      body = raw.body;
+      headers = [
+        {
+          name = "Content-Security-Policy";
+          value = "default-src 'self'";
+        },
+        { name = "Referrer-Policy"; value = "strict-origin" },
+        { name = "Permissions-Policy"; value = "geolocation=(self)" },
+        {
+          name = "Strict-Transport-Security";
+          value = "max-age=63072000";
+        },
+        { name = "X-Frame-Options"; value = "DENY" },
+        { name = "X-Content-Type-Options"; value = "nosniff" },
+      ];
+    };
+    transformed;
+  };
+
+  private func callLambdaToSendEmail(userEmail:Text , envForBaseURL:Text, userPrincipalText:Text, pohAlertEmail: Bool) : async  Bool{
+
+    let host : Text = "bgl2dihq47pqfjtth2odwdakcm0cislr.lambda-url.us-east-1.on.aws";
+    var minCycles : Nat = 210243300000;
+    // prepare system http_request call
+
+    let request_headers = [
+      { name = "Content-Type"; value = "application/json" },
+      {
+        name = "Authorization";
+        value = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MRs";
+      }
+    ];
+    let url = "https://" # host # "/";
+
+    let body : JSON.JSON = #Object([
+      ("userEmail", #String(userEmail)),
+      ("pohAlertEmail", #Boolean(pohAlertEmail)),
+      ("envForURL", #String(envForBaseURL)),
+      ("userPrincipalText", #String(userPrincipalText))
+    ]);
+    let DATA_POINTS_PER_API : Nat64 = 200;
+    let MAX_RESPONSE_BYTES : Nat64 = 10 * 6 * DATA_POINTS_PER_API;
+    let request : Types.CanisterHttpRequestArgs = {
+      url = url;
+      headers = request_headers;
+      body = ?Blob.toArray(Text.encodeUtf8(JSON.show(body)));
+      method = #post;
+      max_response_bytes = ?MAX_RESPONSE_BYTES;
+      transform = ?(#function(transform));
+    };
+    try {
+      // Dynamically add cycles based on the useremail characters
+      minCycles += (100000 * Text.size(userEmail));
+      Cycles.add(minCycles);
+      let ic : Types.IC = actor ("aaaaa-aa");
+      let response : Types.CanisterHttpResponsePayload = await ic.http_request(request);
+      switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
+          case null {
+              throw Error.reject("Remote response had no body.");
+          };
+          case (?body) {
+              return true;
+          };
+      };
+      return false;
+    } catch (err) {
+      throw Error.reject(Error.message(err));
+    };
   };
 
 };

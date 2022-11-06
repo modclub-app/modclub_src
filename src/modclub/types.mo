@@ -5,6 +5,7 @@ import Nat "mo:base/Nat";
 import Result "mo:base/Result";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
+import JSON "mo:json/JSON";
 
 module {
   public type Timestamp = Int;
@@ -310,5 +311,35 @@ module {
   public type ProviderSettingResult = Result.Result<ProviderSettings, ProviderError>;
   public type ProviderResult = Result.Result<(), ProviderError>;
   public type ProviderTextResult = Result.Result<Text, ProviderError>;
+
+  public type HttpHeader = {
+    name : Text;
+    value : Text;
+  };
+
+  public type HttpMethod = {
+    #post;
+  };
+
+  public type CanisterHttpRequestArgs = {
+    url : Text;
+    headers : [HttpHeader];
+    body : ?[Nat8];
+    method : HttpMethod;
+    max_response_bytes : ?Nat64;
+    transform : ?{
+      #function : shared query CanisterHttpResponsePayload -> async CanisterHttpResponsePayload;
+    };
+  };
+
+  public type CanisterHttpResponsePayload = {
+    status : Nat;
+    headers : [HttpHeader];
+    body : [Nat8];
+  };
+
+  public type IC = actor {
+    http_request : CanisterHttpRequestArgs -> async CanisterHttpResponsePayload;
+  };
 
 };

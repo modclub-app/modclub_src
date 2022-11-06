@@ -1,4 +1,6 @@
 import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
+
 export interface Activity {
   'status' : ContentStatus,
   'reward' : number,
@@ -23,8 +25,8 @@ export interface Branch { 'left' : Trie, 'size' : bigint, 'right' : Trie }
 export interface Branch_1 { 'left' : Trie_1, 'size' : bigint, 'right' : Trie_1 }
 export interface Branch_2 { 'left' : Trie_2, 'size' : bigint, 'right' : Trie_2 }
 export interface Branch_3 { 'left' : Trie_3, 'size' : bigint, 'right' : Trie_3 }
-export type CanisterCyclesAggregatedData = Array<bigint>;
-export type CanisterHeapMemoryAggregatedData = Array<bigint>;
+export type CanisterCyclesAggregatedData = BigUint64Array;
+export type CanisterHeapMemoryAggregatedData = BigUint64Array;
 export type CanisterLogFeature = { 'filterMessageByContains' : null } |
   { 'filterMessageByRegex' : null };
 export interface CanisterLogMessages {
@@ -42,7 +44,7 @@ export type CanisterLogRequest = { 'getMessagesInfo' : null } |
   { 'getLatestMessages' : GetLatestLogMessagesParameters };
 export type CanisterLogResponse = { 'messagesInfo' : CanisterLogMessagesInfo } |
   { 'messages' : CanisterLogMessages };
-export type CanisterMemoryAggregatedData = Array<bigint>;
+export type CanisterMemoryAggregatedData = BigUint64Array;
 export interface CanisterMetrics { 'data' : CanisterMetricsData }
 export type CanisterMetricsData = { 'hourly' : Array<HourlyMetricsData> } |
   { 'daily' : Array<DailyMetricsData> };
@@ -125,7 +127,7 @@ export interface HourlyMetricsData {
   'canisterMemorySize' : CanisterMemoryAggregatedData,
   'timeMillis' : bigint,
 }
-export interface Image { 'imageType' : string, 'data' : Array<number> }
+export interface Image { 'imageType' : string, 'data' : Uint8Array }
 export interface Key { 'key' : string, 'hash' : Hash }
 export interface Key_1 { 'key' : Principal, 'hash' : Hash }
 export interface Leaf { 'size' : bigint, 'keyvals' : AssocList }
@@ -140,180 +142,145 @@ export interface LogMessagesData { 'timeNanos' : Nanos, 'message' : string }
 export type MetricsGranularity = { 'hourly' : null } |
   { 'daily' : null };
 export interface ModClub {
-  'addProviderAdmin' : (
-      arg_0: Principal,
-      arg_1: string,
-      arg_2: [] | [Principal],
-    ) => Promise<ProviderResult>,
-  'addRules' : (arg_0: Array<string>, arg_1: [] | [Principal]) => Promise<
-      undefined
-    >,
-  'addToAirdropWhitelist' : (arg_0: Array<Principal>) => Promise<undefined>,
-  'addToAllowList' : (arg_0: Principal) => Promise<undefined>,
-  'addToApprovedUser' : (arg_0: Principal) => Promise<undefined>,
-  'adminInit' : () => Promise<undefined>,
-  'adminSlashStake' : (arg_0: Principal, arg_1: bigint) => Promise<undefined>,
-  'adminTransferTokens' : (arg_0: Principal, arg_1: bigint) => Promise<
-      undefined
-    >,
-  'airdropRegister' : () => Promise<AirdropUser>,
-  'collectCanisterMetrics' : () => Promise<undefined>,
-  'configurePohForProvider' : (
-      arg_0: Principal,
-      arg_1: Array<string>,
-      arg_2: bigint,
-    ) => Promise<undefined>,
-  'deregisterProvider' : () => Promise<string>,
-  'distributeAllPendingRewards' : () => Promise<undefined>,
-  'downloadSupport' : (
-      arg_0: string,
-      arg_1: string,
-      arg_2: bigint,
-      arg_3: bigint,
-    ) => Promise<Array<Array<string>>>,
-  'editProviderAdmin' : (
-      arg_0: Principal,
-      arg_1: Principal,
-      arg_2: string,
-    ) => Promise<ProviderResult>,
-  'generateSigningKey' : () => Promise<undefined>,
-  'getActivity' : (arg_0: boolean) => Promise<Array<Activity>>,
-  'getAdminProviderIDs' : () => Promise<Array<Principal>>,
-  'getAdmins' : () => Promise<Result_4>,
-  'getAirdropUsers' : () => Promise<Array<AirdropUser>>,
-  'getAirdropWhitelist' : () => Promise<Array<Principal>>,
-  'getAllContent' : (arg_0: ContentStatus) => Promise<Array<ContentPlus>>,
-  'getAllDataCanisterIds' : () => Promise<[Array<Principal>, Array<string>]>,
-  'getAllModeratorHoldings' : () => Promise<Array<[Principal, Holdings]>>,
-  'getAllPohTasksForAdminUsers' : (
-      arg_0: ContentStatus,
-      arg_1: bigint,
-      arg_2: bigint,
-      arg_3: Array<string>,
-      arg_4: bigint,
-      arg_5: bigint,
-    ) => Promise<Array<PohTaskPlusForAdmin>>,
-  'getAllProfiles' : () => Promise<Array<Profile>>,
-  'getCanisterLog' : (arg_0: [] | [CanisterLogRequest]) => Promise<
-      [] | [CanisterLogResponse]
-    >,
-  'getCanisterMetrics' : (arg_0: GetMetricsParameters) => Promise<
-      [] | [CanisterMetrics]
-    >,
-  'getContent' : (arg_0: string) => Promise<[] | [ContentPlus]>,
-  'getDeployer' : () => Promise<Principal>,
-  'getModclubHoldings' : () => Promise<Holdings>,
-  'getModeratorLeaderboard' : (arg_0: bigint, arg_1: bigint) => Promise<
-      Array<ModeratorLeaderboard>
-    >,
-  'getPohAttempts' : () => Promise<PohStableState>,
-  'getPohTaskData' : (arg_0: string) => Promise<Result_3>,
-  'getPohTaskDataForAdminUsers' : (arg_0: string) => Promise<Result_2>,
-  'getPohTasks' : (
-      arg_0: ContentStatus,
-      arg_1: bigint,
-      arg_2: bigint,
-    ) => Promise<Array<PohTaskPlus>>,
-  'getProfile' : () => Promise<Profile>,
-  'getProfileById' : (arg_0: Principal) => Promise<Profile>,
-  'getProvider' : (arg_0: Principal) => Promise<ProviderPlus>,
-  'getProviderAdmins' : (arg_0: Principal) => Promise<Array<Profile>>,
-  'getProviderContent' : (
-      arg_0: Principal,
-      arg_1: ContentStatus,
-      arg_2: bigint,
-      arg_3: bigint,
-    ) => Promise<Array<ContentPlus>>,
-  'getRules' : (arg_0: Principal) => Promise<Array<Rule>>,
-  'getTaskStats' : (arg_0: bigint) => Promise<[bigint, bigint, bigint, bigint]>,
-  'getTasks' : (arg_0: bigint, arg_1: bigint, arg_2: boolean) => Promise<
-      Array<ContentPlus>
-    >,
-  'getTokenHoldings' : () => Promise<Holdings>,
-  'getVotePerformance' : () => Promise<number>,
-  'isAirdropRegistered' : () => Promise<AirdropUser>,
-  'isUserAdmin' : () => Promise<boolean>,
-  'issueJwt' : () => Promise<string>,
-  'pohCallbackForModclub' : (arg_0: PohVerificationResponsePlus) => Promise<
-      undefined
-    >,
-  'populateChallenges' : () => Promise<undefined>,
-  'registerAdmin' : (arg_0: Principal) => Promise<Result>,
-  'registerModerator' : (
-      arg_0: string,
-      arg_1: [] | [string],
-      arg_2: [] | [Image],
-    ) => Promise<Profile>,
-  'registerProvider' : (
-      arg_0: string,
-      arg_1: string,
-      arg_2: [] | [Image],
-    ) => Promise<string>,
-  'removeProviderAdmin' : (arg_0: Principal, arg_1: Principal) => Promise<
-      ProviderResult
-    >,
-  'removeRules' : (arg_0: Array<RuleId>, arg_1: [] | [Principal]) => Promise<
-      undefined
-    >,
-  'resetUserChallengeAttempt' : (arg_0: string) => Promise<Result_1>,
-  'retiredDataCanisterIdForWriting' : (arg_0: string) => Promise<undefined>,
-  'retrieveChallengesForUser' : (arg_0: string) => Promise<Result_1>,
-  'rewardPoints' : (arg_0: Principal, arg_1: bigint) => Promise<undefined>,
-  'setRandomization' : (arg_0: boolean) => Promise<undefined>,
-  'shuffleContent' : () => Promise<undefined>,
-  'shufflePohContent' : () => Promise<undefined>,
-  'stakeTokens' : (arg_0: bigint) => Promise<string>,
-  'submitChallengeData' : (arg_0: PohChallengeSubmissionRequest) => Promise<
-      PohChallengeSubmissionResponse
-    >,
-  'submitHtmlContent' : (
-      arg_0: string,
-      arg_1: string,
-      arg_2: [] | [string],
-    ) => Promise<string>,
-  'submitImage' : (
-      arg_0: string,
-      arg_1: Array<number>,
-      arg_2: string,
-      arg_3: [] | [string],
-    ) => Promise<string>,
-  'submitText' : (
-      arg_0: string,
-      arg_1: string,
-      arg_2: [] | [string],
-    ) => Promise<string>,
-  'subscribe' : (arg_0: SubscribeMessage) => Promise<undefined>,
-  'subscribePohCallback' : (arg_0: SubscribePohMessage) => Promise<undefined>,
-  'toggleAllowSubmission' : (arg_0: boolean) => Promise<undefined>,
-  'unStakeTokens' : (arg_0: bigint) => Promise<string>,
-  'unregisterAdmin' : (arg_0: string) => Promise<Result>,
-  'updateProvider' : (arg_0: Principal, arg_1: ProviderMeta) => Promise<
-      ProviderMetaResult
-    >,
-  'updateProviderLogo' : (
-      arg_0: Principal,
-      arg_1: Array<number>,
-      arg_2: string,
-    ) => Promise<string>,
-  'updateRules' : (arg_0: Array<Rule>, arg_1: [] | [Principal]) => Promise<
-      undefined
-    >,
-  'updateSettings' : (arg_0: Principal, arg_1: ProviderSettings) => Promise<
-      ProviderSettingResult
-    >,
-  'verifyHumanity' : (arg_0: string) => Promise<PohVerificationResponsePlus>,
-  'verifyUserHumanityForModclub' : () => Promise<VerifyHumanityResponse>,
-  'vote' : (
-      arg_0: ContentId,
-      arg_1: Decision,
-      arg_2: [] | [Array<RuleId>],
-    ) => Promise<string>,
-  'votePohContent' : (
-      arg_0: string,
-      arg_1: Decision,
-      arg_2: Array<PohRulesViolated>,
-    ) => Promise<undefined>,
-  'whoami' : () => Promise<Principal>,
+  'AdminCheckPohVerificationResp' : ActorMethod<
+    [string, Principal],
+    PohVerificationResponsePlus,
+  >,
+  'addProviderAdmin' : ActorMethod<
+    [Principal, string, [] | [Principal]],
+    ProviderResult,
+  >,
+  'addRules' : ActorMethod<[Array<string>, [] | [Principal]], undefined>,
+  'addToAirdropWhitelist' : ActorMethod<[Array<Principal>], undefined>,
+  'addToAllowList' : ActorMethod<[Principal], undefined>,
+  'addToApprovedUser' : ActorMethod<[Principal], undefined>,
+  'adminInit' : ActorMethod<[], undefined>,
+  'adminSlashStake' : ActorMethod<[Principal, bigint], undefined>,
+  'adminTransferTokens' : ActorMethod<[Principal, bigint], undefined>,
+  'airdropRegister' : ActorMethod<[], AirdropUser>,
+  'checkIfUserOptToReciveAlerts' : ActorMethod<[], boolean>,
+  'collectCanisterMetrics' : ActorMethod<[], undefined>,
+  'configurePohForProvider' : ActorMethod<
+    [Principal, Array<string>, bigint],
+    undefined,
+  >,
+  'deregisterProvider' : ActorMethod<[], string>,
+  'distributeAllPendingRewards' : ActorMethod<[], undefined>,
+  'downloadSupport' : ActorMethod<
+    [string, string, bigint, bigint],
+    Array<Array<string>>,
+  >,
+  'editProviderAdmin' : ActorMethod<
+    [Principal, Principal, string],
+    ProviderResult,
+  >,
+  'generateSigningKey' : ActorMethod<[], undefined>,
+  'getActivity' : ActorMethod<[boolean], Array<Activity>>,
+  'getAdminProviderIDs' : ActorMethod<[], Array<Principal>>,
+  'getAdmins' : ActorMethod<[], Result_4>,
+  'getAirdropUsers' : ActorMethod<[], Array<AirdropUser>>,
+  'getAirdropWhitelist' : ActorMethod<[], Array<Principal>>,
+  'getAllContent' : ActorMethod<[ContentStatus], Array<ContentPlus>>,
+  'getAllDataCanisterIds' : ActorMethod<[], [Array<Principal>, Array<string>]>,
+  'getAllModeratorHoldings' : ActorMethod<[], Array<[Principal, Holdings]>>,
+  'getAllPohTasksForAdminUsers' : ActorMethod<
+    [ContentStatus, bigint, bigint, Array<string>, bigint, bigint],
+    Array<PohTaskPlusForAdmin>,
+  >,
+  'getAllProfiles' : ActorMethod<[], Array<Profile>>,
+  'getAllUsersWantToReceiveAlerts' : ActorMethod<[], Array<string>>,
+  'getCanisterLog' : ActorMethod<
+    [[] | [CanisterLogRequest]],
+    [] | [CanisterLogResponse],
+  >,
+  'getCanisterMetrics' : ActorMethod<
+    [GetMetricsParameters],
+    [] | [CanisterMetrics],
+  >,
+  'getContent' : ActorMethod<[string], [] | [ContentPlus]>,
+  'getDeployer' : ActorMethod<[], Principal>,
+  'getModclubHoldings' : ActorMethod<[], Holdings>,
+  'getModeratorEmailsForPOH' : ActorMethod<[], Array<string>>,
+  'getModeratorLeaderboard' : ActorMethod<
+    [bigint, bigint],
+    Array<ModeratorLeaderboard>,
+  >,
+  'getPohAttempts' : ActorMethod<[], PohStableState>,
+  'getPohTaskData' : ActorMethod<[string], Result_3>,
+  'getPohTaskDataForAdminUsers' : ActorMethod<[string], Result_2>,
+  'getPohTasks' : ActorMethod<
+    [ContentStatus, bigint, bigint],
+    Array<PohTaskPlus>,
+  >,
+  'getProfile' : ActorMethod<[], Profile>,
+  'getProfileById' : ActorMethod<[Principal], Profile>,
+  'getProvider' : ActorMethod<[Principal], ProviderPlus>,
+  'getProviderAdmins' : ActorMethod<[Principal], Array<Profile>>,
+  'getProviderContent' : ActorMethod<
+    [Principal, ContentStatus, bigint, bigint],
+    Array<ContentPlus>,
+  >,
+  'getRules' : ActorMethod<[Principal], Array<Rule>>,
+  'getTaskStats' : ActorMethod<[bigint], [bigint, bigint, bigint, bigint]>,
+  'getTasks' : ActorMethod<[bigint, bigint, boolean], Array<ContentPlus>>,
+  'getTokenHoldings' : ActorMethod<[], Holdings>,
+  'getVotePerformance' : ActorMethod<[], number>,
+  'isAirdropRegistered' : ActorMethod<[], AirdropUser>,
+  'isUserAdmin' : ActorMethod<[], boolean>,
+  'issueJwt' : ActorMethod<[], string>,
+  'pohCallbackForModclub' : ActorMethod<
+    [PohVerificationResponsePlus],
+    undefined,
+  >,
+  'populateChallenges' : ActorMethod<[], undefined>,
+  'registerAdmin' : ActorMethod<[Principal], Result>,
+  'registerModerator' : ActorMethod<
+    [string, [] | [string], [] | [Image]],
+    Profile,
+  >,
+  'registerProvider' : ActorMethod<[string, string, [] | [Image]], string>,
+  'registerUserToReceiveAlerts' : ActorMethod<[Principal, boolean], boolean>,
+  'removeProviderAdmin' : ActorMethod<[Principal, Principal], ProviderResult>,
+  'removeRules' : ActorMethod<[Array<RuleId>, [] | [Principal]], undefined>,
+  'resetUserChallengeAttempt' : ActorMethod<[string], Result_1>,
+  'retiredDataCanisterIdForWriting' : ActorMethod<[string], undefined>,
+  'retrieveChallengesForUser' : ActorMethod<[string], Result_1>,
+  'rewardPoints' : ActorMethod<[Principal, bigint], undefined>,
+  'sendVerificationEmail' : ActorMethod<[string], boolean>,
+  'setRandomization' : ActorMethod<[boolean], undefined>,
+  'shuffleContent' : ActorMethod<[], undefined>,
+  'shufflePohContent' : ActorMethod<[], undefined>,
+  'stakeTokens' : ActorMethod<[bigint], string>,
+  'submitChallengeData' : ActorMethod<
+    [PohChallengeSubmissionRequest],
+    PohChallengeSubmissionResponse,
+  >,
+  'submitHtmlContent' : ActorMethod<[string, string, [] | [string]], string>,
+  'submitImage' : ActorMethod<
+    [string, Uint8Array, string, [] | [string]],
+    string,
+  >,
+  'submitText' : ActorMethod<[string, string, [] | [string]], string>,
+  'subscribe' : ActorMethod<[SubscribeMessage], undefined>,
+  'subscribePohCallback' : ActorMethod<[SubscribePohMessage], undefined>,
+  'toggleAllowSubmission' : ActorMethod<[boolean], undefined>,
+  'unStakeTokens' : ActorMethod<[bigint], string>,
+  'unregisterAdmin' : ActorMethod<[string], Result>,
+  'updateProvider' : ActorMethod<[Principal, ProviderMeta], ProviderMetaResult>,
+  'updateProviderLogo' : ActorMethod<[Principal, Uint8Array, string], string>,
+  'updateRules' : ActorMethod<[Array<Rule>, [] | [Principal]], undefined>,
+  'updateSettings' : ActorMethod<
+    [Principal, ProviderSettings],
+    ProviderSettingResult,
+  >,
+  'verifyHumanity' : ActorMethod<[string], PohVerificationResponsePlus>,
+  'verifyUserHumanityForModclub' : ActorMethod<[], VerifyHumanityResponse>,
+  'vote' : ActorMethod<[ContentId, Decision, [] | [Array<RuleId>]], string>,
+  'votePohContent' : ActorMethod<
+    [string, Decision, Array<PohRulesViolated>],
+    undefined,
+  >,
+  'whoami' : ActorMethod<[], Principal>,
 }
 export interface ModeratorLeaderboard {
   'id' : UserId,
@@ -354,7 +321,7 @@ export interface PohChallengeSubmissionRequest {
   'offset' : bigint,
   'challengeId' : string,
   'dataSize' : bigint,
-  'challengeDataBlob' : [] | [Array<number>],
+  'challengeDataBlob' : [] | [Uint8Array],
 }
 export interface PohChallengeSubmissionResponse {
   'submissionStatus' : PohChallengeSubmissionStatus,
@@ -595,7 +562,7 @@ export type Trie_2 = { 'branch' : Branch_2 } |
 export type Trie_3 = { 'branch' : Branch_3 } |
   { 'leaf' : Leaf_3 } |
   { 'empty' : null };
-export type UpdateCallsAggregatedData = Array<bigint>;
+export type UpdateCallsAggregatedData = BigUint64Array;
 export type UserId = Principal;
 export interface VerifyHumanityResponse {
   'status' : PohVerificationStatus,

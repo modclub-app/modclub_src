@@ -36,6 +36,16 @@ let
       , version = "v0.2.2"
       , dependencies = ["base", "io"]
       },
+      { name = "parser-combinators"
+      , repo = "https://github.com/aviate-labs/parser-combinators.mo"
+      , version = "v0.1.1"
+      , dependencies = [ "base" ]
+      },
+      { name = "json"
+      , repo = "https://github.com/aviate-labs/json.mo"
+      , version = "v0.2.0"
+      , dependencies = [ "base", "parser-combinators" ]
+      }
   ] : List Package
 
 let

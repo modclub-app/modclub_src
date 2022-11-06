@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Switch, Route, Link, useHistory } from "react-router-dom";
+import { Switch, Route, Link, useHistory, useLocation } from 'react-router-dom';
 import { Columns, Modal, Heading } from "react-bulma-components";
 import NotAuthenticatedModal from './modals/NotAuthenticated';
 import UserIncompleteModal from './modals/UserIncompleteModal';
@@ -14,6 +14,7 @@ import PohSubmittedApplicantList from "./poh/adminsubmittedcontent/SubmittedAppl
 import PohSubmittedApplicant from "./poh/adminsubmittedcontent/SubmittedApplicant";
 import Moderators from "./moderators/Moderators";
 import Leaderboard from "./moderators/Leaderboard";
+import AlertConfirmation from "./poh/AlertConfirmation";
 import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 import AdminActivity from "./admin/RecentActivities";
@@ -25,7 +26,7 @@ import { getUserFromCanister } from "../../utils/api";
 
 export default function ModclubApp() {
   const history = useHistory();
-  const { isAuthenticated, isAuthReady, user, selectedProvider, providerIdText, providers,setSelectedProvider } = useAuth();
+  const { isAuthenticated, isAuthReady, user, selectedProvider, providerIdText, providers, setSelectedProvider } = useAuth();
   const [status, setStatus] = useState(null);
   const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([]);
   const [token, setToken] = useState(null);
@@ -57,9 +58,11 @@ export default function ModclubApp() {
       }
     }
   }, [user, isAuthenticated]);
+  const location = useLocation();
+  const displayVerificationEmail = location.pathname.startsWith('/app/confirm/poh/alerts/');
 
   if (isAuthReady && !isAuthenticated) return (
-    <NotAuthenticatedModal />
+    displayVerificationEmail ? <AlertConfirmation /> : <NotAuthenticatedModal />
   );
 
   return (
@@ -105,6 +108,9 @@ export default function ModclubApp() {
             </Route>
             <Route exact path="/app/leaderboard">
               <Leaderboard />
+            </Route>
+            <Route exact path="/app/confirm/poh/alerts/:userID+">
+              <AlertConfirmation />
             </Route>
             {user ? (
               <Route exact path="/app/admin">

@@ -8,15 +8,18 @@ import {
   Icon,
   Button,
   Modal,
-  Dropdown
+  Dropdown,
+  Notification
 } from "react-bulma-components";
 import LogoImg from "../../../../assets/logo.png";
 import SidebarUser from "./SidebarUser";
 import { useAuth } from "../../../utils/auth";
+import { addUserToQueueAndSendVerificationEmail, getUserAlertOptInVal, registerUserToReceiveAlerts } from "../../../utils/api";
 import { SignIn } from "../../auth/SignIn";
 import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
-import FormModal from "../modals/FormModal";
+import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
+import { Principal } from "@dfinity/principal";
 
 const InviteModerator = ({ toggle }) => {
   const link = "Coming Soon"; //`${window.location.origin}/referral=${Date.now()}`
@@ -85,18 +88,55 @@ const DropdownLabel = ({ toggle }) => {
 
 export default function Sidebar() {
   const history = useHistory();
-  const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider, isAdminUser } = useAuth();
+  const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider, isAdminUser, userPrincipalText, userAlertVal, setUserAlertVal } = useAuth();
   // Need to change
   // const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider } = useAuth();
   // const isAdminUser = true;
   const [showModal, setShowModal] = useState(false);
+  const [notificationMsg, setNotificationMsg] = useState(null);
   const toggleModal = () => setShowModal(!showModal);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loadSpinner, setLoadSpinner] = useState(false);
   const toggle = () => setShowDropdown(!showDropdown);
+
+  const subscribeToAlert = async () => {
+    setLoadSpinner(true);
+    if (userAlertVal) {
+      await registerUserToReceiveAlerts(userPrincipalText, false);
+      setUserAlertVal(false);
+      setLoadSpinner(false);
+      return;
+    }
+    const email = user.email;
+    if (!email) setNotificationMsg({ success: false, value:'Email Id is not provided!!'});
+    const msgToDisplay = { success: true, value:'Please check your email to receive email alerts!!'};
+    try {
+      const envToUse = process.env.DFX_NETWORK == 'local' ? 'dev':process.env.DEV_ENV ? process.env.DEV_ENV : 'dev';
+      console.log(envToUse)
+      await addUserToQueueAndSendVerificationEmail(envToUse);
+    } catch (error) {
+      console.log(error);
+      msgToDisplay.success = false;
+      msgToDisplay.value = 'Error occurred while sending email. Please try again later.';
+    }
+    setLoadSpinner(false);
+    setNotificationMsg(msgToDisplay);
+    setTimeout(() => {setNotificationMsg(null);}, 5000);
+  }
+
+  const fetchUserAlertOptinVal = async () => {
+    setLoadSpinner(true);
+    const result = await getUserAlertOptInVal();
+    setLoadSpinner(false);
+    setUserAlertVal(result);
+  }
 
   useEffect(() => {
     if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
       history.push("/signup");
+    }
+    if (isAuthReady && isAuthenticated && user) {
+      fetchUserAlertOptinVal();
     }
   }, [isAuthReady, isAuthenticated, user, requiresSignUp]);
   return (
@@ -134,13 +174,13 @@ export default function Sidebar() {
             Human Verification
           </Link>
           {/* ADMIN POH CONTENT APPROVED AND REJECTED */}
-          { user && isAdminUser &&
-                <Link to="/app/admin/poh">
-                  <Icon>
-                    <span className="material-icons">check_circle_outline</span>
-                  </Icon>
-                  Admin POH Content
-                </Link>
+          {user && isAdminUser &&
+            <Link to="/app/admin/poh">
+              <Icon>
+                <span className="material-icons">check_circle_outline</span>
+              </Icon>
+              Admin POH Content
+            </Link>
           }
           {/* END ADMIN POH CONTENT APPROVED AND REJECTED */}
           <Link to="/app/leaderboard">
@@ -194,7 +234,19 @@ export default function Sidebar() {
             ""
           )}
         </Menu.List>
-
+        {user && user.email && <div>
+          <strong style={{ position: 'relative', top: '10px', marginRight: '20px', marginLeft: '20px', color: '#FFF' }}>Alerts?</strong>
+          <ToggleSwitch
+            id="userAlerts"
+            checked={userAlertVal}
+            onChange={subscribeToAlert}
+            style={{ top: '10px' }}
+          />
+          {loadSpinner && <div className="loader is-loading" style={{
+            display: "inline-block",
+            top: "13px"
+          }}></div>}
+        </div>}
         <Button
           color="primary"
           fullwidth
@@ -205,6 +257,11 @@ export default function Sidebar() {
           Invite a Moderator
         </Button>
       </Menu>
+      {notificationMsg &&
+        <Notification className="has-text-centered" color={notificationMsg.success ? "success" : "danger"}>
+          {notificationMsg.value}
+        </Notification>
+      }
 
       {showModal && <InviteModerator toggle={toggleModal} />}
     </Columns.Column >

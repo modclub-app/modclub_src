@@ -31,10 +31,19 @@ import {
   ProviderSettingResult,
 } from "./types";
 import { Principal } from "@dfinity/principal";
+import { modclub } from "../../../declarations/modclub/index";
+import { modclub_dev } from "../../../declarations/modclub_dev/index";
+import { modclub_qa } from "../../../declarations/modclub_qa/index";
 import { fetchObjectUrl, formatDate, getUrlForData } from "./util";
 export type Optional<Type> = [Type] | [];
 
 var actor: _SERVICE = null;
+let MCToUse=modclub;
+if (process.env.DEV_ENV == "dev") {
+  MCToUse = modclub_dev;
+} else if (process.env.DEV_ENV == "qa") {
+  MCToUse = modclub_qa;
+}
 
 async function getMC(): Promise<_SERVICE> {
   if (!actor) {
@@ -69,6 +78,15 @@ export async function getUserFromCanister(): Promise<Profile | null> {
   } catch (e) {
     console.log("error", e);
     return null;
+  }
+}
+
+export async function getUserAlertOptInVal(): Promise<boolean> {
+  try {
+    return (await (await getMC()).checkIfUserOptToReciveAlerts());
+  } catch (e) {
+    console.log("error", e);
+    return false;
   }
 }
 
@@ -314,13 +332,24 @@ export async function getAllPohTasksForAdminUsers(
   startDate?: number,
   endDate?: number
 ): Promise<PohTaskPlusForAdmin[]> {
-  const startDateToProvide = startDate?startDate:0;
-  const endDateToProvide = endDate?endDate:0;
-  return (await getMC()).getAllPohTasksForAdminUsers(status, BigInt(start), BigInt(end),userPrincipal,startDateToProvide,endDateToProvide);
+  const startDateToProvide = startDate ? startDate : 0;
+  const endDateToProvide = endDate ? endDate : 0;
+  return (await getMC()).getAllPohTasksForAdminUsers(status, BigInt(start), BigInt(end), userPrincipal, startDateToProvide, endDateToProvide);
 }
 
 export async function getPohTaskData(packageId: string): Promise<any> {
   return (await getMC()).getPohTaskData(packageId);
+}
+
+export async function addUserToQueueAndSendVerificationEmail(environmentForBaseUrl: string) {
+  return (await getMC()).sendVerificationEmail(environmentForBaseUrl);
+}
+
+export async function registerUserToReceiveAlerts(
+  userId: string,
+  wantToReceiveAlerts: boolean
+): Promise<boolean> {
+  return (await MCToUse.registerUserToReceiveAlerts(Principal.fromText(userId), wantToReceiveAlerts));
 }
 
 export async function getPohTaskDataForAdminUsers(packageId: string): Promise<any> {

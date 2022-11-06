@@ -442,6 +442,8 @@ type ModeratorLeaderboard =
  };
 type ModClub = 
  service {
+   AdminCheckPohVerificationResp: (text, principal) ->
+    (PohVerificationResponsePlus);
    addProviderAdmin: (principal, text, opt principal) -> (ProviderResult);
    addRules: (vec text, opt principal) -> ();
    addToAirdropWhitelist: (vec principal) -> ();
@@ -451,6 +453,7 @@ type ModClub =
    adminSlashStake: (principal, nat) -> ();
    adminTransferTokens: (principal, nat) -> ();
    airdropRegister: () -> (AirdropUser);
+   checkIfUserOptToReciveAlerts: () -> (bool) query;
    collectCanisterMetrics: () -> ();
    configurePohForProvider: (principal, vec text, nat) -> ();
    deregisterProvider: () -> (text);
@@ -472,12 +475,14 @@ type ModClub =
    getAllPohTasksForAdminUsers: (ContentStatus, nat, nat, vec text, int,
     int) -> (vec PohTaskPlusForAdmin) query;
    getAllProfiles: () -> (vec Profile) query;
+   getAllUsersWantToReceiveAlerts: () -> (vec text) query;
    getCanisterLog: (opt CanisterLogRequest) ->
     (opt CanisterLogResponse) query;
    getCanisterMetrics: (GetMetricsParameters) -> (opt CanisterMetrics) query;
    getContent: (text) -> (opt ContentPlus) query;
    getDeployer: () -> (principal) query;
    getModclubHoldings: () -> (Holdings) query;
+   getModeratorEmailsForPOH: () -> (vec text);
    getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard) query;
    getPohAttempts: () -> (PohStableState);
    getPohTaskData: (text) -> (Result_3) query;
@@ -502,12 +507,14 @@ type ModClub =
    registerAdmin: (principal) -> (Result);
    registerModerator: (text, opt text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
+   registerUserToReceiveAlerts: (principal, bool) -> (bool);
    removeProviderAdmin: (principal, principal) -> (ProviderResult);
    removeRules: (vec RuleId, opt principal) -> ();
    resetUserChallengeAttempt: (text) -> (Result_1);
    retiredDataCanisterIdForWriting: (text) -> () oneway;
    retrieveChallengesForUser: (text) -> (Result_1);
    rewardPoints: (principal, int) -> ();
+   sendVerificationEmail: (text) -> (bool);
    setRandomization: (bool) -> ();
    shuffleContent: () -> ();
    shufflePohContent: () -> ();

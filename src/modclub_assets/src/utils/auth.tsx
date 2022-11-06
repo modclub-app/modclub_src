@@ -22,8 +22,11 @@ export interface AuthContext {
   user: Profile;
   isAdminUser: boolean;
   setUser: (user: Profile) => void;
+  userPrincipalText: string;
   setSelectedProvider: (provider: Object) => void;
   selectedProvider: Object;
+  setUserAlertVal: (alerts:boolean) => void;
+  userAlertVal: boolean;
   providers: Array<Object>;
   providerIdText: string;
 }
@@ -39,7 +42,7 @@ if (process.env.DEV_ENV == "dev") {
   canisterId = process.env.MODCLUB_QA_CANISTER_ID;
 }
 
-  
+
 const whitelist = [canisterId];
 const host = window.location.origin;
 let fetchedProviders = false;
@@ -50,6 +53,7 @@ let checkAndConnectStoicCounter = 0;
 // Provider hook that creates auth object and handles state
 export function useProvideAuth(authClient): AuthContext {
   const [user, setUser] = useState<Profile | undefined>();
+  const [userPrincipalText, setUserPrincipalText] = useState<string>("");
   const [isAuthenticatedLocal, setIsAuthenticatedLocal] = useState<boolean>(
     false
   );
@@ -60,6 +64,7 @@ export function useProvideAuth(authClient): AuthContext {
   const [providers, setProviders] = useState([]);
   const [providerIdText, setProviderIdText] = useState("");
   const [selectedProvider, setSelectedProvider] = useState<Object | undefined>();
+  const [userAlertVal, setUserAlertVal] = useState(false);
 
 
   // Creating the auth client is async and no auth related checks can happen
@@ -81,9 +86,9 @@ export function useProvideAuth(authClient): AuthContext {
       // Check to make sure your local storage user exists on the backend, and
       // log out if it doesn't (this is when you have your user stored in local
       // storage but the user was cleared from the backend)
-      getUserFromCanister().then(async(user_) => {
+      getUserFromCanister().then(async (user_) => {
         // console.log("getUserFromCanister user_", user_);
-        if(user_){
+        if (user_) {
           const checkAdmin = await checkUserRole();
           setAdminUser(checkAdmin);
         }
@@ -127,10 +132,10 @@ export function useProvideAuth(authClient): AuthContext {
           break;
         case 'infinityWallet':
         case 'plug':
-          if(checkAndConnectToPlugOrIWCounter==0)checkAndConnectToPlugOrIW(walletToUse);
+          if (checkAndConnectToPlugOrIWCounter == 0) checkAndConnectToPlugOrIW(walletToUse);
           break;
         case 'stoic':
-          if(checkAndConnectStoicCounter==0)checkAndConnectToStoic();
+          if (checkAndConnectStoicCounter == 0) checkAndConnectToStoic();
           break;
         default:
           break;
@@ -145,8 +150,8 @@ export function useProvideAuth(authClient): AuthContext {
       if (connected) {
         if (!window['ic'][walletToUse].agent) {
           if (walletToUse == 'plug') {
-            await window['ic'][walletToUse].createAgent({whitelist, host });
-          }else{
+            await window['ic'][walletToUse].createAgent({ whitelist, host });
+          } else {
             await window['ic'][walletToUse].requestConnect({
               whitelist
             });
@@ -154,15 +159,15 @@ export function useProvideAuth(authClient): AuthContext {
         };
         const pID = await window['ic'][walletToUse].getPrincipal();
         const identity = {
-          type : walletToUse,
-          getPrincipal : () => pID
+          type: walletToUse,
+          getPrincipal: () => pID
         };
         setIsAuthenticatedLocal(true);
         setWalletIdentity(identity, walletToUse);
         setUserFromLocalStorage();
         setAuthClientReady(true);
-      }else{
-        if(walletToUse == 'infinityWallet'){
+      } else {
+        if (walletToUse == 'infinityWallet') {
           logOut();
           logIn(walletToUse);
         }
@@ -222,8 +227,8 @@ export function useProvideAuth(authClient): AuthContext {
         for (let provider of adminProviders) {
           providerListPromise.push(getProvider(provider));
         };
-        let providerListPrm = await Promise.all(providerListPromise.map((providerPromise)=>providerPromise.catch((error)=>null)));
-        let providerList = providerListPrm.filter(provider=>provider);
+        let providerListPrm = await Promise.all(providerListPromise.map((providerPromise) => providerPromise.catch((error) => null)));
+        let providerList = providerListPrm.filter(provider => provider);
         setProviders(providerList);
         if (adminProviders.length > 0) {
           setProviderIdText(adminProviders[0].toText());
@@ -244,11 +249,13 @@ export function useProvideAuth(authClient): AuthContext {
       });
       const principal: Principal = _identity.getPrincipal();
       Usergeek.setPrincipal(principal);
+      setUserPrincipalText(principal.toText());
       Usergeek.trackSession()
     } else {
       console.log(" setting not authenticated");
       actorController.unauthenticateActor();
       Usergeek.setPrincipal(null);
+      setUserPrincipalText("");
     }
   }, [_identity]);
 
@@ -282,8 +289,8 @@ export function useProvideAuth(authClient): AuthContext {
             if (result) {
               const p = await window['ic'][walletToUse].getPrincipal();
               const identity = {
-                type : 'is',
-                getPrincipal : () => p
+                type: 'is',
+                getPrincipal: () => p
               };
               setWalletIdentity(identity, walletToUse);
             } else {
@@ -334,9 +341,11 @@ export function useProvideAuth(authClient): AuthContext {
         break;
     }
     setUser(undefined);
+    setUserPrincipalText("");
     setAdminUser(false);
     setIsAuthenticatedLocal(false);
     setSelectedProvider(undefined);
+    setUserAlertVal(false);
     setProviders([]);
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
     localStorage.removeItem('_loginType');
@@ -357,8 +366,11 @@ export function useProvideAuth(authClient): AuthContext {
     isAdminUser,
     identity,
     setUser,
+    userPrincipalText,
     setSelectedProvider,
     selectedProvider,
+    setUserAlertVal,
+    userAlertVal,
     requiresSignUp: shouldSignup,
     providers: providers,
     providerIdText: providerIdText,

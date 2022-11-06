@@ -189,6 +189,7 @@ module StateV1 {
         (Principal.equal, Principal.equal),
       );
       appName = "MODCLUB";
+      
       providerAllowedForAIFiltering = HashMap.HashMap<Principal, Bool>(
         1,
         Principal.equal,

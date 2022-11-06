@@ -83,26 +83,7 @@ const mnemonicToId = (mnemonic) => {
   seed = new Uint8Array(seed);
   return Ed25519KeyIdentity.generate(seed);
 }
-const encrypt = (mnemonic, principal, password) => {
-  return new Promise((resolve, reject) => {
-    pbkdf2.pbkdf2(password, principal, 30000, 512, 'sha512', (e, d) => {
-      if (e) return reject(e);
-      resolve(sjcl.encrypt(d.toString(), btoa(mnemonic)));
-    });
-  });
-}
-const decrypt = (data, principal, password) => {
-  return new Promise((resolve, reject) => {
-    pbkdf2.pbkdf2(password, principal, 30000, 512, 'sha512', (e, d) => {
-      if (e) return reject(e);
-      try{
-        resolve(atob(sjcl.decrypt(d.toString(), data)));
-      } catch (e) {
-        reject(e);
-      }
-    });
-  });
-}
+
 const isHex = (h) => {
   var regexp = /^[0-9a-fA-F]+$/;
   return regexp.test(h);
@@ -135,8 +116,6 @@ export {
   fromHexString,
   generateMnemonic, 
   mnemonicToId, 
-  encrypt, 
-  decrypt, 
   isHex,
   validateMnemonic,
   validateAddress,
