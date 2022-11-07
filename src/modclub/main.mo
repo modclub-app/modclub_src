@@ -694,9 +694,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
   };
 
   public shared ({caller}) func adminUpdateEmail(pid: Principal, email: Text) : async Types.Profile {
-    switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
-      case (#err(e)) { throw Error.reject("Unauthorized") };
-      case (_)();
+    if (not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
     };
 
      switch (ModeratorManager.adminUpdateEmail(pid, email, state)) {
