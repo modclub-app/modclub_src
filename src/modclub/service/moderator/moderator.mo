@@ -28,13 +28,13 @@ module ModeratorModule {
     userName : Text,
     email : ?Text,
     pic : ?Types.Image,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : async Types.Profile {
     var _userName = Text.trim(userName, #text " ");
     var _email = Text.trim(Option.get(email, ""), #text " ");
     if (_email.size() > 320) throw Error.reject("Invalid email, too long");
     if (_userName.size() > 64 or _userName.size() < 3) throw Error.reject(
-      "Username length must be longer than 3 and less than 64 characters",
+      "Username length must be longer than 3 and less than 64 characters"
     );
 
     switch (pic) {
@@ -76,6 +76,29 @@ module ModeratorModule {
     };
   };
 
+  public func adminUpdateEmail(
+    moderatorId : Principal,
+    newEmail : Text,
+    state : GlobalState.State
+  ) : Result.Result<Types.Profile, ModError> {
+    switch (state.profiles.get(moderatorId)) {
+      case (null) #err(#notFound);
+      case (?result) {
+          let profile : Types.Profile = {
+              id = result.id;
+              userName = result.userName;
+              pic = result.pic;
+              role = result.role;
+              email = newEmail;
+              createdAt = result.createdAt;
+              updatedAt = Helpers.timeNow();
+            };
+            state.profiles.put(result.id, profile);
+            return #ok(profile)
+      };
+    };
+  };
+
   public func getAllProfiles(state : GlobalState.State) : [Types.Profile] {
     let buf = Buffer.Buffer<Types.Profile>(0);
     for ((pid, p) in state.profiles.entries()) {
@@ -88,7 +111,7 @@ module ModeratorModule {
     start : Nat,
     end : Nat,
     state : GlobalState.State,
-    getHolding : Principal -> Tokens.Holdings,
+    getHolding : Principal -> Tokens.Holdings
   ) : Result.Result<[Types.ModeratorLeaderboard], ModError> {
     let rewardsEarnedBuffer = Buffer.Buffer<Types.RewardsEarnedMap>(0);
     for ((pid, p) in state.profiles.entries()) {
@@ -97,7 +120,7 @@ module ModeratorModule {
         {
           rewardsEarned = holdings.userPoints;
           userId = p.id;
-        },
+        }
       );
     };
     let sortedArray = Array.sort(
@@ -108,9 +131,9 @@ module ModeratorModule {
         #greater;
       } {
         if (a.rewardsEarned > b.rewardsEarned) { #less } else if (
-          a.rewardsEarned == b.rewardsEarned,
+          a.rewardsEarned == b.rewardsEarned
         ) { #equal } else { #greater };
-      },
+      }
     );
 
     let buf = Buffer.Buffer<Types.ModeratorLeaderboard>(0);
@@ -150,7 +173,7 @@ module ModeratorModule {
           var performance : Float = 0;
           if (completedVoteCount != 0) {
             performance := Float.fromInt(correctVoteCount) / Float.fromInt(
-              completedVoteCount,
+              completedVoteCount
             );
           };
 
@@ -186,7 +209,7 @@ module ModeratorModule {
     moderatorId : Principal,
     isComplete : Bool,
     getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : Result.Result<[Types.Activity], ModError> {
     let buf = Buffer.Buffer<Types.Activity>(0);
     label l for (vid in state.mods2votes.get0(moderatorId).vals()) {
@@ -215,7 +238,7 @@ module ModeratorModule {
                     updatedAt = content.updatedAt;
                     voteCount = Nat.max(
                       voteCount.approvedCount,
-                      voteCount.rejectedCount,
+                      voteCount.rejectedCount
                     );
                     minVotes = provider.settings.minVotes;
                     minStake = provider.settings.minStaked;
@@ -225,10 +248,10 @@ module ModeratorModule {
                         case (true) {
                           switch (vote.decision == content.status) {
                             case (true) Float.fromInt(
-                              provider.settings.minStaked,
+                              provider.settings.minStaked
                             );
                             case (false) -1 * Float.fromInt(
-                              provider.settings.minStaked,
+                              provider.settings.minStaked
                             );
                           };
                         };

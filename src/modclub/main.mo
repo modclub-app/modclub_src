@@ -693,6 +693,22 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     return ModeratorManager.getAllProfiles(state);
   };
 
+  public shared ({caller}) func adminUpdateEmail(pid: Principal, email: Text) : async Types.Profile {
+    switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
+      case (#err(e)) { throw Error.reject("Unauthorized") };
+      case (_)();
+    };
+
+     switch (ModeratorManager.adminUpdateEmail(pid, email, state)) {
+      case (#ok(moderator)) {
+        return moderator;
+      };
+      case (_) {
+        throw Error.reject("profile not found");
+      };
+     };
+  };
+
   public query func getModeratorLeaderboard(start : Nat, end : Nat) : async [
     Types.ModeratorLeaderboard
   ] {
