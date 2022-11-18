@@ -2305,10 +2305,10 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     throw Error.reject("Unauthorized");
   };
 
-  public query func transform(raw : Types.CanisterHttpResponsePayload) : async Types.CanisterHttpResponsePayload {
+  public query func transform(raw : Types.TransformArgs) : async Types.CanisterHttpResponsePayload {
     let transformed : Types.CanisterHttpResponsePayload = {
-      status = raw.status;
-      body = raw.body;
+      status = raw.response.status;
+      body = raw.response.body;
       headers = [
         {
           name = "Content-Security-Policy";
@@ -2350,13 +2350,19 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     ]);
     let DATA_POINTS_PER_API : Nat64 = 200;
     let MAX_RESPONSE_BYTES : Nat64 = 10 * 6 * DATA_POINTS_PER_API;
+
+    let transform_context : Types.TransformContext = {
+      function = transform;
+      context = Blob.fromArray([]);
+    };
+
     let request : Types.CanisterHttpRequestArgs = {
       url = url;
       headers = request_headers;
       body = ?Blob.toArray(Text.encodeUtf8(JSON.show(body)));
       method = #post;
       max_response_bytes = ?MAX_RESPONSE_BYTES;
-      transform = ?(#function(transform));
+      transform = ?transform_context;
     };
     try {
       // Dynamically add cycles based on the useremail characters
