@@ -1127,10 +1127,6 @@ module PohModule {
     public func getPohChallengePackage(packageId : Text) : ?PohTypes.PohChallengePackage {
       return state.pohChallengePackages.get(packageId);
     };
-    public func getModeratorEmailsForPOH(pohEmailManager: EmailManager.EmailManager, newContents: HashMap.HashMap<Text, ?Text>, voteState: VoteState.PohVoteState, globalState: GlobalState.State, modClubAmins: List.List<Principal> ) : [Text] { 
-        let distinctUserEmailIDs = pohEmailManager.getEmailsFromPackageID(newContents, voteState, globalState, state.pohChallengePackages, modClubAmins); 
-        return Iter.toArray(distinctUserEmailIDs.keys());
-    };
 
     public func validateRules(violatedRules : [Types.PohRulesViolated]) : Bool {
       let validRules : ?Bool = do ? {
@@ -1660,6 +1656,9 @@ module PohModule {
         providersCallback = pohStableStateV2.providersCallback;
         callbackIssuedByProvider = [];
       };
+    };
+    public func getPOHState() : PohStateV2.PohState {
+      return state;
     };
   };
 };

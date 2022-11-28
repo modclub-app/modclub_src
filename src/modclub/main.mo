@@ -206,8 +206,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     if(userEmail == ""){
       throw Error.reject("User has not provided email id")
     };
-    //Make HTTP REQUEST TO LAMBDA TO SEND EMAIL
-    callResult := await callLambdaToSendEmail(userEmail,envForBaseURL,pid,false);
+    // send Verification email to receive alerts
+    callResult := await callLambdaToSendEmail(userEmail,envForBaseURL,pid,"v",0);
     return callResult;
   };
   // ---------------------- END Email Methods------------------------------
@@ -458,10 +458,10 @@ shared ({ caller = deployer }) actor class ModClub() = this {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
-    if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, state)) {
+    if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, state)) { 
       throw Error.reject("Content already submitted");
     };
-    ContentManager.submitTextOrHtmlContent(
+    var contentID = ContentManager.submitTextOrHtmlContent(
       caller,
       sourceId,
       htmlContent,
@@ -469,7 +469,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
       #htmlContent,
       contentQueueManager,
       state,
-    );
+    ); 
+    return contentID;
   };
 
   public shared ({ caller }) func submitImage(
@@ -1202,7 +1203,6 @@ shared ({ caller = deployer }) actor class ModClub() = this {
         };
       };
     };
-    var sendEmail = getModeratorEmailsForPOHAndSendEmail();
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = isValid;
@@ -1554,13 +1554,25 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     );
   };
   
-  public shared ({caller}) func getModeratorEmailsForPOHAndSendEmail(): async () {
+  public shared ({caller}) func getModeratorEmailsForPOHAndSendEmail(emailType:Text): async () {
     // As email is going to send to all the users who opted in to receive at the time of content submission
-    // So no need to check content again just fetch users email and send emails
-    var emailIdsMap = emailManager.getAllUsersEmailWhoWantsToReceiveAlerts(state);
-    for (email in emailIdsMap.keys()){
+    var emailIDsHash = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+    var voteStateToSend = voteManager.getVoteState();
+    if(emailType == "shc"){
+      // Sends content email
+      var queueStateToSend = contentQueueManager.getQueueState();
+      emailIDsHash := emailManager.getModeratorEmailsForContent(
+                      voteStateToSend,queueStateToSend,state);
+    }else{ 
+      // Sends POH email
+      var pohContentState = pohContentQueueManager.getQueueState();
+      var pohStateToSend = pohEngine.getPOHState();
+      emailIDsHash := emailManager.getModeratorEmailsForPOH(
+                      voteStateToSend,pohContentState,state,pohStateToSend);
+    };
+    for ((email,totalCount) in emailIDsHash.entries()){
       // "prod" and principal are just place holders to prevent idempotency
-      let callResult = await callLambdaToSendEmail(email,"prod",Principal.toText(caller),true);
+      let callResult = await callLambdaToSendEmail(email,"prod",Principal.toText(caller),emailType,totalCount);
     };
   };
 
@@ -2189,6 +2201,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
       Debug.print("Running Metrics Collection");
       canistergeekMonitor.collectMetrics();
       nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
+      var pohEmailSend = getModeratorEmailsForPOHAndSendEmail("p");
+      var contentEmailSend = getModeratorEmailsForPOHAndSendEmail("shc");
     };
   };
 
@@ -2327,10 +2341,10 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     transformed;
   };
 
-  private func callLambdaToSendEmail(userEmail:Text , envForBaseURL:Text, userPrincipalText:Text, pohAlertEmail: Bool) : async  Bool{
+  private func callLambdaToSendEmail(userEmail:Text , envForBaseURL:Text, userPrincipalText:Text, emailType: Text, totalContents:Nat) : async  Bool{
 
     let host : Text = "bgl2dihq47pqfjtth2odwdakcm0cislr.lambda-url.us-east-1.on.aws";
-    var minCycles : Nat = 210243300000;
+    var minCycles : Nat = 210244050000;
     // prepare system http_request call
 
     let request_headers = [
@@ -2344,8 +2358,9 @@ shared ({ caller = deployer }) actor class ModClub() = this {
 
     let body : JSON.JSON = #Object([
       ("userEmail", #String(userEmail)),
-      ("pohAlertEmail", #Boolean(pohAlertEmail)),
+      ("emailType", #String(emailType)),
       ("envForURL", #String(envForBaseURL)),
+      ("count", #String(Nat.toText(totalContents))),
       ("userPrincipalText", #String(userPrincipalText))
     ]);
     let DATA_POINTS_PER_API : Nat64 = 200;

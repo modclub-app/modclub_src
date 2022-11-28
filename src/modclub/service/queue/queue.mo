@@ -270,6 +270,10 @@ module QueueManager {
       DownloadSupport.download(state, varName, start, end);
     };
 
+    public func getQueueState() : QueueState.QueueState {
+        return state;
+    };
+
     // It assumes that all contentIds are already moved into this class
     public func postupgrade(
       _stableStateOpt : ?QueueState.QueueStateStable,

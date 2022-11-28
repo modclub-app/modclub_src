@@ -8,12 +8,15 @@ import Iter "mo:base/Iter";
 import List "mo:base/List";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
+import Time "mo:base/Time";
 
 import AuthManager "../auth/auth";
 import EmailState "./state";
 import GlobalState "../../statev1";
 import PohTypes "../poh/types";
 import VoteState "../vote/state";
+import Content "../queue/state";
+import PohStateV2 "../poh/statev2";
 
 module EmailModule {
 
@@ -96,34 +99,93 @@ module EmailModule {
             return EmailState.getStableState(state);
         };
 
-        public func getEmailsFromPackageID(newContents: HashMap.HashMap<Text, ?Text>, voteState: VoteState.PohVoteState, globalState: GlobalState.State, packages: HashMap.HashMap<Text, PohTypes.PohChallengePackage>, modClubAmins: List.List<Principal>) : HashMap.HashMap<Text, ?Text> { 
-            let userEmailIDs = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
-            for(packageID in newContents.keys()){
-                let usersAlreadyVoted = HashMap.HashMap<Principal, Bool>(1, Principal.equal, Principal.hash);
-                //Remove owner of the content
-                switch(packages.get(packageID)){
-                    case(null)();
-                    case(?packageExist) { 
-                        for(voteID in voteState.pohContent2votes.get0(packageID).vals()){
-                            for(votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()){
-                                usersAlreadyVoted.put(votedUserID,true);
+        public func getModeratorEmailsForContent(voteState: VoteState.PohVoteState, contentState: Content.QueueState, globalState: GlobalState.State) : HashMap.HashMap<Text, Nat> { 
+            let userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+            for ((qId,contentMap) in contentState.newContentQueues.entries()) {
+                // Proceed further if there is content in present queue
+                if(contentMap.size() != 0){
+                    for ((userID, userQID) in contentState.userId2QueueId.entries()) {
+                        // If current queueID matches with current user's queue then proceed further for that user
+                        if(userQID == qId){
+                            var totalUserContents:Nat = 0;
+                            for (contentID in contentMap.keys()){
+                                switch(globalState.content.get(contentID)){
+                                    case(null)();
+                                    case(?contentToCheck){
+                                        let currentTime = Time.now() / 1000000;
+                                        if(contentToCheck.createdAt > currentTime-300000 and contentToCheck.createdAt < currentTime){
+                                            totalUserContents := totalUserContents+1;
+                                            for(voteID in voteState.pohContent2votes.get0(contentID).vals()){
+                                                for(votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()){
+                                                    totalUserContents:=totalUserContents-1;
+                                                };
+                                            };
+                                        };
+                                    };
+                                };
+                            };
+                            if(totalUserContents > 0){
+                                // Check if current user opted in for email alerts
+                                switch(state.usersToReceiveEmailAlerts.get(userID)){
+                                    case(null)();
+                                    case(?userWantsToReceiveAlerts){
+                                        // If user opted in for email alerts 
+                                        switch(globalState.profiles.get(userID)) {
+                                            case(null)();
+                                            case (?result) {
+                                                if(result.email != ""){
+                                                    userEmailIDs.put(result.email,totalUserContents);
+                                                };
+                                            };
+                                        };
+                                    };
+                                };
                             };
                         };
                     };
                 };
-                for(userID in state.usersToReceiveEmailAlerts.keys()){
-                    var isPOHOwner = Text.startsWith(packageID,#text(Principal.toText(userID)));
-                    switch(usersAlreadyVoted.get(userID)) {
-                        case (?result) {
-                            //Debug.print("User voted already" # Principal.toText(userID));
-                        };
-                        case (_) {
-                            switch(globalState.profiles.get(userID)) {
-                                case(null)();
-                                case (?result) {
-                                    // Add only non Admin users to map
-                                    if(not AuthManager.isAdmin(userID, modClubAmins) and isPOHOwner == false) {
-                                        userEmailIDs.put(result.email,null);
+            };
+            return userEmailIDs;
+        };
+        public func getModeratorEmailsForPOH(voteState: VoteState.PohVoteState, contentState: Content.QueueState, globalState: GlobalState.State, pohState: PohStateV2.PohState) : HashMap.HashMap<Text, Nat> { 
+            let userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+            for ((qId,contentMap) in contentState.newContentQueues.entries()) {
+                // Proceed further if there is content in present queue
+                if(contentMap.size() != 0){
+                    for ((userID, userQID) in contentState.userId2QueueId.entries()) {
+                        // If current queueID matches with current user's queue then proceed further for that user
+                        if(userQID == qId){
+                            var totalUserContents:Nat = 0;
+                            for (contentID in contentMap.keys()){
+                                switch(pohState.pohChallengePackages.get(contentID)){
+                                    case(null)();
+                                    case(?contentToCheck){
+                                        let currentTime = Time.now() / 1000000;
+                                        if(contentToCheck.createdAt > currentTime-300000 and contentToCheck.createdAt < currentTime){
+                                            totalUserContents := totalUserContents+1;
+                                            for(voteID in voteState.pohContent2votes.get0(contentID).vals()){
+                                                for(votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()){
+                                                    totalUserContents:=totalUserContents-1;
+                                                };
+                                            };
+                                        };
+                                    };
+                                };
+                            };
+                            if(totalUserContents > 0){
+                                // Check if current user opted in for email alerts
+                                switch(state.usersToReceiveEmailAlerts.get(userID)){
+                                    case(null)();
+                                    case(?userWantsToReceiveAlerts){
+                                        // If user opted in for email alerts 
+                                        switch(globalState.profiles.get(userID)) {
+                                            case(null)();
+                                            case (?result) {
+                                                if(result.email != ""){
+                                                    userEmailIDs.put(result.email,totalUserContents);
+                                                };
+                                            };
+                                        };
                                     };
                                 };
                             };
