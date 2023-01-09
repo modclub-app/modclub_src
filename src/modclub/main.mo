@@ -1988,7 +1988,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
           };
           // if caller is null, consider it as modclub calling it so that operation evaluates to false
           // simplifies switch braches
-          hasVoted := Principal.equal(Option.get(caller, Principal.fromActor(this)), v.userId);
+          if(not hasVoted)
+            hasVoted := Principal.equal(Option.get(caller, Principal.fromActor(this)), v.userId);
           for(vRuleId in Option.get(v.violatedRules, []).vals()) {
             violatedRulesCount.put(vRuleId, Option.get(violatedRulesCount.get(vRuleId), 0) + 1);
           };
