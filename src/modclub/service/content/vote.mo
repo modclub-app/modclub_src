@@ -13,6 +13,9 @@ import Tokens "../../token";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
 import QueueManager "../queue/queue";
+import Option "mo:base/Option";
+import HashMap "mo:base/HashMap";
+import Buffer "mo:base/Buffer";
 
 module ContentVotingModule {
 
@@ -119,6 +122,9 @@ module ContentVotingModule {
               if (validateRules(contentId, result, state) != true) {
                 throw Error.reject("The violated rules provided are incorrect");
               };
+              for (vRuleId in result.vals()) {
+                voteCount.violatedRulesCount.put(vRuleId, Option.get(voteCount.violatedRulesCount.get(vRuleId), 0) + 1);
+              };
             };
             case (_) throw Error.reject("Must provide rules that were violated");
           };
@@ -151,6 +157,7 @@ module ContentVotingModule {
           content,
           voteApproved,
           voteRejected,
+          voteCount.violatedRulesCount,
           tokens,
           state,
           logger,
@@ -195,6 +202,7 @@ module ContentVotingModule {
     content : Types.Content,
     aCount : Nat,
     rCount : Nat,
+    violatedRulesCount: HashMap.HashMap<Text, Nat>,
     tokens : Tokens.Tokens,
     state : GlobalState.State,
     logger : Canistergeek.Logger,
@@ -256,8 +264,11 @@ module ContentVotingModule {
             result.callback(
               {
                 id = content.id;
+                approvedCount = aCount;
+                rejectedCount = rCount;
                 sourceId = content.sourceId;
                 status = status;
+                violatedRules = getViolatedRuleCount(violatedRulesCount);
               },
             );
             Debug.print(
@@ -288,4 +299,17 @@ module ContentVotingModule {
       case (null)();
     };
   };
+
+  private func getViolatedRuleCount(violatedRuleCount: HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
+    let vRulesCountBuff = Buffer.Buffer<Types.ViolatedRules>(violatedRuleCount.size());
+    
+    for((vRuleId, count) in violatedRuleCount.entries()) {
+      vRulesCountBuff.add({
+        id = vRuleId;
+        rejectionCount = count;
+      });
+    };
+    return vRulesCountBuff.toArray();
+  };
+
 };
