@@ -384,6 +384,10 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     };
   };
 
+  public query ({ caller }) func getProviderRules() : async [Types.Rule] {
+    ProviderManager.getProviderRules(caller, state);
+  };
+
   public query func getRules(providerId : Principal) : async [Types.Rule] {
     ProviderManager.getProviderRules(providerId, state);
   };
@@ -1977,6 +1981,7 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     var voteApproved : Nat = 0;
     var voteRejected : Nat = 0;
     var hasVoted : Bool = false;
+    let violatedRulesCount =  HashMap.HashMap<Types.RuleId, Nat>(1, Text.equal, Text.hash);
     for (vid in state.content2votes.get0(contentId).vals()) {
       switch (state.votes.get(vid)) {
         case (?v) {
@@ -1985,13 +1990,13 @@ shared ({ caller = deployer }) actor class ModClub() = this {
           } else {
             voteRejected += 1;
           };
-          switch (caller) {
-            case (?x) {
-              if (v.userId == x) {
-                hasVoted := true;
-              };
-            };
-            case (_)();
+          // if caller is null, consider it as modclub calling it so that operation evaluates to false
+          // simplifies switch braches
+          if(not hasVoted) {
+            hasVoted := Principal.equal(Option.get(caller, Principal.fromActor(this)), v.userId);
+          };
+          for(vRuleId in Option.get(v.violatedRules, []).vals()) {
+            violatedRulesCount.put(vRuleId, Option.get(violatedRulesCount.get(vRuleId), 0) + 1);
           };
         };
         case (_)();
@@ -2002,6 +2007,7 @@ shared ({ caller = deployer }) actor class ModClub() = this {
       approvedCount = voteApproved;
       rejectedCount = voteRejected;
       hasVoted = hasVoted;
+      violatedRulesCount = violatedRulesCount;
     };
   };
 

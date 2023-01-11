@@ -187,9 +187,17 @@ module {
     createdAt : Timestamp;
   };
 
+  public type ViolatedRules = {
+    id : RuleId;
+    rejectionCount: Nat;
+  };
+
   public type ContentResult = {
     sourceId : Text;
+    approvedCount: Nat;
+    rejectedCount: Nat;
     status : ContentStatus;
+    violatedRules: [ViolatedRules];
   };
 
   public type SubscribeMessage = {
@@ -205,6 +213,7 @@ module {
     approvedCount : Nat;
     rejectedCount : Nat;
     hasVoted : Bool;
+    violatedRulesCount: HashMap.HashMap<RuleId, Nat>;
   };
 
   public type Activity = {

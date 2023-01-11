@@ -13,6 +13,10 @@ import Tokens "../../token";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
 import QueueManager "../queue/queue";
+import Option "mo:base/Option";
+import HashMap "mo:base/HashMap";
+import Buffer "mo:base/Buffer";
+import Text "mo:base/Text";
 
 module ContentVotingModule {
 
@@ -119,6 +123,9 @@ module ContentVotingModule {
               if (validateRules(contentId, result, state) != true) {
                 throw Error.reject("The violated rules provided are incorrect");
               };
+              for (vRuleId in result.vals()) {
+                voteCount.violatedRulesCount.put(vRuleId, Option.get(voteCount.violatedRulesCount.get(vRuleId), 0) + 1);
+              };
             };
             case (_) throw Error.reject("Must provide rules that were violated");
           };
@@ -151,6 +158,7 @@ module ContentVotingModule {
           content,
           voteApproved,
           voteRejected,
+          voteCount.violatedRulesCount,
           tokens,
           state,
           logger,
@@ -195,6 +203,7 @@ module ContentVotingModule {
     content : Types.Content,
     aCount : Nat,
     rCount : Nat,
+    violatedRulesCount: HashMap.HashMap<Text, Nat>,
     tokens : Tokens.Tokens,
     state : GlobalState.State,
     logger : Canistergeek.Logger,
@@ -253,23 +262,22 @@ module ContentVotingModule {
         // Call the providers callback
         switch (state.providerSubs.get(content.providerId)) {
           case (?result) {
+            let callbackData = {
+              id = content.id;
+              approvedCount = aCount;
+              rejectedCount = rCount;
+              sourceId = content.sourceId;
+              status = status;
+              violatedRules = getViolatedRuleCount(violatedRulesCount);
+            };
+
             result.callback(
-              {
-                id = content.id;
-                sourceId = content.sourceId;
-                status = status;
-              },
-            );
-            Debug.print(
-              "Called callback for provider " # Principal.toText(
-                content.providerId,
-              ),
+              callbackData,
             );
             Helpers.logMessage(
               logger,
               "Called callback for provider " # Principal.toText(
-                content.providerId,
-              ),
+                content.providerId) # " callbackData: " # callBackDataToString(callbackData) ,
               #info,
             );
           };
@@ -288,4 +296,31 @@ module ContentVotingModule {
       case (null)();
     };
   };
+
+  private func getViolatedRuleCount(violatedRuleCount: HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
+    let vRulesCountBuff = Buffer.Buffer<Types.ViolatedRules>(violatedRuleCount.size());
+
+    for((vRuleId, count) in violatedRuleCount.entries()) {
+      vRulesCountBuff.add({
+        id = vRuleId;
+        rejectionCount = count;
+      });
+    };
+    return vRulesCountBuff.toArray();
+  };
+
+  private func callBackDataToString(callbackData: Types.ContentResult) : Text {
+    var res = "sourceId: " # callbackData.sourceId # " approvedCount: " # Nat.toText(callbackData.approvedCount) # " rejectedCount: " # Nat.toText(callbackData.rejectedCount);
+    switch(callbackData.status) {
+      case(#rejected) {
+        res :=  res # " violatedRules size: " # Nat.toText(callbackData.violatedRules.size());
+        for(vRules in callbackData.violatedRules.vals()) {
+          res := res # " id: " # vRules.id # " rejectionCount: " # Nat.toText(vRules.rejectionCount);
+        };
+      };
+      case(_)();
+    };
+    return res;
+  };
+
 };
