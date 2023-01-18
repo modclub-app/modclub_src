@@ -1844,19 +1844,6 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     (allDataCanisterId, retired);
   };
 
-  private func getProviderRules(providerId : Principal) : [Types.Rule] {
-    let buf = Buffer.Buffer<Types.Rule>(0);
-    for (ruleId in state.provider2rules.get0(providerId).vals()) {
-      switch (state.rules.get(ruleId)) {
-        case (?rule) {
-          buf.add(rule);
-        };
-        case (_)();
-      };
-    };
-    buf.toArray();
-  };
-
   // Return the principal identifier of this canister.
   public func whoami() : async Principal {
     Principal.fromActor(this);
