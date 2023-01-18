@@ -44,7 +44,6 @@ const StyledMenu = styled.nav`
 const Menu = ({ open }) => {
   return (
     <StyledMenu open={open}>
-      <HashLink to="/invest">Investor Interest</HashLink>
       <HashLink to="/#developers">Developers</HashLink>
       <HashLink to="/#tokenomics">Tokenomics</HashLink>
       <HashLink to="/#roadmap">Roadmap</HashLink>

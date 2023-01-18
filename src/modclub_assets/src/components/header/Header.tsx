@@ -23,9 +23,6 @@ export default function Header() {
         </Navbar.Brand>
         <Navbar.Menu>
           <Navbar.Container align="right">
-            <HashLink className="navbar-item" to="/invest">
-              Investor Interest
-            </HashLink>
             <HashLink className="navbar-item" to="/#developers">
               Developers
             </HashLink>

@@ -19,9 +19,6 @@ export default function Footer_() {
             <Heading subtitle>
               Menu
             </Heading>
-            <HashLink to="/invest" className="is-block has-text-white">
-              Investor Interest
-            </HashLink>
             <HashLink to="/#developers" className="is-block has-text-white">
               Developers
             </HashLink>
