@@ -22,6 +22,21 @@ module ContentVotingModule {
 
   public type ContentVoteError = { #contentNotFound; #voteNotFound };
 
+  public func getContentResult(
+      contentId: Types.ContentId,
+      sourceId: Text,
+      status: Types.ContentStatus,
+      voteCount : Types.VoteCount) : Types.ContentResult {
+        let contentResult : Types.ContentResult = {
+              sourceId = sourceId;
+              approvedCount = voteCount.approvedCount;
+              rejectedCount = voteCount.rejectedCount;
+              status = status;
+              violatedRules = getViolatedRuleCount(voteCount.violatedRulesCount);
+      };
+    return contentResult; 
+  };
+
   public func getVotePerformance(caller : Principal, state : GlobalState.State) : Result.Result<Float, ContentVoteError> {
     var correctVoteCount : Int = 0;
     var completedVoteCount : Int = 0;
@@ -296,6 +311,7 @@ module ContentVotingModule {
       case (null)();
     };
   };
+  
 
   private func getViolatedRuleCount(violatedRuleCount: HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
     let vRulesCountBuff = Buffer.Buffer<Types.ViolatedRules>(violatedRuleCount.size());

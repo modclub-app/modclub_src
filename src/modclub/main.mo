@@ -424,6 +424,33 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     return ContentManager.getContent(caller, id, voteCount, state);
   };
 
+  public query ({ caller }) func getContentResult(
+      id : Text
+      ) : async Types.ContentResult {
+        let voteCount = getVoteCount(id, ?caller);
+        switch(ContentManager.getContent(caller, id, voteCount, state)) {
+          case(?result) {
+          switch (AuthManager.checkProviderPermission(caller, ?result.providerId, state)) {
+            case (#err(error)) return throw Error.reject("Unauthorized");
+            case (#ok(p)) {
+              let cr = ContentVotingManager.getContentResult(
+                result.id,
+                result.sourceId,
+                result.status,
+                voteCount
+              );
+              return cr;
+            };
+        };
+          };
+          case(_) {
+            throw Error.reject("Content not found");
+          };
+        };
+
+        return throw Error.reject("Unknown error when fetching content results");
+  };
+
   public shared ({ caller }) func submitText(
     sourceId : Text,
     text : Text,
