@@ -1,6 +1,5 @@
 import * as React from 'react'
 import "./Landing.scss";
-import { Doughnut } from "react-chartjs-2";
 import HowTo1 from "../../../../assets/network.png";
 import HowTo2 from "../../../../assets/internet.png";
 import HowTo3 from "../../../../assets/award.png";
@@ -18,44 +17,6 @@ import discordImg from '../../../../assets/discord.jpeg';
 import dscvrImg from '../../../../assets/dscvr.jpeg';
 import mediumImg from '../../../../assets/medium.png';
 import { useHistory } from "react-router-dom";
-
-const data = {
-  labels: [
-    "Team",
-    "Private Sale",
-    "Public Sale",
-    "Advisors",
-    "Marketing",
-    "Reserve",
-    "Airdrop",
-    "Seed"
-  ],
-  datasets: [
-    {
-      label: "Allocation",      
-      data: [16, 15, 10, 5, 5, 41.75, 1, 6.25],
-      backgroundColor: [
-        "#FB6A00", // Team
-        "#5EBEE1", // Private
-        "#185698", // Public
-        "#00109B", // Advisors
-        "#CB339C", // Marketing
-        "#3D52FA", // Reserve
-        "#007CE0", // Airdrop
-        "#CB439C", // Seed
-      ],
-      borderColor: "#000",
-      borderWidth: 1,  
-    },
-  ],
-  plugins: {
-    labels: {
-      render: "percentage",
-      fontColor: "#fff",
-      precision: 2
-    }
-  }
-};
 
 export default function Landing() {
   const history = useHistory(); 
@@ -204,72 +165,6 @@ export default function Landing() {
 
         <div className="has-text-centered pt-3">
           <a className="button is-large extra is-primary" href="mailto:team@modclub.app">Contact Us</a>
-        </div>
-
-      </div>
-    </section>
-
-    <section className="section Tokenomics">
-      <div id="tokenomics" className="container" style={{ maxWidth: 960 }}>
-
-        <div className="columns">
-          <div className="column">
-            <h3 className="title is-size-1">Tokenomics</h3>
-            <p className="is-size-5 has-text-white mb-5">
-              MODCLUB Tokens (MOD) will play a crucial role in the MODCLUB ecosystem. It is a reputation token that is required in order to participate in the platform. It can be used to receive rewards, participate in governance, get access to Airdrops and other awesome features.
-            </p>
-            <div style={{ width: 320}}>
-              <Doughnut
-                data={data}
-                options={{
-                  plugins: {
-                    legend: {
-                      position: "bottom",
-                      align: "start",
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
-          <div className="column is-flex is-align-items-center is-justify-content-center">
-            <div className="columns">
-              <div className="column pb-0">
-                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
-                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
-                    <label className="label has-text-white mt-3">Initial Max Supply</label>
-                    <p className="has-text-silver is-size-4 mb-3" style={{ fontSize: 20 }}>1,000,000,000</p>
-                  </div>
-                </div>
-                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
-                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
-                    <label className="label has-text-white mt-3">Token Type</label>
-                    <p className="has-text-silver is-size-4 mb-3">Utility</p>
-                  </div>
-                </div>
-                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
-                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
-                    <label className="label has-text-white mt-3">Initial Price</label>
-                    <p className="has-text-silver is-size-4 mb-3">TBD</p>
-                  </div>
-                </div>
-              </div>
-              <div className="column is-flex is-flex-direction-column is-justify-content-center">
-                <div className="card has-gradient mb-6" style={{ borderRadius: 0 }}>
-                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
-                    <label className="label has-text-white mt-3">Token Symbol</label>
-                    <p className="has-text-silver is-size-4 mb-3">MOD</p>
-                  </div>
-                </div>
-                <div className="card has-gradient" style={{ borderRadius: 0 }}>
-                  <div className="card-content has-text-centered" style={{ borderRadius: 0, margin: 1 }}>
-                    <label className="label has-text-white mt-3">Token Supply</label>
-                    <p className="has-text-silver is-size-4 mb-3">Deflationary</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
       </div>

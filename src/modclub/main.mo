@@ -817,11 +817,32 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     };
   };
 
+
+// Hard coded array of blocked principal IDs
+let blocklist : [Principal] = [
+  Principal.fromText("vwg5x-m3nk4-7yemy-scctx-bsh4a-xnkaf-pmomf-2v7ip-worm6-iqlau-oae"),
+  Principal.fromText("urbvy-cpagg-qe5fh-fakx4-4kyk5-qajvp-zttg5-bfem2-hcga4-smscd-dqe"),
+  Principal.fromText("5gfqm-uxitn-sv5mt-qswzv-7xgee-jks6l-nzdhv-n444n-fbwsc-6xth3-5ae"),
+  Principal.fromText("o6nlf-g3xwf-yocnk-rmssc-vp7pa-j632v-4vbpu-kthme-3ks6w-yb3xz-lqe")
+];
+
   public shared ({ caller }) func vote(
     contentId : Types.ContentId,
     decision : Types.Decision,
     violatedRules : ?[Types.RuleId],
   ) : async Text {
+
+    // Temporary solution to block voting
+    let blockedCaller = Array.find<Principal>(
+      blocklist,
+      func(val : Principal) : Bool {
+        Principal.equal(val, caller);
+      },
+    );
+
+    if (blockedCaller != null) {
+      throw Error.reject("You are blocked from voting, due to multiple violations of the rules.");
+    };
 
     switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
@@ -1642,6 +1663,8 @@ shared ({ caller = deployer }) actor class ModClub() = this {
     decision : Types.Decision,
     violatedRules : [Types.PohRulesViolated],
   ) : async () {
+
+
     switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
