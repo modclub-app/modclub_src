@@ -34,6 +34,30 @@
       "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
       "type": "assets"
     },
+    "wallet": {
+      "main": "src/wallet/main.mo",
+      "type": "motoko"
+    },
+    "wallet_qa": {
+      "main": "src/wallet/main.mo",
+      "type": "motoko"
+    },
+    "wallet_dev": {
+      "main": "src/wallet/main.mo",
+      "type": "motoko"
+    },
+    "rs": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_qa": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_dev": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
     "provider": {
       "main": "src/modclub/main2.mo",
       "type": "motoko"

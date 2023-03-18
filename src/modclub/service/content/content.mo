@@ -2,7 +2,7 @@ import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import Helpers "../../helpers";
 import Nat "mo:base/Nat";
 import Order "mo:base/Order";

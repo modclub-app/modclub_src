@@ -5,18 +5,21 @@ import Float "mo:base/Float";
 import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Option "mo:base/Option";
+import Buffer "mo:base/Buffer";
+import HashMap "mo:base/HashMap";
 
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import Helpers "../../helpers";
 import Types "../../types";
 import Tokens "../../token";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
 import QueueManager "../queue/queue";
-import Option "mo:base/Option";
-import HashMap "mo:base/HashMap";
-import Buffer "mo:base/Buffer";
-import Text "mo:base/Text";
+import ModWallet "../../remote_canisters/ModWallet";
+import RSManager "../../remote_canisters/RSManager";
+import RSTypes "../../../rs/types";
+import WalletTypes "../../../wallet/types";
 
 module ContentVotingModule {
 
@@ -71,15 +74,16 @@ module ContentVotingModule {
 
   public func vote(
     userId : Principal,
+    env: Text,
     contentId : Types.ContentId,
     decision : Types.Decision,
     violatedRules : ?[Types.RuleId],
     voteCount : Types.VoteCount,
-    tokens : Tokens.Tokens,
     state : GlobalState.State,
     logger : Canistergeek.Logger,
     contentQueueManager : QueueManager.QueueManager,
     randomizationEnabled : Bool,
+    modclubWalletId: Principal
   ) : async Text {
     if (
       not contentQueueManager.isContentAssignedToUser(
@@ -104,86 +108,78 @@ module ContentVotingModule {
         if (content.status != #new) throw Error.reject(
           "Content has already been reviewed",
         );
+      };
+      case (_)(throw Error.reject("Content does not exist"));
+    };
 
-        // Check the user has enough tokens staked
-        switch (state.providers.get(content.providerId)) {
-          case (?provider) {
-            let holdings = tokens.getHoldings(userId);
-            Debug.print(
-              "Holdings: wallet" # Int.toText(holdings.wallet) # "stake" # Int.toText(
-                holdings.stake,
-              ),
-            );
-            Debug.print(
-              "Provider: minStake" # Nat.toText(provider.settings.minStaked),
-            );
+    // TODO: validation check staking requirement fulfilled for senior levels
+    var voteApproved : Nat = 0;
+    var voteRejected : Nat = 0;
+    voteApproved := voteApproved + voteCount.approvedCount;
+    voteRejected := voteRejected + voteCount.rejectedCount;
 
-            if (holdings.stake < provider.settings.minStaked) throw Error.reject(
-              "Not enough tokens staked",
-            );
+    // Check if the rules provided are valid
+    if (decision == #rejected) {
+      switch (violatedRules) {
+        case (?result) {
+          if (validateRules(contentId, result, state) != true) {
+            throw Error.reject("The violated rules provided are incorrect");
           };
-          case (_) throw Error.reject("Provider not found");
-        };
-
-        var voteApproved : Nat = 0;
-        var voteRejected : Nat = 0;
-        // var voteCount = getVoteCount(contentId, ?caller);
-        voteApproved := voteApproved + voteCount.approvedCount;
-        voteRejected := voteRejected + voteCount.rejectedCount;
-
-        // Check if the rules provided are valid
-        if (decision == #rejected) {
-          switch (violatedRules) {
-            case (?result) {
-              if (validateRules(contentId, result, state) != true) {
-                throw Error.reject("The violated rules provided are incorrect");
-              };
-              for (vRuleId in result.vals()) {
-                voteCount.violatedRulesCount.put(vRuleId, Option.get(voteCount.violatedRulesCount.get(vRuleId), 0) + 1);
-              };
-            };
-            case (_) throw Error.reject("Must provide rules that were violated");
+          for (vRuleId in result.vals()) {
+            voteCount.violatedRulesCount.put(vRuleId, Option.get(voteCount.violatedRulesCount.get(vRuleId), 0) + 1);
           };
         };
+        case (_) throw Error.reject("Must provide rules that were violated");
+      };
+    };
 
-        let vote : Types.Vote = {
-          id = voteId;
-          contentId = contentId;
-          userId = userId;
-          decision = decision;
-          violatedRules = violatedRules;
-          createdAt = Helpers.timeNow();
+    let userRSAndLevel = await RSManager.getActor(env).queryRSAndLevelByPrincipal(userId);
+    let vote : Types.VoteV2 = {
+      id = voteId;
+      contentId = contentId;
+      userId = userId;
+      decision = decision;
+      violatedRules = violatedRules;
+      rsBeforeVoting = userRSAndLevel.score;
+      level = userRSAndLevel.level;
+      createdAt = Helpers.timeNow();
+    };
+
+    if(userRSAndLevel.level != #novice) {
+      switch (decision) {
+        case (#approved) {
+          voteApproved += 1;
         };
-        switch (decision) {
-          case (#approved) {
-            voteApproved += 1;
-          };
-          case (#rejected) {
-            voteRejected += 1;
-          };
+        case (#rejected) {
+          voteRejected += 1;
         };
+      };
+    };
 
-        // Update relations
-        state.content2votes.put(content.id, vote.id);
-        state.mods2votes.put(userId, vote.id);
-        state.votes.put(vote.id, vote);
+      // Update relations
+    state.content2votes.put(contentId, vote.id);
+    state.mods2votes.put(userId, vote.id);
+    state.votes.put(vote.id, vote);
 
-        // Evaluate and send notification to provider
+      // Evaluate and send notification to provider
+    switch (state.content.get(contentId)) {
+      case (?content) {
         await evaluateVotes(
           content,
+          env,
           voteApproved,
           voteRejected,
+          modclubWalletId,
           voteCount.violatedRulesCount,
-          tokens,
           state,
           logger,
           contentQueueManager,
         );
-        return "Vote successful";
       };
       case (_)(throw Error.reject("Content does not exist"));
     };
-    return "";
+    
+    return "Vote successful";
   };
 
   private func validateRules(
@@ -216,10 +212,11 @@ module ContentVotingModule {
 
   private func evaluateVotes(
     content : Types.Content,
+    env: Text,
     aCount : Nat,
     rCount : Nat,
+    modclubWalletId : Principal,
     violatedRulesCount: HashMap.HashMap<Text, Nat>,
-    tokens : Tokens.Tokens,
     state : GlobalState.State,
     logger : Canistergeek.Logger,
     contentQueueManager : QueueManager.QueueManager,
@@ -228,87 +225,138 @@ module ContentVotingModule {
     var status : Types.ContentStatus = #new;
     var decision : Types.Decision = #approved;
 
-    switch (state.providers.get(content.providerId)) {
-      case (?provider) {
-        var minVotes = provider.settings.minVotes;
-        if (aCount >= minVotes) {
-          // Approved
-          finishedVote := true;
-          status := #approved;
-          decision := #approved;
-          contentQueueManager.changeContentStatus(content.id, #approved);
-        } else if (rCount >= minVotes) {
-          // Rejected
-          status := #rejected;
-          decision := #rejected;
-          finishedVote := true;
-          contentQueueManager.changeContentStatus(content.id, #rejected);
-        } else {
-          return;
-        };
+    var minVotes = 0;
+    switch(state.providers.get(content.providerId)) {
+      case(?provider) {
+        minVotes := provider.settings.minVotes;
+      };
+      case(null)();
+    };
 
-        if (finishedVote) {
-          // Reward / Slash voters ;
-          await tokens.voteFinalization(
-            ModClubParam.getModclubWallet(),
-            decision,
-            state.content2votes.get0(content.id),
-            provider.settings.minStaked,
-            // TODO: Change this to a percentage
-            state,
-          );
-        };
+    if (aCount >= minVotes) {
+      // Approved
+      finishedVote := true;
+      status := #approved;
+      decision := #approved;
+      contentQueueManager.changeContentStatus(content.id, #approved);
+    } else if (rCount >= minVotes) {
+      // Rejected
+      status := #rejected;
+      decision := #rejected;
+      finishedVote := true;
+      contentQueueManager.changeContentStatus(content.id, #rejected);
+    } else {
+      return;
+    };
 
-        // Update content status
-        state.content.put(
-          content.id,
-          {
-            id = content.id;
-            providerId = content.providerId;
-            contentType = content.contentType;
-            status = status;
-            sourceId = content.sourceId;
-            title = content.title;
-            createdAt = content.createdAt;
-            updatedAt = Helpers.timeNow();
-          },
-        );
-
-        // Call the providers callback
-        switch (state.providerSubs.get(content.providerId)) {
-          case (?result) {
-            let callbackData = {
-              id = content.id;
-              approvedCount = aCount;
-              rejectedCount = rCount;
-              sourceId = content.sourceId;
-              status = status;
-              violatedRules = getViolatedRuleCount(violatedRulesCount);
+    if (finishedVote) {
+      // Reward / Slash voters ;
+      let rewardingVotes = Buffer.Buffer<Types.VoteV2>(1);
+      let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
+      for(voteId in state.content2votes.get0(content.id).vals()) {
+        switch (state.votes.get(voteId)) {
+          case(null)();
+          case(?vote) {
+            var votedCorrect = false;
+            if (vote.decision == decision) {
+              if(vote.level != #novice) {
+                rewardingVotes.add(vote);
+              };
+              votedCorrect := true;
+            } else {
+              votedCorrect := false;
             };
-
-            result.callback(
-              callbackData,
-            );
-            Helpers.logMessage(
-              logger,
-              "Called callback for provider " # Principal.toText(
-                content.providerId) # " callbackData: " # callBackDataToString(callbackData) ,
-              #info,
-            );
-          };
-          case (_) {
-            Debug.print(
-              "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback",
-            );
-            Helpers.logMessage(
-              logger,
-              "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback",
-              #info,
-            );
+            usersToRewardRS.add({
+              userId = vote.userId;
+              votedCorrect = votedCorrect;
+            });
           };
         };
       };
-      case (null)();
+      var sumRS = 0.0;
+      for(userVote in rewardingVotes.vals()) {
+        sumRS := sumRS + userVote.rsBeforeVoting;
+      };
+      
+      // For each rewarding vote, add the user to the buffer with the corresponding amount of MOD to be rewarded
+      let usersToRewardMOD = Buffer.Buffer<WalletTypes.UserAndAmount>(1);
+      let CT: Float = ModClubParam.CS * Float.fromInt(minVotes);
+      for(userVote in rewardingVotes.vals()) {
+        usersToRewardMOD.add({
+          fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
+          toOwner = userVote.userId;
+          toSA = null;
+          amount = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT)/ sumRS ;
+        });
+      };
+      let _ = await RSManager.getActor(env).updateRSBulk(usersToRewardRS.toArray());
+      // moderator dist and treasury dist
+      usersToRewardMOD.add({
+        fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
+        toOwner = modclubWalletId;
+        toSA = ?ModClubParam.TREASURY_SA;
+        amount = (ModClubParam.GAMMA_T * CT) ;
+      });
+      let _ = await ModWallet.getActor(env).transferBulk(usersToRewardMOD.toArray());
+      // burn
+      let _ = await ModWallet.getActor(env).burn(
+                    ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE), 
+                    (ModClubParam.GAMMA_B * CT)
+                  );
+
+    };
+
+    // Update content status
+    state.content.put(
+      content.id,
+      {
+        id = content.id;
+        providerId = content.providerId;
+        contentType = content.contentType;
+        status = status;
+        sourceId = content.sourceId;
+        title = content.title;
+        createdAt = content.createdAt;
+        updatedAt = Helpers.timeNow();
+      },
+    );
+
+    // Call the providers callback
+    switch (state.providerSubs.get(content.providerId)) {
+      case (?result) {
+        result.callback(
+          {
+            id = content.id;
+            sourceId = content.sourceId;
+            approvedCount = aCount;
+            rejectedCount = rCount;
+            status = status;
+            violatedRules = getViolatedRuleCount(violatedRulesCount);
+          },
+        );
+        Debug.print(
+          "Called callback for provider " # Principal.toText(
+            content.providerId,
+          ),
+        );
+        Helpers.logMessage(
+          logger,
+          "Called callback for provider " # Principal.toText(
+            content.providerId,
+          ),
+          #info,
+        );
+      };
+      case (_) {
+        Debug.print(
+          "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback",
+        );
+        Helpers.logMessage(
+          logger,
+          "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback",
+          #info,
+        );
+      };
     };
   };
   

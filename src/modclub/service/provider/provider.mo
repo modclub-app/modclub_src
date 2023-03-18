@@ -6,14 +6,18 @@ import Option "mo:base/Option";
 import Debug "mo:base/Debug";
 import Bool "mo:base/Bool";
 import List "mo:base/List";
+import Float "mo:base/Float";
 
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
 import Types "../../types";
 import Helpers "../../helpers";
 import ModClubParams "../parameters/params";
 import AuthManager "../auth/auth";
 import Canistergeek "../../canistergeek/canistergeek";
+import ModClubParam "../parameters/params";
+import ModWallet "../../remote_canisters/ModWallet";
+
 
 module ProviderModule {
 
@@ -42,7 +46,7 @@ module ProviderModule {
             settings = {
               minVotes = ModClubParams.DEFAULT_MIN_VOTES;
               // At least 2 votes required to finalize a decision
-              minStaked = ModClubParams.DEFAULT_MIN_STAKED;
+              minStaked = 0;
               // Default amount staked, change when tokens are released
             };
           },
@@ -654,6 +658,31 @@ module ProviderModule {
         state.providersWhitelist.put(providerId, true);
       };
     };
+  };
+
+
+  public func checkIfProviderHasEnoughBalance(
+    providerId : Principal,
+    env: Text,
+    modclubCanisterPrincipal: Principal,
+    state : GlobalState.State,
+    logger : Canistergeek.Logger,
+  ) : async () {
+    var minVotes = 0;
+    switch(state.providers.get(providerId)) {
+      case(null) {
+        return throw Error.reject("Unauthorized");
+      };
+      case(?p) {
+        minVotes := p.settings.minVotes;
+      };
+    };
+    let feeForTask = ModClubParam.CS * Float.fromInt(minVotes);
+    let providerBalance = await ModWallet.getActor(env).queryBalance(?(Principal.toText(providerId) # ModClubParam.RESERVE_SA));
+    if(providerBalance < feeForTask) {
+      return throw Error.reject("Not enough balance in provider reserves to submit task.");
+    };
+    let _ = await ModWallet.getActor(env).transfer(?(Principal.toText(providerId) # ModClubParam.RESERVE_SA), modclubCanisterPrincipal, ?(Principal.toText(providerId) # ModClubParam.ACCOUNT_PAYABLE), feeForTask);
   };
 
   private func getNewContentCount(

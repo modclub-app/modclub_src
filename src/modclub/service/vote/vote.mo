@@ -9,17 +9,22 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
 import VoteState "./state";
+import VoteStateV2 "./statev2";
 import VoteTypes "./types";
 import Helpers "../../helpers";
 import QueueManager "../queue/queue";
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import DownloadSupport "./downloadSupport";
+import ModWallet "../../remote_canisters/ModWallet";
+import RSManager "../../remote_canisters/RSManager";
+import RSTypes "../../../rs/types";
+import WalletTypes "../../../wallet/types";
 
 module VoteModule {
 
-  public class VoteManager(stableState : VoteState.PohVoteStableState) {
+  public class VoteManager(stableState : VoteStateV2.PohVoteStableState) {
 
-    var state : VoteState.PohVoteState = VoteState.getState(stableState);
+    var state : VoteStateV2.PohVoteState = VoteStateV2.getState(stableState);
 
     public func isAutoApprovedPOHUser(userId : Principal) : Bool {
       Debug.print("isAutoApprovedPOHUser: " # Principal.toText(userId));
@@ -42,7 +47,7 @@ module VoteModule {
       return state.pohContent2votes.get0(packageId);
     };
 
-    public func getPOHVote(voteId : Text) : ?VoteTypes.Vote {
+    public func getPOHVote(voteId : Text) : ?VoteTypes.VoteV2 {
       return state.pohVotes.get(voteId);
     };
 
@@ -78,11 +83,12 @@ module VoteModule {
 
     public func votePohContent(
       userId : Principal,
+      env: Text,
       packageId : Text,
       decision : Types.Decision,
       violatedRules : [Types.PohRulesViolated],
       pohContentQueueManager : QueueManager.QueueManager,
-    ) : Result.Result<Bool, VoteTypes.VoteError> {
+    ) : async Result.Result<Bool, VoteTypes.VoteError> {
       Debug.print(
         "votePohContent: " # packageId # " UserId " # Principal.toText(userId),
       );
@@ -95,24 +101,30 @@ module VoteModule {
       };
 
       var voteCount = getVoteCountForPoh(userId, packageId);
+      let userRSAndLevel = await RSManager.getActor(env).queryRSAndLevelByPrincipal(userId);
+
       var voteApproved = voteCount.approvedCount;
       var voteRejected = voteCount.rejectedCount;
 
-      let vote : VoteTypes.Vote = {
+      let vote : VoteTypes.VoteV2 = {
         id = getVoteId(userId, packageId);
         contentId = packageId;
         userId = userId;
         decision = decision;
         violatedRules = violatedRules;
+        rsBeforeVoting = userRSAndLevel.score;
+        level = userRSAndLevel.level;
         createdAt = Time.now();
       };
 
-      switch (decision) {
-        case (#approved) {
-          voteApproved += 1;
-        };
-        case (#rejected) {
-          voteRejected += 1;
+      if(userRSAndLevel.level != #novice) {
+        switch (decision) {
+          case (#approved) {
+            voteApproved += 1;
+          };
+          case (#rejected) {
+            voteRejected += 1;
+          };
         };
       };
 
@@ -182,7 +194,6 @@ module VoteModule {
     ) : Bool {
       var finishedVote = false;
 
-      // var minVotes = ModClubParam.MIN_VOTE_POH;
       if (aCount >= ModClubParam.MIN_VOTE_POH) {
         // Approved
         finishedVote := true;
@@ -241,12 +252,39 @@ module VoteModule {
       DownloadSupport.download(state, varName, start, end);
     };
 
-    public func getStableState() : VoteState.PohVoteStableState {
-      return VoteState.getStableState(state);
+    public func getStableState() : VoteStateV2.PohVoteStableState {
+      return VoteStateV2.getStableState(state);
     };
 
-    public func getVoteState() : VoteState.PohVoteState {
+    public func getVoteState() : VoteStateV2.PohVoteState {
         return state;
+    };
+
+    public func migrateV1ToV2(pohVoteStableState: VoteState.PohVoteStableState, pohVoteStableStateV2: VoteStateV2.PohVoteStableState) : VoteStateV2.PohVoteStableState {
+      let buff = Buffer.Buffer<(Text, VoteTypes.VoteV2)>(pohVoteStableState.pohVotes.size());
+      for((voteId, vote) in pohVoteStableState.pohVotes.vals()) {
+        buff.add((voteId, {
+          id = vote.id;
+          contentId = vote.contentId;
+          userId = vote.userId;
+          decision = vote.decision;
+          rsBeforeVoting = 0.0;
+          level = #novice;
+          violatedRules = vote.violatedRules;
+          createdAt = vote.createdAt; 
+        }));
+      };
+
+      return {
+        newPohPackages = pohVoteStableState.newPohPackages;
+        approvedPohPackages = pohVoteStableState.approvedPohPackages;
+        rejectedPohPackages = pohVoteStableState.rejectedPohPackages;
+        package2Status = pohVoteStableState.package2Status;
+        pohVotes = buff.toArray();
+        pohContent2votes = pohVoteStableState.pohContent2votes;
+        mods2Pohvotes = pohVoteStableState.mods2Pohvotes;
+        autoApprovePOHUserIds= pohVoteStableState.autoApprovePOHUserIds;
+      };
     };
 
   };

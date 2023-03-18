@@ -9,9 +9,10 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Option "mo:base/Option";
 
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import Helpers "../../helpers";
 import Types "../../types";
+import RSTypes "../../../rs/types";
 import Tokens "../../token";
 
 module ModeratorModule {
@@ -107,49 +108,18 @@ module ModeratorModule {
     return buf.toArray();
   };
 
-  public func getModeratorLeaderboard(
-    start : Nat,
-    end : Nat,
-    state : GlobalState.State,
-    getHolding : Principal -> Tokens.Holdings
-  ) : Result.Result<[Types.ModeratorLeaderboard], ModError> {
-    let rewardsEarnedBuffer = Buffer.Buffer<Types.RewardsEarnedMap>(0);
-    for ((pid, p) in state.profiles.entries()) {
-      let holdings = getHolding(p.id);
-      rewardsEarnedBuffer.add(
-        {
-          rewardsEarned = holdings.userPoints;
-          userId = p.id;
-        }
-      );
-    };
-    let sortedArray = Array.sort(
-      rewardsEarnedBuffer.toArray(),
-      func(a : Types.RewardsEarnedMap, b : Types.RewardsEarnedMap) : {
-        #less;
-        #equal;
-        #greater;
-      } {
-        if (a.rewardsEarned > b.rewardsEarned) { #less } else if (
-          a.rewardsEarned == b.rewardsEarned
-        ) { #equal } else { #greater };
-      }
-    );
-
+  public func formModeratorLeaderboard(topUsers: [RSTypes.UserAndRS], 
+      state : GlobalState.State) : Result.Result<[Types.ModeratorLeaderboard], ModError> {
     let buf = Buffer.Buffer<Types.ModeratorLeaderboard>(0);
-    var i : Nat = start;
-    while (i < end and i < sortedArray.size()) {
-      let pid = sortedArray[i].userId;
-      let rewardsEarned = sortedArray[i].rewardsEarned;
-      let profile = state.profiles.get(pid);
 
-      switch (profile) {
+    for(user in topUsers.vals()) {
+      switch (state.profiles.get(user.userId)) {
         case (?p) {
-          Debug.print("getModeratorLeaderboard pid " # Principal.toText(pid));
+          Debug.print("getModeratorLeaderboard pid " # Principal.toText(user.userId));
           var correctVoteCount : Int = 0;
           var completedVoteCount : Int = 0;
           var lastVoted : Int = 0;
-          for (vid in state.mods2votes.get0(pid).vals()) {
+          for (vid in state.mods2votes.get0(user.userId).vals()) {
             switch (state.votes.get(vid)) {
               case (?vote) {
                 switch (state.content.get(vote.contentId)) {
@@ -178,10 +148,11 @@ module ModeratorModule {
           };
 
           let item : Types.ModeratorLeaderboard = {
-            id = pid;
+            id = user.userId;
             userName = p.userName;
             completedVoteCount = completedVoteCount;
-            rewardsEarned = rewardsEarned;
+            rewardsEarned = 0;
+            rs = user.score;
             performance = performance;
             lastVoted = ?lastVoted;
           };
@@ -189,10 +160,9 @@ module ModeratorModule {
         };
         case (_)();
       };
-
-      i := i + 1;
     };
     return #ok(buf.toArray());
+
   };
 
   public func getModerators(state : GlobalState.State) : [Principal] {

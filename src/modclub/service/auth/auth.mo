@@ -4,7 +4,7 @@ import Error "mo:base/Error";
 import Result "mo:base/Result";
 import List "mo:base/List";
 
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import Types "../../types";
 
 module AuthModule {

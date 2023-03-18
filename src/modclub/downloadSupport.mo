@@ -1,7 +1,7 @@
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import DownloadUtil "./downloadUtil";
-import GlobalState "./statev1";
+import GlobalState "./statev2";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
@@ -295,7 +295,7 @@ module {
     return buff.toArray();
   };
 
-  func serializeVotes(votes : HashMap.HashMap<Text, Types.Vote>) : [[Text]] {
+  func serializeVotes(votes : HashMap.HashMap<Text, Types.VoteV2>) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((vId, votes) in votes.entries()) {
       buff.add(

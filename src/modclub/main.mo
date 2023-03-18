@@ -27,9 +27,9 @@ import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Order "mo:base/Order";
 import POH "./service/poh/poh";
-import PohStateV1 "./service/poh/statev1";
 import PohStateV2 "./service/poh/statev2";
 import PohTypes "./service/poh/types";
+import VoteTypes "./service/vote/types";
 import Prim "mo:prim";
 import Principal "mo:base/Principal";
 import Cycles "mo:base/ExperimentalCycles";
@@ -42,6 +42,7 @@ import Rel "./data_structures/Rel";
 import RelObj "./data_structures/RelObj";
 import Result "mo:base/Result";
 import StateV1 "./statev1";
+import StateV2 "./statev2";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
@@ -51,13 +52,19 @@ import Types "./types";
 import EmailManager "./service/email/email";
 import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
-import VoteState "./service/vote/state";
+import VoteState "./service/vote/statev2";
+import VoteStateV2 "./service/vote/statev2";
 import DownloadSupport "./downloadSupport";
+import ModWallet "./remote_canisters/ModWallet";
+import RSManager "./remote_canisters/RSManager";
+import RSTypes "../rs/types";
+import WalletTypes "../wallet/types";
 
-shared({ caller = deployer }) actor class ModClub() = this {
+shared ({ caller = deployer }) actor class ModClub(env: Text) = this {
 
   // Constants
   let MAX_WAIT_LIST_SIZE = 20000;
+
   // In case someone spams us, limit the waitlist
   private stable var startTimeForPOHEmail = Helpers.timeNow();
   private var ranPOHUserEmailsOnce : Bool = false;
@@ -66,7 +73,9 @@ shared({ caller = deployer }) actor class ModClub() = this {
   stable var allowSubmissionFlag : Bool = true;
   // Global Objects
   var state = StateV1.empty();
+  var stateV2 = StateV2.empty();
 
+  // Delete this and all token files if code runs fine.
   stable var tokensStableV1 : Token.TokensStableV1 = Token.emptyStableV1(
     ModClubParam.getModclubWallet()
   );
@@ -77,8 +86,6 @@ shared({ caller = deployer }) actor class ModClub() = this {
   stable var storageStateStable = StorageState.emptyStableState();
   stable var retiredDataCanisterId : [Text] = [];
 
-  // Delete one line
-  stable var pohStableStateV1 = PohStateV1.emptyStableState();
   stable var pohStableStateV2 = PohStateV2.emptyStableState();
   // time when callback was sent by provider, then by provider user, then by status
   stable var pohCallbackDataByProvider : [(Principal, [(Text, [(Text, Int)])])] = [];
@@ -92,6 +99,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
   );
 
   stable var pohVoteStableState = VoteState.emptyStableState();
+  stable var pohVoteStableStateV2 = VoteStateV2.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
 
   stable var emailStableState = EmailState.emptyStableState();
@@ -211,7 +219,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     var userEmail = await emailManager.sendVerificationEmail(
       caller,
       envForBaseURL,
-      state
+      stateV2
     );
     var callResult : Bool = false;
     var pid = Principal.toText(caller);
@@ -232,18 +240,18 @@ shared({ caller = deployer }) actor class ModClub() = this {
 
   // ----------------------Airdrop Methods------------------------------
   public shared({ caller }) func airdropRegister() : async Types.AirdropUser {
-    await AirDropManager.airdropRegister(caller, state);
+    await AirDropManager.airdropRegister(caller, stateV2);
   };
 
   public shared({ caller }) func isAirdropRegistered() : async Types.AirdropUser {
-    await AirDropManager.isAirdropRegistered(caller, state);
+    await AirDropManager.isAirdropRegistered(caller, stateV2);
   };
 
   public shared({ caller }) func getAirdropUsers() : async [Types.AirdropUser] {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    AirDropManager.getAirdropUsers(state);
+    AirDropManager.getAirdropUsers(stateV2);
   };
 
   // Add principals to airdropWhitelist
@@ -251,7 +259,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    AirDropManager.addToAirdropWhitelist(pids, state);
+    AirDropManager.addToAirdropWhitelist(pids, stateV2);
   };
 
   // Get airdropWhitelist entries
@@ -259,7 +267,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    AirDropManager.getAirdropWhitelist(state);
+    AirDropManager.getAirdropWhitelist(stateV2);
   };
 
   public shared({ caller }) func addToApprovedUser(userId : Principal) : async () {
@@ -277,7 +285,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     image : ?Types.Image
   ) : async Text {
     Debug.print("registerProvider caller: " # Principal.toText(caller));
-    switch (state.providersWhitelist.get(caller)) {
+    switch (stateV2.providersWhitelist.get(caller)) {
       case (null) {
         Helpers.logMessage(
           canistergeekLogger,
@@ -295,7 +303,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       name,
       description,
       image,
-      state,
+      stateV2,
       canistergeekLogger
     );
   };
@@ -313,7 +321,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       providerId,
       updatedProviderVal,
       caller,
-      state,
+      stateV2,
       canistergeekLogger
     );
   };
@@ -329,13 +337,13 @@ shared({ caller = deployer }) actor class ModClub() = this {
       logoToUpload,
       logoType,
       caller,
-      state,
+      stateV2,
       canistergeekLogger
     );
   };
 
   public shared({ caller }) func deregisterProvider() : async Text {
-    ProviderManager.deregisterProvider(caller, state, canistergeekLogger);
+    ProviderManager.deregisterProvider(caller, stateV2, canistergeekLogger);
   };
 
   public shared({ caller }) func updateSettings(
@@ -351,7 +359,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       providerId,
       updatedSettings,
       caller,
-      state,
+      stateV2,
       canistergeekLogger
     );
   };
@@ -362,7 +370,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
         providerId
       )
     );
-    await ProviderManager.getProvider(providerId, state);
+    await ProviderManager.getProvider(providerId, stateV2);
   };
 
   public shared({ caller }) func addRules(
@@ -370,10 +378,10 @@ shared({ caller = deployer }) actor class ModClub() = this {
     providerId : ?Principal
   ) : async () {
     // checkProviderPermission will return either the caller or the passed in providerId depending if the caller is the provider or not
-    switch (AuthManager.checkProviderPermission(caller, providerId, state)) {
+    switch (AuthManager.checkProviderPermission(caller, providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p)) {
-        ProviderManager.addRules(p, rules, state, canistergeekLogger);
+        ProviderManager.addRules(p, rules, stateV2, canistergeekLogger);
       };
     };
   };
@@ -382,10 +390,10 @@ shared({ caller = deployer }) actor class ModClub() = this {
     ruleIds : [Types.RuleId],
     providerId : ?Principal
   ) : async () {
-    switch (AuthManager.checkProviderPermission(caller, providerId, state)) {
+    switch (AuthManager.checkProviderPermission(caller, providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p)) {
-        ProviderManager.removeRules(p, ruleIds, state, canistergeekLogger);
+        ProviderManager.removeRules(p, ruleIds, stateV2, canistergeekLogger);
       };
     };
   };
@@ -394,35 +402,35 @@ shared({ caller = deployer }) actor class ModClub() = this {
     rulesList : [Types.Rule],
     providerId : ?Principal
   ) : async () {
-    switch (AuthManager.checkProviderPermission(caller, providerId, state)) {
+    switch (AuthManager.checkProviderPermission(caller, providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p)) {
-        ProviderManager.updateRules(p, rulesList, state);
+        ProviderManager.updateRules(p, rulesList, stateV2);
       };
     };
   };
 
   public query ({ caller }) func getProviderRules() : async [Types.Rule] {
-    ProviderManager.getProviderRules(caller, state);
+    ProviderManager.getProviderRules(caller, stateV2);
   };
 
   public query func getRules(providerId : Principal) : async [Types.Rule] {
-    ProviderManager.getProviderRules(providerId, state);
+    ProviderManager.getProviderRules(providerId, stateV2);
   };
 
   // Subscribe function for providers to register their callback after a vote decision has been made
   public shared({ caller }) func subscribe(sub : Types.SubscribeMessage) : async () {
-    switch (AuthManager.checkProviderPermission(caller, null, state)) {
+    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
-    ProviderManager.subscribe(caller, sub, state, canistergeekLogger);
+    ProviderManager.subscribe(caller, sub, stateV2, canistergeekLogger);
   };
 
   public shared({ caller }) func subscribePohCallback(
     sub : PohTypes.SubscribePohMessage
   ) : async () {
-    switch (AuthManager.checkProviderPermission(caller, null, state)) {
+    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
@@ -433,22 +441,22 @@ shared({ caller = deployer }) actor class ModClub() = this {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    await ProviderManager.addToAllowList(providerId, state, canistergeekLogger);
+    await ProviderManager.addToAllowList(providerId, stateV2, canistergeekLogger);
   };
 
   // ----------------------Content Related Methods------------------------------
   public query ({ caller }) func getContent(id : Text) : async ?Types.ContentPlus {
     let voteCount = getVoteCount(id, ?caller);
-    return ContentManager.getContent(caller, id, voteCount, state);
+    return ContentManager.getContent(caller, id, voteCount, stateV2);
   };
 
   public query ({ caller }) func getContentResult(
     id : Text
   ) : async Types.ContentResult {
     let voteCount = getVoteCount(id, ?caller);
-    switch (ContentManager.getContent(caller, id, voteCount, state)) {
+    switch (ContentManager.getContent(caller, id, voteCount, stateV2)) {
       case (?result) {
-        switch (AuthManager.checkProviderPermission(caller, ?result.providerId, state)) {
+        switch (AuthManager.checkProviderPermission(caller, ?result.providerId, stateV2)) {
           case (#err(error)) return throw Error.reject("Unauthorized");
           case (#ok(p)) {
             let cr = ContentVotingManager.getContentResult(
@@ -477,13 +485,14 @@ shared({ caller = deployer }) actor class ModClub() = this {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, state)) {
+    if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, stateV2)) {
       throw Error.reject("Content already submitted");
     };
-    switch (AuthManager.checkProviderPermission(caller, null, state)) {
+    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
+    await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     return ContentManager.submitTextOrHtmlContent(
       caller,
       sourceId,
@@ -491,7 +500,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       title,
       #text,
       contentQueueManager,
-      state
+      stateV2
     );
   };
 
@@ -503,13 +512,14 @@ shared({ caller = deployer }) actor class ModClub() = this {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    switch (AuthManager.checkProviderPermission(caller, null, state)) {
+    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
-    if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, state)) {
+    if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, stateV2)) {
       throw Error.reject("Content already submitted");
     };
+    await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     var contentID = ContentManager.submitTextOrHtmlContent(
       caller,
       sourceId,
@@ -517,7 +527,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       title,
       #htmlContent,
       contentQueueManager,
-      state
+      stateV2
     );
     return contentID;
   };
@@ -531,13 +541,14 @@ shared({ caller = deployer }) actor class ModClub() = this {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, state)) {
+    if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, stateV2)) {
       throw Error.reject("Content already submitted");
     };
-    switch (AuthManager.checkProviderPermission(caller, null, state)) {
+    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
+    await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     return ContentManager.submitImage(
       caller,
       sourceId,
@@ -545,7 +556,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       imageType,
       title,
       contentQueueManager,
-      state
+      stateV2
     );
   };
 
@@ -556,7 +567,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     start : Nat,
     end : Nat
   ) : async [Types.ContentPlus] {
-    switch (AuthManager.checkProviderPermission(caller, ?providerId, state)) {
+    switch (AuthManager.checkProviderPermission(caller, ?providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
@@ -566,7 +577,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     return ContentManager.getProviderContent(
       providerId,
       getVoteCount,
-      state,
+      stateV2,
       status,
       start,
       end,
@@ -577,7 +588,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
   public query ({ caller }) func getAllContent(status : Types.ContentStatus) : async [
     Types.ContentPlus
   ] {
-    switch (AuthManager.checkProfilePermission(caller, #getContent, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -605,7 +616,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       getVoteCount,
       contentQueueManager,
       canistergeekLogger,
-      state,
+      stateV2,
       randomizationEnabled
     );
   };
@@ -620,7 +631,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       "getTasks - provider called with provider ID: " # Principal.toText(caller),
       #info
     );
-    switch (AuthManager.checkProfilePermission(caller, #getContent, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -646,7 +657,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       ContentManager.getTasks(
         caller,
         getVoteCount,
-        state,
+        stateV2,
         start,
         end,
         filterVoted,
@@ -687,15 +698,10 @@ shared({ caller = deployer }) actor class ModClub() = this {
       userName,
       email,
       pic,
-      state
+      stateV2,
     );
     // Todo: Remove this after testnet
-    // Give new users MOD points
-    await tokens.transfer(
-      ModClubParam.getModclubWallet(),
-      caller,
-      ModClubParam.DEFAULT_TEST_TOKENS
-    );
+    await ModWallet.getActor(env).transfer(?ModClubParam.TREASURY_SA, caller, null, ModClubParam.DEFAULT_TEST_TOKENS);
     await storageSolution.registerModerators([caller]);
     contentQueueManager.assignUserIds2QueueId([caller]);
     pohContentQueueManager.assignUserIds2QueueId([caller]);
@@ -703,7 +709,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
   };
 
   public query ({ caller }) func getProfile() : async Types.Profile {
-    switch (ModeratorManager.getProfile(caller, state)) {
+    switch (ModeratorManager.getProfile(caller, stateV2)) {
       case (#ok(p)) {
         return p;
       };
@@ -714,11 +720,11 @@ shared({ caller = deployer }) actor class ModClub() = this {
   };
 
   public query ({ caller }) func getProfileById(pid : Principal) : async Types.Profile {
-    switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
     };
-    switch (ModeratorManager.getProfile(pid, state)) {
+    switch (ModeratorManager.getProfile(pid, stateV2)) {
       case (#ok(p)) {
         return {
           id = p.id;
@@ -740,7 +746,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    return ModeratorManager.getAllProfiles(state);
+    return ModeratorManager.getAllProfiles(stateV2);
   };
 
   public shared({ caller }) func adminUpdateEmail(pid : Principal, email : Text) : async Types.Profile {
@@ -748,7 +754,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       throw Error.reject(AuthManager.Unauthorized);
     };
 
-    switch (ModeratorManager.adminUpdateEmail(pid, email, state)) {
+    switch (ModeratorManager.adminUpdateEmail(pid, email, stateV2)) {
       case (#ok(moderator)) {
         return moderator;
       };
@@ -758,16 +764,17 @@ shared({ caller = deployer }) actor class ModClub() = this {
     };
   };
 
-  public query func getModeratorLeaderboard(start : Nat, end : Nat) : async [
+  public shared func getModeratorLeaderboard(start : Nat, end : Nat) : async [
     Types.ModeratorLeaderboard
   ] {
+
+    let topUsers =  await RSManager.getActor(env).topKUsers(start, end);
+
     switch (
-      ModeratorManager.getModeratorLeaderboard(
-        start,
-        end,
-        state,
-        tokens.getHoldings
-      )
+      ModeratorManager.formModeratorLeaderboard(
+        topUsers,
+        stateV2,
+      ),
     ) {
       case (#ok(leaderboard)) {
         return leaderboard;
@@ -787,7 +794,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
   public query ({ caller }) func getActivity(isComplete : Bool) : async [
     Types.Activity
   ] {
-    switch (AuthManager.checkProfilePermission(caller, #getActivity, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #getActivity, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
     };
@@ -808,7 +815,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       case (_)();
     };
     switch (
-      ModeratorManager.getActivity(caller, isComplete, getVoteCount, state)
+      ModeratorManager.getActivity(caller, isComplete, getVoteCount, stateV2)
     ) {
       case (#ok(activity)) return activity;
       case (#err(#providerNotFound)) throw Error.reject(
@@ -822,7 +829,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
 
   // ----------------------Content Voting Methods------------------------------
   public query ({ caller }) func getVotePerformance() : async Float {
-    switch (ContentVotingManager.getVotePerformance(caller, state)) {
+    switch (ContentVotingManager.getVotePerformance(caller, stateV2)) {
       case (#ok(vp)) {
         return vp;
       };
@@ -860,7 +867,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       throw Error.reject("You are blocked from voting, due to multiple violations of the rules.");
     };
 
-    switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
     };
@@ -893,94 +900,24 @@ shared({ caller = deployer }) actor class ModClub() = this {
     );
     await ContentVotingManager.vote(
       caller,
+      env,
       contentId,
       decision,
       violatedRules,
       voteCount,
-      tokens,
-      state,
+      stateV2,
       canistergeekLogger,
       contentQueueManager,
-      randomizationEnabled
+      randomizationEnabled,
+      Principal.fromActor(this),
     );
   };
 
   // ----------------------Token Methods------------------------------
-  public query ({ caller }) func getTokenHoldings() : async Token.Holdings {
-    tokens.getHoldings(caller);
-  };
-
-  public shared({ caller }) func stakeTokens(amount : Nat) : async Text {
-    switch (
-      pohVerificationRequestHelper(
-        Principal.toText(caller),
-        Principal.fromActor(this)
-      )
-    ) {
-      case (#ok(verificationResponse)) {
-        if (verificationResponse.status != #verified) {
-          throw Error.reject("Proof of Humanity not completed user");
-        };
-      };
-      case (#err(#pohNotConfiguredForProvider)) {
-        throw Error.reject("Poh Not configured for provider.");
-      };
-      case (_)();
-    };
-    await tokens.stake(caller, amount);
-    "Staked " # Nat.toText(amount) # " tokens";
-  };
-
-  public shared({ caller }) func unStakeTokens(amount : Nat) : async Text {
-    await tokens.unstake(caller, amount);
+  public shared ({ caller }) func unStakeTokens(amount : Nat) : async Text {
+    await ModWallet.getActor(env).transfer(?(Principal.toText(caller) # ModClubParam.STAKE_SA), caller, null , Float.fromInt(amount));
     "Unstaked " # Nat.toText(amount) # " tokens";
   };
-
-  public query ({ caller }) func getModclubHoldings() : async Token.Holdings {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    tokens.getHoldings(ModClubParam.getModclubWallet());
-  };
-
-  public query ({ caller }) func getAllModeratorHoldings() : async [(
-    Principal,
-    Token.Holdings
-  )] {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    return tokens.getAllHoldings();
-  };
-
-  public shared({ caller }) func distributeAllPendingRewards() : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    for ((p, h) in tokens.getAllHoldings().vals()) {
-      await tokens.distributePendingReward(p, h.pendingRewards);
-    };
-    Helpers.logMessage(canistergeekLogger, "Distributed all rewards", #info);
-  };
-
-  // TODO Delete this function
-  public shared({ caller }) func adminTransferTokens(
-    to : Principal,
-    amount : Nat
-  ) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    await tokens.transfer(ModClubParam.getModclubWallet(), to, amount);
-  };
-
-  public shared({ caller }) func adminSlashStake(p : Principal, amount : Nat) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    await tokens.burnStakeFrom(p, amount);
-  };
-
   //----------------------POH Methods For Providers------------------------------
   public shared({ caller }) func verifyHumanity(providerUserId : Text) : async PohTypes.PohVerificationResponsePlus {
     switch (pohVerificationRequestHelper(providerUserId, caller)) {
@@ -1020,7 +957,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       );
     };
     let pohVerificationRequest : PohTypes.PohVerificationRequestV1 = {
-      requestId = Helpers.generateId(providerId, "pohRequest", state);
+      requestId = Helpers.generateId(providerId, "pohRequest", stateV2);
       providerUserId = providerUserId;
       providerId = providerId;
     };
@@ -1031,7 +968,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       case (_)();
     };
     // validity and rules needs to come from admin dashboard here
-    switch (pohEngine.getProviderPohConfiguration(providerId, state)) {
+    switch (pohEngine.getProviderPohConfiguration(providerId, stateV2)) {
       case (#ok(providerPohConfig)) {
         let verificationResponse = pohEngine.pohVerificationRequest(
           pohVerificationRequest,
@@ -1156,7 +1093,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
             return #err(#attemptToCreateMultipleWalletsWithSameIp);
           };
         };
-        switch (pohEngine.getProviderPohConfiguration(tokenResponse.providerId, state)) {
+        switch (pohEngine.getProviderPohConfiguration(tokenResponse.providerId, stateV2)) {
           case (#ok(pohConfigForProvider)) {
 
             switch (
@@ -1191,7 +1128,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
 
                   await pohEngine.issueCallbackToProviders(
                     caller,
-                    state,
+                    stateV2,
                     voteManager.getAllUniqueViolatedRules,
                     pohContentQueueManager.getContentStatus,
                     canistergeekLogger
@@ -1246,7 +1183,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
             let challengePackages = pohEngine.createChallengePackageForVoting(
               caller,
               pohContentQueueManager.getContentStatus,
-              state,
+              stateV2,
               canistergeekLogger
             );
             for (package in challengePackages.vals()) {
@@ -1256,7 +1193,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
                 case (?package) {
                   await pohEngine.issueCallbackToProviders(
                     package.userId,
-                    state,
+                    stateV2,
                     voteManager.getAllUniqueViolatedRules,
                     pohContentQueueManager.getContentStatus,
                     canistergeekLogger
@@ -1332,8 +1269,8 @@ shared({ caller = deployer }) actor class ModClub() = this {
     for (id in challengeId.vals()) {
       challengeBuffer.add(id);
     };
-    state.provider2PohChallengeIds.put(providerId, challengeBuffer);
-    state.provider2PohExpiry.put(providerId, expiry);
+    stateV2.provider2PohChallengeIds.put(providerId, challengeBuffer);
+    stateV2.provider2PohExpiry.put(providerId, expiry);
     provider2IpRestriction := Trie.put(
       provider2IpRestriction,
       key(providerId),
@@ -1351,7 +1288,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     start : Nat,
     end : Nat
   ) : async [PohTypes.PohTaskPlus] {
-    switch (AuthManager.checkProfilePermission(caller, #getContent, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -1427,12 +1364,10 @@ shared({ caller = deployer }) actor class ModClub() = this {
                 voteCount.rejectedCount
               );
               minVotes = ModClubParam.MIN_VOTE_POH;
-              minStake = ModClubParam.MIN_STAKE_POH;
+              minStake = 0;
               title = null;
               hasVoted = ?voteCount.hasVoted;
-              reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(
-                ModClubParam.MIN_STAKE_POH
-              );
+              reward = 0.0;
               createdAt = package.createdAt;
               updatedAt = package.updatedAt;
             };
@@ -1447,7 +1382,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
   };
 
   public query ({ caller }) func getPohTaskData(packageId : Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
-    switch (AuthManager.checkProfilePermission(caller, #getContent, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -1480,10 +1415,8 @@ shared({ caller = deployer }) actor class ModClub() = this {
         pohTaskData = pohTasks[0].pohTaskData;
         votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
         minVotes = ModClubParam.MIN_VOTE_POH;
-        minStake = ModClubParam.MIN_STAKE_POH;
-        reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(
-          ModClubParam.MIN_STAKE_POH
-        );
+        minStake = 0;
+        reward = 0.0;
         createdAt = pohTasks[0].createdAt;
         updatedAt = pohTasks[0].updatedAt;
       }
@@ -1563,7 +1496,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
           for (data in wrapper.pohTaskData.vals()) {
             submittedAt := data.submittedAt;
             completedOn := data.completedOn;
-            switch (state.profiles.get(data.userId)) {
+            switch (stateV2.profiles.get(data.userId)) {
               case (null)();
               case (?result) {
                 userModClubId := Principal.toText(result.id);
@@ -1622,7 +1555,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     };
     let voteDetails = voteManager.getVotesForPOHBasedOnPackageId(
       packageId,
-      state
+      stateV2
     );
     #ok(
       {
@@ -1630,10 +1563,8 @@ shared({ caller = deployer }) actor class ModClub() = this {
         pohTaskData = pohTasks[0].pohTaskData;
         voteUserDetails = voteDetails;
         minVotes = ModClubParam.MIN_VOTE_POH;
-        minStake = ModClubParam.MIN_STAKE_POH;
-        reward = ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(
-          ModClubParam.MIN_STAKE_POH
-        );
+        minStake = 0;
+        reward = 0.0;
         createdAt = pohTasks[0].createdAt;
         updatedAt = pohTasks[0].updatedAt;
       }
@@ -1650,7 +1581,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       emailIDsHash := emailManager.getModeratorEmailsForContent(
         voteStateToSend,
         queueStateToSend,
-        state
+        stateV2
       );
     } else {
       // Sends POH email
@@ -1659,7 +1590,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       emailIDsHash := emailManager.getModeratorEmailsForPOH(
         voteStateToSend,
         pohContentState,
-        state,
+        stateV2,
         pohStateToSend
       );
     };
@@ -1711,7 +1642,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     violatedRules : [Types.PohRulesViolated]
   ) : async () {
 
-    switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -1733,10 +1664,10 @@ shared({ caller = deployer }) actor class ModClub() = this {
       };
       case (_)();
     };
-    let holdings = tokens.getHoldings(caller);
-    if (holdings.stake < ModClubParam.MIN_STAKE_POH) {
-      throw Error.reject("Not enough tokens staked");
-    };
+    // let holdings = tokens.getHoldings(caller);
+    // if (holdings.stake < ModClubParam.MIN_STAKE_POH) {
+    //   throw Error.reject("Not enough tokens staked");
+    // };
     if (voteManager.checkPohUserHasVoted(caller, packageId)) {
       throw Error.reject("You have already voted");
     };
@@ -1748,8 +1679,9 @@ shared({ caller = deployer }) actor class ModClub() = this {
       throw Error.reject("Valid rules not provided.");
     };
 
-    let finishedVoting = voteManager.votePohContent(
+    let finishedVoting = await voteManager.votePohContent(
       caller,
+      env,
       packageId,
       decision,
       violatedRules,
@@ -1790,79 +1722,71 @@ shared({ caller = deployer }) actor class ModClub() = this {
         await storageSolution.markContentNotAccessible(cId);
       };
       // should be taken out to some job
+      // TODO: Take out to helper function as it's used twice in the codebase
+      let rewardingVotes = Buffer.Buffer<VoteTypes.VoteV2>(1);
+      let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
       for (id in votesId.vals()) {
-        let vote = voteManager.getPOHVote(id);
-        switch (vote) {
+        switch (voteManager.getPOHVote(id)) {
           case (null)();
           case (?v) {
-            let reward = (
-              ModClubParam.STAKE_REWARD_PERCENTAGE * Float.fromInt(
-                ModClubParam.MIN_STAKE_POH
-              )
-            );
+            var votedCorrect = false;
             if (
               (v.decision == #approved and finalDecision == #approved) or (
-                v.decision == #rejected and finalDecision == #rejected
-              )
+                v.decision == #rejected and finalDecision == #rejected,
+              ),
             ) {
-              Helpers.logMessage(
-                canistergeekLogger,
-                "User Point before distribution: " # Int.toText(
-                  tokens.getUserPointForUser(v.userId)
-                ),
-                #info
-              );
-              Helpers.logMessage(
-                canistergeekLogger,
-                "Distributing reward to user: " # Principal.toText(v.userId),
-                #info
-              );
-              //reward only some percentage
-              await tokens.reward(
-                ModClubParam.getModclubWallet(),
-                v.userId,
-                Float.toInt(reward)
-              );
-              Helpers.logMessage(
-                canistergeekLogger,
-                "User Point after distribution: " # Int.toText(
-                  tokens.getUserPointForUser(v.userId)
-                ),
-                #info
-              );
+              if(v.level != #novice) {
+                rewardingVotes.add(v);
+              };
+              votedCorrect := true;
             } else {
-              // burn only some percentage
-              Helpers.logMessage(
-                canistergeekLogger,
-                "User Point before distribution: " # Int.toText(
-                  tokens.getUserPointForUser(v.userId)
-                ),
-                #info
-              );
-              Helpers.logMessage(
-                canistergeekLogger,
-                "Burning reward from user: " # Principal.toText(v.userId),
-                #info
-              );
-              await tokens.burnStakeFrom(v.userId, Float.toInt(reward));
-              Helpers.logMessage(
-                canistergeekLogger,
-                "User Point after distribution: " # Int.toText(
-                  tokens.getUserPointForUser(v.userId)
-                ),
-                #info
-              );
+              votedCorrect := false;
             };
+            usersToRewardRS.add({
+              userId = v.userId;
+              votedCorrect = votedCorrect;
+            });
           };
         };
       };
+
+      var sumRS = 0.0;
+      for(userVote in rewardingVotes.vals()) {
+        sumRS := sumRS + userVote.rsBeforeVoting;
+      };
+
+      let usersToRewardMOD = Buffer.Buffer<WalletTypes.UserAndAmount>(1);
+      let CT: Float = ModClubParam.CS * Float.fromInt(ModClubParam.MIN_VOTE_POH);
+      for(userVote in rewardingVotes.vals()) {
+        usersToRewardMOD.add({
+          fromSA = ?(Principal.toText(Principal.fromActor(this)) # ModClubParam.ACCOUNT_PAYABLE);
+          toOwner = userVote.userId;
+          toSA = null;
+          amount = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT)/ sumRS;
+        });
+      };
+      let _ = await RSManager.getActor(env).updateRSBulk(usersToRewardRS.toArray());
+      // moderator dist and treasury dist
+      usersToRewardMOD.add({
+        fromSA = ?(Principal.toText(Principal.fromActor(this)) # ModClubParam.ACCOUNT_PAYABLE);
+        toOwner = Principal.fromActor(this);
+        toSA = ?ModClubParam.TREASURY_SA;
+        amount = (ModClubParam.GAMMA_T * CT) ;
+      });
+      let _ = await ModWallet.getActor(env).transferBulk(usersToRewardMOD.toArray());
+      // burn
+      let _ = await ModWallet.getActor(env).burn(
+                    ?(Principal.toText(Principal.fromActor(this)) # ModClubParam.ACCOUNT_PAYABLE), 
+                    (ModClubParam.GAMMA_B * CT)
+                  );
+
       // inform all providers
       switch (pohEngine.getPohChallengePackage(packageId)) {
         case (null)();
         case (?package) {
           await pohEngine.issueCallbackToProviders(
             package.userId,
-            state,
+            stateV2,
             voteManager.getAllUniqueViolatedRules,
             pohContentQueueManager.getContentStatus,
             canistergeekLogger
@@ -1874,7 +1798,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
 
   public shared({ caller }) func issueJwt() : async Text {
     Debug.print("Issue JWT called by " # Principal.toText(caller));
-    switch (AuthManager.checkProfilePermission(caller, #vote, state)) {
+    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -1960,7 +1884,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       userName,
       caller,
       providerId,
-      state,
+      stateV2,
       admins,
       canistergeekLogger
     );
@@ -1971,7 +1895,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     Types.Profile
   ] {
     Debug.print("getProviderAdmins caller: " # Principal.toText(caller));
-    return ProviderManager.getProviderAdmins(providerId, state);
+    return ProviderManager.getProviderAdmins(providerId, stateV2);
   };
 
   public shared({ caller }) func removeProviderAdmin(
@@ -1983,7 +1907,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
       providerId,
       providerAdminPrincipalIdToBeRemoved,
       caller,
-      state,
+      stateV2,
       admins,
       canistergeekLogger
     );
@@ -2001,14 +1925,14 @@ shared({ caller = deployer }) actor class ModClub() = this {
       newUserName,
       caller,
       admins,
-      state
+      stateV2
     );
   };
 
   public query ({ caller }) func getAdminProviderIDs() : async [Principal] {
     return ProviderManager.getAdminProviderIDs(
       caller,
-      state,
+      stateV2,
       canistergeekLogger
     );
   };
@@ -2026,7 +1950,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     };
     contentQueueManager.shuffleContent();
     contentQueueManager.assignUserIds2QueueId(
-      Iter.toArray(state.profiles.keys())
+      Iter.toArray(stateV2.profiles.keys())
     );
   };
 
@@ -2036,7 +1960,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     };
     pohContentQueueManager.shuffleContent();
     pohContentQueueManager.assignUserIds2QueueId(
-      Iter.toArray(state.profiles.keys())
+      Iter.toArray(stateV2.profiles.keys())
     );
   };
 
@@ -2048,7 +1972,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
   ) : Types.Content {
     let now = Helpers.timeNow();
     let content : Types.Content = {
-      id = Helpers.generateId(caller, "content", state);
+      id = Helpers.generateId(caller, "content", stateV2);
       providerId = caller;
       contentType = contentType;
       status = #new;
@@ -2069,13 +1993,15 @@ shared({ caller = deployer }) actor class ModClub() = this {
       Text.equal,
       Text.hash
     );
-    for (vid in state.content2votes.get0(contentId).vals()) {
-      switch (state.votes.get(vid)) {
+    for (vid in stateV2.content2votes.get0(contentId).vals()) {
+      switch (stateV2.votes.get(vid)) {
         case (?v) {
-          if (v.decision == #approved) {
-            voteApproved += 1;
-          } else {
-            voteRejected += 1;
+          if(v.level != #novice) {
+            if (v.decision == #approved) {
+              voteApproved += 1;
+            } else {
+              voteRejected += 1;
+            };
           };
           // if caller is null, consider it as modclub calling it so that operation evaluates to false
           // simplifies switch braches
@@ -2104,14 +2030,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     };
   };
 
-  public shared({ caller }) func rewardPoints(p : Principal, amount : Int) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    tokens.rewardPoints(p, amount);
-  };
-
-  public shared({ caller }) func setRandomization(isRandom : Bool) : async () {
+  public shared ({ caller }) func setRandomization(isRandom : Bool) : async () {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
@@ -2161,13 +2080,13 @@ shared({ caller = deployer }) actor class ModClub() = this {
       Principal.hash
     );
     for (cid in contentQueue.keys()) {
-      switch (state.content.get(cid)) {
+      switch (stateV2.content.get(cid)) {
         case (null)();
         case (?con) {
           if (con.createdAt >= from) {
             count := count + 1;
-            for (vId in state.content2votes.get0(con.id).vals()) {
-              switch (state.votes.get(vId)) {
+            for (vId in stateV2.content2votes.get0(con.id).vals()) {
+              switch (stateV2.votes.get(vId)) {
                 case (null)();
                 case (?v) {
                   distinctUsersVoted.put(v.userId, null);
@@ -2183,11 +2102,13 @@ shared({ caller = deployer }) actor class ModClub() = this {
 
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
+  // Delete here after deployment
   stable var stateSharedV1 : StateV1.StateShared = StateV1.emptyShared();
+  stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
 
   system func preupgrade() {
     Debug.print("MODCLUB PREUPGRRADE");
-    stateSharedV1 := StateV1.fromState(state);
+    stateSharedV2 := StateV2.fromState(stateV2);
     tokensStableV1 := tokens.getStableV1();
 
     storageStateStable := storageSolution.getStableState();
@@ -2197,7 +2118,7 @@ shared({ caller = deployer }) actor class ModClub() = this {
     pohCallbackDataByProvider := pohCombinedStableState.1;
     provider2ProviderUserId2Ip := pohCombinedStableState.2;
     provider2Ip2Wallet := pohCombinedStableState.3;
-    pohVoteStableState := voteManager.getStableState();
+    pohVoteStableStateV2 := voteManager.getStableState();
     emailStableState := emailManager.getStableState();
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
@@ -2206,8 +2127,8 @@ shared({ caller = deployer }) actor class ModClub() = this {
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
-  stable var pohRunOnce = false;
-  stable var pohQueueRunOnce = false;
+  stable var migrationDone = false;
+  stable var globalStateMigrationDone = false;
   system func postupgrade() {
     // Reinitializing storage Solution to add "this" actor as a controller
     admins := AuthManager.setUpDefaultAdmins(
@@ -2223,37 +2144,35 @@ shared({ caller = deployer }) actor class ModClub() = this {
     );
     Debug.print("MODCLUB POSTUPGRADE");
 
-    state := StateV1.toState(stateSharedV1);
-    // Reducing memory footprint by assigning empty stable state
+    // Delete from here after deployment
+    if(not globalStateMigrationDone) {
+      stateSharedV2 := migrateStateV1toV2(stateSharedV1, stateSharedV2);
+      globalStateMigrationDone := true;
+    };
     stateSharedV1 := StateV1.emptyShared();
+    // Delete upto here
+    stateV2 := StateV2.toState(stateSharedV2);
+    stateSharedV2 := StateV2.emptyShared();
+
 
     tokensStableV1 := Token.emptyStableV1(ModClubParam.getModclubWallet());
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
-    // Delete from here after deployment
-    if (not pohRunOnce) {
-      pohStableStateV2 := pohEngine.migrateV1ToV2(
-        pohStableStateV1,
-        pohStableStateV2,
-        Principal.fromActor(this)
-      );
-      pohEngine := POH.PohEngine(
-        pohStableStateV2,
-        pohCallbackDataByProvider,
-        provider2ProviderUserId2Ip,
-        provider2Ip2Wallet
-      );
-      pohRunOnce := true;
-    };
-    pohStableStateV1 := PohStateV1.emptyStableState();
-    // Delete upto here
 
     pohStableStateV2 := PohStateV2.emptyStableState();
+    // Delete from here after deployment
+    if(not migrationDone) {
+      pohVoteStableStateV2 := voteManager.migrateV1ToV2(pohVoteStableState, pohVoteStableStateV2);
+      voteManager := VoteManager.VoteManager(pohVoteStableStateV2);
+      migrationDone := true;
+    };
     pohVoteStableState := VoteState.emptyStableState();
+    // Delete upto here
+    pohVoteStableStateV2 := VoteStateV2.emptyStableState();
     emailStableState := EmailState.emptyStableState();
 
-    // This statement should be run after the storagestate gets restored from stable state
-    storageSolution.setInitialModerators(ModeratorManager.getModerators(state));
+    // This statement should be run after the storagestate gets restored from stable stateV2
+    storageSolution.setInitialModerators(ModeratorManager.getModerators(stateV2));
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
     _canistergeekMonitorUD := null;
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
@@ -2264,35 +2183,6 @@ shared({ caller = deployer }) actor class ModClub() = this {
       pohContentQueueStateStable,
       canistergeekLogger
     );
-
-    // To be deleted
-    if (not pohQueueRunOnce) {
-      pohVoteStableState := voteManager.getStableState();
-      pohContentQueueManager.moveContentIds(
-        pohVoteStableState.newPohPackages,
-        pohVoteStableState.approvedPohPackages,
-        pohVoteStableState.rejectedPohPackages
-      );
-      pohContentQueueManager.shuffleContent();
-      pohContentQueueManager.assignUserIds2QueueId(
-        Iter.toArray(state.profiles.keys())
-      );
-      voteManager := VoteManager.VoteManager(
-        {
-          newPohPackages = [];
-          approvedPohPackages = [];
-          rejectedPohPackages = [];
-          package2Status = [];
-          pohVotes = pohVoteStableState.pohVotes;
-          pohContent2votes = pohVoteStableState.pohContent2votes;
-          mods2Pohvotes = pohVoteStableState.mods2Pohvotes;
-          autoApprovePOHUserIds = pohVoteStableState.autoApprovePOHUserIds;
-        }
-      );
-      pohQueueRunOnce := true;
-    };
-    // To Be Deleted
-
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
@@ -2300,6 +2190,11 @@ shared({ caller = deployer }) actor class ModClub() = this {
 
   var nextRunTime = Time.now();
   let FIVE_MIN_NANO_SECS = 300000000000;
+
+  var nextTokenReleaseTime = Time.now();
+  let TWENTY_FOUR_HOUR_NANO_SECS = 86400000000000;
+
+  // TODO: change heartbeat to timer
   system func heartbeat() : async () {
     if (Time.now() > nextRunTime) {
       Debug.print("Running Metrics Collection");
@@ -2307,6 +2202,12 @@ shared({ caller = deployer }) actor class ModClub() = this {
       nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
       var pohEmailSend = getModeratorEmailsForPOHAndSendEmail("p");
       var contentEmailSend = getModeratorEmailsForPOHAndSendEmail("shc");
+    };
+
+    // TODO: reduce Token release every x year as per tokenomics
+    if (Time.now() > nextTokenReleaseTime) {
+      let _ = await ModWallet.getActor(env).transfer(?ModClubParam.RESERVE_SA, Principal.fromActor(this), ?ModClubParam.TREASURY_SA, ModClubParam.MOD_RELEASE_PER_DAY);
+      nextTokenReleaseTime := Time.now() + TWENTY_FOUR_HOUR_NANO_SECS;
     };
   };
 
@@ -2427,11 +2328,11 @@ shared({ caller = deployer }) actor class ModClub() = this {
         case ("storageState") {
           return storageSolution.downloadSupport(varName, start, end);
         };
-        case ("state") {
-          return DownloadSupport.download(state, varName, start, end);
+        case ("stateV2") {
+          return DownloadSupport.download(stateV2, varName, start, end);
         };
         case (_) {
-          throw Error.reject("Invalid state");
+          throw Error.reject("Invalid stateV2");
         };
       };
     };
@@ -2522,6 +2423,50 @@ shared({ caller = deployer }) actor class ModClub() = this {
     } catch (err) {
       throw Error.reject(Error.message(err));
     };
+  };
+
+  // Delete after deployment
+  private func migrateStateV1toV2(stateSharedV1 : StateV1.StateShared, stateSharedV2: StateV2.StateShared) : StateV2.StateShared {
+
+    let buff = Buffer.Buffer<(Text, Types.VoteV2)>(pohVoteStableState.pohVotes.size());
+      for((voteId, vote) in stateSharedV1.votes.vals()) {
+        buff.add((voteId, {
+          id = vote.id;
+          contentId = vote.contentId;
+          userId = vote.userId;
+          decision = vote.decision;
+          rsBeforeVoting = 0.0;
+          level = #novice;
+          violatedRules = vote.violatedRules;
+          createdAt = vote.createdAt; 
+        }));
+      };
+
+    return {
+        GLOBAL_ID_MAP = stateSharedV1.GLOBAL_ID_MAP;
+        providers = stateSharedV1.providers;
+        providerSubs = stateSharedV1.providerSubs;
+        providersWhitelist = stateSharedV1.providersWhitelist;
+        providerAdmins = stateSharedV1.providerAdmins;
+        airdropUsers = stateSharedV1.airdropUsers;
+        airdropWhitelist = stateSharedV1.airdropWhitelist;
+        profiles = stateSharedV1.profiles;
+        usernames = stateSharedV1.usernames;
+        content = stateSharedV1.content;
+        rules  = stateSharedV1.rules;
+        votes = buff.toArray();
+        textContent = stateSharedV1.textContent;
+        imageContent = stateSharedV1.imageContent;
+        content2votes = stateSharedV1.content2votes;
+        mods2votes = stateSharedV1.mods2votes;
+        provider2content = stateSharedV1.provider2content;
+        provider2rules = stateSharedV1.provider2rules;
+        admin2Provider = stateSharedV1.admin2Provider;
+        appName = stateSharedV1.appName;
+        providerAllowedForAIFiltering = stateSharedV1.providerAllowedForAIFiltering;
+        provider2PohChallengeIds = stateSharedV1.provider2PohChallengeIds;
+        provider2PohExpiry = stateSharedV1.provider2PohExpiry;
+      };
   };
 
 };

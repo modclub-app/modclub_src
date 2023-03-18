@@ -12,9 +12,9 @@ import Time "mo:base/Time";
 
 import AuthManager "../auth/auth";
 import EmailState "./state";
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import PohTypes "../poh/types";
-import VoteState "../vote/state";
+import VoteStateV2 "../vote/statev2";
 import Content "../queue/state";
 import PohStateV2 "../poh/statev2";
 
@@ -99,7 +99,7 @@ module EmailModule {
             return EmailState.getStableState(state);
         };
 
-        public func getModeratorEmailsForContent(voteState: VoteState.PohVoteState, contentState: Content.QueueState, globalState: GlobalState.State) : HashMap.HashMap<Text, Nat> { 
+        public func getModeratorEmailsForContent(voteState: VoteStateV2.PohVoteState, contentState: Content.QueueState, globalState: GlobalState.State) : HashMap.HashMap<Text, Nat> { 
             let userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
             for ((qId,contentMap) in contentState.newContentQueues.entries()) {
                 // Proceed further if there is content in present queue
@@ -147,7 +147,7 @@ module EmailModule {
             };
             return userEmailIDs;
         };
-        public func getModeratorEmailsForPOH(voteState: VoteState.PohVoteState, contentState: Content.QueueState, globalState: GlobalState.State, pohState: PohStateV2.PohState) : HashMap.HashMap<Text, Nat> { 
+        public func getModeratorEmailsForPOH(voteState: VoteStateV2.PohVoteState, contentState: Content.QueueState, globalState: GlobalState.State, pohState: PohStateV2.PohState) : HashMap.HashMap<Text, Nat> { 
             let userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
             for ((qId,contentMap) in contentState.newContentQueues.entries()) {
                 // Proceed further if there is content in present queue

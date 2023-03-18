@@ -3,7 +3,7 @@ import Buffer "mo:base/Buffer";
 import Array "mo:base/Array";
 import Order "mo:base/Order";
 
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import Types "../../types";
 import Helpers "../../helpers";
 

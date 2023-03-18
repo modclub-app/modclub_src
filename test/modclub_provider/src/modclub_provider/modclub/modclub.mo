@@ -29,8 +29,13 @@ module {
 
   public type SubscribeMessage = { callback : shared ContentResult -> () };
 
+  public type Decision = {
+    #approved;
+    #rejected;
+  };
+
   // Have to hardcode principal for modclub, change it to production canister ID later
-  public let ModClub = actor "rrkah-fqaaa-aaaaa-aaaaq-cai" : actor {
+  public let ModClub = actor "rkp4c-7iaaa-aaaaa-aaaca-cai" : actor {
     registerProvider : (Text, Text, ?Image) -> async Text;
     deregisterProvider : () -> async Text;
     addProviderAdmin : (Principal, Text, ?Principal) -> async ();
@@ -47,6 +52,7 @@ module {
       Principal,
       Nat,
     );
+    vote: (ContentId, Decision,?[Text]) -> async Text;
     getBlob : (Text, Principal, Nat) -> async ?Blob;
   };
 };

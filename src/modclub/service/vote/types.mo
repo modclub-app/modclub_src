@@ -16,6 +16,21 @@ module {
     createdAt : Int;
   };
 
+  public type UserLevel = {
+    #novice; #junior; #senior1; #senior2; #senior3;
+  };
+
+  public type VoteV2 = {
+    id : Text;
+    contentId : Text;
+    userId : Principal;
+    decision : Decision;
+    rsBeforeVoting: Float;
+    level: UserLevel;
+    violatedRules : [Types.PohRulesViolated];
+    createdAt : Int;
+  };
+
   public type VotePlusUser = {
     userModClubId : Principal;
     userUserName : Text;

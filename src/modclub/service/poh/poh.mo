@@ -7,7 +7,7 @@ import Debug "mo:base/Debug";
 import DownloadSupport "./downloadSupport";
 import DownloadUtil "../../downloadUtil";
 import Error "mo:base/Error";
-import GlobalState "../../statev1";
+import GlobalState "../../statev2";
 import HashMap "mo:base/HashMap";
 import Helpers "../../helpers";
 import Int "mo:base/Int";
@@ -16,7 +16,6 @@ import ModClubParam "../parameters/params";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Order "mo:base/Order";
-import PohStateV1 "./statev1";
 import PohStateV2 "./statev2";
 import PohTypes "./types";
 import Principal "mo:base/Principal";
@@ -1553,110 +1552,6 @@ module PohModule {
       );
     };
 
-    // Delete this function
-    public func migrateV1ToV2(
-      pohStableStateV1 : PohStateV1.PohStableState,
-      pohStableStateV2 : PohStateV2.PohStableState,
-      modclubCanisterId : Principal,
-    ) : PohStateV2.PohStableState {
-      let token2ProviderAndUserDataBuff = Buffer.Buffer<(Text, PohTypes.PohProviderAndUserData)>(
-        1,
-      );
-      for (
-        (token, userProviderData) in pohStableStateV1.pohProviderUserData.vals()
-      ) {
-        token2ProviderAndUserDataBuff.add(
-          (
-            token,
-            {
-              token = userProviderData.token;
-              providerUserId = Principal.toText(userProviderData.providerUserId);
-              providerId = userProviderData.providerUserId;
-              generatedAt = Helpers.timeNow();
-            },
-          ),
-        );
-      };
-
-      let relObj = RelObj.RelObj<Text, Principal>(
-        (Text.hash, Principal.hash),
-        (Text.equal, Principal.equal),
-      );
-      let providerUserIdToModclubUserIdByProviderIdBuff = Buffer.Buffer<(Principal, Rel.RelShared<Text, Principal>)>(
-        1,
-      );
-      for ((pUserId, mUserId) in pohStableStateV1.providerToModclubUser.vals()) {
-        relObj.put(Principal.toText(pUserId), mUserId);
-      };
-      providerUserIdToModclubUserIdByProviderIdBuff.add(
-        (modclubCanisterId, Rel.share(relObj.getRel())),
-      );
-
-      let pohUserChallengeAttemptBuff = Buffer.Buffer<(Principal, [(Text, [PohTypes.PohChallengesAttemptV1])])>(
-        1,
-      );
-
-      for (
-        (userId, attemptByChallengeId) 
-            in pohStableStateV1.pohUserChallengeAttempts.vals()
-      ) {
-        let newAttemptByChallengeIdBuff = Buffer.Buffer<(Text, [PohTypes.PohChallengesAttemptV1])>(
-          1,
-        );
-
-        for ((challengeId, oldAttempts) in attemptByChallengeId.vals()) {
-          let newAttemptBuff = Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(1);
-          for (oldAttempt in oldAttempts.vals()) {
-            newAttemptBuff.add(
-              {
-                attemptId = oldAttempt.attemptId;
-                challengeId = oldAttempt.challengeId;
-                challengeName = oldAttempt.challengeName;
-                challengeDescription = oldAttempt.challengeDescription;
-                challengeType = oldAttempt.challengeType;
-                userId = oldAttempt.userId;
-                status = oldAttempt.status;
-                createdAt = oldAttempt.createdAt;
-                //setting new submitted field as last updated field coz of lack of data
-                submittedAt = oldAttempt.updatedAt;
-                updatedAt = oldAttempt.updatedAt;
-                completedOn = oldAttempt.completedOn;
-                dataCanisterId = oldAttempt.dataCanisterId;
-                wordList = oldAttempt.wordList;
-              },
-            );
-          };
-
-          newAttemptByChallengeIdBuff.add(
-            (challengeId, newAttemptBuff.toArray()),
-          );
-        };
-        pohUserChallengeAttemptBuff.add(
-          (userId, newAttemptByChallengeIdBuff.toArray()),
-        )
-      };
-
-      return {
-        pohChallenges = Array.append(
-          pohStableStateV1.pohChallenges,
-          pohStableStateV2.pohChallenges,
-        );
-        pohUserChallengeAttempts = pohUserChallengeAttemptBuff.toArray();
-        token2ProviderAndUserData = token2ProviderAndUserDataBuff.toArray();
-        providerUserIdToModclubUserIdByProviderId = providerUserIdToModclubUserIdByProviderIdBuff.toArray();
-        pohChallengePackages = Array.append(
-          pohStableStateV1.pohChallengePackages,
-          pohStableStateV2.pohChallengePackages,
-        );
-        userToPohChallengePackageId = pohStableStateV1.userToPohChallengePackageId;
-        wordList = Array.append(
-          pohStableStateV1.wordList,
-          pohStableStateV2.wordList,
-        );
-        providersCallback = pohStableStateV2.providersCallback;
-        callbackIssuedByProvider = [];
-      };
-    };
     public func getPOHState() : PohStateV2.PohState {
       return state;
     };

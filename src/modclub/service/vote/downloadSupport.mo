@@ -8,7 +8,7 @@ import Principal "mo:base/Principal";
 import RelObj "../../data_structures/RelObj";
 import TrieMap "mo:base/TrieMap";
 import Types "../../types";
-import VoteState "./state";
+import VoteState "./statev2";
 import VoteTypes "./types";
 
 module {
@@ -67,7 +67,7 @@ module {
     return buff.toArray();
   };
 
-  func serializePohVotes(pohVotes : HashMap.HashMap<Text, VoteTypes.Vote>) : [
+  func serializePohVotes(pohVotes : HashMap.HashMap<Text, VoteTypes.VoteV2>) : [
     [Text]
   ] {
     let buff = Buffer.Buffer<[Text]>(1);

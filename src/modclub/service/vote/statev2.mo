@@ -16,7 +16,7 @@ module State {
     approvedPohPackages : Buffer.Buffer<Text>;
     rejectedPohPackages : Buffer.Buffer<Text>;
     package2Status : HashMap.HashMap<Text, Types.ContentStatus>;
-    pohVotes : HashMap.HashMap<Text, VoteTypes.Vote>;
+    pohVotes : HashMap.HashMap<Text, VoteTypes.VoteV2>;
     // relates content to votes
     pohContent2votes : RelObj.RelObj<Text, Text>;
     // relates users to votes
@@ -30,7 +30,7 @@ module State {
     approvedPohPackages : [Text];
     rejectedPohPackages : [Text];
     package2Status : [(Text, Types.ContentStatus)];
-    pohVotes : [(Text, VoteTypes.Vote)];
+    pohVotes : [(Text, VoteTypes.VoteV2)];
     pohContent2votes : Rel.RelShared<Types.ContentId, Types.VoteId>;
     mods2Pohvotes : Rel.RelShared<Types.UserId, Types.VoteId>;
     autoApprovePOHUserIds : [(Principal, Principal)];
@@ -46,7 +46,7 @@ module State {
         Text.equal,
         Text.hash,
       );
-      pohVotes = HashMap.HashMap<Text, VoteTypes.Vote>(1, Text.equal, Text.hash);
+      pohVotes = HashMap.HashMap<Text, VoteTypes.VoteV2>(1, Text.equal, Text.hash);
 
       pohContent2votes = RelObj.RelObj(
         (Text.hash, Text.hash),

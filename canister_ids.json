@@ -27,5 +27,17 @@
   },
   "provider": {
     "ic": "h4p3v-vqaaa-aaaah-qc3jq-cai"
+  },
+  "rs_dev": {
+    "ic": "vflbk-kiaaa-aaaah-qc7wq-cai"
+  },
+  "rs_qa": {
+    "ic": "vmikw-4aaaa-aaaah-qc7xa-cai"
+  },
+  "wallet_dev": {
+    "ic": "vxnwt-gyaaa-aaaah-qc7vq-cai"
+  },
+  "wallet_qa": {
+    "ic": "vckh6-hqaaa-aaaah-qc7wa-cai"
   }
 }

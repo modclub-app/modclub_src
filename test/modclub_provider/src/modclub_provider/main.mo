@@ -83,14 +83,19 @@ shared ({ caller = initializer }) actor class ModclubProvider() = this {
       ?"Taylors HTML2",
     );
 
-    await MC.addProviderAdmin(
+    // await MC.addProviderAdmin(
 
-      Principal.fromText("YOUR_STOIC_PRINCIPAL_ID"),
-      "moderator",
-      null,
-    );
+    //   Principal.fromText("YOUR_STOIC_PRINCIPAL_ID"),
+    //   "moderator",
+    //   null,
+    // );
 
     return registerResult # "\n " # test1 # "\n" # test2 # "\n" # test3;
+    // return "test1";
+  };
+
+  public shared ({ caller }) func vote(contentId : Text) : async Text {
+    await MC.vote(contentId, #approved, null);
   };
 
   public shared ({ caller }) func addAdmin(p : Principal) : async () {

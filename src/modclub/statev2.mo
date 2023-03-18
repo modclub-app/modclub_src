@@ -51,7 +51,7 @@ module StateV1 {
 
     rules : Map<Types.RuleId, Types.Rule>;
 
-    votes : Map<Types.VoteId, Types.Vote>;
+    votes : Map<Types.VoteId, Types.VoteV2>;
 
     textContent : Map<Types.ContentId, Types.TextContent>;
 
@@ -91,7 +91,7 @@ module StateV1 {
     usernames : [(Text, Types.UserId)];
     content : [(Types.ContentId, Types.Content)];
     rules : [(Types.RuleId, Types.Rule)];
-    votes : [(Types.VoteId, Types.Vote)];
+    votes : [(Types.VoteId, Types.VoteV2)];
     textContent : [(Types.ContentId, Types.TextContent)];
     imageContent : [(Types.ContentId, Types.ImageContent)];
     content2votes : RelShared<Types.ContentId, Types.VoteId>;
@@ -151,7 +151,8 @@ module StateV1 {
         Text.equal,
         Text.hash,
       );
-      votes = HashMap.HashMap<Types.VoteId, Types.Vote>(
+     
+      votes  = HashMap.HashMap<Types.VoteId, Types.VoteV2>(
         1,
         Text.equal,
         Text.hash,

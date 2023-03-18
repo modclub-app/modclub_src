@@ -7,6 +7,7 @@ import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import JSON "mo:json/JSON";
 
+
 module {
   public type Timestamp = Int;
   // See mo:base/Time and Time.now()
@@ -169,6 +170,7 @@ module {
     userName : Text;
     completedVoteCount : Int;
     rewardsEarned : Int;
+    rs: Float;
     performance : Float;
     lastVoted : ?Timestamp;
   };
@@ -187,6 +189,21 @@ module {
     createdAt : Timestamp;
   };
 
+  public type UserLevel = {
+    #novice; #junior; #senior1; #senior2; #senior3;
+  };
+
+  public type VoteV2 = {
+    id : VoteId;
+    contentId : Text;
+    userId : UserId;
+    decision : Decision;
+    rsBeforeVoting: Float;
+    level: UserLevel;
+    violatedRules : ?[RuleId];
+    createdAt : Timestamp;
+  };
+  
   public type ViolatedRules = {
     id : RuleId;
     rejectionCount: Nat;
