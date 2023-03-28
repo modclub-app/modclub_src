@@ -81,10 +81,6 @@ module.exports = {
       {
         test: /\.(js|ts)x?$/,
         loader: "esbuild-loader",
-        options: {
-          loader: "tsx", // Or 'ts' if you don't need tsx
-          target: "ES2020",
-        },
       },
       {
         test: /\.(sa|sc|c)ss$/,
@@ -123,7 +119,8 @@ module.exports = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       MODCLUB_CANISTER_ID: canisters["modclub"],
-      MODCLUB_DEV_CANISTER_ID: canisters["modclub_dev"],
+      MODCLUB_DEV_CANISTER_ID:
+        canisters["modclub_dev"] || "olc6u-lqaaa-aaaah-qcooq-cai",
       MODCLUB_QA_CANISTER_ID:
         canisters["modclub_qa"] || "f2xjy-4aaaa-aaaah-qc3eq-cai",
       LOCAL_II_CANISTER,
@@ -148,8 +145,10 @@ module.exports = {
       },
     },
     hot: true,
-    contentBase: path.resolve(__dirname, "./src/modclub_assets"),
-    watchContentBase: true,
+    static: {
+      directory: "./src/modclub_assets",
+    },
+    watchFiles: "./src/modclub_assets/**/*",
     historyApiFallback: true,
   },
 };
