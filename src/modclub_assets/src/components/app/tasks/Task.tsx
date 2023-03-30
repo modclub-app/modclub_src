@@ -114,11 +114,7 @@ export default function Task() {
                   <div className="htmlContent content">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(task.text, {
-                          allowedTags: sanitizeHtml.defaults.allowedTags.concat(
-                            ["img", "iframe"]
-                          ),
-                        }),
+                        __html: sanitizedHtml,
                       }}
                     />
                   </div>
