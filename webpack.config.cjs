@@ -36,6 +36,7 @@ function initCanisterIds() {
     process.env.DFX_NETWORK ||
     (process.env.NODE_ENV === "production" ? "ic" : "local");
 
+  console.log("network: ", network);
   canisters = network === "local" ? localCanisters : prodCanisters;
 
   for (const canister in canisters) {
@@ -137,7 +138,7 @@ module.exports = {
     port: "9000",
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: "http://127.0.0.1:8000",
         changeOrigin: true,
         pathRewrite: {
           "^/api": "/api",
