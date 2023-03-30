@@ -74,7 +74,7 @@ export default function Task() {
     iframe: iframeAttributes,
   };
 
-  const sanitizedHtml = sanitizeHtml(task.text, {
+  const sanitizedHtml = sanitizeHtml((task && task.text) || "<div></div>", {
     allowedTags,
     allowedAttributes,
   });
@@ -112,7 +112,15 @@ export default function Task() {
                 )}
                 {"htmlContent" in task.contentType && (
                   <div className="htmlContent content">
-                    <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeHtml(task.text, {
+                          allowedTags: sanitizeHtml.defaults.allowedTags.concat(
+                            ["img", "iframe"]
+                          ),
+                        }),
+                      }}
+                    />
                   </div>
                 )}
 
