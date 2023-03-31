@@ -37,6 +37,10 @@ const InfoItem = ({ icon, title, info }) => {
   );
 };
 
+function resizeIframe(iframe) {
+  iframe.style.height = iframe.contentWindow.document.body.scrollHeight + "px";
+}
+
 export default function Task() {
   const { user } = useAuth();
   const { taskId } = useParams();
@@ -62,6 +66,15 @@ export default function Task() {
     user && voted && fetchTask();
     setVoted(false);
   }, [voted]);
+
+  useEffect(() => {
+    const iframes = document.querySelectorAll("iframe");
+    iframes.forEach((iframe) => {
+      iframe.addEventListener("load", () => {
+        resizeIframe(iframe);
+      });
+    });
+  }, []);
 
   const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
     "img",
