@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
@@ -9,7 +9,7 @@ import {
   Card,
   Heading,
   Button,
-  Icon
+  Icon,
 } from "react-bulma-components";
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
@@ -28,7 +28,7 @@ const Task = ({ task, setVoted }) => {
   const getImage = (data: any) => {
     const image = unwrap<Image>(data);
     return fileToImgSrc(image.data, image.imageType);
-  }
+  };
 
   const fetchRules = async () => {
     const rules = await getProviderRules(task.providerId);
@@ -39,13 +39,31 @@ const Task = ({ task, setVoted }) => {
     fetchRules();
   }, []);
 
+  const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
+    "img",
+    "iframe",
+  ]);
+
+  const iframeAttributes = ["src", "width", "height", "frameborder", "style"];
+  const allowedAttributes = {
+    ...sanitizeHtml.defaults.allowedAttributes,
+    iframe: iframeAttributes,
+  };
+
+  const sanitizedHtml = sanitizeHtml(task.text, {
+    allowedTags,
+    allowedAttributes,
+  });
+
   return (
     <Columns.Column size={12}>
       <Card>
         <Card.Header>
           <Card.Header.Title>
             {task.providerName}
-            <span>Submitted by {task.sourceId} {formatDate(task.createdAt)}</span>
+            <span>
+              Submitted by {task.sourceId} {formatDate(task.createdAt)}
+            </span>
           </Card.Header.Title>
           <Progress
             value={Number(task.voteCount)}
@@ -53,26 +71,27 @@ const Task = ({ task, setVoted }) => {
           />
         </Card.Header>
         <Card.Content>
-          <Heading subtitle>
-            {task.title}
-          </Heading>
+          <Heading subtitle>{task.title}</Heading>
 
-          {'text' in task.contentType && (
-            <p>{task.text}</p>
+          {"text" in task.contentType && <p>{task.text}</p>}
+          {"imageBlob" in task.contentType && (
+            <img
+              src={getImage(task.image)}
+              alt="Image File"
+              style={{ display: "block", margin: "auto" }}
+            />
           )}
-          {'imageBlob' in task.contentType && (
-            <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
-          )}
-          {'htmlContent' in task.contentType && (
+          {"htmlContent" in task.contentType && (
             <div className="htmlContent content preview">
-              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text, {
-                allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ])
-                })
-              }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
             </div>
           )}
 
-          <Link to={`/app/tasks/${task.id}`} className="button is-block mt-4" style={{ width: 100, margin: "auto" }}>
+          <Link
+            to={`/app/tasks/${task.id}`}
+            className="button is-block mt-4"
+            style={{ width: 100, margin: "auto" }}
+          >
             See More
           </Link>
         </Card.Content>
@@ -94,10 +113,7 @@ const Task = ({ task, setVoted }) => {
 
           <Button.Group style={{ flexWrap: "wrap" }}>
             <div className="mb-4 mt-1" style={{ width: "100%" }}>
-              <RulesList
-                platform={task.providerName}
-                rules={rules}
-              />
+              <RulesList platform={task.providerName} rules={rules} />
             </div>
             <TaskConfirmationModal
               task={task}
@@ -119,27 +135,26 @@ export default function Tasks() {
   const [page, setPage] = useState({
     page: 1,
     startIndex: 0,
-    endIndex: PAGE_SIZE
+    endIndex: PAGE_SIZE,
   });
   const [firstLoad, setFirstLoad] = useState(true);
 
-
   useEffect(() => {
     if (user && firstLoad && !loading && fetchTasks()) {
-      setFirstLoad(false)
+      setFirstLoad(false);
     }
   }, [user]);
 
   useEffect(() => {
     // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI.
     // TODO: We should use Redux to manage this.
-    user && voted && !loading && refetchAll()
+    user && voted && !loading && refetchAll();
     setVoted(false);
   }, [voted]);
 
   useEffect(() => {
     user && !loading && fetchTasks();
-}, [page]);
+  }, [page]);
 
   const nextPage = () => {
     let nextPageNum = page.page + 1;
@@ -147,30 +162,34 @@ export default function Tasks() {
     setPage({
       page: nextPageNum,
       startIndex: start,
-      endIndex: start + PAGE_SIZE
+      endIndex: start + PAGE_SIZE,
     });
-  }
+  };
 
   const refetchAll = async () => {
     setLoading(true);
     setTasks(await getTasks(0, page.endIndex, FILTER_VOTES));
     setLoading(false);
-  }
+  };
 
   const fetchTasks = async () => {
     setLoading(true);
-    const newTasks = await getTasks(page.startIndex, page.endIndex, FILTER_VOTES);
-    if (newTasks.length < PAGE_SIZE) setHasReachedEnd(true)
+    const newTasks = await getTasks(
+      page.startIndex,
+      page.endIndex,
+      FILTER_VOTES
+    );
+    if (newTasks.length < PAGE_SIZE) setHasReachedEnd(true);
     setTasks([...tasks, ...newTasks]);
     setLoading(false);
-  }
+  };
 
   if (loading) {
     return (
       <Modal show={true} showClose={false}>
-      <div className="loader is-loading p-5"></div>
+        <div className="loader is-loading p-5"></div>
       </Modal>
-    )
+    );
   }
 
   return (
@@ -180,24 +199,19 @@ export default function Tasks() {
       <Columns>
         {!tasks ? (
           <div className="loader is-loading p-4 mt-6" />
-        ) : tasks.map((task) => (
-
-          <Task
-            key={task.id}
-            task={task}
-            setVoted={setVoted}
-            />
-
-        ))}
-      {tasks != null &&  <Columns.Column size={12}>
+        ) : (
+          tasks.map((task) => (
+            <Task key={task.id} task={task} setVoted={setVoted} />
+          ))
+        )}
+        {tasks != null && (
+          <Columns.Column size={12}>
             <Card>
               <Card.Footer alignItems="center">
-                <div>
-                  Showing 1 to {tasks.length} feeds
-                </div>
+                <div>Showing 1 to {tasks.length} feeds</div>
                 <Button
                   color="primary"
-                onClick={() => nextPage()}
+                  onClick={() => nextPage()}
                   className="ml-4 px-7 py-3"
                   disabled={hasReachedEnd}
                 >
@@ -205,8 +219,9 @@ export default function Tasks() {
                 </Button>
               </Card.Footer>
             </Card>
-          </Columns.Column>}
+          </Columns.Column>
+        )}
       </Columns>
     </>
-  )
+  );
 }

@@ -63,6 +63,22 @@ export default function Task() {
     setVoted(false);
   }, [voted]);
 
+  const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
+    "img",
+    "iframe",
+  ]);
+
+  const iframeAttributes = ["src", "width", "height", "frameborder", "style"];
+  const allowedAttributes = {
+    ...sanitizeHtml.defaults.allowedAttributes,
+    iframe: iframeAttributes,
+  };
+
+  const sanitizedHtml = sanitizeHtml((task && task.text) || "<div></div>", {
+    allowedTags,
+    allowedAttributes,
+  });
+
   return (
     <>
       <Userstats />
@@ -98,11 +114,7 @@ export default function Task() {
                   <div className="htmlContent content">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(task.text, {
-                          allowedTags: sanitizeHtml.defaults.allowedTags.concat(
-                            ["img", "iframe"]
-                          ),
-                        }),
+                        __html: sanitizedHtml,
                       }}
                     />
                   </div>
