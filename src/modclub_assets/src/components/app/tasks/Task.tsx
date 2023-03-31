@@ -67,15 +67,6 @@ export default function Task() {
     setVoted(false);
   }, [voted]);
 
-  useEffect(() => {
-    const iframes = document.querySelectorAll("iframe");
-    iframes.forEach((iframe) => {
-      iframe.addEventListener("load", () => {
-        resizeIframe(iframe);
-      });
-    });
-  }, []);
-
   const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
     "img",
     "iframe",
@@ -91,6 +82,15 @@ export default function Task() {
     allowedTags,
     allowedAttributes,
   });
+
+  useEffect(() => {
+    const iframes = document.querySelectorAll("iframe");
+    iframes.forEach((iframe) => {
+      iframe.addEventListener("load", () => {
+        resizeIframe(iframe);
+      });
+    });
+  }, [sanitizedHtml]);
 
   return (
     <>
