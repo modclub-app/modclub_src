@@ -38,7 +38,20 @@ const InfoItem = ({ icon, title, info }) => {
 };
 
 function resizeIframe(iframe) {
-  iframe.style.height = iframe.contentWindow.document.body.scrollHeight + "px";
+  if (!iframe.contentWindow) {
+    console.warn("Cannot access contentWindow property of iframe element");
+    return;
+  }
+  iframe.contentWindow.postMessage("get-iframe-height", "*");
+  window.addEventListener("message", (event) => {
+    if (
+      event.data &&
+      event.data.type === "iframe-height" &&
+      event.data.src === iframe.src
+    ) {
+      iframe.style.height = `${event.data.height}px`;
+    }
+  });
 }
 
 export default function Task() {
@@ -88,6 +101,15 @@ export default function Task() {
     iframes.forEach((iframe) => {
       iframe.addEventListener("load", () => {
         resizeIframe(iframe);
+      });
+      window.addEventListener("message", (event) => {
+        if (
+          event.data &&
+          event.data.type === "iframe-height" &&
+          event.data.src === iframe.src
+        ) {
+          iframe.style.height = `${event.data.height}px`;
+        }
       });
     });
   }, [sanitizedHtml]);
