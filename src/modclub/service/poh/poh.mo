@@ -44,45 +44,46 @@ module PohModule {
   public class PohEngine(
     stableState : PohStateV2.PohStableState,
     pohCallbackDataByProviderStable : [(Principal, [(Text, [(Text, Int)])])],
-    provider2ProviderUserId2IpStable: [(Principal, [(Text, Text)])], 
-    provider2Ip2WalletStable: [(Principal, Rel.RelShared<Text, Principal>)]) {
-      let state = PohStateV2.getState(stableState);
+    provider2ProviderUserId2IpStable : [(Principal, [(Text, Text)])],
+    provider2Ip2WalletStable : [(Principal, Rel.RelShared<Text, Principal>)]
+  ) {
+    let state = PohStateV2.getState(stableState);
 
-      let pohCallbackByProvider = HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>(
-        1,
-        Principal.equal,
-        Principal.hash,
+    let pohCallbackByProvider = HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>(
+      1,
+      Principal.equal,
+      Principal.hash
+    );
+
+    for ((pId, callBackDataByUserId) in pohCallbackDataByProviderStable.vals()) {
+
+      let callBackDataByUserIdMap = TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>(Text.equal, Text.hash);
+      for ((userId, callBackDataByStatus) in callBackDataByUserId.vals()) {
+        let callBackDataByStatusMap = HashMap.HashMap<Text, Int>(1, Text.equal, Text.hash);
+        for ((status, time) in callBackDataByStatus.vals()) {
+          callBackDataByStatusMap.put(status, time);
+        };
+        callBackDataByUserIdMap.put(userId, callBackDataByStatusMap);
+      };
+
+      pohCallbackByProvider.put(pId, callBackDataByUserIdMap);
+    };
+    // Keep providerId to token to IP address Mapping.
+    let provider2ProviderUserId2Ip = HashMap.HashMap<Principal, TrieMap.TrieMap<Text, Text>>(1, Principal.equal, Principal.hash);
+    for ((providerId, providerUserId2Ip) in provider2ProviderUserId2IpStable.vals()) {
+      let providerUserId2IpMap = TrieMap.fromEntries<Text, Text>(providerUserId2Ip.vals(), Text.equal, Text.hash);
+      provider2ProviderUserId2Ip.put(providerId, providerUserId2IpMap);
+    };
+
+    // Keep providerId to ip to Modclub wallet/Principal mapping.
+    let provider2Ip2Wallet = HashMap.HashMap<Principal, RelObj.RelObj<Text, Principal>>(1, Principal.equal, Principal.hash);
+    for ((providerId, ip2Wallet) in provider2Ip2WalletStable.vals()) {
+      let ip2WalletRelObj = RelObj.RelObj<Text, Principal>((Text.hash, Principal.hash), (Text.equal, Principal.equal));
+      ip2WalletRelObj.setRel(
+        Rel.fromShare<Text, Principal>(ip2Wallet, (Text.hash, Principal.hash), (Text.equal, Principal.equal))
       );
-
-      for((pId, callBackDataByUserId) in pohCallbackDataByProviderStable.vals()) {
-          
-          let callBackDataByUserIdMap = TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>(Text.equal, Text.hash);
-          for((userId, callBackDataByStatus) in callBackDataByUserId.vals()) {
-              let callBackDataByStatusMap = HashMap.HashMap<Text, Int>(1, Text.equal, Text.hash);
-              for((status, time) in callBackDataByStatus.vals()) {
-                  callBackDataByStatusMap.put(status, time);
-              };
-              callBackDataByUserIdMap.put(userId, callBackDataByStatusMap);
-          };
-
-          pohCallbackByProvider.put(pId, callBackDataByUserIdMap);
-      };
-      // Keep providerId to token to IP address Mapping.
-      let provider2ProviderUserId2Ip = HashMap.HashMap<Principal, TrieMap.TrieMap<Text, Text>>(1, Principal.equal, Principal.hash);
-      for((providerId, providerUserId2Ip) in provider2ProviderUserId2IpStable.vals()) {
-          let providerUserId2IpMap = TrieMap.fromEntries<Text, Text>(providerUserId2Ip.vals(), Text.equal, Text.hash);
-          provider2ProviderUserId2Ip.put(providerId, providerUserId2IpMap);
-      };
-
-      // Keep providerId to ip to Modclub wallet/Principal mapping.
-      let provider2Ip2Wallet = HashMap.HashMap<Principal, RelObj.RelObj<Text, Principal>>(1, Principal.equal, Principal.hash);
-      for((providerId, ip2Wallet) in provider2Ip2WalletStable.vals()) {
-          let ip2WalletRelObj = RelObj.RelObj<Text, Principal> ((Text.hash, Principal.hash), (Text.equal, Principal.equal));
-          ip2WalletRelObj.setRel(
-                  Rel.fromShare<Text, Principal>(ip2Wallet, (Text.hash, Principal.hash), (Text.equal, Principal.equal))
-          );
-          provider2Ip2Wallet.put(providerId, ip2WalletRelObj);
-      };
+      provider2Ip2Wallet.put(providerId, ip2WalletRelObj);
+    };
 
     let MILLI_SECONDS_DAY = 86400000;
 
@@ -91,7 +92,7 @@ module PohModule {
       validForDays : Nat,
       configuredChallengeIds : [Text],
       getAllUniqueViolatedRules : Text -> [Types.PohRulesViolated],
-      getContentStatus : Text -> Types.ContentStatus,
+      getContentStatus : Text -> Types.ContentStatus
     ) : PohTypes.PohVerificationResponsePlus {
       // request audit
       // TODO: Audit Fixing
@@ -100,7 +101,7 @@ module PohModule {
 
       let modclubUserIdOpt = findModclubId(
         pohVerificationRequest.providerUserId,
-        pohVerificationRequest.providerId,
+        pohVerificationRequest.providerId
       );
       switch (modclubUserIdOpt) {
         case (null) {
@@ -114,7 +115,7 @@ module PohModule {
             completedAt = null;
             token = ?pohGenerateUniqueToken(
               pohVerificationRequest.providerUserId,
-              pohVerificationRequest.providerId,
+              pohVerificationRequest.providerId
             );
             rejectionReasons = [];
             isFirstAssociation = true;
@@ -128,20 +129,20 @@ module PohModule {
             pohVerificationRequest.providerId,
             validForDays,
             getAllUniqueViolatedRules,
-            getContentStatus,
+            getContentStatus
           );
           if (resp.status == #verified) {
             // makeCallbackEntryForProvider(pohVerificationRequest.providerId);
             makeCallbackEntryForProviderUser(
               pohVerificationRequest.providerUserId,
-              pohVerificationRequest.providerId,
+              pohVerificationRequest.providerId
             );
             let _ = do ? {
               let callbackDataByUserId = pohCallbackByProvider.get(
-                pohVerificationRequest.providerId,
+                pohVerificationRequest.providerId
               )!;
               let callbackData = callbackDataByUserId.get(
-                pohVerificationRequest.providerUserId,
+                pohVerificationRequest.providerUserId
               )!;
               let statusText = statusToString(resp.status);
               switch (callbackData.get(statusText)) {
@@ -166,8 +167,8 @@ module PohModule {
             HashMap.HashMap<Text, HashMap.HashMap<Text, Int>>(
               1,
               Text.equal,
-              Text.hash,
-            ),
+              Text.hash
+            )
           );
         };
         case (_)();
@@ -176,7 +177,7 @@ module PohModule {
 
     func makeCallbackEntryForProviderUser(
       providerUserId : Text,
-      providerId : Principal,
+      providerId : Principal
     ) {
       makeCallbackEntryForProvider(providerId);
       let _ = do ? {
@@ -185,7 +186,7 @@ module PohModule {
           case (null) {
             callbackByProvider.put(
               providerUserId,
-              HashMap.HashMap<Text, Int>(1, Text.equal, Text.hash),
+              HashMap.HashMap<Text, Int>(1, Text.equal, Text.hash)
             );
           };
           case (_)();
@@ -201,7 +202,7 @@ module PohModule {
       providerId : Principal,
       validForDays : Nat,
       getAllUniqueViolatedRules : Text -> [Types.PohRulesViolated],
-      getContentStatus : Text -> Types.ContentStatus,
+      getContentStatus : Text -> Types.ContentStatus
     ) : PohTypes.PohVerificationResponsePlus {
       switch (state.pohUserChallengeAttempts.get(modclubUserId)) {
         case (null)
@@ -221,7 +222,7 @@ module PohModule {
         };
         case (?attemptsByChallenges) {
           let challenges = Buffer.Buffer<PohTypes.ChallengeResponse>(
-            configuredChallengeIds.size(),
+            configuredChallengeIds.size()
           );
           var overAllStatus : PohTypes.PohVerificationStatus = #verified;
           var overAllRequestedDate = -1;
@@ -239,7 +240,7 @@ module PohModule {
                     requestedAt = null;
                     submittedAt = null;
                     completedAt = null;
-                  },
+                  }
                 );
               };
               case (?attempts) {
@@ -250,7 +251,7 @@ module PohModule {
                 if (attempts.size() != 0) {
                   let statusAndDate = findChallengeStatus(
                     attempts,
-                    validForDays,
+                    validForDays
                   );
                   status := statusAndDate.0;
                   completedOn := statusAndDate.1;
@@ -258,15 +259,15 @@ module PohModule {
                   submittedAt := statusAndDate.3;
                   overAllRequestedDate := Int.max(
                     overAllRequestedDate,
-                    requestedAt,
+                    requestedAt
                   );
                   overAllSubmittedDate := Int.max(
                     overAllSubmittedDate,
-                    submittedAt,
+                    submittedAt
                   );
                   overAllCompletedDate := Int.max(
                     overAllCompletedDate,
-                    Option.get(completedOn, -1),
+                    Option.get(completedOn, -1)
                   );
                 };
                 challenges.add(
@@ -276,7 +277,7 @@ module PohModule {
                     requestedAt = ?requestedAt;
                     submittedAt = ?submittedAt;
                     completedAt = completedOn;
-                  },
+                  }
                 );
 
                 // if any of the challenge is rejected, then overall status is rejected
@@ -293,7 +294,7 @@ module PohModule {
                   if (status == #notSubmitted) {
                     overAllStatus := #notSubmitted;
                   } else if (
-                    overAllStatus != #notSubmitted and status == #pending,
+                    overAllStatus != #notSubmitted and status == #pending
                   ) {
                     overAllStatus := #pending;
                   };
@@ -309,11 +310,13 @@ module PohModule {
               modclubUserId,
               configuredChallengeIds,
               getAllUniqueViolatedRules,
-              getContentStatus,
+              getContentStatus
             );
           };
           var token : ?Text = null;
-          if (overAllStatus == #startPoh or overAllStatus == #notSubmitted) {
+          if (
+            overAllStatus == #startPoh or overAllStatus == #notSubmitted or overAllStatus == #expired
+          ) {
             token := ?pohGenerateUniqueToken(providerUserId, providerId);
           };
 
@@ -330,7 +333,7 @@ module PohModule {
             isFirstAssociation = checkIfFirstAssoication(
               modclubUserId,
               providerUserId,
-              providerId,
+              providerId
             );
           };
         };
@@ -341,12 +344,12 @@ module PohModule {
       userId : Principal,
       challengeIds : [Text],
       getAllUniqueViolatedRules : Text -> [Types.PohRulesViolated],
-      getContentStatus : Text -> Types.ContentStatus,
+      getContentStatus : Text -> Types.ContentStatus
     ) : [Text] {
       let rejectedPackageId = retrieveRejectedPackageId(
         userId,
         challengeIds,
-        getContentStatus,
+        getContentStatus
       );
       switch (rejectedPackageId) {
         case (null) {
@@ -360,18 +363,18 @@ module PohModule {
     };
 
     // User A
-    // 4 years back	 3 years back	2 year back
-    // rejected	      verified	     verified	pending
+    // 4 years back   3 years back  2 year back
+    // rejected        verified       verified  pending
 
     // User B
-    // 4 years back	 1 years back
-    //  rejected	       verified	     rejected	rejected
+    // 4 years back   1 years back
+    //  rejected         verified       rejected  rejected
 
     // Provider A expiry: 1 year
     // Provider B expiry: 2 year
     func findChallengeStatus(
       attempts : Buffer.Buffer<PohTypes.PohChallengesAttemptV1>,
-      validForDays : Nat,
+      validForDays : Nat
     ) : (PohTypes.PohChallengeStatus, ?Int, Int, Int) {
 
       for (i in Iter.revRange(attempts.size() - 1, 0)) {
@@ -380,14 +383,14 @@ module PohModule {
         if (
           attempt.status == #verified and not isChallengeExpired(
             attempt,
-            validForDays,
-          ),
+            validForDays
+          )
         ) {
           return (
             #verified,
             ?attempt.completedOn,
             attempt.createdAt,
-            attempt.submittedAt,
+            attempt.submittedAt
           );
         };
       };
@@ -399,20 +402,20 @@ module PohModule {
           #expired,
           ?lastAttempt.completedOn,
           lastAttempt.createdAt,
-          lastAttempt.submittedAt,
+          lastAttempt.submittedAt
         );
       };
       return (
         lastAttempt.status,
         ?lastAttempt.completedOn,
         lastAttempt.createdAt,
-        lastAttempt.submittedAt,
+        lastAttempt.submittedAt
       );
     };
 
     func isChallengeExpired(
       attempt : PohTypes.PohChallengesAttemptV1,
-      validForDays : Nat,
+      validForDays : Nat
     ) : Bool {
       return Helpers.timeNow() - attempt.completedOn >= validForDays * MILLI_SECONDS_DAY and attempt.status == #verified;
     };
@@ -420,11 +423,11 @@ module PohModule {
     //Pre Step 4 Generate token
     public func pohGenerateUniqueToken(
       providerUserId : Text,
-      providerId : Principal,
+      providerId : Principal
     ) : Text {
       //using token: as salt instead of time here to keep behavior deterministic for us
       let token : Text = Helpers.generateHash(
-        "token:" # providerUserId # Principal.toText(providerId),
+        "token:" # providerUserId # Principal.toText(providerId)
       );
       switch (state.token2ProviderAndUserData.get(token)) {
         case (null) {
@@ -454,33 +457,33 @@ module PohModule {
     public func associateProviderUserId2ModclubUserId(
       providerId : Principal,
       providerUserId : Text,
-      modclubUserId : Principal,
+      modclubUserId : Principal
     ) : Result.Result<(), PohTypes.PohError> {
       let providerUserId2ModclubUserId = Option.get(
         state.providerUserIdToModclubUserIdByProviderId.get(providerId),
         RelObj.RelObj<Text, Principal>(
           (Text.hash, Principal.hash),
-          (Text.equal, Principal.equal),
-        ),
+          (Text.equal, Principal.equal)
+        )
       );
       let alreadyAssociatedModclubIds = providerUserId2ModclubUserId.get0(
-        providerUserId,
+        providerUserId
       );
       if (
         alreadyAssociatedModclubIds.size() != 0 and alreadyAssociatedModclubIds.get(
-          0,
-        ) != modclubUserId,
+          0
+        ) != modclubUserId
       ) {
         return #err(
           #attemptToAssociateMultipleModclubAccounts(
-            alreadyAssociatedModclubIds.get(0),
-          ),
+            alreadyAssociatedModclubIds.get(0)
+          )
         );
       };
       providerUserId2ModclubUserId.put(providerUserId, modclubUserId);
       state.providerUserIdToModclubUserIdByProviderId.put(
         providerId,
-        providerUserId2ModclubUserId,
+        providerUserId2ModclubUserId
       );
       return #ok();
     };
@@ -488,7 +491,7 @@ module PohModule {
     func findModclubId(providerUserId : Text, providerId : Principal) : ?Principal {
       do ? {
         let modclubUserId = state.providerUserIdToModclubUserIdByProviderId.get(
-          providerId,
+          providerId
         )!.get0(providerUserId);
         if (modclubUserId.size() == 0) {
           return null;
@@ -503,7 +506,7 @@ module PohModule {
       var pUserIds : [Text] = [];
       let _ = do ? {
         pUserIds := state.providerUserIdToModclubUserIdByProviderId.get(
-          providerId,
+          providerId
         )!.get1(modclubUserId);
       };
       return pUserIds;
@@ -512,15 +515,15 @@ module PohModule {
     func checkIfFirstAssoication(
       modclubUserId : Principal,
       providerUserId : Text,
-      providerId : Principal,
+      providerId : Principal
     ) : Bool {
       var isFirstAssociation = true;
       let _ = do ? {
         let providerUserIds = state.providerUserIdToModclubUserIdByProviderId.get(
-          providerId,
+          providerId
         )!.get1(modclubUserId);
         if (
-          providerUserIds.size() != 0 and providerUserIds.get(0) != providerUserId,
+          providerUserIds.size() != 0 and providerUserIds.get(0) != providerUserId
         ) {
           isFirstAssociation := false;
         };
@@ -534,7 +537,7 @@ module PohModule {
       userId : Principal,
       challengeIds : [Text],
       validForDays : Nat,
-      forceCreateNewAttempts : Bool,
+      forceCreateNewAttempts : Bool
     ) : async Result.Result<[PohTypes.PohChallengesAttemptV1], PohTypes.PohError> {
       switch (state.pohUserChallengeAttempts.get(userId)) {
         case (null) state.pohUserChallengeAttempts.put(
@@ -542,42 +545,42 @@ module PohModule {
           HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>(
             challengeIds.size(),
             Text.equal,
-            Text.hash,
-          ),
+            Text.hash
+          )
         );
         case (_)();
       };
 
       let challengesCurrent = Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(
-        challengeIds.size(),
+        challengeIds.size()
       );
 
       let _ = do ? {
         for (challengeId in challengeIds.vals()) {
           switch (
-            (state.pohUserChallengeAttempts.get(userId))!.get(challengeId),
+            (state.pohUserChallengeAttempts.get(userId))!.get(challengeId)
           ) {
             case (null) {
               (state.pohUserChallengeAttempts.get(userId))!.put(
                 challengeId,
-                Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(1),
+                Buffer.Buffer<PohTypes.PohChallengesAttemptV1>(1)
               );
             };
             case (_)();
           };
 
           let attempts = state.pohUserChallengeAttempts.get(userId)!.get(
-            challengeId,
+            challengeId
           )!;
 
           if (attempts.size() == 0 or forceCreateNewAttempts == true) {
             let newAttempt = createNewAttempt(
               userId,
               challengeId,
-              attempts.size(),
+              attempts.size()
             )!;
             state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!.add(
-              newAttempt,
+              newAttempt
             );
             challengesCurrent.add(newAttempt);
           } else {
@@ -586,16 +589,16 @@ module PohModule {
             if (
               lastAttempt.status == #rejected or isChallengeExpired(
                 lastAttempt,
-                validForDays,
-              ),
+                validForDays
+              )
             ) {
               let newAttempt = createNewAttempt(
                 userId,
                 challengeId,
-                attempts.size(),
+                attempts.size()
               )!;
               state.pohUserChallengeAttempts.get(userId)!.get(challengeId)!.add(
-                newAttempt,
+                newAttempt
               );
             };
             challengesCurrent.add(attempts.get(attempts.size() - 1));
@@ -608,14 +611,14 @@ module PohModule {
     func createNewAttempt(
       userId : Principal,
       challengeId : Text,
-      nextAttemptIndex : Nat,
+      nextAttemptIndex : Nat
     ) : ?PohTypes.PohChallengesAttemptV1 {
       do ? {
         {
           attemptId = ?Helpers.generateHash(
             Principal.toText(userId) # challengeId # Nat.toText(
-              nextAttemptIndex,
-            ),
+              nextAttemptIndex
+            )
           );
           challengeId = challengeId;
           userId = userId;
@@ -635,13 +638,13 @@ module PohModule {
               case (#selfVideo) Helpers.generateRandomList(
                 ModClubParam.WORD_SIZE_FOR_VIDEO,
                 state.wordList.toArray(),
-                Helpers.getRandomFeedGenerator(),
+                Helpers.getRandomFeedGenerator()
               );
               // case(#selfAudio) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_AUDIO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
               case (#dl) Helpers.generateRandomList(
                 ModClubParam.SHAPE_COUNT,
                 SHAPE_LIST,
-                Helpers.getRandomFeedGenerator(),
+                Helpers.getRandomFeedGenerator()
               );
               case (_)[];
             };
@@ -652,14 +655,14 @@ module PohModule {
 
     public func validateChallengeSubmission(
       challengeData : PohTypes.PohChallengeSubmissionRequest,
-      userId : Principal,
+      userId : Principal
     ) : PohTypes.PohChallengeSubmissionStatus {
       Debug.print(Principal.toText(userId));
       switch (state.pohChallenges.get(challengeData.challengeId)) {
         case (null) return #incorrectChallenge;
         case (?pohChallenge) {
           if (
-            pohChallenge.requiredField != #profileFieldBlobs and challengeData.challengeDataBlob == null,
+            pohChallenge.requiredField != #profileFieldBlobs and challengeData.challengeDataBlob == null
           ) {
             return #inputDataMissing;
           };
@@ -697,7 +700,7 @@ module PohModule {
 
     public func changeChallengePackageStatus(
       packageId : Text,
-      status : PohTypes.PohChallengeStatus,
+      status : PohTypes.PohChallengeStatus
     ) : [Text] {
       let buff = Buffer.Buffer<Text>(1);
       switch (state.pohChallengePackages.get(packageId)) {
@@ -707,7 +710,7 @@ module PohModule {
             let attemptId = changeChallengeTaskStatus(
               id,
               package.userId,
-              status,
+              status
             );
             buff.add(Option.get(attemptId, ""));
           };
@@ -721,7 +724,7 @@ module PohModule {
     public func changeChallengeTaskStatus(
       challengeId : Text,
       userId : Principal,
-      status : PohTypes.PohChallengeStatus,
+      status : PohTypes.PohChallengeStatus
     ) : ?Text {
       let _ = do ? {
         var completedOn = -1;
@@ -729,7 +732,7 @@ module PohModule {
           completedOn := Helpers.timeNow();
         };
         let attempts = state.pohUserChallengeAttempts.get(userId)!.get(
-          challengeId,
+          challengeId
         )!;
         let attempt = attempts.get(attempts.size() - 1);
         let updatedAttempt = {
@@ -756,11 +759,11 @@ module PohModule {
     public func updateDataCanisterId(
       challengeId : Text,
       userId : Principal,
-      dataCanisterId : ?Principal,
+      dataCanisterId : ?Principal
     ) {
       let _ = do ? {
         let attempts = state.pohUserChallengeAttempts.get(userId)!.get(
-          challengeId,
+          challengeId
         )!;
         let attempt = attempts.get(attempts.size() - 1);
         let updatedAttempt = {
@@ -787,7 +790,7 @@ module PohModule {
       var contentId = "";
       let _ = do ? {
         let attempts = state.pohUserChallengeAttempts.get(userId)!.get(
-          challengeId,
+          challengeId
         )!;
         let attempt = attempts.get(attempts.size() - 1);
         contentId := attempt.attemptId!;
@@ -819,7 +822,7 @@ module PohModule {
 
     private func sortByComplexChallengeFirst(
       a : (Principal, [Text]),
-      b : (Principal, [Text]),
+      b : (Principal, [Text])
     ) : Order.Order {
       if (a.1. size() > b.1. size()) {
         return #less;
@@ -856,7 +859,7 @@ module PohModule {
       userId : Principal,
       getContentStatus : Text -> Types.ContentStatus,
       globalState : GlobalState.State,
-      canistergeekLogger : Canistergeek.Logger,
+      canistergeekLogger : Canistergeek.Logger
     ) : [PohTypes.PohChallengePackage] {
 
       let challengeIdByProviderBuff = Buffer.Buffer<(Principal, [Text])>(1);
@@ -872,7 +875,7 @@ module PohModule {
       // can cover other providers with small list of challenges
       challengeIdByProviderArr := Array.sort(
         challengeIdByProviderArr,
-        sortByComplexChallengeFirst,
+        sortByComplexChallengeFirst
       );
       Helpers.logMessage(canistergeekLogger, "Creating packages", #info);
 
@@ -882,22 +885,22 @@ module PohModule {
         Helpers.logMessage(
           canistergeekLogger,
           "provider: " # Principal.toText(pid) # " challengeIds: " # DownloadUtil.joinArr(
-            challengeIds,
+            challengeIds
           ),
-          #info,
+          #info
         );
 
         // Get all challenges submitted, but not approved. If even one of them is rejected or not submitted, fetch None( blank array[]).
         let potentialChallengeIdsForPackage = getChallengeIdsToBeVotedForUser(
           userId,
-          challengeIds,
+          challengeIds
         );
         Helpers.logMessage(
           canistergeekLogger,
           "provider: " # Principal.toText(pid) # "  potentialChallengeIdsForPackage: " # DownloadUtil.joinArr(
-            potentialChallengeIdsForPackage,
+            potentialChallengeIdsForPackage
           ),
-          #info,
+          #info
         );
 
         // This needs to go for voting now but first check if these are already sent for voting in any
@@ -905,7 +908,7 @@ module PohModule {
         let potentialChallengeIdsForPackageMap = HashMap.HashMap<Text, Text>(
           1,
           Text.equal,
-          Text.hash,
+          Text.hash
         );
         for (id in potentialChallengeIdsForPackage.vals()) {
           potentialChallengeIdsForPackageMap.put(id, id);
@@ -931,9 +934,9 @@ module PohModule {
         Helpers.logMessage(
           canistergeekLogger,
           "provider: " # Principal.toText(pid) # "  potentialChallengeIdsForPackage after removing already submitted challenge: " # DownloadUtil.joinArr(
-            Iter.toArray(potentialChallengeIdsForPackageMap.keys()),
+            Iter.toArray(potentialChallengeIdsForPackageMap.keys())
           ),
-          #info,
+          #info
         );
         // Now check again if we are left something for voting.
         if (potentialChallengeIdsForPackageMap.size() > 0) {
@@ -942,7 +945,7 @@ module PohModule {
           let pohPackage = {
             id = Helpers.generateId(userId, "poh-content", globalState);
             challengeIds = Iter.toArray(
-              potentialChallengeIdsForPackageMap.keys(),
+              potentialChallengeIdsForPackageMap.keys()
             );
             userId = userId;
             contentType = #pohPackage;
@@ -953,9 +956,9 @@ module PohModule {
           Helpers.logMessage(
             canistergeekLogger,
             "Creating package finally: " # pohPackage.id # " for userId: " # Principal.toText(
-              userId,
+              userId
             ),
-            #info,
+            #info
           );
           state.pohChallengePackages.put(pohPackage.id, pohPackage);
           state.userToPohChallengePackageId.put(userId, pohPackage.id);
@@ -967,7 +970,7 @@ module PohModule {
 
     func getChallengeIdsToBeVotedForUser(
       userId : Principal,
-      providerChallengeIds : [Text],
+      providerChallengeIds : [Text]
     ) : [Text] {
       let challengeIdsForPackage = Buffer.Buffer<Text>(1);
       var createPackage = true;
@@ -977,8 +980,8 @@ module PohModule {
           let attempts = challengeAttempts.get(id)!;
           if (
             attempts.size() == 0 or attempts.get(attempts.size() - 1).status == #notSubmitted or attempts.get(
-              attempts.size() - 1,
-            ).status == #rejected or attempts.get(attempts.size() - 1).status == #expired,
+              attempts.size() - 1
+            ).status == #rejected or attempts.get(attempts.size() - 1).status == #expired
           ) {
             createPackage := false;
             break l;
@@ -1005,7 +1008,7 @@ module PohModule {
             for (challengeId in package.challengeIds.vals()) {
               let attempt = do ? {
                 let attempts = state.pohUserChallengeAttempts.get(
-                  package.userId,
+                  package.userId
                 )!.get(challengeId)!;
                 attempts.get(attempts.size() - 1);
               };
@@ -1044,7 +1047,7 @@ module PohModule {
                 pohTaskData = taskData.toArray();
                 createdAt = package.createdAt;
                 updatedAt = package.updatedAt;
-              },
+              }
             );
           };
         };
@@ -1056,7 +1059,7 @@ module PohModule {
     public func retrieveRejectedPackageId(
       userId : Principal,
       challengeIds : [Text],
-      getContentStatus : Text -> Types.ContentStatus,
+      getContentStatus : Text -> Types.ContentStatus
     ) : ?Text {
       let packageIds = state.userToPohChallengePackageId.get0(userId);
       if (packageIds.size() == 0) {
@@ -1068,13 +1071,13 @@ module PohModule {
           case (?package) {
             if (
               package.challengeIds.size() == challengeIds.size() and getContentStatus(
-                package.id,
-              ) == #rejected,
+                package.id
+              ) == #rejected
             ) {
               let cIdsMap = HashMap.HashMap<Text, Text>(
                 1,
                 Text.equal,
-                Text.hash,
+                Text.hash
               );
               for (id in package.challengeIds.vals()) {
                 cIdsMap.put(id, id);
@@ -1101,7 +1104,7 @@ module PohModule {
     };
 
     public func resolveViolatedRulesById(
-      violatedRules : [Types.PohRulesViolated],
+      violatedRules : [Types.PohRulesViolated]
     ) : [Text] {
       let buff = Buffer.Buffer<Text>(violatedRules.size());
       for (vRule in violatedRules.vals()) {
@@ -1149,11 +1152,11 @@ module PohModule {
 
     public func getProviderPohConfiguration(
       providerId : Principal,
-      state : GlobalState.State,
+      state : GlobalState.State
     ) : Result.Result<PohTypes.PohConfigurationForProvider, PohTypes.PohError> {
       let challengeIds = Option.get(
         state.provider2PohChallengeIds.get(providerId),
-        Buffer.Buffer<Text>(0),
+        Buffer.Buffer<Text>(0)
       );
       let expiry = Option.get(state.provider2PohExpiry.get(providerId), 0);
       if (expiry == 0 or challengeIds.size() == 0) {
@@ -1163,53 +1166,52 @@ module PohModule {
         {
           challengeIds = challengeIds.toArray();
           expiry = expiry;
-        },
+        }
       );
     };
 
-    public func registerIPWithProviderUser(providerUserId: Text, ip: Text, providerId: Principal) : Bool {
+    public func registerIPWithProviderUser(providerUserId : Text, ip : Text, providerId : Principal) : Bool {
 
-            let providerUser2Ip = Option.get(provider2ProviderUserId2Ip.get(providerId), 
-                TrieMap.TrieMap<Text, Text>(Text.equal, Text.hash));
-            switch(providerUser2Ip.get(providerUserId)) {
-                case(null) {
-                    // If there is no association for a token to ip, then add it.
-                    providerUser2Ip.put(providerUserId, ip);
-                    provider2ProviderUserId2Ip.put(providerId, providerUser2Ip);
-                    return true;
-                };
-                case(?storedIp) {
-                    // If there is already an association for a token to ip, then check it's the same.
-                    if(storedIp == ip) {
-                        return true;
-                    };
-                    // else
-                    return false;
-                };
-            };
+      let providerUser2Ip = Option.get(provider2ProviderUserId2Ip.get(providerId), TrieMap.TrieMap<Text, Text>(Text.equal, Text.hash));
+      switch (providerUser2Ip.get(providerUserId)) {
+        case (null) {
+          // If there is no association for a token to ip, then add it.
+          providerUser2Ip.put(providerUserId, ip);
+          provider2ProviderUserId2Ip.put(providerId, providerUser2Ip);
+          return true;
         };
-
-        public func registerIPWithWallet(providerUserId: Text, providerId: Principal, modclubUserId: Principal) : Bool {
-            var done = false;
-
-            let _ = do ? {
-                let storedIpForProviderUser = provider2ProviderUserId2Ip.get(providerId)!.get(providerUserId)!;
-                let ip2ModclubId = Option.get(provider2Ip2Wallet.get(providerId), RelObj.RelObj<Text, Principal> ((Text.hash, Principal.hash), (Text.equal, Principal.equal)));
-                let alreadyAssociatedWallets = ip2ModclubId.get0(storedIpForProviderUser);
-                if(alreadyAssociatedWallets.size() == 0) {
-                    ip2ModclubId.put(storedIpForProviderUser, modclubUserId);
-                    provider2Ip2Wallet.put(providerId, ip2ModclubId);
-                    done := true;
-                } else if(alreadyAssociatedWallets.size() == 1) {
-                    if(alreadyAssociatedWallets.get(0) == modclubUserId) {
-                        done := true;
-                    } else {
-                        done := false;
-                    }
-                };
-            };
-            return done;
+        case (?storedIp) {
+          // If there is already an association for a token to ip, then check it's the same.
+          if (storedIp == ip) {
+            return true;
+          };
+          // else
+          return false;
         };
+      };
+    };
+
+    public func registerIPWithWallet(providerUserId : Text, providerId : Principal, modclubUserId : Principal) : Bool {
+      var done = false;
+
+      let _ = do ? {
+        let storedIpForProviderUser = provider2ProviderUserId2Ip.get(providerId)!.get(providerUserId)!;
+        let ip2ModclubId = Option.get(provider2Ip2Wallet.get(providerId), RelObj.RelObj<Text, Principal>((Text.hash, Principal.hash), (Text.equal, Principal.equal)));
+        let alreadyAssociatedWallets = ip2ModclubId.get0(storedIpForProviderUser);
+        if (alreadyAssociatedWallets.size() == 0) {
+          ip2ModclubId.put(storedIpForProviderUser, modclubUserId);
+          provider2Ip2Wallet.put(providerId, ip2ModclubId);
+          done := true;
+        } else if (alreadyAssociatedWallets.size() == 1) {
+          if (alreadyAssociatedWallets.get(0) == modclubUserId) {
+            done := true;
+          } else {
+            done := false;
+          };
+        };
+      };
+      return done;
+    };
 
     public func populateChallenges() : () {
       let allowedViolationRules2 = Buffer.Buffer<PohTypes.ViolatedRules>(3);
@@ -1217,19 +1219,19 @@ module PohModule {
         {
           ruleId = "1";
           ruleDesc = "The person face is well lit";
-        },
+        }
       );
       allowedViolationRules2.add(
         {
           ruleId = "2";
           ruleDesc = "You can clearly see the persons face";
-        },
+        }
       );
       allowedViolationRules2.add(
         {
           ruleId = "3";
           ruleDesc = "The person is not wearing a mask or hiding their face";
-        },
+        }
       );
       state.pohChallenges.put(
         CHALLENGE_PROFILE_PIC_ID,
@@ -1244,7 +1246,7 @@ module PohModule {
           allowedViolationRules = allowedViolationRules2.toArray();
           createdAt = Helpers.timeNow();
           updatedAt = Helpers.timeNow();
-        },
+        }
       );
 
       let allowedViolationRules3 = Buffer.Buffer<PohTypes.ViolatedRules>(4);
@@ -1252,19 +1254,19 @@ module PohModule {
         {
           ruleId = "1";
           ruleDesc = "The person in the video is the same person in the profile picture";
-        },
+        }
       );
       allowedViolationRules3.add(
         {
           ruleId = "2";
           ruleDesc = "The person in the video says all the words in order in the box above";
-        },
+        }
       );
       allowedViolationRules3.add(
         {
           ruleId = "3";
           ruleDesc = "The person in the video appears to be a real person and not AI generated";
-        },
+        }
       );
       state.pohChallenges.put(
         CHALLENGE_USER_VIDEO_ID,
@@ -1279,7 +1281,7 @@ module PohModule {
           allowedViolationRules = allowedViolationRules3.toArray();
           createdAt = Helpers.timeNow();
           updatedAt = Helpers.timeNow();
-        },
+        }
       );
 
       let allowedViolationRules4 = Buffer.Buffer<PohTypes.ViolatedRules>(4);
@@ -1287,13 +1289,13 @@ module PohModule {
         {
           ruleId = "1";
           ruleDesc = "The person in the audio says all the words in order in the box above";
-        },
+        }
       );
       allowedViolationRules4.add(
         {
           ruleId = "2";
           ruleDesc = "The person in the audio appears to be sound like a real person and not  an AI-generated voice";
-        },
+        }
       );
       state.pohChallenges.put(
         CHALLENGE_USER_AUDIO_ID,
@@ -1309,7 +1311,7 @@ module PohModule {
           allowedViolationRules = allowedViolationRules4.toArray();
           createdAt = Helpers.timeNow();
           updatedAt = Helpers.timeNow();
-        },
+        }
       );
 
       let challengeDrawingRules : [PohTypes.ViolatedRules] = [
@@ -1320,7 +1322,7 @@ module PohModule {
         {
           ruleId = "2";
           ruleDesc = "The shapes were drawn on a piece of Paper. This has to be a physical piece of paper and not a digital drawing.";
-        },
+        }
       ];
       state.pohChallenges.put(
         CHALLENGE_DRAWING_ID,
@@ -1335,7 +1337,7 @@ module PohModule {
           allowedViolationRules = challengeDrawingRules;
           createdAt = Helpers.timeNow();
           updatedAt = Helpers.timeNow();
-        },
+        }
       );
 
       state.wordList.clear();
@@ -1396,14 +1398,14 @@ module PohModule {
       globalState : GlobalState.State,
       getAllUniqueViolatedRules : Text -> [Types.PohRulesViolated],
       getContentStatus : Text -> Types.ContentStatus,
-      canistergeekLogger : Canistergeek.Logger,
+      canistergeekLogger : Canistergeek.Logger
     ) : async () {
       for ((providerId, callbackSubs) in state.providersCallback.entries()) {
         makeCallbackEntryForProvider(providerId);
         Helpers.logMessage(
           canistergeekLogger,
           "Attempting callback for provider: " # Principal.toText(providerId),
-          #info,
+          #info
         );
         let _ = do ? {
           let callbackDataByUserId = pohCallbackByProvider.get(providerId)!;
@@ -1414,9 +1416,9 @@ module PohModule {
             Helpers.logMessage(
               canistergeekLogger,
               "Finding providerUserId for provider: " # Principal.toText(
-                providerId,
+                providerId
               ),
-              #info,
+              #info
             );
             switch (getProviderPohConfiguration(providerId, globalState)) {
               case (#ok(config)) {
@@ -1427,10 +1429,10 @@ module PohModule {
                   providerId,
                   config.expiry,
                   getAllUniqueViolatedRules,
-                  getContentStatus,
+                  getContentStatus
                 );
                 if (
-                  resp.status == #verified or resp.status == #rejected or resp.status == #pending,
+                  resp.status == #verified or resp.status == #rejected or resp.status == #pending
                 ) {
                   let statusText = statusToString(resp.status);
                   switch (callbackData.get(statusText)) {
@@ -1438,17 +1440,17 @@ module PohModule {
                       Helpers.logMessage(
                         canistergeekLogger,
                         "issueCallbackToProviders - callback:  " # statusToString(
-                          resp.status,
+                          resp.status
                         ) # " submittedAt: " # Int.toText(
-                          Option.get(resp.submittedAt, -1),
+                          Option.get(resp.submittedAt, -1)
                         ) # " requestedAt: " # Int.toText(
-                          Option.get(resp.requestedAt, -1),
+                          Option.get(resp.requestedAt, -1)
                         ) # " completedAt: " # Int.toText(
-                          Option.get(resp.completedAt, -1),
+                          Option.get(resp.completedAt, -1)
                         ) # "isFirstAssociation: " # Bool.toText(
-                          resp.isFirstAssociation,
+                          resp.isFirstAssociation
                         ) # "providerUserId: " # resp.providerUserId,
-                        #info,
+                        #info
                       );
                       callbackSubs.callback(resp);
                       // Saving that user has queried the approved status, so no callback
@@ -1491,7 +1493,7 @@ module PohModule {
 
     public func subscribe(
       providerId : Principal,
-      sub : PohTypes.SubscribePohMessage,
+      sub : PohTypes.SubscribePohMessage
     ) {
       state.providersCallback.put(providerId, sub);
     };
@@ -1507,49 +1509,55 @@ module PohModule {
       };
     };
 
-    public func getStableStateV2() : (PohStateV2.PohStableState, [(Principal, [(Text, [(Text, Int)] )])],
-        [(Principal, [(Text, Text)])], [(Principal, Rel.RelShared<Text, Principal>)] ) {
+    public func getStableStateV2() : (
+      PohStateV2.PohStableState,
+      [(Principal, [(Text, [(Text, Int)])])],
+      [(Principal, [(Text, Text)])],
+      [(Principal, Rel.RelShared<Text, Principal>)]
+    ) {
 
-        let pohCallbackDataByProviderStableStateBuff =  Buffer.Buffer<(Principal, [(Text, [(Text, Int)] )])>(1);
-        for((providerId, callBackByUser) in pohCallbackByProvider.entries()) {
-            let callBackByUserBuff = Buffer.Buffer<(Text, [(Text, Int)])>(1);
-            for((userId, callbackData) in callBackByUser.entries()) {
-                let callbackBuff = Buffer.Buffer<(Text, Int)>(1);
-                for((status, time) in callbackData.entries()) {
-                    callbackBuff.add((status, time));
-                };
-                callBackByUserBuff.add(userId, callbackBuff.toArray());
-            };
-            pohCallbackDataByProviderStableStateBuff.add(providerId, callBackByUserBuff.toArray());
+      let pohCallbackDataByProviderStableStateBuff = Buffer.Buffer<(Principal, [(Text, [(Text, Int)])])>(1);
+      for ((providerId, callBackByUser) in pohCallbackByProvider.entries()) {
+        let callBackByUserBuff = Buffer.Buffer<(Text, [(Text, Int)])>(1);
+        for ((userId, callbackData) in callBackByUser.entries()) {
+          let callbackBuff = Buffer.Buffer<(Text, Int)>(1);
+          for ((status, time) in callbackData.entries()) {
+            callbackBuff.add((status, time));
+          };
+          callBackByUserBuff.add(userId, callbackBuff.toArray());
         };
+        pohCallbackDataByProviderStableStateBuff.add(providerId, callBackByUserBuff.toArray());
+      };
 
-        let provider2ProviderUserId2IpBuff =  Buffer.Buffer<(Principal, [(Text, Text)])>(1);
-        for((providerId, providerUserId2Ip) in provider2ProviderUserId2Ip.entries()) {
-            let providerUserId2IpBuff = Buffer.Buffer<(Text, Text)>(1);
-            for((pUserId, ip) in providerUserId2Ip.entries()) {
-                providerUserId2IpBuff.add(pUserId, ip);
-            };
-            provider2ProviderUserId2IpBuff.add(providerId, providerUserId2IpBuff.toArray());
+      let provider2ProviderUserId2IpBuff = Buffer.Buffer<(Principal, [(Text, Text)])>(1);
+      for ((providerId, providerUserId2Ip) in provider2ProviderUserId2Ip.entries()) {
+        let providerUserId2IpBuff = Buffer.Buffer<(Text, Text)>(1);
+        for ((pUserId, ip) in providerUserId2Ip.entries()) {
+          providerUserId2IpBuff.add(pUserId, ip);
         };
+        provider2ProviderUserId2IpBuff.add(providerId, providerUserId2IpBuff.toArray());
+      };
 
-        let provider2Ip2WalletBuff = Buffer.Buffer<(Principal, Rel.RelShared<Text, Principal>)>(1);
-        for((providerId, ip2Wallets) in provider2Ip2Wallet.entries()) {
-            provider2Ip2WalletBuff.add((providerId, Rel.share(ip2Wallets.getRel())));
-        };
+      let provider2Ip2WalletBuff = Buffer.Buffer<(Principal, Rel.RelShared<Text, Principal>)>(1);
+      for ((providerId, ip2Wallets) in provider2Ip2Wallet.entries()) {
+        provider2Ip2WalletBuff.add((providerId, Rel.share(ip2Wallets.getRel())));
+      };
 
-        return (PohStateV2.getStableState(state), pohCallbackDataByProviderStableStateBuff.toArray(),
-        provider2ProviderUserId2IpBuff.toArray(), provider2Ip2WalletBuff.toArray());
+      return (
+        PohStateV2.getStableState(state),
+        pohCallbackDataByProviderStableStateBuff.toArray(),
+        provider2ProviderUserId2IpBuff.toArray(),
+        provider2Ip2WalletBuff.toArray()
+      );
     };
 
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [
-      [Text]
-    ] {
+    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
       DownloadSupport.download(
         state,
         pohCallbackByProvider,
         varName,
         start,
-        end,
+        end
       );
     };
 
@@ -1557,10 +1565,10 @@ module PohModule {
     public func migrateV1ToV2(
       pohStableStateV1 : PohStateV1.PohStableState,
       pohStableStateV2 : PohStateV2.PohStableState,
-      modclubCanisterId : Principal,
+      modclubCanisterId : Principal
     ) : PohStateV2.PohStableState {
       let token2ProviderAndUserDataBuff = Buffer.Buffer<(Text, PohTypes.PohProviderAndUserData)>(
-        1,
+        1
       );
       for (
         (token, userProviderData) in pohStableStateV1.pohProviderUserData.vals()
@@ -1573,35 +1581,34 @@ module PohModule {
               providerUserId = Principal.toText(userProviderData.providerUserId);
               providerId = userProviderData.providerUserId;
               generatedAt = Helpers.timeNow();
-            },
-          ),
+            }
+          )
         );
       };
 
       let relObj = RelObj.RelObj<Text, Principal>(
         (Text.hash, Principal.hash),
-        (Text.equal, Principal.equal),
+        (Text.equal, Principal.equal)
       );
       let providerUserIdToModclubUserIdByProviderIdBuff = Buffer.Buffer<(Principal, Rel.RelShared<Text, Principal>)>(
-        1,
+        1
       );
       for ((pUserId, mUserId) in pohStableStateV1.providerToModclubUser.vals()) {
         relObj.put(Principal.toText(pUserId), mUserId);
       };
       providerUserIdToModclubUserIdByProviderIdBuff.add(
-        (modclubCanisterId, Rel.share(relObj.getRel())),
+        (modclubCanisterId, Rel.share(relObj.getRel()))
       );
 
       let pohUserChallengeAttemptBuff = Buffer.Buffer<(Principal, [(Text, [PohTypes.PohChallengesAttemptV1])])>(
-        1,
+        1
       );
 
       for (
-        (userId, attemptByChallengeId) 
-            in pohStableStateV1.pohUserChallengeAttempts.vals()
+        (userId, attemptByChallengeId) in pohStableStateV1.pohUserChallengeAttempts.vals()
       ) {
         let newAttemptByChallengeIdBuff = Buffer.Buffer<(Text, [PohTypes.PohChallengesAttemptV1])>(
-          1,
+          1
         );
 
         for ((challengeId, oldAttempts) in attemptByChallengeId.vals()) {
@@ -1623,35 +1630,35 @@ module PohModule {
                 completedOn = oldAttempt.completedOn;
                 dataCanisterId = oldAttempt.dataCanisterId;
                 wordList = oldAttempt.wordList;
-              },
+              }
             );
           };
 
           newAttemptByChallengeIdBuff.add(
-            (challengeId, newAttemptBuff.toArray()),
+            (challengeId, newAttemptBuff.toArray())
           );
         };
         pohUserChallengeAttemptBuff.add(
-          (userId, newAttemptByChallengeIdBuff.toArray()),
-        )
+          (userId, newAttemptByChallengeIdBuff.toArray())
+        );
       };
 
       return {
         pohChallenges = Array.append(
           pohStableStateV1.pohChallenges,
-          pohStableStateV2.pohChallenges,
+          pohStableStateV2.pohChallenges
         );
         pohUserChallengeAttempts = pohUserChallengeAttemptBuff.toArray();
         token2ProviderAndUserData = token2ProviderAndUserDataBuff.toArray();
         providerUserIdToModclubUserIdByProviderId = providerUserIdToModclubUserIdByProviderIdBuff.toArray();
         pohChallengePackages = Array.append(
           pohStableStateV1.pohChallengePackages,
-          pohStableStateV2.pohChallengePackages,
+          pohStableStateV2.pohChallengePackages
         );
         userToPohChallengePackageId = pohStableStateV1.userToPohChallengePackageId;
         wordList = Array.append(
           pohStableStateV1.wordList,
-          pohStableStateV2.wordList,
+          pohStableStateV2.wordList
         );
         providersCallback = pohStableStateV2.providersCallback;
         callbackIssuedByProvider = [];
