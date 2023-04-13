@@ -427,7 +427,8 @@ module PohModule {
     ) : Text {
       //using token: as salt instead of time here to keep behavior deterministic for us
       let token : Text = Helpers.generateHash(
-        "token:" # providerUserId # Principal.toText(providerId)
+        "token:" # providerUserId # Principal.toText(providerId) #
+        Int.toText(Helpers.timeNow())
       );
       switch (state.token2ProviderAndUserData.get(token)) {
         case (null) {
@@ -1573,17 +1574,15 @@ module PohModule {
       for (
         (token, userProviderData) in pohStableStateV1.pohProviderUserData.vals()
       ) {
-        token2ProviderAndUserDataBuff.add(
-          (
-            token,
-            {
-              token = userProviderData.token;
-              providerUserId = Principal.toText(userProviderData.providerUserId);
-              providerId = userProviderData.providerUserId;
-              generatedAt = Helpers.timeNow();
-            }
-          )
-        );
+        token2ProviderAndUserDataBuff.add((
+          token,
+          {
+            token = userProviderData.token;
+            providerUserId = Principal.toText(userProviderData.providerUserId);
+            providerId = userProviderData.providerUserId;
+            generatedAt = Helpers.timeNow();
+          }
+        ));
       };
 
       let relObj = RelObj.RelObj<Text, Principal>(
@@ -1596,9 +1595,7 @@ module PohModule {
       for ((pUserId, mUserId) in pohStableStateV1.providerToModclubUser.vals()) {
         relObj.put(Principal.toText(pUserId), mUserId);
       };
-      providerUserIdToModclubUserIdByProviderIdBuff.add(
-        (modclubCanisterId, Rel.share(relObj.getRel()))
-      );
+      providerUserIdToModclubUserIdByProviderIdBuff.add((modclubCanisterId, Rel.share(relObj.getRel())));
 
       let pohUserChallengeAttemptBuff = Buffer.Buffer<(Principal, [(Text, [PohTypes.PohChallengesAttemptV1])])>(
         1
@@ -1634,13 +1631,9 @@ module PohModule {
             );
           };
 
-          newAttemptByChallengeIdBuff.add(
-            (challengeId, newAttemptBuff.toArray())
-          );
+          newAttemptByChallengeIdBuff.add((challengeId, newAttemptBuff.toArray()));
         };
-        pohUserChallengeAttemptBuff.add(
-          (userId, newAttemptByChallengeIdBuff.toArray())
-        );
+        pohUserChallengeAttemptBuff.add((userId, newAttemptByChallengeIdBuff.toArray()));
       };
 
       return {
