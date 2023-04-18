@@ -12,20 +12,29 @@ import Types "./types";
 import Buffer "mo:base/Buffer";
 import Result "mo:base/Result";
 import AuthManager "../modclub/service/auth/auth";
+import Utils "../common/utils";
+import CommonTypes "../common/types"
 
-shared ({ caller = deployer }) actor class Wallet(env: Text) = this {
+shared ({ caller = deployer }) actor class Wallet(env : CommonTypes.ENV) = this {
 
   type SubAccount = Text;
-  let MILLION: Float = 1000000;
+  let MILLION : Float = 1000000;
   let MINT_WALLET_ID = Principal.fromText("aaaaa-aa");
-  // Keep this as local modclub id
-  var MODCLUB_WALLET_PRINCIPAL = Principal.fromText("rkp4c-7iaaa-aaaaa-aaaca-cai");
-  if(env == "prod") {
-    MODCLUB_WALLET_PRINCIPAL := Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai");
-  } else if(env == "dev") {
-    MODCLUB_WALLET_PRINCIPAL := Principal.fromText("olc6u-lqaaa-aaaah-qcooq-cai");
-  } else if(env == "qa") {
-    MODCLUB_WALLET_PRINCIPAL := Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai");
+  var MODCLUB_WALLET_PRINCIPAL : ?Principal = null;
+
+  switch (env) {
+    case (#local(value)) {
+      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText(value);
+    };
+    case (#prod) {
+      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai");
+    };
+    case (#dev) {
+      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText("olc6u-lqaaa-aaaah-qcooq-cai");
+    };
+    case (#qa) {
+      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai");
+    };
   };
 
   let DEFAULT_SUB_ACCOUNT = "0";
@@ -43,76 +52,74 @@ shared ({ caller = deployer }) actor class Wallet(env: Text) = this {
   let ACCOUNT_PAYABLE = "AP";
   let STAKE_SA = "STAKE";
 
-
-
   //----------------------- All modclub owned Wallets ----------------------------
   // Modclub's main wallets - kind of sub accounts owned by modclub
-  
-  var allWallets: HashMap.HashMap<Principal, HashMap.HashMap<SubAccount, Float>> = HashMap.HashMap<Principal, HashMap.HashMap<SubAccount, Float>>(1, Principal.equal, Principal.hash);
-  stable var allWalletsStable: [(Principal, [(SubAccount, Float)])] = [];
+
+  var allWallets : HashMap.HashMap<Principal, HashMap.HashMap<SubAccount, Float>> = HashMap.HashMap<Principal, HashMap.HashMap<SubAccount, Float>>(1, Principal.equal, Principal.hash);
+  stable var allWalletsStable : [(Principal, [(SubAccount, Float)])] = [];
   //----------------------- END All modclub owned Wallets ----------------------------
   stable var admins : List.List<Principal> = List.nil<Principal>();
 
-  public query ({caller}) func queryBalancePr(pr: Principal, from: ?SubAccount) : async Float {
+  public query ({ caller }) func queryBalancePr(pr : Principal, from : ?SubAccount) : async Float {
     // default subaccount is 0
     let fromWallet = Option.get(from, DEFAULT_SUB_ACCOUNT);
     let allSubAccountWallets = Option.get(allWallets.get(pr), HashMap.HashMap<SubAccount, Float>(1, Text.equal, Text.hash));
-    Option.get(allSubAccountWallets.get(fromWallet), 0: Float);
+    Option.get(allSubAccountWallets.get(fromWallet), 0 : Float);
   };
 
-  public query ({caller}) func queryBalance(from: ?SubAccount) : async Float {
+  public query ({ caller }) func queryBalance(from : ?SubAccount) : async Float {
     // default subaccount is 0
     let fromWallet = Option.get(from, DEFAULT_SUB_ACCOUNT);
     let allSubAccountWallets = Option.get(allWallets.get(caller), HashMap.HashMap<SubAccount, Float>(1, Text.equal, Text.hash));
-    Option.get(allSubAccountWallets.get(fromWallet), 0: Float);
+    Option.get(allSubAccountWallets.get(fromWallet), 0 : Float);
   };
 
-  public shared ({caller}) func transfer(fromSA: ?SubAccount, toOwner: Principal, toSA: ?SubAccount, amount: Float) : async () {
+  public shared ({ caller }) func transfer(fromSA : ?SubAccount, toOwner : Principal, toSA : ?SubAccount, amount : Float) : async () {
     await transferFromTo(caller, Option.get(fromSA, DEFAULT_SUB_ACCOUNT), toOwner, Option.get(toSA, DEFAULT_SUB_ACCOUNT), amount);
   };
 
-  public shared ({caller}) func transferBulk(userAndAmounts: [Types.UserAndAmount]) : async () {
-    for(userAndAmount in userAndAmounts.vals()) {
+  public shared ({ caller }) func transferBulk(userAndAmounts : [Types.UserAndAmount]) : async () {
+    for (userAndAmount in userAndAmounts.vals()) {
       let _ = await transferFromTo(caller, Option.get(userAndAmount.fromSA, DEFAULT_SUB_ACCOUNT), userAndAmount.toOwner, Option.get(userAndAmount.toSA, DEFAULT_SUB_ACCOUNT), userAndAmount.amount);
     };
   };
 
   public shared ({ caller }) func stakeTokens(amount : Float) : async () {
-    await transferFromTo(caller, DEFAULT_SUB_ACCOUNT, MODCLUB_WALLET_PRINCIPAL, (Principal.toText(caller) # STAKE_SA), amount);
+    await transferFromTo(caller, DEFAULT_SUB_ACCOUNT, Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), (Principal.toText(caller) # STAKE_SA), amount);
   };
 
-   public shared ({caller}) func transferToProvider(fromOwner: Principal, fromSA: ?SubAccount, toOwner: Principal, toSA: ?SubAccount, amount: Float) : async () {
+  public shared ({ caller }) func transferToProvider(fromOwner : Principal, fromSA : ?SubAccount, toOwner : Principal, toSA : ?SubAccount, amount : Float) : async () {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
     await transferFromTo(fromOwner, Option.get(fromSA, DEFAULT_SUB_ACCOUNT), toOwner, Option.get(toSA, DEFAULT_SUB_ACCOUNT), amount);
   };
 
-  public shared ({caller}) func burn(fromSA: ?SubAccount, amount: Float) : async () {
+  public shared ({ caller }) func burn(fromSA : ?SubAccount, amount : Float) : async () {
     await transferFromTo(caller, Option.get(fromSA, DEFAULT_SUB_ACCOUNT), MINT_WALLET_ID, DEFAULT_SUB_ACCOUNT, amount);
   };
 
-  public shared ({caller}) func tge() : async () {
+  public shared ({ caller }) func tge() : async () {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, RESERVE_SA, 367.5 * MILLION);
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, AIRDROP_SA, 10 * MILLION);
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, MARKETING_SA, 50 * MILLION);
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, ADVISORS_SA, 50 * MILLION);
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, PRESEED_SA, 62.5 * MILLION);
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, PUBLICSALE_SA, 100 * MILLION);
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, MAIN_SA, 100 * MILLION);
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, SEED_SA, 100 * MILLION);
-    creditWallet(MODCLUB_WALLET_PRINCIPAL, TEAM_SA, 160 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), RESERVE_SA, 367.5 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), AIRDROP_SA, 10 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), MARKETING_SA, 50 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), ADVISORS_SA, 50 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), PRESEED_SA, 62.5 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), PUBLICSALE_SA, 100 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), MAIN_SA, 100 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), SEED_SA, 100 * MILLION);
+    creditWallet(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), TEAM_SA, 160 * MILLION);
   };
 
-  private func transferFromTo(fromOwner: Principal, fromSA: SubAccount, toOwner: Principal, toSA: SubAccount, amount: Float): async () {
+  private func transferFromTo(fromOwner : Principal, fromSA : SubAccount, toOwner : Principal, toSA : SubAccount, amount : Float) : async () {
     let _ = await debitWallet(fromOwner, fromSA, amount);
     creditWallet(toOwner, toSA, amount);
   };
 
-  private func creditWallet(toOwner: Principal, toSA: SubAccount, amount: Float) : () {
+  private func creditWallet(toOwner : Principal, toSA : SubAccount, amount : Float) : () {
     initializeWalletIfAbsent(toOwner);
 
     let _ = do ? {
@@ -121,7 +128,7 @@ shared ({ caller = deployer }) actor class Wallet(env: Text) = this {
     };
   };
 
-  private func debitWallet(fromOwner : Principal, fromSA: SubAccount, amount : Float) : async () {
+  private func debitWallet(fromOwner : Principal, fromSA : SubAccount, amount : Float) : async () {
     initializeWalletIfAbsent(fromOwner);
 
     let _ = do ? {
@@ -154,15 +161,14 @@ shared ({ caller = deployer }) actor class Wallet(env: Text) = this {
     admins := AuthManager.setUpDefaultAdmins(
       admins,
       deployer,
-      Principal.fromActor(this),
+      Principal.fromActor(this)
     );
     allWallets := HashMap.HashMap<Principal, HashMap.HashMap<SubAccount, Float>>(1, Principal.equal, Principal.hash);
-    for((owner: Principal, subAccounts: [(Text, Float)]) in allWalletsStable.vals()) {
+    for ((owner : Principal, subAccounts : [(Text, Float)]) in allWalletsStable.vals()) {
       let subAccountMap = HashMap.fromIter<Text, Float>(subAccounts.vals(), subAccounts.size(), Text.equal, Text.hash);
       allWallets.put(owner, subAccountMap);
     };
   };
-
 
   public shared query ({ caller }) func getAdmins() : async Result.Result<[Principal], Text> {
     if (not AuthManager.isAdmin(caller, admins)) {
@@ -188,7 +194,7 @@ shared ({ caller = deployer }) actor class Wallet(env: Text) = this {
   };
 
   func resolveAdminResponse(
-    adminListResponse : Result.Result<List.List<Principal>, Text>,
+    adminListResponse : Result.Result<List.List<Principal>, Text>
   ) : async Result.Result<(), Text> {
     switch (adminListResponse) {
       case (#err(Unauthorized)) {
@@ -202,4 +208,3 @@ shared ({ caller = deployer }) actor class Wallet(env: Text) = this {
   };
 
 };
-

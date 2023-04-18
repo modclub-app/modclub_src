@@ -19,6 +19,7 @@ import ModWallet "../../remote_canisters/ModWallet";
 import RSManager "../../remote_canisters/RSManager";
 import RSTypes "../../../rs/types";
 import WalletTypes "../../../wallet/types";
+import CommonTypes "../../../common/types"
 
 module VoteModule {
 
@@ -57,7 +58,7 @@ module VoteModule {
       let uniqueViolatedRules = HashMap.HashMap<Text, Types.PohRulesViolated>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       for (voteId in state.pohContent2votes.get0(packageId).vals()) {
         switch (state.pohVotes.get(voteId)) {
@@ -73,7 +74,7 @@ module VoteModule {
         };
       };
       let buffer = Buffer.Buffer<Types.PohRulesViolated>(
-        uniqueViolatedRules.size(),
+        uniqueViolatedRules.size()
       );
       for ((key, val) in uniqueViolatedRules.entries()) {
         buffer.add(val);
@@ -83,14 +84,14 @@ module VoteModule {
 
     public func votePohContent(
       userId : Principal,
-      env: Text,
+      env : CommonTypes.ENV,
       packageId : Text,
       decision : Types.Decision,
       violatedRules : [Types.PohRulesViolated],
-      pohContentQueueManager : QueueManager.QueueManager,
+      pohContentQueueManager : QueueManager.QueueManager
     ) : async Result.Result<Bool, VoteTypes.VoteError> {
       Debug.print(
-        "votePohContent: " # packageId # " UserId " # Principal.toText(userId),
+        "votePohContent: " # packageId # " UserId " # Principal.toText(userId)
       );
       if (checkPohUserHasVoted(userId, packageId)) {
         return #err(#userAlreadyVoted);
@@ -117,7 +118,7 @@ module VoteModule {
         createdAt = Time.now();
       };
 
-      if(userRSAndLevel.level != #novice) {
+      if (userRSAndLevel.level != #novice) {
         switch (decision) {
           case (#approved) {
             voteApproved += 1;
@@ -138,7 +139,7 @@ module VoteModule {
         packageId,
         voteApproved,
         voteRejected,
-        pohContentQueueManager,
+        pohContentQueueManager
       );
       Debug.print("Finished voting: ");
       #ok(finishedVoting);
@@ -190,7 +191,7 @@ module VoteModule {
       packageId : Text,
       aCount : Nat,
       rCount : Nat,
-      pohContentQueueManager : QueueManager.QueueManager,
+      pohContentQueueManager : QueueManager.QueueManager
     ) : Bool {
       var finishedVote = false;
 
@@ -219,7 +220,7 @@ module VoteModule {
 
     public func getVotesForPOHBasedOnPackageId(
       packageId : Text,
-      globalState : GlobalState.State,
+      globalState : GlobalState.State
     ) : [VoteTypes.VotePlusUser] {
       let buffer = Buffer.Buffer<VoteTypes.VotePlusUser>(0);
       for (vid in state.pohContent2votes.get0(packageId).vals()) {
@@ -236,7 +237,7 @@ module VoteModule {
                     userEmailId = result.email;
                     userVoteDecision = v.decision;
                     userVoteCreatedAt = v.createdAt;
-                  },
+                  }
                 );
               };
             };
@@ -246,9 +247,7 @@ module VoteModule {
       return buffer.toArray();
     };
 
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [
-      [Text]
-    ] {
+    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
       DownloadSupport.download(state, varName, start, end);
     };
 
@@ -257,22 +256,25 @@ module VoteModule {
     };
 
     public func getVoteState() : VoteStateV2.PohVoteState {
-        return state;
+      return state;
     };
 
-    public func migrateV1ToV2(pohVoteStableState: VoteState.PohVoteStableState, pohVoteStableStateV2: VoteStateV2.PohVoteStableState) : VoteStateV2.PohVoteStableState {
+    public func migrateV1ToV2(pohVoteStableState : VoteState.PohVoteStableState, pohVoteStableStateV2 : VoteStateV2.PohVoteStableState) : VoteStateV2.PohVoteStableState {
       let buff = Buffer.Buffer<(Text, VoteTypes.VoteV2)>(pohVoteStableState.pohVotes.size());
-      for((voteId, vote) in pohVoteStableState.pohVotes.vals()) {
-        buff.add((voteId, {
-          id = vote.id;
-          contentId = vote.contentId;
-          userId = vote.userId;
-          decision = vote.decision;
-          rsBeforeVoting = 0.0;
-          level = #novice;
-          violatedRules = vote.violatedRules;
-          createdAt = vote.createdAt; 
-        }));
+      for ((voteId, vote) in pohVoteStableState.pohVotes.vals()) {
+        buff.add((
+          voteId,
+          {
+            id = vote.id;
+            contentId = vote.contentId;
+            userId = vote.userId;
+            decision = vote.decision;
+            rsBeforeVoting = 0.0;
+            level = #novice;
+            violatedRules = vote.violatedRules;
+            createdAt = vote.createdAt;
+          }
+        ));
       };
 
       return {
@@ -283,7 +285,7 @@ module VoteModule {
         pohVotes = buff.toArray();
         pohContent2votes = pohVoteStableState.pohContent2votes;
         mods2Pohvotes = pohVoteStableState.mods2Pohvotes;
-        autoApprovePOHUserIds= pohVoteStableState.autoApprovePOHUserIds;
+        autoApprovePOHUserIds = pohVoteStableState.autoApprovePOHUserIds;
       };
     };
 

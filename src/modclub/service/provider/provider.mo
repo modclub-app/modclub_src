@@ -17,7 +17,7 @@ import AuthManager "../auth/auth";
 import Canistergeek "../../canistergeek/canistergeek";
 import ModClubParam "../parameters/params";
 import ModWallet "../../remote_canisters/ModWallet";
-
+import CommonTypes "../../../common/types"
 
 module ProviderModule {
 
@@ -27,7 +27,7 @@ module ProviderModule {
     description : Text,
     image : ?Types.Image,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : Text {
     // Todo remove this after airdrop
     // await onlyOwner(caller);
@@ -49,12 +49,12 @@ module ProviderModule {
               minStaked = 0;
               // Default amount staked, change when tokens are released
             };
-          },
+          }
         );
         Helpers.logMessage(
           logger,
           "registerProvider - Provider " # Principal.toText(providerId) # " Registration successful ",
-          #info,
+          #info
         );
         return "Registration successful";
       };
@@ -62,7 +62,7 @@ module ProviderModule {
         Helpers.logMessage(
           logger,
           "registerProvider - Provider " # Principal.toText(providerId) # " already registered ",
-          #info,
+          #info
         );
         return "Provider already registered";
       };
@@ -74,25 +74,25 @@ module ProviderModule {
     updatedProviderVal : Types.ProviderMeta,
     callerPrincipalId : Principal,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : async Types.ProviderMetaResult {
     //Check if user is authorized to perform the action
     var authorized = false;
     Debug.print(
-      "Authenticating the caller: " # Principal.toText(callerPrincipalId),
+      "Authenticating the caller: " # Principal.toText(callerPrincipalId)
     );
     switch (
       AuthManager.checkProviderAdminPermission(
         providerId,
         callerPrincipalId,
-        state,
-      ),
+        state
+      )
     ) {
       case (#err(error)) {
         Helpers.logMessage(
           logger,
           "updateProviderMetaData - Provider " # Principal.toText(providerId) # " permission check failed ",
-          #info,
+          #info
         );
         return #err(error);
       };
@@ -102,7 +102,7 @@ module ProviderModule {
       Helpers.logMessage(
         logger,
         "updateProviderMetaData - Provider " # Principal.toText(providerId) # " unauthorized ",
-        #info,
+        #info
       );
       return #err(#Unauthorized);
     };
@@ -121,12 +121,12 @@ module ProviderModule {
             createdAt = result.createdAt;
             updatedAt = now;
             settings = result.settings;
-          },
+          }
         );
         Helpers.logMessage(
           logger,
           "updateProviderMetaData - Provider " # Principal.toText(providerId) # " Provider metadata updated successfully ",
-          #info,
+          #info
         );
         return #ok(updatedProviderVal);
       };
@@ -142,7 +142,7 @@ module ProviderModule {
     logoType : Text,
     callerPrincipalId : Principal,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : async Text {
     var existingProvider = state.providers.get(providerId);
     switch (existingProvider) {
@@ -161,12 +161,12 @@ module ProviderModule {
             createdAt = result.createdAt;
             updatedAt = now;
             settings = result.settings;
-          },
+          }
         );
         Helpers.logMessage(
           logger,
           "updateProviderMetaData - Provider " # Principal.toText(providerId) # " Provider metadata updated successfully ",
-          #info,
+          #info
         );
         return "Uploaded";
       };
@@ -179,14 +179,14 @@ module ProviderModule {
   public func deregisterProvider(
     providerId : Principal,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : Text {
     switch (state.providers.get(providerId)) {
       case (null) {
         Helpers.logMessage(
           logger,
           "deregisterProvider - Provider " # Principal.toText(providerId) # " does not exist",
-          #info,
+          #info
         );
         return "Provider does not exist";
       };
@@ -195,7 +195,7 @@ module ProviderModule {
         Helpers.logMessage(
           logger,
           "deregisterProvider - Provider " # Principal.toText(providerId) # " deregistered",
-          #info,
+          #info
         );
         return "Provider deregistered";
       };
@@ -207,24 +207,24 @@ module ProviderModule {
     updatedSettings : Types.ProviderSettings,
     callerPrincipalId : Principal,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : async Types.ProviderSettingResult {
     var authorized = false;
     Debug.print(
-      "Authenticating the caller: " # Principal.toText(callerPrincipalId),
+      "Authenticating the caller: " # Principal.toText(callerPrincipalId)
     );
     switch (
       AuthManager.checkProviderAdminPermission(
         providerId,
         callerPrincipalId,
-        state,
-      ),
+        state
+      )
     ) {
       case (#err(error)) {
         Helpers.logMessage(
           logger,
           "updateProviderSettings - Provider " # Principal.toText(providerId) # " permission check failed ",
-          #info,
+          #info
         );
         return #err(error);
       };
@@ -234,7 +234,7 @@ module ProviderModule {
       Helpers.logMessage(
         logger,
         "updateProviderSettings - Provider " # Principal.toText(providerId) # " unauthorized ",
-        #info,
+        #info
       );
       return #err(#Unauthorized);
     };
@@ -254,12 +254,12 @@ module ProviderModule {
             createdAt = result.createdAt;
             updatedAt = now;
             settings = updatedSettings;
-          },
+          }
         );
         Helpers.logMessage(
           logger,
           "updateProviderSettings - Provider " # Principal.toText(providerId) # " updated successfully ",
-          #info,
+          #info
         );
         return #ok(updatedSettings);
       };
@@ -283,7 +283,7 @@ module ProviderModule {
           contentCount = state.provider2content.get0Size(provider.id);
           activeCount = getNewContentCount(
             provider.id,
-            state : GlobalState.State,
+            state : GlobalState.State
           );
           rewardsSpent = 5000;
           // Todo calculate rewards spent
@@ -300,21 +300,21 @@ module ProviderModule {
     providerId : Principal,
     rules : [Text],
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) {
     for (rule in rules.vals()) {
       var ruleId = Helpers.generateId(providerId, "rule", state);
       Helpers.logMessage(
         logger,
         "addRules - Provider " # Principal.toText(providerId) # "adding rule, ruleId:  " # ruleId # " text: " # rule,
-        #info,
+        #info
       );
       state.rules.put(
         ruleId,
         {
           id = ruleId;
           description = rule;
-        },
+        }
       );
       state.provider2rules.put(providerId, ruleId);
     };
@@ -324,13 +324,13 @@ module ProviderModule {
     providerId : Principal,
     ruleIds : [Types.RuleId],
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) {
     for (ruleId in ruleIds.vals()) {
       Helpers.logMessage(
         logger,
         "removeRules - Provider " # Principal.toText(providerId) # "removing rule, ruleId:  " # ruleId,
-        #info,
+        #info
       );
       state.rules.delete(ruleId);
       state.provider2rules.delete(providerId, ruleId);
@@ -340,7 +340,7 @@ module ProviderModule {
   public func updateRules(
     providerId : Principal,
     rulesList : [Types.Rule],
-    state : GlobalState.State,
+    state : GlobalState.State
   ) {
     for (rule in rulesList.vals()) {
       state.rules.put(rule.id, rule);
@@ -352,19 +352,19 @@ module ProviderModule {
     providerId : Principal,
     sub : Types.SubscribeMessage,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : () {
     Helpers.logMessage(
       logger,
       "subscribe - Provider " # Principal.toText(providerId) # " subscribing",
-      #info,
+      #info
     );
     state.providerSubs.put(providerId, sub);
   };
 
   public func getProviderRules(
     providerId : Principal,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : [Types.Rule] {
     let buf = Buffer.Buffer<Types.Rule>(0);
     for (ruleId in state.provider2rules.get0(providerId).vals()) {
@@ -385,7 +385,7 @@ module ProviderModule {
     providerId : ?Principal,
     state : GlobalState.State,
     modClubAmins : List.List<Principal>,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : async Types.ProviderResult {
     var authorized = false;
     var isProvider = false;
@@ -404,9 +404,9 @@ module ProviderModule {
     Helpers.logMessage(
       logger,
       "addProviderAdmin - Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(
-        caller,
+        caller
       ) # " new admin principal ID " # Principal.toText(userId),
-      #info,
+      #info
     );
 
     // Provider check
@@ -424,7 +424,7 @@ module ProviderModule {
     Helpers.logMessage(
       logger,
       "addProviderAdmin - Is caller provider:  " # Bool.toText(isProvider),
-      #info,
+      #info
     );
 
     // Allow Modclub Admins
@@ -435,7 +435,7 @@ module ProviderModule {
     // Check if the caller is an admin of this provider
     if (authorized == false) {
       switch (
-        AuthManager.checkProviderAdminPermission(_providerId, caller, state),
+        AuthManager.checkProviderAdminPermission(_providerId, caller, state)
       ) {
         case (#err(error)) return #err(error);
         case (#ok()) authorized := true;
@@ -470,7 +470,7 @@ module ProviderModule {
         let adminMap = HashMap.HashMap<Types.UserId, ()>(
           1,
           Principal.equal,
-          Principal.hash,
+          Principal.hash
         );
         adminMap.put(userId, ());
         state.providerAdmins.put(_providerId, adminMap);
@@ -490,18 +490,18 @@ module ProviderModule {
       Helpers.logMessage(
         logger,
         "addProviderAdmin - FAILED:  Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(
-          caller,
+          caller
         ) # " admin principal ID is already exist" # Principal.toText(userId),
-        #info,
+        #info
       );
       #err(#ProviderAdminIsAlreadyRegistered);
     } else {
       Helpers.logMessage(
         logger,
         "addProviderAdmin - SUCCESS:  Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(
-          caller,
+          caller
         ) # " new admin principal ID " # Principal.toText(userId),
-        #info,
+        #info
       );
       #ok();
     };
@@ -511,14 +511,14 @@ module ProviderModule {
   public func getAdminProviderIDs(
     caller : Principal,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : [Principal] {
     return state.admin2Provider.get0(caller);
   };
 
   public func getProviderAdmins(
     providerId : Principal,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : [Types.Profile] {
     let buf = Buffer.Buffer<Types.Profile>(0);
     switch (state.providerAdmins.get(providerId)) {
@@ -543,11 +543,11 @@ module ProviderModule {
     callerPrincipalId : Principal,
     state : GlobalState.State,
     modClubAmins : List.List<Principal>,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : async Types.ProviderResult {
 
     Debug.print(
-      "Authenticating the caller: " # Principal.toText(callerPrincipalId),
+      "Authenticating the caller: " # Principal.toText(callerPrincipalId)
     );
     // Allow Modclub Admins
     var authorized = AuthManager.isAdmin(callerPrincipalId, modClubAmins);
@@ -556,8 +556,8 @@ module ProviderModule {
         AuthManager.checkProviderAdminPermission(
           providerId,
           callerPrincipalId,
-          state,
-        ),
+          state
+        )
       ) {
         case (#err(error)) return #err(error);
         case (#ok()) authorized := true;
@@ -583,12 +583,12 @@ module ProviderModule {
     newUserName : Text,
     callerPrincipalId : Principal,
     modClubAmins : List.List<Principal>,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : async Types.ProviderResult {
 
     var authorized = AuthManager.isAdmin(callerPrincipalId, modClubAmins);
     Debug.print(
-      "Authenticating the caller: " # Principal.toText(callerPrincipalId),
+      "Authenticating the caller: " # Principal.toText(callerPrincipalId)
     );
 
     if (authorized == false) {
@@ -596,8 +596,8 @@ module ProviderModule {
         AuthManager.checkProviderAdminPermission(
           providerId,
           callerPrincipalId,
-          state,
-        ),
+          state
+        )
       ) {
         case (#err(error)) return #err(error);
         case (#ok()) authorized := true;
@@ -610,10 +610,10 @@ module ProviderModule {
 
     let editProviderAdminStatus = do ? {
       state.providerAdmins.get(providerId)!.get(
-        providerAdminPrincipalIdToBeEdited,
+        providerAdminPrincipalIdToBeEdited
       )!;
       let currentAdminProfile = state.profiles.get(
-        providerAdminPrincipalIdToBeEdited,
+        providerAdminPrincipalIdToBeEdited
       )!;
       state.profiles.put(
         providerAdminPrincipalIdToBeEdited,
@@ -625,7 +625,7 @@ module ProviderModule {
           role = currentAdminProfile.role;
           createdAt = currentAdminProfile.createdAt;
           updatedAt = Helpers.timeNow();
-        },
+        }
       );
     };
     if (Option.isNull(editProviderAdminStatus)) {
@@ -637,14 +637,14 @@ module ProviderModule {
   public func addToAllowList(
     providerId : Principal,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : async () {
     switch (state.providersWhitelist.get(providerId)) {
       case (?result) {
         Helpers.logMessage(
           logger,
           "addToAllowList - Provider " # Principal.toText(providerId) # " already added to allow list ",
-          #info,
+          #info
         );
         throw Error.reject("Provider already added to allow list");
         return;
@@ -653,33 +653,32 @@ module ProviderModule {
         Helpers.logMessage(
           logger,
           "addToAllowList - Provider " # Principal.toText(providerId) # "added to allow list ",
-          #info,
+          #info
         );
         state.providersWhitelist.put(providerId, true);
       };
     };
   };
 
-
   public func checkIfProviderHasEnoughBalance(
     providerId : Principal,
-    env: Text,
-    modclubCanisterPrincipal: Principal,
+    env : CommonTypes.ENV,
+    modclubCanisterPrincipal : Principal,
     state : GlobalState.State,
-    logger : Canistergeek.Logger,
+    logger : Canistergeek.Logger
   ) : async () {
     var minVotes = 0;
-    switch(state.providers.get(providerId)) {
-      case(null) {
+    switch (state.providers.get(providerId)) {
+      case (null) {
         return throw Error.reject("Unauthorized");
       };
-      case(?p) {
+      case (?p) {
         minVotes := p.settings.minVotes;
       };
     };
     let feeForTask = ModClubParam.CS * Float.fromInt(minVotes);
     let providerBalance = await ModWallet.getActor(env).queryBalance(?(Principal.toText(providerId) # ModClubParam.RESERVE_SA));
-    if(providerBalance < feeForTask) {
+    if (providerBalance < feeForTask) {
       return throw Error.reject("Not enough balance in provider reserves to submit task.");
     };
     let _ = await ModWallet.getActor(env).transfer(?(Principal.toText(providerId) # ModClubParam.RESERVE_SA), modclubCanisterPrincipal, ?(Principal.toText(providerId) # ModClubParam.ACCOUNT_PAYABLE), feeForTask);
@@ -687,7 +686,7 @@ module ProviderModule {
 
   private func getNewContentCount(
     providerId : Principal,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : Nat {
     var count = 0;
     for (cid in state.provider2content.get0(providerId).vals()) {
