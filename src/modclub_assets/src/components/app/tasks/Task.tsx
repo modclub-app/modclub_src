@@ -1,9 +1,16 @@
-import * as React from 'react'
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
 import { getContent } from "../../../utils/api";
-import { Columns, Card, Level, Heading, Icon, Button } from "react-bulma-components";
+import {
+  Columns,
+  Card,
+  Level,
+  Heading,
+  Icon,
+  Button,
+} from "react-bulma-components";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
@@ -15,18 +22,37 @@ import sanitizeHtml from "sanitize-html-react";
 const InfoItem = ({ icon, title, info }) => {
   return (
     <Level>
-      <Heading size={6} className="has-text-silver is-flex is-align-items-center mb-0" style={{ minWidth: 120 }}>
+      <Heading
+        size={6}
+        className="has-text-silver is-flex is-align-items-center mb-0"
+        style={{ minWidth: 120 }}
+      >
         <Icon className="mr-2">
           <span className="material-icons">{icon}</span>
         </Icon>
         <span>{title}</span>
       </Heading>
-      <p className="has-text-silver">
-        {info}
-      </p>
+      <p className="has-text-silver">{info}</p>
     </Level>
   );
 };
+
+function resizeIframe(iframe) {
+  if (!iframe.contentWindow) {
+    console.warn("Cannot access contentWindow property of iframe element");
+    return;
+  }
+  iframe.contentWindow.postMessage("get-iframe-height", "*");
+  window.addEventListener("message", (event) => {
+    if (
+      event.data &&
+      event.data.type === "iframe-height" &&
+      event.data.src === iframe.src
+    ) {
+      iframe.style.height = `${event.data.height}px`;
+    }
+  });
+}
 
 export default function Task() {
   const { user } = useAuth();
@@ -37,13 +63,13 @@ export default function Task() {
   const getImage = (data: any) => {
     const image = unwrap<Image__1>(data);
     return fileToImgSrc(image.data, image.imageType);
-  }
+  };
 
   const fetchTask = async () => {
     const content = await getContent(taskId);
     console.log(content);
     setTask(content);
-  }
+  };
 
   useEffect(() => {
     user && !task && fetchTask();
@@ -53,6 +79,40 @@ export default function Task() {
     user && voted && fetchTask();
     setVoted(false);
   }, [voted]);
+
+  const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
+    "img",
+    "iframe",
+  ]);
+
+  const iframeAttributes = ["src", "width", "height", "frameborder", "style"];
+  const allowedAttributes = {
+    ...sanitizeHtml.defaults.allowedAttributes,
+    iframe: iframeAttributes,
+  };
+
+  const sanitizedHtml = sanitizeHtml((task && task.text) || "<div></div>", {
+    allowedTags,
+    allowedAttributes,
+  });
+
+  useEffect(() => {
+    const iframes = document.querySelectorAll("iframe");
+    iframes.forEach((iframe) => {
+      iframe.addEventListener("load", () => {
+        resizeIframe(iframe);
+      });
+      window.addEventListener("message", (event) => {
+        if (
+          event.data &&
+          event.data.type === "iframe-height" &&
+          event.data.src === iframe.src
+        ) {
+          iframe.style.height = `${event.data.height}px`;
+        }
+      });
+    });
+  }, [sanitizedHtml]);
 
   return (
     <>
@@ -67,9 +127,7 @@ export default function Task() {
               <Card.Header>
                 <Card.Header.Title>
                   {task.providerName}
-                  <span>
-                    Submitted by {task.sourceId}
-                  </span>
+                  <span>Submitted by {task.sourceId}</span>
                 </Card.Header.Title>
                 <Progress
                   value={Number(task.voteCount)}
@@ -77,23 +135,23 @@ export default function Task() {
                 />
               </Card.Header>
               <Card.Content>
-                <Heading>
-                  {task.title}
-                </Heading>
+                <Heading>{task.title}</Heading>
 
-                {'text' in task.contentType && (
-                  <p>{task.text}</p>
+                {"text" in task.contentType && <p>{task.text}</p>}
+                {"imageBlob" in task.contentType && (
+                  <img
+                    src={getImage(task.image)}
+                    alt="Image File"
+                    style={{ display: "block", margin: "auto" }}
+                  />
                 )}
-                {'imageBlob' in task.contentType && (
-                  <img src={getImage(task.image)} alt="Image File" style={{ display: "block", margin: "auto" }} />
-                )}
-                {'htmlContent' in task.contentType && (
-                  
+                {"htmlContent" in task.contentType && (
                   <div className="htmlContent content">
-                    <div dangerouslySetInnerHTML={{__html: sanitizeHtml(task.text, {
-                      allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ])
-                      })
-                    }} />
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizedHtml,
+                      }}
+                    />
                   </div>
                 )}
 
@@ -139,5 +197,5 @@ export default function Task() {
         </Columns>
       )}
     </>
-  )
+  );
 }
