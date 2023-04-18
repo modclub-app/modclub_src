@@ -20,24 +20,24 @@ import ModWallet "../../remote_canisters/ModWallet";
 import RSManager "../../remote_canisters/RSManager";
 import RSTypes "../../../rs/types";
 import WalletTypes "../../../wallet/types";
-
-module ContentVotingModule {
+import CommonTypes "../../../common/types" module ContentVotingModule {
 
   public type ContentVoteError = { #contentNotFound; #voteNotFound };
 
   public func getContentResult(
-      contentId: Types.ContentId,
-      sourceId: Text,
-      status: Types.ContentStatus,
-      voteCount : Types.VoteCount) : Types.ContentResult {
-        let contentResult : Types.ContentResult = {
-              sourceId = sourceId;
-              approvedCount = voteCount.approvedCount;
-              rejectedCount = voteCount.rejectedCount;
-              status = status;
-              violatedRules = getViolatedRuleCount(voteCount.violatedRulesCount);
-      };
-    return contentResult; 
+    contentId : Types.ContentId,
+    sourceId : Text,
+    status : Types.ContentStatus,
+    voteCount : Types.VoteCount
+  ) : Types.ContentResult {
+    let contentResult : Types.ContentResult = {
+      sourceId = sourceId;
+      approvedCount = voteCount.approvedCount;
+      rejectedCount = voteCount.rejectedCount;
+      status = status;
+      violatedRules = getViolatedRuleCount(voteCount.violatedRulesCount);
+    };
+    return contentResult;
   };
 
   public func getVotePerformance(caller : Principal, state : GlobalState.State) : Result.Result<Float, ContentVoteError> {
@@ -66,7 +66,7 @@ module ContentVotingModule {
     var performance : Float = 0;
     if (completedVoteCount != 0) {
       performance := Float.fromInt(correctVoteCount) / Float.fromInt(
-        completedVoteCount,
+        completedVoteCount
       );
     };
     return #ok(performance);
@@ -74,7 +74,7 @@ module ContentVotingModule {
 
   public func vote(
     userId : Principal,
-    env: Text,
+    env : CommonTypes.ENV,
     contentId : Types.ContentId,
     decision : Types.Decision,
     violatedRules : ?[Types.RuleId],
@@ -83,15 +83,15 @@ module ContentVotingModule {
     logger : Canistergeek.Logger,
     contentQueueManager : QueueManager.QueueManager,
     randomizationEnabled : Bool,
-    modclubWalletId: Principal
+    modclubWalletId : Principal
   ) : async Text {
     if (
       not contentQueueManager.isContentAssignedToUser(
         userId,
         contentId,
         logger,
-        randomizationEnabled,
-      ),
+        randomizationEnabled
+      )
     ) {
       throw Error.reject("User voted on Unauthorized Content.");
     };
@@ -106,7 +106,7 @@ module ContentVotingModule {
     switch (state.content.get(contentId)) {
       case (?content) {
         if (content.status != #new) throw Error.reject(
-          "Content has already been reviewed",
+          "Content has already been reviewed"
         );
       };
       case (_)(throw Error.reject("Content does not exist"));
@@ -145,7 +145,7 @@ module ContentVotingModule {
       createdAt = Helpers.timeNow();
     };
 
-    if(userRSAndLevel.level != #novice) {
+    if (userRSAndLevel.level != #novice) {
       switch (decision) {
         case (#approved) {
           voteApproved += 1;
@@ -156,12 +156,12 @@ module ContentVotingModule {
       };
     };
 
-      // Update relations
+    // Update relations
     state.content2votes.put(contentId, vote.id);
     state.mods2votes.put(userId, vote.id);
     state.votes.put(vote.id, vote);
 
-      // Evaluate and send notification to provider
+    // Evaluate and send notification to provider
     switch (state.content.get(contentId)) {
       case (?content) {
         await evaluateVotes(
@@ -173,19 +173,19 @@ module ContentVotingModule {
           voteCount.violatedRulesCount,
           state,
           logger,
-          contentQueueManager,
+          contentQueueManager
         );
       };
       case (_)(throw Error.reject("Content does not exist"));
     };
-    
+
     return "Vote successful";
   };
 
   private func validateRules(
     contentId : Types.ContentId,
     violatedRules : [Types.RuleId],
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : Bool {
     if (violatedRules.size() == 0) {
       return false;
@@ -196,7 +196,7 @@ module ContentVotingModule {
         for (rule in violatedRules.vals()) {
           let isMember : Bool = state.provider2rules.isMember(
             content.providerId,
-            rule,
+            rule
           );
           if (isMember != true) {
             return false;
@@ -212,25 +212,25 @@ module ContentVotingModule {
 
   private func evaluateVotes(
     content : Types.Content,
-    env: Text,
+    env : CommonTypes.ENV,
     aCount : Nat,
     rCount : Nat,
     modclubWalletId : Principal,
-    violatedRulesCount: HashMap.HashMap<Text, Nat>,
+    violatedRulesCount : HashMap.HashMap<Text, Nat>,
     state : GlobalState.State,
     logger : Canistergeek.Logger,
-    contentQueueManager : QueueManager.QueueManager,
+    contentQueueManager : QueueManager.QueueManager
   ) : async () {
     var finishedVote = false;
     var status : Types.ContentStatus = #new;
     var decision : Types.Decision = #approved;
 
     var minVotes = 0;
-    switch(state.providers.get(content.providerId)) {
-      case(?provider) {
+    switch (state.providers.get(content.providerId)) {
+      case (?provider) {
         minVotes := provider.settings.minVotes;
       };
-      case(null)();
+      case (null)();
     };
 
     if (aCount >= minVotes) {
@@ -253,13 +253,13 @@ module ContentVotingModule {
       // Reward / Slash voters ;
       let rewardingVotes = Buffer.Buffer<Types.VoteV2>(1);
       let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
-      for(voteId in state.content2votes.get0(content.id).vals()) {
+      for (voteId in state.content2votes.get0(content.id).vals()) {
         switch (state.votes.get(voteId)) {
-          case(null)();
-          case(?vote) {
+          case (null)();
+          case (?vote) {
             var votedCorrect = false;
             if (vote.decision == decision) {
-              if(vote.level != #novice) {
+              if (vote.level != #novice) {
                 rewardingVotes.add(vote);
               };
               votedCorrect := true;
@@ -274,19 +274,19 @@ module ContentVotingModule {
         };
       };
       var sumRS = 0.0;
-      for(userVote in rewardingVotes.vals()) {
+      for (userVote in rewardingVotes.vals()) {
         sumRS := sumRS + userVote.rsBeforeVoting;
       };
-      
+
       // For each rewarding vote, add the user to the buffer with the corresponding amount of MOD to be rewarded
       let usersToRewardMOD = Buffer.Buffer<WalletTypes.UserAndAmount>(1);
-      let CT: Float = ModClubParam.CS * Float.fromInt(minVotes);
-      for(userVote in rewardingVotes.vals()) {
+      let CT : Float = ModClubParam.CS * Float.fromInt(minVotes);
+      for (userVote in rewardingVotes.vals()) {
         usersToRewardMOD.add({
           fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
           toOwner = userVote.userId;
           toSA = null;
-          amount = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT)/ sumRS ;
+          amount = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
         });
       };
       let _ = await RSManager.getActor(env).updateRSBulk(usersToRewardRS.toArray());
@@ -295,14 +295,14 @@ module ContentVotingModule {
         fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
         toOwner = modclubWalletId;
         toSA = ?ModClubParam.TREASURY_SA;
-        amount = (ModClubParam.GAMMA_T * CT) ;
+        amount = (ModClubParam.GAMMA_T * CT);
       });
       let _ = await ModWallet.getActor(env).transferBulk(usersToRewardMOD.toArray());
       // burn
       let _ = await ModWallet.getActor(env).burn(
-                    ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE), 
-                    (ModClubParam.GAMMA_B * CT)
-                  );
+        ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE),
+        (ModClubParam.GAMMA_B * CT)
+      );
 
     };
 
@@ -318,7 +318,7 @@ module ContentVotingModule {
         title = content.title;
         createdAt = content.createdAt;
         updatedAt = Helpers.timeNow();
-      },
+      }
     );
 
     // Call the providers callback
@@ -332,39 +332,38 @@ module ContentVotingModule {
             rejectedCount = rCount;
             status = status;
             violatedRules = getViolatedRuleCount(violatedRulesCount);
-          },
+          }
         );
         Debug.print(
           "Called callback for provider " # Principal.toText(
-            content.providerId,
-          ),
+            content.providerId
+          )
         );
         Helpers.logMessage(
           logger,
           "Called callback for provider " # Principal.toText(
-            content.providerId,
+            content.providerId
           ),
-          #info,
+          #info
         );
       };
       case (_) {
         Debug.print(
-          "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback",
+          "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback"
         );
         Helpers.logMessage(
           logger,
           "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback",
-          #info,
+          #info
         );
       };
     };
   };
-  
 
-  private func getViolatedRuleCount(violatedRuleCount: HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
+  private func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
     let vRulesCountBuff = Buffer.Buffer<Types.ViolatedRules>(violatedRuleCount.size());
 
-    for((vRuleId, count) in violatedRuleCount.entries()) {
+    for ((vRuleId, count) in violatedRuleCount.entries()) {
       vRulesCountBuff.add({
         id = vRuleId;
         rejectionCount = count;
@@ -373,16 +372,16 @@ module ContentVotingModule {
     return vRulesCountBuff.toArray();
   };
 
-  private func callBackDataToString(callbackData: Types.ContentResult) : Text {
+  private func callBackDataToString(callbackData : Types.ContentResult) : Text {
     var res = "sourceId: " # callbackData.sourceId # " approvedCount: " # Nat.toText(callbackData.approvedCount) # " rejectedCount: " # Nat.toText(callbackData.rejectedCount);
-    switch(callbackData.status) {
-      case(#rejected) {
-        res :=  res # " violatedRules size: " # Nat.toText(callbackData.violatedRules.size());
-        for(vRules in callbackData.violatedRules.vals()) {
+    switch (callbackData.status) {
+      case (#rejected) {
+        res := res # " violatedRules size: " # Nat.toText(callbackData.violatedRules.size());
+        for (vRules in callbackData.violatedRules.vals()) {
           res := res # " id: " # vRules.id # " rejectionCount: " # Nat.toText(vRules.rejectionCount);
         };
       };
-      case(_)();
+      case (_)();
     };
     return res;
   };
