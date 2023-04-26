@@ -24,7 +24,7 @@ shared ({ caller = deployer }) actor class Wallet(env : CommonTypes.ENV) = this 
 
   switch (env) {
     case (#local(value)) {
-      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText(value);
+      MODCLUB_WALLET_PRINCIPAL := ?value.modclub_canister_id;
     };
     case (#prod) {
       MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai");

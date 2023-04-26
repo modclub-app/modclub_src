@@ -26,7 +26,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
   switch (env) {
     case (#local(value)) {
-      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText(value);
+      MODCLUB_WALLET_PRINCIPAL := ?value.modclub_canister_id;
     };
     case (#prod) {
       MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai");
@@ -76,7 +76,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     };
     let buff = Buffer.Buffer<Types.UserAndRS>(userVotes.size());
     for (userVote in userVotes.vals()) {
-      buff.add(await updateRS(userVote.userId, userVote.votedCorrect));
+      buff.add(await _updateRS(userVote.userId, userVote.votedCorrect));
     };
     buff.toArray();
   };
@@ -85,6 +85,17 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     if (not Principal.equal(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), caller)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
+    return await _updateRS(userId, votedCorrect);
+  };
+
+  public shared ({ caller }) func setRS(userId : Principal, rs : Float) : async () {
+    if (not AuthManager.isAdmin(caller, admins)) {
+      throw Error.reject(AuthManager.Unauthorized);
+    };
+    rsByUserId.put(userId, rs);
+  };
+
+  private func _updateRS(userId : Principal, votedCorrect : Bool): async Types.UserAndRS {
     var point : Float = 0.1;
     if (not votedCorrect) {
       point := point * -1;
@@ -99,14 +110,6 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
       score = currentRS;
     };
   };
-
-  public shared ({ caller }) func setRS(userId : Principal, rs : Float) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    rsByUserId.put(userId, rs);
-  };
-
   private func sortTopUser(user1 : (Principal, Float), user2 : (Principal, Float)) : Order.Order {
     Float.compare(user2.1, user1.1);
   };

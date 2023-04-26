@@ -1,0 +1,42 @@
+type Wallet = 
+ service {
+   burn: (opt SubAccount, float64) -> ();
+   getAdmins: () -> (Result_1) query;
+   isUserAdmin: () -> (bool) query;
+   queryBalance: (opt SubAccount) -> (float64) query;
+   queryBalancePr: (principal, opt SubAccount) -> (float64) query;
+   registerAdmin: (principal) -> (Result);
+   stakeTokens: (float64) -> ();
+   tge: () -> ();
+   transfer: (opt SubAccount, principal, opt SubAccount, float64) -> ();
+   transferBulk: (vec UserAndAmount) -> ();
+   transferToProvider: (principal, opt SubAccount, principal, opt SubAccount,
+    float64) -> ();
+   unregisterAdmin: (text) -> (Result);
+ };
+type UserAndAmount = 
+ record {
+   amount: float64;
+   fromSA: opt text;
+   toOwner: principal;
+   toSA: opt text;
+ };
+type SubAccount = text;
+type Result_1 = 
+ variant {
+   err: text;
+   ok: vec principal;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok;
+ };
+type ENV = 
+ variant {
+   dev;
+   local: text;
+   prod;
+   qa;
+ };
+service : (ENV) -> Wallet

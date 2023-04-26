@@ -698,7 +698,12 @@ type GetLatestLogMessagesParameters =
 type ENV = 
  variant {
    dev;
-   local: text;
+   local:
+    record {
+      modclub_canister_id: principal;
+      rs_canister_id: principal;
+      wallet_canister_id: principal;
+    };
    prod;
    qa;
  };

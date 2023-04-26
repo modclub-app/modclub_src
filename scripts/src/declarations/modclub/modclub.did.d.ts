@@ -107,7 +107,13 @@ export type Decision__1 = { 'approved' : null } |
 export type ENV = { 'qa' : null } |
   { 'dev' : null } |
   { 'prod' : null } |
-  { 'local' : string };
+  {
+    'local' : {
+      'wallet_canister_id' : Principal,
+      'modclub_canister_id' : Principal,
+      'rs_canister_id' : Principal,
+    }
+  };
 export interface GetLatestLogMessagesParameters {
   'upToTimeNanos' : [] | [Nanos],
   'count' : number,
