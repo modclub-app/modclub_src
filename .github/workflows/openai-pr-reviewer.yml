@@ -27,4 +27,27 @@ jobs:
           debug: false
           review_simple_changes: false
           review_comment_lgtm: false
-          openai_heavy_model: "gpt-4"
+          path_filters: |
+            !dist/**
+            !**/*.pb.go
+            !**/*.lock
+            !**/*.yaml
+            !**/*.yml
+            !**/*.cfg
+            !**/*.toml
+            !**/*.ini
+            !**/*.mod
+            !**/*.sum
+            !**/*.work
+            !**/*.json
+            !**/*.mmd
+            !**/*.svg
+            !**/*.png
+            !**/*.dot
+            !**/*.md5sum
+            !**/*.wasm
+            !**/gen/**
+            !**/_gen/**
+            !**/generated/**
+            !**/vendor/**
+            !**/declarations/**
