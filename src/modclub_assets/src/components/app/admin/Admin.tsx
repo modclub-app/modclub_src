@@ -26,6 +26,7 @@ import {
   getUserFromCanister,
   getAdminProviderIDs,
   updateProviderLogo,
+  queryBalancePr,
 } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
@@ -34,6 +35,7 @@ import placeholder from "../../../../assets/user_placeholder.png";
 import { ImageData } from "../../../utils/types";
 import { Principal } from "@dfinity/principal";
 import AdminIdentity from "../../external/AdminIdentity";
+import { useAuth } from "../../../utils/auth";
 
 const EditAppModal = ({ toggle, principalID, selectedProvider, updateProvider }) => {
   const onFormSubmit = async (values: any) => {
@@ -352,8 +354,10 @@ const RemoveRuleModal = ({
 };
 
 export default function Admin({selectedProvider,providerIdText,setSelectedProvider, providers}) {
+  const {identity} = useAuth();
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
+  const [mod_token, setModToken] = useState<number>(0);
 
   const [showEditRules, setShowEditRules] = useState(false);
   const toggleEditRules = () => setShowEditRules(!showEditRules);
@@ -399,11 +403,27 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
         setRules(selectedProvider.rules);
       }
     };
+    let get_token= async() =>{
+      let token = await queryBalancePr(identity.getPrincipal().toText());
+      setModToken(token);
+    }
+    get_token();
     adminInit();
   }, []);
+
   const toggle = () => setShowModal(false);
-
-
+  const formet_token = (amount) => 
+  {
+    if(amount >= 1000 && amount < 1000000)
+    {
+      return `${(amount/1000).toFixed(2)}k`
+    }else if(amount >= 1000000)
+    {
+      return `${(amount/1000000).toFixed(2)}m`
+    }else{
+      return `${amount}`
+    }
+  }
 
   const [loader, setLoader] = useState(false);
   const [newRules, setNewRules] = useState(rules);
@@ -545,9 +565,8 @@ export default function Admin({selectedProvider,providerIdText,setSelectedProvid
                   className="mt-3 ml-3"
                   style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
                 >
-                  <p className="is-size-7 has-text-light">min 100000 tokens</p>
                   <Heading size={1} className="level">
-                    <span>55k</span>
+                    <span>{formet_token(mod_token)}</span>
                     <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
                       MOD
                       <br />

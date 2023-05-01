@@ -7,7 +7,7 @@ import Debug "mo:base/Debug";
 module {
 
   public type RSManagerActorType = actor {
-    topKUsers : (Nat, Nat) -> async [Types.UserAndRS];
+    topUsers : (Nat, Nat) -> async [Types.UserAndRS];
     queryRSAndLevel : () -> async Types.RSAndLevel;
     queryRSAndLevelByPrincipal : (Principal) -> async Types.RSAndLevel;
     updateRSBulk : ([Types.UserAndVote]) -> async [Types.UserAndRS];

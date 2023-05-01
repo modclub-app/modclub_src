@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from "react";
-import { getTokenHoldings, getPerformance } from '../../../utils/api';
+import { getTokenHoldings, getPerformance, queryRSAndLevelByPrincipal, queryRSAndLevel } from '../../../utils/api';
 import { useAuth } from "../../../utils/auth";
 import { Columns, Card, Heading, Button } from "react-bulma-components";
 import walletImg from '../../../../assets/wallet.svg';
@@ -9,6 +9,7 @@ import performanceImg from '../../../../assets/performance.svg';
 import Withdraw from "../modals/Withdraw";
 import Stake from "../modals/Stake";
 import Unstake from "../modals/Unstake";
+import { Principal } from '@dfinity/principal';
 
 const StatBox = ({ loading, image, title, amount, usd, detailed, children }) => {
   return (
@@ -45,8 +46,9 @@ const StatBox = ({ loading, image, title, amount, usd, detailed, children }) => 
 };
 
 export default function Userstats({ detailed = false }) {
-  const { user } = useAuth();
+  const { user,identity } = useAuth();
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
+  const [principalID, setPrincipalID] = useState<string>("");
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards : 0,
     stake : 0,
@@ -63,11 +65,23 @@ export default function Userstats({ detailed = false }) {
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);
 
+  const getUserData = (identity) => {
+    const principalId = identity.getPrincipal().toText();
+    setPrincipalID(principalId);
+  };
+  useEffect(() => {
+    identity && getUserData(identity);
+  }, [identity]);
+
   useEffect(() => {
     const fetchTokenHoldings = async () => {
       const tokenHoldings = await getTokenHoldings();
-      const performance = await getPerformance();
-      setPerformance(performance);
+      let perf = 0;
+      if(principalID !== "")
+      {
+        perf = await (await queryRSAndLevelByPrincipal(principalID!)).score;
+        setPerformance(perf);
+      }
       setTokenHoldings(tokenHoldings);
       setHoldingsUpdated(false);
     };
@@ -114,8 +128,8 @@ export default function Userstats({ detailed = false }) {
       <StatBox
         loading={holdingsUpdated}
         image={performanceImg}
-        title="Performance"
-        amount={(performance * 100).toFixed(0) + "%"}
+        title="Reputation Score"
+        amount={performance.toFixed(0)}
         usd={12}
         detailed={detailed}
       >

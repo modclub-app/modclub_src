@@ -1,7 +1,6 @@
 import { Actor, HttpAgent, Identity } from "@dfinity/agent";
 // Imports and re-exports candid interface
 import { idlFactory, modclub } from "../../../declarations/modclub/index";
-export { idlFactory, modclub } from "../../../declarations/modclub/index";
 import { _SERVICE } from "./types";
 import dfxConfig from "../../../../dfx.json";
 

@@ -34,7 +34,10 @@ import { Principal } from "@dfinity/principal";
 import { modclub } from "../../../declarations/modclub/index";
 import { modclub_dev } from "../../../declarations/modclub_dev/index";
 import { modclub_qa } from "../../../declarations/modclub_qa/index";
+import { rs } from "../../../declarations/rs";
+import { wallet } from "../../../declarations/wallet";
 import { fetchObjectUrl, formatDate, getUrlForData } from "./util";
+import { RSAndLevel } from "../../../declarations/rs/rs.did";
 export type Optional<Type> = [Type] | [];
 
 var actor: _SERVICE = null;
@@ -51,7 +54,16 @@ async function getMC(): Promise<_SERVICE> {
   }
   return actor;
 }
-
+async function trace_error(_trace:any) {
+  try {
+    return Promise.resolve(_trace());
+  } catch (e) {
+    console.log(e);
+    return Promise.reject(e);
+    
+  }
+  
+}
 export async function registerModerator(
   username: string,
   email?: string,
@@ -144,7 +156,7 @@ export async function editProviderAdmin(
 export async function getAllContent(
   status: ContentStatus
 ): Promise<ContentPlus[]> {
-  return (await getMC()).getAllContent(status);
+  return trace_error(async()=>(await getMC()).getAllContent(status));
 }
 
 export async function getContent(
@@ -190,7 +202,7 @@ export async function getProviderAdmins(
 }
 
 export async function stakeTokens(amount: number): Promise<string> {
-  return (await getMC()).stakeTokens(BigInt(amount));
+  return (await wallet.stakeTokens(amount));
 }
 
 export async function unStakeTokens(amount: number): Promise<string> {
@@ -352,6 +364,7 @@ export async function registerUserToReceiveAlerts(
   return (await MCToUse.registerUserToReceiveAlerts(Principal.fromText(userId), wantToReceiveAlerts));
 }
 
+
 export async function getPohTaskDataForAdminUsers(packageId: string): Promise<any> {
   return (await getMC()).getPohTaskDataForAdminUsers(packageId);
 }
@@ -377,11 +390,19 @@ export async function getTasks(
   end: number,
   filterVoted: boolean
 ): Promise<ContentPlus[]> {
-  try {
-    return (await getMC()).getTasks(BigInt(start), BigInt(end), filterVoted);
-  } catch (e) {
-    // Temp fix for the issue where the MC is not ready yet
-    console.log(e);
-    return [];
-  }
+  return trace_error(async()=>(await getMC()).getTasks(BigInt(start), BigInt(end), filterVoted));
+}
+export async function queryRSAndLevelByPrincipal(principalId: string):Promise<RSAndLevel> {
+  return trace_error(async()=>  await rs.queryRSAndLevelByPrincipal(Principal.fromText(principalId)));
+}
+export async function queryRSAndLevel():Promise<RSAndLevel> {
+  return trace_error(async()=> await rs.queryRSAndLevel());
+
+}
+export async function queryBalance(subAcc?: string): Promise<number>{
+  return trace_error(async()=> await wallet.queryBalance(subAcc ? [subAcc] : []));
+ 
+}
+export async function queryBalancePr(principalId:string, subAcc?: string): Promise<number>{
+  return trace_error(async()=> await wallet.queryBalancePr(Principal.fromText(principalId), subAcc ? [subAcc] : []));
 }

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
-import { getAllContent, getProviderRules, getTasks } from "../../../utils/api";
+import { getAllContent, getProviderRules, getTasks, shuffleContent } from "../../../utils/api";
 import {
   Modal,
   Columns,
@@ -159,7 +159,11 @@ export default function Tasks() {
 
   const fetchTasks = async () => {
     setLoading(true);
-    const newTasks = await getTasks(page.startIndex, page.endIndex, FILTER_VOTES);
+    const newTasks = await getTasks(page.startIndex, page.endIndex, FILTER_VOTES).then((res)=>{
+      return res
+    });
+    
+    
     if (newTasks.length < PAGE_SIZE) setHasReachedEnd(true)
     setTasks([...tasks, ...newTasks]);
     setLoading(false);

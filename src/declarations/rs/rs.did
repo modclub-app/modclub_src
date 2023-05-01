@@ -1,0 +1,54 @@
+type UserLevel = 
+ variant {
+   junior;
+   novice;
+   senior1;
+   senior2;
+   senior3;
+ };
+type UserAndVote = 
+ record {
+   userId: principal;
+   votedCorrect: bool;
+ };
+type UserAndRS = 
+ record {
+   score: float64;
+   userId: principal;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: vec principal;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok;
+ };
+type RSManager = 
+ service {
+   getAdmins: () -> (Result_1) query;
+   isUserAdmin: () -> (bool) query;
+   queryRSAndLevel: () -> (RSAndLevel) query;
+   queryRSAndLevelByPrincipal: (principal) -> (RSAndLevel) query;
+   registerAdmin: (principal) -> (Result);
+   setRS: (principal, float64) -> ();
+   topUsers: (nat, nat) -> (vec UserAndRS) query;
+   unregisterAdmin: (text) -> (Result);
+   updateRS: (principal, bool) -> (UserAndRS);
+   updateRSBulk: (vec UserAndVote) -> (vec UserAndRS);
+ };
+type RSAndLevel = 
+ record {
+   level: UserLevel;
+   score: float64;
+ };
+type ENV = 
+ variant {
+   dev;
+   local: text;
+   prod;
+   qa;
+ };
+service : (ENV) -> RSManager
