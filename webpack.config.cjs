@@ -133,6 +133,14 @@ module.exports = {
         canisters["modclub_dev"] || "olc6u-lqaaa-aaaah-qcooq-cai",
       MODCLUB_QA_CANISTER_ID:
         canisters["modclub_qa"] || "f2xjy-4aaaa-aaaah-qc3eq-cai",
+      WALLET_CANISTER_ID: canisters["wallet"],
+      WALLET_DEV_CANISTER_ID:
+        canisters["wallet_dev"] || "vxnwt-gyaaa-aaaah-qc7vq-cai",
+      WALLET_QA_CANISTER_ID:
+        canisters["wallet_qa"] || "vckh6-hqaaa-aaaah-qc7wa-cai",
+      RS_CANISTER_ID: canisters["rs"],
+      RS_DEV_CANISTER_ID: canisters["rs_dev"] || "vflbk-kiaaa-aaaah-qc7wq-cai",
+      RS_QA_CANISTER_ID: canisters["rs_qa"] || "vmikw-4aaaa-aaaah-qc7xa-cai",
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
       DEV_ENV: process.env.DEV_ENV || "production",

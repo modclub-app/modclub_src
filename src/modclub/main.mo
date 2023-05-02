@@ -770,7 +770,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     Types.ModeratorLeaderboard
   ] {
 
-    let topUsers = await RSManager.getActor(env).topKUsers(start, end);
+    let topUsers = await RSManager.getActor(env).topUsers(start, end);
 
     switch (
       ModeratorManager.formModeratorLeaderboard(

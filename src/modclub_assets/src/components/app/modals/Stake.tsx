@@ -1,8 +1,8 @@
-import * as React from 'react'
+import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
-import { stakeTokens } from '../../../utils/api';
+import { stakeTokens } from "../../../utils/api";
 
 const UpdateTable = ({ wallet, stake, amount = 0 }) => {
   return (
@@ -24,29 +24,34 @@ const UpdateTable = ({ wallet, stake, amount = 0 }) => {
         <span className="has-text-weight-bold">{stake + Number(amount)}</span>
       </Level>
     </>
-  )
-}
+  );
+};
 
-export default function Stake({ toggle, tokenHoldings, onUpdate }) {  
+export default function Stake({ toggle, tokenHoldings, onUpdate }) {
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
-    let res = await stakeTokens(amount);
+    let res = await stakeTokens(parseFloat(amount));
     onUpdate();
     return res;
   };
 
   const preventMax = (e) => {
     if (parseInt(e.target.value) > tokenHoldings.wallet) {
-      e.target.value = tokenHoldings.wallet; 
+      e.target.value = tokenHoldings.wallet;
     }
-  }
+  };
 
   return (
     <FormModal
       title="Stake"
       toggle={toggle}
       handleSubmit={onFormSubmit}
-      updateTable={<UpdateTable wallet={tokenHoldings.wallet} stake={tokenHoldings.stake} />}
+      updateTable={
+        <UpdateTable
+          wallet={tokenHoldings.wallet}
+          stake={tokenHoldings.stake}
+        />
+      }
     >
       <div className="field">
         <div className="control has-icons-right">
@@ -65,4 +70,4 @@ export default function Stake({ toggle, tokenHoldings, onUpdate }) {
       </div>
     </FormModal>
   );
-};
+}

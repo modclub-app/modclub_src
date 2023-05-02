@@ -1,7 +1,6 @@
 import { Actor, HttpAgent, Identity } from "@dfinity/agent";
 // Imports and re-exports candid interface
 import { idlFactory, modclub } from "../../../declarations/modclub/index";
-export { idlFactory, modclub } from "../../../declarations/modclub/index";
 import { _SERVICE } from "./types";
 import dfxConfig from "../../../../dfx.json";
 
@@ -31,7 +30,7 @@ function createActor(identity?: Identity, canisterId?: any) {
 }
 
 const createPlugOrISActor = async function (walletToUse, canisterId) {
-  const actor = await window['ic'][walletToUse].createActor({
+  const actor = await window["ic"][walletToUse].createActor({
     canisterId: canisterId,
     interfaceFactory: idlFactory,
   });
