@@ -80,6 +80,4 @@ jobs:
             Focus on identifying and resolving significant concerns that impact
             overall code quality, while intentionally avoiding minor issues.
             Strive for accuracy and avoid over-sensitivity in your analysis.
-          summarize_release_notes: |
-            Do not summarize release notes. Please with respone exactly with
-            the phrase: Summary Disabled
+          disable_release_notes: true
