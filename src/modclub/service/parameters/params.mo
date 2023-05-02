@@ -33,7 +33,6 @@ module {
 
   public let TREASURY_SA = "TREASURY";
   public let RESERVE_SA = "RESERVE";
-  public let AIRDROP_SA = "AIRDROP";
   public let MARKETING_SA = "MARKETING";
   public let ADVISORS_SA = "ADVISORS";
   public let PRESEED_SA = "PRESEED";
@@ -43,8 +42,7 @@ module {
   public let TEAM_SA = "TEAM";
   public let ACCOUNT_PAYABLE = "AP";
   public let STAKE_SA = "STAKE";
-  public let MOD_RELEASE_PER_DAY: Float = 125770;
-
+  public let MOD_RELEASE_PER_DAY : Float = 125770;
 
   public func getModclubWallet() : Principal {
     return Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai");

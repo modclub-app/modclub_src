@@ -19,7 +19,7 @@ module {
     state : GlobalState.State,
     varName : Text,
     start : Int,
-    end : Int,
+    end : Int
   ) : [[Text]] {
     switch (varName) {
       case ("GLOBAL_ID_MAP") {
@@ -39,12 +39,6 @@ module {
       };
       case ("profiles") {
         return serializeProfiles(state.profiles);
-      };
-      case ("airdropUsers") {
-        return serializeAirdropUsers(state.airdropUsers);
-      };
-      case ("airdropWhitelist") {
-        return serializeAirdropWhitelist(state.airdropWhitelist);
       };
       case ("usernames") {
         return serializeUsernames(state.usernames);
@@ -97,107 +91,73 @@ module {
     };
   };
 
-  func serializeGLOBAL_ID_MAP(GLOBAL_ID_MAP : HashMap.HashMap<Text, Nat>) : [
-    [Text]
-  ] {
+  func serializeGLOBAL_ID_MAP(GLOBAL_ID_MAP : HashMap.HashMap<Text, Nat>) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((category, id) in GLOBAL_ID_MAP.entries()) {
-      buff.add(
-        [category, Nat.toText(id)]
-      );
+      buff.add([category, Nat.toText(id)]);
     };
     return buff.toArray();
   };
 
   func serializeProvidersWhitelist(
-    providersWhitelist : HashMap.HashMap<Principal, Bool>,
+    providersWhitelist : HashMap.HashMap<Principal, Bool>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((pId, allowedOrNotAllowed) in providersWhitelist.entries()) {
-      buff.add(
-        [Principal.toText(pId), Bool.toText(allowedOrNotAllowed)]
-      );
+      buff.add([Principal.toText(pId), Bool.toText(allowedOrNotAllowed)]);
     };
     return buff.toArray();
   };
 
   func serializeProviders(
-    providers : HashMap.HashMap<Principal, Types.Provider>,
+    providers : HashMap.HashMap<Principal, Types.Provider>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((pId, providerDetail) in providers.entries()) {
-      buff.add(
-        [
-          Principal.toText(pId),
-          DownloadUtil.joinArr(DownloadUtil.toString_Provider([providerDetail])),
-        ],
-      );
+      buff.add([
+        Principal.toText(pId),
+        DownloadUtil.joinArr(DownloadUtil.toString_Provider([providerDetail]))
+      ]);
     };
     return buff.toArray();
   };
 
   func serializeProviderAdmins(
-    providerAdmin : HashMap.HashMap<Principal, HashMap.HashMap<Principal, ()>>,
+    providerAdmin : HashMap.HashMap<Principal, HashMap.HashMap<Principal, ()>>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((pId, userIdMap) in providerAdmin.entries()) {
       for ((userId, _) in userIdMap.entries()) {
-        buff.add(
-          [Principal.toText(pId), Principal.toText(userId)],
-        );
+        buff.add([Principal.toText(pId), Principal.toText(userId)]);
       };
     };
     return buff.toArray();
   };
 
-  func serializeProfiles(profiles : HashMap.HashMap<Principal, Types.Profile>) : [
-    [Text]
-  ] {
+  func serializeProfiles(profiles : HashMap.HashMap<Principal, Types.Profile>) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((pId, profile) in profiles.entries()) {
-      buff.add(
-        [
-          Principal.toText(pId),
-          DownloadUtil.joinArr(DownloadUtil.toString_Profile([profile])),
-        ],
-      );
+      buff.add([
+        Principal.toText(pId),
+        DownloadUtil.joinArr(DownloadUtil.toString_Profile([profile]))
+      ]);
     };
     return buff.toArray();
   };
 
-  func serializeAirdropWhitelist(
-    airdropWhitelist : HashMap.HashMap<Principal, Principal>,
-  ) : [[Text]] {
-    let buff = Buffer.Buffer<[Text]>(1);
-    for ((userId, userId1) in airdropWhitelist.entries()) {
-      buff.add(
-        [Principal.toText(userId), Principal.toText(userId1)],
-      );
-    };
-    return buff.toArray();
-  };
-
-  func serializeUsernames(usernames : HashMap.HashMap<Text, Principal>) : [
-    [Text]
-  ] {
+  func serializeUsernames(usernames : HashMap.HashMap<Text, Principal>) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((username, userId) in usernames.entries()) {
-      buff.add(
-        [username, Principal.toText(userId)],
-      );
+      buff.add([username, Principal.toText(userId)]);
     };
     return buff.toArray();
   };
 
-  func serializeContent2votes(content2votes : RelObj.RelObj<Text, Text>) : [
-    [Text]
-  ] {
+  func serializeContent2votes(content2votes : RelObj.RelObj<Text, Text>) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for (cId in content2votes.getKeys().vals()) {
       for (vId in content2votes.get0(cId).vals()) {
-        buff.add(
-          [cId, vId],
-        );
+        buff.add([cId, vId]);
       };
 
     };
@@ -208,9 +168,7 @@ module {
     let buff = Buffer.Buffer<[Text]>(1);
     for (userId in mods2votes.getKeys().vals()) {
       for (vId in mods2votes.get0(userId).vals()) {
-        buff.add(
-          [Principal.toText(userId), vId],
-        );
+        buff.add([Principal.toText(userId), vId]);
       };
 
     };
@@ -218,14 +176,12 @@ module {
   };
 
   func serializeRelPrincipal2Principal(
-    mods2votes : RelObj.RelObj<Principal, Principal>,
+    mods2votes : RelObj.RelObj<Principal, Principal>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for (userId in mods2votes.getKeys().vals()) {
       for (vId in mods2votes.get0(userId).vals()) {
-        buff.add(
-          [Principal.toText(userId), Principal.toText(vId)],
-        );
+        buff.add([Principal.toText(userId), Principal.toText(vId)]);
       };
 
     };
@@ -233,54 +189,31 @@ module {
   };
 
   func serializeProvider2PohExpiry(
-    GLOBAL_ID_MAP : HashMap.HashMap<Principal, Nat>,
+    GLOBAL_ID_MAP : HashMap.HashMap<Principal, Nat>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((category, id) in GLOBAL_ID_MAP.entries()) {
-      buff.add(
-        [Principal.toText(category), Nat.toText(id)],
-      );
+      buff.add([Principal.toText(category), Nat.toText(id)]);
     };
     return buff.toArray();
   };
 
   func serializeProvider2PohChallengeIds(
-    provider2PohChallengeIds : HashMap.HashMap<Principal, Buffer.Buffer<Text>>,
+    provider2PohChallengeIds : HashMap.HashMap<Principal, Buffer.Buffer<Text>>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((pId, challengeIds) in provider2PohChallengeIds.entries()) {
       for (cId in challengeIds.vals()) {
-        buff.add(
-          [Principal.toText(pId), cId],
-        );
+        buff.add([Principal.toText(pId), cId]);
       };
     };
     return buff.toArray();
   };
 
-  func serializeAirdropUsers(
-    airdropUsers : HashMap.HashMap<Principal, Types.AirdropUser>,
-  ) : [[Text]] {
-    let buff = Buffer.Buffer<[Text]>(1);
-    for ((uId, user) in airdropUsers.entries()) {
-      buff.add(
-        [
-          Principal.toText(uId),
-          DownloadUtil.joinArr(DownloadUtil.toString_AirdropUser([user])),
-        ],
-      );
-    };
-    return buff.toArray();
-  };
-
-  func serializeContent(contents : HashMap.HashMap<Text, Types.Content>) : [
-    [Text]
-  ] {
+  func serializeContent(contents : HashMap.HashMap<Text, Types.Content>) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((cId, content) in contents.entries()) {
-      buff.add(
-        [cId, DownloadUtil.joinArr(DownloadUtil.toString_Content([content]))],
-      );
+      buff.add([cId, DownloadUtil.joinArr(DownloadUtil.toString_Content([content]))]);
     };
     return buff.toArray();
   };
@@ -288,9 +221,7 @@ module {
   func serializeRules(rules : HashMap.HashMap<Text, Types.Rule>) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((rId, rules) in rules.entries()) {
-      buff.add(
-        [rId, DownloadUtil.joinArr(DownloadUtil.toString_Rule([rules]))],
-      );
+      buff.add([rId, DownloadUtil.joinArr(DownloadUtil.toString_Rule([rules]))]);
     };
     return buff.toArray();
   };
@@ -298,52 +229,44 @@ module {
   func serializeVotes(votes : HashMap.HashMap<Text, Types.VoteV2>) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((vId, votes) in votes.entries()) {
-      buff.add(
-        [vId, DownloadUtil.joinArr(DownloadUtil.toString_Vote([votes]))],
-      );
+      buff.add([vId, DownloadUtil.joinArr(DownloadUtil.toString_Vote([votes]))]);
     };
     return buff.toArray();
   };
   func serializeTextContent(
-    textContents : HashMap.HashMap<Text, Types.TextContent>,
+    textContents : HashMap.HashMap<Text, Types.TextContent>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((cId, textContent) in textContents.entries()) {
-      buff.add(
-        [
-          cId,
-          DownloadUtil.joinArr(DownloadUtil.toString_TextContent([textContent])),
-        ],
-      );
+      buff.add([
+        cId,
+        DownloadUtil.joinArr(DownloadUtil.toString_TextContent([textContent]))
+      ]);
     };
     return buff.toArray();
   };
 
   func serializeImageContent(
-    imageContents : HashMap.HashMap<Text, Types.ImageContent>,
+    imageContents : HashMap.HashMap<Text, Types.ImageContent>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((cId, imageContent) in imageContents.entries()) {
-      buff.add(
-        [
-          cId,
-          DownloadUtil.joinArr(
-            DownloadUtil.toString_ImageContent([imageContent]),
-          ),
-        ],
-      );
+      buff.add([
+        cId,
+        DownloadUtil.joinArr(
+          DownloadUtil.toString_ImageContent([imageContent])
+        )
+      ]);
     };
     return buff.toArray();
   };
 
   func serializeProviderSubs(
-    providerSubs : HashMap.HashMap<Principal, Types.SubscribeMessage>,
+    providerSubs : HashMap.HashMap<Principal, Types.SubscribeMessage>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((pId, _) in providerSubs.entries()) {
-      buff.add(
-        [Principal.toText(pId)],
-      );
+      buff.add([Principal.toText(pId)]);
     };
     return buff.toArray();
   };

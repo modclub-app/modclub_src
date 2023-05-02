@@ -1,4 +1,3 @@
-import AirDropManager "./service/airdrop/airdrop";
 import Array "mo:base/Array";
 import Arrays "mo:base/Array";
 import AuthManager "./service/auth/auth";
@@ -203,15 +202,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return emailManager.checkIfUserOptToReciveAlerts(caller);
   };
 
-  // public shared ({ caller }) func addUserToQueueToReceiveAlerts(
-  //   userPrincipal: Principal
-  // ) : async Bool {
-  //   if (Principal.toText(caller) == "2vxsx-fae") {
-  //     throw Error.reject("Unauthorized, user does not have an identity");
-  //   };
-  //   return await emailManager.addUserToQueueToReceiveAlerts(userPrincipal);
-  // };
-
   public shared ({ caller }) func sendVerificationEmail(
     envForBaseURL : Text
   ) : async Bool {
@@ -239,45 +229,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return callResult;
   };
   // ---------------------- END Email Methods------------------------------
-
-  // ----------------------Airdrop Methods------------------------------
-  public shared ({ caller }) func airdropRegister() : async Types.AirdropUser {
-    await AirDropManager.airdropRegister(caller, stateV2);
-  };
-
-  public shared ({ caller }) func isAirdropRegistered() : async Types.AirdropUser {
-    await AirDropManager.isAirdropRegistered(caller, stateV2);
-  };
-
-  public shared ({ caller }) func getAirdropUsers() : async [Types.AirdropUser] {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    AirDropManager.getAirdropUsers(stateV2);
-  };
-
-  // Add principals to airdropWhitelist
-  public shared ({ caller }) func addToAirdropWhitelist(pids : [Principal]) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    AirDropManager.addToAirdropWhitelist(pids, stateV2);
-  };
-
-  // Get airdropWhitelist entries
-  public shared ({ caller }) func getAirdropWhitelist() : async [Principal] {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    AirDropManager.getAirdropWhitelist(stateV2);
-  };
-
-  public shared ({ caller }) func addToApprovedUser(userId : Principal) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    voteManager.addToAutoApprovedPOHUser(userId);
-  };
 
   // ----------------------Provider Methods------------------------------
   // todo: Require cylces on provider registration, add provider imageURl, description

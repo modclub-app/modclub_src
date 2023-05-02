@@ -37,7 +37,7 @@ module {
   };
 
   public func toString_PohChallengeRequiredField(
-    challengeRequiredField : [PohTypes.PohChallengeRequiredField],
+    challengeRequiredField : [PohTypes.PohChallengeRequiredField]
   ) : [Text] {
     let buff = Buffer.Buffer<Text>(challengeRequiredField.size());
 
@@ -48,14 +48,14 @@ module {
           case (#imageBlob) "imageBlob";
           case (#videoBlob) "videoBlob";
           case (#profileFieldBlobs) "profileFieldBlobs";
-        },
+        }
       );
     };
     return buff.toArray();
   };
 
   public func toString_PohChallengeType(
-    challengeRequiredField : [PohTypes.PohChallengeType],
+    challengeRequiredField : [PohTypes.PohChallengeType]
   ) : [Text] {
     let buff = Buffer.Buffer<Text>(challengeRequiredField.size());
 
@@ -69,30 +69,30 @@ module {
           case (#fullName) "fullName";
           case (#userName) "userName";
           case (#email) "email";
-        },
+        }
       );
     };
     return buff.toArray();
   };
 
   public func toString_PohChallengesAttemptV1(
-    attempts : [PohTypes.PohChallengesAttemptV1],
+    attempts : [PohTypes.PohChallengesAttemptV1]
   ) : [Text] {
     let buff = Buffer.Buffer<Text>(attempts.size());
 
     for (attempt in attempts.vals()) {
       buff.add(
         Option.get(attempt.attemptId, "") # ";" # attempt.challengeId # ";" # attempt.challengeName # ";" # attempt.challengeDescription # ";" # joinArr(
-          toString_PohChallengeType([attempt.challengeType]),
+          toString_PohChallengeType([attempt.challengeType])
         ) # ";" # Principal.toText(attempt.userId) # ";" # joinArr(
-          toString_PohChallengeStatus([attempt.status]),
+          toString_PohChallengeStatus([attempt.status])
         ) # ";" # Int.toText(attempt.createdAt) # ";" # Int.toText(
-          attempt.submittedAt,
+          attempt.submittedAt
         ) # ";" # Int.toText(attempt.updatedAt) # ";" # Int.toText(
-          attempt.completedOn,
+          attempt.completedOn
         ) # ";" # Principal.toText(
-          Option.get(attempt.dataCanisterId, Principal.fromText("aaaaa-aa")),
-        ) # ";" # joinArrOpt(attempt.wordList),
+          Option.get(attempt.dataCanisterId, Principal.fromText("aaaaa-aa"))
+        ) # ";" # joinArrOpt(attempt.wordList)
       );
     };
     return buff.toArray();
@@ -104,10 +104,10 @@ module {
     for (vote in votes.vals()) {
       buff.add(
         vote.id # ";" # vote.contentId # ";" # Principal.toText(vote.userId) # ";" # joinArr(
-          toString_Decision([vote.decision]),
+          toString_Decision([vote.decision])
         ) # ";" # joinArr(toString_PohRulesViolated(vote.violatedRules)) # ";" # Int.toText(
-          vote.createdAt,
-        ),
+          vote.createdAt
+        )
       );
     };
     return buff.toArray();
@@ -143,29 +143,21 @@ module {
     for (p in providers.vals()) {
       buff.add(
         Principal.toText(p.id) # ";" # p.name # ";" # p.description # ";" # Int.toText(
-          p.createdAt,
+          p.createdAt
         ) # ";" # Int.toText(p.updatedAt) # ";" # joinArr(
-          toString_ProviderSettings([p.settings]),
-        ),
+          toString_ProviderSettings([p.settings])
+        )
       );
     };
     return buff.toArray();
   };
 
   public func toString_ProviderSettings(
-    providerSettings : [Types.ProviderSettings],
+    providerSettings : [Types.ProviderSettings]
   ) : [Text] {
     let buff = Buffer.Buffer<Text>(providerSettings.size());
     for (p in providerSettings.vals()) {
       buff.add(Nat.toText(p.minVotes) # ";" # Nat.toText(p.minStaked));
-    };
-    return buff.toArray();
-  };
-
-  public func toString_AirdropUser(airdropUsers : [Types.AirdropUser]) : [Text] {
-    let buff = Buffer.Buffer<Text>(airdropUsers.size());
-    for (aUser in airdropUsers.vals()) {
-      buff.add(Principal.toText(aUser.id) # ";" # Int.toText(aUser.createdAt));
     };
     return buff.toArray();
   };
@@ -183,10 +175,10 @@ module {
     for (vote in votes.vals()) {
       buff.add(
         vote.id # ";" # vote.contentId # ";" # Principal.toText(vote.userId) # ";" # joinArr(
-          toString_Decision([vote.decision]),
+          toString_Decision([vote.decision])
         ) # ";" # joinArr(Option.get(vote.violatedRules, [] : [Text])) # ";" # Int.toText(
-          vote.createdAt,
-        ),
+          vote.createdAt
+        )
       );
     };
     return buff.toArray();
@@ -206,7 +198,7 @@ module {
     let buff = Buffer.Buffer<Text>(imageContents.size());
     for (imageContent in imageContents.vals()) {
       buff.add(
-        imageContent.id # ";" # joinArr(toString_Image([imageContent.image])),
+        imageContent.id # ";" # joinArr(toString_Image([imageContent.image]))
       );
     };
     return buff.toArray();
@@ -217,12 +209,12 @@ module {
     for (content in contents.vals()) {
       buff.add(
         content.id # ";" # Principal.toText(content.providerId) # ";" # joinArr(
-          toString_ContentType([content.contentType]),
+          toString_ContentType([content.contentType])
         ) # ";" # content.sourceId # ";" # joinArr(
-          toString_ContentStatus([content.status]),
+          toString_ContentStatus([content.status])
         ) # ";" # Option.get(content.title, "") # ";" # Int.toText(
-          content.createdAt,
-        ) # ";" # Int.toText(content.updatedAt),
+          content.createdAt
+        ) # ";" # Int.toText(content.updatedAt)
       );
     };
     return buff.toArray();
@@ -245,10 +237,10 @@ module {
       };
       buff.add(
         Principal.toText(p.id) # ";" # p.userName # ";" # p.email # ";" # joinArr(
-          toString_Image(i),
+          toString_Image(i)
         ) # ";" # joinArr(toString_Role([p.role])) # ";" # Int.toText(
-          p.createdAt,
-        ) # ";" # Int.toText(p.updatedAt),
+          p.createdAt
+        ) # ";" # Int.toText(p.updatedAt)
       );
     };
     return buff.toArray();
@@ -276,14 +268,14 @@ module {
           case (#owner) {
             "owner";
           };
-        },
+        }
       );
     };
     return buff.toArray();
   };
 
   public func toString_PohChallengeStatus(
-    statuses : [PohTypes.PohChallengeStatus],
+    statuses : [PohTypes.PohChallengeStatus]
   ) : [Text] {
     let buff = Buffer.Buffer<Text>(statuses.size());
     for (status in statuses.vals()) {
@@ -304,7 +296,7 @@ module {
           case (#expired) {
             "expired";
           };
-        },
+        }
       );
     };
     return buff.toArray();
@@ -324,7 +316,7 @@ module {
           case (#rejected) {
             "rejected";
           };
-        },
+        }
       );
     };
     return buff.toArray();
@@ -350,7 +342,7 @@ module {
           case (#htmlContent) {
             "htmlContent";
           };
-        },
+        }
       );
     };
     return buff.toArray();
