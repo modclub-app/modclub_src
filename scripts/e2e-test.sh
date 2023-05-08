@@ -122,7 +122,7 @@ case $1 in
         MOD_PRINCIPAL=\"$(dfx identity get-principal)\"
         echo "#### MOD_PRINCIPAL: $MOD_PRINCIPAL"
         dfx identity use default
-        dfx canister call rs setRS "(principal $MOD_PRINCIPAL, 69.0)"
+        dfx canister call rs setRS "(principal $MOD_PRINCIPAL, 6900)"
         dfx canister call modclub addToApprovedUser "(principal $MOD_PRINCIPAL )"
         dfx canister call modclub shuffleContent
         for i in {3..20}

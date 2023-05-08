@@ -269,11 +269,12 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
             usersToRewardRS.add({
               userId = vote.userId;
               votedCorrect = votedCorrect;
+              decision = vote.decision;
             });
           };
         };
       };
-      var sumRS = 0.0;
+      var sumRS : Int = 0;
       for (userVote in rewardingVotes.vals()) {
         sumRS := sumRS + userVote.rsBeforeVoting;
       };
@@ -286,7 +287,7 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
           fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
           toOwner = userVote.userId;
           toSA = null;
-          amount = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
+          amount = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
         });
       };
       let _ = await RSManager.getActor(env).updateRSBulk(usersToRewardRS.toArray());

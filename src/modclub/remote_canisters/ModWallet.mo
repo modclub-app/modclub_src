@@ -12,6 +12,7 @@ module {
     burn : (?Text, Float) -> async ();
   };
 
+  //TODO: Update these canister according to the wallet canister id when deploy.
   public let MODCLUB_WALLET_CANISTER_ID_QA = "r7inp-6aaaa-aaaaa-aaabq-cai";
   public let MODCLUB_WALLET_QA_ACTOR = actor "r7inp-6aaaa-aaaaa-aaabq-cai" : ModWalletActorType;
 

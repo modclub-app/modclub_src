@@ -15,12 +15,15 @@ import List "mo:base/List";
 import Types "./types";
 import AuthManager "../modclub/service/auth/auth";
 import Utils "../common/utils";
-import CommonTypes "../common/types"
+import CommonTypes "../common/types";
+import Debug "mo:base/Debug";
+import Int "mo:base/Int";
+import Constants "constants";
 
 shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = this {
 
-  stable var rsByUserIdStable : [(Principal, Float)] = [];
-  var rsByUserId = HashMap.HashMap<Principal, Float>(1, Principal.equal, Principal.hash);
+  stable var rsByUserIdStable : [(Principal, Int)] = [];
+  var rsByUserId = HashMap.HashMap<Principal, Int>(1, Principal.equal, Principal.hash);
   stable var admins : List.List<Principal> = List.nil<Principal>();
   var MODCLUB_WALLET_PRINCIPAL : ?Principal = null;
 
@@ -40,7 +43,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public query ({ caller }) func topUsers(start : Nat, end : Nat) : async [Types.UserAndRS] {
-    let allUsers : [(Principal, Float)] = Iter.toArray(rsByUserId.entries());
+    let allUsers : [(Principal, Int)] = Iter.toArray(rsByUserId.entries());
     let topUsers = Array.sort(allUsers, sortTopUser);
     let topK = Buffer.Buffer<Types.UserAndRS>(end - start);
     var i : Nat = start;
@@ -55,7 +58,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public query ({ caller }) func queryRSAndLevel() : async Types.RSAndLevel {
-    let rs = Option.get(rsByUserId.get(caller), 0.0);
+    let rs = Option.get(rsByUserId.get(caller), 0);
     {
       score = rs;
       level = determineLevel(rs);
@@ -63,7 +66,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public query ({ caller }) func queryRSAndLevelByPrincipal(user : Principal) : async Types.RSAndLevel {
-    let rs = Option.get(rsByUserId.get(user), 0.0);
+    let rs = Option.get(rsByUserId.get(user), 0);
     {
       score = rs;
       level = determineLevel(rs);
@@ -76,52 +79,65 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     };
     let buff = Buffer.Buffer<Types.UserAndRS>(userVotes.size());
     for (userVote in userVotes.vals()) {
-      buff.add(await _updateRS(userVote.userId, userVote.votedCorrect));
+      buff.add(await _updateRS(userVote.userId, userVote.votedCorrect, userVote.decision));
     };
     buff.toArray();
   };
 
-  public shared ({ caller }) func updateRS(userId : Principal, votedCorrect : Bool) : async Types.UserAndRS {
+  public shared ({ caller }) func updateRS(userId : Principal, votedCorrect : Bool, decision : Types.Decision) : async Types.UserAndRS {
     if (not Principal.equal(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), caller)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
-    return await _updateRS(userId, votedCorrect);
+    return await _updateRS(userId, votedCorrect, decision);
   };
 
-  public shared ({ caller }) func setRS(userId : Principal, rs : Float) : async () {
+  public shared ({ caller }) func setRS(userId : Principal, rs : Int) : async () {
     if (not AuthManager.isAdmin(caller, admins)) {
       throw Error.reject(AuthManager.Unauthorized);
     };
     rsByUserId.put(userId, rs);
   };
 
-  private func _updateRS(userId : Principal, votedCorrect : Bool) : async Types.UserAndRS {
-    var point : Float = 0.1;
-    if (not votedCorrect) {
-      point := point * -1;
-    };
-    let currentRS : Float = Option.get(rsByUserId.get(userId), 0.0);
+  private func _updateRS(userId : Principal, votedCorrect : Bool, decision : Types.Decision) : async Types.UserAndRS {
+    var point : Int = Constants.DEFAULT_RS;
+    var pointMultiplier : Int = 1;
+    let isNovice = (await queryRSAndLevelByPrincipal(userId)).level == #novice;
 
-    if (not ((currentRS == 0 and point < 0) or (currentRS == 100 and point > 0))) {
-      rsByUserId.put(userId, currentRS + point);
+    if (isNovice) {
+      pointMultiplier := 10;
     };
+    if (not votedCorrect) {
+      if (decision == #approved) {
+        point := -2 * pointMultiplier * point;
+      } else {
+        point := -1 * pointMultiplier * point;
+      };
+    } else {
+      point := pointMultiplier * point;
+    };
+    let currentRS : Int = Option.get(rsByUserId.get(userId), 0);
+    let updateRS = currentRS + point;
+
+    let clampedRS = Int.min(Int.max(updateRS, 0), Constants.MAX_RS);
+    rsByUserId.put(userId, clampedRS);
+
     return {
       userId = userId;
       score = currentRS;
     };
   };
-  private func sortTopUser(user1 : (Principal, Float), user2 : (Principal, Float)) : Order.Order {
-    Float.compare(user2.1, user1.1);
+  private func sortTopUser(user1 : (Principal, Int), user2 : (Principal, Int)) : Order.Order {
+    Int.compare(user2.1, user1.1);
   };
 
-  private func determineLevel(score : Float) : Types.UserLevel {
-    if (score < 20) {
+  private func determineLevel(score : Int) : Types.UserLevel {
+    if (score < Constants.NOVICE_THRESHOLD) {
       return #novice;
-    } else if (score < 50) {
+    } else if (score < Constants.JUNIOR_THRESHOLD) {
       return #junior;
-    } else if (score < 70) {
+    } else if (score < Constants.SENIOR1_THRESHOLD) {
       return #senior1;
-    } else if (score < 90) {
+    } else if (score < Constants.SENIOR2_THRESHOLD) {
       return #senior2;
     } else {
       return #senior3;
@@ -138,7 +154,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
       deployer,
       Principal.fromActor(this)
     );
-    rsByUserId := HashMap.fromIter<Principal, Float>(rsByUserIdStable.vals(), rsByUserIdStable.size(), Principal.equal, Principal.hash);
+    rsByUserId := HashMap.fromIter<Principal, Int>(rsByUserIdStable.vals(), rsByUserIdStable.size(), Principal.equal, Principal.hash);
   };
 
   public shared query ({ caller }) func getAdmins() : async Result.Result<[Principal], Text> {

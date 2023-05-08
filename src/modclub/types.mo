@@ -198,7 +198,7 @@ module {
     contentId : Text;
     userId : UserId;
     decision : Decision;
-    rsBeforeVoting: Float;
+    rsBeforeVoting: Int;
     level: UserLevel;
     violatedRules : ?[RuleId];
     createdAt : Timestamp;

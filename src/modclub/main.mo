@@ -1698,6 +1698,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             usersToRewardRS.add({
               userId = v.userId;
               votedCorrect = votedCorrect;
+              decision = v.decision;
             });
           };
         };
@@ -2389,7 +2390,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           contentId = vote.contentId;
           userId = vote.userId;
           decision = vote.decision;
-          rsBeforeVoting = 0.0;
+          rsBeforeVoting = 0;
           level = #novice;
           violatedRules = vote.violatedRules;
           createdAt = vote.createdAt;

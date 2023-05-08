@@ -85,17 +85,17 @@ module ModeratorModule {
     switch (state.profiles.get(moderatorId)) {
       case (null) #err(#notFound);
       case (?result) {
-          let profile : Types.Profile = {
-              id = result.id;
-              userName = result.userName;
-              pic = result.pic;
-              role = result.role;
-              email = newEmail;
-              createdAt = result.createdAt;
-              updatedAt = Helpers.timeNow();
-            };
-            state.profiles.put(result.id, profile);
-            return #ok(profile)
+        let profile : Types.Profile = {
+          id = result.id;
+          userName = result.userName;
+          pic = result.pic;
+          role = result.role;
+          email = newEmail;
+          createdAt = result.createdAt;
+          updatedAt = Helpers.timeNow();
+        };
+        state.profiles.put(result.id, profile);
+        return #ok(profile);
       };
     };
   };
@@ -108,11 +108,13 @@ module ModeratorModule {
     return buf.toArray();
   };
 
-  public func formModeratorLeaderboard(topUsers: [RSTypes.UserAndRS], 
-      state : GlobalState.State) : Result.Result<[Types.ModeratorLeaderboard], ModError> {
+  public func formModeratorLeaderboard(
+    topUsers : [RSTypes.UserAndRS],
+    state : GlobalState.State
+  ) : Result.Result<[Types.ModeratorLeaderboard], ModError> {
     let buf = Buffer.Buffer<Types.ModeratorLeaderboard>(0);
 
-    for(user in topUsers.vals()) {
+    for (user in topUsers.vals()) {
       switch (state.profiles.get(user.userId)) {
         case (?p) {
           Debug.print("getModeratorLeaderboard pid " # Principal.toText(user.userId));
@@ -152,7 +154,7 @@ module ModeratorModule {
             userName = p.userName;
             completedVoteCount = completedVoteCount;
             rewardsEarned = 0;
-            rs = user.score;
+            rs = Float.fromInt(user.score);
             performance = performance;
             lastVoted = ?lastVoted;
           };

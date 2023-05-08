@@ -1,4 +1,5 @@
 import Buffer "mo:base/Buffer";
+import Float "mo:base/Float";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
@@ -113,7 +114,7 @@ module VoteModule {
         userId = userId;
         decision = decision;
         violatedRules = violatedRules;
-        rsBeforeVoting = userRSAndLevel.score;
+        rsBeforeVoting = Float.fromInt(userRSAndLevel.score);
         level = userRSAndLevel.level;
         createdAt = Time.now();
       };
