@@ -70,3 +70,4 @@ jobs:
 
             Aim for accuracy and provide clear suggestions to address identified concerns.
           disable_release_notes: true
+          openai_heavy_model: 'gpt-4'
