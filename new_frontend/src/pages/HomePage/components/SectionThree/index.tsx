@@ -1,0 +1,100 @@
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useState, useEffect, useRef } from "react";
+import Styles from "./styles.module.scss";
+
+export default function SectionThree() {
+  const card1Ref = useRef(null);
+  const card2Ref = useRef(null);
+  const [secondCardMarginTop, setSecondCardMarginTop] = useState(0);
+  const [responsive, setResponsive] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 720 && card1Ref.current && card2Ref.current) {
+        setResponsive(true);
+        const margin = window.getComputedStyle(card1Ref.current).margin;
+        const marginTop = parseInt(margin.split(" ")[0]);
+        setSecondCardMarginTop(marginTop);
+      } else {
+        setResponsive(false);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [card1Ref.current]);
+
+  return (
+    <section className={`${Styles.sectionThree} rounded-3xl py-20 md:py-72`}>
+      <div className="header-center text-left grid grid-cols-12">
+        <div className="col-start-2 col-span-10 md:mr-56">
+          <h2 className="leading-none">
+            See how Modclub has helped businesses like yours
+          </h2>
+          <button className="mt-14 tertiary-btn">
+            Don&apos;t just take our word for it
+          </button>
+        </div>
+      </div>
+      <hr className="my-16 w-10/12 mx-auto" />
+      <div className="cards-area grid grid-cols-12 gap-x-1 text-center text-white">
+        <div className="card-v2 card-1 col-span-10 md:col-span-7 col-start-2 md:col-start-2">
+          <div
+            className="mx-20 my-auto text-left grid grid-cols-12"
+            ref={card1Ref}
+          >
+            <div className="col-span-10 md:col-span-4 mb-5 md:mb-0">
+              <p>Karman Ventures</p>
+            </div>
+            <div className="col-span-10 md:col-span-8">
+              <div className={Styles.testimonial}>
+                <p>
+                  The Modclub Verification Process Content: Our verification
+                  process consists of several steps to ensure that we provide
+                  our clients with accurate and reliable results.
+                </p>
+                <p className="mt-8">
+                  First, we collect the relevant information about the content
+                  to be verified. Second, we use automated and manual techniques
+                  to verify the content, including visual and text analysis.
+                </p>
+              </div>
+              <div className="gap-x-5 flex mt-10 md:mt-24">
+                <Image
+                  src="/assets/william-worker.png"
+                  width={50}
+                  height={50}
+                  alt="William Worker"
+                />
+                <div className="my-auto">
+                  <p>William Worker</p>
+                  <p>CEO</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          className="card-v2 card-2 mt-1 md:mt-0 col-start-2 col-span-10 md:col-span-3"
+          style={{ alignItems: "flex-start" }}
+        >
+          <div
+            className="mx-20 text-left my-auto"
+            style={{ marginTop: responsive ? secondCardMarginTop : "" }}
+            ref={card2Ref}
+          >
+            <p>
+              The Modclub Verification Process Content: Our verification process
+              consists of several steps to ensure that we provide our clients
+              with accurate and reliable results.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

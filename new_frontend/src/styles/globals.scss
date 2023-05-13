@@ -1,0 +1,177 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display&family=Poppins:wght@200;300;400;700&display=swap");
+@import "./colors.scss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+html {
+  font-family: "Poppins", sans-serif;
+  font-size: 62.5%;
+}
+
+body {
+  margin: 1.6em 1.6em 0 1.6em;
+  box-sizing: border-box;
+  /* color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb)); */
+}
+
+.bg-header {
+  background-color: $main-color;
+}
+
+.text-main {
+  color: $main-color;
+}
+
+.text-secondary {
+  color: $secondary-light-color;
+}
+
+.primary-btn {
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  color: $main-color;
+  border-radius: 10em;
+  background: linear-gradient(
+    45deg,
+    $secondary-color 0%,
+    $light-secondary-color 96.87%
+  );
+}
+
+.secondary-btn,
+.secondary-btn-text-main {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10em;
+  background-color: transparent;
+  border: 0.5px solid $secondary-color;
+}
+
+.secondary-btn-text-main {
+  border: 0.5px solid #000;
+  color: $main-color !important;
+}
+
+.tertiary-btn {
+  font-family: "Playfair Display";
+  font-size: 2.4rem;
+  font-weight: 600;
+  color: $main-color;
+  padding: 12px 20px;
+  border-radius: 10em;
+  background-color: transparent;
+  border: 0.5px solid $main-color;
+}
+
+h1 {
+  font-size: 7.2rem;
+  font-weight: 400;
+}
+
+h2 {
+  font-size: 6.4rem;
+  font-weight: 400;
+}
+
+h3 {
+  font-size: 3.2rem;
+  font-weight: 400;
+}
+
+p {
+  font-size: 1.4rem;
+}
+
+hr {
+  border-color: #c2c2c2;
+}
+
+.font-second {
+  font-family: "Playfair Display";
+}
+
+.header-center h2 {
+  color: $main-color;
+}
+
+.card {
+  display: flex;
+  justify-content: center;
+  background-color: $main-color;
+  height: 48em;
+  border-radius: 2em;
+}
+
+.card-v2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: $main-color;
+  height: 48em;
+  border-radius: 2em;
+}
+
+.card-3 {
+  background-image: url("/assets/neon-one.svg"), url("/assets/neon-two.svg") !important;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@media screen and (max-width: 769px) {
+  h1 {
+    font-size: 2.2rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 400;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 400;
+  }
+
+  p {
+    font-size: 1.1rem;
+  }
+
+  a {
+    cursor: pointer;
+  }
+
+  .tertiary-btn {
+    font-size: 1.4rem;
+  }
+
+  .font-second {
+    font-size: 1.1rem;
+  }
+}

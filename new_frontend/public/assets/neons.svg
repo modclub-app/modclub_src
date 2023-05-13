@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%">
+  <defs>
+    <pattern id="image1" patternUnits="userSpaceOnUse" width="100%" height="100%">
+      <image xlink:href="neon-one.svg" x="0" y="0" width="100%" height="100%" />
+    </pattern>
+    <pattern id="image2" patternUnits="userSpaceOnUse" width="100%" height="100%">
+      <image xlink:href="neon-two.svg" x="0" y="0" width="100%" height="100%" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#image1)" />
+  <rect width="100%" height="100%" fill="url(#image2)" />
+</svg>

@@ -1,0 +1,15 @@
+.sectionTwo {
+  p {
+    font-family: "Playfair Display";
+    font-size: 2em;
+  }
+}
+
+@media screen and (max-width: 769px) {
+  .sectionTwo {
+    p {
+      font-family: "Playfair Display";
+      font-size: 1em;
+    }
+  }
+}

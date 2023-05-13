@@ -1,0 +1,29 @@
+@import "../../../../styles/colors.scss";
+
+.sectionFive {
+  background-color: #efefef;
+  margin-top: 1.6em;
+}
+
+.sectionFive {
+  a {
+    position: relative;
+    font-size: 1.6rem;
+  }
+
+  a::after {
+    content: "";
+    position: absolute;
+    background-color: $main-color;
+    width: 100%;
+    left: 0;
+    height: 0.01em;
+    bottom: -0.04em;
+  }
+}
+
+@media screen and (max-width: 769px) {
+  .section-five a {
+    font-size: 1.2rem;
+  }
+}

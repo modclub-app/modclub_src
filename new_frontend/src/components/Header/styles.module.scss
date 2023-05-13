@@ -1,0 +1,22 @@
+.headerArea {
+  color: #fff;
+  margin: 8em 0;
+
+  .headerText {
+    margin: 0 17.7em;
+  }
+}
+
+.headerSubtext {
+  font-family: "Playfair Display";
+}
+
+@media screen and (max-width: 769px) {
+  .headerArea {
+    margin: auto;
+
+    .headerText {
+      margin: auto;
+    }
+  }
+}
