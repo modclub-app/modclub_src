@@ -46,8 +46,10 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Timer "mo:base/Timer";
 import Token "./token";
 import Types "./types";
+import MsgInspectTypes "./msgInspectTypes";
 import EmailManager "./service/email/email";
 import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
@@ -59,7 +61,9 @@ import RSManager "./remote_canisters/RSManager";
 import RSTypes "../rs/types";
 import WalletTypes "../wallet/types";
 import Utils "../common/utils";
-import CommonTypes "../common/types"
+import CommonTypes "../common/types";
+import ModSecurity "../common/security/guard";
+import Auth "../common/security/AuthCanister";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
 
@@ -128,60 +132,31 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     signingKey
   );
 
+  private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
+  let timer = Timer.setTimer(
+    #seconds(0),
+    func() : async () {
+      Debug.print("SUBSCRIBING MODCLUB CANISTER on ADMINS");
+      await authGuard.subscribe("admins");
+    }
+  );
+
+  public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
+    Debug.print("[MODCLUB_CANISTER] [SUBSCRIPTION HANDLER] ==> Payload received from AUTH_CANISTER");
+    authGuard.handleSubscription(payload);
+  };
+
   public shared ({ caller }) func toggleAllowSubmission(allow : Bool) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     allowSubmissionFlag := allow;
   };
 
+  // TODO: Transfer to Auth canister.
   public shared ({ caller }) func generateSigningKey() : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     switch (Helpers.encodeNat8ArraytoBase32(Blob.toArray(await Random.blob()))) {
       case (null) { throw Error.reject("Couldn't generate key") };
       case (?key) {
         signingKey := key;
         await storageSolution.setSigningKey(signingKey);
-      };
-    };
-  };
-
-  public shared query ({ caller }) func getAdmins() : async Result.Result<[Principal], Text> {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    AuthManager.getAdmins(caller, admins);
-  };
-
-  public shared query ({ caller }) func isUserAdmin() : async Bool {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      return false;
-    };
-    return true;
-  };
-
-  //This function should be invoked immediately after the canister is deployed via script.
-  public shared ({ caller }) func registerAdmin(id : Principal) : async Result.Result<(), Text> {
-    await resolveAdminResponse(AuthManager.registerAdmin(caller, admins, id));
-  };
-
-  public shared ({ caller }) func unregisterAdmin(id : Text) : async Result.Result<(), Text> {
-    await resolveAdminResponse(AuthManager.unregisterAdmin(caller, admins, id));
-  };
-
-  func resolveAdminResponse(
-    adminListResponse : Result.Result<List.List<Principal>, Text>
-  ) : async Result.Result<(), Text> {
-    switch (adminListResponse) {
-      case (#err(Unauthorized)) {
-        return #err(Unauthorized);
-      };
-      case (#ok(adminList)) {
-        admins := adminList;
-        await storageSolution.updateBucketControllers(admins);
-        #ok();
       };
     };
   };
@@ -205,9 +180,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func sendVerificationEmail(
     envForBaseURL : Text
   ) : async Bool {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("Unauthorized, user does not have an identity");
-    };
     var userEmail = await emailManager.sendVerificationEmail(
       caller,
       envForBaseURL,
@@ -231,6 +203,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   // ---------------------- END Email Methods------------------------------
 
   // ----------------------Provider Methods------------------------------
+  // TODO: REFACTOR AND CUT OFF PERMISSION-CHECK LAYER FROM ProviderManager!!!
   // todo: Require cylces on provider registration, add provider imageURl, description
   public shared ({ caller }) func registerProvider(
     name : Text,
@@ -391,9 +364,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func addToAllowList(providerId : Principal) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     await ProviderManager.addToAllowList(providerId, stateV2, canistergeekLogger);
   };
 
@@ -641,9 +611,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     email : ?Text,
     pic : ?Types.Image
   ) : async Types.Profile {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("Unauthorized, user does not have an identity");
-    };
     // throw Error.reject("Sign ups are turned off.");
 
     let profile = await ModeratorManager.registerModerator(
@@ -696,17 +663,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func getAllProfiles() : async [Types.Profile] {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
+    Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     return ModeratorManager.getAllProfiles(stateV2);
   };
 
   public shared ({ caller }) func adminUpdateEmail(pid : Principal, email : Text) : async Types.Profile {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-
     switch (ModeratorManager.adminUpdateEmail(pid, email, stateV2)) {
       case (#ok(moderator)) {
         return moderator;
@@ -964,9 +925,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerUserId : Text,
     providerId : Principal
   ) : async PohTypes.PohVerificationResponsePlus {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     switch (pohVerificationRequestHelper(providerUserId, providerId)) {
       case (#ok(verificationResponse)) {
         return verificationResponse;
@@ -1180,9 +1138,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   // Admin method to create new attempts
   public shared ({ caller }) func resetUserChallengeAttempt(packageId : Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     switch (pohEngine.getPohChallengePackage(packageId)) {
       case (null) {
         throw Error.reject("Package doesn't exist");
@@ -1203,9 +1158,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared ({ caller }) func populateChallenges() : async () {
     Debug.print("Populating challenges called by: " # Principal.toText(caller));
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     pohEngine.populateChallenges();
   };
 
@@ -1215,9 +1167,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     expiry : Nat,
     ipRestriction : Bool
   ) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     let challengeBuffer = Buffer.Buffer<Text>(challengeId.size());
     for (id in challengeId.vals()) {
       challengeBuffer.add(id);
@@ -1384,10 +1333,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     startDate : Int,
     endDate : Int
   ) : async [PohTypes.PohTaskPlusForAdmin] {
-
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
+    Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
 
     // Add item id to buffer
     let items = Buffer.Buffer<Text>(0);
@@ -1499,9 +1445,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func getPohTaskDataForAdminUsers(packageId : Text) : async Result.Result<PohTypes.PohTaskDataAndVotesWrapperPlus, PohTypes.PohError> {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
+    Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
+
     let pohTasks = pohEngine.getPohTasks([packageId]);
     if (pohTasks.size() == 0) {
       return #err(#invalidPackageId);
@@ -1790,9 +1735,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   // Helpers
   public shared ({ caller }) func adminInit() : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     await generateSigningKey();
     await populateChallenges();
   };
@@ -1800,9 +1742,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func retiredDataCanisterIdForWriting(
     canisterId : Text
   ) {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     storageSolution.retiredDataCanisterId(canisterId);
   };
 
@@ -1810,9 +1749,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     [Principal],
     [Text]
   ) {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     let allDataCanisterId = storageSolution.getAllDataCanisterIds();
     let retired = storageSolution.getRetiredDataCanisterIdsStable();
     (allDataCanisterId, retired);
@@ -1833,13 +1769,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerId : ?Principal
   ) : async Types.ProviderResult {
     Debug.print("addProviderAdmin caller: " # Principal.toText(caller));
+
     let result = await ProviderManager.addProviderAdmin(
       userId,
       userName,
       caller,
       providerId,
       stateV2,
-      admins,
+      authGuard.isAdmin(caller),
       canistergeekLogger
     );
     return result;
@@ -1862,7 +1799,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       providerAdminPrincipalIdToBeRemoved,
       caller,
       stateV2,
-      admins,
+      authGuard.isAdmin(caller),
       canistergeekLogger
     );
   };
@@ -1878,7 +1815,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       providerAdminPrincipalIdToBeEdited,
       newUserName,
       caller,
-      admins,
+      authGuard.isAdmin(caller),
       stateV2
     );
   };
@@ -1892,16 +1829,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func getPohAttempts() : async PohStateV2.PohStableState {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     pohEngine.getStableStateV2().0;
   };
 
   public shared ({ caller }) func shuffleContent() : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     contentQueueManager.shuffleContent();
     contentQueueManager.assignUserIds2QueueId(
       Iter.toArray(stateV2.profiles.keys())
@@ -1909,9 +1840,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func shufflePohContent() : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     pohContentQueueManager.shuffleContent();
     pohContentQueueManager.assignUserIds2QueueId(
       Iter.toArray(stateV2.profiles.keys())
@@ -1985,9 +1913,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func setRandomization(isRandom : Bool) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     randomizationEnabled := isRandom;
   };
 
@@ -1997,9 +1922,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     Nat,
     Nat
   ) {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     let approvedStats = getContentCountFrom(
       contentQueueManager.getUserContentQueue(caller, #approved, false),
       from
@@ -2054,6 +1976,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return (count, distinctUsersVoted);
   };
 
+  // For testing purposes
+  public query ({ caller }) func showAdmins() : async [Principal] {
+    Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
+    authGuard.getAdmins();
+  };
+
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   // Delete here after deployment
@@ -2084,8 +2012,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var migrationDone = false;
   stable var globalStateMigrationDone = false;
   system func postupgrade() {
+
+    let timer = Timer.setTimer(
+      #seconds(0),
+      func() : async () {
+        Debug.print("SUBSCRIBING MODCLUB CANISTER on ADMINS");
+        await authGuard.subscribe("admins");
+      }
+    );
     // Reinitializing storage Solution to add "this" actor as a controller
-    admins := AuthManager.setUpDefaultAdmins(
+    // Refactor after deploy and state migrated.
+    admins := authGuard.setUpDefaultAdmins(
       admins,
       deployer,
       Principal.fromActor(this)
@@ -2161,6 +2098,35 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (Time.now() > nextTokenReleaseTime) {
       let _ = await ModWallet.getActor(env).transfer(?ModClubParam.RESERVE_SA, Principal.fromActor(this), ?ModClubParam.TREASURY_SA, ModClubParam.MOD_RELEASE_PER_DAY);
       nextTokenReleaseTime := Time.now() + TWENTY_FOUR_HOUR_NANO_SECS;
+    };
+  };
+
+  system func inspect({
+    arg : Blob;
+    caller : Principal;
+    msg : MsgInspectTypes.ModclubCanisterMethods;
+  }) : Bool {
+    switch (msg) {
+      case (#toggleAllowSubmission _) { authGuard.isAdmin(caller) };
+      case (#generateSigningKey _) { authGuard.isAdmin(caller) };
+      case (#addToAllowList _) { authGuard.isAdmin(caller) };
+      case (#adminUpdateEmail _) { authGuard.isAdmin(caller) };
+      case (#AdminCheckPohVerificationResp _) { authGuard.isAdmin(caller) };
+      case (#resetUserChallengeAttempt _) { authGuard.isAdmin(caller) };
+      case (#populateChallenges _) { authGuard.isAdmin(caller) };
+      case (#configurePohForProvider _) { authGuard.isAdmin(caller) };
+      case (#adminInit _) { authGuard.isAdmin(caller) };
+      case (#retiredDataCanisterIdForWriting _) { authGuard.isAdmin(caller) };
+      case (#getAllDataCanisterIds _) { authGuard.isAdmin(caller) };
+      case (#getPohAttempts _) { authGuard.isAdmin(caller) };
+      case (#shuffleContent _) { authGuard.isAdmin(caller) };
+      case (#shufflePohContent _) { authGuard.isAdmin(caller) };
+      case (#getTaskStats _) { authGuard.isAdmin(caller) };
+      case (#setRandomization _) { authGuard.isAdmin(caller) };
+      case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
+      case (#registerModerator _) { not authGuard.isAnonymous(caller) };
+      case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
+      case _ { not Principal.isAnonymous(caller) };
     };
   };
 

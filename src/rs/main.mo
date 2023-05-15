@@ -12,11 +12,13 @@ import Order "mo:base/Order";
 import Array "mo:base/Array";
 import Result "mo:base/Result";
 import List "mo:base/List";
+import Debug "mo:base/Debug";
 import Types "./types";
 import AuthManager "../modclub/service/auth/auth";
 import Utils "../common/utils";
 import CommonTypes "../common/types";
-import Debug "mo:base/Debug";
+import Timer "mo:base/Timer";
+import ModSecurity "../common/security/guard";
 import Int "mo:base/Int";
 import Constants "constants";
 
@@ -24,25 +26,32 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
   stable var rsByUserIdStable : [(Principal, Int)] = [];
   var rsByUserId = HashMap.HashMap<Principal, Int>(1, Principal.equal, Principal.hash);
-  stable var admins : List.List<Principal> = List.nil<Principal>();
   var MODCLUB_WALLET_PRINCIPAL : ?Principal = null;
 
-  switch (env) {
-    case (#local(value)) {
-      MODCLUB_WALLET_PRINCIPAL := ?value.modclub_canister_id;
-    };
-    case (#prod) {
-      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai");
-    };
-    case (#dev) {
-      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText("olc6u-lqaaa-aaaah-qcooq-cai");
-    };
-    case (#qa) {
-      MODCLUB_WALLET_PRINCIPAL := ?Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai");
-    };
+  stable var admins : List.List<Principal> = List.nil<Principal>();
+  let authGuard = ModSecurity.Guard(env, "RS_CANISTER");
+  ignore Timer.setTimer(
+    #seconds(0),
+    func() : async () {
+      Debug.print("SUBSCRIBING RS CANISTER on ADMINS");
+      await authGuard.subscribe("admins");
+    }
+  );
+
+  public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
+    // Debug.print("[RS_CANISTER] [SUBSCRIPTION HANDLER] ==> Payload received");
+    authGuard.handleSubscription(payload);
+  };
+
+  // For testing purposes
+  public query ({ caller }) func showAdmins() : async [Principal] {
+    Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
+    authGuard.getAdmins();
   };
 
   public query ({ caller }) func topUsers(start : Nat, end : Nat) : async [Types.UserAndRS] {
+    // Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
+
     let allUsers : [(Principal, Int)] = Iter.toArray(rsByUserId.entries());
     let topUsers = Array.sort(allUsers, sortTopUser);
     let topK = Buffer.Buffer<Types.UserAndRS>(end - start);
@@ -58,6 +67,8 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public query ({ caller }) func queryRSAndLevel() : async Types.RSAndLevel {
+    // Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
+
     let rs = Option.get(rsByUserId.get(caller), 0);
     {
       score = rs;
@@ -66,6 +77,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public query ({ caller }) func queryRSAndLevelByPrincipal(user : Principal) : async Types.RSAndLevel {
+    // Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     let rs = Option.get(rsByUserId.get(user), 0);
     {
       score = rs;
@@ -74,9 +86,6 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public shared ({ caller }) func updateRSBulk(userVotes : [Types.UserAndVote]) : async [Types.UserAndRS] {
-    if (not Principal.equal(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), caller)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     let buff = Buffer.Buffer<Types.UserAndRS>(userVotes.size());
     for (userVote in userVotes.vals()) {
       buff.add(await _updateRS(userVote.userId, userVote.votedCorrect, userVote.decision));
@@ -85,16 +94,10 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public shared ({ caller }) func updateRS(userId : Principal, votedCorrect : Bool, decision : Types.Decision) : async Types.UserAndRS {
-    if (not Principal.equal(Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), caller)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    return await _updateRS(userId, votedCorrect, decision);
+    await _updateRS(userId, votedCorrect, decision);
   };
 
   public shared ({ caller }) func setRS(userId : Principal, rs : Int) : async () {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
     rsByUserId.put(userId, rs);
   };
 
@@ -149,7 +152,16 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   system func postupgrade() {
-    admins := AuthManager.setUpDefaultAdmins(
+    Debug.print("POSTUPGRADE FOR RS CANISTER");
+    ignore Timer.setTimer(
+      #seconds(0),
+      func() : async () {
+        Debug.print("SUBSCRIBING RS CANISTER on ADMINS");
+        await authGuard.subscribe("admins");
+      }
+    );
+
+    admins := authGuard.setUpDefaultAdmins(
       admins,
       deployer,
       Principal.fromActor(this)
@@ -157,40 +169,17 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     rsByUserId := HashMap.fromIter<Principal, Int>(rsByUserIdStable.vals(), rsByUserIdStable.size(), Principal.equal, Principal.hash);
   };
 
-  public shared query ({ caller }) func getAdmins() : async Result.Result<[Principal], Text> {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      throw Error.reject(AuthManager.Unauthorized);
-    };
-    AuthManager.getAdmins(caller, admins);
-  };
-
-  public shared query ({ caller }) func isUserAdmin() : async Bool {
-    if (not AuthManager.isAdmin(caller, admins)) {
-      return false;
-    };
-    return true;
-  };
-
-  //This function should be invoked immediately after the canister is deployed via script.
-  public shared ({ caller }) func registerAdmin(id : Principal) : async Result.Result<(), Text> {
-    await resolveAdminResponse(AuthManager.registerAdmin(caller, admins, id));
-  };
-
-  public shared ({ caller }) func unregisterAdmin(id : Text) : async Result.Result<(), Text> {
-    await resolveAdminResponse(AuthManager.unregisterAdmin(caller, admins, id));
-  };
-
-  func resolveAdminResponse(
-    adminListResponse : Result.Result<List.List<Principal>, Text>
-  ) : async Result.Result<(), Text> {
-    switch (adminListResponse) {
-      case (#err(Unauthorized)) {
-        return #err(Unauthorized);
-      };
-      case (#ok(adminList)) {
-        admins := adminList;
-        #ok();
-      };
+  system func inspect({
+    arg : Blob;
+    caller : Principal;
+    msg : Types.RSCanisterMessageInspection;
+  }) : Bool {
+    switch (msg) {
+      case (#setRS _) { authGuard.isAdmin(caller) };
+      case (#updateRS _) { authGuard.isModclubWallet(caller) };
+      case (#updateRSBulk _) { authGuard.isModclubWallet(caller) };
+      case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
+      case _ { not Principal.isAnonymous(caller) };
     };
   };
 

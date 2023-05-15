@@ -7,7 +7,6 @@ import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import JSON "mo:json/JSON";
 
-
 module {
   public type Timestamp = Int;
   // See mo:base/Time and Time.now()
@@ -170,7 +169,7 @@ module {
     userName : Text;
     completedVoteCount : Int;
     rewardsEarned : Int;
-    rs: Float;
+    rs : Float;
     performance : Float;
     lastVoted : ?Timestamp;
   };
@@ -190,7 +189,11 @@ module {
   };
 
   public type UserLevel = {
-    #novice; #junior; #senior1; #senior2; #senior3;
+    #novice;
+    #junior;
+    #senior1;
+    #senior2;
+    #senior3;
   };
 
   public type VoteV2 = {
@@ -198,23 +201,23 @@ module {
     contentId : Text;
     userId : UserId;
     decision : Decision;
-    rsBeforeVoting: Int;
-    level: UserLevel;
+    rsBeforeVoting : Int;
+    level : UserLevel;
     violatedRules : ?[RuleId];
     createdAt : Timestamp;
   };
-  
+
   public type ViolatedRules = {
     id : RuleId;
-    rejectionCount: Nat;
+    rejectionCount : Nat;
   };
 
   public type ContentResult = {
     sourceId : Text;
-    approvedCount: Nat;
-    rejectedCount: Nat;
+    approvedCount : Nat;
+    rejectedCount : Nat;
     status : ContentStatus;
-    violatedRules: [ViolatedRules];
+    violatedRules : [ViolatedRules];
   };
 
   public type SubscribeMessage = {
@@ -230,7 +233,7 @@ module {
     approvedCount : Nat;
     rejectedCount : Nat;
     hasVoted : Bool;
-    violatedRulesCount: HashMap.HashMap<RuleId, Nat>;
+    violatedRulesCount : HashMap.HashMap<RuleId, Nat>;
   };
 
   public type Activity = {
@@ -319,19 +322,19 @@ module {
     headers : [HeaderField];
     body : Blob;
     streaming_strategy : ?StreamingStrategy;
-    upgrade: ?Bool;
+    upgrade : ?Bool;
   };
 
-    public type ProviderError = {
-        #Unauthorized;
-        #ProviderIsRegistered;
-        #NotFound;
-        #RequiresWhitelisting;
-        #InvalidProvider;
-        #InvalidContentType;
-        #InvalidContentStatus;
-        #ProviderAdminIsAlreadyRegistered;
-    };
+  public type ProviderError = {
+    #Unauthorized;
+    #ProviderIsRegistered;
+    #NotFound;
+    #RequiresWhitelisting;
+    #InvalidProvider;
+    #InvalidContentType;
+    #InvalidContentStatus;
+    #ProviderAdminIsAlreadyRegistered;
+  };
 
   public type ProviderMetaResult = Result.Result<ProviderMeta, ProviderError>;
   public type ProviderSettingResult = Result.Result<ProviderSettings, ProviderError>;

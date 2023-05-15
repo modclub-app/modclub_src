@@ -61,6 +61,18 @@
     "provider": {
       "main": "src/modclub/main2.mo",
       "type": "motoko"
+    },
+    "auth": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
+    "auth_dev": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
+    "auth_qa": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
     }
   },
   "defaults": {
@@ -68,7 +80,7 @@
       "packtool": "vessel sources"
     }
   },
-  "dfx": "0.12.1",
+  "dfx": "0.13.1",
   "networks": {
     "local": {
       "bind": "127.0.0.1:8000",

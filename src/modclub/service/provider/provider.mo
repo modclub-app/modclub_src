@@ -17,7 +17,8 @@ import AuthManager "../auth/auth";
 import Canistergeek "../../canistergeek/canistergeek";
 import ModClubParam "../parameters/params";
 import ModWallet "../../remote_canisters/ModWallet";
-import CommonTypes "../../../common/types"
+import CommonTypes "../../../common/types";
+import AuthGuard "../../../common/security/guard";
 
 module ProviderModule {
 
@@ -384,7 +385,7 @@ module ProviderModule {
     caller : Principal,
     providerId : ?Principal,
     state : GlobalState.State,
-    modClubAmins : List.List<Principal>,
+    isModclubAdmin : Bool,
     logger : Canistergeek.Logger
   ) : async Types.ProviderResult {
     var authorized = false;
@@ -427,9 +428,9 @@ module ProviderModule {
       #info
     );
 
-    // Allow Modclub Admins
-    if (authorized == false) {
-      authorized := AuthManager.isAdmin(caller, modClubAmins);
+    // Allow Modclub Admins. REFACTOR.
+    if (authorized == false and isModclubAdmin) {
+      authorized := true;
     };
 
     // Check if the caller is an admin of this provider
@@ -542,7 +543,7 @@ module ProviderModule {
     providerAdminPrincipalIdToBeRemoved : Principal,
     callerPrincipalId : Principal,
     state : GlobalState.State,
-    modClubAmins : List.List<Principal>,
+    isModclubAdmin : Bool,
     logger : Canistergeek.Logger
   ) : async Types.ProviderResult {
 
@@ -550,7 +551,7 @@ module ProviderModule {
       "Authenticating the caller: " # Principal.toText(callerPrincipalId)
     );
     // Allow Modclub Admins
-    var authorized = AuthManager.isAdmin(callerPrincipalId, modClubAmins);
+    var authorized = isModclubAdmin;
     if (authorized == false) {
       switch (
         AuthManager.checkProviderAdminPermission(
@@ -582,11 +583,11 @@ module ProviderModule {
     providerAdminPrincipalIdToBeEdited : Principal,
     newUserName : Text,
     callerPrincipalId : Principal,
-    modClubAmins : List.List<Principal>,
+    isModclubAdmin : Bool,
     state : GlobalState.State
   ) : async Types.ProviderResult {
 
-    var authorized = AuthManager.isAdmin(callerPrincipalId, modClubAmins);
+    var authorized = isModclubAdmin;
     Debug.print(
       "Authenticating the caller: " # Principal.toText(callerPrincipalId)
     );

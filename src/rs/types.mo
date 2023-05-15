@@ -1,3 +1,5 @@
+import CommonTypes "../common/types";
+
 module {
   public type UserLevel = {
     #novice;
@@ -27,4 +29,16 @@ module {
     userId : Principal;
     score : Int;
   };
+
+  public type RSCanisterMessageInspection = {
+    #handleSubscription : () -> CommonTypes.ConsumerPayload;
+    #queryRSAndLevel : () -> ();
+    #showAdmins : () -> ();
+    #queryRSAndLevelByPrincipal : () -> Principal;
+    #setRS : () -> (Principal, Int);
+    #topUsers : () -> (Nat, Nat);
+    #updateRS : () -> (Principal, Bool, Decision);
+    #updateRSBulk : () -> [UserAndVote];
+  };
+
 };
