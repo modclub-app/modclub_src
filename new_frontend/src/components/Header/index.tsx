@@ -5,6 +5,16 @@ import Styles from "./styles.module.scss";
 import Nav from "../Nav";
 
 const Header = () => {
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault();
+    const href = e.currentTarget.href;
+    const targetId = href.replace(/.*\#/, "");
+    const elem = document.getElementById(targetId);
+    elem?.scrollIntoView({
+      behavior: "smooth",
+    });
+  };
+
   return (
     <div className="w-full bg-header rounded-3xl">
       <Nav />
@@ -19,8 +29,17 @@ const Header = () => {
             AI powered user verification and content moderation
           </h3>
           <div className="mt-10 flex justify-center gap-x-4">
-            <button className="primary-btn">Get Started</button>
-            <Link href="#" className="flex my-auto text-2xl">
+            <Link
+              href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
+              target="_blank"
+            >
+              <button className="primary-btn">Get Started</button>
+            </Link>
+            <Link
+              className="flex my-auto text-2xl"
+              href="#section-1"
+              onClick={handleScroll}
+            >
               More about us
               <Image
                 className="ms-2 my-auto"

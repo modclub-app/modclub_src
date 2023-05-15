@@ -1,3 +1,10 @@
+@import "../../../../styles/colors.scss";
+
 .sectionFour {
-  // section four properties
+  margin-top: 1.6em;
+  background-color: $main-color;
+
+  h2 {
+    color: #fff !important;
+  }
 }

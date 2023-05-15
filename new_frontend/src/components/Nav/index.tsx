@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React from "react";
+import Link from "next/link";
 import Styles from "./styles.module.scss";
 
 export default function Nav() {
@@ -8,8 +9,8 @@ export default function Nav() {
       <div className={`${Styles.navBrand} gap-x-3 flex`}>
         <Image
           src="/assets/logo-icon.svg"
-          height={30}
-          width={30}
+          height={40}
+          width={45}
           alt="Logo Icon"
         />
         <Image
@@ -23,9 +24,14 @@ export default function Nav() {
       <div className={Styles.navItems}>
         <ul className="flex gap-x-4">
           <li className="gap-x-3">
-            <button className="primary-btn">Sign Up</button>
+            <Link
+              href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
+              target="_blank"
+            >
+              <button className="primary-btn">Sign Up</button>
+            </Link>
           </li>
-          <li>
+          {/*<li>
             <button className="secondary-btn">Log In</button>
           </li>
           <li className="my-auto">
@@ -35,7 +41,7 @@ export default function Nav() {
               width={40}
               alt="Logo Icon"
             />
-          </li>
+          </li>*/}
         </ul>
       </div>
     </nav>

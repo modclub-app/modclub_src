@@ -6,9 +6,11 @@
 }
 
 .sectionFive {
-  a {
+  a,
+  p {
     position: relative;
     font-size: 1.6rem;
+    line-height: 2em;
   }
 
   a::after {
@@ -20,10 +22,57 @@
     height: 0.01em;
     bottom: -0.04em;
   }
+
+  a.link::after,
+  p a.link::after {
+    content: "";
+    position: absolute;
+    background-color: transparent !important;
+    width: 100%;
+    left: 0;
+    height: 0.01em;
+    bottom: -0.04em;
+  }
+
+  .faq {
+    p {
+      color: $main-color;
+    }
+
+    ul {
+      margin: 1em 0;
+    }
+
+    ol {
+      margin: 1em 0;
+      list-style-type: decimal !important;
+      margin-left: 1.5em;
+    }
+
+    li {
+      margin-left: 1.5em;
+      font-size: 1.4rem;
+      line-height: 2em;
+    }
+  }
+}
+
+.disclosureBtn {
+  font-size: 1.4rem;
 }
 
 @media screen and (max-width: 769px) {
   .section-five a {
     font-size: 1.2rem;
+  }
+
+  .defaultOpen {
+    min-width: 64vh;
+  }
+}
+
+@media screen and (min-width: 992px) {
+  .defaultOpen {
+    min-width: 170vh;
   }
 }

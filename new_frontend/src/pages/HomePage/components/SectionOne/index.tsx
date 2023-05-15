@@ -15,7 +15,10 @@ export default function SectionOne() {
     "User Verification",
   ]);
   return (
-    <section className={`${Styles.sectionOne} py-20 md:py-80 rounded-3xl`}>
+    <section
+      id="section-1"
+      className={`${Styles.sectionOne} py-20 md:py-80 rounded-3xl`}
+    >
       <div className="header-center text-center">
         <div>
           <h2>Modular solutions</h2>
@@ -76,7 +79,7 @@ export default function SectionOne() {
                     </div>
                     <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2">
                       <Image
-                        src="assets/section-one-hero-img.svg"
+                        src="assets/section-one-hero-img-1.svg"
                         width={600}
                         height={600}
                         alt="Section Two Hero Image"
@@ -85,33 +88,41 @@ export default function SectionOne() {
                   </div>
                 </Tab.Panel>
                 <Tab.Panel>
-                  <div className="grid grid-cols-12 mt-16 gap-x-5 justify-center">
-                    <div className="col-span-10 md:col-span-6 md:col-start-2 col-start-2">
+                  <div className="grid grid-cols-12 mt-16 gap-x-10 justify-center">
+                    <div className="col-span-10 md:col-span-4 col-start-2 md:col-start-2 my-8 md:my-auto text-left">
+                      <h3 className="leading-none">
+                        Proof of Humanity Bot Protection
+                      </h3>
+                      <p className="md:mr-32 mt-14">
+                        Are you struggling with spam, bot accounts, sybil
+                        attacks and tracking real user engagement?
+                      </p>
+                      <p className="mt-8 md:mr-32">
+                        Flexible and transferrable and seamlessly
+                        MODCLUB&apost;s Proof of Humanity user-verification
+                        service has you covered. With scalable and customizable
+                        challenges, you can choose the level of verification you
+                        require for your project. Say goodbye to bot attacks and
+                        hello to real user engagement with MODCLUB&apost;s Proof
+                        of Humanity. Partner with us today and enjoy a seamless
+                        and secure verification process.
+                      </p>
+                      <Link
+                        href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
+                        target="_blank"
+                      >
+                        <button className="primary-btn mt-14">
+                          Book a Demo
+                        </button>
+                      </Link>
+                    </div>
+                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2">
                       <Image
-                        src="assets/section-one-hero-img.svg"
+                        src="assets/section-one-hero-img-2.svg"
                         width={600}
                         height={600}
                         alt="Section Two Hero Image"
                       />
-                    </div>
-                    <div className="col-span-10 col-start-2 md:col-start-0 md:col-span-4 my-8 md:my-auto text-left">
-                      <h3 className="leading-none">
-                        Hassle-Free Content Moderation
-                      </h3>
-                      <p className="md:mr-32 mt-14">
-                        Looking for an efficient way to manage user-generated
-                        content? Modclub&apost;s content moderation tool offers
-                        customizable moderation rules and real-time
-                        notifications, at a fraction of the cost of in-house
-                        moderation.
-                      </p>
-                      <p className="mt-8 md:mr-32">
-                        Integrate with Modclub and discover cost-effective,
-                        efficient, customizable, and analytical content
-                        moderation services that protect your brand reputation
-                        and foster user trust.
-                      </p>
-                      <button className="primary-btn mt-14">Book a demo</button>
                     </div>
                   </div>
                 </Tab.Panel>

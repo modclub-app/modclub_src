@@ -9,7 +9,10 @@ export default function Footer() {
         <div className="py-40 md:py-72 md:flex justify-between">
           <div className="md:w-12/12 my-auto">
             <h2 className="text-main">Ready to get started?</h2>
-            <Link href="#">
+            <Link
+              target="_blank"
+              href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
+            >
               <h2 className="text-secondary underline md:-mt-6">
                 Get in touch
               </h2>
@@ -42,10 +45,9 @@ export default function Footer() {
           <Link target="_blank" href="https://medium.com/@modclub">
             Medium
           </Link>
-          {/*<Link target='_blank' href='#'>Telegram</Link>
-          <Link target='_blank' href='#'>LinkedIn</Link>
-          <Link target='_blank' href='#'>Notion</Link>
-          <Link target='_blank' href='#'>Instagram</Link>*/}
+          <Link target="_blank" href="https://nuance.xyz/">
+            Nuance
+          </Link>
         </div>
         <Link
           target="_blank"

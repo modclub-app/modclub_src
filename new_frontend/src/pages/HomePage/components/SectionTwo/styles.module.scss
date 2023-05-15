@@ -2,14 +2,42 @@
   p {
     font-family: "Playfair Display";
     font-size: 2em;
+    color: #fff;
   }
+  background-color: #1b4444;
+  margin-top: 1.6em;
+}
+
+.headerCenter h2 {
+  color: #fff;
+}
+
+.subText {
+  font-family: "Playfair Display";
+  font-size: 2em;
+  color: #fff;
+}
+
+.cardThree {
+  background-image: url("/assets/section-two-card-3-neon-1.svg"),
+    url("/assets/section-two-card-3-neon-2.svg") !important;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.cardFour img {
+  border-radius: 0 0 2em 0;
 }
 
 @media screen and (max-width: 769px) {
   .sectionTwo {
     p {
       font-family: "Playfair Display";
-      font-size: 1em;
+      font-size: 1.6rem;
     }
+  }
+
+  .sectionTwo h3 {
+    font-size: 2.4rem;
   }
 }

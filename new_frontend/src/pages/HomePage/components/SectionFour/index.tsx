@@ -4,9 +4,11 @@ import Styles from "./styles.module.scss";
 
 export default function SectionFour() {
   return (
-    <section className={Styles.sectionFour}>
+    <section
+      className={`py-40 md:py-72 px-14 md:px-40 ${Styles.sectionFour} rounded-3xl`}
+    >
       <div className="container text-center p-24 my-40 md:my-96">
-        <h2 className="text-main mx-5 md:mx-0 lg:mx-60">
+        <h2 className="text-main mx-5 md:mx-0 lg:mx-20">
           Offload your content moderation and focus on what matters most - your
           product and community.
         </h2>

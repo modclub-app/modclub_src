@@ -119,10 +119,14 @@ hr {
   color: $main-color;
 }
 
+.header-center-white p {
+  color: #fff;
+}
+
 .card {
   display: flex;
   justify-content: center;
-  background-color: $main-color;
+  background-color: #193f3f;
   height: 48em;
   border-radius: 2em;
 }
@@ -131,17 +135,10 @@ hr {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: $main-color;
-  height: 48em;
+  background-color: #fff;
+  min-height: 48em;
   border-radius: 2em;
-}
-
-.card-3 {
-  background-image: url("/assets/neon-one.svg"), url("/assets/neon-two.svg") !important;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-size: cover;
+  color: $main-color;
 }
 
 @media screen and (max-width: 769px) {
@@ -155,12 +152,12 @@ hr {
   }
 
   h3 {
-    font-size: 1.2rem;
+    font-size: 1.6rem;
     font-weight: 400;
   }
 
   p {
-    font-size: 1.1rem;
+    font-size: 1.4rem;
   }
 
   a {
