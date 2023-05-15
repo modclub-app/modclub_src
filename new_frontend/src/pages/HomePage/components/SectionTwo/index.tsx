@@ -20,7 +20,7 @@ export default function SectionTwo() {
         >
           <div className="my-auto">
             <Image
-              src="/assets/section-two-card-1.svg"
+              src="/assets/cost-effective.png"
               width={200}
               height={200}
               alt="Card 1 Image"

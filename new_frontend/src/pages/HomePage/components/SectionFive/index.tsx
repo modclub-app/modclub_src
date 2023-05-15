@@ -168,9 +168,9 @@ export default function SectionFive() {
                     >
                       <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-500">
                         <p>
-                          Join MODCLUB&apost;s community moderators and help
-                          make the internet a better place. Sign up now and
-                          moderate to earn!
+                          Join Modclub's community moderators and help make the
+                          internet a better place. Sign up now and moderate to
+                          earn!
                         </p>
                       </Disclosure.Panel>
                     </Transition>
@@ -219,18 +219,18 @@ export default function SectionFive() {
                         <ul>
                           <li>
                             $MOD token is the core utility and governance token
-                            of MODCLUB&apost;s platform. The overarching goal of
-                            the $MOD is to properly incentivize and reward all
+                            of Modclub's platform. The overarching goal of the
+                            $MOD is to properly incentivize and reward all
                             MODCLUB ecosystem token holders, and thus ensure the
-                            security and utility of the MODCLUB platform. Token
+                            security and utility of the Modclub platform. Token
                             Use-Cases:
                           </li>
                           <ol>
                             <li>
                               Means of payment: $MOD will primarily be used as
-                              means of payment. DApp developers will pay MODCLUB
+                              means of payment. DApp developers will pay Modclub
                               directly with $MOD for verification services, and
-                              MODCLUB will pay moderators with $MOD for service.
+                              Modclub will pay moderators with $MOD for service.
                             </li>
                             <li>
                               Qualifying for moderation: Senior moderators will
@@ -240,10 +240,10 @@ export default function SectionFive() {
                             <li>
                               Staking & governance: Any $MOD holder that stakes
                               $MOD in the Governance canister will be able to
-                              participate in the platform&apost;s
-                              decision-making and receive staking rewards.
-                              Staking has the potential to increase the token
-                              value as it reduces the circulating supply.
+                              participate in the platform's decision-making and
+                              receive staking rewards. Staking has the potential
+                              to increase the token value as it reduces the
+                              circulating supply.
                             </li>
                           </ol>
                         </ul>

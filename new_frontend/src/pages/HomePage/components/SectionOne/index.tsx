@@ -40,7 +40,7 @@ export default function SectionOne() {
                         "ring-white ring-opacity-60 ring-offset-2 focus:outline-none focus:ring-2",
                         selected
                           ? "font-semibold transition ease-in-out duration-200"
-                          : "text-gray-300 text-opacity-50 transition ease-in-out duration-200"
+                          : "text-gray-600 text-opacity-50 transition ease-in-out duration-200"
                       )
                     }
                   >
@@ -77,9 +77,9 @@ export default function SectionOne() {
                         </button>
                       </Link>
                     </div>
-                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2">
+                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2 flex items-center justify-center h-full">
                       <Image
-                        src="assets/section-one-hero-img-1.svg"
+                        src="/assets/moderation_preview.png"
                         width={600}
                         height={600}
                         alt="Section Two Hero Image"
@@ -98,14 +98,14 @@ export default function SectionOne() {
                         attacks and tracking real user engagement?
                       </p>
                       <p className="mt-8 md:mr-32">
-                        Flexible and transferrable and seamlessly
-                        MODCLUB&apost;s Proof of Humanity user-verification
-                        service has you covered. With scalable and customizable
-                        challenges, you can choose the level of verification you
-                        require for your project. Say goodbye to bot attacks and
-                        hello to real user engagement with MODCLUB&apost;s Proof
-                        of Humanity. Partner with us today and enjoy a seamless
-                        and secure verification process.
+                        Flexible and transferrable and seamlessly Modclub's
+                        Proof of Humanity user-verification service has you
+                        covered. With scalable and customizable challenges, you
+                        can choose the level of verification you require for
+                        your project. Say goodbye to bot attacks and hello to
+                        real user engagement with Modclub's Proof of Humanity.
+                        Partner with us today and enjoy a seamless and secure
+                        verification process.
                       </p>
                       <Link
                         href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
@@ -116,9 +116,9 @@ export default function SectionOne() {
                         </button>
                       </Link>
                     </div>
-                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2">
+                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2 flex items-center justify-center h-full">
                       <Image
-                        src="assets/section-one-hero-img-2.svg"
+                        src="/assets/poh_preview.png"
                         width={600}
                         height={600}
                         alt="Section Two Hero Image"
