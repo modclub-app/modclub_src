@@ -11,10 +11,10 @@ module {
   public type Subscriber = {
     topic : Text;
     consumer : Principal;
-    _actor : SubcriberCanisterType;
+    _actor : SubscriberCanisterType;
   };
 
-  public type SubcriberCanisterType = actor {
+  public type SubscriberCanisterType = actor {
     handleSubscription : (ConsumerPayload) -> async ();
   };
 
