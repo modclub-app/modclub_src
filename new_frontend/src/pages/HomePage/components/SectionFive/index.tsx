@@ -56,7 +56,7 @@ export default function SectionFive() {
                         <div className="flex mt-10">
                           <div className="w-12/12 md:w-1/3">
                             <p>
-                              Modclub's tokenomics model was developed in
+                              Modclub&apos;s tokenomics model was developed in
                               collaboration with{" "}
                               <Link
                                 target="_blank"
@@ -159,9 +159,9 @@ export default function SectionFive() {
                     >
                       <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-500">
                         <p>
-                          Join Modclub's community moderators and help make the
-                          internet a better place. Sign up now and moderate to
-                          earn!
+                          Join Modclub&apos;s community moderators and help make
+                          the internet a better place. Sign up now and moderate
+                          to earn!
                         </p>
                       </Disclosure.Panel>
                     </Transition>
@@ -218,8 +218,8 @@ export default function SectionFive() {
                         </h3>
                         <p className="text-gray-600">
                           MOD token is the core utility and governance token of
-                          Modclub's platform. The overarching goal of the MOD is
-                          to properly incentivize and reward all MODCLUB
+                          Modclub&apos;s platform. The overarching goal of the
+                          MOD is to properly incentivize and reward all MODCLUB
                           ecosystem token holders, and thus ensure the security
                           and utility of the Modclub platform. Token Use-Cases:
                         </p>
@@ -238,10 +238,10 @@ export default function SectionFive() {
                           <li className="text-gray-600">
                             Staking & governance: Any MOD holder that stakes MOD
                             in the Governance canister will be able to
-                            participate in the platform's decision-making and
-                            receive staking rewards. Staking has the potential
-                            to increase the token value as it reduces the
-                            circulating supply.
+                            participate in the platform&apos;s decision-making
+                            and receive staking rewards. Staking has the
+                            potential to increase the token value as it reduces
+                            the circulating supply.
                           </li>
                         </ol>
                       </Disclosure.Panel>
