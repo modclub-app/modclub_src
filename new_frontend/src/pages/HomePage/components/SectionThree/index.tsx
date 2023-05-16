@@ -36,7 +36,7 @@ export default function SectionThree() {
             See how Modclub has helped businesses like yours
           </h2>
           <button className="mt-14 tertiary-btn">
-            Don&#39;t just take our word for it
+            Don&apos;t just take our word for it
           </button>
         </div>
       </div>

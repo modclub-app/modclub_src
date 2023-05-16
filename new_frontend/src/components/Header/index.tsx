@@ -16,7 +16,7 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full bg-header rounded-3xl">
+    <div id="header-section" className="w-full bg-header rounded-3xl">
       <Nav />
       <div className={`text-center ${Styles.headerArea}`}>
         <div className={Styles.headerText}>

@@ -24,7 +24,7 @@ export default function SectionTwo() {
               width={200}
               height={200}
               alt="Card 1 Image"
-              className="w-10/12 mx-auto"
+              className="w-10/12 xl:w-8/12 mx-auto"
             />
             <div className="mx-10 md:mx-20 mt-14">
               <h3 className="leading-none">Cost-Effective</h3>

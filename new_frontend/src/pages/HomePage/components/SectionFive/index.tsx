@@ -17,7 +17,7 @@ export default function SectionFive() {
   ];
   return (
     <section
-      className={`py-40 md:py-72 px-14 md:px-40 ${Styles.sectionFive} rounded-3xl`}
+      className={`py-40 md:py-72 px-14 md:px-40 ${Styles.sectionFive} rounded-3xl w-full`}
     >
       <div className="md:px-3 text-main">
         <div className="header-center text-left grid grid-cols-12">

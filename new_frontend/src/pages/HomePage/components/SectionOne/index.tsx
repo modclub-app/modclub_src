@@ -99,11 +99,11 @@ export default function SectionOne() {
                       </p>
                       <p className="mt-8 md:mr-32">
                         Flexible and transferrable and seamlessly
-                        MODCLUB&#39;s Proof of Humanity user-verification
+                        MODCLUB&apost;s Proof of Humanity user-verification
                         service has you covered. With scalable and customizable
                         challenges, you can choose the level of verification you
                         require for your project. Say goodbye to bot attacks and
-                        hello to real user engagement with MODCLUB&#39;s Proof
+                        hello to real user engagement with MODCLUB&apost;s Proof
                         of Humanity. Partner with us today and enjoy a seamless
                         and secure verification process.
                       </p>
