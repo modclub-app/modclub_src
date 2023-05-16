@@ -40,7 +40,7 @@ export default function SectionOne() {
                         "ring-white ring-opacity-60 ring-offset-2 focus:outline-none focus:ring-2",
                         selected
                           ? "font-semibold transition ease-in-out duration-200"
-                          : "text-gray-300 text-opacity-50 transition ease-in-out duration-200"
+                          : "text-gray-600 text-opacity-50 transition ease-in-out duration-200"
                       )
                     }
                   >
