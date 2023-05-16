@@ -53,10 +53,19 @@ export default function SectionFive() {
                       leaveTo="transform scale-95 opacity-0"
                     >
                       <Disclosure.Panel className="pt-4 pb-2 text-sm text-gray-500">
+                        <div className="flex mt-20">
+                          <Image
+                            className="w-full"
+                            src="/assets/section-five-hero-img.svg"
+                            width={500}
+                            height={400}
+                            alt="Section Five Hero Image"
+                          />
+                        </div>
                         <div className="flex mt-10">
                           <div className="w-12/12 md:w-1/3">
                             <p>
-                              Modclub&apos;s tokenomics model was developed in
+                              Modclub&#39;s tokenomics model was developed in
                               collaboration with{" "}
                               <Link
                                 target="_blank"
@@ -159,7 +168,7 @@ export default function SectionFive() {
                     >
                       <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-500">
                         <p>
-                          Join Modclub&apos;s community moderators and help make
+                          Join MODCLUB&#39;s community moderators and help make
                           the internet a better place. Sign up now and moderate
                           to earn!
                         </p>
@@ -194,58 +203,53 @@ export default function SectionFive() {
                       leaveFrom="transform scale-100 opacity-100"
                       leaveTo="transform scale-95 opacity-0"
                     >
-                      <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-500 space-y-4">
-                        <h3 className="text-lg font-semibold text-gray-700">
-                          How to Integrate with Modclub?
-                        </h3>
-                        <ul className="list-disc list-inside space-y-2">
-                          <li className="text-gray-600">
-                            We have a simple to use developer SDK.{" "}
-                            <a
-                              href="mailto:team@modclub.app"
-                              className={`${Styles.link} text-secondary`}
-                            >
-                              Reach out to us to get access.
-                            </a>
+                      <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-500">
+                        <p>How to Integrate with Modclub?</p>
+                        <ul>
+                          <li>
+                            We have a simple to use developer SDK. Reach out to
+                            us to get access.
                           </li>
-                          <li className="text-gray-600">
+                          <li>
                             You can receive MOD tokens through our airdrop or
                             via exchanges.
                           </li>
                         </ul>
-                        <h3 className="text-lg font-semibold text-gray-700">
-                          What does Modclub token do?
-                        </h3>
-                        <p className="text-gray-600">
-                          MOD token is the core utility and governance token of
-                          Modclub&apos;s platform. The overarching goal of the
-                          MOD is to properly incentivize and reward all MODCLUB
-                          ecosystem token holders, and thus ensure the security
-                          and utility of the Modclub platform. Token Use-Cases:
-                        </p>
-                        <ol className="list-decimal list-inside space-y-2 pl-5">
-                          <li className="text-gray-600">
-                            Means of payment: MOD will primarily be used as
-                            means of payment. DApp developers will pay Modclub
-                            directly with MOD for verification services, and
-                            Modclub will pay moderators with MOD for service.
+                        <p>What does Modclub token do?</p>
+                        <ul>
+                          <li>
+                            $MOD token is the core utility and governance token
+                            of MODCLUB&#39;s platform. The overarching goal of
+                            the $MOD is to properly incentivize and reward all
+                            MODCLUB ecosystem token holders, and thus ensure the
+                            security and utility of the MODCLUB platform. Token
+                            Use-Cases:
                           </li>
-                          <li className="text-gray-600">
-                            Qualifying for moderation: Senior moderators will
-                            need to stake a certain amount of MOD in the
-                            Governance system to claim verification tasks.
-                          </li>
-                          <li className="text-gray-600">
-                            Staking & governance: Any MOD holder that stakes MOD
-                            in the Governance canister will be able to
-                            participate in the platform&apos;s decision-making
-                            and receive staking rewards. Staking has the
-                            potential to increase the token value as it reduces
-                            the circulating supply.
-                          </li>
-                        </ol>
+                          <ol>
+                            <li>
+                              Means of payment: $MOD will primarily be used as
+                              means of payment. DApp developers will pay MODCLUB
+                              directly with $MOD for verification services, and
+                              MODCLUB will pay moderators with $MOD for service.
+                            </li>
+                            <li>
+                              Qualifying for moderation: Senior moderators will
+                              need to stake a certain amount of $MOD in the
+                              Governance system to claim verification tasks.
+                            </li>
+                            <li>
+                              Staking & governance: Any $MOD holder that stakes
+                              $MOD in the Governance canister will be able to
+                              participate in the platform&#39;s decision-making
+                              and receive staking rewards. Staking has the
+                              potential to increase the token value as it
+                              reduces the circulating supply.
+                            </li>
+                          </ol>
+                        </ul>
                       </Disclosure.Panel>
                     </Transition>
+                    <hr className="my-10" />
                   </>
                 )}
               </Disclosure>

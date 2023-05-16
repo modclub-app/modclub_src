@@ -17,6 +17,19 @@ export default function Footer() {
                 Get in touch
               </h2>
             </Link>
+            <div className="mt-14 md:mt-0 md:w-3/12 my-auto">
+              <div className="mt-28">
+                <p>Subscribe to newsletters</p>
+                <div className="flex mt-10">
+                  <input
+                    type="text"
+                    className="border-solid border border-primary rounded-full w-96 pl-10 text-2xl"
+                    placeholder="Write your e-mail"
+                  ></input>
+                  <button className="primary-btn">Send</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

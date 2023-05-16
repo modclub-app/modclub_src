@@ -54,7 +54,7 @@ const Header = () => {
         <div className="mt-10 md:mt-28 pb-10 md:p-0 md:mx-40 px-10 md:px-0">
           <Image
             className="mx-auto"
-            src="/assets/dashboard_main.png"
+            src="/assets/macbook-ui.svg"
             width={1200}
             height={1200}
             alt="Arrow Down Icon"

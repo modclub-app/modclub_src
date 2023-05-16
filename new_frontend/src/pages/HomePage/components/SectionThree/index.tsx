@@ -36,7 +36,7 @@ export default function SectionThree() {
             See how Modclub has helped businesses like yours
           </h2>
           <button className="mt-14 tertiary-btn">
-            Don&apos;t just take our word for it
+            Don&#39;t just take our word for it
           </button>
         </div>
       </div>
@@ -48,15 +48,13 @@ export default function SectionThree() {
             ref={card1Ref}
           >
             <div className="col-span-10 md:col-span-4 mb-5 md:mb-0">
-              <Link href={"https://nuance.xyz"}>
-                <Image
-                  src="/assets/karman-ventures.png"
-                  width={125}
-                  height={125}
-                  alt="Nuance"
-                />
-              </Link>
-              <p className="font-semibold pt-5">Nuance</p>
+              <Image
+                src="/assets/karman-ventures.png"
+                width={125}
+                height={125}
+                alt="Karman Ventures"
+              />
+              <p className="font-semibold pt-5">Karman Ventures</p>
             </div>
             <div className="col-span-10 md:col-span-8">
               <div className={Styles.testimonial}>
