@@ -77,9 +77,9 @@ export default function SectionOne() {
                         </button>
                       </Link>
                     </div>
-                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2">
+                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2 flex justify-center items-center p-4">
                       <Image
-                        src="assets/section-one-hero-img-1.svg"
+                        src="/assets/moderation_preview.png"
                         width={600}
                         height={600}
                         alt="Section Two Hero Image"
@@ -116,9 +116,9 @@ export default function SectionOne() {
                         </button>
                       </Link>
                     </div>
-                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2">
+                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2 flex justify-center items-center p-4">
                       <Image
-                        src="assets/section-one-hero-img-2.svg"
+                        src="/assets/poh_preview.png"
                         width={600}
                         height={600}
                         alt="Section Two Hero Image"
