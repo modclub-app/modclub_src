@@ -22,8 +22,9 @@ const Header = () => {
         <div className={Styles.headerText}>
           <h1>
             Content moderation is hard, let M
-            <span className="-ml-2 mr-2 italic">o</span>dc
-            <span className="italic -ml-2 mr-2">l</span>ub make it easy for you
+            <span className="-ml-1 mr-1 md:-ml-2 md:mr-2 italic">o</span>dc
+            <span className="italic -ml-1 mr-1 md:-ml-2 md:mr-2">l</span>ub make
+            it easy for you
           </h1>
           <h3 className={Styles.headerSubtext}>
             AI powered user verification and content moderation

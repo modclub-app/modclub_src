@@ -5,16 +5,6 @@ import { Disclosure, Transition } from "@headlessui/react";
 import Styles from "./styles.module.scss";
 
 export default function SectionFive() {
-  const items = [
-    {
-      title: "Whitepaper",
-      body: `Learn more about Modclub! Read our <a href='https://docsend.com/view/x6ay6xw6f5f3npj8' className='${Styles.link} text-secondary' target='_blank'>Whitepaper</a>.`,
-    },
-    {
-      title: "Become a Moderator",
-      body: "Learn more about Modclub! Read our Whitepaper.",
-    },
-  ];
   return (
     <section
       className={`py-40 md:py-72 px-14 md:px-40 ${Styles.sectionFive} rounded-3xl w-full`}
@@ -27,10 +17,8 @@ export default function SectionFive() {
         </div>
         <div className="header-center">
           <div className="w-full">
-            <div
-              className={`${Styles.defaultOpen} ${Styles.faq} mx-auto w-full rounded-2xl p-2`}
-            >
-              <Disclosure defaultOpen={true}>
+            <div className={`${Styles.faq} mx-auto w-full rounded-2xl p-2`}>
+              <Disclosure>
                 {({ open }) => (
                   <>
                     <hr className="mt-16 mb-10" />
@@ -39,10 +27,14 @@ export default function SectionFive() {
                     >
                       <span>
                         <div className="text-3xl text-main flex justify-between">
-                          <p>Tokenomics</p>
+                          <p className="underline underline-offset-8">
+                            Tokenomics
+                          </p>
                         </div>
                       </span>
-                      {open ? <p>Hide</p> : <p>Read</p>}
+                      <p className="underline underline-offset-8">
+                        {open ? "Hide" : "Read"}
+                      </p>
                     </Disclosure.Button>
                     <Transition
                       enter="transition duration-100 ease-out"
@@ -53,15 +45,6 @@ export default function SectionFive() {
                       leaveTo="transform scale-95 opacity-0"
                     >
                       <Disclosure.Panel className="pt-4 pb-2 text-sm text-gray-500">
-                        <div className="flex mt-20">
-                          <Image
-                            className="w-full"
-                            src="/assets/section-five-hero-img.svg"
-                            width={500}
-                            height={400}
-                            alt="Section Five Hero Image"
-                          />
-                        </div>
                         <div className="flex mt-10">
                           <div className="w-12/12 md:w-1/3">
                             <p>
@@ -106,14 +89,14 @@ export default function SectionFive() {
                     >
                       <span>
                         <div className="text-3xl text-main flex justify-between">
-                          <Link href="#" onClick={(e) => e.preventDefault()}>
-                            <p>Whitepaper</p>
-                          </Link>
+                          <p className="underline underline-offset-8">
+                            Whitepaper
+                          </p>
                         </div>
                       </span>
-                      <Link href="#" onClick={(e) => e.preventDefault()}>
-                        {open ? <p>Hide</p> : <p>Read</p>}
-                      </Link>
+                      <p className="underline underline-offset-8">
+                        {open ? "Hide" : "Read"}
+                      </p>
                     </Disclosure.Button>
                     <Transition
                       enter="transition duration-100 ease-out"
@@ -149,14 +132,14 @@ export default function SectionFive() {
                     >
                       <span>
                         <div className="text-3xl text-main flex justify-between">
-                          <Link href="#" onClick={(e) => e.preventDefault()}>
-                            <p>Become a Moderator</p>
-                          </Link>
+                          <p className="underline underline-offset-8">
+                            Become a Moderator
+                          </p>
                         </div>
                       </span>
-                      <Link href="#" onClick={(e) => e.preventDefault()}>
-                        {open ? <p>Hide</p> : <p>Read</p>}
-                      </Link>
+                      <p className="underline underline-offset-8">
+                        {open ? "Hide" : "Read"}
+                      </p>
                     </Disclosure.Button>
                     <Transition
                       enter="transition duration-100 ease-out"
@@ -186,14 +169,12 @@ export default function SectionFive() {
                     >
                       <span>
                         <div className="text-3xl text-main flex justify-between">
-                          <Link href="#" onClick={(e) => e.preventDefault()}>
-                            <p>FAQs</p>
-                          </Link>
+                          <p className="underline underline-offset-8">FAQs</p>
                         </div>
                       </span>
-                      <Link href="#" onClick={(e) => e.preventDefault()}>
-                        {open ? <p>Hide</p> : <p>Read</p>}
-                      </Link>
+                      <p className="underline underline-offset-8">
+                        {open ? "Hide" : "Read"}
+                      </p>
                     </Disclosure.Button>
                     <Transition
                       enter="transition duration-100 ease-out"
