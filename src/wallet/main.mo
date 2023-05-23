@@ -8,6 +8,9 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
 import List "mo:base/List";
+import Int "mo:base/Int";
+import Nat8 "mo:base/Nat8";
+import Nat64 "mo:base/Nat64";
 import Types "./types";
 import Buffer "mo:base/Buffer";
 import Result "mo:base/Result";
@@ -15,19 +18,17 @@ import Debug "mo:base/Debug";
 import AuthManager "../modclub/service/auth/auth";
 import Utils "../common/utils";
 import CommonTypes "../common/types";
-import Timer "mo:base/Timer";
 import ModSecurity "../common/security/guard";
+import ICRCLedger "ICRC/ledger";
+import ICRCTypes "ICRC/types";
 
-shared ({ caller = deployer }) actor class Wallet(env : CommonTypes.ENV) = this {
+shared ({ caller = deployer }) actor class Wallet({
+  env : CommonTypes.ENV;
+  ledgerInit : ICRCTypes.LedgerInitParams;
+}) = this {
 
   let authGuard = ModSecurity.Guard(env, "WALLET_CANISTER");
-  ignore Timer.setTimer(
-    #seconds(0),
-    func() : async () {
-      Debug.print("SUBSCRIBING WALLET CANISTER on ADMINS");
-      await authGuard.subscribe("admins");
-    }
-  );
+  authGuard.subscribe("admins");
 
   let MILLION : Float = 1000000;
   let MINT_WALLET_ID = Principal.fromText("aaaaa-aa");
@@ -61,6 +62,121 @@ shared ({ caller = deployer }) actor class Wallet(env : CommonTypes.ENV) = this 
     authGuard.handleSubscription(payload);
   };
 
+  // ============ ICRC Standards methods ================= \\
+
+  // The stable representation of the transactions log.
+  stable var persistedLedgerStorage : [ICRCTypes.Transaction] = [];
+  var ledger = ICRCLedger.Ledger(ledgerInit);
+  if (ledger.txLogSize() == 0) {
+    ledger.makeGenesisChain();
+  };
+
+  public shared ({ caller }) func icrc1_transfer({
+    from_subaccount : ?ICRCTypes.Subaccount;
+    to : ICRCTypes.Account;
+    amount : ICRCTypes.Tokens;
+    fee : ?ICRCTypes.Tokens;
+    memo : ?ICRCTypes.Memo;
+    created_at_time : ?ICRCTypes.Timestamp;
+  }) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
+    ledger.applyTransfer({
+      spender = caller;
+      source = #Icrc1Transfer;
+      from = {
+        owner = caller;
+        subaccount = from_subaccount;
+      };
+      to = to;
+      amount = amount;
+      fee = fee;
+      memo = memo;
+      created_at_time = created_at_time;
+    });
+  };
+
+  public query func icrc1_balance_of(account : ICRCTypes.Account) : async ICRCTypes.Tokens {
+    ledger.balance(account);
+  };
+
+  public query func icrc1_total_supply() : async ICRCTypes.Tokens {
+    ledger.totalSupply();
+  };
+
+  public query func icrc1_minting_account() : async ?ICRCTypes.Account {
+    ?ledgerInit.minting_account;
+  };
+
+  public query func icrc1_name() : async Text {
+    ledgerInit.token_name;
+  };
+
+  public query func icrc1_symbol() : async Text {
+    ledgerInit.token_symbol;
+  };
+
+  public query func icrc1_decimals() : async Nat8 {
+    ledgerInit.decimals;
+  };
+
+  public query func icrc1_fee() : async Nat {
+    ledgerInit.transfer_fee;
+  };
+
+  public query func icrc1_metadata() : async [(Text, ICRCTypes.Value)] {
+    [
+      ("icrc1:name", #Text(ledgerInit.token_name)),
+      ("icrc1:symbol", #Text(ledgerInit.token_symbol)),
+      ("icrc1:decimals", #Nat(Nat8.toNat(ledgerInit.decimals))),
+      ("icrc1:fee", #Nat(ledgerInit.transfer_fee))
+    ];
+  };
+
+  public query func icrc1_supported_standards() : async [{
+    name : Text;
+    url : Text;
+  }] {
+    [
+      {
+        name = "ICRC-1";
+        url = "https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-1";
+      },
+      {
+        name = "ICRC-2";
+        url = "https://github.com/dfinity/ICRC-1/tree/main/standards/ICRC-2";
+      }
+    ];
+  };
+
+  public shared ({ caller }) func icrc2_approve(args : ICRCTypes.ApproveArgs) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.ApproveError> {
+    ledger.approve({
+      approver = caller;
+      from_subaccount = args.from_subaccount;
+      spender = args.spender;
+      amount = args.amount;
+      expires_at = args.expires_at;
+      memo = args.memo;
+      fee = args.fee;
+      created_at_time = args.created_at_time;
+    });
+  };
+
+  public shared ({ caller }) func icrc2_transfer_from(args : ICRCTypes.TransferFromArgs) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferFromError> {
+    ledger.transfer_from({
+      spender = caller;
+      from = args.from;
+      to = args.to;
+      amount = args.amount;
+      fee = args.fee;
+      memo = args.memo;
+      created_at_time = args.created_at_time;
+    });
+  };
+
+  public query func icrc2_allowance(args : ICRCTypes.AllowanceArgs) : async ICRCTypes.Allowance {
+    ledger.allowance(args.account, args.spender, Nat64.fromNat(Int.abs(Time.now())));
+  };
+
+  // OLD Wallet code
   public query ({ caller }) func queryBalancePr(pr : Principal, from : ?Types.SubAccount) : async Float {
     // default subaccount is 0
     let fromWallet = Option.get(from, DEFAULT_SUB_ACCOUNT);
@@ -143,6 +259,8 @@ shared ({ caller = deployer }) actor class Wallet(env : CommonTypes.ENV) = this 
   };
 
   system func preupgrade() {
+    persistedLedgerStorage := ledger.toPersistedStorage();
+
     allWalletsStable := [];
     // let walletStableBuff = Buffer.Buffer<(Principal, [(SubAccount, Float)])>(allWallets.size());
     // for((owner, subAccount) in allWallets.entries()) {
@@ -152,13 +270,9 @@ shared ({ caller = deployer }) actor class Wallet(env : CommonTypes.ENV) = this 
   };
 
   system func postupgrade() {
-    ignore Timer.setTimer(
-      #seconds(0),
-      func() : async () {
-        Debug.print("SUBSCRIBING WALLET CANISTER on ADMINS");
-        await authGuard.subscribe("admins");
-      }
-    );
+    ledger.fromPersistedStorage(persistedLedgerStorage);
+
+    authGuard.subscribe("admins");
 
     admins := authGuard.setUpDefaultAdmins(
       admins,

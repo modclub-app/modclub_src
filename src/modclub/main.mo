@@ -46,7 +46,6 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Timer "mo:base/Timer";
 import Token "./token";
 import Types "./types";
 import MsgInspectTypes "./msgInspectTypes";
@@ -133,13 +132,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   );
 
   private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
-  let timer = Timer.setTimer(
-    #seconds(0),
-    func() : async () {
-      Debug.print("SUBSCRIBING MODCLUB CANISTER on ADMINS");
-      await authGuard.subscribe("admins");
-    }
-  );
+  authGuard.subscribe("admins");
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     Debug.print("[MODCLUB_CANISTER] [SUBSCRIPTION HANDLER] ==> Payload received from AUTH_CANISTER");
@@ -2013,13 +2006,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var globalStateMigrationDone = false;
   system func postupgrade() {
 
-    let timer = Timer.setTimer(
-      #seconds(0),
-      func() : async () {
-        Debug.print("SUBSCRIBING MODCLUB CANISTER on ADMINS");
-        await authGuard.subscribe("admins");
-      }
-    );
+    authGuard.subscribe("admins");
+
     // Reinitializing storage Solution to add "this" actor as a controller
     // Refactor after deploy and state migrated.
     admins := authGuard.setUpDefaultAdmins(

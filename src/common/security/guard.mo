@@ -1,8 +1,10 @@
 import Text "mo:base/Text";
 import List "mo:base/List";
 import Principal "mo:base/Principal";
+import Blob "mo:base/Blob";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
+import Timer "mo:base/Timer";
 import AuthCanister "./AuthCanister";
 import CommonTypes "../types";
 import Utils "../utils";
@@ -17,8 +19,14 @@ module ModSecurity {
 
     var admins : List.List<Principal> = List.nil<Principal>();
 
-    public func subscribe(topic : Text) : async () {
-      await AuthCanister.getActor(env).subscribe(topic);
+    public func subscribe(topic : Text) : () {
+      ignore Timer.setTimer(
+        #seconds(0),
+        func() : async () {
+          Debug.print("SUBSCRIBING " # context # " on " # topic);
+          await AuthCanister.getActor(env).subscribe(topic);
+        }
+      );
     };
 
     public func handleSubscription(payload : CommonTypes.ConsumerPayload) : () {
@@ -50,8 +58,9 @@ module ModSecurity {
       );
     };
 
+    // Correct checks if the principal is anonymous.
     public func isAnonymous(caller : Principal) : Bool {
-      Principal.toText(caller) == "2vxsx-fae";
+      Blob.equal(Principal.toBlob(caller), Blob.fromArray([0x04]));
     };
 
     public func isModclubWallet(caller : Principal) : Bool {

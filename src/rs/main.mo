@@ -17,7 +17,6 @@ import Types "./types";
 import AuthManager "../modclub/service/auth/auth";
 import Utils "../common/utils";
 import CommonTypes "../common/types";
-import Timer "mo:base/Timer";
 import ModSecurity "../common/security/guard";
 import Int "mo:base/Int";
 import Constants "constants";
@@ -30,13 +29,8 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
   stable var admins : List.List<Principal> = List.nil<Principal>();
   let authGuard = ModSecurity.Guard(env, "RS_CANISTER");
-  ignore Timer.setTimer(
-    #seconds(0),
-    func() : async () {
-      Debug.print("SUBSCRIBING RS CANISTER on ADMINS");
-      await authGuard.subscribe("admins");
-    }
-  );
+
+  authGuard.subscribe("admins");
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     // Debug.print("[RS_CANISTER] [SUBSCRIPTION HANDLER] ==> Payload received");
@@ -153,13 +147,8 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
   system func postupgrade() {
     Debug.print("POSTUPGRADE FOR RS CANISTER");
-    ignore Timer.setTimer(
-      #seconds(0),
-      func() : async () {
-        Debug.print("SUBSCRIBING RS CANISTER on ADMINS");
-        await authGuard.subscribe("admins");
-      }
-    );
+
+    authGuard.subscribe("admins");
 
     admins := authGuard.setUpDefaultAdmins(
       admins,
