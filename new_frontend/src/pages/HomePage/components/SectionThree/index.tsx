@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Styles from "./styles.module.scss";
 
 export default function SectionThree() {

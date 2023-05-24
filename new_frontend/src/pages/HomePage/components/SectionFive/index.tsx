@@ -1,6 +1,4 @@
-import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 import { Disclosure, Transition } from "@headlessui/react";
 import Styles from "./styles.module.scss";
 

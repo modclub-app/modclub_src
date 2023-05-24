@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Tab } from "@headlessui/react";
 import Styles from "./styles.module.scss";
 
@@ -10,10 +10,7 @@ function classNames(...classes: string[]) {
 }
 
 export default function SectionOne() {
-  const [categories, setCategories] = useState([
-    "Content Moderation",
-    "User Verification",
-  ]);
+  const [categories] = useState(["Content Moderation", "User Verification"]);
   return (
     <section
       id="section-1"
