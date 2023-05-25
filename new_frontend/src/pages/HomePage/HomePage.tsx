@@ -5,10 +5,13 @@ import SectionFour from "./components/SectionFour";
 import SectionFive from "./components/SectionFive";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import Styles from "./styles.module.scss";
 
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between">
+    <main
+      className={`${Styles.main} flex min-h-screen flex-col items-center justify-between`}
+    >
       <Header />
       <SectionOne />
       <SectionTwo />

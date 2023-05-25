@@ -91,21 +91,25 @@ body {
 h1 {
   font-size: 7.2rem;
   font-weight: 400;
+  letter-spacing: -2.3px;
 }
 
 h2 {
   font-size: 6.4rem;
   font-weight: 400;
+  letter-spacing: -3.84px;
 }
 
 h3 {
   font-size: 3.2rem;
   font-weight: 400;
+  letter-spacing: -0.8px;
 }
 
 h4 {
   font-size: 2rem;
   font-weight: 400;
+  letter-spacing: -2.3px;
 }
 
 p {
@@ -149,21 +153,25 @@ hr {
 @media screen and (max-width: 769px) {
   h1 {
     font-size: 2.2rem;
+    letter-spacing: unset;
   }
 
   h2 {
     font-size: 2rem;
     font-weight: 400;
+    letter-spacing: unset;
   }
 
   h3 {
     font-size: 1.6rem;
     font-weight: 400;
+    letter-spacing: unset;
   }
 
   h3 {
     font-size: 1.2rem;
     font-weight: 400;
+    letter-spacing: unset;
   }
 
   p {

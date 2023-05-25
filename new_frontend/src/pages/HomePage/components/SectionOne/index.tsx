@@ -54,7 +54,7 @@ export default function SectionOne() {
                       </h3>
                       <p className="md:mr-32 mt-14">
                         Looking for an efficient way to manage user-generated
-                        content? Modclub&apost;s content moderation tool offers
+                        content? Modclub&#39;s content moderation tool offers
                         customizable moderation rules and real-time
                         notifications, at a fraction of the cost of in-house
                         moderation.
@@ -95,14 +95,13 @@ export default function SectionOne() {
                         attacks and tracking real user engagement?
                       </p>
                       <p className="mt-8 md:mr-32">
-                        Flexible and transferrable and seamlessly
-                        MODCLUB&apost;s Proof of Humanity user-verification
-                        service has you covered. With scalable and customizable
-                        challenges, you can choose the level of verification you
-                        require for your project. Say goodbye to bot attacks and
-                        hello to real user engagement with MODCLUB&apost;s Proof
-                        of Humanity. Partner with us today and enjoy a seamless
-                        and secure verification process.
+                        Modclub offers a Proof of Humanity user-verification
+                        service that is flexible, transferable, and seamless.
+                        With customizable challenges that can be scaled to your
+                        project&#39;s needs, you can choose the level of
+                        verification required for your users. This service helps
+                        ensure that real humans are using your platform,
+                        improving security and user experience.
                       </p>
                       <Link
                         href="https://wne38odgjn9.typeform.com/to/ryzRV65E"

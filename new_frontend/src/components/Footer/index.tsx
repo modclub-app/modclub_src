@@ -54,9 +54,6 @@ export default function Footer() {
           <Link target="_blank" href="https://medium.com/@modclub">
             Medium
           </Link>
-          <Link target="_blank" href="https://nuance.xyz/">
-            Nuance
-          </Link>
         </div>
         <Link
           target="_blank"

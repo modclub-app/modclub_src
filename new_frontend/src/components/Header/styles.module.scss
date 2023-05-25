@@ -2,6 +2,10 @@
   color: #fff;
   margin: 8em 0;
 
+  h1 {
+    letter-spacing: -2.3px;
+  }
+
   .headerText {
     margin: 0 17.7em;
   }
@@ -17,6 +21,10 @@
 
     .headerText {
       margin: auto;
+    }
+
+    h1 {
+      letter-spacing: unset;
     }
   }
 }

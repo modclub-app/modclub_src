@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import Styles from "./styles.module.scss";
 
 export default function SectionThree() {
@@ -35,7 +36,7 @@ export default function SectionThree() {
             See how Modclub has helped businesses like yours
           </h2>
           <button className="mt-14 tertiary-btn">
-            Don&apos;t just take our word for it
+            Don&#39;t just take our word for it
           </button>
         </div>
       </div>
@@ -53,7 +54,9 @@ export default function SectionThree() {
                 height={125}
                 alt="Karman Ventures"
               />
-              <p className="font-semibold pt-5">Karman Ventures</p>
+              <Link target="_blank" href="https://nuance.xyz/">
+                <p className="font-semibold pt-5">Nuance</p>
+              </Link>
             </div>
             <div className="col-span-10 md:col-span-8">
               <div className={Styles.testimonial}>
@@ -94,12 +97,12 @@ export default function SectionThree() {
           >
             <p>
               Join our satisfied customer community and streamline your content
-              moderation needs with MODCLUB. Our comprehensive platform offers
+              moderation needs with Modclub. Our comprehensive platform offers
               cost-effective, efficient, and customizable solutions for
               maintaining content quality and community safety. With powerful
               analytics and expert moderation services, you can make data-driven
               decisions and focus on your product and community. Partner with
-              MODCLUB today to revolutionize your content moderation experience.
+              Modclub today to revolutionize your content moderation experience.
             </p>
           </div>
         </div>
