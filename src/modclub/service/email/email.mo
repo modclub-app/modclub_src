@@ -57,7 +57,7 @@ module EmailModule {
       for (user in state.usersToReceiveEmailAlerts.keys()) {
         userPrincipalBuff.add(Principal.toText(user));
       };
-      return userPrincipalBuff.toArray();
+      return Buffer.toArray<Text>(userPrincipalBuff);
     };
 
     public func getAllUsersEmailWhoWantsToReceiveAlerts(globalState : GlobalState.State) : HashMap.HashMap<Text, ?Text> {

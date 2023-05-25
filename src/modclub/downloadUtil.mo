@@ -33,7 +33,7 @@ module {
     for (vRule in violatedRules.vals()) {
       buff.add(vRule.ruleId # ";" # vRule.ruleDesc);
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_PohChallengeRequiredField(
@@ -51,7 +51,7 @@ module {
         }
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_PohChallengeType(
@@ -72,7 +72,7 @@ module {
         }
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_PohChallengesAttemptV1(
@@ -95,7 +95,7 @@ module {
         ) # ";" # joinArrOpt(attempt.wordList)
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_PohVote(votes : [VoteTypes.Vote]) : [Text] {
@@ -110,7 +110,7 @@ module {
         )
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Decision(decisions : [VoteTypes.Decision]) : [Text] {
@@ -125,7 +125,7 @@ module {
         };
       };
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_PohRulesViolated(vRules : [Types.PohRulesViolated]) : [
@@ -135,7 +135,7 @@ module {
     for (vRule in vRules.vals()) {
       buff.add(vRule.challengeId # ";" # vRule.ruleId);
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Provider(providers : [Types.Provider]) : [Text] {
@@ -149,7 +149,7 @@ module {
         )
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_ProviderSettings(
@@ -159,7 +159,7 @@ module {
     for (p in providerSettings.vals()) {
       buff.add(Nat.toText(p.minVotes) # ";" # Nat.toText(p.minStaked));
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Rule(rules : [Types.Rule]) : [Text] {
@@ -167,7 +167,7 @@ module {
     for (rule in rules.vals()) {
       buff.add(rule.id # ";" # rule.description);
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Vote(votes : [Types.Vote]) : [Text] {
@@ -181,7 +181,7 @@ module {
         )
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_TextContent(textContents : [Types.TextContent]) : [Text] {
@@ -189,7 +189,7 @@ module {
     for (textContent in textContents.vals()) {
       buff.add(textContent.id # ";" # textContent.text);
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_ImageContent(imageContents : [Types.ImageContent]) : [
@@ -201,7 +201,7 @@ module {
         imageContent.id # ";" # joinArr(toString_Image([imageContent.image]))
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Content(contents : [Types.Content]) : [Text] {
@@ -217,7 +217,7 @@ module {
         ) # ";" # Int.toText(content.updatedAt)
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Image(images : [Types.Image]) : [Text] {
@@ -225,7 +225,7 @@ module {
     for (image in images.vals()) {
       buff.add(joinArr(toString_Nat8(image.data)) # ";" # image.imageType);
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Profile(profiles : [Types.Profile]) : [Text] {
@@ -243,7 +243,7 @@ module {
         ) # ";" # Int.toText(p.updatedAt)
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Nat8(data : [Nat8]) : [Text] {
@@ -251,7 +251,7 @@ module {
     for (d in data.vals()) {
       buff.add(Nat8.toText(d));
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_Role(roles : [Types.Role]) : [Text] {
@@ -271,7 +271,7 @@ module {
         }
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_PohChallengeStatus(
@@ -299,7 +299,7 @@ module {
         }
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_ContentStatus(statuses : [Types.ContentStatus]) : [Text] {
@@ -319,7 +319,7 @@ module {
         }
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
   public func toString_ContentType(statuses : [Types.ContentType]) : [Text] {
@@ -345,7 +345,7 @@ module {
         }
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<Text>(buff);
   };
 
 };

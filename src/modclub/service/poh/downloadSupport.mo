@@ -17,7 +17,7 @@ module {
     pohCallbackByProvider : HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>,
     varName : Text,
     start : Int,
-    end : Int,
+    end : Int
   ) : [[Text]] {
     switch (varName) {
       case ("pohChallenges") {
@@ -28,12 +28,12 @@ module {
       };
       case ("token2ProviderAndUserData") {
         return serializeToken2ProviderAndUserData(
-          state.token2ProviderAndUserData,
+          state.token2ProviderAndUserData
         );
       };
       case ("providerUserIdToModclubUserIdByProviderId") {
         return serializeProviderUserIdToModclubUserIdByProviderId(
-          state.providerUserIdToModclubUserIdByProviderId,
+          state.providerUserIdToModclubUserIdByProviderId
         );
       };
       case ("pohChallengePackages") {
@@ -41,7 +41,7 @@ module {
       };
       case ("userToPohChallengePackageId") {
         return serializeUserToPohChallengePackageId(
-          state.userToPohChallengePackageId,
+          state.userToPohChallengePackageId
         );
       };
       case ("wordList") {
@@ -57,7 +57,7 @@ module {
   };
 
   func serializeCallbackIssuedByProvider(
-    pohCallbackByProvider : HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>,
+    pohCallbackByProvider : HashMap.HashMap<Principal, TrieMap.TrieMap<Text, HashMap.HashMap<Text, Int>>>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((pId, calbackByUserId) in pohCallbackByProvider.entries()) {
@@ -68,17 +68,17 @@ module {
               Principal.toText(pId),
               pUserId,
               status,
-              Int.toText(callbackTime),
-            ],
+              Int.toText(callbackTime)
+            ]
           );
         };
       };
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeProviderUserIdToModclubUserIdByProviderId(
-    providerUserIdToModclubUserIdByProviderId : HashMap.HashMap<Principal, RelObj.RelObj<Text, Principal>>,
+    providerUserIdToModclubUserIdByProviderId : HashMap.HashMap<Principal, RelObj.RelObj<Text, Principal>>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for (
@@ -90,17 +90,17 @@ module {
             Principal.toText(pId),
             pUserId,
             DownloadUtil.joinArr(
-              Array.map(pUserId2McId.get0(pUserId), Principal.toText),
-            ),
-          ],
+              Array.map(pUserId2McId.get0(pUserId), Principal.toText)
+            )
+          ]
         );
       };
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializePohUserChallengeAttempts(
-    pohUserChallengeAttempts : HashMap.HashMap<Principal, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>>,
+    pohUserChallengeAttempts : HashMap.HashMap<Principal, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for (
@@ -113,29 +113,29 @@ module {
               Principal.toText(modclubUserId),
               cId,
               DownloadUtil.joinArr(
-                DownloadUtil.toString_PohChallengesAttemptV1([attempt]),
-              ),
-            ],
+                DownloadUtil.toString_PohChallengesAttemptV1([attempt])
+              )
+            ]
           );
         };
       };
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeUserToPohChallengePackageId(
-    userToPohChallengePackageId : RelObj.RelObj<Principal, Text>,
+    userToPohChallengePackageId : RelObj.RelObj<Principal, Text>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for (modclubUserId in userToPohChallengePackageId.getKeys().vals()) {
       buff.add(
         [
           Principal.toText(modclubUserId),
-          DownloadUtil.joinArr(userToPohChallengePackageId.get0(modclubUserId)),
-        ],
+          DownloadUtil.joinArr(userToPohChallengePackageId.get0(modclubUserId))
+        ]
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeWordList(wordList : Buffer.Buffer<Text>) : [[Text]] {
@@ -143,11 +143,11 @@ module {
     for (word in wordList.vals()) {
       buff.add([word]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializePohChallengePackages(
-    pohChallengePackages : TrieMap.TrieMap<Text, PohTypes.PohChallengePackage>,
+    pohChallengePackages : TrieMap.TrieMap<Text, PohTypes.PohChallengePackage>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((packageId, package) in pohChallengePackages.entries()) {
@@ -159,15 +159,15 @@ module {
           Principal.toText(package.userId),
           Option.get(package.title, ""),
           Int.toText(package.createdAt),
-          Int.toText(package.updatedAt),
-        ],
+          Int.toText(package.updatedAt)
+        ]
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializePohChallenges(
-    pohChallenges : HashMap.HashMap<Text, PohTypes.PohChallenges>,
+    pohChallenges : HashMap.HashMap<Text, PohTypes.PohChallenges>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((challengeId, challenge) in pohChallenges.entries()) {
@@ -180,25 +180,25 @@ module {
           DownloadUtil.joinArrOpt(challenge.dependentChallengeId),
           DownloadUtil.joinArr(
             DownloadUtil.toString_PohChallengeRequiredField(
-              [challenge.requiredField],
-            ),
+              [challenge.requiredField]
+            )
           ),
           DownloadUtil.joinArr(
-            DownloadUtil.toString_PohChallengeType([challenge.challengeType]),
+            DownloadUtil.toString_PohChallengeType([challenge.challengeType])
           ),
           DownloadUtil.joinArr(
-            DownloadUtil.toString_ViolatedRules(challenge.allowedViolationRules),
+            DownloadUtil.toString_ViolatedRules(challenge.allowedViolationRules)
           ),
           Int.toText(challenge.createdAt),
-          Int.toText(challenge.updatedAt),
-        ],
+          Int.toText(challenge.updatedAt)
+        ]
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeToken2ProviderAndUserData(
-    token2ProviderAndUserData : HashMap.HashMap<Text, PohTypes.PohProviderAndUserData>,
+    token2ProviderAndUserData : HashMap.HashMap<Text, PohTypes.PohProviderAndUserData>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((token, providerAndUserData) in token2ProviderAndUserData.entries()) {
@@ -208,10 +208,10 @@ module {
           providerAndUserData.token,
           providerAndUserData.providerUserId,
           Principal.toText(providerAndUserData.providerId),
-          Int.toText(providerAndUserData.generatedAt),
-        ],
+          Int.toText(providerAndUserData.generatedAt)
+        ]
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 };

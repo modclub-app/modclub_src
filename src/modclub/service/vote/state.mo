@@ -44,22 +44,22 @@ module State {
       package2Status = HashMap.HashMap<Text, Types.ContentStatus>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       pohVotes = HashMap.HashMap<Text, VoteTypes.Vote>(1, Text.equal, Text.hash);
 
       pohContent2votes = RelObj.RelObj(
         (Text.hash, Text.hash),
-        (Text.equal, Text.equal),
+        (Text.equal, Text.equal)
       );
       mods2Pohvotes = RelObj.RelObj(
         (Principal.hash, Text.hash),
-        (Principal.equal, Text.equal),
+        (Principal.equal, Text.equal)
       );
       autoApprovePOHUserIds = HashMap.HashMap<Principal, Principal>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
 
     };
@@ -103,16 +103,16 @@ module State {
       Rel.fromShare<Text, Text>(
         stableState.pohContent2votes,
         (Text.hash, Text.hash),
-        (Text.equal, Text.equal),
-      ),
+        (Text.equal, Text.equal)
+      )
     );
 
     state.mods2Pohvotes.setRel(
       Rel.fromShare<Principal, Text>(
         stableState.mods2Pohvotes,
         (Principal.hash, Text.hash),
-        (Principal.equal, Text.equal),
-      ),
+        (Principal.equal, Text.equal)
+      )
     );
     for ((id, pid) in stableState.autoApprovePOHUserIds.vals()) {
       state.autoApprovePOHUserIds.put(id, pid);
@@ -123,15 +123,15 @@ module State {
 
   public func getStableState(state : PohVoteState) : PohVoteStableState {
     let stableState : PohVoteStableState = {
-      newPohPackages = state.newPohPackages.toArray();
-      approvedPohPackages = state.approvedPohPackages.toArray();
-      rejectedPohPackages = state.rejectedPohPackages.toArray();
+      newPohPackages = Buffer.toArray<Text>(state.newPohPackages);
+      approvedPohPackages = Buffer.toArray<Text>(state.approvedPohPackages);
+      rejectedPohPackages = Buffer.toArray<Text>(state.rejectedPohPackages);
       package2Status = Iter.toArray(state.package2Status.entries());
       pohVotes = Iter.toArray(state.pohVotes.entries());
       pohContent2votes = Rel.share<Text, Text>(state.pohContent2votes.getRel());
       mods2Pohvotes = Rel.share<Principal, Text>(state.mods2Pohvotes.getRel());
       autoApprovePOHUserIds = Iter.toArray(
-        state.autoApprovePOHUserIds.entries(),
+        state.autoApprovePOHUserIds.entries()
       );
 
     };

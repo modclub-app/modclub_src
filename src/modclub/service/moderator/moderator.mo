@@ -105,7 +105,7 @@ module ModeratorModule {
     for ((pid, p) in state.profiles.entries()) {
       buf.add(p);
     };
-    return buf.toArray();
+    return Buffer.toArray<Types.Profile>(buf);
   };
 
   public func formModeratorLeaderboard(
@@ -163,7 +163,7 @@ module ModeratorModule {
         case (_)();
       };
     };
-    return #ok(buf.toArray());
+    return #ok(Buffer.toArray<Types.ModeratorLeaderboard>(buf));
 
   };
 
@@ -174,7 +174,7 @@ module ModeratorModule {
         moderatorIds.add(id);
       };
     };
-    return moderatorIds.toArray();
+    return Buffer.toArray<Principal>(moderatorIds);
   };
 
   public func getActivity(
@@ -242,7 +242,7 @@ module ModeratorModule {
         case (_) return #err(#voteNotFound);
       };
     };
-    return #ok(buf.toArray());
+    return #ok(Buffer.toArray<Types.Activity>(buf));
   };
 
   func checkUsernameAvailable(userName_ : Text, state : GlobalState.State) : async Bool {

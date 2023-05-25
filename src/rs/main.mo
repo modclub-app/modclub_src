@@ -57,7 +57,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
       });
       i := i + 1;
     };
-    topK.toArray();
+    Buffer.toArray<Types.UserAndRS>(topK);
   };
 
   public query ({ caller }) func queryRSAndLevel() : async Types.RSAndLevel {
@@ -84,7 +84,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     for (userVote in userVotes.vals()) {
       buff.add(await _updateRS(userVote.userId, userVote.votedCorrect, userVote.decision));
     };
-    buff.toArray();
+    Buffer.toArray<Types.UserAndRS>(buff);
   };
 
   public shared ({ caller }) func updateRS(userId : Principal, votedCorrect : Bool, decision : Types.Decision) : async Types.UserAndRS {

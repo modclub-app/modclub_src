@@ -1,16 +1,14 @@
 #!/bin/bash
 
-clear
-echo "Modclub Security-system test module"
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+printf "${GREEN}[TEST] ${YELLOW}Modclub Security-system test module...${NC}\n"
+
 dfx identity use default
-source ./scripts/up_test_infra.sh
 
 function get_auth_canister_admins() {
 	local AUTH_CANISTER_ADMINS=$(dfx canister call auth_qa getAdmins '()')
@@ -26,7 +24,7 @@ function check_auth_canister() {
 		printf "${GREEN}[TEST] ${RED}[FAILED] ADMINS_LIST NOT EMPTY !!!${NC}\n"
 		echo $admins_list
 		echo $EMPTY_ADMINS_LIST
-		source ./scripts/shutdown_test_infra.sh
+		source ./scripts/tests/infra/shutdown_test_infra.sh
 		exit 1
 	fi
 
@@ -49,7 +47,7 @@ function check_auth_canister() {
 		printf "${GREEN}[TEST] ${RED}[FAILED] ADMINS_LIST NOT UPDATED WITH NEW ADMIN !!!${NC}\n"
 		echo $admins_list_updated
 		echo $ADMINS_LIST_UPDATED
-		source ./scripts/shutdown_test_infra.sh
+		source ./scripts/tests/infra/shutdown_test_infra.sh
 		exit 1
 	fi
 
@@ -70,7 +68,7 @@ function check_rs_canister() {
 	if [[ "$auth_subscribers" != *"$RS_SUBSCRIPTION_RECORD"* ]]; then
 		printf "${GREEN}[TEST] ${RED}[FAILED] RS_CANISTER IS NOT SUBSCRIBED TO AUTH_CANISTER !!!${NC}\n"
 		echo $auth_subscribers
-		source ./scripts/shutdown_test_infra.sh
+		source ./scripts/tests/infra/shutdown_test_infra.sh
 		exit 1
 	fi
 
@@ -91,7 +89,7 @@ function check_wallet_canister() {
 	if [[ "$auth_subscribers" != *"$WALLET_SUBSCRIPTION_RECORD"* ]]; then
 		printf "${GREEN}[TEST] ${RED}[FAILED] WALLET_CANISTER IS NOT SUBSCRIBED TO AUTH_CANISTER !!!${NC}\n"
 		echo $auth_subscribers
-		source ./scripts/shutdown_test_infra.sh
+		source ./scripts/tests/infra/shutdown_test_infra.sh
 		exit 1
 	fi
 
@@ -111,7 +109,7 @@ function check_modclub_canister() {
 	if [[ "$auth_subscribers" != *"$MODCLUB_SUBSCRIPTION_RECORD"* ]]; then
 		printf "${GREEN}[TEST] ${RED}[FAILED] MODCLUB_CANISTER IS NOT SUBSCRIBED TO AUTH_CANISTER !!!${NC}\n"
 		echo $auth_subscribers
-		source ./scripts/shutdown_test_infra.sh
+		source ./scripts/tests/infra/shutdown_test_infra.sh
 		exit 1
 	fi
 
@@ -131,5 +129,3 @@ function run_testcases() {
 }
 
 run_testcases
-
-source ./scripts/shutdown_test_infra.sh

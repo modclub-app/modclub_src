@@ -96,7 +96,7 @@ module {
     for ((category, id) in GLOBAL_ID_MAP.entries()) {
       buff.add([category, Nat.toText(id)]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeProvidersWhitelist(
@@ -106,7 +106,7 @@ module {
     for ((pId, allowedOrNotAllowed) in providersWhitelist.entries()) {
       buff.add([Principal.toText(pId), Bool.toText(allowedOrNotAllowed)]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeProviders(
@@ -119,7 +119,7 @@ module {
         DownloadUtil.joinArr(DownloadUtil.toString_Provider([providerDetail]))
       ]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeProviderAdmins(
@@ -131,7 +131,7 @@ module {
         buff.add([Principal.toText(pId), Principal.toText(userId)]);
       };
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeProfiles(profiles : HashMap.HashMap<Principal, Types.Profile>) : [[Text]] {
@@ -142,7 +142,7 @@ module {
         DownloadUtil.joinArr(DownloadUtil.toString_Profile([profile]))
       ]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeUsernames(usernames : HashMap.HashMap<Text, Principal>) : [[Text]] {
@@ -150,7 +150,7 @@ module {
     for ((username, userId) in usernames.entries()) {
       buff.add([username, Principal.toText(userId)]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeContent2votes(content2votes : RelObj.RelObj<Text, Text>) : [[Text]] {
@@ -161,7 +161,7 @@ module {
       };
 
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeRel(mods2votes : RelObj.RelObj<Principal, Text>) : [[Text]] {
@@ -172,7 +172,7 @@ module {
       };
 
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeRelPrincipal2Principal(
@@ -185,7 +185,7 @@ module {
       };
 
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeProvider2PohExpiry(
@@ -195,7 +195,7 @@ module {
     for ((category, id) in GLOBAL_ID_MAP.entries()) {
       buff.add([Principal.toText(category), Nat.toText(id)]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeProvider2PohChallengeIds(
@@ -207,7 +207,7 @@ module {
         buff.add([Principal.toText(pId), cId]);
       };
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeContent(contents : HashMap.HashMap<Text, Types.Content>) : [[Text]] {
@@ -215,7 +215,7 @@ module {
     for ((cId, content) in contents.entries()) {
       buff.add([cId, DownloadUtil.joinArr(DownloadUtil.toString_Content([content]))]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeRules(rules : HashMap.HashMap<Text, Types.Rule>) : [[Text]] {
@@ -223,7 +223,7 @@ module {
     for ((rId, rules) in rules.entries()) {
       buff.add([rId, DownloadUtil.joinArr(DownloadUtil.toString_Rule([rules]))]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeVotes(votes : HashMap.HashMap<Text, Types.VoteV2>) : [[Text]] {
@@ -231,7 +231,7 @@ module {
     for ((vId, votes) in votes.entries()) {
       buff.add([vId, DownloadUtil.joinArr(DownloadUtil.toString_Vote([votes]))]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
   func serializeTextContent(
     textContents : HashMap.HashMap<Text, Types.TextContent>
@@ -243,7 +243,7 @@ module {
         DownloadUtil.joinArr(DownloadUtil.toString_TextContent([textContent]))
       ]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeImageContent(
@@ -258,7 +258,7 @@ module {
         )
       ]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeProviderSubs(
@@ -268,6 +268,6 @@ module {
     for ((pId, _) in providerSubs.entries()) {
       buff.add([Principal.toText(pId)]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 };

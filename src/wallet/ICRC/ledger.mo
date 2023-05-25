@@ -411,7 +411,7 @@ module ModclubICRC = {
     };
 
     public func toPersistedStorage() : [Types.Transaction] {
-      txLog.toArray();
+      Buffer.toArray<Types.Transaction>(txLog);
     };
 
     public func txLogSize() : Nat {

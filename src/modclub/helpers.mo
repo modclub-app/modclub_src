@@ -66,7 +66,7 @@ module Helpers {
   public func generateId(
     caller : Principal,
     category : Text,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : Text {
     var count : Nat = 0;
     switch (state.GLOBAL_ID_MAP.get(category)) {
@@ -83,7 +83,7 @@ module Helpers {
   public func generateRandomList(
     size : Nat,
     wordList : [Text],
-    randomFeed : LFSR.LFSR32,
+    randomFeed : LFSR.LFSR32
   ) : [Text] {
     if (wordList.size() <= size) {
       return wordList;
@@ -94,7 +94,7 @@ module Helpers {
     let allAvailableWordIndices = HashMap.HashMap<Nat, Nat>(
       1,
       Int.equal,
-      Int.hash,
+      Int.hash
     );
     for (i in Iter.range(0, wordList.size() - 1)) {
       allAvailableWordIndices.put(i, 1);
@@ -111,7 +111,7 @@ module Helpers {
       allAvailableWordIndices.delete(selectedIndex);
       randomWords.add(wordList.get(selectedIndex));
     };
-    randomWords.toArray();
+    Buffer.toArray<Text>(randomWords);
   };
 
   public func getRandomFeedGenerator() : LFSR.LFSR32 {
@@ -121,7 +121,7 @@ module Helpers {
 
   public func encodeBase32(content : Text) : ?Text {
     return Text.decodeUtf8(
-      Blob.fromArray(Base32.encode(Blob.toArray(Text.encodeUtf8(content)))),
+      Blob.fromArray(Base32.encode(Blob.toArray(Text.encodeUtf8(content))))
     );
   };
   public func encodeNat8ArraytoBase32(content : [Nat8]) : ?Text {
@@ -160,17 +160,17 @@ module Helpers {
   public func allowedCanistergeekCaller(caller : Principal) : Bool {
     let authorizedCallers : [Principal] = [
       Principal.fromText(
-        "hqyof-lxrze-ezy5y-bys4t-dm4bq-7i57t-uisji-lsnmt-5jdma-4ujdb-5qe",
+        "hqyof-lxrze-ezy5y-bys4t-dm4bq-7i57t-uisji-lsnmt-5jdma-4ujdb-5qe"
       ),
       Principal.fromText(
-        "mni5w-twhal-we6re-mvbh2-r3e6x-2djsc-nubmb-hw2ra-avyuu-mu2gj-5qe",
+        "mni5w-twhal-we6re-mvbh2-r3e6x-2djsc-nubmb-hw2ra-avyuu-mu2gj-5qe"
       )
     ];
     var exists = Array.find<Principal>(
       authorizedCallers,
       func(val : Principal) : Bool {
         Principal.equal(val, caller);
-      },
+      }
     );
     exists != null;
   };
@@ -178,7 +178,7 @@ module Helpers {
   public func logMessage(
     canistergeekLogger : Canistergeek.Logger,
     logMessage : Text,
-    logLevel : { #info; #error; #warn; #debugLevel },
+    logLevel : { #info; #error; #warn; #debugLevel }
   ) {
     var level = "INFO: ";
     switch (logLevel) {
@@ -207,7 +207,7 @@ module Helpers {
       "",
       func(accum, w8) {
         accum # encodeW8(w8);
-      },
+      }
     );
   };
 

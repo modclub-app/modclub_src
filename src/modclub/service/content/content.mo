@@ -19,7 +19,7 @@ module ContentModule {
     userId : Principal,
     contentId : Text,
     voteCount : Types.VoteCount,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : ?Types.ContentPlus {
     return getContentPlus(contentId, ?userId, voteCount, state);
   };
@@ -31,7 +31,7 @@ module ContentModule {
     title : ?Text,
     contentType : Types.ContentType,
     contentQueueManager : QueueManager.QueueManager,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : Text {
     let content = createContentObj(sourceId, caller, contentType, title, state);
     let textContent : Types.TextContent = {
@@ -53,7 +53,7 @@ module ContentModule {
     imageType : Text,
     title : ?Text,
     contentQueueManager : QueueManager.QueueManager,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : Text {
     let content = createContentObj(sourceId, caller, #imageBlob, title, state);
     let imageContent : Types.ImageContent = {
@@ -78,7 +78,7 @@ module ContentModule {
     status : Types.ContentStatus,
     start : Nat,
     end : Nat,
-    contentQueueManager : QueueManager.QueueManager,
+    contentQueueManager : QueueManager.QueueManager
   ) : [Types.ContentPlus] {
     let buf = Buffer.Buffer<Types.ContentPlus>(0);
     let maxReturn : Nat = end - start;
@@ -104,7 +104,7 @@ module ContentModule {
       };
       index := index + 1;
     };
-    buf.toArray();
+    Buffer.toArray<Types.ContentPlus>(buf);
   };
 
   public func getAllContent(
@@ -114,14 +114,14 @@ module ContentModule {
     contentQueueManager : QueueManager.QueueManager,
     logger : Canistergeek.Logger,
     state : GlobalState.State,
-    randomizationEnabled : Bool,
+    randomizationEnabled : Bool
   ) : [Types.ContentPlus] {
     let buf = Buffer.Buffer<Types.ContentPlus>(0);
     var count = 0;
     let contentQueue = contentQueueManager.getUserContentQueue(
       caller,
       status,
-      randomizationEnabled,
+      randomizationEnabled
     );
 
     for (cid in contentQueue.keys()) {
@@ -136,7 +136,7 @@ module ContentModule {
         };
       };
     };
-    return Array.sort(buf.toArray(), sortAsc);
+    return Array.sort(Buffer.toArray<Types.ContentPlus>(buf), sortAsc);
   };
 
   func compareContent(a : Types.Content, b : Types.Content) : Order.Order {
@@ -183,7 +183,7 @@ module ContentModule {
     caller : Principal,
     contentType : Types.ContentType,
     title : ?Text,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : Types.Content {
     let now = Helpers.timeNow();
     let content = {
@@ -203,7 +203,7 @@ module ContentModule {
     contentId : Types.ContentId,
     caller : ?Principal,
     voteCount : Types.VoteCount,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : ?Types.ContentPlus {
     switch (state.content.get(contentId)) {
       case (?content) {
@@ -216,7 +216,7 @@ module ContentModule {
               minVotes = provider.settings.minVotes;
               voteCount = Nat.max(
                 voteCount.approvedCount,
-                voteCount.rejectedCount,
+                voteCount.rejectedCount
               );
               hasVoted = ?voteCount.hasVoted;
               providerId = content.providerId;
@@ -260,7 +260,7 @@ module ContentModule {
     filterVoted : Bool,
     logger : Canistergeek.Logger,
     contentQueueManager : QueueManager.QueueManager,
-    randomizationEnabled : Bool,
+    randomizationEnabled : Bool
   ) : Result.Result<[Types.ContentPlus], Text> {
     if (start < 0 or end < 0 or start > end) {
       return #err("Invalid range");
@@ -272,7 +272,7 @@ module ContentModule {
     let contentQueue = contentQueueManager.getUserContentQueue(
       caller,
       #new,
-      randomizationEnabled,
+      randomizationEnabled
     );
 
     for (cid in contentQueue.keys()) {
@@ -292,7 +292,7 @@ module ContentModule {
     };
 
     var index : Nat = 0;
-    for (content in Array.sort(items.toArray(), sortAsc).vals()) {
+    for (content in Array.sort(Buffer.toArray<Types.Content>(items), sortAsc).vals()) {
       if (index >= start and index <= end and count < maxReturn) {
         let voteCount = getVoteCount(content.id, ?caller);
         switch (getContentPlus(content.id, ?caller, voteCount, state)) {
@@ -306,15 +306,15 @@ module ContentModule {
       index := index + 1;
     };
     Debug.print(
-      "Sending getTasks Resposnse for user: " # Principal.toText(caller),
+      "Sending getTasks Resposnse for user: " # Principal.toText(caller)
     );
-    return #ok(result.toArray());
+    return #ok(Buffer.toArray<Types.ContentPlus>(result));
   };
 
   public func checkIfAlreadySubmitted(
     sourceId : Text,
     providerId : Principal,
-    state : GlobalState.State,
+    state : GlobalState.State
   ) : Bool {
     for (cid in state.provider2content.get0(providerId).vals()) {
       switch (state.content.get(cid)) {

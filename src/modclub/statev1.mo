@@ -113,98 +113,98 @@ module StateV1 {
       providers = HashMap.HashMap<Principal, Provider>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       providersWhitelist = HashMap.HashMap<Principal, Bool>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       providerSubs = HashMap.HashMap<Principal, Types.SubscribeMessage>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       providerAdmins = HashMap.HashMap<Principal, ProviderAdminMap>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       profiles = HashMap.HashMap<Types.UserId, Profile>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       usernames = HashMap.HashMap<Text, Types.UserId>(1, Text.equal, Text.hash);
       airdropUsers = HashMap.HashMap<Principal, Types.AirdropUser>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       airdropWhitelist = HashMap.HashMap<Principal, Principal>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       content = HashMap.HashMap<Types.ContentId, Types.Content>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       votes = HashMap.HashMap<Types.VoteId, Types.Vote>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
 
       rules = HashMap.HashMap<Types.RuleId, Types.Rule>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       textContent = HashMap.HashMap<Types.ContentId, Types.TextContent>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       imageContent = HashMap.HashMap<Types.ContentId, Types.ImageContent>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       content2votes = RelObj.RelObj(hash, equal);
       mods2votes = RelObj.RelObj(
         (Principal.hash, Text.hash),
-        (Principal.equal, Text.equal),
+        (Principal.equal, Text.equal)
       );
       provider2content = RelObj.RelObj(
         (Principal.hash, Text.hash),
-        (Principal.equal, Text.equal),
+        (Principal.equal, Text.equal)
       );
       provider2rules = RelObj.RelObj(
         (Principal.hash, Text.hash),
-        (Principal.equal, Text.equal),
+        (Principal.equal, Text.equal)
       );
       admin2Provider = RelObj.RelObj(
         (Principal.hash, Principal.hash),
-        (Principal.equal, Principal.equal),
+        (Principal.equal, Principal.equal)
       );
       appName = "MODCLUB";
-      
+
       providerAllowedForAIFiltering = HashMap.HashMap<Principal, Bool>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       provider2PohChallengeIds = HashMap.HashMap<Principal, Buffer.Buffer<Text>>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       provider2PohExpiry = HashMap.HashMap<Principal, Nat>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
     };
     st;
@@ -246,10 +246,9 @@ module StateV1 {
     };
     let provider2PohChallengeIdsStable = Buffer.Buffer<(Principal, [Text])>(1);
     for (
-      (pid : Principal, challengeIdBuffer : Buffer.Buffer<Text>) 
-        in state.provider2PohChallengeIds.entries()
+      (pid : Principal, challengeIdBuffer : Buffer.Buffer<Text>) in state.provider2PohChallengeIds.entries()
     ) {
-      provider2PohChallengeIdsStable.add((pid, challengeIdBuffer.toArray()));
+      provider2PohChallengeIdsStable.add((pid, Buffer.toArray<Text>(challengeIdBuffer)));
     };
     let st : StateShared = {
       GLOBAL_ID_MAP = Iter.toArray(state.GLOBAL_ID_MAP.entries());
@@ -264,28 +263,28 @@ module StateV1 {
       textContent = Iter.toArray(state.textContent.entries());
       imageContent = Iter.toArray(state.imageContent.entries());
       airdropUsers = Iter.toArray(state.airdropUsers.entries());
-      providerAdmins = buf.toArray();
+      providerAdmins = Buffer.toArray<(Principal, [(Principal, ())])>(buf);
       airdropWhitelist = Iter.toArray(state.airdropWhitelist.entries());
       content2votes = Rel.share<Types.ContentId, Types.VoteId>(
-        state.content2votes.getRel(),
+        state.content2votes.getRel()
       );
       mods2votes = Rel.share<Types.UserId, Types.VoteId>(
-        state.mods2votes.getRel(),
+        state.mods2votes.getRel()
       );
       provider2content = Rel.share<Principal, Types.ContentId>(
-        state.provider2content.getRel(),
+        state.provider2content.getRel()
       );
       provider2rules = Rel.share<Principal, Types.ContentId>(
-        state.provider2rules.getRel(),
+        state.provider2rules.getRel()
       );
       admin2Provider = Rel.share<Principal, Types.ProviderId>(
-        state.admin2Provider.getRel(),
+        state.admin2Provider.getRel()
       );
       appName = state.appName;
       providerAllowedForAIFiltering = Iter.toArray(
-        state.providerAllowedForAIFiltering.entries(),
+        state.providerAllowedForAIFiltering.entries()
       );
-      provider2PohChallengeIds = provider2PohChallengeIdsStable.toArray();
+      provider2PohChallengeIds = Buffer.toArray<(Principal, [Text])>(provider2PohChallengeIdsStable);
       provider2PohExpiry = Iter.toArray(state.provider2PohExpiry.entries());
     };
     st;
@@ -337,7 +336,7 @@ module StateV1 {
       let adminMap : ProviderAdminMap = HashMap.HashMap<Types.UserId, ()>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       for ((admin, ()) in admins.vals()) {
         adminMap.put(admin, ());
@@ -353,36 +352,36 @@ module StateV1 {
       Rel.fromShare<Types.ContentId, Types.VoteId>(
         stateShared.content2votes,
         hash,
-        equal,
-      ),
+        equal
+      )
     );
     state.mods2votes.setRel(
       Rel.fromShare<Types.UserId, Types.VoteId>(
         stateShared.mods2votes,
         (Principal.hash, Text.hash),
-        (Principal.equal, Text.equal),
-      ),
+        (Principal.equal, Text.equal)
+      )
     );
     state.provider2content.setRel(
       Rel.fromShare<Principal, Types.ContentId>(
         stateShared.provider2content,
         (Principal.hash, Text.hash),
-        (Principal.equal, Text.equal),
-      ),
+        (Principal.equal, Text.equal)
+      )
     );
     state.provider2rules.setRel(
       Rel.fromShare<Principal, Types.ContentId>(
         stateShared.provider2rules,
         (Principal.hash, Text.hash),
-        (Principal.equal, Text.equal),
-      ),
+        (Principal.equal, Text.equal)
+      )
     );
     state.admin2Provider.setRel(
       Rel.fromShare<Principal, Types.ProviderId>(
         stateShared.admin2Provider,
         (Principal.hash, Principal.hash),
-        (Principal.equal, Principal.equal),
-      ),
+        (Principal.equal, Principal.equal)
+      )
     );
     for ((pid, allowed) in stateShared.providerAllowedForAIFiltering.vals()) {
       state.providerAllowedForAIFiltering.put(pid, allowed);

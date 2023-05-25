@@ -290,7 +290,7 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
           amount = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
         });
       };
-      let _ = await RSManager.getActor(env).updateRSBulk(usersToRewardRS.toArray());
+      let _ = await RSManager.getActor(env).updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
       // moderator dist and treasury dist
       usersToRewardMOD.add({
         fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
@@ -298,7 +298,7 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
         toSA = ?ModClubParam.TREASURY_SA;
         amount = (ModClubParam.GAMMA_T * CT);
       });
-      let _ = await ModWallet.getActor(env).transferBulk(usersToRewardMOD.toArray());
+      let _ = await ModWallet.getActor(env).transferBulk(Buffer.toArray<WalletTypes.UserAndAmount>(usersToRewardMOD));
       // burn
       let _ = await ModWallet.getActor(env).burn(
         ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE),
@@ -370,7 +370,7 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
         rejectionCount = count;
       });
     };
-    return vRulesCountBuff.toArray();
+    return Buffer.toArray<Types.ViolatedRules>(vRulesCountBuff);
   };
 
   private func callBackDataToString(callbackData : Types.ContentResult) : Text {

@@ -23,7 +23,7 @@ module {
 
   public func getMetrics(
     state : TypesModule.CanisterMonitoringState,
-    parameters : GetMetricsParameters,
+    parameters : GetMetricsParameters
   ) : ?CanisterMetrics {
     do ? {
       //millis to nanos
@@ -33,18 +33,18 @@ module {
       if (dateToNanos >= dateFromNanos) {
         //get (year, month, day) parts from dateTo ignoring time of a day
         let dateFromISO8601Parts : DateModule.ISO8601.DatePartsISO8601 = DateModule.Date.toDatePartsISO8601(
-          dateFromNanos,
+          dateFromNanos
         )!;
         let dateToISO8601Parts : DateModule.ISO8601.DatePartsISO8601 = DateModule.Date.toDatePartsISO8601(
-          dateToNanos,
+          dateToNanos
         )!;
 
         //set time to start of a days (0h:0m:0s) to shift by days correctly
         let dateFromDayStartTime = DateModule.Date.datePartsISO8601ToTime(
-          dateFromISO8601Parts,
+          dateFromISO8601Parts
         )!;
         let dateToDayStartTime = DateModule.Date.datePartsISO8601ToTime(
-          dateToISO8601Parts,
+          dateToISO8601Parts
         )!;
 
         //create a calendar using start of a dateTo day
@@ -54,14 +54,14 @@ module {
         switch (parameters.granularity) {
           case (#hourly) {
             let metricsDataBufferReverse : Buffer.Buffer<TypesModule.HourlyMetricsData> = Buffer.Buffer<TypesModule.HourlyMetricsData>(
-              30,
+              30
             );
             var daysAnalyzed = 0;
             //iterate days from dayTo day backwards
             //also check maximum number of analyzed days for hourly
             label iterateDays loop {
               if (
-                calendar.getTime() < dateFromDayStartTime or daysAnalyzed >= HOURLY_MAX_DAYS,
+                calendar.getTime() < dateFromDayStartTime or daysAnalyzed >= HOURLY_MAX_DAYS
               ) {
                 break iterateDays;
               };
@@ -71,13 +71,13 @@ module {
               let dayDataId : TypesModule.DayDataId = TypesModule.toDayDataId(
                 year,
                 month,
-                day,
+                day
               )!;
               ignore do ? {
                 //obtain dayData structure
                 let currentDayData : TypesModule.DayData = TypesModule.getDayData(
                   state,
-                  dayDataId,
+                  dayDataId
                 )!;
                 let intervalTimeMillis : Int = calendar.getTime() / 1_000_000;
                 //add to buffer
@@ -86,15 +86,15 @@ module {
                     timeMillis = intervalTimeMillis;
                     updateCalls = Array.freeze(currentDayData.updateCallsData);
                     canisterHeapMemorySize = Array.freeze(
-                      currentDayData.canisterHeapMemorySizeData,
+                      currentDayData.canisterHeapMemorySizeData
                     );
                     canisterMemorySize = Array.freeze(
-                      currentDayData.canisterMemorySizeData,
+                      currentDayData.canisterMemorySizeData
                     );
                     canisterCycles = Array.freeze(
-                      currentDayData.canisterCyclesData,
+                      currentDayData.canisterCyclesData
                     );
-                  },
+                  }
                 );
               };
               //next iteration...
@@ -102,18 +102,18 @@ module {
               calendar.addDays(-1);
             };
             return ?{
-              data = #hourly(metricsDataBufferReverse.toArray());
+              data = #hourly(Buffer.toArray<TypesModule.HourlyMetricsData>(metricsDataBufferReverse));
             };
           };
           case (#daily) {
             let metricsDataBufferReverse : Buffer.Buffer<TypesModule.DailyMetricsData> = Buffer.Buffer<TypesModule.DailyMetricsData>(
-              30,
+              30
             );
             var daysAnalyzed = 0;
             //iterate days from dayTo day backwards
             //also check maximum number of analyzed days for daily
             while (
-              daysAnalyzed < DAILY_MAX_DAYS and calendar.getTime() >= dateFromDayStartTime and calendar.getTime() <= dateToNanos,
+              daysAnalyzed < DAILY_MAX_DAYS and calendar.getTime() >= dateFromDayStartTime and calendar.getTime() <= dateToNanos
             ) {
               //get (year, month, day) parts from calendar
               let (year, month, day) : (Nat, Nat, Nat) = calendar.getISO8601DateParts();
@@ -121,27 +121,27 @@ module {
               let dayDataId : TypesModule.DayDataId = TypesModule.toDayDataId(
                 year,
                 month,
-                day,
+                day
               )!;
               ignore do ? {
                 //obtain dayData structure
                 let currentDayData : TypesModule.DayData = TypesModule.getDayData(
                   state,
-                  dayDataId,
+                  dayDataId
                 )!;
                 let intervalTimeMillis : Int = calendar.getTime() / 1_000_000;
 
                 let totalUpdateCalls = UtilsModule.sumOfArrayVarNat64(
-                  currentDayData.updateCallsData,
+                  currentDayData.updateCallsData
                 );
                 let averageHeapMemorySize = calculateNumericMetricsEntity(
-                  currentDayData.canisterHeapMemorySizeData,
+                  currentDayData.canisterHeapMemorySizeData
                 );
                 let averageMemorySize = calculateNumericMetricsEntity(
-                  currentDayData.canisterMemorySizeData,
+                  currentDayData.canisterMemorySizeData
                 );
                 let averageCycles = calculateNumericMetricsEntity(
-                  currentDayData.canisterCyclesData,
+                  currentDayData.canisterCyclesData
                 );
 
                 //add to buffer
@@ -152,7 +152,7 @@ module {
                     canisterHeapMemorySize = averageHeapMemorySize;
                     canisterMemorySize = averageMemorySize;
                     canisterCycles = averageCycles;
-                  },
+                  }
                 );
               };
               //next iteration...
@@ -160,7 +160,7 @@ module {
               calendar.addDays(-1);
             };
             return ?{
-              data = #daily(metricsDataBufferReverse.toArray());
+              data = #daily(Buffer.toArray<TypesModule.DailyMetricsData>(metricsDataBufferReverse));
             };
           };
         };

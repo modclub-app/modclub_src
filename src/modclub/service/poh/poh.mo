@@ -323,7 +323,7 @@ module PohModule {
             providerUserId = providerUserId;
             providerId = providerId;
             status = overAllStatus;
-            challenges = challenges.toArray();
+            challenges = Buffer.toArray<PohTypes.ChallengeResponse>(challenges);
             requestedAt = ?overAllRequestedDate;
             submittedAt = ?overAllSubmittedDate;
             completedAt = ?overAllCompletedDate;
@@ -605,7 +605,7 @@ module PohModule {
           };
         };
       };
-      #ok(challengesCurrent.toArray());
+      #ok(Buffer.toArray<PohTypes.PohChallengesAttemptV1>(challengesCurrent));
     };
 
     func createNewAttempt(
@@ -637,10 +637,10 @@ module PohModule {
             switch (state.pohChallenges.get(challengeId)!.challengeType) {
               case (#selfVideo) Helpers.generateRandomList(
                 ModClubParam.WORD_SIZE_FOR_VIDEO,
-                state.wordList.toArray(),
+                Buffer.toArray<Text>(state.wordList),
                 Helpers.getRandomFeedGenerator()
               );
-              // case(#selfAudio) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_AUDIO, state.wordList.toArray(), Helpers.getRandomFeedGenerator());
+              // case(#selfAudio) Helpers.generateRandomList(ModClubParam.WORD_SIZE_FOR_AUDIO, Buffer.toArray<Text>(state.wordList), Helpers.getRandomFeedGenerator());
               case (#dl) Helpers.generateRandomList(
                 ModClubParam.SHAPE_COUNT,
                 SHAPE_LIST,
@@ -716,7 +716,7 @@ module PohModule {
           };
         };
       };
-      return buff.toArray();
+      return Buffer.toArray<Text>(buff);
     };
 
     // Step 6 MODCLUB mods verify that user data and approve the user. The
@@ -805,7 +805,7 @@ module PohModule {
           contenBuff.add(packageId);
         };
       };
-      return contenBuff.toArray();
+      return Buffer.toArray<Text>(contenBuff);
     };
 
     public func getAllPohIDsForDateRange(startDate : Int, endDate : Int) : [
@@ -817,7 +817,7 @@ module PohModule {
           packageIdForDateRangeBuf.add(packageId);
         };
       };
-      return packageIdForDateRangeBuf.toArray();
+      return Buffer.toArray<Text>(packageIdForDateRangeBuf);
     };
 
     private func sortByComplexChallengeFirst(
@@ -867,10 +867,10 @@ module PohModule {
         (pid, challengeIds) in globalState.provider2PohChallengeIds.entries()
       ) {
         if (findProviderUserIds(userId, pid).size() != 0) {
-          challengeIdByProviderBuff.add((pid, challengeIds.toArray()));
+          challengeIdByProviderBuff.add((pid, Buffer.toArray<Text>(challengeIds)));
         };
       };
-      var challengeIdByProviderArr = challengeIdByProviderBuff.toArray();
+      var challengeIdByProviderArr = Buffer.toArray<(Principal, [Text])>(challengeIdByProviderBuff);
       // sort to get provider with more challenges configured as first so that package for them
       // can cover other providers with small list of challenges
       challengeIdByProviderArr := Array.sort(
@@ -965,7 +965,7 @@ module PohModule {
           packagesCreated.add(pohPackage);
         };
       };
-      return packagesCreated.toArray();
+      return Buffer.toArray<PohTypes.PohChallengePackage>(packagesCreated);
     };
 
     func getChallengeIdsToBeVotedForUser(
@@ -994,7 +994,7 @@ module PohModule {
       if (not createPackage) {
         return [];
       };
-      return challengeIdsForPackage.toArray();
+      return Buffer.toArray<Text>(challengeIdsForPackage);
     };
 
     public func getPohTasks(taskIds : [Text]) : [PohTypes.PohTaskDataWrapper] {
@@ -1044,7 +1044,7 @@ module PohModule {
             pohTasks.add(
               {
                 packageId = id;
-                pohTaskData = taskData.toArray();
+                pohTaskData = Buffer.toArray<PohTypes.PohTaskData>(taskData);
                 createdAt = package.createdAt;
                 updatedAt = package.updatedAt;
               }
@@ -1053,7 +1053,7 @@ module PohModule {
         };
 
       };
-      return pohTasks.toArray();
+      return Buffer.toArray<PohTypes.PohTaskDataWrapper>(pohTasks);
     };
 
     public func retrieveRejectedPackageId(
@@ -1120,11 +1120,11 @@ module PohModule {
           };
         };
       };
-      return buff.toArray();
+      return Buffer.toArray<Text>(buff);
     };
 
     public func sortPackagesByCreatedDate(items : Buffer.Buffer<Text>) : [Text] {
-      Arrays.sort(items.toArray(), sortByCreatedDateDesc);
+      Arrays.sort(Buffer.toArray<Text>(items), sortByCreatedDateDesc);
     };
 
     public func getPohChallengePackage(packageId : Text) : ?PohTypes.PohChallengePackage {
@@ -1164,7 +1164,7 @@ module PohModule {
       };
       return #ok(
         {
-          challengeIds = challengeIds.toArray();
+          challengeIds = Buffer.toArray<Text>(challengeIds);
           expiry = expiry;
         }
       );
@@ -1243,7 +1243,7 @@ module PohModule {
           // assuming there will be no transitive dependencies. else graph needs to be used
           dependentChallengeId = null;
           challengeType = #selfPic;
-          allowedViolationRules = allowedViolationRules2.toArray();
+          allowedViolationRules = Buffer.toArray<PohTypes.ViolatedRules>(allowedViolationRules2);
           createdAt = Helpers.timeNow();
           updatedAt = Helpers.timeNow();
         }
@@ -1278,7 +1278,7 @@ module PohModule {
           // assuming there will be no transitive dependencies. else graph needs to be used
           dependentChallengeId = null;
           challengeType = #selfVideo;
-          allowedViolationRules = allowedViolationRules3.toArray();
+          allowedViolationRules = Buffer.toArray<PohTypes.ViolatedRules>(allowedViolationRules3);
           createdAt = Helpers.timeNow();
           updatedAt = Helpers.timeNow();
         }
@@ -1308,7 +1308,7 @@ module PohModule {
           // assuming there will be no transitive dependencies. else graph needs to be used
           dependentChallengeId = null;
           challengeType = #selfVideo;
-          allowedViolationRules = allowedViolationRules4.toArray();
+          allowedViolationRules = Buffer.toArray<PohTypes.ViolatedRules>(allowedViolationRules4);
           createdAt = Helpers.timeNow();
           updatedAt = Helpers.timeNow();
         }
@@ -1524,9 +1524,9 @@ module PohModule {
           for ((status, time) in callbackData.entries()) {
             callbackBuff.add((status, time));
           };
-          callBackByUserBuff.add(userId, callbackBuff.toArray());
+          callBackByUserBuff.add(userId, Buffer.toArray<(Text, Int)>(callbackBuff));
         };
-        pohCallbackDataByProviderStableStateBuff.add(providerId, callBackByUserBuff.toArray());
+        pohCallbackDataByProviderStableStateBuff.add(providerId, Buffer.toArray<(Text, [(Text, Int)])>(callBackByUserBuff));
       };
 
       let provider2ProviderUserId2IpBuff = Buffer.Buffer<(Principal, [(Text, Text)])>(1);
@@ -1535,7 +1535,7 @@ module PohModule {
         for ((pUserId, ip) in providerUserId2Ip.entries()) {
           providerUserId2IpBuff.add(pUserId, ip);
         };
-        provider2ProviderUserId2IpBuff.add(providerId, providerUserId2IpBuff.toArray());
+        provider2ProviderUserId2IpBuff.add(providerId, Buffer.toArray<(Text, Text)>(providerUserId2IpBuff));
       };
 
       let provider2Ip2WalletBuff = Buffer.Buffer<(Principal, Rel.RelShared<Text, Principal>)>(1);
@@ -1545,9 +1545,9 @@ module PohModule {
 
       return (
         PohStateV2.getStableState(state),
-        pohCallbackDataByProviderStableStateBuff.toArray(),
-        provider2ProviderUserId2IpBuff.toArray(),
-        provider2Ip2WalletBuff.toArray()
+        Buffer.toArray<(Principal, [(Text, [(Text, Int)])])>(pohCallbackDataByProviderStableStateBuff),
+        Buffer.toArray<(Principal, [(Text, Text)])>(provider2ProviderUserId2IpBuff),
+        Buffer.toArray<(Principal, Rel.RelShared<Text, Principal>)>(provider2Ip2WalletBuff)
       );
     };
 

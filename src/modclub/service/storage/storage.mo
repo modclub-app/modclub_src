@@ -20,7 +20,7 @@ module StorageModule {
     storageStableState : StorageState.DataCanisterStateStable,
     retiredDataCanisterIds : [Text],
     admins : List.List<Principal>,
-    signingKeyFromMain : Text,
+    signingKeyFromMain : Text
   ) {
 
     let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648;
@@ -31,7 +31,7 @@ module StorageModule {
     let retiredDataCanisterIdMap = HashMap.HashMap<Text, Text>(
       1,
       Text.equal,
-      Text.hash,
+      Text.hash
     );
     var adminList = admins;
     for (id in retiredDataCanisterIds.vals()) {
@@ -41,10 +41,10 @@ module StorageModule {
     public func getBlob(contentId : Text, offset : Nat) : async ?Blob {
       do ? {
         let contentCanisterId = storageState.contentIdToCanisterId.get(
-          contentId,
+          contentId
         )!;
         let b : ?Bucket.Bucket = storageState.dataCanisters.get(
-          contentCanisterId,
+          contentCanisterId
         );
         (await b!.getChunks(contentId, offset))!;
       };
@@ -73,7 +73,7 @@ module StorageModule {
       for ((id, _) in retiredDataCanisterIdMap.entries()) {
         buff.add(id);
       };
-      return buff.toArray();
+      return Buffer.toArray<Text>(buff);
     };
 
     public func getAllDataCanisterIds() : [Principal] {
@@ -81,7 +81,7 @@ module StorageModule {
       for ((id, _) in storageState.dataCanisters.entries()) {
         buff.add(id);
       };
-      return buff.toArray();
+      return Buffer.toArray<Principal>(buff);
     };
 
     public func updateBucketControllers(admins : List.List<Principal>) : async () {
@@ -150,7 +150,7 @@ module StorageModule {
       offset : Nat,
       numOfChunks : Nat,
       mimeType : Text,
-      dataSize : Nat,
+      dataSize : Nat
     ) : async ?Principal {
       let contentCanisterId = storageState.contentIdToCanisterId.get(contentId);
       switch (contentCanisterId) {
@@ -161,11 +161,11 @@ module StorageModule {
             offset,
             chunkData,
             numOfChunks,
-            mimeType,
+            mimeType
           );
           storageState.contentIdToCanisterId.put(
             contentId,
-            Principal.fromActor(b),
+            Principal.fromActor(b)
           );
         };
         case (?canisterId) {
@@ -173,14 +173,14 @@ module StorageModule {
             case (null)();
             case (?bucket) {
               if (
-                (await bucket.getSize()) + chunkData.size() < DATA_CANISTER_MAX_STORAGE_LIMIT,
+                (await bucket.getSize()) + chunkData.size() < DATA_CANISTER_MAX_STORAGE_LIMIT
               ) {
                 let a = await bucket.putChunks(
                   contentId,
                   offset,
                   chunkData,
                   numOfChunks,
-                  mimeType,
+                  mimeType
                 );
               } else {
                 // Todo Chunk Migration into new bucket
@@ -234,7 +234,7 @@ module StorageModule {
       // Cycles.add(Cycles.balance()/2);
       let cid = { canister_id = Principal.fromActor(a) };
       Debug.print(
-        "IC status..." # debug_show (await IC.IC.canister_status(cid)),
+        "IC status..." # debug_show (await IC.IC.canister_status(cid))
       );
       // let cid = await IC.create_canister(  {
       //    settings = ?{controllers = [?(owner)]; compute_allocation = null; memory_allocation = ?(4294967296); freezing_threshold = null; } } );
@@ -252,14 +252,12 @@ module StorageModule {
               freezing_threshold = ?2_676_000;
               // 30 days
             };
-          },
-        ),
+          }
+        )
       );
     };
 
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [
-      [Text]
-    ] {
+    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
       DownloadSupport.download(storageState, varName, start, end);
     };
 

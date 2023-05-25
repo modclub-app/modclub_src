@@ -15,7 +15,7 @@ module {
     state : QueueState.QueueState,
     varName : Text,
     start : Int,
-    end : Int,
+    end : Int
   ) : [[Text]] {
     switch (varName) {
       case ("newContentQueues") {
@@ -46,17 +46,17 @@ module {
   };
 
   func serializeNewContentQueues(
-    newContentQueues : HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>,
+    newContentQueues : HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((qId, contentIdMap) in newContentQueues.entries()) {
       for (cId in contentIdMap.keys()) {
         buff.add(
-          [qId, cId],
+          [qId, cId]
         );
       };
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeQueue(qeueue : HashMap.HashMap<Text, ?Text>) : [[Text]] {
@@ -64,7 +64,7 @@ module {
     for (cId in qeueue.keys()) {
       buff.add([cId]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeQueueIds(queueIds : Buffer.Buffer<Text>) : [[Text]] {
@@ -72,16 +72,16 @@ module {
     for (qId in queueIds.vals()) {
       buff.add([qId]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeUserId2QueueId(
-    userId2QueueId : HashMap.HashMap<Principal, Text>,
+    userId2QueueId : HashMap.HashMap<Principal, Text>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((uId, qId) in userId2QueueId.entries()) {
       buff.add([Principal.toText(uId), qId]);
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 };

@@ -14,7 +14,7 @@ module {
 
   public func getLog(
     state : TypesModule.State,
-    request : ?TypesModule.CanisterLogRequest,
+    request : ?TypesModule.CanisterLogRequest
   ) : ?TypesModule.CanisterLogResponse {
     switch (request) {
       case (null) { null };
@@ -73,27 +73,27 @@ module {
 
   private func getLogMessages(
     state : TypesModule.State,
-    parameters : TypesModule.GetLogMessagesParameters,
+    parameters : TypesModule.GetLogMessagesParameters
   ) : ?TypesModule.CanisterLogMessages {
     return iterateLogMessagesInt(
       state,
       false,
       parameters.fromTimeNanos,
       Nat32.toNat(parameters.count),
-      parameters.filter,
+      parameters.filter
     );
   };
 
   private func getLatestLogMessages(
     state : TypesModule.State,
-    parameters : TypesModule.GetLatestLogMessagesParameters,
+    parameters : TypesModule.GetLatestLogMessagesParameters
   ) : ?TypesModule.CanisterLogMessages {
     return iterateLogMessagesInt(
       state,
       true,
       parameters.upToTimeNanos,
       Nat32.toNat(parameters.count),
-      parameters.filter,
+      parameters.filter
     );
   };
 
@@ -102,7 +102,7 @@ module {
     reverse : Bool,
     time : ?TypesModule.Nanos,
     count : Nat,
-    filter : ?TypesModule.GetLogMessagesFilter,
+    filter : ?TypesModule.GetLogMessagesFilter
   ) : ?TypesModule.CanisterLogMessages {
     if (count == 0 or count > MAX_CHUNK_SIZE) {
       return null;
@@ -121,14 +121,14 @@ module {
     };
 
     let data : Buffer.Buffer<TypesModule.LogMessagesData> = Buffer.Buffer<TypesModule.LogMessagesData>(
-      count,
+      count
     );
 
     let (pattern, analizeCount) : (?Text.Pattern, Nat) = switch (filter) {
       case (null) { (null, count) };
       case (?filterUnwrapped) {
         let filterRegexPattern : ?Text.Pattern = switch (
-          filterUnwrapped.messageContains,
+          filterUnwrapped.messageContains
         ) {
           case (null) { null };
           case (?v) { ?#text v };
@@ -163,14 +163,14 @@ module {
     };
 
     return ?{
-      data = data.toArray();
+      data = Buffer.toArray<TypesModule.LogMessagesData>(data);
       lastAnalyzedMessageTimeNanos = lastAnalyzedMessageTimeNanos;
     };
   };
 
   private func isValidByFilterRegex(
     logMessageData : TypesModule.LogMessagesData,
-    pattern : ?Text.Pattern,
+    pattern : ?Text.Pattern
   ) : Bool {
     return switch (pattern) {
       case (null) {
@@ -472,7 +472,7 @@ module {
         firstTimeNanos = null;
         lastTimeNanos = null;
         features = features;
-      },
+      }
     );
 
     CollectorModule.storeLogMessage(state, "1 message", 1, 1024);
@@ -482,7 +482,7 @@ module {
         firstTimeNanos = ?1;
         lastTimeNanos = ?1;
         features = features;
-      },
+      }
     );
 
     CollectorModule.storeLogMessage(state, "2 message", 2, 1024);
@@ -495,13 +495,13 @@ module {
         firstTimeNanos = ?2;
         lastTimeNanos = ?5;
         features = features;
-      },
+      }
     );
   };
 
   private func test_unwrapLogMessages(
     state : TypesModule.State,
-    params : TypesModule.GetLogMessagesParameters,
+    params : TypesModule.GetLogMessagesParameters
   ) : TypesModule.CanisterLogMessages {
     switch (getLogMessages(state, params)) {
       case (null) {
@@ -513,7 +513,7 @@ module {
 
   private func test_unwrapLatestLogMessages(
     state : TypesModule.State,
-    params : TypesModule.GetLatestLogMessagesParameters,
+    params : TypesModule.GetLatestLogMessagesParameters
   ) : TypesModule.CanisterLogMessages {
     switch (getLatestLogMessages(state, params)) {
       case (null) {

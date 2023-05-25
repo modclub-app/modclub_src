@@ -28,7 +28,7 @@ module QueueManager {
 
     public func changeContentStatus(
       contentId : Text,
-      contentStatus : Types.ContentStatus,
+      contentStatus : Types.ContentStatus
     ) {
       switch (contentStatus) {
         case (#new) {
@@ -48,7 +48,7 @@ module QueueManager {
     public func getUserContentQueue(
       userId : Principal,
       status : Types.ContentStatus,
-      randomizationEnabled : Bool,
+      randomizationEnabled : Bool
     ) : HashMap.HashMap<Text, ?Text> {
       switch (status) {
         case (#approved) {
@@ -65,7 +65,7 @@ module QueueManager {
           let qId = Option.get(state.userId2QueueId.get(userId), "");
           return Option.get(
             state.newContentQueues.get(qId),
-            HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash),
+            HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash)
           );
         };
       };
@@ -99,12 +99,12 @@ module QueueManager {
     public func getContentIds(
       userId : Principal,
       status : Types.ContentStatus,
-      randomizationEnabled : Bool,
+      randomizationEnabled : Bool
     ) : [Text] {
       var sourceBuffer = getUserContentQueue(
         userId,
         status,
-        randomizationEnabled,
+        randomizationEnabled
       );
 
       let buf = Buffer.Buffer<Text>(1);
@@ -112,7 +112,7 @@ module QueueManager {
       for (cId in sourceBuffer.keys()) {
         buf.add(cId);
       };
-      return buf.toArray();
+      return Buffer.toArray<Text>(buf);
     };
 
     public func getContentQueueByStatus(status : Types.ContentStatus) : HashMap.HashMap<Text, ?Text> {
@@ -133,7 +133,7 @@ module QueueManager {
       userId : Principal,
       contentId : Text,
       logger : Canistergeek.Logger,
-      randomizationEnabled : Bool,
+      randomizationEnabled : Bool
     ) : Bool {
       let queue = getUserContentQueue(userId, #new, randomizationEnabled);
       switch (queue.get(contentId)) {
@@ -145,8 +145,8 @@ module QueueManager {
     private func submitContentToNewQueue(contentId : Text) {
       let queueList = Helpers.generateRandomList(
         Params.ASSIGN_CONTENT_QUEUES,
-        state.queueIds.toArray(),
-        Helpers.getRandomFeedGenerator(),
+        Buffer.toArray<Text>(state.queueIds),
+        Helpers.getRandomFeedGenerator()
       );
       for (qId in queueList.vals()) {
         let _ = do ? {
@@ -180,21 +180,21 @@ module QueueManager {
         logMessage(
           logger,
           "Assiging qId to user: " # Principal.toText(allUserIds.get(i)) # " currentUserQueueIndex: " # Int.toText(
-            state.lastUserQueueIndex,
-          ),
+            state.lastUserQueueIndex
+          )
         );
         let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
         Debug.print(
           "QueueId: " # qId # " and state.lastUserQueueIndex: " # Int.toText(
-            state.lastUserQueueIndex,
-          ),
+            state.lastUserQueueIndex
+          )
         );
         state.userId2QueueId.put(allUserIds.get(i), qId);
       };
     };
 
     public func getQIds() : [Text] {
-      state.queueIds.toArray();
+      Buffer.toArray<Text>(state.queueIds);
     };
 
     private func createAllQueues() {
@@ -211,8 +211,8 @@ module QueueManager {
       for (contentId in state.allNewContentQueue.keys()) {
         let queueList = Helpers.generateRandomList(
           Params.ASSIGN_CONTENT_QUEUES,
-          state.queueIds.toArray(),
-          randomFeedGenerator,
+          Buffer.toArray<Text>(state.queueIds),
+          randomFeedGenerator
         );
         for (qId in queueList.vals()) {
           initializeQueue(qId);
@@ -229,7 +229,7 @@ module QueueManager {
         case (null) {
           state.newContentQueues.put(
             qId,
-            HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash),
+            HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash)
           );
         };
         case (_)();
@@ -240,7 +240,7 @@ module QueueManager {
       state.newContentQueues := HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       // removing all element from queueIds to generate new ones
       while (state.queueIds.removeLast() != null) {};
@@ -251,7 +251,7 @@ module QueueManager {
     public func moveContentIds(
       allNewContentIds : [Text],
       approvedContentIds : [Text],
-      rejectedContentIds : [Text],
+      rejectedContentIds : [Text]
     ) {
       for (id in allNewContentIds.vals()) {
         state.allNewContentQueue.put(id, null);
@@ -264,20 +264,18 @@ module QueueManager {
       };
     };
 
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [
-      [Text]
-    ] {
+    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
       DownloadSupport.download(state, varName, start, end);
     };
 
     public func getQueueState() : QueueState.QueueState {
-        return state;
+      return state;
     };
 
     // It assumes that all contentIds are already moved into this class
     public func postupgrade(
       _stableStateOpt : ?QueueState.QueueStateStable,
-      _logger : Canistergeek.Logger,
+      _logger : Canistergeek.Logger
     ) {
       switch (_stableStateOpt) {
         case (null)();

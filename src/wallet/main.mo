@@ -266,7 +266,7 @@ shared ({ caller = deployer }) actor class Wallet({
     // for((owner, subAccount) in allWallets.entries()) {
     //   walletStableBuff.add(owner, Iter.toArray(subAccount.entries()));
     // };
-    // allWalletsStable := walletStableBuff.toArray();
+    // allWalletsStable := Buffer.toArray<(Principal, [(SubAccount, Float)])>(walletStableBuff);
   };
 
   system func postupgrade() {

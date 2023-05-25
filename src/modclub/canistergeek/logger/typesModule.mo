@@ -97,23 +97,23 @@ module {
 
   public func newState(maxMessagesCount : Nat) : State {
     let defaultUpgradeData : UpgradeData = createDefaultUpgradeData_v1(
-      maxMessagesCount,
+      maxMessagesCount
     );
     return loadState(?defaultUpgradeData, maxMessagesCount);
   };
 
   public func loadState(
     upgradeData : ?UpgradeData,
-    defaultMaxMessagesCount : Nat,
+    defaultMaxMessagesCount : Nat
   ) : State {
     return switch (upgradeData) {
       case null { newState(defaultMaxMessagesCount) };
       case (?upgradeDataValue) {
         let migratedUpgradeData : UpgradeData = migrateUpgradeData(
-          upgradeDataValue,
+          upgradeDataValue
         );
         let state : State = createStateFromMigratedUpgradeData(
-          migratedUpgradeData,
+          migratedUpgradeData
         );
         return state;
       };
@@ -138,7 +138,7 @@ module {
 
   private func prepareCurrentUpgradeData_v1(state : State) : UpgradeData {
     let upgradeData : UpgradeData = #v1 {
-      queue = state.queue.toArray();
+      queue = Buffer.toArray<LogMessagesData>(state.queue);
       maxCount = state.maxCount;
       next = state.next;
       full = state.full;

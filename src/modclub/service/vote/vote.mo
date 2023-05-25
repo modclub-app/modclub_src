@@ -80,7 +80,7 @@ module VoteModule {
       for ((key, val) in uniqueViolatedRules.entries()) {
         buffer.add(val);
       };
-      return buffer.toArray();
+      return Buffer.toArray<Types.PohRulesViolated>(buffer);
     };
 
     public func votePohContent(
@@ -245,7 +245,7 @@ module VoteModule {
           };
         };
       };
-      return buffer.toArray();
+      return Buffer.toArray<VoteTypes.VotePlusUser>(buffer);
     };
 
     public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
@@ -283,7 +283,7 @@ module VoteModule {
         approvedPohPackages = pohVoteStableState.approvedPohPackages;
         rejectedPohPackages = pohVoteStableState.rejectedPohPackages;
         package2Status = pohVoteStableState.package2Status;
-        pohVotes = buff.toArray();
+        pohVotes = Buffer.toArray<(Text, VoteTypes.VoteV2)>(buff);
         pohContent2votes = pohVoteStableState.pohContent2votes;
         mods2Pohvotes = pohVoteStableState.mods2Pohvotes;
         autoApprovePOHUserIds = pohVoteStableState.autoApprovePOHUserIds;

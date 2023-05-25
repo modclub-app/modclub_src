@@ -21,7 +21,7 @@ module {
     state : StorageState.DataCanisterState,
     varName : Text,
     start : Int,
-    end : Int,
+    end : Int
   ) : [[Text]] {
     switch (varName) {
       case ("dataCanisters") {
@@ -40,42 +40,42 @@ module {
   };
 
   func serializeDataCanisters(
-    dataCanisters : HashMap.HashMap<StorageTypes.DataCanisterId, Buckets.Bucket>,
+    dataCanisters : HashMap.HashMap<StorageTypes.DataCanisterId, Buckets.Bucket>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((canId, canister) in dataCanisters.entries()) {
       buff.add(
         [
           Principal.toText(canId),
-          Principal.toText(Principal.fromActor(canister)),
-        ],
+          Principal.toText(Principal.fromActor(canister))
+        ]
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeContentIdToCanisterId(
-    contentIdToCanisterId : HashMap.HashMap<Text, StorageTypes.DataCanisterId>,
+    contentIdToCanisterId : HashMap.HashMap<Text, StorageTypes.DataCanisterId>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((contentId, canId) in contentIdToCanisterId.entries()) {
       buff.add(
-        [contentId, Principal.toText(canId)],
+        [contentId, Principal.toText(canId)]
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeModeratorsId(
-    moderatorsId : HashMap.HashMap<Principal, Principal>,
+    moderatorsId : HashMap.HashMap<Principal, Principal>
   ) : [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
     for ((modId, modId1) in moderatorsId.entries()) {
       buff.add(
-        [Principal.toText(modId), Principal.toText(modId1)],
+        [Principal.toText(modId), Principal.toText(modId1)]
       );
     };
-    return buff.toArray();
+    return Buffer.toArray<[Text]>(buff);
   };
 
 };

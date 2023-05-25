@@ -31,28 +31,28 @@ module State {
       var newContentQueues = HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       allNewContentQueue = HashMap.HashMap<Text, ?Text>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       approvedContentQueue = HashMap.HashMap<Text, ?Text>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       rejectedContentQueue = HashMap.HashMap<Text, ?Text>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
       queueIds = Buffer.Buffer<Text>(1);
       userId2QueueId = HashMap.HashMap<Principal, Text>(
         1,
         Principal.equal,
-        Principal.hash,
+        Principal.hash
       );
       var lastUserQueueIndex = -1;
     };
@@ -104,11 +104,11 @@ module State {
       newContentQBuff.add((qId, Iter.toArray(qMap.keys())));
     };
     let stableState : QueueStateStable = {
-      newContentQueues = newContentQBuff.toArray();
+      newContentQueues = Buffer.toArray<(Text, [Text])>(newContentQBuff);
       allNewContentQueue = Iter.toArray(state.allNewContentQueue.keys());
       approvedContentQueue = Iter.toArray(state.approvedContentQueue.keys());
       rejectedContentQueue = Iter.toArray(state.rejectedContentQueue.keys());
-      queueIds = state.queueIds.toArray();
+      queueIds = Buffer.toArray<Text>(state.queueIds);
       userId2QueueId = Iter.toArray(state.userId2QueueId.entries());
       var lastUserQueueIndex = state.lastUserQueueIndex;
     };

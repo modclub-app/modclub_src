@@ -11,8 +11,9 @@ NC='\033[0m' # No Color
 # Check for AuthCanister
 function stop_and_remove_canister() {
 		printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Stop&Remove QA Canisters ...${NC}\n"
+		dfx identity use default
 		dfx canister stop modclub_qa && dfx canister delete modclub_qa
-		dfx canister stop wallet_qa && dfx canister delete wallet_qa
+		dfx canister stop wallet_qa && dfx canister delete wallet_qa && dfx identity remove qa_ledger_identity && dfx identity remove qa_ledger_minter
 		dfx canister stop rs_qa && dfx canister delete rs_qa
 		dfx canister stop auth_qa && dfx canister delete auth_qa
 

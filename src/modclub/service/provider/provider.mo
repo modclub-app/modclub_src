@@ -376,7 +376,7 @@ module ProviderModule {
         case (_)();
       };
     };
-    buf.toArray();
+    Buffer.toArray<Types.Rule>(buf);
   };
 
   public func addProviderAdmin(
@@ -535,7 +535,7 @@ module ProviderModule {
         };
       };
     };
-    buf.toArray();
+    Buffer.toArray<Types.Profile>(buf);
   };
 
   public func removeProviderAdmin(

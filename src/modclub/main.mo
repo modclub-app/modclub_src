@@ -1273,7 +1273,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       index := index + 1;
     };
-    return tasks.toArray();
+    return Buffer.toArray<PohTypes.PohTaskPlus>(tasks);
   };
 
   public query ({ caller }) func getPohTaskData(packageId : Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
@@ -1356,7 +1356,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         userPrincipalBuff.add(Principal.fromText(user));
       };
       let pohTaskIds = pohEngine.getPohPackageIDForUserList(
-        userPrincipalBuff.toArray()
+        Buffer.toArray<Principal>(userPrincipalBuff)
       );
       for (id in pohTaskIds.vals()) {
         items.add(id);
@@ -1434,7 +1434,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       index := index + 1;
     };
-    return tasks.toArray();
+    return Buffer.toArray<PohTypes.PohTaskPlusForAdmin>(tasks);
   };
 
   public query ({ caller }) func getPohTaskDataForAdminUsers(packageId : Text) : async Result.Result<PohTypes.PohTaskDataAndVotesWrapperPlus, PohTypes.PohError> {
@@ -1657,7 +1657,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           amount = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
         });
       };
-      let _ = await RSManager.getActor(env).updateRSBulk(usersToRewardRS.toArray());
+      let _ = await RSManager.getActor(env).updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
       // moderator dist and treasury dist
       usersToRewardMOD.add({
         fromSA = ?(Principal.toText(Principal.fromActor(this)) # ModClubParam.ACCOUNT_PAYABLE);
@@ -1665,7 +1665,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         toSA = ?ModClubParam.TREASURY_SA;
         amount = (ModClubParam.GAMMA_T * CT);
       });
-      let _ = await ModWallet.getActor(env).transferBulk(usersToRewardMOD.toArray());
+      let _ = await ModWallet.getActor(env).transferBulk(Buffer.toArray<WalletTypes.UserAndAmount>(usersToRewardMOD));
       // burn
       let _ = await ModWallet.getActor(env).burn(
         ?(Principal.toText(Principal.fromActor(this)) # ModClubParam.ACCOUNT_PAYABLE),
@@ -2364,7 +2364,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       usernames = stateSharedV1.usernames;
       content = stateSharedV1.content;
       rules = stateSharedV1.rules;
-      votes = buff.toArray();
+      votes = Buffer.toArray<(Text, Types.VoteV2)>(buff);
       textContent = stateSharedV1.textContent;
       imageContent = stateSharedV1.imageContent;
       content2votes = stateSharedV1.content2votes;
