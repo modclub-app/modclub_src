@@ -177,123 +177,124 @@ module QueueManager {
     public func assignUserIds2QueueId(allUserIds : [Principal]) {
       for (i in Iter.range(0, allUserIds.size() - 1)) {
         state.lastUserQueueIndex := (state.lastUserQueueIndex + 1) % Params.TOTAL_QUEUES;
+        let lastIndex = Int.abs(state.lastUserQueueIndex);
+        let qId = "Queue: " # Int.toText(lastIndex);
         logMessage(
           logger,
           "Assiging qId to user: " # Principal.toText(allUserIds.get(i)) # " currentUserQueueIndex: " # Int.toText(
             state.lastUserQueueIndex
           )
         );
-        let qId = state.queueIds.get(Int.abs(state.lastUserQueueIndex));
         Debug.print(
           "QueueId: " # qId # " and state.lastUserQueueIndex: " # Int.toText(
             state.lastUserQueueIndex
           )
         );
         state.userId2QueueId.put(allUserIds.get(i), qId);
-      };
     };
+  };
 
-    public func getQIds() : [Text] {
-      Buffer.toArray<Text>(state.queueIds);
+  public func getQIds() : [Text] {
+    Buffer.toArray<Text>(state.queueIds);
+  };
+
+  private func createAllQueues() {
+    // Emptying the queueIds
+    for (i in Iter.range(0, Params.TOTAL_QUEUES - 1)) {
+      let qId = "Queue: " # Int.toText(i);
+      initializeQueue(qId);
+      state.queueIds.add(qId);
     };
+  };
 
-    private func createAllQueues() {
-      // Emptying the queueIds
-      for (i in Iter.range(0, Params.TOTAL_QUEUES - 1)) {
-        let qId = "Queue: " # Int.toText(i);
-        initializeQueue(qId);
-        state.queueIds.add(qId);
-      };
-    };
-
-    private func assignAllContentToQueues() {
-      let randomFeedGenerator = Helpers.getRandomFeedGenerator();
-      for (contentId in state.allNewContentQueue.keys()) {
-        let queueList = Helpers.generateRandomList(
-          Params.ASSIGN_CONTENT_QUEUES,
-          Buffer.toArray<Text>(state.queueIds),
-          randomFeedGenerator
-        );
-        for (qId in queueList.vals()) {
-          initializeQueue(qId);
-          let _ = do ? {
-            let q = state.newContentQueues.get(qId)!;
-            q.put(contentId, null);
-          };
-        };
-      };
-    };
-
-    private func initializeQueue(qId : Text) {
-      switch (state.newContentQueues.get(qId)) {
-        case (null) {
-          state.newContentQueues.put(
-            qId,
-            HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash)
-          );
-        };
-        case (_)();
-      };
-    };
-
-    public func shuffleContent() {
-      state.newContentQueues := HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(
-        1,
-        Text.equal,
-        Text.hash
+  private func assignAllContentToQueues() {
+    let randomFeedGenerator = Helpers.getRandomFeedGenerator();
+    for (contentId in state.allNewContentQueue.keys()) {
+      let queueList = Helpers.generateRandomList(
+        Params.ASSIGN_CONTENT_QUEUES,
+        Buffer.toArray<Text>(state.queueIds),
+        randomFeedGenerator
       );
-      // removing all element from queueIds to generate new ones
-      while (state.queueIds.removeLast() != null) {};
-      createAllQueues();
-      assignAllContentToQueues();
-    };
-
-    public func moveContentIds(
-      allNewContentIds : [Text],
-      approvedContentIds : [Text],
-      rejectedContentIds : [Text]
-    ) {
-      for (id in allNewContentIds.vals()) {
-        state.allNewContentQueue.put(id, null);
-      };
-      for (id in approvedContentIds.vals()) {
-        state.approvedContentQueue.put(id, null);
-      };
-      for (id in rejectedContentIds.vals()) {
-        state.rejectedContentQueue.put(id, null);
-      };
-    };
-
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
-      DownloadSupport.download(state, varName, start, end);
-    };
-
-    public func getQueueState() : QueueState.QueueState {
-      return state;
-    };
-
-    // It assumes that all contentIds are already moved into this class
-    public func postupgrade(
-      _stableStateOpt : ?QueueState.QueueStateStable,
-      _logger : Canistergeek.Logger
-    ) {
-      switch (_stableStateOpt) {
-        case (null)();
-        case (?_stableState) {
-          state := QueueState.getState(_stableState);
+      for (qId in queueList.vals()) {
+        initializeQueue(qId);
+        let _ = do ? {
+          let q = state.newContentQueues.get(qId)!;
+          q.put(contentId, null);
         };
-      };
-      logger := ?_logger;
-    };
-
-    public func preupgrade() : QueueState.QueueStateStable {
-      QueueState.getStableState(state);
-    };
-
-    private func logMessage(logger : ?Canistergeek.Logger, message : Text) {
-      let _ = do ? {
-        Helpers.logMessage(logger!, message, #info);
       };
     };
   };
+
+  private func initializeQueue(qId : Text) {
+    switch (state.newContentQueues.get(qId)) {
+      case (null) {
+        state.newContentQueues.put(
+          qId,
+          HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash)
+        );
+      };
+      case (_)();
+    };
+  };
+
+  public func shuffleContent() {
+    state.newContentQueues := HashMap.HashMap<Text, HashMap.HashMap<Text, ?Text>>(
+      1,
+      Text.equal,
+      Text.hash
+    );
+    // removing all element from queueIds to generate new ones
+    while (state.queueIds.removeLast() != null) {};
+    createAllQueues();
+    assignAllContentToQueues();
+  };
+
+  public func moveContentIds(
+    allNewContentIds : [Text],
+    approvedContentIds : [Text],
+    rejectedContentIds : [Text]
+  ) {
+    for (id in allNewContentIds.vals()) {
+      state.allNewContentQueue.put(id, null);
+    };
+    for (id in approvedContentIds.vals()) {
+      state.approvedContentQueue.put(id, null);
+    };
+    for (id in rejectedContentIds.vals()) {
+      state.rejectedContentQueue.put(id, null);
+    };
+  };
+
+  public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
+    DownloadSupport.download(state, varName, start, end);
+  };
+
+  public func getQueueState() : QueueState.QueueState {
+    return state;
+  };
+
+  // It assumes that all contentIds are already moved into this class
+  public func postupgrade(
+    _stableStateOpt : ?QueueState.QueueStateStable,
+    _logger : Canistergeek.Logger
+  ) {
+    switch (_stableStateOpt) {
+      case (null)();
+      case (?_stableState) {
+        state := QueueState.getState(_stableState);
+      };
+    };
+    logger := ?_logger;
+  };
+
+  public func preupgrade() : QueueState.QueueStateStable {
+    QueueState.getStableState(state);
+  };
+
+  private func logMessage(logger : ?Canistergeek.Logger, message : Text) {
+    let _ = do ? {
+      Helpers.logMessage(logger!, message, #info);
+    };
+  };
+};
 };
