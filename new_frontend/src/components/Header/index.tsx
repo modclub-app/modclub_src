@@ -22,8 +22,11 @@ const Header = () => {
         <div className={`text-center ${Styles.headerArea}`}>
           <div className={Styles.headerText}>
             <h1 className="mx-10 md:mx-0 xl:mx-96">
-              Content moderation is hard, let M
-              <span className="-ml-1 mr-1 md:-ml-2 md:mr-2 italic">o</span>dc
+              <span className={Styles.mainText}>
+                Content moderation is hard, <br />
+              </span>
+              let M<span className="-ml-1 mr-1 md:-ml-2 md:mr-2 italic">o</span>
+              dc
               <span className="italic -ml-1 mr-1 md:-ml-2 md:mr-2">l</span>ub
               make it easy for you
             </h1>

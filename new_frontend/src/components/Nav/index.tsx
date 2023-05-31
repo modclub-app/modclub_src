@@ -10,12 +10,12 @@ export default function Nav() {
       <div className={`${Styles.navBrand} gap-x-3 flex`}>
         <Image
           src="/assets/logo-icon.svg"
-          height={40}
-          width={45}
+          height={18}
+          width={50}
           alt="Logo Icon"
         />
         <Image
-          className="my-auto hidden md:block"
+          className="my-auto hidden sm:block"
           src="/assets/logo-text.svg"
           height={120}
           width={120}
@@ -29,7 +29,7 @@ export default function Nav() {
               href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
               target="_blank"
             >
-              <button className="primary-btn">Sign Up</button>
+              <button className="primary-btn p-0">Sign Up</button>
             </Link>
           </li>
           {/*<li>

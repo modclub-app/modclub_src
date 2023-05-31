@@ -14,9 +14,9 @@ export default function SectionOne() {
   return (
     <section
       id="section-1"
-      className={`${Styles.sectionOne} py-20 md:py-80 rounded-3xl`}
+      className={`${Styles.sectionOne} w-full py-20 md:py-80`}
     >
-      <div className="header-center text-center">
+      <div className="header-center text-center mx-auto">
         <div>
           <h2>Modular solutions</h2>
           <p className="text-4xl pt-6 px-10 md:px-0 text-main font-second">

@@ -2,3 +2,9 @@
   background-color: #efefef;
   margin-top: 1.6em;
 }
+
+@media screen and (min-width: 1920px) {
+  .sectionOne div {
+    max-width: 1920px;
+  }
+}

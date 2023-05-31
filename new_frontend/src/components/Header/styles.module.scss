@@ -21,6 +21,12 @@
   font-family: "Playfair Display";
 }
 
+@media screen and (max-width: 639px) {
+  .headerArea .mainText {
+    font-size: 2.7rem;
+  }
+}
+
 @media screen and (max-width: 769px) {
   .headerArea {
     margin: auto;
