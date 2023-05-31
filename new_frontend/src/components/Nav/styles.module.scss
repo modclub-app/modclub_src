@@ -3,6 +3,9 @@
   font-size: 2.18182rem;
 }
 
-.navItems {
-  // nav items properties here
+@media screen and (min-width: 1920px) {
+  .nav {
+    max-width: 1920px;
+    margin: auto;
+  }
 }

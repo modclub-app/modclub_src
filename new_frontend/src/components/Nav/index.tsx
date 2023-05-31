@@ -4,7 +4,9 @@ import Styles from "./styles.module.scss";
 
 export default function Nav() {
   return (
-    <nav className="flex w-full justify-between px-10 md:px-20 py-10 text-white">
+    <nav
+      className={`${Styles.nav} flex justify-between px-10 md:px-20 py-10 text-white`}
+    >
       <div className={`${Styles.navBrand} gap-x-3 flex`}>
         <Image
           src="/assets/logo-icon.svg"

@@ -9,16 +9,18 @@ import Styles from "./styles.module.scss";
 
 export default function HomePage() {
   return (
-    <main
-      className={`${Styles.main} flex min-h-screen flex-col items-center justify-between`}
-    >
+    <>
       <Header />
-      <SectionOne />
-      <SectionTwo />
-      <SectionThree />
-      <SectionFour />
-      <SectionFive />
+      <main
+        className={`${Styles.main} flex min-h-screen flex-col items-center justify-between`}
+      >
+        <SectionOne />
+        <SectionTwo />
+        <SectionThree />
+        <SectionFour />
+        <SectionFive />
+      </main>
       <Footer />
-    </main>
+    </>
   );
 }

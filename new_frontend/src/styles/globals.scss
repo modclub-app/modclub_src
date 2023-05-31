@@ -25,7 +25,8 @@ html {
 }
 
 body {
-  margin: 1.6em 1.6em 0 1.6em;
+  display: flex;
+  justify-content: center;
   box-sizing: border-box;
   /* color: rgb(var(--foreground-rgb));
   background: linear-gradient(

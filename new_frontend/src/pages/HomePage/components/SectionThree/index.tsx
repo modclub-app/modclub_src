@@ -35,7 +35,7 @@ export default function SectionThree() {
           <h2 className="leading-none">
             See how Modclub has helped businesses like yours
           </h2>
-          <button className="mt-14 tertiary-btn">
+          <button className="mt-14 tertiary-btn w-full md:w-auto">
             Don&#39;t just take our word for it
           </button>
         </div>

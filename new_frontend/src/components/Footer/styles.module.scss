@@ -7,3 +7,9 @@
     display: none !important;
   }
 }
+
+@media screen and (min-width: 1920px) {
+  .container {
+    max-width: 1920px;
+  }
+}

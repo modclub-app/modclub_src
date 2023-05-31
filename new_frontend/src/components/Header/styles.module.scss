@@ -1,14 +1,20 @@
+@import "@/styles/colors.scss";
+
+.headerSection {
+  width: calc(100%);
+  position: relative;
+  left: 50%;
+  right: 50%;
+  transform: translateX(-50%);
+  background-color: $main-color;
+  overflow: hidden;
+}
+
 .headerArea {
   color: #fff;
-  margin: 8em 0;
-
-  h1 {
-    letter-spacing: -2.3px;
-  }
-
-  .headerText {
-    margin: 0 17.7em;
-  }
+  padding: 0 2rem;
+  margin: 0 auto;
+  max-width: 1920px;
 }
 
 .headerSubtext {
@@ -26,5 +32,16 @@
     h1 {
       letter-spacing: unset;
     }
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  .headerSection {
+    margin: 0;
+  }
+
+  .headerArea {
+    margin: 0 auto;
+    max-width: 1920px;
   }
 }

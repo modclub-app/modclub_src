@@ -69,7 +69,7 @@ export default function SectionOne() {
                         href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
                         target="_blank"
                       >
-                        <button className="primary-btn mt-14">
+                        <button className="primary-btn mt-14 w-full md:w-60">
                           Book a Demo
                         </button>
                       </Link>
