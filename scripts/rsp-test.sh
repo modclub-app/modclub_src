@@ -35,10 +35,11 @@ case $1 in
 
     # deploy
     echo "++++++++++++++++++++Deploy has started++++++++++++++++++++"
-    dfx canister create modclub && dfx canister create wallet && dfx canister create rs
-    dfx deploy modclub --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\";}})"
-    dfx deploy wallet --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\";}})"
-    dfx deploy rs --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\";}})"
+    dfx canister create modclub && dfx canister create wallet && dfx canister create rs && dfx canister create auth
+    dfx deploy auth --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\"; auth_canister_id = principal \"$(dfx canister id auth)\";}})"
+    dfx deploy modclub --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\"; auth_canister_id = principal \"$(dfx canister id auth)\";}})"
+    dfx deploy wallet --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\"; auth_canister_id = principal \"$(dfx canister id auth)\";}})"
+    dfx deploy rs --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\"; auth_canister_id = principal \"$(dfx canister id auth)\";}})"
 
     # call registerAdmin
     echo "++++++++++++++++++++Setup has started++++++++++++++++++++"
@@ -52,7 +53,7 @@ case $1 in
     dfx canister call modclub addToAllowList "(principal \"$(dfx identity get-principal)\" )"
     dfx canister call modclub registerProvider "(\""TEMP_PROVIDER_NAME"\",\""DESCRIPTION_A"\", null)"
     dfx canister call modclub addProviderAdmin "(principal \"$(dfx identity get-principal)\" , \""TEMP_PROVIDER_NAME"\", null)"
-    dfx canister call modclub updateSettings "(principal \"$(dfx identity get-principal)\", record {minVotes=1; minStaked=0})"
+    dfx canister call modclub updateSettings "(principal \"$(dfx identity get-principal)\", record {requiredVotes=1; minStaked=0})"
     dfx canister call modclub addRules '(vec{"Passed"},null)'
     dfx canister call rs registerAdmin "( principal \"$(dfx identity get-principal)\" )"
     dfx canister call modclub setRandomization false

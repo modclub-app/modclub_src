@@ -48,6 +48,7 @@ module {
     #getProviderAdmins : () -> Principal;
     #getProviderContent : () -> (Principal, Types.ContentStatus, Nat, Nat);
     #getProviderRules : () -> ();
+    #getReservedByContentId : () -> Text;
     #getRules : () -> Principal;
     #getTaskStats : () -> Int;
     #getTasks : () -> (Nat, Nat, Bool);
@@ -69,6 +70,8 @@ module {
     #retrieveChallengesForUser : () -> Text;
     #sendVerificationEmail : () -> Text;
     #setRandomization : () -> Bool;
+    #reserveContent : () -> Text;
+    #setVoteParamsForLevel : () -> (Int, Types.Level);
     #shuffleContent : () -> ();
     #shufflePohContent : () -> ();
     #submitChallengeData : () -> PohTypes.PohChallengeSubmissionRequest;

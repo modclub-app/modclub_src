@@ -212,7 +212,7 @@ module ModeratorModule {
                       voteCount.approvedCount,
                       voteCount.rejectedCount
                     );
-                    minVotes = provider.settings.minVotes;
+                    requiredVotes = provider.settings.requiredVotes;
                     minStake = provider.settings.minStaked;
                     rewardRelease = Helpers.timeNow();
                     reward = do {

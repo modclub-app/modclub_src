@@ -72,7 +72,7 @@ const Task = ({ task, setVoted }) => {
           </Card.Header.Title>
           <Progress
             value={Number(task.voteCount)}
-            min={Number(task.minVotes)}
+            min={Number(task.requiredVotes)}
           />
         </Card.Header>
         <Card.Content>

@@ -157,7 +157,7 @@ module {
   ) : [Text] {
     let buff = Buffer.Buffer<Text>(providerSettings.size());
     for (p in providerSettings.vals()) {
-      buff.add(Nat.toText(p.minVotes) # ";" # Nat.toText(p.minStaked));
+      buff.add(Nat.toText(p.requiredVotes) # ";" # Nat.toText(p.minStaked));
     };
     return Buffer.toArray<Text>(buff);
   };

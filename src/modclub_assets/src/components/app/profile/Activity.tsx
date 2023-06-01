@@ -65,7 +65,7 @@ const Table = (
                   <td>
                     <Progress
                       value={Number(item.voteCount)}
-                      min={Number(("new" in item.status) ? item.minVotes : item.voteCount)}
+                      min={Number(("new" in item.status) ? item.requiredVotes : item.voteCount)}
                     />
                   </td>
                   <td>{formatDate(item.createdAt)}</td>

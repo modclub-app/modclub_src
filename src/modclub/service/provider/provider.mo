@@ -45,7 +45,7 @@ module ProviderModule {
             createdAt = now;
             updatedAt = now;
             settings = {
-              minVotes = ModClubParams.DEFAULT_MIN_VOTES;
+              requiredVotes = ModClubParams.DEFAULT_MIN_VOTES;
               // At least 2 votes required to finalize a decision
               minStaked = 0;
               // Default amount staked, change when tokens are released
@@ -668,16 +668,16 @@ module ProviderModule {
     state : GlobalState.State,
     logger : Canistergeek.Logger
   ) : async () {
-    var minVotes = 0;
+    var requiredVotes = 0;
     switch (state.providers.get(providerId)) {
       case (null) {
         return throw Error.reject("Unauthorized");
       };
       case (?p) {
-        minVotes := p.settings.minVotes;
+        requiredVotes := p.settings.requiredVotes;
       };
     };
-    let feeForTask = ModClubParam.CS * Float.fromInt(minVotes);
+    let feeForTask = ModClubParam.CS * Float.fromInt(requiredVotes);
     let providerBalance = await ModWallet.getActor(env).queryBalance(?(Principal.toText(providerId) # ModClubParam.RESERVE_SA));
     if (providerBalance < feeForTask) {
       return throw Error.reject("Not enough balance in provider reserves to submit task.");

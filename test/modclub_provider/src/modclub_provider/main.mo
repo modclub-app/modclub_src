@@ -50,7 +50,7 @@ shared ({ caller = initializer }) actor class ModclubProvider() = this {
     // Update settings
     await MC.updateSettings(
       Principal.fromActor(this),
-      { minVotes = 2; minStaked = 15 },
+      { requiredVotes = 2; minStaked = 15 },
     );
 
     // Submit content to be reviewed by moderators
@@ -127,7 +127,7 @@ shared ({ caller = initializer }) actor class ModclubProvider() = this {
   public func updateSettings(voteNum : Nat, stakeNum : Nat) : async () {
     await MC.updateSettings(
       initializer,
-      { minVotes = voteNum; minStaked = stakeNum },
+      { requiredVotes = voteNum; minStaked = stakeNum },
     );
   };
 

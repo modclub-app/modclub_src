@@ -252,7 +252,7 @@ module {
     packageId : Text;
     pohTaskData : [PohTaskData];
     votes : Nat;
-    minVotes : Int;
+    requiredVotes : Int;
     minStake : Int;
     reward : Float;
     createdAt : Int;
@@ -264,7 +264,7 @@ module {
     status : Types.ContentStatus;
     voteCount : Nat;
     profileImageUrlSuffix : ?Text;
-    minVotes : Int;
+    requiredVotes : Int;
     minStake : Int;
     title : ?Text;
     hasVoted : ?Bool;
@@ -300,7 +300,7 @@ module {
     packageId : Text;
     pohTaskData : [PohTaskData];
     voteUserDetails : [VoteTypes.VotePlusUser];
-    minVotes : Int;
+    requiredVotes : Int;
     minStake : Int;
     reward : Float;
     createdAt : Int;

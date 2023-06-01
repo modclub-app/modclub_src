@@ -169,7 +169,7 @@ export default function PohApplicant() {
               </Card.Header.Title>
               <Progress
                 value={content.votes}
-                min={content.minVotes}
+                min={content.requiredVotes}
               />
             </Card.Header>
 

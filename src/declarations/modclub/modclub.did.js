@@ -132,6 +132,29 @@ export const idlFactory = ({ IDL }) => {
     err: IDL.Text,
   });
   const ContentId = IDL.Text;
+  const ClaimId = IDL.Text;
+  const Claim = IDL.Record({
+    'id' : ClaimId,
+    'claimExpiryTime' : Timestamp,
+    'createdAt' : Timestamp,
+    'profileId' : IDL.Text,
+    'updatedAt' : Timestamp,
+  });
+  const VoteParamsId = IDL.Text;
+  const Level = IDL.Variant({
+    'normal' : IDL.Null,
+    'hard' : IDL.Null,
+    'xhard' : IDL.Null,
+    'simple' : IDL.Null,
+  });
+  const Complexity = IDL.Record({ 'expiryTime' : Timestamp, 'level' : Level });
+  const VoteParameters = IDL.Record({
+    'id' : VoteParamsId,
+    'complexity' : Complexity,
+    'createdAt' : Timestamp,
+    'updatedAt' : Timestamp,
+    'requiredVotes' : IDL.Int,
+  });
   const ContentPlus = IDL.Record({
     id: ContentId,
     status: ContentStatus,

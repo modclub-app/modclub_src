@@ -51,7 +51,7 @@ const ApplicantSnippet = ({ applicant } : { applicant : PohTaskPlus }) => {
       <Card.Header justifyContent="start" style={{ marginBottom: "auto", boxShadow: "none" }}>
         <Progress
           value={applicant.voteCount}
-          min={applicant.minVotes}
+          min={applicant.requiredVotes}
         />
       </Card.Header>
 

@@ -8,8 +8,10 @@ import Result "mo:base/Result";
 import Option "mo:base/Option";
 import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
+import Array "mo:base/Array";
 
 import GlobalState "../../statev2";
+import ContentState "./state";
 import Helpers "../../helpers";
 import Types "../../types";
 import Tokens "../../token";
@@ -20,8 +22,10 @@ import ModWallet "../../remote_canisters/ModWallet";
 import RSManager "../../remote_canisters/RSManager";
 import RSTypes "../../../rs/types";
 import WalletTypes "../../../wallet/types";
-import CommonTypes "../../../common/types" module ContentVotingModule {
+import Utils "../../../common/utils";
+import CommonTypes "../../../common/types";
 
+module ContentVotingModule {
   public type ContentVoteError = { #contentNotFound; #voteNotFound };
 
   public func getContentResult(
@@ -108,10 +112,13 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
         if (content.status != #new) throw Error.reject(
           "Content has already been reviewed"
         );
+        let isReserved = Utils.isReserved(Principal.toText(userId), content.reservedList);
+        if (isReserved == false) throw Error.reject(
+          "Must take Reservations before voting"
+        );
       };
       case (_)(throw Error.reject("Content does not exist"));
     };
-
     // TODO: validation check staking requirement fulfilled for senior levels
     var voteApproved : Nat = 0;
     var voteRejected : Nat = 0;
@@ -225,21 +232,21 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
     var status : Types.ContentStatus = #new;
     var decision : Types.Decision = #approved;
 
-    var minVotes = 0;
+    var requiredVotes = 0;
     switch (state.providers.get(content.providerId)) {
       case (?provider) {
-        minVotes := provider.settings.minVotes;
+        requiredVotes := provider.settings.requiredVotes;
       };
       case (null)();
     };
 
-    if (aCount >= minVotes) {
+    if (aCount >= requiredVotes) {
       // Approved
       finishedVote := true;
       status := #approved;
       decision := #approved;
       contentQueueManager.changeContentStatus(content.id, #approved);
-    } else if (rCount >= minVotes) {
+    } else if (rCount >= requiredVotes) {
       // Rejected
       status := #rejected;
       decision := #rejected;
@@ -250,61 +257,7 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
     };
 
     if (finishedVote) {
-      // Reward / Slash voters ;
-      let rewardingVotes = Buffer.Buffer<Types.VoteV2>(1);
-      let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
-      for (voteId in state.content2votes.get0(content.id).vals()) {
-        switch (state.votes.get(voteId)) {
-          case (null)();
-          case (?vote) {
-            var votedCorrect = false;
-            if (vote.decision == decision) {
-              if (vote.level != #novice) {
-                rewardingVotes.add(vote);
-              };
-              votedCorrect := true;
-            } else {
-              votedCorrect := false;
-            };
-            usersToRewardRS.add({
-              userId = vote.userId;
-              votedCorrect = votedCorrect;
-              decision = vote.decision;
-            });
-          };
-        };
-      };
-      var sumRS : Int = 0;
-      for (userVote in rewardingVotes.vals()) {
-        sumRS := sumRS + userVote.rsBeforeVoting;
-      };
-
-      // For each rewarding vote, add the user to the buffer with the corresponding amount of MOD to be rewarded
-      let usersToRewardMOD = Buffer.Buffer<WalletTypes.UserAndAmount>(1);
-      let CT : Float = ModClubParam.CS * Float.fromInt(minVotes);
-      for (userVote in rewardingVotes.vals()) {
-        usersToRewardMOD.add({
-          fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
-          toOwner = userVote.userId;
-          toSA = null;
-          amount = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
-        });
-      };
-      let _ = await RSManager.getActor(env).updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
-      // moderator dist and treasury dist
-      usersToRewardMOD.add({
-        fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
-        toOwner = modclubWalletId;
-        toSA = ?ModClubParam.TREASURY_SA;
-        amount = (ModClubParam.GAMMA_T * CT);
-      });
-      let _ = await ModWallet.getActor(env).transferBulk(Buffer.toArray<WalletTypes.UserAndAmount>(usersToRewardMOD));
-      // burn
-      let _ = await ModWallet.getActor(env).burn(
-        ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE),
-        (ModClubParam.GAMMA_B * CT)
-      );
-
+      await _rewardCalculation(content, env, state, logger, modclubWalletId, contentQueueManager, decision, requiredVotes);
     };
 
     // Update content status
@@ -319,6 +272,9 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
         title = content.title;
         createdAt = content.createdAt;
         updatedAt = Helpers.timeNow();
+        voteParameters = content.voteParameters;
+        receipt = content.receipt;
+        reservedList = content.reservedList;
       }
     );
 
@@ -360,7 +316,72 @@ import CommonTypes "../../../common/types" module ContentVotingModule {
       };
     };
   };
+  private func _rewardCalculation(
+    content : Types.Content,
+    env : CommonTypes.ENV,
+    state : GlobalState.State,
+    logger : Canistergeek.Logger,
+    modclubWalletId : Principal,
+    contentQueueManager : QueueManager.QueueManager,
+    decision : Types.Decision,
+    requiredVotes : Nat
+  ) : async () {
+    // Reward / Slash voters ;
+    let rewardingVotes = Buffer.Buffer<Types.VoteV2>(1);
+    let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
+    for (voteId in state.content2votes.get0(content.id).vals()) {
+      switch (state.votes.get(voteId)) {
+        case (null)();
+        case (?vote) {
+          var votedCorrect = false;
+          if (vote.decision == decision) {
+            if (vote.level != #novice) {
+              rewardingVotes.add(vote);
+            };
+            votedCorrect := true;
+          } else {
+            votedCorrect := false;
+          };
+          usersToRewardRS.add({
+            userId = vote.userId;
+            votedCorrect = votedCorrect;
+            decision = vote.decision;
+          });
+        };
+      };
+    };
+    var sumRS : Int = 0;
+    for (userVote in rewardingVotes.vals()) {
+      sumRS := sumRS + userVote.rsBeforeVoting;
+    };
 
+    //TODO: Needs to be updated to handle junior case where they only receive half the rewards and the remaining is locked. until they become senior
+    let usersToRewardMOD = Buffer.Buffer<WalletTypes.UserAndAmount>(1);
+    let CT : Float = ModClubParam.CS * Float.fromInt(requiredVotes);
+    for (userVote in rewardingVotes.vals()) {
+      usersToRewardMOD.add({
+        fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
+        toOwner = userVote.userId;
+        toSA = null;
+        amount = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
+      });
+    };
+    let _ = await RSManager.getActor(env).updateRSBulk(usersToRewardRS.toArray());
+    // moderator dist and treasury dist
+    usersToRewardMOD.add({
+      fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
+      toOwner = modclubWalletId;
+      toSA = ?ModClubParam.TREASURY_SA;
+      amount = (ModClubParam.GAMMA_T * CT);
+    });
+    let _ = await ModWallet.getActor(env).transferBulk(usersToRewardMOD.toArray());
+    // burn
+    let _ = await ModWallet.getActor(env).burn(
+      ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE),
+      (ModClubParam.GAMMA_B * CT)
+    );
+  };
+  
   private func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
     let vRulesCountBuff = Buffer.Buffer<Types.ViolatedRules>(violatedRuleCount.size());
 

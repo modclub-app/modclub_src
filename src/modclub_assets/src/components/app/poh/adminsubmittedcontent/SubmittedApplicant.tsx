@@ -105,7 +105,7 @@ export default function PohSubmittedApplicant() {
                 </Card.Header.Title>
                 {/* <Progress
                 value={content.votes}
-                min={content.minVotes}
+                min={content.requiredVotes}
                 /> */}
             </Card.Header>
 

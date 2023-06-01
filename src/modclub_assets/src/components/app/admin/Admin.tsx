@@ -316,9 +316,9 @@ const EditModeratorSettingsModal = ({
   toggle,
   principalID,
   selectedProvider,
-  minVotes,
+  requiredVotes,
   minTokens,
-  setMinVotes,
+  setrequiredVotes,
   setMinTokens,
   updateProvider,
 }) => {
@@ -331,9 +331,9 @@ const EditModeratorSettingsModal = ({
     values["minStaked"] = values.minTokens;
 
     await updateProviderSettings(Principal.fromText(principalID), values);
-    setMinVotes(parseInt(values.minVotes));
+    setrequiredVotes(parseInt(values.requiredVotes));
     setMinTokens(parseInt(values.minTokens));
-    selectedProvider.settings.minVotes = parseInt(values.minVotes);
+    selectedProvider.settings.requiredVotes = parseInt(values.requiredVotes);
     selectedProvider.settings.minTokens = parseInt(values.minTokens);
     updateProvider();
     return "Moderator settings updated successfully";
@@ -348,10 +348,10 @@ const EditModeratorSettingsModal = ({
       <div className="field level">
         <p>Number of votes required to finalize decision:</p>
         <Field
-          name="minVotes"
+          name="requiredVotes"
           component="input"
           className="input has-text-centered ml-3"
-          initialValue={minVotes}
+          initialValue={requiredVotes}
           style={{ width: 70 }}
         />
       </div>
@@ -454,7 +454,7 @@ export default function Admin({
   }
   const [showModal, setShowModal] = useState(true);
 
-  const [minVotes, setMinVotes] = useState(0);
+  const [requiredVotes, setrequiredVotes] = useState(0);
   const [minTokens, setMinTokens] = useState(0);
 
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
@@ -473,9 +473,9 @@ export default function Admin({
   useEffect(() => {
     let adminInit = () => {
       if (selectedProvider) {
-        setMinVotes(
-          selectedProvider.settings.minVotes
-            ? parseInt(selectedProvider.settings.minVotes)
+        setrequiredVotes(
+          selectedProvider.settings.requiredVotes
+            ? parseInt(selectedProvider.settings.requiredVotes)
             : 0
         );
         setMinTokens(
@@ -521,9 +521,9 @@ export default function Admin({
                   key={provider.id}
                   onClick={() => {
                     setSelectedProvider(provider);
-                    setMinVotes(
-                      provider.settings.minVotes
-                        ? parseInt(provider.settings.minVotes)
+                    setrequiredVotes(
+                      provider.settings.requiredVotes
+                        ? parseInt(provider.settings.requiredVotes)
                         : 0
                     );
                     setMinTokens(
@@ -765,7 +765,7 @@ export default function Admin({
                     <tr>
                       <td>Number of votes required to finalize decision:</td>
                       <td className="has-text-white is-size-5 has-text-weight-bold">
-                        {minVotes.toString()}
+                        {requiredVotes.toString()}
                       </td>
                     </tr>
                     <tr>
@@ -811,9 +811,9 @@ export default function Admin({
           toggle={toggleModeratorSettings}
           principalID={providerIdText}
           selectedProvider={selectedProvider}
-          minVotes={minVotes}
+          requiredVotes={requiredVotes}
           minTokens={minTokens}
-          setMinVotes={setMinVotes}
+          setrequiredVotes={setrequiredVotes}
           setMinTokens={setMinTokens}
           updateProvider={updateProvider}
         />

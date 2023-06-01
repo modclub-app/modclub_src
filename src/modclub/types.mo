@@ -14,6 +14,9 @@ module {
   public type ContentId = Text;
   public type RuleId = Text;
   public type VoteId = Text;
+  public type ReceiptId = Text;
+  public type ReservedId = Text;
+  public type VoteParamsId = Text;
   public type ProviderId = Principal;
 
   public type Action = {
@@ -74,7 +77,7 @@ module {
     sourceId : Text;
     status : ContentStatus;
     voteCount : Nat;
-    minVotes : Nat;
+    requiredVotes : Nat;
     minStake : Nat;
     title : ?Text;
     createdAt : Timestamp;
@@ -82,6 +85,10 @@ module {
     text : ?Text;
     image : ?Image;
     hasVoted : ?Bool;
+    // voteParameters : ?VoteParamsId;
+    voteParameters : VoteParameters;
+    reservedList : [Reserved];
+    receipt : Receipt;
   };
 
   public type Content = {
@@ -91,8 +98,60 @@ module {
     sourceId : Text;
     status : ContentStatus;
     title : ?Text;
+    createdAt : Int;
+    updatedAt : Int;
+    // voteParameters : ?VoteParamsId;
+    voteParameters : VoteParameters;
+    reservedList : [Reserved];
+    receipt : Receipt;
+  };
+
+  public type Level = {
+    #simple;
+    #normal;
+    #hard;
+    #xhard;
+  };
+
+  public type Complexity = {
+    level : Level;
+    expiryTime : Timestamp;
+  };
+
+  public type RunResult = Result.Result<(), RunError>;
+  public type RunError = {
+    #UnexpectedValue : Text;
+    #UnexpectedError : Text;
+  };
+  public type Reserved = {
+    id : ReservedId;
+    profileId : Text;
+    // role: Text; // Should we add this?
+    createdAt : Timestamp; // Based on a timeout we should be able to remove Reserveds
+    updatedAt : Timestamp;
+    reservedExpiryTime : Timestamp; // High complexity may also have higher Reserved expiry time.
+  };
+
+  public type Receipt = {
+    id : ReceiptId;
+    cost : Int; // High complexity may also have higher Reserved expiry time. In MOD Tokens
+    createdAt : Timestamp;
+  };
+
+  public type VoteParameters = {
+    id : VoteParamsId; 
+    requiredVotes : Int;
+
+    // Should we add these?
+    // requiredVotes: Int;
+    // requiredSenior: Int;
+    // requiredJunior: Int;
+    // votingPowerSenior: Int;
+    // votingPowerJunior: Int;
+
     createdAt : Timestamp;
     updatedAt : Timestamp;
+    complexity : Complexity; // High complexity may also have higher Reserved expiry time.
   };
 
   public type TextContent = {
@@ -150,7 +209,7 @@ module {
   };
 
   public type ProviderSettings = {
-    minVotes : Nat;
+    requiredVotes : Nat;
     minStaked : Nat;
   };
 
@@ -246,7 +305,7 @@ module {
     createdAt : Timestamp;
     updatedAt : Timestamp;
     voteCount : Nat;
-    minVotes : Nat;
+    requiredVotes : Nat;
     minStake : Nat;
     reward : Float;
     rewardRelease : Timestamp;

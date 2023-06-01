@@ -65,7 +65,7 @@ const Table = (
                   <td>
                     <Progress
                       value={Number(item.voteCount)}
-                      min={Number(("new" in item.status) ? item.minVotes : item.voteCount)}
+                      min={Number(("new" in item.status) ? item.requiredVotes : item.voteCount)}
                       gradient={true}
                       />
                     {/* style={{"border-radius: 5px","background: -webkit-linear-gradient(right,#3d52fa, #c91988)"}} */}

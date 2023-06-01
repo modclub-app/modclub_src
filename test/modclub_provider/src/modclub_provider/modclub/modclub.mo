@@ -18,7 +18,7 @@ module {
   };
 
   public type ProviderSettings = {
-    minVotes : Nat;
+    requiredVotes : Nat;
     minStaked : Nat;
   };
 

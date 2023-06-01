@@ -81,6 +81,15 @@ export interface ChallengeResponse {
   challengeId: string;
   requestedAt: [] | [bigint];
 }
+export interface Claim {
+  'id' : ClaimId,
+  'claimExpiryTime' : Timestamp,
+  'createdAt' : Timestamp,
+  'profileId' : string,
+  'updatedAt' : Timestamp,
+}
+export type ClaimId = string;
+export interface Complexity { 'expiryTime' : Timestamp, 'level' : Level }
 export type ContentId = string;
 export interface ContentPlus {
   id: ContentId;
@@ -673,6 +682,14 @@ export interface Vote {
   violatedRules: [] | [Array<RuleId>];
 }
 export type VoteId = string;
+export interface VoteParameters {
+  'id' : VoteParamsId,
+  'complexity' : Complexity,
+  'createdAt' : Timestamp,
+  'updatedAt' : Timestamp,
+  'requiredVotes' : bigint,
+}
+export type VoteParamsId = string;
 export interface VotePlusUser {
   userVoteDecision: Decision__1;
   userUserName: string;

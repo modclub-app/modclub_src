@@ -43,13 +43,13 @@ document.getElementById("ruleBtn").addEventListener("click", async () => {
 });
 
 document.getElementById("settingsBtn").addEventListener("click", async () => {
-  const minVotes = Number(document.getElementById("minVotes").value.toString());
+  const requiredVotes = Number(document.getElementById("requiredVotes").value.toString());
   const minStaked = Number(
     document.getElementById("minStaked").value.toString()
   );
-  await modclub_provider.updateSettings(minVotes, minStaked);
+  await modclub_provider.updateSettings(requiredVotes, minStaked);
   alert("Settings updated successfully");
-  document.getElementById("minVotes").value = "";
+  document.getElementById("requiredVotes").value = "";
   document.getElementById("minStaked").value = "";
 });
 

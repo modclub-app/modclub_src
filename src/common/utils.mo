@@ -1,12 +1,28 @@
 import P "mo:base/Prelude";
+import Types "../modclub/types";
+import Array "mo:base/Array";
+import Int "mo:base/Int";
+import Text "mo:base/Text";
+import Bool "mo:base/Bool";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
-import Types "types";
+import CommonTypes "types";
 
 module {
+  public type Timestamp = Int;
   public func unwrap<T>(x : ?T) : T = switch x {
     case null { P.unreachable() };
     case (?x_) { x_ };
+  };
+  public func isReserved(profileId : Text, reservedList : [Types.Reserved]) : Bool {
+    let res = Array.find<Types.Reserved>(reservedList, func x = x.profileId == profileId);
+    if (res != null) {
+      return true;
+    };
+    return false;
+  };
+  public func getNonExpiredList(reservedList : [Types.Reserved], now : Timestamp) : [Types.Reserved] {
+    return Array.filter<Types.Reserved>(reservedList, func x = x.reservedExpiryTime > now);
   };
 
   public func mod_assert(success_test : Bool, message : Text) {
@@ -15,7 +31,7 @@ module {
     };
   };
   // auth_canister_id = principal "t6rzw-2iaaa-aaaaa-aaama-cai";
-  public func getCanisterId(canisterType : Types.ModclubCanister, env : Types.ENV) : Principal {
+  public func getCanisterId(canisterType : CommonTypes.ModclubCanister, env : CommonTypes.ENV) : Principal {
     switch (canisterType) {
       case (#modclub) {
         switch (env) {

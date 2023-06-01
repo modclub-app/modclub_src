@@ -98,7 +98,7 @@ export default function Platform ({ providerId }: { providerId: Principal }) {
 
     <Columns style={{ margin: "-.75rem" }}>
       <GradientBox title="Rq Stake" showToken={false}>
-        {loading ? <div className="loader is-loading"></div> : Number(content.settings.minVotes)}
+        {loading ? <div className="loader is-loading"></div> : Number(content.settings.requiredVotes)}
       </GradientBox>
       <GradientBox title="Reward">
         5

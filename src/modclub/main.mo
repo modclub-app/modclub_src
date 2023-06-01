@@ -1,12 +1,10 @@
 import Array "mo:base/Array";
-import Arrays "mo:base/Array";
 import AuthManager "./service/auth/auth";
 import Base32 "mo:encoding/Base32";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Canistergeek "./canistergeek/canistergeek";
-import ContentManager "./service/content/content";
 import ContentVotingManager "./service/content/vote";
 import Debug "mo:base/Debug";
 import DownloadUtil "downloadUtil";
@@ -48,7 +46,7 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Token "./token";
 import Types "./types";
-import MsgInspectTypes "./msgInspectTypes";
+import MsgInspectTypes "msgInspectTypes";
 import EmailManager "./service/email/email";
 import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
@@ -60,7 +58,12 @@ import RSManager "./remote_canisters/RSManager";
 import RSTypes "../rs/types";
 import WalletTypes "../wallet/types";
 import Utils "../common/utils";
+import ContentManager "./service/content/content";
+import ContentStateManager "./service/content/reserved";
+import ContentState "./service/content/state";
 import CommonTypes "../common/types";
+import Reserved "service/content/reserved";
+import Constants "../common/constants";
 import ModSecurity "../common/security/guard";
 import Auth "../common/security/AuthCanister";
 
@@ -106,6 +109,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var pohVoteStableStateV2 = VoteStateV2.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableState);
 
+  stable var contentStableState = ContentState.emptyStableState();
+  var contentState = ContentStateManager.ContentStateManager(contentStableState);
   stable var emailStableState = EmailState.emptyStableState();
   var emailManager = EmailManager.EmailManager(emailStableState);
 
@@ -292,6 +297,56 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     await ProviderManager.getProvider(providerId, stateV2);
   };
 
+  private func getVoteParamIdByLevel(
+    level : Types.Level
+  ) : Text {
+    return contentState.getVoteParamIdByLevel(level, stateV2);
+  };
+
+  private func getVoteParamsIdByContentId(contentId : Types.ContentId) : ?Types.VoteParamsId {
+    return contentState.getVoteParamsIdByContentId(contentId);
+  };
+
+  private func getVoteParamsByVoteParamId(voteParamId : Types.VoteParamsId) : async Types.VoteParameters {
+    switch (contentState.getVoteParamsByVoteParamId(voteParamId)) {
+      case (null) {
+        let now = Helpers.timeNow();
+        let vp : Types.VoteParameters = {
+          id = "simplevoteParameter-0";
+          requiredVotes = 3;
+          createdAt = now;
+          updatedAt = now;
+          complexity = {
+            level = #simple;
+            expiryTime = now + Constants.EXPIRE_VOTE_TIME;
+          };
+        };
+        await contentState.setVoteParams(vp);
+        return vp;
+      };
+      case (?vote) {
+        return vote;
+      };
+    };
+  };
+
+  public shared ({ caller }) func setVoteParamsForLevel(requireVote : Int, level : Types.Level) : async () {
+    let now = Helpers.timeNow();
+    let id : Types.VoteParamsId = Helpers.generateVoteParamId(Helpers.level2Text(level) # "voteParameter", stateV2);
+    let vp : Types.VoteParameters = {
+      id = id;
+      requiredVotes = requireVote;
+      createdAt = now;
+      updatedAt = now;
+      complexity = {
+        level = level;
+        expiryTime = now + Constants.EXPIRE_VOTE_TIME;
+      };
+
+    };
+    let res = await contentState.setVoteParams(vp);
+  };
+
   public shared ({ caller }) func addRules(
     rules : [Text],
     providerId : ?Principal
@@ -396,7 +451,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func submitText(
     sourceId : Text,
     text : Text,
-    title : ?Text
+    title : ?Text,
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -408,22 +463,27 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
+    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
+
     await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     return ContentManager.submitTextOrHtmlContent(
       caller,
       sourceId,
       text,
       title,
+      voteParam,
       #text,
       contentQueueManager,
-      stateV2
+      stateV2,
+      contentStableState
     );
   };
 
   public shared ({ caller }) func submitHtmlContent(
     sourceId : Text,
     htmlContent : Text,
-    title : ?Text
+    title : ?Text,
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -435,15 +495,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, stateV2)) {
       throw Error.reject("Content already submitted");
     };
+    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
     await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     var contentID = ContentManager.submitTextOrHtmlContent(
       caller,
       sourceId,
       htmlContent,
       title,
+      voteParam,
       #htmlContent,
       contentQueueManager,
-      stateV2
+      stateV2,
+      contentStableState
     );
     return contentID;
   };
@@ -452,7 +516,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     sourceId : Text,
     image : [Nat8],
     imageType : Text,
-    title : ?Text
+    title : ?Text,
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -464,6 +528,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
+    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
     await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     return ContentManager.submitImage(
       caller,
@@ -471,8 +537,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       image,
       imageType,
       title,
+      voteParam,
       contentQueueManager,
-      stateV2
+      stateV2,
+      contentStableState
     );
   };
 
@@ -1258,7 +1326,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
                 voteCount.approvedCount,
                 voteCount.rejectedCount
               );
-              minVotes = ModClubParam.MIN_VOTE_POH;
+              requiredVotes = ModClubParam.MIN_VOTE_POH;
               minStake = 0;
               title = null;
               hasVoted = ?voteCount.hasVoted;
@@ -1309,7 +1377,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         packageId = pohTasks[0].packageId;
         pohTaskData = pohTasks[0].pohTaskData;
         votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
-        minVotes = ModClubParam.MIN_VOTE_POH;
+        requiredVotes = ModClubParam.MIN_VOTE_POH;
         minStake = 0;
         reward = 0.0;
         createdAt = pohTasks[0].createdAt;
@@ -1453,7 +1521,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         packageId = pohTasks[0].packageId;
         pohTaskData = pohTasks[0].pohTaskData;
         voteUserDetails = voteDetails;
-        minVotes = ModClubParam.MIN_VOTE_POH;
+        requiredVotes = ModClubParam.MIN_VOTE_POH;
         minStake = 0;
         reward = 0.0;
         createdAt = pohTasks[0].createdAt;
@@ -1838,14 +1906,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       Iter.toArray(stateV2.profiles.keys())
     );
   };
-
+  
   private func createContentObj(
     sourceId : Text,
     caller : Principal,
     contentType : Types.ContentType,
     title : ?Text
-  ) : Types.Content {
+  ) : async Types.Content {
     let now = Helpers.timeNow();
+    let reserved : [Types.Reserved] = [];
+    let rp : Types.Receipt = ContentManager.createReceipt(caller, stateV2, 10, contentStableState);
+    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
     let content : Types.Content = {
       id = Helpers.generateId(caller, "content", stateV2);
       providerId = caller;
@@ -1855,8 +1927,31 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       title = title;
       createdAt = now;
       updatedAt = now;
+      voteParameters = voteParam;
+      reservedList = reserved;
+      receipt = rp;
     };
     return content;
+  };
+
+  public shared ({ caller }) func getReservedByContentId(contentId : Text) : async Result.Result<Types.Reserved, Text> {
+    let content = await getContent(contentId);
+    switch (content) {
+      case (null) { #err("Empty") };
+      case (?data) {
+        let res = await ContentManager.getReservation(Principal.toText(caller), data.reservedList);
+        return Result.fromOption<Types.Reserved, Text>(res, "Cannot get Reserveds");
+      };
+    };
+  };
+
+  public shared ({ caller }) func reserveContent(contentId : Text) : async () {
+    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
+      case (#err(e)) { throw Error.reject("Unauthorized") };
+      case (_)();
+    };
+    let voteCount = getVoteCount(contentId, ?caller);
+    let reserved = await ContentManager.createReservation(caller, contentId, voteCount, stateV2, contentStableState);
   };
 
   private func getVoteCount(contentId : Types.ContentId, caller : ?Principal) : Types.VoteCount {
@@ -1994,6 +2089,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     provider2ProviderUserId2Ip := pohCombinedStableState.2;
     provider2Ip2Wallet := pohCombinedStableState.3;
     pohVoteStableStateV2 := voteManager.getStableState();
+    contentStableState := contentState.getStableState();
     emailStableState := emailManager.getStableState();
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
@@ -2048,6 +2144,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     // Delete upto here
     pohVoteStableStateV2 := VoteStateV2.emptyStableState();
     emailStableState := EmailState.emptyStableState();
+    contentStableState := ContentState.emptyStableState();
 
     // This statement should be run after the storagestate gets restored from stable stateV2
     storageSolution.setInitialModerators(ModeratorManager.getModerators(stateV2));
@@ -2110,6 +2207,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#shuffleContent _) { authGuard.isAdmin(caller) };
       case (#shufflePohContent _) { authGuard.isAdmin(caller) };
       case (#getTaskStats _) { authGuard.isAdmin(caller) };
+      case (#setVoteParamsForLevel _) {authGuard.isAdmin(caller)};
       case (#setRandomization _) { authGuard.isAdmin(caller) };
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };

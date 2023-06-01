@@ -80,6 +80,22 @@ module Helpers {
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
+// Generates a voteparameter semi unique ID
+  public func generateVoteParamId(
+    category : Text,
+    state : GlobalState.State
+  ) : Text {
+    var count : Nat = 0;
+    switch (state.GLOBAL_ID_MAP.get(category)) {
+      case (?result) {
+        count := result;
+      };
+      case (_)();
+    };
+    count := count + 1;
+    state.GLOBAL_ID_MAP.put(category, count);
+    return category # "-" # (Nat.toText(count));
+  };
   public func generateRandomList(
     size : Nat,
     wordList : [Text],
@@ -173,6 +189,23 @@ module Helpers {
       }
     );
     exists != null;
+  };
+
+  public func level2Text(lv : Types.Level): Text{
+    switch(lv){
+      case (#simple){
+        return "simple"
+      };
+      case (#normal){
+        return "normal"
+      };
+      case (#hard){
+        return "hard"
+      };
+      case (#xhard){
+        return "xhard"
+      };
+    }
   };
 
   public func logMessage(
