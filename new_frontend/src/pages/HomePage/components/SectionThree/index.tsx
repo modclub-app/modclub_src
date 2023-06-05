@@ -32,9 +32,13 @@ export default function SectionThree() {
     <section className={`${Styles.sectionThree} py-20 md:py-72 w-full`}>
       <div className={`${Styles.main} mx-auto`}>
         <div className="header-center text-left grid grid-cols-12">
-          <div className="col-start-2 col-span-10 md:mr-56">
+          <div className="col-start-1 md:col-start-2 col-span-12 px-14">
             <h2 className="leading-none">
-              See how Modclub has helped businesses like yours
+              See how Modclub has
+              <span className={`${Styles.lineBreak} hidden md:inline`}>
+                <br />
+              </span>{" "}
+              helped businesses like yours
             </h2>
             <button className="mt-14 tertiary-btn w-full md:w-auto">
               Don&#39;t just take our word for it
@@ -43,20 +47,22 @@ export default function SectionThree() {
         </div>
         <hr className="my-16 w-10/12 mx-auto" />
         <div className="cards-area grid grid-cols-12 gap-x-1 text-center text-white">
-          <div className="card-v2 card-1 col-span-10 md:col-span-7 col-start-2 md:col-start-2">
+          <div className="card-v2 card-1 col-span-10 lg:col-span-7 col-start-2 lg:col-start-2">
             <div
-              className="mx-20 my-auto py-20 text-left grid grid-cols-12"
+              className="mx-10 my-auto py-16 pb-20 text-left grid grid-cols-12"
               ref={card1Ref}
             >
-              <div className="col-span-10 md:col-span-4 mb-5 md:mb-0">
+              <div
+                className={`${Styles.head} col-span-10 md:col-span-3 md:px-12 mb-5 md:mb-0`}
+              >
                 <Image
                   src="/assets/karman-ventures.png"
-                  width={125}
-                  height={125}
+                  width={160}
+                  height={160}
                   alt="Karman Ventures"
                 />
                 <Link target="_blank" href="https://nuance.xyz/">
-                  <p className="font-semibold pt-5">Nuance</p>
+                  <p className="font-medium md:pt-5 text-center">Nuance</p>
                 </Link>
               </div>
               <div className="col-span-10 md:col-span-8">
@@ -89,11 +95,11 @@ export default function SectionThree() {
             </div>
           </div>
           <div
-            className="card-v2 card-2 mt-1 md:mt-0 col-start-2 col-span-10 md:col-span-3"
+            className="card-v2 card-2 mt-1 lg:mt-0 col-start-2 col-span-10 lg:col-span-3"
             style={{ alignItems: "flex-start" }}
           >
             <div
-              className="mx-20 text-left my-auto py-20"
+              className={`mx-10 text-left my-auto py-20 ${Styles.marketing}`}
               style={{ marginTop: responsive ? secondCardMarginTop : "" }}
               ref={card2Ref}
             >
@@ -102,6 +108,8 @@ export default function SectionThree() {
                 content moderation needs with Modclub. Our comprehensive
                 platform offers cost-effective, efficient, and customizable
                 solutions for maintaining content quality and community safety.
+              </p>
+              <p className="mt-10">
                 With powerful analytics and expert moderation services, you can
                 make data-driven decisions and focus on your product and
                 community. Partner with Modclub today to revolutionize your

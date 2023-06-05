@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display&family=Poppins:wght@200;300;400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display&family=Poppins:wght@200;300;400;500;700&display=swap");
 @import "./colors.scss";
 
 @tailwind base;
@@ -62,7 +62,7 @@ body {
 
 .primary-btn {
   font-size: 1.4rem;
-  font-weight: 600;
+  font-weight: 500;
   padding: 12px 20px;
   color: $main-color;
   border-radius: 10em;
@@ -92,8 +92,9 @@ body {
 .tertiary-btn {
   font-family: "Playfair Display";
   font-size: 2.4rem;
-  font-weight: 600;
+  font-weight: 300;
   color: $main-color;
+  letter-spacing: -0.06em;
   padding: 12px 20px;
   border-radius: 10em;
   background-color: transparent;
@@ -109,19 +110,19 @@ h1 {
 h2 {
   font-size: 6.4rem;
   font-weight: 400;
-  letter-spacing: -3.84px;
+  letter-spacing: -0.06em;
 }
 
 h3 {
   font-size: 3.2rem;
   font-weight: 400;
-  letter-spacing: -0.8px;
+  letter-spacing: -0.06em;
 }
 
 h4 {
   font-size: 2rem;
   font-weight: 400;
-  letter-spacing: -2.3px;
+  letter-spacing: -0.08em;
 }
 
 p {
@@ -148,7 +149,7 @@ hr {
   display: flex;
   justify-content: center;
   background-color: #193f3f;
-  height: 48em;
+  min-height: 54em;
   border-radius: 2em;
 }
 

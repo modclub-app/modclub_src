@@ -4,6 +4,7 @@
     font-size: 2em;
     color: #fff;
   }
+
   background-color: #1b4444;
   margin-top: 1.6em;
 }
@@ -16,6 +17,7 @@
   font-family: "Playfair Display";
   font-size: 2em;
   color: #fff;
+  line-height: 30px;
 }
 
 .cardThree {
@@ -35,6 +37,10 @@
       font-family: "Playfair Display";
       font-size: 1.6rem;
     }
+
+    h2 {
+      font-size: 3.2rem;
+    }
   }
 
   .sectionTwo h3 {
@@ -45,5 +51,10 @@
 @media screen and (min-width: 1920px) {
   .main {
     max-width: 1920px;
+  }
+
+  .cardOne p,
+  .cardFour p {
+    margin: 0 4em;
   }
 }

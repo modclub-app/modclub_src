@@ -19,28 +19,34 @@ const Header = () => {
     <section className={`${Styles.headerSection} w-full`}>
       <div id="header-section" className="w-full bg-header">
         <Nav />
-        <div className={`text-center ${Styles.headerArea}`}>
+        <div className={`text-center ${Styles.headerArea} mt-28 xl:mt-40`}>
           <div className={Styles.headerText}>
-            <h1 className="mx-10 md:mx-0 xl:mx-96">
-              <span className={Styles.mainText}>
-                Content moderation is hard, <br />
-              </span>
-              let M<span className="-ml-1 mr-1 md:-ml-2 md:mr-2 italic">o</span>
-              dc
-              <span className="italic -ml-1 mr-1 md:-ml-2 md:mr-2">l</span>ub
-              make it easy for you
-            </h1>
-            <h3 className={Styles.headerSubtext}>
+            <div className={Styles.mainText}>
+              <h1>
+                <span className={Styles.mainText}>
+                  Content moderation is
+                  <br />
+                </span>
+                hard, let M
+                <span className="-ml-1 md:mr-1 lg:-ml-1 lg:mr-1 xl:-ml-2 xl:mr-2 italic">
+                  o
+                </span>
+                dc
+                <span className="italic -ml-1 md:mr-1 lg:-ml-1 lg:mr-1 xl:-ml-2 xl:mr-2">
+                  l
+                </span>
+                ub make it easy for you
+              </h1>
+            </div>
+            <h3 className={`${Styles.headerSubtext} mt-5 md:mt-16`}>
               AI powered user verification and content moderation
             </h3>
-            <div className="mt-10 md:flex justify-center gap-x-4">
+            <div className="mt-5 md:mt-14 md:flex justify-center gap-x-10">
               <Link
                 href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
                 target="_blank"
               >
-                <button className="primary-btn w-9/12 md:w-auto">
-                  Get Started
-                </button>
+                <button className="primary-btn md:w-auto">Get Started</button>
               </Link>
               <Link
                 className="flex justify-center my-8 md:my-auto text-2xl"

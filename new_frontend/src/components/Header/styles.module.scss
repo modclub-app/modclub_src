@@ -8,35 +8,113 @@
   transform: translateX(-50%);
   background-color: $main-color;
   overflow: hidden;
+
+  .mainText {
+    width: 1030px;
+    margin: auto;
+  }
 }
 
 .headerArea {
   color: #fff;
   padding: 0 2rem;
-  margin: 0 auto;
   max-width: 1920px;
+
+  h1 {
+    line-height: 72px;
+  }
+
+  button {
+    padding: 12px 40px;
+  }
 }
 
 .headerSubtext {
   font-family: "Playfair Display";
 }
 
-@media screen and (max-width: 639px) {
-  .headerArea .mainText {
-    font-size: 2.7rem;
+@media screen and (max-width: 526px) {
+  .headerArea {
+    .mainText {
+      width: 316px;
+    }
+
+    h1 {
+      line-height: 24px;
+      font-size: 2.4rem !important;
+    }
+
+    .mainText {
+      line-height: 14px;
+      font-size: 2.7rem !important;
+    }
   }
 }
 
-@media screen and (max-width: 769px) {
+@media screen and (max-width: 359px) {
   .headerArea {
-    margin: auto;
+    .mainText {
+      width: 253px !important;
+      font-size: 2.1rem !important;
+    }
+
+    h1 {
+      font-size: 2rem !important;
+    }
+  }
+}
+
+@media screen and (max-width: 639px) {
+  .headerArea .mainText {
+    font-size: 3.3rem;
+    line-height: 44px;
+
+    span {
+      line-height: 27px;
+    }
+  }
+}
+
+@media (min-width: 526px) and (max-width: 769px) {
+  .headerArea {
+    margin-left: auto;
+    margin-right: auto;
 
     .headerText {
       margin: auto;
     }
 
+    .mainText {
+      width: 482px;
+    }
+
     h1 {
+      font-size: 3.2rem;
+      line-height: 32px;
       letter-spacing: unset;
+    }
+
+    h3 {
+      margin: 1.2em 4em;
+      font-size: 1.6rem;
+    }
+  }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1199px) {
+  .headerSection {
+    .mainText {
+      width: 572px;
+    }
+
+    .headerSubtext {
+      font-size: 2.5rem;
+    }
+
+    h1 {
+      font-size: 5.2rem;
+      line-height: 55px;
+      letter-spacing: -2.3px;
     }
   }
 }
@@ -47,7 +125,8 @@
   }
 
   .headerArea {
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
     max-width: 1920px;
   }
 }

@@ -10,7 +10,7 @@ export default function SectionFive() {
       <div className={`${Styles.main} mx-auto`}>
         <div className="md:px-3 text-main">
           <div className="header-center text-left grid grid-cols-12">
-            <div className="col-span-10">
+            <div className="col-span-10 ml-2">
               <h2>Know More</h2>
             </div>
           </div>
@@ -20,7 +20,7 @@ export default function SectionFive() {
                 <Disclosure>
                   {({ open }) => (
                     <>
-                      <hr className="mt-16 mb-10" />
+                      <hr className="mt-8 mb-6" />
                       <Disclosure.Button
                         className={`${Styles.disclosureBtn} flex w-full justify-between rounded-lg py-2 text-left focus:outline-none`}
                       >
@@ -90,7 +90,7 @@ export default function SectionFive() {
                 <Disclosure>
                   {({ open }) => (
                     <>
-                      <hr className="my-10" />
+                      <hr className="my-6" />
                       <Disclosure.Button
                         className={`${Styles.disclosureBtn} flex w-full justify-between rounded-lg py-2 text-left focus:outline-none`}
                       >
@@ -133,7 +133,7 @@ export default function SectionFive() {
                 <Disclosure>
                   {({ open }) => (
                     <>
-                      <hr className="my-10" />
+                      <hr className="mt-8 mb-6" />
                       <Disclosure.Button
                         className={`${Styles.disclosureBtn} flex w-full justify-between rounded-lg py-2 text-left focus:outline-none`}
                       >
@@ -170,7 +170,7 @@ export default function SectionFive() {
                 <Disclosure>
                   {({ open }) => (
                     <>
-                      <hr className="my-10" />
+                      <hr className="mt-8 mb-6" />
                       <Disclosure.Button
                         className={`${Styles.disclosureBtn} flex w-full justify-between rounded-lg py-2 text-left focus:outline-none`}
                       >
@@ -277,7 +277,7 @@ export default function SectionFive() {
                               rewards are locked for a defined period of time
                               before being released. During this period,
                               developers can review the results (and the
-                              moderator’s past activity) and raise any
+                              moderator&#39;s past activity) and raise any
                               objections.
                             </li>
                             <li>
@@ -354,7 +354,7 @@ export default function SectionFive() {
                           </ul>
                         </Disclosure.Panel>
                       </Transition>
-                      <hr className="my-10" />
+                      <hr className="mt-8 mb-6" />
                     </>
                   )}
                 </Disclosure>

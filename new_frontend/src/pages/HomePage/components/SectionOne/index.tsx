@@ -18,7 +18,7 @@ export default function SectionOne() {
     >
       <div className="header-center text-center mx-auto">
         <div>
-          <h2>Modular solutions</h2>
+          <h3 className="text-main">Modular solutions</h3>
           <p className="text-4xl pt-6 px-10 md:px-0 text-main font-second">
             A fully integrated suite of moderation and user verification
             products
@@ -41,17 +41,17 @@ export default function SectionOne() {
                       )
                     }
                   >
-                    <p>{category}</p>
+                    <p className="font-medium">{category}</p>
                   </Tab>
                 ))}
               </Tab.List>
               <Tab.Panels className="mt-2">
                 <Tab.Panel>
                   <div className="grid grid-cols-12 mt-16 gap-x-10 justify-center">
-                    <div className="col-span-10 md:col-span-4 col-start-2 md:col-start-2 my-8 md:my-auto text-left">
-                      <h3 className="leading-none">
+                    <div className="col-span-10 lg:col-span-6 xl:col-span-4 col-start-2 lg:col-start-2 xl:col-start-2 my-8 md:my-auto text-left">
+                      <h2 className="leading-none">
                         Hassle-Free Content Moderation
-                      </h3>
+                      </h2>
                       <p className="md:mr-32 mt-14">
                         Looking for an efficient way to manage user-generated
                         content? Modclub&#39;s content moderation tool offers
@@ -74,7 +74,7 @@ export default function SectionOne() {
                         </button>
                       </Link>
                     </div>
-                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2 flex justify-center items-center p-4">
+                    <div className="col-span-10 lg:col-span-4 xl:col-span-6 lg:col-start-0 col-start-2 flex justify-center items-center p-4">
                       <Image
                         src="/assets/moderation_preview.png"
                         width={600}
@@ -86,10 +86,10 @@ export default function SectionOne() {
                 </Tab.Panel>
                 <Tab.Panel>
                   <div className="grid grid-cols-12 mt-16 gap-x-10 justify-center">
-                    <div className="col-span-10 md:col-span-4 col-start-2 md:col-start-2 my-8 md:my-auto text-left">
-                      <h3 className="leading-none">
+                    <div className="col-span-10 lg:col-span-6 xl:col-span-4 col-start-2 lg:col-start-2 xl:col-start-2 my-8 md:my-auto text-left">
+                      <h2 className="leading-none">
                         Proof of Humanity Bot Protection
-                      </h3>
+                      </h2>
                       <p className="md:mr-32 mt-14">
                         Are you struggling with spam, bot accounts, sybil
                         attacks and tracking real user engagement?
@@ -112,7 +112,7 @@ export default function SectionOne() {
                         </button>
                       </Link>
                     </div>
-                    <div className="col-span-10 md:col-span-6 md:col-start-0 col-start-2 flex justify-center items-center p-4">
+                    <div className="col-span-10 lg:col-span-4 xl:col-span-6 lg:col-start-0 col-start-2 flex justify-center items-center p-4">
                       <Image
                         src="/assets/poh_preview.png"
                         width={600}
