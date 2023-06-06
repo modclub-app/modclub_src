@@ -1,5 +1,11 @@
 import Principal "mo:base/Principal";
 import Types "../../types";
+import QueueManager "../queue/queue";
+import ContentState "./state";
+import GlobalState "../../statev2";
+import Canistergeek "../../canistergeek/canistergeek";
+import CommonTypes "../../../common/types";
+import HashMap "mo:base/HashMap";
 
 module {
   public type ReservedArg = {
@@ -9,12 +15,91 @@ module {
     reservedExpiryTime : ?Types.Timestamp;
   };
 
-  public type ContentObjArg = {
+  public type CommonArg = {
+    caller : Principal;
+    globalState : GlobalState.State;
+    contentState : ContentState.ContentStateStable;
+  };
+
+  public type TextOrHtmlContentArg = {
+    sourceId : Text;
+    text : Text;
+    title : ?Text;
+    voteParam : Types.VoteParameters;
+    contentType : Types.ContentType;
+    contentQueueManager : QueueManager.QueueManager;
+  };
+  public type ImageContentArg = {
+    sourceId : Text;
+    image : [Nat8];
+    imageType : Text;
+    title : ?Text;
+    voteParam : Types.VoteParameters;
+    contentQueueManager : QueueManager.QueueManager;
+  };
+  public type ContentArg = {
     sourceId : Text;
     caller : Principal;
-    _contentType : Types.ContentType;
+    contentType : Types.ContentType;
     title : ?Text;
-    _voteParam : Types.VoteParameters;
+    voteParam : Types.VoteParameters;
   };
-  
+
+  public type TasksArg = {
+    caller : Principal;
+    getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount;
+    globalState : GlobalState.State;
+    start : Nat;
+    end : Nat;
+    filterVoted : Bool;
+    logger : Canistergeek.Logger;
+    contentQueueManager : QueueManager.QueueManager;
+    randomizationEnabled : Bool;
+  };
+
+  public type ProviderContentArg = {
+    providerId : Principal;
+    getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount;
+    globalState : GlobalState.State;
+    status : Types.ContentStatus;
+    start : Nat;
+    end : Nat;
+    contentQueueManager : QueueManager.QueueManager;
+  };
+
+  public type VoteArg = {
+    userId : Principal;
+    env : CommonTypes.ENV;
+    contentId : Types.ContentId;
+    decision : Types.Decision;
+    violatedRules : ?[Types.RuleId];
+    voteCount : Types.VoteCount;
+    state : GlobalState.State;
+    logger : Canistergeek.Logger;
+    contentQueueManager : QueueManager.QueueManager;
+    randomizationEnabled : Bool;
+    modclubWalletId : Principal;
+  };
+
+  public type EvaluateVoteArg = {
+    content : Types.Content;
+    env : CommonTypes.ENV;
+    aCount : Nat;
+    rCount : Nat;
+    modclubWalletId : Principal;
+    violatedRulesCount : HashMap.HashMap<Text, Nat>;
+    state : GlobalState.State;
+    logger : Canistergeek.Logger;
+    contentQueueManager : QueueManager.QueueManager;
+  };
+
+  public type RewardCalculationArg = {
+    content : Types.Content;
+    env : CommonTypes.ENV;
+    state : GlobalState.State;
+    logger : Canistergeek.Logger;
+    modclubWalletId : Principal;
+    decision : Types.Decision;
+    requiredVotes : Nat;
+  };
 };

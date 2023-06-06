@@ -9,9 +9,9 @@ import Option "mo:base/Option";
 import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
 import Array "mo:base/Array";
-
+import ContentTypes "types";
 import GlobalState "../../statev2";
-import ContentState "./state";
+import ContentState "state";
 import Helpers "../../helpers";
 import Types "../../types";
 import Tokens "../../token";
@@ -77,29 +77,20 @@ module ContentVotingModule {
   };
 
   public func vote(
-    userId : Principal,
-    env : CommonTypes.ENV,
-    contentId : Types.ContentId,
-    decision : Types.Decision,
-    violatedRules : ?[Types.RuleId],
-    voteCount : Types.VoteCount,
-    state : GlobalState.State,
-    logger : Canistergeek.Logger,
-    contentQueueManager : QueueManager.QueueManager,
-    randomizationEnabled : Bool,
-    modclubWalletId : Principal
+    arg : ContentTypes.VoteArg
   ) : async Text {
     if (
-      not contentQueueManager.isContentAssignedToUser(
-        userId,
-        contentId,
-        logger,
-        randomizationEnabled
+      not arg.contentQueueManager.isContentAssignedToUser(
+        arg.userId,
+        arg.contentId,
+        arg.logger,
+        arg.randomizationEnabled
       )
     ) {
       throw Error.reject("User voted on Unauthorized Content.");
     };
-    let voteId = "vote-" # Principal.toText(userId) # contentId;
+    let state = arg.state;
+    let voteId = "vote-" # Principal.toText(arg.userId) # arg.contentId;
     switch (state.votes.get(voteId)) {
       case (?v) {
         throw Error.reject("User already voted");
@@ -107,12 +98,12 @@ module ContentVotingModule {
       case (_)();
     };
 
-    switch (state.content.get(contentId)) {
+    switch (state.content.get(arg.contentId)) {
       case (?content) {
         if (content.status != #new) throw Error.reject(
           "Content has already been reviewed"
         );
-        let isReserved = Utils.isReserved(Principal.toText(userId), content.reservedList);
+        let isReserved = Utils.isReserved(Principal.toText(arg.userId), content.reservedList);
         if (isReserved == false) throw Error.reject(
           "Must take Reservations before voting"
         );
@@ -122,38 +113,38 @@ module ContentVotingModule {
     // TODO: validation check staking requirement fulfilled for senior levels
     var voteApproved : Nat = 0;
     var voteRejected : Nat = 0;
-    voteApproved := voteApproved + voteCount.approvedCount;
-    voteRejected := voteRejected + voteCount.rejectedCount;
+    voteApproved := voteApproved + arg.voteCount.approvedCount;
+    voteRejected := voteRejected + arg.voteCount.rejectedCount;
 
     // Check if the rules provided are valid
-    if (decision == #rejected) {
-      switch (violatedRules) {
+    if (arg.decision == #rejected) {
+      switch (arg.violatedRules) {
         case (?result) {
-          if (validateRules(contentId, result, state) != true) {
+          if (validateRules(arg.contentId, result, state) != true) {
             throw Error.reject("The violated rules provided are incorrect");
           };
           for (vRuleId in result.vals()) {
-            voteCount.violatedRulesCount.put(vRuleId, Option.get(voteCount.violatedRulesCount.get(vRuleId), 0) + 1);
+            arg.voteCount.violatedRulesCount.put(vRuleId, Option.get(arg.voteCount.violatedRulesCount.get(vRuleId), 0) + 1);
           };
         };
         case (_) throw Error.reject("Must provide rules that were violated");
       };
     };
 
-    let userRSAndLevel = await RSManager.getActor(env).queryRSAndLevelByPrincipal(userId);
+    let userRSAndLevel = await RSManager.getActor(arg.env).queryRSAndLevelByPrincipal(arg.userId);
     let vote : Types.VoteV2 = {
       id = voteId;
-      contentId = contentId;
-      userId = userId;
-      decision = decision;
-      violatedRules = violatedRules;
+      contentId = arg.contentId;
+      userId = arg.userId;
+      decision = arg.decision;
+      violatedRules = arg.violatedRules;
       rsBeforeVoting = userRSAndLevel.score;
       level = userRSAndLevel.level;
       createdAt = Helpers.timeNow();
     };
 
     if (userRSAndLevel.level != #novice) {
-      switch (decision) {
+      switch (arg.decision) {
         case (#approved) {
           voteApproved += 1;
         };
@@ -164,24 +155,24 @@ module ContentVotingModule {
     };
 
     // Update relations
-    state.content2votes.put(contentId, vote.id);
-    state.mods2votes.put(userId, vote.id);
+    state.content2votes.put(arg.contentId, vote.id);
+    state.mods2votes.put(arg.userId, vote.id);
     state.votes.put(vote.id, vote);
 
     // Evaluate and send notification to provider
-    switch (state.content.get(contentId)) {
+    switch (state.content.get(arg.contentId)) {
       case (?content) {
-        await evaluateVotes(
-          content,
-          env,
-          voteApproved,
-          voteRejected,
-          modclubWalletId,
-          voteCount.violatedRulesCount,
-          state,
-          logger,
-          contentQueueManager
-        );
+        await evaluateVotes({
+          content;
+          env = arg.env;
+          aCount = voteApproved;
+          rCount = voteRejected;
+          modclubWalletId = arg.modclubWalletId;
+          violatedRulesCount = arg.voteCount.violatedRulesCount;
+          state;
+          logger = arg.logger;
+          contentQueueManager = arg.contentQueueManager;
+        });
       };
       case (_)(throw Error.reject("Content does not exist"));
     };
@@ -218,123 +209,118 @@ module ContentVotingModule {
   };
 
   private func evaluateVotes(
-    content : Types.Content,
-    env : CommonTypes.ENV,
-    aCount : Nat,
-    rCount : Nat,
-    modclubWalletId : Principal,
-    violatedRulesCount : HashMap.HashMap<Text, Nat>,
-    state : GlobalState.State,
-    logger : Canistergeek.Logger,
-    contentQueueManager : QueueManager.QueueManager
+    arg : ContentTypes.EvaluateVoteArg
   ) : async () {
     var finishedVote = false;
     var status : Types.ContentStatus = #new;
     var decision : Types.Decision = #approved;
 
     var requiredVotes = 0;
-    switch (state.providers.get(content.providerId)) {
+    let state = arg.state;
+    switch (state.providers.get(arg.content.providerId)) {
       case (?provider) {
         requiredVotes := provider.settings.requiredVotes;
       };
       case (null)();
     };
 
-    if (aCount >= requiredVotes) {
+    if (arg.aCount >= requiredVotes) {
       // Approved
       finishedVote := true;
       status := #approved;
       decision := #approved;
-      contentQueueManager.changeContentStatus(content.id, #approved);
-    } else if (rCount >= requiredVotes) {
+      arg.contentQueueManager.changeContentStatus(arg.content.id, #approved);
+    } else if (arg.rCount >= requiredVotes) {
       // Rejected
       status := #rejected;
       decision := #rejected;
       finishedVote := true;
-      contentQueueManager.changeContentStatus(content.id, #rejected);
+      arg.contentQueueManager.changeContentStatus(arg.content.id, #rejected);
     } else {
       return;
     };
 
     if (finishedVote) {
-      await _rewardCalculation(content, env, state, logger, modclubWalletId, contentQueueManager, decision, requiredVotes);
+      await _rewardCalculation({
+        content = arg.content;
+        env = arg.env;
+        state;
+        logger = arg.logger;
+        modclubWalletId = arg.modclubWalletId;
+        decision;
+        requiredVotes;
+      });
     };
 
     // Update content status
     state.content.put(
-      content.id,
+      arg.content.id,
       {
-        id = content.id;
-        providerId = content.providerId;
-        contentType = content.contentType;
+        id = arg.content.id;
+        providerId = arg.content.providerId;
+        contentType = arg.content.contentType;
         status = status;
-        sourceId = content.sourceId;
-        title = content.title;
-        createdAt = content.createdAt;
+        sourceId = arg.content.sourceId;
+        title = arg.content.title;
+        createdAt = arg.content.createdAt;
         updatedAt = Helpers.timeNow();
-        voteParameters = content.voteParameters;
-        receipt = content.receipt;
-        reservedList = content.reservedList;
+        voteParameters = arg.content.voteParameters;
+        receipt = arg.content.receipt;
+        reservedList = arg.content.reservedList;
       }
     );
 
     // Call the providers callback
-    switch (state.providerSubs.get(content.providerId)) {
+    switch (state.providerSubs.get(arg.content.providerId)) {
       case (?result) {
         result.callback(
           {
-            id = content.id;
-            sourceId = content.sourceId;
-            approvedCount = aCount;
-            rejectedCount = rCount;
+            id = arg.content.id;
+            sourceId = arg.content.sourceId;
+            approvedCount = arg.aCount;
+            rejectedCount = arg.rCount;
             status = status;
-            violatedRules = getViolatedRuleCount(violatedRulesCount);
+            violatedRules = getViolatedRuleCount(arg.violatedRulesCount);
           }
         );
         Debug.print(
           "Called callback for provider " # Principal.toText(
-            content.providerId
+            arg.content.providerId
           )
         );
         Helpers.logMessage(
-          logger,
+          arg.logger,
           "Called callback for provider " # Principal.toText(
-            content.providerId
+            arg.content.providerId
           ),
           #info
         );
       };
       case (_) {
         Debug.print(
-          "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback"
+          "Provider " # Principal.toText(arg.content.providerId) # " has not subscribed a callback"
         );
         Helpers.logMessage(
-          logger,
-          "Provider " # Principal.toText(content.providerId) # " has not subscribed a callback",
+          arg.logger,
+          "Provider " # Principal.toText(arg.content.providerId) # " has not subscribed a callback",
           #info
         );
       };
     };
   };
   private func _rewardCalculation(
-    content : Types.Content,
-    env : CommonTypes.ENV,
-    state : GlobalState.State,
-    logger : Canistergeek.Logger,
-    modclubWalletId : Principal,
-    contentQueueManager : QueueManager.QueueManager,
-    decision : Types.Decision,
-    requiredVotes : Nat
+    arg : ContentTypes.RewardCalculationArg
   ) : async () {
     // Reward / Slash voters ;
     let rewardingVotes = Buffer.Buffer<Types.VoteV2>(1);
     let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
-    for (voteId in state.content2votes.get0(content.id).vals()) {
+    let state = arg.state;
+    for (voteId in state.content2votes.get0(arg.content.id).vals()) {
       switch (state.votes.get(voteId)) {
         case (null)();
         case (?vote) {
           var votedCorrect = false;
-          if (vote.decision == decision) {
+          if (vote.decision == arg.decision) {
             if (vote.level != #novice) {
               rewardingVotes.add(vote);
             };
@@ -357,31 +343,31 @@ module ContentVotingModule {
 
     //TODO: Needs to be updated to handle junior case where they only receive half the rewards and the remaining is locked. until they become senior
     let usersToRewardMOD = Buffer.Buffer<WalletTypes.UserAndAmount>(1);
-    let CT : Float = ModClubParam.CS * Float.fromInt(requiredVotes);
+    let CT : Float = ModClubParam.CS * Float.fromInt(arg.requiredVotes);
     for (userVote in rewardingVotes.vals()) {
       usersToRewardMOD.add({
-        fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
+        fromSA = ?(Principal.toText(arg.content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
         toOwner = userVote.userId;
         toSA = null;
         amount = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
       });
     };
-    let _ = await RSManager.getActor(env).updateRSBulk(usersToRewardRS.toArray());
+    let _ = await RSManager.getActor(arg.env).updateRSBulk(usersToRewardRS.toArray());
     // moderator dist and treasury dist
     usersToRewardMOD.add({
-      fromSA = ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
-      toOwner = modclubWalletId;
+      fromSA = ?(Principal.toText(arg.content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
+      toOwner = arg.modclubWalletId;
       toSA = ?ModClubParam.TREASURY_SA;
       amount = (ModClubParam.GAMMA_T * CT);
     });
-    let _ = await ModWallet.getActor(env).transferBulk(usersToRewardMOD.toArray());
+    let _ = await ModWallet.getActor(arg.env).transferBulk(usersToRewardMOD.toArray());
     // burn
-    let _ = await ModWallet.getActor(env).burn(
-      ?(Principal.toText(content.providerId) # ModClubParam.ACCOUNT_PAYABLE),
+    let _ = await ModWallet.getActor(arg.env).burn(
+      ?(Principal.toText(arg.content.providerId) # ModClubParam.ACCOUNT_PAYABLE),
       (ModClubParam.GAMMA_B * CT)
     );
   };
-  
+
   private func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
     let vRulesCountBuff = Buffer.Buffer<Types.ViolatedRules>(violatedRuleCount.size());
 

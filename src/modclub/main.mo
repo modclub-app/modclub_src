@@ -222,14 +222,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (?_)();
     };
-    ProviderManager.registerProvider(
-      caller,
-      name,
-      description,
-      image,
-      stateV2,
-      canistergeekLogger
-    );
+    ProviderManager.registerProvider({
+      providerId = caller;
+      name;
+      description;
+      image;
+      state = stateV2;
+      logger = canistergeekLogger;
+    });
   };
 
   public shared ({ caller }) func updateProvider(
@@ -241,13 +241,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         providerId
       )
     );
-    return await ProviderManager.updateProviderMetaData(
-      providerId,
-      updatedProviderVal,
-      caller,
-      stateV2,
-      canistergeekLogger
-    );
+    return await ProviderManager.updateProviderMetaData({
+      providerId;
+      updatedProviderVal;
+      callerPrincipalId = caller;
+      state = stateV2;
+      logger = canistergeekLogger;
+    });
   };
 
   public shared ({ caller }) func updateProviderLogo(
@@ -256,14 +256,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     logoType : Text
   ) : async Text {
 
-    return await ProviderManager.updateProviderLogo(
-      providerId,
-      logoToUpload,
-      logoType,
-      caller,
-      stateV2,
-      canistergeekLogger
-    );
+    return await ProviderManager.updateProviderLogo({
+      providerId;
+      logoToUpload;
+      logoType;
+      callerPrincipalId = caller;
+      state = stateV2;
+      logger = canistergeekLogger;
+    });
   };
 
   public shared ({ caller }) func deregisterProvider() : async Text {
@@ -451,7 +451,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func submitText(
     sourceId : Text,
     text : Text,
-    title : ?Text,
+    title : ?Text
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -468,22 +468,26 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     return ContentManager.submitTextOrHtmlContent(
-      caller,
-      sourceId,
-      text,
-      title,
-      voteParam,
-      #text,
-      contentQueueManager,
-      stateV2,
-      contentStableState
+      {
+        sourceId;
+        text;
+        title;
+        voteParam;
+        contentType = #text;
+        contentQueueManager;
+      },
+      {
+        caller;
+        globalState = stateV2;
+        contentState = contentStableState;
+      }
     );
   };
 
   public shared ({ caller }) func submitHtmlContent(
     sourceId : Text,
     htmlContent : Text,
-    title : ?Text,
+    title : ?Text
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -499,15 +503,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
     await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     var contentID = ContentManager.submitTextOrHtmlContent(
-      caller,
-      sourceId,
-      htmlContent,
-      title,
-      voteParam,
-      #htmlContent,
-      contentQueueManager,
-      stateV2,
-      contentStableState
+      {
+        sourceId;
+        text = htmlContent;
+        title;
+        voteParam;
+        contentType = #htmlContent;
+        contentQueueManager;
+      },
+      {
+        caller;
+        globalState = stateV2;
+        contentState = contentStableState;
+      }
     );
     return contentID;
   };
@@ -516,7 +524,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     sourceId : Text,
     image : [Nat8],
     imageType : Text,
-    title : ?Text,
+    title : ?Text
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -532,15 +540,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
     await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     return ContentManager.submitImage(
-      caller,
-      sourceId,
-      image,
-      imageType,
-      title,
-      voteParam,
-      contentQueueManager,
-      stateV2,
-      contentStableState
+      {
+        sourceId;
+        image;
+        imageType;
+        title;
+        voteParam;
+        contentQueueManager;
+      },
+      {
+        caller;
+        globalState = stateV2;
+        contentState = contentStableState;
+      }
     );
   };
 
@@ -558,15 +570,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (start < 0 or end < 0 or start > end) {
       throw Error.reject("Invalid range");
     };
-    return ContentManager.getProviderContent(
-      providerId,
-      getVoteCount,
-      stateV2,
-      status,
-      start,
-      end,
-      contentQueueManager
-    );
+    return ContentManager.getProviderContent({
+      providerId;
+      getVoteCount;
+      globalState = stateV2;
+      status;
+      start;
+      end;
+      contentQueueManager;
+    });
   };
 
   public query ({ caller }) func getAllContent(status : Types.ContentStatus) : async [
@@ -638,17 +650,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      ContentManager.getTasks(
-        caller,
-        getVoteCount,
-        stateV2,
-        start,
-        end,
-        filterVoted,
-        canistergeekLogger,
-        contentQueueManager,
-        randomizationEnabled
-      )
+      ContentManager.getTasks({
+        caller;
+        getVoteCount;
+        globalState = stateV2;
+        start;
+        end;
+        filterVoted;
+        logger = canistergeekLogger;
+        contentQueueManager;
+        randomizationEnabled;
+      })
     ) {
       case (#err(e)) {
         throw Error.reject(e);
@@ -873,19 +885,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       ) # " rejected count : " # Nat.toText(voteCount.rejectedCount),
       #info
     );
-    await ContentVotingManager.vote(
-      caller,
-      env,
-      contentId,
-      decision,
-      violatedRules,
-      voteCount,
-      stateV2,
-      canistergeekLogger,
-      contentQueueManager,
-      randomizationEnabled,
-      Principal.fromActor(this)
-    );
+    await ContentVotingManager.vote({
+      userId = caller;
+      env;
+      contentId;
+      decision;
+      violatedRules;
+      voteCount;
+      state = stateV2;
+      logger = canistergeekLogger;
+      contentQueueManager;
+      randomizationEnabled;
+      modclubWalletId = Principal.fromActor(this);
+    });
   };
 
   // ----------------------Token Methods------------------------------
@@ -1831,15 +1843,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Types.ProviderResult {
     Debug.print("addProviderAdmin caller: " # Principal.toText(caller));
 
-    let result = await ProviderManager.addProviderAdmin(
-      userId,
-      userName,
-      caller,
-      providerId,
-      stateV2,
-      authGuard.isAdmin(caller),
-      canistergeekLogger
-    );
+    let result = await ProviderManager.addProviderAdmin({
+      userId;
+      username = userName;
+      caller;
+      providerId;
+      state = stateV2;
+      isModclubAdmin = authGuard.isAdmin(caller);
+      logger = canistergeekLogger;
+    });
     return result;
   };
 
@@ -1856,11 +1868,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Types.ProviderResult {
 
     return await ProviderManager.removeProviderAdmin(
-      providerId,
-      providerAdminPrincipalIdToBeRemoved,
-      caller,
-      stateV2,
-      authGuard.isAdmin(caller),
+      {
+        providerId;
+        providerAdminPrincipalId = providerAdminPrincipalIdToBeRemoved;
+        callerPrincipalId = caller;
+        state = stateV2;
+        isModclubAdmin = authGuard.isAdmin(caller);
+      },
       canistergeekLogger
     );
   };
@@ -1872,12 +1886,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Types.ProviderResult {
 
     return await ProviderManager.editProviderAdmin(
-      providerId,
-      providerAdminPrincipalIdToBeEdited,
-      newUserName,
-      caller,
-      authGuard.isAdmin(caller),
-      stateV2
+      {
+        providerId;
+        providerAdminPrincipalId = providerAdminPrincipalIdToBeEdited;
+        callerPrincipalId = caller;
+        state = stateV2;
+        isModclubAdmin = authGuard.isAdmin(caller);
+      },
+      newUserName
     );
   };
 
@@ -1906,33 +1922,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       Iter.toArray(stateV2.profiles.keys())
     );
   };
-  
-  private func createContentObj(
-    sourceId : Text,
-    caller : Principal,
-    contentType : Types.ContentType,
-    title : ?Text
-  ) : async Types.Content {
-    let now = Helpers.timeNow();
-    let reserved : [Types.Reserved] = [];
-    let rp : Types.Receipt = ContentManager.createReceipt(caller, stateV2, 10, contentStableState);
-    let voteParamId = getVoteParamIdByLevel(#simple);
-    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
-    let content : Types.Content = {
-      id = Helpers.generateId(caller, "content", stateV2);
-      providerId = caller;
-      contentType = contentType;
-      status = #new;
-      sourceId = sourceId;
-      title = title;
-      createdAt = now;
-      updatedAt = now;
-      voteParameters = voteParam;
-      reservedList = reserved;
-      receipt = rp;
-    };
-    return content;
-  };
 
   public shared ({ caller }) func getReservedByContentId(contentId : Text) : async Result.Result<Types.Reserved, Text> {
     let content = await getContent(contentId);
@@ -1951,7 +1940,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     let voteCount = getVoteCount(contentId, ?caller);
-    let reserved = await ContentManager.createReservation(caller, contentId, voteCount, stateV2, contentStableState);
+    let reserved = await ContentManager.createReservation(
+      contentId,
+      voteCount,
+      { caller; globalState = stateV2; contentState = contentStableState }
+    );
   };
 
   private func getVoteCount(contentId : Types.ContentId, caller : ?Principal) : Types.VoteCount {
@@ -2207,7 +2200,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#shuffleContent _) { authGuard.isAdmin(caller) };
       case (#shufflePohContent _) { authGuard.isAdmin(caller) };
       case (#getTaskStats _) { authGuard.isAdmin(caller) };
-      case (#setVoteParamsForLevel _) {authGuard.isAdmin(caller)};
+      case (#setVoteParamsForLevel _) { authGuard.isAdmin(caller) };
       case (#setRandomization _) { authGuard.isAdmin(caller) };
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };

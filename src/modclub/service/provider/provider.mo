@@ -11,6 +11,7 @@ import Float "mo:base/Float";
 import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
 import Types "../../types";
+import ProviderTypes "types";
 import Helpers "../../helpers";
 import ModClubParams "../parameters/params";
 import AuthManager "../auth/auth";
@@ -23,25 +24,21 @@ import AuthGuard "../../../common/security/guard";
 module ProviderModule {
 
   public func registerProvider(
-    providerId : Principal,
-    name : Text,
-    description : Text,
-    image : ?Types.Image,
-    state : GlobalState.State,
-    logger : Canistergeek.Logger
+    arg : ProviderTypes.ProviderArg
   ) : Text {
     // Todo remove this after airdrop
     // await onlyOwner(caller);
-    switch (state.providers.get(providerId)) {
+    let state = arg.state;
+    switch (state.providers.get(arg.providerId)) {
       case (null) {
         let now = Helpers.timeNow();
         state.providers.put(
-          providerId,
+          arg.providerId,
           {
-            id = providerId;
-            name = name;
-            description = description;
-            image = image;
+            id = arg.providerId;
+            name = arg.name;
+            description = arg.description;
+            image = arg.image;
             createdAt = now;
             updatedAt = now;
             settings = {
@@ -53,16 +50,16 @@ module ProviderModule {
           }
         );
         Helpers.logMessage(
-          logger,
-          "registerProvider - Provider " # Principal.toText(providerId) # " Registration successful ",
+          arg.logger,
+          "registerProvider - Provider " # Principal.toText(arg.providerId) # " Registration successful ",
           #info
         );
         return "Registration successful";
       };
       case (?result) {
         Helpers.logMessage(
-          logger,
-          "registerProvider - Provider " # Principal.toText(providerId) # " already registered ",
+          arg.logger,
+          "registerProvider - Provider " # Principal.toText(arg.providerId) # " already registered ",
           #info
         );
         return "Provider already registered";
@@ -71,28 +68,25 @@ module ProviderModule {
   };
 
   public func updateProviderMetaData(
-    providerId : Principal,
-    updatedProviderVal : Types.ProviderMeta,
-    callerPrincipalId : Principal,
-    state : GlobalState.State,
-    logger : Canistergeek.Logger
+    arg : ProviderTypes.ProviderMetaArg
   ) : async Types.ProviderMetaResult {
     //Check if user is authorized to perform the action
     var authorized = false;
+    let state = arg.state;
     Debug.print(
-      "Authenticating the caller: " # Principal.toText(callerPrincipalId)
+      "Authenticating the caller: " # Principal.toText(arg.callerPrincipalId)
     );
     switch (
       AuthManager.checkProviderAdminPermission(
-        providerId,
-        callerPrincipalId,
+        arg.providerId,
+        arg.callerPrincipalId,
         state
       )
     ) {
       case (#err(error)) {
         Helpers.logMessage(
-          logger,
-          "updateProviderMetaData - Provider " # Principal.toText(providerId) # " permission check failed ",
+          arg.logger,
+          "updateProviderMetaData - Provider " # Principal.toText(arg.providerId) # " permission check failed ",
           #info
         );
         return #err(error);
@@ -101,23 +95,23 @@ module ProviderModule {
     };
     if (authorized == false) {
       Helpers.logMessage(
-        logger,
-        "updateProviderMetaData - Provider " # Principal.toText(providerId) # " unauthorized ",
+        arg.logger,
+        "updateProviderMetaData - Provider " # Principal.toText(arg.providerId) # " unauthorized ",
         #info
       );
       return #err(#Unauthorized);
     };
 
-    var existingProvider = state.providers.get(providerId);
+    var existingProvider = state.providers.get(arg.providerId);
     switch (existingProvider) {
       case (?result) {
         let now = Helpers.timeNow();
         state.providers.put(
-          providerId,
+          arg.providerId,
           {
-            id = providerId;
-            name = updatedProviderVal.name;
-            description = updatedProviderVal.description;
+            id = arg.providerId;
+            name = arg.updatedProviderVal.name;
+            description = arg.updatedProviderVal.description;
             image = result.image;
             createdAt = result.createdAt;
             updatedAt = now;
@@ -125,11 +119,11 @@ module ProviderModule {
           }
         );
         Helpers.logMessage(
-          logger,
-          "updateProviderMetaData - Provider " # Principal.toText(providerId) # " Provider metadata updated successfully ",
+          arg.logger,
+          "updateProviderMetaData - Provider " # Principal.toText(arg.providerId) # " Provider metadata updated successfully ",
           #info
         );
-        return #ok(updatedProviderVal);
+        return #ok(arg.updatedProviderVal);
       };
       case (null) {
         throw Error.reject("Provider does not exist");
@@ -138,26 +132,22 @@ module ProviderModule {
   };
 
   public func updateProviderLogo(
-    providerId : Principal,
-    logoToUpload : [Nat8],
-    logoType : Text,
-    callerPrincipalId : Principal,
-    state : GlobalState.State,
-    logger : Canistergeek.Logger
+    arg : ProviderTypes.ProviderLogoArg
   ) : async Text {
-    var existingProvider = state.providers.get(providerId);
+    let state = arg.state;
+    var existingProvider = state.providers.get(arg.providerId);
     switch (existingProvider) {
       case (?result) {
         let now = Helpers.timeNow();
         state.providers.put(
-          providerId,
+          arg.providerId,
           {
-            id = providerId;
+            id = arg.providerId;
             name = result.name;
             description = result.description;
             image = ?{
-              data = logoToUpload;
-              imageType = logoType;
+              data = arg.logoToUpload;
+              imageType = arg.logoType;
             };
             createdAt = result.createdAt;
             updatedAt = now;
@@ -165,8 +155,8 @@ module ProviderModule {
           }
         );
         Helpers.logMessage(
-          logger,
-          "updateProviderMetaData - Provider " # Principal.toText(providerId) # " Provider metadata updated successfully ",
+          arg.logger,
+          "updateProviderMetaData - Provider " # Principal.toText(arg.providerId) # " Provider metadata updated successfully ",
           #info
         );
         return "Uploaded";
@@ -380,33 +370,28 @@ module ProviderModule {
   };
 
   public func addProviderAdmin(
-    userId : Principal,
-    username : Text,
-    caller : Principal,
-    providerId : ?Principal,
-    state : GlobalState.State,
-    isModclubAdmin : Bool,
-    logger : Canistergeek.Logger
+    arg : ProviderTypes.ProviderRegAdminArg
   ) : async Types.ProviderResult {
+    let state = arg.state;
     var authorized = false;
     var isProvider = false;
     var _providerId : Principal = do {
-      switch (providerId) {
+      switch (arg.providerId) {
         case (?result) {
           isProvider := false;
           result;
         };
         case (_) {
-          caller;
+          arg.caller;
         };
       };
     };
 
     Helpers.logMessage(
-      logger,
+      arg.logger,
       "addProviderAdmin - Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(
-        caller
-      ) # " new admin principal ID " # Principal.toText(userId),
+        arg.caller
+      ) # " new admin principal ID " # Principal.toText(arg.userId),
       #info
     );
 
@@ -415,7 +400,7 @@ module ProviderModule {
       case (null)();
       // Do nothing check if the caller is an admin for the provider
       case (?result) {
-        if (caller == result.id) {
+        if (arg.caller == result.id) {
           authorized := true;
           isProvider := true;
         };
@@ -423,20 +408,20 @@ module ProviderModule {
     };
 
     Helpers.logMessage(
-      logger,
+      arg.logger,
       "addProviderAdmin - Is caller provider:  " # Bool.toText(isProvider),
       #info
     );
 
     // Allow Modclub Admins. REFACTOR.
-    if (authorized == false and isModclubAdmin) {
+    if (authorized == false and arg.isModclubAdmin) {
       authorized := true;
     };
 
     // Check if the caller is an admin of this provider
     if (authorized == false) {
       switch (
-        AuthManager.checkProviderAdminPermission(_providerId, caller, state)
+        AuthManager.checkProviderAdminPermission(_providerId, arg.caller, state)
       ) {
         case (#err(error)) return #err(error);
         case (#ok()) authorized := true;
@@ -449,8 +434,8 @@ module ProviderModule {
     let now = Helpers.timeNow();
 
     let adminProfile : Types.Profile = {
-      id = userId;
-      userName = username;
+      id = arg.userId;
+      userName = arg.username;
       // Todo accept username as a paramater
       email = "";
       pic = null;
@@ -459,11 +444,11 @@ module ProviderModule {
       updatedAt = now;
     };
 
-    if (Option.isNull(state.profiles.get(userId))) {
-      state.profiles.put(userId, adminProfile);
+    if (Option.isNull(state.profiles.get(arg.userId))) {
+      state.profiles.put(arg.userId, adminProfile);
     };
 
-    state.profiles.put(userId, adminProfile);
+    state.profiles.put(arg.userId, adminProfile);
     // TODO: Consider adding to username map to preserve uniqueness
     var IsUserAlreadyAdminOfProvider = false;
     switch (state.providerAdmins.get(_providerId)) {
@@ -473,35 +458,35 @@ module ProviderModule {
           Principal.equal,
           Principal.hash
         );
-        adminMap.put(userId, ());
+        adminMap.put(arg.userId, ());
         state.providerAdmins.put(_providerId, adminMap);
-        state.admin2Provider.put(userId, _providerId);
+        state.admin2Provider.put(arg.userId, _providerId);
       };
       case (?adminMap) {
-        if (Option.isSome(adminMap.get(userId))) {
+        if (Option.isSome(adminMap.get(arg.userId))) {
           IsUserAlreadyAdminOfProvider := true;
         } else {
-          adminMap.put(userId, ());
-          state.admin2Provider.put(userId, _providerId);
+          adminMap.put(arg.userId, ());
+          state.admin2Provider.put(arg.userId, _providerId);
         };
       };
     };
 
     if (IsUserAlreadyAdminOfProvider == true) {
       Helpers.logMessage(
-        logger,
+        arg.logger,
         "addProviderAdmin - FAILED:  Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(
-          caller
-        ) # " admin principal ID is already exist" # Principal.toText(userId),
+          arg.caller
+        ) # " admin principal ID is already exist" # Principal.toText(arg.userId),
         #info
       );
       #err(#ProviderAdminIsAlreadyRegistered);
     } else {
       Helpers.logMessage(
-        logger,
+        arg.logger,
         "addProviderAdmin - SUCCESS:  Provider " # Principal.toText(_providerId) # " caller " # Principal.toText(
-          caller
-        ) # " new admin principal ID " # Principal.toText(userId),
+          arg.caller
+        ) # " new admin principal ID " # Principal.toText(arg.userId),
         #info
       );
       #ok();
@@ -539,24 +524,21 @@ module ProviderModule {
   };
 
   public func removeProviderAdmin(
-    providerId : Principal,
-    providerAdminPrincipalIdToBeRemoved : Principal,
-    callerPrincipalId : Principal,
-    state : GlobalState.State,
-    isModclubAdmin : Bool,
+    arg : ProviderTypes.ProviderAdminArg,
     logger : Canistergeek.Logger
   ) : async Types.ProviderResult {
 
     Debug.print(
-      "Authenticating the caller: " # Principal.toText(callerPrincipalId)
+      "Authenticating the caller: " # Principal.toText(arg.callerPrincipalId)
     );
     // Allow Modclub Admins
-    var authorized = isModclubAdmin;
+    let state = arg.state;
+    var authorized = arg.isModclubAdmin;
     if (authorized == false) {
       switch (
         AuthManager.checkProviderAdminPermission(
-          providerId,
-          callerPrincipalId,
+          arg.providerId,
+          arg.callerPrincipalId,
           state
         )
       ) {
@@ -568,35 +550,31 @@ module ProviderModule {
       return #err(#Unauthorized);
     };
 
-    switch (state.providerAdmins.get(providerId)) {
+    switch (state.providerAdmins.get(arg.providerId)) {
       case (null) return #err(#NotFound);
       case (?adminMap) {
-        adminMap.delete(providerAdminPrincipalIdToBeRemoved);
-        state.profiles.delete(providerAdminPrincipalIdToBeRemoved);
+        adminMap.delete(arg.providerAdminPrincipalId);
+        state.profiles.delete(arg.providerAdminPrincipalId);
         return #ok();
       };
     };
   };
 
   public func editProviderAdmin(
-    providerId : Principal,
-    providerAdminPrincipalIdToBeEdited : Principal,
+    arg : ProviderTypes.ProviderAdminArg,
     newUserName : Text,
-    callerPrincipalId : Principal,
-    isModclubAdmin : Bool,
-    state : GlobalState.State
   ) : async Types.ProviderResult {
-
-    var authorized = isModclubAdmin;
+    var authorized = arg.isModclubAdmin;
+    let state = arg.state;
     Debug.print(
-      "Authenticating the caller: " # Principal.toText(callerPrincipalId)
+      "Authenticating the caller: " # Principal.toText(arg.callerPrincipalId)
     );
 
     if (authorized == false) {
       switch (
         AuthManager.checkProviderAdminPermission(
-          providerId,
-          callerPrincipalId,
+          arg.providerId,
+          arg.callerPrincipalId,
           state
         )
       ) {
@@ -610,14 +588,14 @@ module ProviderModule {
     };
 
     let editProviderAdminStatus = do ? {
-      state.providerAdmins.get(providerId)!.get(
-        providerAdminPrincipalIdToBeEdited
+      state.providerAdmins.get(arg.providerId)!.get(
+        arg.providerAdminPrincipalId
       )!;
       let currentAdminProfile = state.profiles.get(
-        providerAdminPrincipalIdToBeEdited
+        arg.providerAdminPrincipalId
       )!;
       state.profiles.put(
-        providerAdminPrincipalIdToBeEdited,
+        arg.providerAdminPrincipalId,
         {
           id = currentAdminProfile.id;
           userName = newUserName;
