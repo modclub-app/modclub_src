@@ -107,16 +107,17 @@ export default function SectionOne() {
                         href="https://wne38odgjn9.typeform.com/to/ryzRV65E"
                         target="_blank"
                       >
-                        <button className="primary-btn mt-14">
+                        <button className="primary-btn mt-14 w-full md:w-60">
                           Book a Demo
                         </button>
                       </Link>
                     </div>
                     <div className="col-span-10 lg:col-span-4 xl:col-span-6 lg:col-start-0 col-start-2 flex justify-center items-center p-4">
                       <Image
-                        src="/assets/poh_preview.png"
+                        src="/assets/poh_prev.svg"
                         width={600}
                         height={600}
+                        className="rounded-3xl"
                         alt="Section Two Hero Image"
                       />
                     </div>

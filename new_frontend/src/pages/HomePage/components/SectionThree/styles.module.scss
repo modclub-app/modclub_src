@@ -31,22 +31,38 @@
   }
 }
 
-@media screen and (max-width: 400px) {
+@media screen and (min-width: 400px) and (max-width: 767px) {
   .head {
+    display: flex;
+
     img {
       width: 38% !important;
+      max-width: 10rem;
+    }
+  }
+}
+
+@media screen and (width: 769px) {
+  .head {
+    display: inline !important;
+
+    img {
+      display: inline;
+      width: 38% !important;
+    }
+
+    p {
+      display: inline;
     }
   }
 }
 
 @media screen and (max-width: 769px) {
   .head {
-    display: flex;
     gap: 2em;
     margin-bottom: 3.2em;
 
     img {
-      width: 20%;
       height: auto;
       margin: unset;
     }
@@ -116,6 +132,14 @@
 
 @media only screen and (min-device-width: 280px) and (max-device-width: 653px) {
   .main {
+    .head {
+      display: flex;
+
+      img {
+        width: 30% !important;
+      }
+    }
+
     div div {
       padding: auto;
     }

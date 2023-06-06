@@ -9,6 +9,11 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --h1-responsive-font: clamp(2.2rem, 4vw, 7.2rem);
+  --h2-responsive-font: clamp(2rem, 3.5vw, 6.4rem);
+  --h3-responsive-font: clamp(1.6rem, 2.5vw, 3.2rem);
+  --h4-responsive-font: clamp(1.2rem, 2vw, 2rem);
+  --p-responsive-font: clamp(1.2rem, 1.5vw, 1.4rem);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,13 +31,6 @@ html {
 
 body {
   box-sizing: border-box;
-  /* color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb)); */
 }
 
 ::-webkit-scrollbar {
@@ -61,11 +59,8 @@ body {
 }
 
 .primary-btn {
-  font-size: 1.4rem;
-  font-weight: 500;
   padding: 12px 20px;
   color: $main-color;
-  border-radius: 10em;
   background: linear-gradient(
     45deg,
     $secondary-color 0%,
@@ -75,11 +70,7 @@ body {
 
 .secondary-btn,
 .secondary-btn-text-main {
-  font-size: 1.4rem;
-  font-weight: 600;
   color: #fff;
-  padding: 12px 20px;
-  border-radius: 10em;
   background-color: transparent;
   border: 0.5px solid $secondary-color;
 }
@@ -101,15 +92,28 @@ body {
   border: 0.5px solid $main-color;
 }
 
+.primary-btn,
+.secondary-btn,
+.secondary-btn-text-main {
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10em;
+}
+
 h1 {
   font-size: 7.2rem;
+  font-size: var(--h1-responsive-font) !important;
   font-weight: 400;
   letter-spacing: -2.3px;
+  line-height: 100% !important;
 }
 
 h2 {
   font-size: 6.4rem;
+  font-size: var(--h2-responsive-font);
   font-weight: 400;
+  line-height: 100% !important;
   letter-spacing: -0.06em;
 }
 
@@ -170,7 +174,6 @@ hr {
   }
 
   h2 {
-    font-size: 2rem;
     font-weight: 400;
     letter-spacing: unset;
   }

@@ -10,7 +10,7 @@
   overflow: hidden;
 
   .mainText {
-    width: 1030px;
+    width: 854px;
     margin: auto;
   }
 }
@@ -38,16 +38,6 @@
     .mainText {
       width: 316px;
     }
-
-    h1 {
-      line-height: 24px;
-      font-size: 2.4rem !important;
-    }
-
-    .mainText {
-      line-height: 14px;
-      font-size: 2.7rem !important;
-    }
   }
 }
 
@@ -60,17 +50,6 @@
 
     h1 {
       font-size: 2rem !important;
-    }
-  }
-}
-
-@media screen and (max-width: 639px) {
-  .headerArea .mainText {
-    font-size: 3.3rem;
-    line-height: 44px;
-
-    span {
-      line-height: 27px;
     }
   }
 }
@@ -113,7 +92,7 @@
 
     h1 {
       font-size: 5.2rem;
-      line-height: 55px;
+      line-height: 38px;
       letter-spacing: -2.3px;
     }
   }
