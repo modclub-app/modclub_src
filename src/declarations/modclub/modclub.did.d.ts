@@ -82,14 +82,17 @@ export interface ChallengeResponse {
   requestedAt: [] | [bigint];
 }
 export interface Claim {
-  'id' : ClaimId,
-  'claimExpiryTime' : Timestamp,
-  'createdAt' : Timestamp,
-  'profileId' : string,
-  'updatedAt' : Timestamp,
+  id: ClaimId;
+  claimExpiryTime: Timestamp;
+  createdAt: Timestamp;
+  profileId: string;
+  updatedAt: Timestamp;
 }
 export type ClaimId = string;
-export interface Complexity { 'expiryTime' : Timestamp, 'level' : Level }
+export interface Complexity {
+  expiryTime: Timestamp;
+  level: Level;
+}
 export type ContentId = string;
 export interface ContentPlus {
   id: ContentId;
@@ -683,11 +686,11 @@ export interface Vote {
 }
 export type VoteId = string;
 export interface VoteParameters {
-  'id' : VoteParamsId,
-  'complexity' : Complexity,
-  'createdAt' : Timestamp,
-  'updatedAt' : Timestamp,
-  'requiredVotes' : bigint,
+  id: VoteParamsId;
+  complexity: Complexity;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  requiredVotes: bigint;
 }
 export type VoteParamsId = string;
 export interface VotePlusUser {

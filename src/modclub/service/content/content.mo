@@ -247,10 +247,7 @@ module ContentModule {
             if (checkExpire == false) {
               throw Error.reject("No spot left");
             };
-            let reservation = await takeReservation({ 
-              caller = arg.caller; 
-              globalState = arg.globalState; 
-              contentState = arg.contentState }, Constant.EXPIRE_TIME);
+            let reservation = await takeReservation({ caller = arg.caller; globalState = arg.globalState; contentState = arg.contentState }, Constant.EXPIRE_TIME);
             let newReserved = Array.append<Types.Reserved>(oldReserved, [reservation]);
             let result : Types.ContentPlus = {
               id = provider.id;

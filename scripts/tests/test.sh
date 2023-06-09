@@ -16,6 +16,7 @@ function run_tests() {
 
 	source ./scripts/tests/security-test.sh
 	source ./scripts/tests/ledger-tests.sh
+	source ./scripts/tests/new-e2e-test.sh
 }
 
 run_tests

@@ -274,13 +274,13 @@ module {
   };
 
   public type PohError = {
-      #invalidToken;
-      #challengeNotPendingForSubmission;
-      #invalidPackageId;
-      #pohNotConfiguredForProvider;
-      #pohCallbackNotRegistered;
-      #attemptToAssociateMultipleModclubAccounts : Principal;
-      #attemptToCreateMultipleWalletsWithSameIp;
+    #invalidToken;
+    #challengeNotPendingForSubmission;
+    #invalidPackageId;
+    #pohNotConfiguredForProvider;
+    #pohCallbackNotRegistered;
+    #attemptToAssociateMultipleModclubAccounts : Principal;
+    #attemptToCreateMultipleWalletsWithSameIp;
   };
 
   public type PohTaskPlusForAdmin = {

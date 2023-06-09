@@ -31,8 +31,19 @@ function deploy_wallet_canister() {
       auth_canister_id = principal \"$(dfx canister id auth_qa)\";
     }};
     ledgerInit = record {
-      initial_mints = vec { record { account = record { owner = principal \"$qa_ledger_principal\"; }; amount = 10_000_000_000_000; }; };
+      initial_mints = vec { 
+        record { account = record { owner = principal \"$qa_ledger_principal\"; }; amount = 100_000_000_000_000; };
+        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"-------------------------RESERVE\"}; amount = 367_500_000_000_000; };
+        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"-------------------------AIRDROP\"}; amount = 10_000_000_000_000; };
+        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"-----------------------MARKETING\"}; amount = 50_000_000_000_000; };
+        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"------------------------ADVISORS\"}; amount = 50_000_000_000_000; };
+        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"-------------------------PRESEED\"}; amount = 62_500_000_000_000; };
+        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"----------------------PUBLICSALE\"}; amount = 100_000_000_000_000; };
+        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"----------------------------SEED\"}; amount = 100_000_000_000_000; };
+        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"----------------------------TEAM\"}; amount = 160_000_000_000_000; };
+      };
       minting_account = record { owner = principal \"$qa_minter_principal\"; };
+      ledger_account = record { owner = principal \"$qa_ledger_principal\"; };
       token_name = \"MODCLUB TEST TOKEN\";
       token_symbol = \"MODTEST\";
       decimals = 6;

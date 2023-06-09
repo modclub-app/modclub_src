@@ -15,14 +15,17 @@ import Nat32 "mo:base/Nat32";
 import Nat64 "mo:base/Nat64";
 import Nat8 "mo:base/Nat8";
 import Nat16 "mo:base/Nat16";
+import Float "mo:base/Float";
 import Prim "mo:prim";
 import Principal "mo:base/Principal";
 import SHA256 "mo:crypto/SHA/SHA256";
 import Source "mo:uuid/async/SourceV4";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Error "mo:base/Error";
 import Types "./types";
 import UUID "mo:uuid/UUID";
+import Constants "../common/constants";
 
 module Helpers {
 
@@ -46,6 +49,8 @@ module Helpers {
     'F'
   ];
   private let base : Nat8 = 0x10;
+
+  // private let subAccTypes = ["RESERVE", "ACCOUNT_PAYABLE"];
 
   public func timeNow() : Types.Timestamp {
     Time.now() / NANOS_PER_MILLI;
@@ -80,7 +85,7 @@ module Helpers {
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
-// Generates a voteparameter semi unique ID
+  // Generates a voteparameter semi unique ID
   public func generateVoteParamId(
     category : Text,
     state : GlobalState.State
@@ -191,21 +196,21 @@ module Helpers {
     exists != null;
   };
 
-  public func level2Text(lv : Types.Level): Text{
-    switch(lv){
-      case (#simple){
-        return "simple"
+  public func level2Text(lv : Types.Level) : Text {
+    switch (lv) {
+      case (#simple) {
+        return "simple";
       };
-      case (#normal){
-        return "normal"
+      case (#normal) {
+        return "normal";
       };
-      case (#hard){
-        return "hard"
+      case (#hard) {
+        return "hard";
       };
-      case (#xhard){
-        return "xhard"
+      case (#xhard) {
+        return "xhard";
       };
-    }
+    };
   };
 
   public func logMessage(
@@ -250,4 +255,12 @@ module Helpers {
     Prim.charToText(c1) # Prim.charToText(c2);
   };
 
+  public func floatToTokens(f : Float) : Nat {
+    switch (Nat.fromText(Int.toText(Float.toInt(Float.abs(f * Constants.TOKENS_DECIMAL))))) {
+      case (?n) n;
+      case (_) { 0 };
+    };
+  };
+
+  public let providerSubaccountTypes = ["RESERVE", "ACCOUNT_PAYABLE"];
 };

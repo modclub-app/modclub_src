@@ -1,5 +1,7 @@
 import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
+import Text "mo:base/Text";
+import Blob "mo:base/Blob";
 import CommonTypes "../../../common/types";
 import Types "../../types";
 import GlobalState "../../statev2";
@@ -11,6 +13,7 @@ module ProviderTypes {
     name : Text;
     description : Text;
     image : ?Types.Image;
+    subaccounts : HashMap.HashMap<Text, Blob>;
     state : GlobalState.State;
     logger : Canistergeek.Logger;
   };

@@ -50,9 +50,9 @@ module {
     subscribe : (SubscribeMessage) -> async ();
     putBlobsInDataCanister : (Text, Blob, Nat, Nat, Text) -> async (
       Principal,
-      Nat,
+      Nat
     );
-    vote: (ContentId, Decision,?[Text]) -> async Text;
+    vote : (ContentId, Decision, ?[Text]) -> async Text;
     getBlob : (Text, Principal, Nat) -> async ?Blob;
   };
 };

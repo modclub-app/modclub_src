@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 // import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
@@ -10,28 +10,26 @@ import {
   Heading,
   Button,
   Dropdown,
-  Icon
+  Icon,
 } from "react-bulma-components";
 import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
 import { Activity } from "../../../utils/types";
 
-const Table = (
-  {
-    loading,
-    filteredActivity,
-    getLabel,
-    currentFilter
-  }: {
-      loading: Boolean
-      filteredActivity: Activity[]
-      getLabel: (activity: string) => string
-      currentFilter: string
-    }
-) => {  
+const Table = ({
+  loading,
+  filteredActivity,
+  getLabel,
+  currentFilter,
+}: {
+  loading: Boolean;
+  filteredActivity: Activity[];
+  getLabel: (activity: string) => string;
+  currentFilter: string;
+}) => {
   if (loading) {
-    return (<div className="loader is-loading"></div>);
+    return <div className="loader is-loading"></div>;
   } else {
     return (
       <div className="table-container">
@@ -50,13 +48,17 @@ const Table = (
           </thead>
           <tbody>
             {filteredActivity.length ? (
-              filteredActivity.map(item => (
+              filteredActivity.map((item) => (
                 <tr key={item.vote.id}>
                   <td>
-                    {("approved" in item.vote.decision) ? "Approved" : "Rejected" }
+                    {"approved" in item.vote.decision ? "Approved" : "Rejected"}
                   </td>
                   <td>
-                    {("new" in item.status) ? "-" : "approved" in item.status ? "Approved" : "Rejected" }
+                    {"new" in item.status
+                      ? "-"
+                      : "approved" in item.status
+                      ? "Approved"
+                      : "Rejected"}
                   </td>
                   <td>{item.providerName}</td>
                   <td>
@@ -65,29 +67,33 @@ const Table = (
                   <td>
                     <Progress
                       value={Number(item.voteCount)}
-                      min={Number(("new" in item.status) ? item.requiredVotes : item.voteCount)}
+                      min={Number(
+                        "new" in item.status
+                          ? item.requiredVotes
+                          : item.voteCount
+                      )}
                     />
                   </td>
                   <td>{formatDate(item.createdAt)}</td>
-                  <td>{("new" in item.status) ? "-" : Number(item.reward)}</td>
-                  <td>{("new" in item.status) ? "-" : formatDate(item.rewardRelease)}</td>
+                  <td>{"new" in item.status ? "-" : Number(item.reward)}</td>
+                  <td>
+                    {"new" in item.status
+                      ? "-"
+                      : formatDate(item.rewardRelease)}
+                  </td>
                 </tr>
-              )
-            )
-          ) : (
-            <tr className="is-relative">
-              <td colSpan={8}>
-                No {getLabel(currentFilter)} Activity
-              </td>
-            </tr>
-          )}
+              ))
+            ) : (
+              <tr className="is-relative">
+                <td colSpan={8}>No {getLabel(currentFilter)} Activity</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-    )
+    );
   }
-  
-}
+};
 
 export default function Activity() {
   const { user, identity } = useAuth();
@@ -100,9 +106,9 @@ export default function Activity() {
   const filters = ["completed", "new"];
 
   const getLabel = (label: string) => {
-    if (label === "new") return "In Progress"
-    if (label === "completed") return "Completed"
-  }
+    if (label === "new") return "In Progress";
+    if (label === "completed") return "Completed";
+  };
 
   const fetchActivity = async (filter) => {
     setLoading(true);
@@ -110,7 +116,7 @@ export default function Activity() {
       setInProgressActivity(await getActivity(false));
     } else {
       setCompletedActivity(await getActivity(true));
-    } 
+    }
     setLoading(false);
   };
 
@@ -134,83 +140,89 @@ export default function Activity() {
   return (
     <>
       <Userstats detailed={true} />
-        <Columns>
-          <Columns.Column size={12}>
-            <Card className="has-gradient">
-              <Card.Content textAlign="center">
-                <label className="label">
-                  My Principal ID
-                </label>
-                <p className="is-flex is-justify-content-center has-text-white">
-                  {principalID}
-                  <Icon color="white" className="ml-3 is-clickable" onClick={() => {navigator.clipboard.writeText(principalID)}}>
-                    <span className="material-icons">file_copy</span>
-                  </Icon>
-                </p>
-              </Card.Content>
-            </Card>
-          </Columns.Column>
-
-          <Columns.Column size={12}>
-            <Card>
-              <Card.Content className="level">
-                <Heading marginless>
-                  Recent Activity
-                </Heading>
-
-                <Dropdown
-                  className="is-hidden-tablet"
-                  right
-                  label="Filter"
-                  icon={
-                    <Icon color="white">
-                      <span className="material-icons">expand_more</span>
-                    </Icon>
-                  }
-                  style={{ width: 100 }}
+      <Columns>
+        <Columns.Column size={12}>
+          <Card className="has-gradient">
+            <Card.Content textAlign="center">
+              <label className="label">My Principal ID</label>
+              <p className="is-flex is-justify-content-center has-text-white">
+                {principalID}
+                <Icon
+                  color="white"
+                  className="ml-3 is-clickable"
+                  onClick={() => {
+                    navigator.clipboard.writeText(principalID);
+                  }}
                 >
-                  {filters.map(filter => 
-                    <Dropdown.Item
-                      key={filter}
-                      value={filter}
-                      renderAs="a"
-                      className={currentFilter === filter && "is-active"}
-                      onMouseDown={() => setCurrentFilter(filter)}
-                    >
-                      {getLabel(filter)}
-                    </Dropdown.Item>
-                  )}
-                </Dropdown>
+                  <span className="material-icons">file_copy</span>
+                </Icon>
+              </p>
+            </Card.Content>
+          </Card>
+        </Columns.Column>
 
-                <Button.Group className="is-hidden-mobile">
-                  {filters.map(filter => 
-                    <Button
-                      key={filter}
-                      color={currentFilter === filter ? "primary" : "ghost"}
-                      className="has-text-white mr-0"
-                      onClick={() => setCurrentFilter(filter)}
-                    >
-                      {getLabel(filter)}
-                    </Button>
-                  )}
-                </Button.Group>
-              </Card.Content>
-            </Card>
-          </Columns.Column>
+        <Columns.Column size={12}>
+          <Card>
+            <Card.Content className="level">
+              <Heading marginless>Recent Activity</Heading>
 
-          <Columns.Column size={12}>
-            <Card>
-              <Card.Content>
-                <Table
-                  loading={loading}
-                  filteredActivity={currentFilter == "new" ? inProgressActivity : completedActivity}
-                  getLabel={getLabel}
-                  currentFilter={currentFilter}
-                />
-              </Card.Content>
-            </Card>
-          </Columns.Column>
-        </Columns>
+              <Dropdown
+                className="is-hidden-tablet"
+                right
+                label="Filter"
+                icon={
+                  <Icon color="white">
+                    <span className="material-icons">expand_more</span>
+                  </Icon>
+                }
+                style={{ width: 100 }}
+              >
+                {filters.map((filter) => (
+                  <Dropdown.Item
+                    key={filter}
+                    value={filter}
+                    renderAs="a"
+                    className={currentFilter === filter && "is-active"}
+                    onMouseDown={() => setCurrentFilter(filter)}
+                  >
+                    {getLabel(filter)}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+
+              <Button.Group className="is-hidden-mobile">
+                {filters.map((filter) => (
+                  <Button
+                    key={filter}
+                    color={currentFilter === filter ? "primary" : "ghost"}
+                    className="has-text-white mr-0"
+                    onClick={() => setCurrentFilter(filter)}
+                  >
+                    {getLabel(filter)}
+                  </Button>
+                ))}
+              </Button.Group>
+            </Card.Content>
+          </Card>
+        </Columns.Column>
+
+        <Columns.Column size={12}>
+          <Card>
+            <Card.Content>
+              <Table
+                loading={loading}
+                filteredActivity={
+                  currentFilter == "new"
+                    ? inProgressActivity
+                    : completedActivity
+                }
+                getLabel={getLabel}
+                currentFilter={currentFilter}
+              />
+            </Card.Content>
+          </Card>
+        </Columns.Column>
+      </Columns>
     </>
-  )
+  );
 }

@@ -11,6 +11,7 @@ import List "mo:base/List";
 import Int "mo:base/Int";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
+import Blob "mo:base/Blob";
 import Types "./types";
 import Buffer "mo:base/Buffer";
 import Result "mo:base/Result";
@@ -176,6 +177,40 @@ shared ({ caller = deployer }) actor class Wallet({
     ledger.allowance(args.account, args.spender, Nat64.fromNat(Int.abs(Time.now())));
   };
 
+  public query ({ caller }) func ledger_account() : async ICRCTypes.Account {
+    Utils.mod_assert(authGuard.isAdmin(caller) or authGuard.isModclubCanister(caller), ModSecurity.AccessMode.NotPermitted);
+    ledgerInit.ledger_account;
+  };
+
+  public shared ({ caller }) func transferToProvider(args : Types.TransferToProviderArgs) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
+    ledger.applyTransfer({
+      spender = caller;
+      source = #Icrc1Transfer;
+      from = args.from;
+      to = args.to;
+      amount = args.amount;
+      created_at_time = null;
+      fee = null;
+      memo = null;
+    });
+  };
+
+  public shared ({ caller }) func burn(fromSA : ?ICRCTypes.Subaccount, amount : Nat) : async () {
+    let _ = ledger.applyTransfer({
+      spender = caller;
+      source = #Icrc1Transfer;
+      from = {
+        owner = caller;
+        subaccount = fromSA;
+      };
+      to = ledgerInit.minting_account;
+      amount = amount;
+      created_at_time = null;
+      fee = null;
+      memo = null;
+    });
+  };
+
   // OLD Wallet code
   public query ({ caller }) func queryBalancePr(pr : Principal, from : ?Types.SubAccount) : async Float {
     // default subaccount is 0
@@ -203,14 +238,6 @@ shared ({ caller = deployer }) actor class Wallet({
 
   public shared ({ caller }) func stakeTokens(amount : Float) : async () {
     await transferFromTo(caller, DEFAULT_SUB_ACCOUNT, Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), (Principal.toText(caller) # STAKE_SA), amount);
-  };
-
-  public shared ({ caller }) func transferToProvider(fromOwner : Principal, fromSA : ?Types.SubAccount, toOwner : Principal, toSA : ?Types.SubAccount, amount : Float) : async () {
-    await transferFromTo(fromOwner, Option.get(fromSA, DEFAULT_SUB_ACCOUNT), toOwner, Option.get(toSA, DEFAULT_SUB_ACCOUNT), amount);
-  };
-
-  public shared ({ caller }) func burn(fromSA : ?Types.SubAccount, amount : Float) : async () {
-    await transferFromTo(caller, Option.get(fromSA, DEFAULT_SUB_ACCOUNT), MINT_WALLET_ID, DEFAULT_SUB_ACCOUNT, amount);
   };
 
   public shared ({ caller }) func tge() : async () {

@@ -14,6 +14,7 @@ module StateV1 {
   type ProviderId = Types.ProviderId;
   type Content = Types.Content;
   type Provider = Types.Provider;
+  type ProviderStable = Types.ProviderStable;
   type Rel<X, Y> = RelObj.RelObj<X, Y>;
   public type RelShared<X, Y> = Rel.RelShared<X, Y>;
   public type Map<X, Y> = HashMap.HashMap<X, Y>;
@@ -81,7 +82,7 @@ module StateV1 {
 
   public type StateShared = {
     GLOBAL_ID_MAP : [(Text, Nat)];
-    providers : [(Principal, Provider)];
+    providers : [(Principal, ProviderStable)];
     providerSubs : [(Principal, Types.SubscribeMessage)];
     providersWhitelist : [(Principal, Bool)];
     providerAdmins : [(Principal, [(Principal, ())])];
@@ -250,9 +251,24 @@ module StateV1 {
     ) {
       provider2PohChallengeIdsStable.add((pid, Buffer.toArray<Text>(challengeIdBuffer)));
     };
+    let providersStable = HashMap.map<Principal, Provider, ProviderStable>(
+      state.providers,
+      Principal.equal,
+      Principal.hash,
+      func(k, p) = {
+        id = p.id;
+        name = p.name;
+        description = p.description;
+        createdAt = p.createdAt;
+        updatedAt = p.updatedAt;
+        settings = p.settings;
+        image = p.image;
+        subaccounts = Iter.toArray(p.subaccounts.entries());
+      }
+    );
     let st : StateShared = {
       GLOBAL_ID_MAP = Iter.toArray(state.GLOBAL_ID_MAP.entries());
-      providers = Iter.toArray(state.providers.entries());
+      providers = Iter.toArray(providersStable.entries());
       providerSubs = Iter.toArray(state.providerSubs.entries());
       usernames = Iter.toArray(state.usernames.entries());
       providersWhitelist = Iter.toArray(state.providersWhitelist.entries());
@@ -306,8 +322,21 @@ module StateV1 {
     for ((username, uid) in stateShared.usernames.vals()) {
       state.usernames.put(username, uid);
     };
-    for ((id, provider) in stateShared.providers.vals()) {
-      state.providers.put(id, provider);
+    for ((id, p) in stateShared.providers.vals()) {
+      var updatedProvider = {
+        id = p.id;
+        name = p.name;
+        description = p.description;
+        createdAt = p.createdAt;
+        updatedAt = p.updatedAt;
+        settings = p.settings;
+        image = p.image;
+        subaccounts = HashMap.HashMap<Text, Blob>(2, Text.equal, Text.hash);
+      };
+      for ((saType, sa) in p.subaccounts.vals()) {
+        updatedProvider.subaccounts.put(saType, sa);
+      };
+      state.providers.put(id, updatedProvider);
     };
     for ((id, val) in stateShared.providersWhitelist.vals()) {
       state.providersWhitelist.put(id, val);

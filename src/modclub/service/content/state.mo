@@ -42,7 +42,7 @@ module ContentState {
       voteParams2content = HashMap.HashMap<Types.ContentId, Types.VoteParamsId>(
         1,
         Text.equal,
-        Text.hash,
+        Text.hash
       );
     };
   };

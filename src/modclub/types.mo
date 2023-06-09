@@ -139,7 +139,7 @@ module {
   };
 
   public type VoteParameters = {
-    id : VoteParamsId; 
+    id : VoteParamsId;
     requiredVotes : Int;
 
     // Should we add these?
@@ -179,7 +179,13 @@ module {
     imageType : Text;
   };
 
-  public type Provider = {
+  public type SubAccountsList = HashMap.HashMap<Text, Blob>;
+
+  public type SubAccounts = {
+    subaccounts : SubAccountsList;
+  };
+
+  public type Provider = SubAccounts and {
     id : Principal;
     name : Text;
     description : Text;
@@ -187,6 +193,17 @@ module {
     updatedAt : Timestamp;
     settings : ProviderSettings;
     image : ?Image;
+  };
+
+  public type ProviderStable = {
+    id : Principal;
+    name : Text;
+    description : Text;
+    createdAt : Timestamp;
+    updatedAt : Timestamp;
+    settings : ProviderSettings;
+    image : ?Image;
+    subaccounts : [(Text, Blob)];
   };
 
   public type ProviderMeta = {

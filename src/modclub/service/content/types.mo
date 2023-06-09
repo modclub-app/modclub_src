@@ -78,7 +78,7 @@ module {
     logger : Canistergeek.Logger;
     contentQueueManager : QueueManager.QueueManager;
     randomizationEnabled : Bool;
-    modclubWalletId : Principal;
+    modclubCanisterId : Principal;
   };
 
   public type EvaluateVoteArg = {
@@ -86,7 +86,7 @@ module {
     env : CommonTypes.ENV;
     aCount : Nat;
     rCount : Nat;
-    modclubWalletId : Principal;
+    modclubCanisterId : Principal;
     violatedRulesCount : HashMap.HashMap<Text, Nat>;
     state : GlobalState.State;
     logger : Canistergeek.Logger;
@@ -98,7 +98,7 @@ module {
     env : CommonTypes.ENV;
     state : GlobalState.State;
     logger : Canistergeek.Logger;
-    modclubWalletId : Principal;
+    modclubCanisterId : Principal;
     decision : Types.Decision;
     requiredVotes : Nat;
   };

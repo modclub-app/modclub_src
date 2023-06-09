@@ -1,5 +1,5 @@
-import * as React from 'react'
-import * as React from 'react'
+import * as React from "react";
+import * as React from "react";
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
 import { getContent, getProvider } from "../../../utils/api";
@@ -17,16 +17,18 @@ const GradientBox = ({ children, title, showToken = true }) => {
           <Heading subtitle size={6} className="has-text-silver">
             {title}
           </Heading>
-          <Heading size={1} className="is-flex is-align-items-center" style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
+          <Heading
+            size={1}
+            className="is-flex is-align-items-center"
+            style={{ lineHeight: 1, whiteSpace: "nowrap" }}
+          >
             {children}
-            {showToken &&
+            {showToken && (
               <span className="is-size-5 ml-1">
                 MOD
-                <span className="is-block has-text-weight-light">
-                  token
-                </span>
+                <span className="is-block has-text-weight-light">token</span>
               </span>
-            }
+            )}
           </Heading>
         </Card.Content>
       </Card>
@@ -34,7 +36,7 @@ const GradientBox = ({ children, title, showToken = true }) => {
   );
 };
 
-export default function Platform ({ providerId }: { providerId: Principal }) {
+export default function Platform({ providerId }: { providerId: Principal }) {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -49,64 +51,92 @@ export default function Platform ({ providerId }: { providerId: Principal }) {
   }, []);
 
   return (
-  <>
-    <Card className="mb-5">
-      <Card.Content>
-        <Level>
-          <Heading subtitle className="mb-0">
-            {loading ? <div className="loader is-loading"></div> : content.name}
+    <>
+      <Card className="mb-5">
+        <Card.Content>
+          <Level>
+            <Heading subtitle className="mb-0">
+              {loading ? (
+                <div className="loader is-loading"></div>
+              ) : (
+                content.name
+              )}
+            </Heading>
+            <a href="#">+ Follow</a>
+          </Level>
+
+          <table className="table is-striped has-text-left mb-6">
+            <tbody>
+              <tr>
+                <td>Total Feeds Posted</td>
+                <td>
+                  {loading ? (
+                    <div className="loader is-loading"></div>
+                  ) : (
+                    Number(content.contentCount)
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td>Active Posts</td>
+                <td>
+                  {loading ? (
+                    <div className="loader is-loading"></div>
+                  ) : (
+                    Number(content.activeCount)
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td>Rewards Spent</td>
+                <td>
+                  {loading ? (
+                    <div className="loader is-loading"></div>
+                  ) : (
+                    Number(content.rewardsSpent)
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td>Avg. Stakes</td>
+                <td>100</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <Heading subtitle size={6}>
+            Rules
           </Heading>
-          <a href="#">+ Follow</a>
-        </Level>
+          <ul>
+            {loading ? (
+              <div className="loader is-loading"></div>
+            ) : (
+              content.rules.map((rule) => (
+                <li key={rule.id} className="is-flex mb-1">
+                  <Icon size="small" color="primary" className="mr-2 mt-1">
+                    <span className="material-icons">trending_flat</span>
+                  </Icon>
+                  <span>{rule.description}</span>
+                </li>
+              ))
+            )}
+          </ul>
+        </Card.Content>
+      </Card>
 
-        <table className="table is-striped has-text-left mb-6">
-          <tbody>
-            <tr>
-              <td>Total Feeds Posted</td>
-              <td>{loading ? <div className="loader is-loading"></div> : Number(content.contentCount)}</td>
-            </tr>
-            <tr>
-              <td>Active Posts</td>
-              <td>{loading ? <div className="loader is-loading"></div> : Number(content.activeCount)}</td>
-            </tr>
-            <tr>
-              <td>Rewards Spent</td>
-              <td>{loading ? <div className="loader is-loading"></div> : Number(content.rewardsSpent)}</td>
-            </tr>
-            <tr>
-              <td>Avg. Stakes</td>
-              <td>100</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <Heading subtitle size={6}>
-          Rules
-        </Heading>
-        <ul>
-          {loading ? <div className="loader is-loading"></div> : content.rules.map((rule) => (
-            <li key={rule.id} className="is-flex mb-1">
-              <Icon size="small" color="primary" className="mr-2 mt-1">
-                <span className="material-icons">trending_flat</span>
-              </Icon>
-              <span>{rule.description}</span>
-            </li>
-          ))}
-        </ul>
-      </Card.Content>
-    </Card>
-
-    <Columns style={{ margin: "-.75rem" }}>
-      <GradientBox title="Rq Stake" showToken={false}>
-        {loading ? <div className="loader is-loading"></div> : Number(content.settings.requiredVotes)}
-      </GradientBox>
-      <GradientBox title="Reward">
-        5
-      </GradientBox>
-      {/* <GradientBox title="Partner Rewards">
+      <Columns style={{ margin: "-.75rem" }}>
+        <GradientBox title="Rq Stake" showToken={false}>
+          {loading ? (
+            <div className="loader is-loading"></div>
+          ) : (
+            Number(content.settings.requiredVotes)
+          )}
+        </GradientBox>
+        <GradientBox title="Reward">5</GradientBox>
+        {/* <GradientBox title="Partner Rewards">
         5
       </GradientBox> */}
-    </Columns>
-  </>
-  )
-};
+      </Columns>
+    </>
+  );
+}

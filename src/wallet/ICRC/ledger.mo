@@ -6,6 +6,7 @@ import Option "mo:base/Option";
 import Error "mo:base/Error";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
+import Nat "mo:base/Nat";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import Debug "mo:base/Debug";
@@ -13,6 +14,18 @@ import Debug "mo:base/Debug";
 import Types "types";
 
 module ModclubICRC = {
+
+  public let ICRC_RESERVE_SA = "-------------------------RESERVE" : Blob;
+  public let ICRC_ACCOUNT_PAYABLE_SA = "-----------------ACCOUNT_PAYABLE" : Blob;
+  public let ICRC_AIRDROP_SA = "-------------------------AIRDROP" : Blob;
+  public let ICRC_MARKETING_SA = "-----------------------MARKETING" : Blob;
+  public let ICRC_ADVISORS_SA = "------------------------ADVISORS" : Blob;
+  public let ICRC_PRESEED_SA = "-------------------------PRESEED" : Blob;
+  public let ICRC_PUBLICSALE_SA = "----------------------PUBLICSALE" : Blob;
+  // public let MAIN_SA = "----------------------------MAIN" : Blob;
+  public let ICRC_SEED_SA = "----------------------------SEED" : Blob;
+  public let ICRC_TEAM_SA = "----------------------------TEAM" : Blob;
+  public let ICRC_TREASURY_SA = "------------------------TREASURY" : Blob;
 
   public class Ledger(init : Types.LedgerInitParams) {
     let permittedDriftNanos : Types.Duration = 60_000_000_000;
@@ -50,7 +63,11 @@ module ModclubICRC = {
             };
             if (accountsEqual(args.to, account)) { sum += args.amount };
           };
-          case (#Approve(_)) {};
+          case (#Approve(args)) {
+            if (accountsEqual(args.from, account)) {
+              sum -= Option.get(args.fee, 0);
+            };
+          };
         };
       };
       sum;
@@ -293,13 +310,19 @@ module ModclubICRC = {
         case (#Err(e)) { return #Err(e) };
       };
 
+      let effectiveFee = init.transfer_fee;
+      let txFee = Option.get<Types.Tokens>(fee, effectiveFee);
+      if (txFee < effectiveFee) {
+        return #Err(#BadFee({ expected_fee = effectiveFee }));
+      };
+
       let approverAccount = { owner = approver; subaccount = from_subaccount };
       let approval = {
         from = approverAccount;
         spender = spender;
         amount = amount;
         expires_at = expires_at;
-        fee = fee;
+        fee = ?txFee;
         created_at_time = created_at_time;
         memo = memo;
       };
@@ -318,12 +341,6 @@ module ModclubICRC = {
         case (null) {};
       };
 
-      let effectiveFee = init.transfer_fee;
-
-      if (Option.get(fee, effectiveFee) != effectiveFee) {
-        return #Err(#BadFee({ expected_fee = effectiveFee }));
-      };
-
       let approverBalance = balance(approverAccount);
       if (approverBalance < init.transfer_fee) {
         return #Err(#InsufficientFunds { balance = approverBalance });
@@ -335,7 +352,12 @@ module ModclubICRC = {
         timestamp = now;
       });
 
-      assert (balance(approverAccount) == overflowOk(approverBalance - effectiveFee));
+      let newBallance = balance(approverAccount);
+      Debug.print("BALLANCE_NEW - " # Nat.toText(newBallance));
+      Debug.print("BALLANCE_BEFORE - " # Nat.toText(approverBalance));
+      Debug.print("FEE_BEFORE - " # Nat.toText(effectiveFee));
+      Debug.print("TX_INDEX - " # Nat.toText(txid));
+      assert (newBallance == overflowOk(approverBalance - effectiveFee));
 
       #Ok(txid);
     };

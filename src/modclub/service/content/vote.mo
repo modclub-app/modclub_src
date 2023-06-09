@@ -21,6 +21,8 @@ import QueueManager "../queue/queue";
 import ModWallet "../../remote_canisters/ModWallet";
 import RSManager "../../remote_canisters/RSManager";
 import RSTypes "../../../rs/types";
+import ICRCModule "../../../wallet/ICRC/ledger";
+import ICRCTypes "../../../wallet/ICRC/types";
 import WalletTypes "../../../wallet/types";
 import Utils "../../../common/utils";
 import CommonTypes "../../../common/types";
@@ -167,7 +169,7 @@ module ContentVotingModule {
           env = arg.env;
           aCount = voteApproved;
           rCount = voteRejected;
-          modclubWalletId = arg.modclubWalletId;
+          modclubCanisterId = arg.modclubCanisterId;
           violatedRulesCount = arg.voteCount.violatedRulesCount;
           state;
           logger = arg.logger;
@@ -214,15 +216,13 @@ module ContentVotingModule {
     var finishedVote = false;
     var status : Types.ContentStatus = #new;
     var decision : Types.Decision = #approved;
-
-    var requiredVotes = 0;
     let state = arg.state;
-    switch (state.providers.get(arg.content.providerId)) {
-      case (?provider) {
-        requiredVotes := provider.settings.requiredVotes;
-      };
-      case (null)();
+    let provider = switch (state.providers.get(arg.content.providerId)) {
+      case (?p) p;
+      case (_)(throw Error.reject("Provider does not exist"));
     };
+
+    var requiredVotes = provider.settings.requiredVotes;
 
     if (arg.aCount >= requiredVotes) {
       // Approved
@@ -246,7 +246,7 @@ module ContentVotingModule {
         env = arg.env;
         state;
         logger = arg.logger;
-        modclubWalletId = arg.modclubWalletId;
+        modclubCanisterId = arg.modclubCanisterId;
         decision;
         requiredVotes;
       });
@@ -311,10 +311,16 @@ module ContentVotingModule {
   private func _rewardCalculation(
     arg : ContentTypes.RewardCalculationArg
   ) : async () {
+    let ledger = ModWallet.getActor(arg.env);
+    let state = arg.state;
+    let provider = switch (state.providers.get(arg.content.providerId)) {
+      case (?p) p;
+      case (_)(throw Error.reject("Provider does not exist"));
+    };
+
     // Reward / Slash voters ;
     let rewardingVotes = Buffer.Buffer<Types.VoteV2>(1);
     let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
-    let state = arg.state;
     for (voteId in state.content2votes.get0(arg.content.id).vals()) {
       switch (state.votes.get(voteId)) {
         case (null)();
@@ -342,30 +348,45 @@ module ContentVotingModule {
     };
 
     //TODO: Needs to be updated to handle junior case where they only receive half the rewards and the remaining is locked. until they become senior
-    let usersToRewardMOD = Buffer.Buffer<WalletTypes.UserAndAmount>(1);
     let CT : Float = ModClubParam.CS * Float.fromInt(arg.requiredVotes);
+    // moderator dist
     for (userVote in rewardingVotes.vals()) {
-      usersToRewardMOD.add({
-        fromSA = ?(Principal.toText(arg.content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
-        toOwner = userVote.userId;
-        toSA = null;
-        amount = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
+      let ta = Helpers.floatToTokens(
+        (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS)
+      );
+      let _ = await ledger.icrc1_transfer({
+        from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+        to = { owner = userVote.userId; subaccount = null };
+        amount = ta;
+        fee = null;
+        memo = null;
+        created_at_time = null;
       });
     };
-    let _ = await RSManager.getActor(arg.env).updateRSBulk(usersToRewardRS.toArray());
-    // moderator dist and treasury dist
-    usersToRewardMOD.add({
-      fromSA = ?(Principal.toText(arg.content.providerId) # ModClubParam.ACCOUNT_PAYABLE);
-      toOwner = arg.modclubWalletId;
-      toSA = ?ModClubParam.TREASURY_SA;
-      amount = (ModClubParam.GAMMA_T * CT);
+
+    let _ = await RSManager.getActor(arg.env).updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
+
+    let tokensAmount = Helpers.floatToTokens(ModClubParam.GAMMA_T * CT);
+
+    // treasury dist
+    let _ = await ledger.icrc1_transfer({
+      from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+      to = {
+        owner = arg.modclubCanisterId;
+        subaccount = ?ICRCModule.ICRC_TREASURY_SA;
+      };
+      amount = tokensAmount;
+      fee = null;
+      memo = null;
+      created_at_time = null;
     });
-    let _ = await ModWallet.getActor(arg.env).transferBulk(usersToRewardMOD.toArray());
-    // burn
-    let _ = await ModWallet.getActor(arg.env).burn(
-      ?(Principal.toText(arg.content.providerId) # ModClubParam.ACCOUNT_PAYABLE),
-      (ModClubParam.GAMMA_B * CT)
+
+    // burn.
+    let _ = await ledger.burn(
+      provider.subaccounts.get("ACCOUNT_PAYABLE"),
+      Helpers.floatToTokens(ModClubParam.GAMMA_B * CT)
     );
+
   };
 
   private func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {

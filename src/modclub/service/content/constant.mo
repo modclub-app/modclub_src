@@ -1,3 +1,3 @@
-module{
-    public let EXPIRE_TIME = 100000;
+module {
+  public let EXPIRE_TIME = 100000;
 };

@@ -9,6 +9,7 @@ module {
   public type LedgerInitParams = {
     initial_mints : [{ account : Account; amount : Nat }];
     minting_account : Account;
+    ledger_account : Account;
     token_name : Text;
     token_symbol : Text;
     decimals : Nat8;
@@ -119,5 +120,12 @@ module {
   };
 
   public type Result<T, E> = { #Ok : T; #Err : E };
+
+  public type UserAndAmount = {
+    fromSA : ?Subaccount;
+    toOwner : Principal;
+    toSA : ?Subaccount;
+    amount : Nat;
+  };
 
 };

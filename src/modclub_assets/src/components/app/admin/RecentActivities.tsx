@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
@@ -10,26 +10,24 @@ import {
   Heading,
   Button,
   Dropdown,
-  Icon
+  Icon,
 } from "react-bulma-components";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
 import { ContentPlus } from "../../../utils/types";
-const Table = (
-  {
-    loading,
-    filteredActivity,
-    getLabel,
-    currentFilter
-  }: {
-      loading: Boolean
-      filteredActivity: ContentPlus[]
-      getLabel: (activity: string) => string
-      currentFilter: string
-    }
-) => {
+const Table = ({
+  loading,
+  filteredActivity,
+  getLabel,
+  currentFilter,
+}: {
+  loading: Boolean;
+  filteredActivity: ContentPlus[];
+  getLabel: (activity: string) => string;
+  currentFilter: string;
+}) => {
   if (loading) {
-    return (<div className="loader is-loading"></div>);
+    return <div className="loader is-loading"></div>;
   } else {
     return (
       <div className="table-container">
@@ -48,15 +46,22 @@ const Table = (
           </thead>
           <tbody>
             {filteredActivity.length ? (
-              filteredActivity.map(item => (
+              filteredActivity.map((item) => (
                 <tr key={item.id}>
                   <td>
-                  <Link to={`/app/tasks/${item.id}`} style={{color:"#c4c4c4"}} >
-                    <Snippet string={item.id} truncate={20} />
-                  </Link>
+                    <Link
+                      to={`/app/tasks/${item.id}`}
+                      style={{ color: "#c4c4c4" }}
+                    >
+                      <Snippet string={item.id} truncate={20} />
+                    </Link>
                   </td>
                   <td>
-                    {("new" in item.status) ? "In Progress" : "approved" in item.status ? "Approved" : "Rejected" }
+                    {"new" in item.status
+                      ? "In Progress"
+                      : "approved" in item.status
+                      ? "Approved"
+                      : "Rejected"}
                   </td>
                   <td>{item.providerName}</td>
                   <td>
@@ -65,38 +70,37 @@ const Table = (
                   <td>
                     <Progress
                       value={Number(item.voteCount)}
-                      min={Number(("new" in item.status) ? item.requiredVotes : item.voteCount)}
+                      min={Number(
+                        "new" in item.status
+                          ? item.requiredVotes
+                          : item.voteCount
+                      )}
                       gradient={true}
-                      />
+                    />
                     {/* style={{"border-radius: 5px","background: -webkit-linear-gradient(right,#3d52fa, #c91988)"}} */}
                   </td>
                   <td>{formatDate(item.createdAt)}</td>
                   <td>20</td>
                   <td>{formatDate(item.updatedAt)}</td>
                 </tr>
-              )
-            )
-          ) : (
-            <tr className="is-relative">
-              <td colSpan={8}>
-                No {getLabel(currentFilter)} Activity
-              </td>
-            </tr>
-          )}
+              ))
+            ) : (
+              <tr className="is-relative">
+                <td colSpan={8}>No {getLabel(currentFilter)} Activity</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-    )
+    );
   }
-
-}
-
+};
 
 export default function AdminActivity() {
   const { selectedProvider } = useAuth();
-  const [approvedActivity,setApprovedActivity] = useState([]);
-  const [inProgressActivity,setInProgressActivity] = useState([]);
-  const [rejectedActivity,setRejectedActivity] = useState([]);
+  const [approvedActivity, setApprovedActivity] = useState([]);
+  const [inProgressActivity, setInProgressActivity] = useState([]);
+  const [rejectedActivity, setRejectedActivity] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingAdditional, setLoadingAdditional] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
@@ -106,30 +110,34 @@ export default function AdminActivity() {
     page: 1,
     startIndex: 0,
     endIndex: PAGE_SIZE,
-    hasDataFetched: false
+    hasDataFetched: false,
   };
   const [page, setPage] = useState({
-    "approved":{...parentPageObj},
-    "new":{...parentPageObj},
-    "rejected":{...parentPageObj},
+    approved: { ...parentPageObj },
+    new: { ...parentPageObj },
+    rejected: { ...parentPageObj },
   });
   const [hasReachedEnd, setHasReachedEnd] = useState({
-    "approved":false,
-    "new":false,
-    "rejected":false
+    approved: false,
+    new: false,
+    rejected: false,
   });
 
   const history = useHistory();
-  if(!selectedProvider){
-    history.push('/app');
+  if (!selectedProvider) {
+    history.push("/app");
   }
   const getLabel = (label: string) => {
-    if (label === "new") return "In Progress"
-    if (label === "approved") return "Approved"
-    if (label === "rejected") return "Rejected"
-  }
+    if (label === "new") return "In Progress";
+    if (label === "approved") return "Approved";
+    if (label === "rejected") return "Rejected";
+  };
 
-  const getProviderContent = async (selectedProvider,selectedFilter,doNotFetchExisting) => {
+  const getProviderContent = async (
+    selectedProvider,
+    selectedFilter,
+    doNotFetchExisting
+  ) => {
     let status = {};
     status[selectedFilter] = null;
     const startIndex = page[selectedFilter].startIndex;
@@ -139,29 +147,43 @@ export default function AdminActivity() {
         that's to make sure each filter fetches data atleast once when user switches to different tabs AND make sure each
         filter data was fetched atleast once and based on passed flag to prevent fetching same data on switching tabs.
     */
-    let providerContents = ((hasReachedEnd[selectedFilter] || page[selectedFilter].hasDataFetched) && (page[selectedFilter].hasDataFetched && doNotFetchExisting)) ? []:await fetchProviderContent(selectedProvider.id,status,startIndex,endIndex);
+    let providerContents =
+      (hasReachedEnd[selectedFilter] || page[selectedFilter].hasDataFetched) &&
+      page[selectedFilter].hasDataFetched &&
+      doNotFetchExisting
+        ? []
+        : await fetchProviderContent(
+            selectedProvider.id,
+            status,
+            startIndex,
+            endIndex
+          );
     page[selectedFilter].hasDataFetched = true;
-    setPage({...page,...page});
+    setPage({ ...page, ...page });
     if (providerContents.length < PAGE_SIZE && !doNotFetchExisting) {
       status[selectedFilter] = true;
-      setHasReachedEnd({...hasReachedEnd,...status});
+      setHasReachedEnd({ ...hasReachedEnd, ...status });
     }
     setLoading(true);
 
     switch (selectedFilter) {
       case "new":
-        if(providerContents.length>0) setInProgressActivity([...inProgressActivity,...providerContents]);
+        if (providerContents.length > 0)
+          setInProgressActivity([...inProgressActivity, ...providerContents]);
         break;
       case "approved":
-        if(providerContents.length>0) setApprovedActivity([...approvedActivity,...providerContents]);
+        if (providerContents.length > 0)
+          setApprovedActivity([...approvedActivity, ...providerContents]);
         break;
       case "rejected":
-        if(providerContents.length>0) setRejectedActivity([...rejectedActivity,...providerContents]);
+        if (providerContents.length > 0)
+          setRejectedActivity([...rejectedActivity, ...providerContents]);
         break;
       default:
-        if(providerContents.length>0) setInProgressActivity([...inProgressActivity,...providerContents]);
+        if (providerContents.length > 0)
+          setInProgressActivity([...inProgressActivity, ...providerContents]);
         break;
-    };
+    }
     setLoading(false);
     setLoadingAdditional(false);
   };
@@ -172,100 +194,126 @@ export default function AdminActivity() {
     page[currentFilter] = {
       page: nextPageNum,
       startIndex: start,
-      endIndex: start + PAGE_SIZE
+      endIndex: start + PAGE_SIZE,
     };
-    setPage({...page,...page});
-    selectedProvider && !loading && getProviderContent(selectedProvider,currentFilter,false);
+    setPage({ ...page, ...page });
+    selectedProvider &&
+      !loading &&
+      getProviderContent(selectedProvider, currentFilter, false);
   };
 
-
   useEffect(() => {
-    if(selectedProvider){
-      getProviderContent(selectedProvider,"new",false);
+    if (selectedProvider) {
+      getProviderContent(selectedProvider, "new", false);
     }
   }, [selectedProvider]);
 
   return (
     <>
-        <Columns>
+      <Columns>
+        <Columns.Column size={12}>
+          <Card>
+            <Card.Content className="level">
+              <Heading marginless>Recent Activity</Heading>
 
+              <Dropdown
+                className="is-hidden-tablet"
+                right
+                label="Filter"
+                icon={
+                  <Icon color="white">
+                    <span className="material-icons">expand_more</span>
+                  </Icon>
+                }
+                style={{ width: 100 }}
+              >
+                {filters.map((filter) => (
+                  <Dropdown.Item
+                    key={filter}
+                    value={filter}
+                    renderAs="a"
+                    className={currentFilter === filter && "is-active"}
+                    onClick={() => {
+                      setCurrentFilter(filter);
+                      getProviderContent(selectedProvider, filter, true);
+                    }}
+                  >
+                    {getLabel(filter)}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+
+              <Button.Group className="is-hidden-mobile">
+                {filters.map((filter) => (
+                  <Button
+                    key={filter}
+                    color={currentFilter === filter ? "primary" : "ghost"}
+                    className="has-text-white mr-0"
+                    onClick={() => {
+                      setCurrentFilter(filter);
+                      getProviderContent(selectedProvider, filter, true);
+                    }}
+                  >
+                    {getLabel(filter)}
+                  </Button>
+                ))}
+              </Button.Group>
+            </Card.Content>
+          </Card>
+        </Columns.Column>
+
+        <Columns.Column size={12}>
+          <Card>
+            <Card.Content>
+              <Table
+                loading={loading}
+                filteredActivity={
+                  currentFilter == "new"
+                    ? inProgressActivity
+                    : currentFilter == "approved"
+                    ? approvedActivity
+                    : rejectedActivity
+                }
+                getLabel={getLabel}
+                currentFilter={currentFilter}
+              />
+            </Card.Content>
+          </Card>
+        </Columns.Column>
+        {(currentFilter == "new"
+          ? inProgressActivity
+          : currentFilter == "approved"
+          ? approvedActivity
+          : rejectedActivity
+        ).length > 0 && (
           <Columns.Column size={12}>
-            <Card>
-              <Card.Content className="level">
-                <Heading marginless>
-                  Recent Activity
-                </Heading>
-
-                <Dropdown
-                  className="is-hidden-tablet"
-                  right
-                  label="Filter"
-                  icon={
-                    <Icon color="white">
-                      <span className="material-icons">expand_more</span>
-                    </Icon>
-                  }
-                  style={{ width: 100 }}
-                >
-                  {filters.map(filter =>
-                    <Dropdown.Item
-                      key={filter}
-                      value={filter}
-                      renderAs="a"
-                      className={currentFilter === filter && "is-active"}
-                      onClick={() => {setCurrentFilter(filter);getProviderContent(selectedProvider,filter,true)}}
-                    >
-                      {getLabel(filter)}
-                    </Dropdown.Item>
-                  )}
-                </Dropdown>
-
-                <Button.Group className="is-hidden-mobile">
-                  {filters.map(filter =>
-                    <Button
-                      key={filter}
-                      color={currentFilter === filter ? "primary" : "ghost"}
-                      className="has-text-white mr-0"
-                      onClick={() => {setCurrentFilter(filter);getProviderContent(selectedProvider,filter,true)}}
-                    >
-                      {getLabel(filter)}
-                    </Button>
-                  )}
-                </Button.Group>
-              </Card.Content>
-            </Card>
-          </Columns.Column>
-
-          <Columns.Column size={12}>
-            <Card>
-              <Card.Content>
-                <Table
-                  loading={loading}
-                  filteredActivity={currentFilter == "new" ? inProgressActivity : currentFilter=="approved"?approvedActivity:rejectedActivity}
-                  getLabel={getLabel}
-                  currentFilter={currentFilter}
-                />
-              </Card.Content>
-            </Card>
-          </Columns.Column>
-          {(currentFilter == "new" ? inProgressActivity : currentFilter=="approved"?approvedActivity:rejectedActivity).length > 0 &&  <Columns.Column size={12}>
             <Card>
               <Card.Footer alignItems="center">
                 <div>
-                  Showing 1 to {(currentFilter == "new" ? inProgressActivity : currentFilter=="approved"?approvedActivity:rejectedActivity).length} activities
+                  Showing 1 to{" "}
+                  {
+                    (currentFilter == "new"
+                      ? inProgressActivity
+                      : currentFilter == "approved"
+                      ? approvedActivity
+                      : rejectedActivity
+                    ).length
+                  }{" "}
+                  activities
                 </div>
                 <Button
                   color="primary"
                   onClick={() => nextPage()}
                   disabled={hasReachedEnd[currentFilter]}
-                  className={ loadingAdditional && "is-loading" }
+                  className={loadingAdditional && "is-loading"}
                 >
                   See more
                 </Button>
               </Card.Footer>
             </Card>
-          </Columns.Column>}
-        </Columns>
+          </Columns.Column>
+        )}
+      </Columns>
     </>
-  )
+  );
 }

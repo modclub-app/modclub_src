@@ -1,7 +1,8 @@
 import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
 import Types "../../wallet/types";
-import CommonTypes "../../common/types"
+import CommonTypes "../../common/types";
+import ICRCTypes "../../wallet/ICRC/types"
 
 module {
 
@@ -9,7 +10,18 @@ module {
     queryBalance : (?Text) -> async Float;
     transfer : (?Text, Principal, ?Text, Float) -> async ();
     transferBulk : ([Types.UserAndAmount]) -> async ();
-    burn : (?Text, Float) -> async ();
+    burn : (?ICRCTypes.Subaccount, ICRCTypes.Tokens) -> async ();
+    icrc1_balance_of : (ICRCTypes.Account) -> async ICRCTypes.Tokens;
+    icrc1_transfer : ({
+      from_subaccount : ?ICRCTypes.Subaccount;
+      to : ICRCTypes.Account;
+      amount : ICRCTypes.Tokens;
+      fee : ?ICRCTypes.Tokens;
+      memo : ?ICRCTypes.Memo;
+      created_at_time : ?ICRCTypes.Timestamp;
+    }) -> async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError>;
+    icrc2_transfer_from : (args : ICRCTypes.TransferFromArgs) -> async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferFromError>;
+    ledger_account : () -> async ICRCTypes.Account;
   };
 
   //TODO: Update these canister according to the wallet canister id when deploy.

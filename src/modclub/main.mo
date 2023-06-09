@@ -57,6 +57,8 @@ import ModWallet "./remote_canisters/ModWallet";
 import RSManager "./remote_canisters/RSManager";
 import RSTypes "../rs/types";
 import WalletTypes "../wallet/types";
+import ICRCModule "../wallet/ICRC/ledger";
+import ICRCTypes "../wallet/ICRC/types";
 import Utils "../common/utils";
 import ContentManager "./service/content/content";
 import ContentStateManager "./service/content/reserved";
@@ -222,11 +224,24 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (?_)();
     };
+
+    // let subAccs = await Helpers.generateSubAccs();
+    let subAccs = HashMap.HashMap<Text, Blob>(
+      Array.size(Helpers.providerSubaccountTypes),
+      Text.equal,
+      Text.hash
+    );
+    for (subAccType in Helpers.providerSubaccountTypes.vals()) {
+      let saUUID = await Helpers.generateUUID();
+      subAccs.put(subAccType, Text.encodeUtf8(Text.replace(saUUID, #char('-'), "")));
+    };
+
     ProviderManager.registerProvider({
       providerId = caller;
       name;
       description;
       image;
+      subaccounts = subAccs;
       state = stateV2;
       logger = canistergeekLogger;
     });
@@ -295,6 +310,36 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       )
     );
     await ProviderManager.getProvider(providerId, stateV2);
+  };
+
+  public shared ({ caller }) func providerSaBalance(saType : Text) : async ICRCTypes.Tokens {
+    let provider = switch (stateV2.providers.get(caller)) {
+      case (?p) p;
+      case (_) return throw Error.reject("Provider doesn't exists.");
+    };
+    let psa = switch (provider.subaccounts.get(saType)) {
+      case (?psa) psa;
+      case (_) return throw Error.reject("Providers Subaccount doesn't exists.");
+    };
+    let tokens = await ProviderManager.getSaBalance(env, authGuard.getCanisterId(#modclub), psa);
+    return tokens;
+  };
+
+  public shared ({ caller }) func topUpProviderReserve({
+    providerId : ?Principal;
+    amount : Nat;
+  }) : async () {
+    // Aproach for use case when admin is able to top Up providers entire balance
+    let pid = switch (providerId) {
+      case (?pid) pid;
+      case (_) caller;
+    };
+    let provider = switch (stateV2.providers.get(pid)) {
+      case (?p) p;
+      case (_) return throw Error.reject("Provider doesn't exists.");
+    };
+
+    await ProviderManager.topUpProviderReserve(env, authGuard.getCanisterId(#modclub), provider, amount);
   };
 
   private func getVoteParamIdByLevel(
@@ -463,10 +508,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
+
+    let provider = switch (stateV2.providers.get(caller)) {
+      case (?p) p;
+      case (_) throw Error.reject("Unauthorized");
+    };
+    let taskFee = ProviderManager.getTaskFee(provider);
+    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
+
     let voteParamId = getVoteParamIdByLevel(#simple);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
-    await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
     return ContentManager.submitTextOrHtmlContent(
       {
         sourceId;
@@ -493,15 +545,22 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       throw Error.reject("Submissions are disabled");
     };
     switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
-      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#err(error)) return throw Error.reject("No Permissions");
       case (#ok(p))();
     };
     if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, stateV2)) {
       throw Error.reject("Content already submitted");
     };
+    let provider = switch (stateV2.providers.get(caller)) {
+      case (?p) p;
+      case (_) throw Error.reject("Unauthorized. No Provider found.");
+    };
+    let taskFee = ProviderManager.getTaskFee(provider);
+    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
+
     let voteParamId = getVoteParamIdByLevel(#simple);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
-    await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
+
     var contentID = ContentManager.submitTextOrHtmlContent(
       {
         sourceId;
@@ -536,9 +595,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
+
+    let provider = switch (stateV2.providers.get(caller)) {
+      case (?p) p;
+      case (_) throw Error.reject("Unauthorized");
+    };
+    let taskFee = ProviderManager.getTaskFee(provider);
+    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
+
     let voteParamId = getVoteParamIdByLevel(#simple);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
-    await ProviderManager.checkIfProviderHasEnoughBalance(caller, env, Principal.fromActor(this), stateV2, canistergeekLogger);
+
     return ContentManager.submitImage(
       {
         sourceId;
@@ -684,8 +751,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     email : ?Text,
     pic : ?Types.Image
   ) : async Types.Profile {
-    // throw Error.reject("Sign ups are turned off.");
-
     let profile = await ModeratorManager.registerModerator(
       caller,
       userName,
@@ -693,8 +758,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       pic,
       stateV2
     );
-    // Todo: Remove this after testnet
-    await ModWallet.getActor(env).transfer(?ModClubParam.TREASURY_SA, caller, null, ModClubParam.DEFAULT_TEST_TOKENS);
+
     await storageSolution.registerModerators([caller]);
     contentQueueManager.assignUserIds2QueueId([caller]);
     pohContentQueueManager.assignUserIds2QueueId([caller]);
@@ -896,7 +960,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       logger = canistergeekLogger;
       contentQueueManager;
       randomizationEnabled;
-      modclubWalletId = Principal.fromActor(this);
+      modclubCanisterId = Principal.fromActor(this);
     });
   };
 
@@ -1649,6 +1713,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (pohEngine.validateRules(violatedRules) == false) {
       throw Error.reject("Valid rules not provided.");
     };
+    let ledger = ModWallet.getActor(env);
 
     let finishedVoting = await voteManager.votePohContent(
       caller,
@@ -1727,29 +1792,40 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         sumRS := sumRS + userVote.rsBeforeVoting;
       };
 
-      let usersToRewardMOD = Buffer.Buffer<WalletTypes.UserAndAmount>(1);
       let CT : Float = ModClubParam.CS * Float.fromInt(ModClubParam.MIN_VOTE_POH);
+      // moderator dist
       for (userVote in rewardingVotes.vals()) {
-        usersToRewardMOD.add({
-          fromSA = ?(Principal.toText(Principal.fromActor(this)) # ModClubParam.ACCOUNT_PAYABLE);
-          toOwner = userVote.userId;
-          toSA = null;
-          amount = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
+        let ta = Helpers.floatToTokens(
+          (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS
+        );
+        let _ = await ledger.icrc1_transfer({
+          from_subaccount = ?ICRCModule.ICRC_ACCOUNT_PAYABLE_SA;
+          to = { owner = userVote.userId; subaccount = null };
+          amount = ta;
+          fee = null;
+          memo = null;
+          created_at_time = null;
         });
       };
       let _ = await RSManager.getActor(env).updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
-      // moderator dist and treasury dist
-      usersToRewardMOD.add({
-        fromSA = ?(Principal.toText(Principal.fromActor(this)) # ModClubParam.ACCOUNT_PAYABLE);
-        toOwner = Principal.fromActor(this);
-        toSA = ?ModClubParam.TREASURY_SA;
-        amount = (ModClubParam.GAMMA_T * CT);
+      // treasury dist
+      let tokensAmount = Helpers.floatToTokens(ModClubParam.GAMMA_T * CT);
+      let _ = await ledger.icrc1_transfer({
+        from_subaccount = ?ICRCModule.ICRC_ACCOUNT_PAYABLE_SA;
+        to = {
+          owner = Principal.fromActor(this);
+          subaccount = ?ICRCModule.ICRC_TREASURY_SA;
+        };
+        amount = tokensAmount;
+        fee = null;
+        memo = null;
+        created_at_time = null;
       });
-      let _ = await ModWallet.getActor(env).transferBulk(Buffer.toArray<WalletTypes.UserAndAmount>(usersToRewardMOD));
+
       // burn
-      let _ = await ModWallet.getActor(env).burn(
-        ?(Principal.toText(Principal.fromActor(this)) # ModClubParam.ACCOUNT_PAYABLE),
-        (ModClubParam.GAMMA_B * CT)
+      let _ = await ledger.burn(
+        ?ICRCModule.ICRC_ACCOUNT_PAYABLE_SA,
+        Helpers.floatToTokens(ModClubParam.GAMMA_B * CT)
       );
 
       // inform all providers
@@ -2204,6 +2280,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#setRandomization _) { authGuard.isAdmin(caller) };
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };
+      case (#submitText _) { ProviderManager.providerExists(caller, stateV2) };
+      case (#submitHtmlContent _) {
+        ProviderManager.providerExists(caller, stateV2);
+      };
+      case (#submitImage _) { ProviderManager.providerExists(caller, stateV2) };
+      case (#providerSaBalance _) {
+        ProviderManager.providerExists(caller, stateV2);
+      };
+      case (#topUpProviderReserve _) {
+        ProviderManager.providerExists(caller, stateV2) or authGuard.isAdmin(caller);
+      };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };

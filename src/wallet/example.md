@@ -9,7 +9,10 @@ dfx deploy wallet --mode=reinstall --argument '(record {
       auth_canister_id = principal "rrkah-fqaaa-aaaaa-aaaaq-cai";
     }};
     ledgerInit = record {
-      initial_mints = vec { record { account = record { owner = principal "dt3sz-yjb25-s3cmv-bfsxp-63y7d-2dx7v-yda2t-ujzq6-yr7nz-ty2ed-2ae"; }; amount = 10_000_000_000_000; }; };
+      initial_mints = vec {
+				record { account = record { owner = principal "dt3sz-yjb25-s3cmv-bfsxp-63y7d-2dx7v-yda2t-ujzq6-yr7nz-ty2ed-2ae"; }; amount = 10_000_000_000_000; };
+				record { account = record { owner = principal "dt3sz-yjb25-s3cmv-bfsxp-63y7d-2dx7v-yda2t-ujzq6-yr7nz-ty2ed-2ae"; subacount = opt blob "--------------------------------" }; amount = 10_000_000_000_000; };
+			};
       minting_account = record { owner = principal "dt3sz-yjb25-s3cmv-bfsxp-63y7d-2dx7v-yda2t-ujzq6-yr7nz-ty2ed-2ae"; };
       token_name = "MODCLUB TOKEN";
       token_symbol = "MODTOKEN";

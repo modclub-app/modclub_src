@@ -77,7 +77,7 @@ function check_ledger_fee() {
 # Check for icrc1_total_supply on WalletCanister
 function check_total_supply() {
 	printf "${GREEN}[TEST] ${YELLOW}[CANISTER_METHOD_CHECK] ${GREEN} WALLET_QA icrc1_total_supply...${NC}\n"
-	local assert_total_supply='(10_000_000_000_000 : nat)'
+	local assert_total_supply='(1_000_000_000_000_000 : nat)'
 	local total_supply=$(dfx canister call wallet_qa icrc1_total_supply '()')
 
 	if [[ "$total_supply" != "$assert_total_supply" ]]; then
@@ -114,8 +114,10 @@ function check_ledger_ballance() {
 	dfx identity use qa_ledger_identity
 	local ledger_account=$(dfx identity get-principal)
 	dfx identity use default
-	local assert_ballance="(10_000_000_000_000 : nat)"
+	local assert_ballance="(100_000_000_000_000 : nat)"
 	local ledger_account_ballance=$(dfx canister call wallet_qa icrc1_balance_of '(record { owner = principal "'$ledger_account'" })')
+	local assert_reserve_ballance="(367_500_000_000_000 : nat)"
+	local ledger_reserve_ballance=$(dfx canister call wallet_qa icrc1_balance_of '(record { owner = principal "'$ledger_account'"; subaccount = opt blob "-------------------------RESERVE"})')
 
 	if [[ "$ledger_account_ballance" != "$assert_ballance" ]]; then
 		printf "${GREEN}[TEST] ${RED}[FAILED] WALLET_CANISTER HAS WRONG PREMINTED_BALLANCE for LEDGER_ACCOUNT !!!${NC}\n"
@@ -123,6 +125,14 @@ function check_ledger_ballance() {
 		source ./scripts/tests/infra/shutdown_test_infra.sh
 		exit 1
 	fi
+
+	if [[ "$ledger_reserve_ballance" != "$assert_reserve_ballance" ]]; then
+		printf "${GREEN}[TEST] ${RED}[FAILED] WALLET_CANISTER HAS WRONG PREMINTED_BALLANCE ON RESERVE SUBACCOUNT !!!${NC}\n"
+		echo $ledger_reserve_ballance
+		source ./scripts/tests/infra/shutdown_test_infra.sh
+		exit 1
+	fi
+
 	printf "${GREEN}[TEST] ${CYAN}[SUCCESS] ${GREEN} WALLET_QA check preminted ballance on Ledger account.${NC}\n"
 	return 0;
 }
@@ -135,10 +145,10 @@ function check_transfer() {
 	dfx identity use qa_ledger_identity
 	local ledger_account=$(dfx identity get-principal)
 
-	local assert_transfer_result="(variant { Ok = 1 : nat })"
+	local assert_transfer_result="variant { Ok = "
 	local transfer_result=$(dfx canister call wallet_qa icrc1_transfer '( record { to = record { owner = principal "'$test_alice_account'" }; amount = 100_000 } )')
 
-	if [[ "$transfer_result" != "$assert_transfer_result" ]]; then
+	if [[ "$transfer_result" != *"$assert_transfer_result"* ]]; then
 		printf "${GREEN}[TEST] ${RED}[FAILED] ICRC1_TRANSFER METHOD DOESNT WORK PROPERLY !!!${NC}\n"
 		echo $transfer_result
 		source ./scripts/tests/infra/shutdown_test_infra.sh
@@ -154,7 +164,7 @@ function check_transfer() {
 		exit 1
 	fi
 
-	local assert_ledger_new_ballance="(9_999_999_890_000 : nat)"
+	local assert_ledger_new_ballance="(99_999_999_890_000 : nat)"
 	local ledger_account_ballance=$(dfx canister call wallet_qa icrc1_balance_of '(record { owner = principal "'$ledger_account'" })')
 	if [[ "$ledger_account_ballance" != "$assert_ledger_new_ballance" ]]; then
 		printf "${GREEN}[TEST] ${RED}[FAILED] ICRC1_TRANSFER METHOD DOESNT WORK PROPERLY, LEDGER BALLANCE IS WRONG !!!${NC}\n"

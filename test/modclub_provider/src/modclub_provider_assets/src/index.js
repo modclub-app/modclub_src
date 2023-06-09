@@ -43,7 +43,9 @@ document.getElementById("ruleBtn").addEventListener("click", async () => {
 });
 
 document.getElementById("settingsBtn").addEventListener("click", async () => {
-  const requiredVotes = Number(document.getElementById("requiredVotes").value.toString());
+  const requiredVotes = Number(
+    document.getElementById("requiredVotes").value.toString()
+  );
   const minStaked = Number(
     document.getElementById("minStaked").value.toString()
   );

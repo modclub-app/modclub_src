@@ -1,4 +1,5 @@
 import Principal "mo:base/Principal";
+import Nat "mo:base/Nat";
 import ICRCTypes "ICRC/types";
 import CommonTypes "../common/types";
 
@@ -12,6 +13,12 @@ module {
   };
 
   public type SubAccount = Text;
+
+  public type TransferToProviderArgs = {
+    from : ICRCTypes.Account;
+    to : ICRCTypes.Account;
+    amount : ICRCTypes.Tokens;
+  };
 
   public type WalletCanisterMethods = {
     #icrc1_balance_of : () -> ICRCTypes.Account;
@@ -34,8 +41,9 @@ module {
     #icrc2_approve : () -> ICRCTypes.ApproveArgs;
     #icrc2_transfer_from : () -> ICRCTypes.TransferFromArgs;
     #icrc2_allowance : () -> ICRCTypes.AllowanceArgs;
+    #ledger_account : () -> ();
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
-    #burn : () -> (?SubAccount, Float);
+    #burn : () -> (?ICRCTypes.Subaccount, Nat);
     #getAdmins : () -> ();
     #isUserAdmin : () -> ();
     #queryBalance : () -> ?SubAccount;
@@ -44,7 +52,7 @@ module {
     #tge : () -> ();
     #transfer : () -> (?SubAccount, Principal, ?SubAccount, Float);
     #transferBulk : () -> [UserAndAmount];
-    #transferToProvider : () -> (Principal, ?SubAccount, Principal, ?SubAccount, Float);
+    #transferToProvider : () -> TransferToProviderArgs;
   };
 
 };

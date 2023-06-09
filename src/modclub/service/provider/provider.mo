@@ -7,6 +7,8 @@ import Debug "mo:base/Debug";
 import Bool "mo:base/Bool";
 import List "mo:base/List";
 import Float "mo:base/Float";
+import Int "mo:base/Int";
+import Nat "mo:base/Nat";
 
 import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
@@ -47,6 +49,7 @@ module ProviderModule {
               minStaked = 0;
               // Default amount staked, change when tokens are released
             };
+            subaccounts = arg.subaccounts;
           }
         );
         Helpers.logMessage(
@@ -116,6 +119,7 @@ module ProviderModule {
             createdAt = result.createdAt;
             updatedAt = now;
             settings = result.settings;
+            subaccounts = result.subaccounts;
           }
         );
         Helpers.logMessage(
@@ -152,6 +156,7 @@ module ProviderModule {
             createdAt = result.createdAt;
             updatedAt = now;
             settings = result.settings;
+            subaccounts = result.subaccounts;
           }
         );
         Helpers.logMessage(
@@ -245,6 +250,7 @@ module ProviderModule {
             createdAt = result.createdAt;
             updatedAt = now;
             settings = updatedSettings;
+            subaccounts = result.subaccounts;
           }
         );
         Helpers.logMessage(
@@ -285,6 +291,15 @@ module ProviderModule {
         throw Error.reject("Provider does not exist");
       };
     };
+  };
+
+  public func getSaBalance(env : CommonTypes.ENV, mcCanister : Principal, providerSA : Blob) : async Nat {
+    let ledger = ModWallet.getActor(env);
+    // let ledger_account = await ledger.ledger_account();
+    await ledger.icrc1_balance_of({
+      owner = mcCanister;
+      subaccount = ?providerSA;
+    });
   };
 
   public func addRules(
@@ -562,7 +577,7 @@ module ProviderModule {
 
   public func editProviderAdmin(
     arg : ProviderTypes.ProviderAdminArg,
-    newUserName : Text,
+    newUserName : Text
   ) : async Types.ProviderResult {
     var authorized = arg.isModclubAdmin;
     let state = arg.state;
@@ -639,28 +654,82 @@ module ProviderModule {
     };
   };
 
-  public func checkIfProviderHasEnoughBalance(
-    providerId : Principal,
+  public func checkAndTopUpProviderBalance(provider : Types.Provider, env : CommonTypes.ENV, principal : Principal, amount : Float) : async () {
+    await hasEnoughReservedBalance(provider, env, principal, amount);
+    await topUpProviderSAPayable(provider, env, principal, amount);
+  };
+
+  public func hasEnoughReservedBalance(
+    provider : Types.Provider,
     env : CommonTypes.ENV,
     modclubCanisterPrincipal : Principal,
-    state : GlobalState.State,
-    logger : Canistergeek.Logger
+    amount : Float
   ) : async () {
-    var requiredVotes = 0;
-    switch (state.providers.get(providerId)) {
-      case (null) {
-        return throw Error.reject("Unauthorized");
-      };
-      case (?p) {
-        requiredVotes := p.settings.requiredVotes;
-      };
-    };
-    let feeForTask = ModClubParam.CS * Float.fromInt(requiredVotes);
-    let providerBalance = await ModWallet.getActor(env).queryBalance(?(Principal.toText(providerId) # ModClubParam.RESERVE_SA));
-    if (providerBalance < feeForTask) {
+    let providerBalance = await ModWallet.getActor(env).icrc1_balance_of({
+      owner = modclubCanisterPrincipal;
+      subaccount = provider.subaccounts.get("RESERVE");
+    });
+    let tokens = Helpers.floatToTokens(amount);
+    if (providerBalance < tokens) {
       return throw Error.reject("Not enough balance in provider reserves to submit task.");
     };
-    let _ = await ModWallet.getActor(env).transfer(?(Principal.toText(providerId) # ModClubParam.RESERVE_SA), modclubCanisterPrincipal, ?(Principal.toText(providerId) # ModClubParam.ACCOUNT_PAYABLE), feeForTask);
+  };
+
+  public func getTaskFee(p : Types.Provider) : Float {
+    ModClubParam.CS * Float.fromInt(p.settings.requiredVotes);
+  };
+
+  public func topUpProviderSAPayable(
+    provider : Types.Provider,
+    env : CommonTypes.ENV,
+    modclubCanisterPrincipal : Principal,
+    amount : Float
+  ) : async () {
+    let tokens = Helpers.floatToTokens(amount);
+    let res = await ModWallet.getActor(env).icrc1_transfer({
+      from_subaccount = provider.subaccounts.get("RESERVE");
+      to = {
+        owner = modclubCanisterPrincipal;
+        subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+      };
+      amount = tokens;
+      created_at_time = null;
+      fee = null;
+      memo = null;
+    });
+  };
+
+  public func providerExists(
+    providerId : Principal,
+    state : GlobalState.State
+  ) : Bool {
+    switch (state.providers.get(providerId)) {
+      case (null) {
+        return false;
+      };
+      case (?p) {
+        return true;
+      };
+    };
+  };
+
+  public func topUpProviderReserve(env : CommonTypes.ENV, mcCanister : Principal, provider : Types.Provider, tokens : Nat) : async () {
+    let ledger = ModWallet.getActor(env);
+    // let ledger_account = await ledger.ledger_account();
+    let res = await ledger.icrc2_transfer_from({
+      from = {
+        owner = provider.id;
+        subaccount = null;
+      };
+      to = {
+        owner = mcCanister; // ledger_account.owner;
+        subaccount = provider.subaccounts.get("RESERVE");
+      };
+      amount = tokens;
+      created_at_time = null;
+      fee = null;
+      memo = null;
+    });
   };
 
   private func getNewContentCount(

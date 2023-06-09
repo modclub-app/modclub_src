@@ -1,17 +1,17 @@
-import * as React from 'react'
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
 import { formatDate } from "../../../utils/util";
 import { getPohTaskData } from "../../../utils/api";
-import { ViolatedRules } from '../../../utils/types';
-import { 
+import { ViolatedRules } from "../../../utils/types";
+import {
   Heading,
   Card,
   Button,
   Modal,
   Icon,
-  Notification
+  Notification,
 } from "react-bulma-components";
 import { Form, Field } from "react-final-form";
 import Userstats from "../profile/Userstats";
@@ -20,7 +20,7 @@ import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserAudio from "./UserAudio";
-import DrawingChallenge from './DrawingChallenge';
+import DrawingChallenge from "./DrawingChallenge";
 import POHConfirmationModal from "./POHConfirmationModal";
 
 const CheckBox = ({ id, label, values }) => {
@@ -33,7 +33,7 @@ const CheckBox = ({ id, label, values }) => {
         <Button.Group justifyContent="flex-end">
           <Button
             renderAs="label"
-            color={values[id] === "confirm" && "primary" }
+            color={values[id] === "confirm" && "primary"}
             className="is-size-7 has-text-weight-normal"
             style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
           >
@@ -47,14 +47,18 @@ const CheckBox = ({ id, label, values }) => {
               style={{ display: "none" }}
             />
             <Icon color="white" size="small">
-              <span className="material-icons">{values[id] === "confirm" ? "trip_origin" : "fiber_manual_record"}</span>
+              <span className="material-icons">
+                {values[id] === "confirm"
+                  ? "trip_origin"
+                  : "fiber_manual_record"}
+              </span>
             </Icon>
             <span className="ml-1">Confirm</span>
           </Button>
 
           <Button
             renderAs="label"
-            color={values[id] === label && "danger" }
+            color={values[id] === label && "danger"}
             className="is-size-7 has-text-weight-normal"
             style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
           >
@@ -68,17 +72,19 @@ const CheckBox = ({ id, label, values }) => {
               style={{ display: "none" }}
             />
             <Icon color="white" size="small">
-              <span className="material-icons">{values[id] === label ? "trip_origin" : "fiber_manual_record"}</span>
+              <span className="material-icons">
+                {values[id] === label ? "trip_origin" : "fiber_manual_record"}
+              </span>
             </Icon>
             <span className="ml-1">Reject</span>
           </Button>
         </Button.Group>
       </td>
     </>
-  )
-}
+  );
+};
 
-export default function PohApplicant() { 
+export default function PohApplicant() {
   const { user } = useAuth();
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
@@ -86,27 +92,33 @@ export default function PohApplicant() {
   const [formRules, setFormRules] = useState<ViolatedRules[]>([]);
 
   const getApplicant = async () => {
-    setLoading(true)
+    setLoading(true);
     const res = await getPohTaskData(packageId);
-    console.log({pohPackage: res.ok });
+    console.log({ pohPackage: res.ok });
     setContent(res.ok);
     setLoading(false);
-  }
+  };
 
   useEffect(() => {
     user && !loading && getApplicant();
   }, [user]);
 
   useEffect(() => {
-    !formRules.length && content && content.pohTaskData && content.pohTaskData.forEach(task => {
-      setFormRules(existingRule => [...existingRule, ...task.allowedViolationRules]);
-    });
+    !formRules.length &&
+      content &&
+      content.pohTaskData &&
+      content.pohTaskData.forEach((task) => {
+        setFormRules((existingRule) => [
+          ...existingRule,
+          ...task.allowedViolationRules,
+        ]);
+      });
   }, [content]);
 
   const formatTitle = (challengeId) => {
     switch (challengeId) {
       case "challenge-profile-details":
-        return "Profile Details"
+        return "Profile Details";
       case "challenge-profile-pic":
         return "Profile Picture";
       case "challenge-user-video":
@@ -116,7 +128,7 @@ export default function PohApplicant() {
       case "challenge-drawing":
         return "Unique Drawing";
       default:
-        return challengeId
+        return challengeId;
     }
   };
 
@@ -136,78 +148,81 @@ export default function PohApplicant() {
       case "challenge-drawing":
         return <DrawingChallenge data={task} />;
     }
-  }
+  };
 
   if (!content) {
     return (
       <Modal show={true} showClose={false}>
         <div className="loader is-loading p-5"></div>
       </Modal>
-    )
-  };
+    );
+  }
 
   return (
     <>
-      {isSafari && iOS &&
+      {isSafari && iOS && (
         <Notification color="danger" className="has-text-centered">
           Proof of Humanity is not working on iOS Safari
         </Notification>
-      }
+      )}
 
       <Userstats />
-      
+
       <Form
         onSubmit={() => {}}
         render={({ handleSubmit, values }) => (
-        <form onSubmit={handleSubmit}>
-          <Card>
-            <Card.Header>
-              <Card.Header.Title>
-                <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-                  Submitted {formatDate(content.updatedAt)}
-                </span>
-              </Card.Header.Title>
-              <Progress
-                value={content.votes}
-                min={content.requiredVotes}
+          <form onSubmit={handleSubmit}>
+            <Card>
+              <Card.Header>
+                <Card.Header.Title>
+                  <span
+                    style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}
+                  >
+                    Submitted {formatDate(content.updatedAt)}
+                  </span>
+                </Card.Header.Title>
+                <Progress value={content.votes} min={content.requiredVotes} />
+              </Card.Header>
+
+              {content.pohTaskData.map((task) => (
+                <Card.Content key={task.challengeId}>
+                  <Heading subtitle className="mb-3">
+                    {formatTitle(task.challengeId)}
+                  </Heading>
+                  <Card backgroundColor="dark">
+                    {renderChallenge(task.challengeId, task)}
+                  </Card>
+                  <Card.Footer
+                    backgroundColor="dark"
+                    className="is-block m-0 px-5"
+                    style={{ borderColor: "#000" }}
+                  >
+                    <table className="table has-text-left">
+                      <tbody>
+                        {task.allowedViolationRules.map((rule, index) => (
+                          <tr key={index}>
+                            <CheckBox
+                              key={rule.ruleId}
+                              id={`${task.challengeId}-${rule.ruleId}`}
+                              label={rule.ruleDesc}
+                              values={values}
+                            />
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Card.Footer>
+                </Card.Content>
+              ))}
+
+              <POHConfirmationModal
+                formRules={formRules}
+                reward={content.reward}
               />
-            </Card.Header>
-
-            {content.pohTaskData.map((task) => (
-              <Card.Content key={task.challengeId}>
-                <Heading subtitle className="mb-3">
-                  {formatTitle(task.challengeId)}
-                </Heading>
-                <Card backgroundColor="dark">
-                  {renderChallenge(task.challengeId, task)}
-                </Card>
-                <Card.Footer backgroundColor="dark" className="is-block m-0 px-5" style={{ borderColor: "#000"}}>
-                  <table className="table has-text-left">
-                    <tbody>
-                      {task.allowedViolationRules.map((rule, index) => (
-                        <tr key={index}>
-                          <CheckBox
-                            key={rule.ruleId}
-                            id={`${task.challengeId}-${rule.ruleId}`}
-                            label={rule.ruleDesc}
-                            values={values}
-                          />
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Card.Footer>
-              </Card.Content>
-            ))}
-
-            <POHConfirmationModal
-              formRules={formRules}
-              reward={content.reward}
-            />
-          </Card>
-        </form>
-      )}
-    />
-  </>
+            </Card>
+          </form>
+        )}
+      />
+    </>
   );
-};
+}
