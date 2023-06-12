@@ -135,7 +135,6 @@ INITIAL_BALANCE_4=$(dfx canister call wallet queryBalance | cut -d '(' -f 2 | cu
 MOD_PRINCIPAL_4=\"$(dfx identity get-principal)\"
 
 echo "+++++++++++++++++++ Step 4: submitText  +++++++++++++++++++"
-echo "#### MOD_PRINCIPAL: $MOD_PRINCIPAL"
 dfx identity use default
 echo "+++++++++++++++++++ Step 4.1: Set VoteParams  +++++++++++++++++++"
 dfx canister call modclub setVoteParamsForLevel "(3, variant {simple})"
@@ -155,9 +154,9 @@ dfx identity use mod_test_2
 echo "......#VOTE# Case 2 MUST PASSED......."
 echo "1"
 dfx canister call modclub reserveContent "(\""$DEFAULT_PRINCIPAL"-content-1""\")" 
+dfx canister call modclub reserveContent "(\""$DEFAULT_PRINCIPAL"-content-2""\")" > /dev/null
 RESULT2=$(dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-1""\", variant {approved}, null)")
 passed
-dfx canister call modclub reserveContent "(\""$DEFAULT_PRINCIPAL"-content-2""\")" 
 dfx identity use mod_test
 echo "2"
 dfx canister call modclub reserveContent "(\""$DEFAULT_PRINCIPAL"-content-1""\")" 
@@ -171,5 +170,17 @@ passed
 echo "......#VOTE# Case 3 MUST FAILED (full)......."
 dfx identity use mod_test_4
 dfx canister call modclub reserveContent "(\""$DEFAULT_PRINCIPAL"-content-1""\")" 
+failed
+echo "......#VOTE# Case 4 MUST FAILED (TimeOut)......."
+dfx identity use mod_test_2
+echo "sleep for 100 s......"
+secs=100
+while [ $secs -gt 0 ]; do
+   echo -ne "$secs\033[0K\r"
+   sleep 1
+   : $((secs--))
+done
+echo "Thank you for your patient..."
+dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-2""\", variant {approved}, null)"
 failed
 echo "-------------------------------"

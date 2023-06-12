@@ -7,6 +7,7 @@ import Bool "mo:base/Bool";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
 import CommonTypes "types";
+import Helpers "../modclub/helpers";
 
 module {
   public type Timestamp = Int;
@@ -14,15 +15,19 @@ module {
     case null { P.unreachable() };
     case (?x_) { x_ };
   };
+
   public func isReserved(profileId : Text, reservedList : [Types.Reserved]) : Bool {
-    let res = Array.find<Types.Reserved>(reservedList, func x = x.profileId == profileId);
-    if (res != null) {
-      return true;
-    };
-    return false;
+    let now = Helpers.timeNow();
+    let reservation = Array.filter<Types.Reserved>(reservedList, func x = x.profileId == profileId and x.reservedExpiryTime > now);
+    return reservation.size() > 0;
   };
+
   public func getNonExpiredList(reservedList : [Types.Reserved], now : Timestamp) : [Types.Reserved] {
     return Array.filter<Types.Reserved>(reservedList, func x = x.reservedExpiryTime > now);
+  };
+
+  public func getUserReservationList(reservedList : [Types.Reserved], userId : Text) : [Types.Reserved] {
+    return Array.filter<Types.Reserved>(reservedList, func x = x.profileId == userId);
   };
 
   public func mod_assert(success_test : Bool, message : Text) {
