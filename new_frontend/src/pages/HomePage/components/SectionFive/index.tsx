@@ -50,7 +50,7 @@ export default function SectionFive() {
                             <Link
                               target="_blank"
                               href="https://e6p3u-6yaaa-aaaah-abkfq-cai.ic0.app/"
-                              className={`${Styles.link} text-secondary`}
+                              className={`${Styles.link} underline`}
                             >
                               Quantum Economics
                             </Link>
@@ -58,7 +58,7 @@ export default function SectionFive() {
                             <Link
                               href="https://www.bochslerfinance.com/"
                               target="_blank"
-                              className={`${Styles.link} text-secondary`}
+                              className={`${Styles.link} underline`}
                             >
                               Bochsler Consulting
                             </Link>
@@ -70,7 +70,7 @@ export default function SectionFive() {
                             <Link
                               href="https://docsend.com/view/e9c3jdq6thia938y"
                               target="_blank"
-                              className={`${Styles.link} text-secondary`}
+                              className={`${Styles.link} underline`}
                             >
                               Tokenomics Paper
                             </Link>
@@ -119,7 +119,7 @@ export default function SectionFive() {
                             <Link
                               target="_blank"
                               href="https://docsend.com/view/cnyepz6x7jjwpgj3"
-                              className={`${Styles.link} text-secondary`}
+                              className={`${Styles.link} underline`}
                             >
                               Whitepaper
                             </Link>
