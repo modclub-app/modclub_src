@@ -58,6 +58,7 @@ module {
     #http_request : () -> Types.HttpRequest;
     #http_request_update : () -> Types.HttpRequest;
     #isUserAdmin : () -> ();
+    #canReserveContent : () -> Text;
     #issueJwt : () -> ();
     #pohCallbackForModclub : () -> PohTypes.PohVerificationResponsePlus;
     #populateChallenges : () -> ();

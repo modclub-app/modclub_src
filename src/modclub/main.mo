@@ -2023,6 +2023,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
   };
 
+  public shared ({ caller }) func canReserveContent(contentId : Text) : async Result.Result<Bool, Text> {
+    return await ContentManager.canReserveContent(contentId, caller, stateV2);
+  };
+
   private func getVoteCount(contentId : Types.ContentId, caller : ?Principal) : Types.VoteCount {
     var voteApproved : Nat = 0;
     var voteRejected : Nat = 0;

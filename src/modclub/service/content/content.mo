@@ -247,7 +247,14 @@ module ContentModule {
             if (checkExpire == false) {
               throw Error.reject("No spot left");
             };
-            let reservation = await takeReservation({ caller = arg.caller; globalState = arg.globalState; contentState = arg.contentState }, Constant.EXPIRE_TIME);
+            let reservation = await takeReservation(
+              {
+                caller = arg.caller;
+                globalState = arg.globalState;
+                contentState = arg.contentState;
+              },
+              Constant.EXPIRE_TIME
+            );
             let newReserved = Array.append<Types.Reserved>(oldReserved, [reservation]);
             let result : Types.ContentPlus = {
               id = provider.id;
@@ -422,6 +429,22 @@ module ContentModule {
       "Sending getTasks Resposnse for user: " # Principal.toText(arg.caller)
     );
     return #ok(Buffer.toArray<Types.ContentPlus>(result));
+  };
+
+  public func canReserveContent(contentId : Text, caller : Principal, globalState : GlobalState.State) : async Result.Result<Bool, Text> {
+    switch (globalState.content.get(contentId)) {
+      case (null) { return #err("Invalid Content") };
+      case (?content) {
+        Debug.print(debug_show (content));
+        let requiredVote = content.voteParameters.requiredVotes;
+        let activeReservations = Utils.getNonExpiredList(content.reservedList, Helpers.timeNow());
+        if (activeReservations.size() == requiredVote or Utils.isReserved(Principal.toText(caller), activeReservations)) {
+          return #ok(false);
+        };
+        return #ok(true);
+      };
+    };
+
   };
 
   public func checkIfAlreadySubmitted(
