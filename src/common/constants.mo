@@ -1,4 +1,7 @@
 module Constants {
   public let EXPIRE_VOTE_TIME = 100000;
   public let TOKENS_DECIMAL = 1000000.0;
+  public let FIVE_MIN_NANO_SECS = 300000000000;
+  public let TWENTY_FOUR_HOUR_NANO_SECS = 86400000000000;
+  public let ONE_YEAR_NANO_SECS = 31556952000000000;
 };

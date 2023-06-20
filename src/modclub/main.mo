@@ -44,6 +44,7 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import { setTimer; recurringTimer } = "mo:base/Timer";
 import Token "./token";
 import Types "./types";
 import MsgInspectTypes "msgInspectTypes";
@@ -68,6 +69,9 @@ import Reserved "service/content/reserved";
 import Constants "../common/constants";
 import ModSecurity "../common/security/guard";
 import Auth "../common/security/AuthCanister";
+import Nat64 "mo:base/Nat64";
+import Constant "service/content/constant";
+import CommonTimer "../common/timer/timer";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
 
@@ -137,6 +141,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     admins,
     signingKey
   );
+
+  private var commonTimer = CommonTimer.CommonTimer(env, "CommonTimer");
+  commonTimer.initTimer(canistergeekMonitor);
 
   private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
   authGuard.subscribe("admins");
@@ -1609,10 +1616,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func getModeratorEmailsForPOHAndSendEmail(emailType : Text) : async () {
     // As email is going to send to all the users who opted in to receive at the time of content submission
     var emailIDsHash = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-    var voteStateToSend = voteManager.getVoteState();
+    let voteStateToSend = voteManager.getVoteState();
     if (emailType == "shc") {
       // Sends content email
-      var queueStateToSend = contentQueueManager.getQueueState();
+      let queueStateToSend = contentQueueManager.getQueueState();
       emailIDsHash := emailManager.getModeratorEmailsForContent(
         voteStateToSend,
         queueStateToSend,
@@ -1620,8 +1627,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       );
     } else {
       // Sends POH email
-      var pohContentState = pohContentQueueManager.getQueueState();
-      var pohStateToSend = pohEngine.getPOHState();
+      let pohContentState = pohContentQueueManager.getQueueState();
+      let pohStateToSend = pohEngine.getPOHState();
       emailIDsHash := emailManager.getModeratorEmailsForPOH(
         voteStateToSend,
         pohContentState,
@@ -1676,7 +1683,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     decision : Types.Decision,
     violatedRules : [Types.PohRulesViolated]
   ) : async () {
-
     switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
@@ -2142,7 +2148,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     authGuard.getAdmins();
   };
-
+  
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   // Delete here after deployment
@@ -2173,6 +2179,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   stable var migrationDone = false;
   stable var globalStateMigrationDone = false;
+
   system func postupgrade() {
 
     authGuard.subscribe("admins");
@@ -2233,30 +2240,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
+
     Debug.print("MODCLUB POSTUPGRADE FINISHED");
-  };
-
-  var nextRunTime = Time.now();
-  let FIVE_MIN_NANO_SECS = 300000000000;
-
-  var nextTokenReleaseTime = Time.now();
-  let TWENTY_FOUR_HOUR_NANO_SECS = 86400000000000;
-
-  // TODO: change heartbeat to timer
-  system func heartbeat() : async () {
-    if (Time.now() > nextRunTime) {
-      Debug.print("Running Metrics Collection");
-      canistergeekMonitor.collectMetrics();
-      nextRunTime := Time.now() + FIVE_MIN_NANO_SECS;
-      var pohEmailSend = getModeratorEmailsForPOHAndSendEmail("p");
-      var contentEmailSend = getModeratorEmailsForPOHAndSendEmail("shc");
-    };
-
-    // TODO: reduce Token release every x year as per tokenomics
-    if (Time.now() > nextTokenReleaseTime) {
-      let _ = await ModWallet.getActor(env).transfer(?ModClubParam.RESERVE_SA, Principal.fromActor(this), ?ModClubParam.TREASURY_SA, ModClubParam.MOD_RELEASE_PER_DAY);
-      nextTokenReleaseTime := Time.now() + TWENTY_FOUR_HOUR_NANO_SECS;
-    };
   };
 
   system func inspect({
@@ -2513,6 +2498,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       throw Error.reject(Error.message(err));
     };
   };
+  
 
   // Delete after deployment
   private func migrateStateV1toV2(stateSharedV1 : StateV1.StateShared, stateSharedV2 : StateV2.StateShared) : StateV2.StateShared {
