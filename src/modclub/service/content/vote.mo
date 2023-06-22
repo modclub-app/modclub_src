@@ -99,14 +99,15 @@ module ContentVotingModule {
       };
       case (_)();
     };
-
+    let userRSAndLevel = await RSManager.getActor(arg.env).queryRSAndLevelByPrincipal(arg.userId);
     switch (state.content.get(arg.contentId)) {
       case (?content) {
         if (content.status != #new) throw Error.reject(
           "Content has already been reviewed"
         );
+
         let isReserved = Utils.isReserved(Principal.toText(arg.userId), content.reservedList);
-        if (isReserved == false) throw Error.reject(
+        if (isReserved == false and userRSAndLevel.level != #novice) throw Error.reject(
           "Must take Reservations before voting"
         );
       };
@@ -133,7 +134,6 @@ module ContentVotingModule {
       };
     };
 
-    let userRSAndLevel = await RSManager.getActor(arg.env).queryRSAndLevelByPrincipal(arg.userId);
     let vote : Types.VoteV2 = {
       id = voteId;
       contentId = arg.contentId;
