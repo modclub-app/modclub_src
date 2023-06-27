@@ -2,6 +2,7 @@ import LoggerTypesModule "./canistergeek/logger/typesModule";
 import Canistergeek "./canistergeek/canistergeek";
 import CommonTypes "../common/types";
 import PohTypes "./service/poh/types";
+import ICRCTypes "../wallet/ICRC/types";
 import Types "./types";
 
 module {
@@ -18,7 +19,9 @@ module {
     #addToAllowList : () -> Principal;
     #adminInit : () -> ();
     #adminUpdateEmail : () -> (Principal, Text);
+    #canClaimLockedReward : () -> ?ICRCTypes.Tokens;
     #checkIfUserOptToReciveAlerts : () -> ();
+    #claimLockedReward : () -> ICRCTypes.Tokens;
     #collectCanisterMetrics : () -> ();
     #configurePohForProvider : () -> (Principal, [Text], Nat, Bool);
     #deregisterProvider : () -> ();

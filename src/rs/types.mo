@@ -1,6 +1,19 @@
+import Text "mo:base/Text";
+import Principal "mo:base/Principal";
 import CommonTypes "../common/types";
 
 module {
+
+  public type Subscriber = {
+    topic : Text;
+    consumer : Principal;
+    _actor : SubscriberCanisterType;
+  };
+
+  public type SubscriberCanisterType = actor {
+    handleSubscription : (CommonTypes.ConsumerPayload) -> async ();
+  };
+
   public type UserLevel = {
     #novice;
     #junior;
@@ -32,6 +45,7 @@ module {
 
   public type RSCanisterMessageInspection = {
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
+    #subscribe : () -> Text;
     #queryRSAndLevel : () -> ();
     #showAdmins : () -> ();
     #queryRSAndLevelByPrincipal : () -> Principal;

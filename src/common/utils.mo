@@ -1,12 +1,17 @@
 import P "mo:base/Prelude";
 import Types "../modclub/types";
 import Array "mo:base/Array";
+import Option "mo:base/Option";
 import Int "mo:base/Int";
+import Nat "mo:base/Nat";
+import Nat8 "mo:base/Nat8";
+import Float "mo:base/Float";
 import Text "mo:base/Text";
 import Bool "mo:base/Bool";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
 import CommonTypes "types";
+import Constants "constants";
 import Helpers "../modclub/helpers";
 
 module {
@@ -70,8 +75,40 @@ module {
           case (#qa) { Principal.fromText("tqtu6-byaaa-aaaaa-aaana-cai") };
         };
       };
+      case (#vesting) {
+        switch (env) {
+          case (#local(value)) { value.vesting_canister_id };
+          case (#prod) { Principal.fromText("t6rzw-2iaaa-aaaaa-aaama-cai") };
+          case (#dev) { Principal.fromText("tzq7c-xqaaa-aaaaa-aaamq-cai") };
+          case (#qa) { Principal.fromText("tqtu6-byaaa-aaaaa-aaana-cai") };
+        };
+      };
     };
   };
 
-  // public func sync_future( fn: Func )
+  public func blobToText(b : Blob) : Text {
+    var res = "";
+    for (byte : Nat8 in b.vals()) {
+      // iterator over the Blob
+      res := res # Nat8.toText(byte);
+    };
+    res;
+  };
+
+  public func floatToTokens(f : Float) : Nat {
+    switch (Nat.fromText(Int.toText(Float.toInt(Float.abs(f * Constants.TOKENS_DECIMAL))))) {
+      case (?n) n;
+      case (_) { 0 };
+    };
+  };
+
+  public func getStakingAmountForRewardWithdraw(rs : Nat) : Nat {
+    Option.get(
+      Nat.fromText(
+        Int.toText(Constants.SENIOR_STAKING_MULTIPLYER * Int.pow(rs, Constants.SENIOR_STAKING_EXPONENT))
+      ),
+      0
+    );
+  };
+
 };

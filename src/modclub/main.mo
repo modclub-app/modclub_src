@@ -44,7 +44,6 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import { setTimer; recurringTimer } = "mo:base/Timer";
 import Token "./token";
 import Types "./types";
 import MsgInspectTypes "msgInspectTypes";
@@ -69,6 +68,7 @@ import Reserved "service/content/reserved";
 import Constants "../common/constants";
 import ModSecurity "../common/security/guard";
 import Auth "../common/security/AuthCanister";
+import Timer "mo:base/Timer";
 import Nat64 "mo:base/Nat64";
 import Constant "service/content/constant";
 import CommonTimer "../common/timer/timer";
@@ -134,6 +134,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private let pohContentQueueManager = QueueManager.QueueManager();
 
   stable var admins : List.List<Principal> = List.nil<Principal>();
+
+  stable var claimRewardsWhitelist : List.List<Principal> = List.nil<Principal>();
+  private var claimRewardsWhitelistBuf = Buffer.Buffer<Principal>(100);
   // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
   var storageSolution = StorageSolution.StorageSolution(
     storageStateStable,
@@ -148,9 +151,28 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
   authGuard.subscribe("admins");
 
+  ModeratorManager.subscribeOnEvents(env, "moderator_became_senior");
+
+  let vestingActor = authGuard.getVestingActor();
+
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
-    Debug.print("[MODCLUB_CANISTER] [SUBSCRIPTION HANDLER] ==> Payload received from AUTH_CANISTER");
-    authGuard.handleSubscription(payload);
+    switch (payload) {
+      case (#admins(list)) { authGuard.handleSubscription(payload) };
+      case (#events(events)) {
+        // TODO: Refactor this and put logic to new refactored ModeratorManager.
+        // TODO: Notify Moderator by email.
+        for (event in Array.vals<CommonTypes.Event>(events)) {
+          switch (event.topic) {
+            case ("moderator_became_senior") {
+              if (not ModeratorManager.canClaimReward(event.payload, claimRewardsWhitelistBuf)) {
+                claimRewardsWhitelistBuf.add(event.payload);
+              };
+            };
+            case (_) {};
+          };
+        };
+      };
+    };
   };
 
   public shared ({ caller }) func toggleAllowSubmission(allow : Bool) : async () {
@@ -882,6 +904,77 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#err(#contentNotFound)) throw Error.reject("Content does not exist");
       case (#err(#voteNotFound)) throw Error.reject("Vote does not exist");
       case (_) throw Error.reject("Something went wrong");
+    };
+  };
+
+  public shared ({ caller }) func canClaimLockedReward(amount : ?ICRCTypes.Tokens) : async Result.Result<Types.CanClaimLockedResponse, Text> {
+    let stats = await ModeratorManager.getStats(caller, env);
+    if (not ModeratorManager.isSenior(stats.score)) {
+      return throw Error.reject("Moderator not permitted to claim locked Tokens.");
+    };
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let lockedAmount = await vestingActor.locked_for(moderatorAcc);
+    let claimAmount = Option.get(amount, lockedAmount);
+    if (lockedAmount < claimAmount) {
+      return throw Error.reject("Wrong amount to claim locked Tokens.");
+    };
+
+    switch (ModeratorManager.canClaimReward(caller, claimRewardsWhitelistBuf)) {
+      case (true) {
+        let stakedAmount = await vestingActor.staked_for(moderatorAcc);
+        let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
+        if (stakedAmount < minStake) {
+          return throw Error.reject("You MUST stake amount of tokens to claim locked Tokens.");
+        };
+        #ok({
+          canClaim = true;
+          claimAmount;
+          claimPrice = minStake;
+        });
+      };
+      case (false) {
+        return throw Error.reject("Moderator not permitted to claim locked Tokens.");
+      };
+    };
+  };
+
+  public shared ({ caller }) func claimLockedReward(amount : ICRCTypes.Tokens) : async Result.Result<Bool, Text> {
+    if (not ModeratorManager.canClaimReward(caller, claimRewardsWhitelistBuf)) {
+      return throw Error.reject("Moderator not permitted to claim locked Tokens.");
+    };
+
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let stats = await ModeratorManager.getStats(caller, env);
+    let lockedAmount = await vestingActor.locked_for(moderatorAcc);
+    let stakedAmount = await vestingActor.staked_for(moderatorAcc);
+    let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
+    if (stakedAmount < minStake) {
+      return throw Error.reject("You MUST stake amount of tokens to claim locked Tokens.");
+    };
+
+    let reduceReputation = (lockedAmount - amount) < minStake;
+    let claimRes = await vestingActor.claim_vesting(moderatorAcc, amount);
+    switch (claimRes) {
+      case (#ok(_)) {
+        let ledger = ModWallet.getActor(env);
+        let _ = await ledger.icrc1_transfer({
+          from_subaccount = ?ICRCModule.ICRC_VESTING_SA;
+          to = moderatorAcc;
+          amount;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        });
+
+        if (reduceReputation) {
+          // REDUCE REPUTATION
+          ignore await ModeratorManager.reduceToJunior(caller, env);
+          claimRewardsWhitelistBuf.filterEntries(func(i, p) : Bool { not Principal.equal(caller, p) });
+        };
+
+        #ok(true);
+      };
+      case (#err(e)) { return throw Error.reject(e) };
     };
   };
 
@@ -1801,13 +1894,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       let CT : Float = ModClubParam.CS * Float.fromInt(ModClubParam.MIN_VOTE_POH);
       // moderator dist
       for (userVote in rewardingVotes.vals()) {
-        let ta = Helpers.floatToTokens(
+        let modReward = Utils.floatToTokens(
           (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS
         );
         let _ = await ledger.icrc1_transfer({
           from_subaccount = ?ICRCModule.ICRC_ACCOUNT_PAYABLE_SA;
           to = { owner = userVote.userId; subaccount = null };
-          amount = ta;
+          amount = modReward;
           fee = null;
           memo = null;
           created_at_time = null;
@@ -1815,7 +1908,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       let _ = await RSManager.getActor(env).updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
       // treasury dist
-      let tokensAmount = Helpers.floatToTokens(ModClubParam.GAMMA_T * CT);
+      let tokensAmount = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
       let _ = await ledger.icrc1_transfer({
         from_subaccount = ?ICRCModule.ICRC_ACCOUNT_PAYABLE_SA;
         to = {
@@ -1831,7 +1924,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       // burn
       let _ = await ledger.burn(
         ?ICRCModule.ICRC_ACCOUNT_PAYABLE_SA,
-        Helpers.floatToTokens(ModClubParam.GAMMA_B * CT)
+        Utils.floatToTokens(ModClubParam.GAMMA_B * CT)
       );
 
       // inform all providers
@@ -2148,7 +2241,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     authGuard.getAdmins();
   };
-  
+
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   // Delete here after deployment
@@ -2174,6 +2267,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
     contentQueueStateStable := ?contentQueueManager.preupgrade();
     pohContentQueueStateStable := ?pohContentQueueManager.preupgrade();
+
+    claimRewardsWhitelist := List.fromArray<Principal>(Buffer.toArray<Principal>(claimRewardsWhitelistBuf));
+
     Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
@@ -2191,6 +2287,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       deployer,
       Principal.fromActor(this)
     );
+    claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
+
     storageSolution := StorageSolution.StorageSolution(
       storageStateStable,
       retiredDataCanisterId,
@@ -2498,7 +2596,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       throw Error.reject(Error.message(err));
     };
   };
-  
 
   // Delete after deployment
   private func migrateStateV1toV2(stateSharedV1 : StateV1.StateShared, stateSharedV2 : StateV2.StateShared) : StateV2.StateShared {

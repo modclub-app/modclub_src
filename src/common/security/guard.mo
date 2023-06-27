@@ -30,12 +30,13 @@ module ModSecurity {
     };
 
     public func handleSubscription(payload : CommonTypes.ConsumerPayload) : () {
+      Debug.print("[" # context # "] [SUBSCRIPTION HANDLER] ==> Payload received");
       switch (payload) {
         case (#admins(list)) {
-          Debug.print("[" # context # "] [GUARD] ==> GOT ADMINS LIST");
+          Debug.print("[" # context # "] [SUBSCRIPTION HANDLER] [ADMINS] ==> GOT ADMINS LIST");
           for (admin in list.vals()) {
             if (not isAdmin(admin)) {
-              Debug.print("[" # context # "] [GUARD] ==> PRINCIPAL " # Principal.toText(admin) # " is NEW");
+              Debug.print("[" # context # "] [SUBSCRIPTION HANDLER] [ADMINS] ==> PRINCIPAL " # Principal.toText(admin) # " is NEW");
               admins := List.push<Principal>(admin, admins);
             };
           };
@@ -79,12 +80,25 @@ module ModSecurity {
       Principal.equal(Utils.getCanisterId(#modclub, env), caller);
     };
 
+    public func isModclubVesting(caller : Principal) : Bool {
+      Principal.equal(Utils.getCanisterId(#vesting, env), caller);
+    };
+
     public func isModclubCanister(caller : Principal) : Bool {
-      isModclubMain(caller) or isModclubWallet(caller) or isModclubRs(caller);
+      isModclubMain(caller) or isModclubWallet(caller) or isModclubRs(caller) or isModclubVesting(caller);
     };
 
     public func getCanisterId(canisterType : CommonTypes.ModclubCanister) : Principal {
       Utils.getCanisterId(canisterType, env);
+    };
+
+    // public func getCanisterActor<T>(canisterType : CommonTypes.ModclubCanister) : actor<T> {
+    //   let canisterActor = actor (getCanisterId(canisterType)) : actor<T>;
+    //   canisterActor;
+    // };
+
+    public func getVestingActor() : CommonTypes.VestingCanisterActor {
+      actor (Principal.toText(getCanisterId(#vesting)));
     };
 
     public func setUpDefaultAdmins(

@@ -32,6 +32,48 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
   authGuard.subscribe("admins");
 
+  stable var subscriptions = List.nil<Types.Subscriber>();
+
+  private func publish(topic : Text, payload : Principal) : async () {
+    Debug.print("PUBLISHING [" # topic # "] topic");
+    try {
+      for (subscriber in List.toArray(subscriptions).vals()) {
+        if (subscriber.topic == topic) {
+          await subscriber._actor.handleSubscription(#events([{ topic; payload }]));
+        };
+      };
+    } catch (e) {
+      Debug.print("Error while publishing: " # Error.message(e));
+    };
+  };
+
+  public shared ({ caller }) func subscribe(_topic : Text) : async () {
+    Debug.print("[RS_CANISTER] Canister [" # Principal.toText(caller) # "] wants to subscribe on RS_EVENTS");
+    Utils.mod_assert(authGuard.isModclubCanister(caller), ModSecurity.AccessMode.NotPermitted);
+
+    let exists = List.some<Types.Subscriber>(
+      subscriptions,
+      func(sub : Types.Subscriber) {
+        Principal.equal(sub.consumer, caller) and sub.topic == _topic
+      }
+    );
+    if (not exists) {
+      try {
+        subscriptions := List.push<Types.Subscriber>(
+          {
+            topic = _topic;
+            consumer = caller;
+            _actor = actor (Principal.toText(caller));
+          },
+          subscriptions
+        );
+      } catch (e) {
+        Debug.print("Error while subscribing: " # Error.message(e));
+      };
+    };
+    Debug.print("[RS_CANISTER] Canister [" # Principal.toText(caller) # "] subscribed on RS_EVENTS");
+  };
+
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     // Debug.print("[RS_CANISTER] [SUBSCRIPTION HANDLER] ==> Payload received");
     authGuard.handleSubscription(payload);
@@ -91,14 +133,17 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     await _updateRS(userId, votedCorrect, decision);
   };
 
-  public shared ({ caller }) func setRS(userId : Principal, rs : Int) : async () {
+  public shared ({ caller }) func setRS(userId : Principal, rs : Int) : async Result.Result<Bool, Text> {
     rsByUserId.put(userId, rs);
+    #ok(true);
   };
 
   private func _updateRS(userId : Principal, votedCorrect : Bool, decision : Types.Decision) : async Types.UserAndRS {
     var point : Int = Constants.DEFAULT_RS;
     var pointMultiplier : Int = 1;
-    let isNovice = (await queryRSAndLevelByPrincipal(userId)).level == #novice;
+    let statBefore = (await queryRSAndLevelByPrincipal(userId));
+    let isNovice = statBefore.level == #novice;
+    let isSeniorBefore = statBefore.score > Constants.SENIOR1_THRESHOLD;
 
     if (isNovice) {
       pointMultiplier := 10;
@@ -117,6 +162,9 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
     let clampedRS = Int.min(Int.max(updateRS, 0), Constants.MAX_RS);
     rsByUserId.put(userId, clampedRS);
+    if ((not isSeniorBefore) and clampedRS > Constants.SENIOR1_THRESHOLD) {
+      await publish("moderator_became_senior", userId);
+    };
 
     return {
       userId = userId;

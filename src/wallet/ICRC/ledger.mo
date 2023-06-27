@@ -26,6 +26,8 @@ module ModclubICRC = {
   public let ICRC_SEED_SA = "----------------------------SEED" : Blob;
   public let ICRC_TEAM_SA = "----------------------------TEAM" : Blob;
   public let ICRC_TREASURY_SA = "------------------------TREASURY" : Blob;
+  public let ICRC_STAKING_SA = "-------------------------STAKING" : Blob;
+  public let ICRC_VESTING_SA = "-------------------------VESTING" : Blob;
 
   public class Ledger(init : Types.LedgerInitParams) {
     let permittedDriftNanos : Types.Duration = 60_000_000_000;

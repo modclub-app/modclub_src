@@ -16,6 +16,7 @@ function stop_and_remove_canister() {
 		dfx canister stop wallet_qa && dfx canister delete wallet_qa && dfx identity remove qa_ledger_identity && dfx identity remove qa_ledger_minter
 		dfx canister stop rs_qa && dfx canister delete rs_qa
 		dfx canister stop auth_qa && dfx canister delete auth_qa
+		dfx canister stop vesting_qa && dfx canister delete vesting_qa
 
 		printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters removed.${NC}\n"
 }

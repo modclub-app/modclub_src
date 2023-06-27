@@ -16,10 +16,12 @@ import Types "./types";
 import Buffer "mo:base/Buffer";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
+import Timer "mo:base/Timer";
 import AuthManager "../modclub/service/auth/auth";
 import Utils "../common/utils";
 import CommonTypes "../common/types";
 import ModSecurity "../common/security/guard";
+import Constants "../common/constants";
 import ICRCLedger "ICRC/ledger";
 import ICRCTypes "ICRC/types";
 
@@ -30,6 +32,7 @@ shared ({ caller = deployer }) actor class Wallet({
 
   let authGuard = ModSecurity.Guard(env, "WALLET_CANISTER");
   authGuard.subscribe("admins");
+  let vestingActor = authGuard.getVestingActor();
 
   let MILLION : Float = 1000000;
   let MINT_WALLET_ID = Principal.fromText("aaaaa-aa");
@@ -236,8 +239,86 @@ shared ({ caller = deployer }) actor class Wallet({
     };
   };
 
-  public shared ({ caller }) func stakeTokens(amount : Float) : async () {
-    await transferFromTo(caller, DEFAULT_SUB_ACCOUNT, Utils.unwrap(MODCLUB_WALLET_PRINCIPAL), (Principal.toText(caller) # STAKE_SA), amount);
+  public shared ({ caller }) func stakeTokens(amount : Nat) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let modclubPrincipal = authGuard.getCanisterId(#modclub);
+    let modclubStakingAcc = {
+      owner = modclubPrincipal;
+      subaccount = ?ICRCLedger.ICRC_STAKING_SA;
+    };
+
+    let stakeTransfer = ledger.applyTransfer({
+      spender = caller;
+      source = #Icrc1Transfer;
+      from = moderatorAcc;
+      to = modclubStakingAcc;
+      amount = amount;
+      created_at_time = null;
+      fee = null;
+      memo = null;
+    });
+    switch (stakeTransfer) {
+      case (#Ok(txIndex)) {
+        let stakeRes = await vestingActor.stake(moderatorAcc, amount);
+        switch (stakeRes) {
+          case (#ok(_)) {
+            ignore Timer.setTimer(
+              #seconds(Constants.VESTING_DISSOLVE_DELAY_SECONDS),
+              func() : async () {
+                Debug.print("STAKING RELEASE.");
+                let releaseStaked = await vestingActor.unlock_staking(moderatorAcc, amount);
+              }
+            );
+
+            #Ok(txIndex);
+          };
+          case (#err(e)) { return throw Error.reject(e) };
+        };
+      };
+      case (#Err(e)) {
+        return throw Error.reject("Can't stake necessary amount of tokens: InsufficientAllowance.");
+      };
+    };
+  };
+
+  public shared ({ caller }) func unstakeTokens(amount : ICRCTypes.Tokens) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let modclubPrincipal = authGuard.getCanisterId(#modclub);
+    let modclubStakingAcc = {
+      owner = modclubPrincipal;
+      subaccount = ?ICRCLedger.ICRC_STAKING_SA;
+    };
+    let unlockedAmount = await vestingActor.unlocked_stakes_for(moderatorAcc);
+    if (unlockedAmount < amount) {
+      return throw Error.reject("Withdraw amount cant be more than unlocked amount of tokens.");
+    };
+    Debug.print("STAKING PAYOUT.");
+    let claimStaked = await vestingActor.claim_staking(moderatorAcc, amount);
+    switch (claimStaked) {
+      case (#Ok(res)) {
+        let releaseTransfer = ledger.applyTransfer({
+          spender = modclubPrincipal;
+          source = #Icrc1Transfer;
+          from = modclubStakingAcc;
+          to = moderatorAcc;
+          amount = amount;
+          created_at_time = null;
+          fee = null;
+          memo = null;
+        });
+        switch (releaseTransfer) {
+          case (#Ok(txIndex)) {
+            #Ok(txIndex);
+          };
+          case (#Ok(txIndex)) {
+            return throw Error.reject("Can't withdraw unlocked amount of tokens.");
+          };
+        };
+      };
+      case (#Err(e)) {
+        return throw Error.reject("Can't withdraw unlocked amount of tokens.");
+      };
+    };
   };
 
   public shared ({ caller }) func tge() : async () {

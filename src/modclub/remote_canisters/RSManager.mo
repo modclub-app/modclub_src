@@ -1,5 +1,9 @@
 import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
+import Text "mo:base/Text";
+import Result "mo:base/Result";
+import Bool "mo:base/Bool";
+import Error "mo:base/Error";
 import Types "../../rs/types";
 import CommonTypes "../../common/types";
 import Debug "mo:base/Debug";
@@ -12,6 +16,8 @@ module {
     queryRSAndLevelByPrincipal : (Principal) -> async Types.RSAndLevel;
     updateRSBulk : ([Types.UserAndVote]) -> async [Types.UserAndRS];
     updateRS : (Principal, Bool) -> async Types.UserAndRS;
+    setRS : (Principal, Int) -> async Result.Result<Bool, Text>;
+    subscribe : (Text) -> async ();
   };
 
   public let MODCLUB_RS_CANISTER_ID_QA = "rkp4c-7iaaa-aaaaa-aaaca-cai";

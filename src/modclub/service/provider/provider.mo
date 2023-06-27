@@ -21,6 +21,7 @@ import Canistergeek "../../canistergeek/canistergeek";
 import ModClubParam "../parameters/params";
 import ModWallet "../../remote_canisters/ModWallet";
 import CommonTypes "../../../common/types";
+import Utils "../../../common/utils";
 import AuthGuard "../../../common/security/guard";
 
 module ProviderModule {
@@ -669,7 +670,7 @@ module ProviderModule {
       owner = modclubCanisterPrincipal;
       subaccount = provider.subaccounts.get("RESERVE");
     });
-    let tokens = Helpers.floatToTokens(amount);
+    let tokens = Utils.floatToTokens(amount);
     if (providerBalance < tokens) {
       return throw Error.reject("Not enough balance in provider reserves to submit task.");
     };
@@ -685,7 +686,7 @@ module ProviderModule {
     modclubCanisterPrincipal : Principal,
     amount : Float
   ) : async () {
-    let tokens = Helpers.floatToTokens(amount);
+    let tokens = Utils.floatToTokens(amount);
     let res = await ModWallet.getActor(env).icrc1_transfer({
       from_subaccount = provider.subaccounts.get("RESERVE");
       to = {

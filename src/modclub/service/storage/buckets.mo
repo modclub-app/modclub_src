@@ -408,7 +408,7 @@ actor class Bucket() = this {
         ("Access-Control-Allow-Origin", "*")
       ];
       _status_code := 200;
-      _streaming_strategy := ? #Callback(
+      _streaming_strategy := ?#Callback(
         {
           token = {
             content_encoding = "gzip";

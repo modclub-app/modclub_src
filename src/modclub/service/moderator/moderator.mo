@@ -8,11 +8,15 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Option "mo:base/Option";
+import Timer "mo:base/Timer";
 
 import GlobalState "../../statev2";
 import Helpers "../../helpers";
 import Types "../../types";
 import RSTypes "../../../rs/types";
+import RSConstants "../../../rs/constants";
+import CommonTypes "../../../common/types";
+import RSManager "../../remote_canisters/RSManager";
 import Tokens "../../token";
 
 module ModeratorModule {
@@ -22,6 +26,33 @@ module ModeratorModule {
     #voteNotFound;
     #contentNotFound;
     #providerNotFound;
+  };
+
+  public func subscribeOnEvents(env : CommonTypes.ENV, topic : Text) : () {
+    ignore Timer.setTimer(
+      #seconds(0),
+      func() : async () {
+        Debug.print("SUBSCRIBING to RS_CANISTER on " # topic);
+        await RSManager.getActor(env).subscribe(topic);
+      }
+    );
+  };
+
+  public func canClaimReward(user : Principal, whitelist : Buffer.Buffer<Principal>) : Bool {
+    Buffer.contains<Principal>(whitelist, user, Principal.equal);
+  };
+
+  public func getStats(moderId : Principal, env : CommonTypes.ENV) : async RSTypes.RSAndLevel {
+    let stats : RSTypes.RSAndLevel = await RSManager.getActor(env).queryRSAndLevelByPrincipal(moderId);
+    return stats;
+  };
+
+  public func isSenior(rs : Int) : Bool {
+    return rs >= RSConstants.SENIOR1_THRESHOLD;
+  };
+
+  public func reduceToJunior(moderId : Principal, env : CommonTypes.ENV) : async Result.Result<Bool, Text> {
+    await RSManager.getActor(env).setRS(moderId, RSConstants.JUNIOR_THRESHOLD);
   };
 
   public func registerModerator(

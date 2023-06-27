@@ -6,8 +6,15 @@ import Result "mo:base/Result";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import JSON "mo:json/JSON";
+import ICRCTypes "../wallet/ICRC/types";
 
 module {
+  public type CanClaimLockedResponse = {
+    canClaim : Bool;
+    claimAmount : ICRCTypes.Tokens;
+    claimPrice : ICRCTypes.Tokens;
+  };
+
   public type Timestamp = Int;
   // See mo:base/Time and Time.now()
   public type UserId = Principal;

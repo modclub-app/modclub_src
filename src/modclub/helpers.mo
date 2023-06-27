@@ -255,12 +255,5 @@ module Helpers {
     Prim.charToText(c1) # Prim.charToText(c2);
   };
 
-  public func floatToTokens(f : Float) : Nat {
-    switch (Nat.fromText(Int.toText(Float.toInt(Float.abs(f * Constants.TOKENS_DECIMAL))))) {
-      case (?n) n;
-      case (_) { 0 };
-    };
-  };
-
   public let providerSubaccountTypes = ["RESERVE", "ACCOUNT_PAYABLE"];
 };

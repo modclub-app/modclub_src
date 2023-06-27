@@ -21,11 +21,14 @@ import QueueManager "../queue/queue";
 import ModWallet "../../remote_canisters/ModWallet";
 import RSManager "../../remote_canisters/RSManager";
 import RSTypes "../../../rs/types";
+import RSConstants "../../../rs/constants";
 import ICRCModule "../../../wallet/ICRC/ledger";
 import ICRCTypes "../../../wallet/ICRC/types";
 import WalletTypes "../../../wallet/types";
 import Utils "../../../common/utils";
 import CommonTypes "../../../common/types";
+import Constants "../../../common/constants";
+import ModSecurity "../../../common/security/guard";
 
 module ContentVotingModule {
   public type ContentVoteError = { #contentNotFound; #voteNotFound };
@@ -312,6 +315,8 @@ module ContentVotingModule {
     arg : ContentTypes.RewardCalculationArg
   ) : async () {
     let ledger = ModWallet.getActor(arg.env);
+    let rs = RSManager.getActor(arg.env);
+    let vesting = ModSecurity.Guard(arg.env, "VOTE_SERVICE").getVestingActor();
     let state = arg.state;
     let provider = switch (state.providers.get(arg.content.providerId)) {
       case (?p) p;
@@ -351,22 +356,48 @@ module ContentVotingModule {
     let CT : Float = ModClubParam.CS * Float.fromInt(arg.requiredVotes);
     // moderator dist
     for (userVote in rewardingVotes.vals()) {
-      let ta = Helpers.floatToTokens(
-        (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS)
-      );
+      let moderatorAcc = { owner = userVote.userId; subaccount = null };
+      let fullReward = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
+      let isSenior = switch (await rs.queryRSAndLevelByPrincipal(userVote.userId)) {
+        case (stat) { stat.score >= RSConstants.SENIOR1_THRESHOLD };
+        case (_) { false };
+      };
+      let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
+      // Dist of free part of rewarded tokens
       let _ = await ledger.icrc1_transfer({
         from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
-        to = { owner = userVote.userId; subaccount = null };
-        amount = ta;
+        to = moderatorAcc;
+        amount = modDistTokens;
         fee = null;
         memo = null;
         created_at_time = null;
       });
+
+      // Dist of locked part of rewarded tokens
+      let lockedReward = Utils.floatToTokens(fullReward - (fullReward * Constants.REWARD_DEVIATION));
+      let lockRes = await vesting.stage_vesting_block(moderatorAcc, lockedReward);
+      switch (lockRes) {
+        case (#ok(lockLen)) {
+          let _ = await ledger.icrc1_transfer({
+            from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+            to = {
+              owner = arg.modclubCanisterId;
+              subaccount = ?ICRCModule.ICRC_VESTING_SA;
+            };
+            amount = lockedReward;
+            fee = null;
+            memo = null;
+            created_at_time = null;
+          });
+        };
+        case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedReward)));
+      };
+
     };
 
-    let _ = await RSManager.getActor(arg.env).updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
+    let _ = await rs.updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
 
-    let tokensAmount = Helpers.floatToTokens(ModClubParam.GAMMA_T * CT);
+    let treasuryDistTokens = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
 
     // treasury dist
     let _ = await ledger.icrc1_transfer({
@@ -375,7 +406,7 @@ module ContentVotingModule {
         owner = arg.modclubCanisterId;
         subaccount = ?ICRCModule.ICRC_TREASURY_SA;
       };
-      amount = tokensAmount;
+      amount = treasuryDistTokens;
       fee = null;
       memo = null;
       created_at_time = null;
@@ -384,7 +415,7 @@ module ContentVotingModule {
     // burn.
     let _ = await ledger.burn(
       provider.subaccounts.get("ACCOUNT_PAYABLE"),
-      Helpers.floatToTokens(ModClubParam.GAMMA_B * CT)
+      Utils.floatToTokens(ModClubParam.GAMMA_B * CT)
     );
 
   };

@@ -12,7 +12,7 @@ printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Modclub test infra START ...${NC}
 function create_qa_canisters() {
   printf  "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Creating QA Canisters...${NC}\n"
 	dfx identity use default
-  dfx canister create auth_qa && dfx canister create wallet_qa && dfx canister create rs_qa && dfx canister create modclub_qa && printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
+  dfx canister create auth_qa && dfx canister create wallet_qa && dfx canister create rs_qa && dfx canister create modclub_qa && dfx canister create vesting_qa && printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
 }
 
@@ -22,14 +22,10 @@ function deploy_wallet_canister() {
 	dfx identity use default && dfx identity new qa_ledger_identity && dfx identity use qa_ledger_identity
 	local qa_ledger_principal=$(dfx identity get-principal)
 	dfx identity use default
+  local env=$(get_local_canisters)
 
   dfx deploy wallet_qa  --argument="(record {
-    env = variant { local = record {
-      modclub_canister_id = principal \"$(dfx canister id modclub_qa)\";
-      rs_canister_id = principal \"$(dfx canister id rs_qa)\";
-      wallet_canister_id = principal \"$(dfx canister id wallet_qa)\";
-      auth_canister_id = principal \"$(dfx canister id auth_qa)\";
-    }};
+    env = $env;
     ledgerInit = record {
       initial_mints = vec { 
         record { account = record { owner = principal \"$qa_ledger_principal\"; }; amount = 100_000_000_000_000; };
@@ -52,16 +48,29 @@ function deploy_wallet_canister() {
   )"
 }
 
+function get_local_canisters() {
+  echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }}"
+}
+
+function deploy_vesting_canister() {
+	dfx identity use default
+  local env=$(get_local_canisters)
+  dfx deploy vesting_qa  --argument="(record { env = $env } )"
+  return 0;
+}
+
 # Deploy AuthCanister
 function deploy_qa_canisters() {
+  local local_env=$(get_local_canisters)
 
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Deploy QA Canisters...${NC}\n"
-	dfx deploy auth_qa --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub_qa)\";wallet_canister_id = principal \"$(dfx canister id wallet_qa)\";rs_canister_id = principal \"$(dfx canister id rs_qa)\";auth_canister_id = principal \"$(dfx canister id auth_qa)\";}})"
+	dfx deploy auth_qa --argument="($local_env)"
 
 	deploy_wallet_canister
+  deploy_vesting_canister
 
-  dfx deploy rs_qa  --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub_qa)\";wallet_canister_id = principal \"$(dfx canister id wallet_qa)\";rs_canister_id = principal \"$(dfx canister id rs_qa)\";auth_canister_id = principal \"$(dfx canister id auth_qa)\";}})"
-	dfx deploy modclub_qa  --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub_qa)\";wallet_canister_id = principal \"$(dfx canister id wallet_qa)\";rs_canister_id = principal \"$(dfx canister id rs_qa)\";auth_canister_id = principal \"$(dfx canister id auth_qa)\";}})"
+  dfx deploy rs_qa  --argument="($local_env)"
+	dfx deploy modclub_qa  --argument="($local_env)"
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
 	return 0
 }
