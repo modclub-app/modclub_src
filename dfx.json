@@ -73,6 +73,18 @@
     "auth_qa": {
       "main": "src/authentication/main.mo",
       "type": "motoko"
+    },
+    "vesting": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "vesting_dev": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "vesting_qa": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
     }
   },
   "defaults": {
