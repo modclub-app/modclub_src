@@ -40,6 +40,7 @@ module {
       Debug.trap(message);
     };
   };
+
   // auth_canister_id = principal "t6rzw-2iaaa-aaaaa-aaama-cai";
   public func getCanisterId(canisterType : CommonTypes.ModclubCanister, env : CommonTypes.ENV) : Principal {
     switch (canisterType) {

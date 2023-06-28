@@ -9,6 +9,8 @@ import Rel "../../data_structures/Rel";
 import RelObj "../../data_structures/RelObj";
 import Text "mo:base/Text";
 import TrieMap "mo:base/TrieMap";
+import Common "../../../common/utils";
+import Nat64 "mo:base/Nat64";
 
 module State {
 
@@ -18,7 +20,7 @@ module State {
     // inner hashmap is for every challenge, how many times challenge user attempted and details
     pohUserChallengeAttempts : HashMap.HashMap<Principal, HashMap.HashMap<Text, Buffer.Buffer<PohTypes.PohChallengesAttemptV1>>>;
     // POH User data by unique token
-    token2ProviderAndUserData : HashMap.HashMap<Text, PohTypes.PohProviderAndUserData>;
+    token2ProviderAndUserData : TrieMap.TrieMap<Text, PohTypes.PohProviderAndUserData>;
     //mapping providerUserId to our userId
     providerUserIdToModclubUserIdByProviderId : HashMap.HashMap<Principal, RelObj.RelObj<Text, Principal>>;
     pohChallengePackages : TrieMap.TrieMap<Text, PohTypes.PohChallengePackage>;
@@ -59,8 +61,7 @@ module State {
         Principal.equal,
         Principal.hash
       );
-      token2ProviderAndUserData = HashMap.HashMap<Text, PohTypes.PohProviderAndUserData>(
-        1,
+      token2ProviderAndUserData = TrieMap.TrieMap<Text, PohTypes.PohProviderAndUserData>(
         Text.equal,
         Text.hash
       );
@@ -187,7 +188,6 @@ module State {
   };
 
   public func getStableState(state : PohState) : PohStableState {
-
     let pohUserChallengeAttempts = Buffer.Buffer<(Principal, [(Text, [PohTypes.PohChallengesAttemptV1])])>(
       state.pohUserChallengeAttempts.size()
     );
