@@ -1,0 +1,49 @@
+type SubscriberCanisterType = service {
+  handleSubscription : (ConsumerPayload) -> ();
+};
+type Subscriber = record {
+  _actor : SubscriberCanisterType;
+  consumer : principal;
+  topic : text;
+};
+type Result_2 = variant {
+  err : text;
+  ok : vec principal;
+};
+type Result_1 = variant {
+  err : text;
+  ok : vec Subscriber;
+};
+type Result = variant {
+  err : text;
+  ok : AdminsList;
+};
+type ModclubAuth = service {
+  getAdmins : () -> (Result_2) query;
+  getSubscriptions : () -> (Result_1) query;
+  isAdmin : (principal) -> (bool) query;
+  registerAdmin : (principal) -> (Result);
+  subscribe : (text) -> ();
+  unregisterAdmin : (text) -> (Result);
+};
+type List = opt record {
+  principal;
+  List;
+};
+type ENV = variant {
+  dev;
+  local : record {
+    auth_canister_id : principal;
+    modclub_canister_id : principal;
+    rs_canister_id : principal;
+    wallet_canister_id : principal;
+  };
+  prod;
+  qa;
+};
+type ConsumerPayload = variant { admins : vec principal };
+type AdminsList = opt record {
+  principal;
+  List;
+};
+service : (ENV) -> ModclubAuth;

@@ -92,13 +92,13 @@ const Task = ({ task, setVoted }) => {
             </div>
           )}
 
-          <Link
+          {/*<Link
             to={`/app/tasks/${task.id}`}
             className="button is-block mt-4"
             style={{ width: 100, margin: "auto" }}
           >
             See More
-          </Link>
+          </Link>*/}
         </Card.Content>
         <Card.Footer className="tasks-footer">
           <Button.Group alignItems="flex-end">
@@ -120,10 +120,11 @@ const Task = ({ task, setVoted }) => {
             <div className="mb-4 mt-1" style={{ width: "100%" }}>
               <RulesList platform={task.providerName} rules={rules} />
             </div>
-            <TaskConfirmationModal
-              task={task}
-              onUpdate={() => setVoted(true)}
-            />
+            <Link to={`/app/tasks/${task.id}`}>
+              <Button color="primary" className="ml-4">
+                See More
+              </Button>
+            </Link>
           </Button.Group>
         </Card.Footer>
       </Card>

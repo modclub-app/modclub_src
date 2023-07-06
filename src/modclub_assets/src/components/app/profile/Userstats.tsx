@@ -1,10 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import {
-  getTokenHoldings,
-  getPerformance,
   queryRSAndLevelByPrincipal,
-  queryRSAndLevel,
 } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { Columns, Card, Heading, Button } from "react-bulma-components";
@@ -87,11 +84,11 @@ export default function Userstats({ detailed = false }) {
 
   useEffect(() => {
     const fetchTokenHoldings = async () => {
-      const tokenHoldings = await getTokenHoldings();
-      let perf = 0;
+      // const tokenHoldings = await getTokenHoldings();
+      let perf;
       if (principalID !== "") {
         perf = await (await queryRSAndLevelByPrincipal(principalID!)).score;
-        setPerformance(perf);
+        setPerformance(Number(perf));
       }
       setTokenHoldings(tokenHoldings);
       setHoldingsUpdated(false);

@@ -191,6 +191,6 @@ while [ $secs -gt 0 ]; do
    : $((secs--))
 done
 echo "Thank you for your patient..."
-dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-2""\", variant {approved}, null)"
+dfx canister call modclub vote "(\""$MODPROVIDER_PRINCIPAL"-content-2""\", variant {approved}, null)"
 failed
 echo "-------------------------------"

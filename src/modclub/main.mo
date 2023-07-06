@@ -2030,6 +2030,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return result;
   };
 
+  public shared ({ caller }) func addToApprovedUser(userId : Principal) : async () {
+    voteManager.addToAutoApprovedPOHUser(userId);
+  };
+
   public shared ({ caller }) func getProviderAdmins(providerId : Principal) : async [
     Types.Profile
   ] {
@@ -2364,6 +2368,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#shufflePohContent _) { authGuard.isAdmin(caller) };
       case (#getTaskStats _) { authGuard.isAdmin(caller) };
       case (#setVoteParamsForLevel _) { authGuard.isAdmin(caller) };
+      case (#addToApprovedUser _) { authGuard.isAdmin(caller) };
       case (#setRandomization _) { authGuard.isAdmin(caller) };
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };

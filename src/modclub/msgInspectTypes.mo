@@ -4,6 +4,7 @@ import CommonTypes "../common/types";
 import PohTypes "./service/poh/types";
 import ICRCTypes "../wallet/ICRC/types";
 import Types "./types";
+import Principal "mo:base/Principal";
 
 module {
 
@@ -13,6 +14,7 @@ module {
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
     #AdminCheckPohVerificationResp : () -> (Text, Principal);
     #addProviderAdmin : () -> (Principal, Text, ?Principal);
+    #addToApprovedUser : () -> Principal;
     #topUpProviderReserve : () -> ({ providerId : ?Principal; amount : Nat });
     #providerSaBalance : () -> (Text);
     #addRules : () -> ([Text], ?Principal);

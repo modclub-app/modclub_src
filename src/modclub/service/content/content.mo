@@ -318,7 +318,7 @@ module ContentModule {
 
   public func hasAvailableSpot(reservedsList : [Types.Reserved], now : Types.Timestamp, requiredVote : Int) : Bool {
     let list = Utils.getNonExpiredList(reservedsList, now);
-    if (reservedsList.size() >= requiredVote) {
+    if (list.size() == requiredVote) {
       return false;
     };
     return true;

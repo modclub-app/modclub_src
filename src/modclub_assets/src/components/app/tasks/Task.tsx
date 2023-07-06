@@ -2,9 +2,16 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
-import { getContent } from "../../../utils/api";
+import {
+  getContent,
+  getReservedByContentId,
+  canReserveContent,
+  reserveContent,
+  queryRSAndLevelByPrincipal,
+} from "../../../utils/api";
 import {
   Columns,
+  Modal,
   Card,
   Level,
   Heading,
@@ -55,10 +62,16 @@ function resizeIframe(iframe) {
 }
 
 export default function Task() {
-  const { user } = useAuth();
+  const initTime = "02:00";
+  const [full, setFull] = useState<boolean | null>(null);
+  const { user, identity } = useAuth();
   const { taskId } = useParams();
   const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
+  const [reserved, setReserved] = useState(false);
+  const [level, setLevel] = useState("");
+  const [showReserveModal, setShowReserveModal] = useState(false);
+  const [time, setTime] = useState("02:00");
 
   const getImage = (data: any) => {
     const image = unwrap<Image__1>(data);
@@ -67,18 +80,65 @@ export default function Task() {
 
   const fetchTask = async () => {
     const content = await getContent(taskId);
-    console.log(content);
     setTask(content);
   };
 
+  const fetchData = async () =>{
+    const [can_reserved, get_level] = await Promise.all([
+      await canReserveContent(taskId.toString()),
+      await queryRSAndLevelByPrincipal(
+        identity.getPrincipal().toText()
+      )
+    ]);
+    if (Object.keys(can_reserved)[0] == "ok") {
+      setFull(!Object.values<boolean>(can_reserved)[0]);
+    }
+    setLevel(Object.keys(get_level.level)[0].toString());
+  }
+
+  /* useEffect(() => {
+     if (full) {
+       setShowReserveModal(true)
+     }
+   }, [])
+  */
+
   useEffect(() => {
-    user && !task && fetchTask();
+    user && !task && fetchTask() && fetchData();
   }, [user]);
 
   useEffect(() => {
     user && voted && fetchTask();
     setVoted(false);
   }, [voted]);
+
+  useEffect(() => {
+    let intervalId;
+    if (reserved) {
+      intervalId = setInterval(() => {
+        setTime((prevTime) => {
+          const [minutes, seconds] = prevTime.split(":").map(Number);
+
+          if ((minutes === 0 && seconds === 0) || task.hasVoted[0]) {
+            clearInterval(intervalId);
+            return "00:00";
+          }
+
+          if (seconds === 0) {
+            return `${minutes - 1}:${59}`;
+          }
+
+          return `${minutes}:${(seconds - 1).toString().padStart(2, "0")}`;
+        });
+      }, 1000);
+    } else {
+      setTime(initTime);
+    }
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [reserved]);
 
   const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
     "img",
@@ -95,6 +155,16 @@ export default function Task() {
     allowedTags,
     allowedAttributes,
   });
+
+  const toggleReserveModal = () => {
+    setShowReserveModal(!showReserveModal);
+  };
+  const makeReserved = async () => {
+    await reserveContent(taskId).then(() => {
+      setReserved(true);
+    });
+    setShowReserveModal(!showReserveModal);
+  };
 
   useEffect(() => {
     const iframes = document.querySelectorAll("iframe");
@@ -114,6 +184,29 @@ export default function Task() {
     });
   }, [sanitizedHtml]);
 
+  const ReserveModal = ({ toggleReserveModal, content }) => {
+    return (
+      <Modal
+        show={showReserveModal}
+        onClose={toggleReserveModal}
+        closeOnBlur={true}
+        showClose={false}
+        className="scrollable"
+      >
+        <Modal.Card backgroundColor="circles">
+          <Modal.Card.Body>
+            {content}
+            <Button.Group>
+              <Button color="danger" onClick={makeReserved} disabled={reserved}>
+                Okay
+              </Button>
+            </Button.Group>
+          </Modal.Card.Body>
+        </Modal.Card>
+      </Modal>
+    );
+  };
+
   return (
     <>
       <Userstats />
@@ -131,7 +224,7 @@ export default function Task() {
                 </Card.Header.Title>
                 <Progress
                   value={Number(task.voteCount)}
-                  min={Number(task.requiredVotes)}
+                  min={Number(task.voteParameters.requiredVotes)}
                 />
               </Card.Header>
               <Card.Content>
@@ -179,16 +272,119 @@ export default function Task() {
                   </Card.Content>
                 </Card> */}
               </Card.Content>
-              <Card.Footer className="pt-0" style={{ border: 0 }}>
-                <Button.Group>
-                  <TaskConfirmationModal
-                    task={task}
-                    fullWidth={true}
-                    onUpdate={() => setVoted(true)}
-                  />
-                </Button.Group>
-              </Card.Footer>
+
+              {reserved && (
+                <>
+                  {!task.hasVoted[0] && (
+                    <Card.Footer className="pt-0" style={{ border: 0 }}>
+                      <Button.Group>
+                        <TaskConfirmationModal
+                          task={task}
+                          fullWidth={true}
+                          onUpdate={() => setVoted(true)}
+                        />
+                      </Button.Group>
+                    </Card.Footer>
+                  )}
+                </>
+              )}
             </Card>
+
+            <ReserveModal
+              toggleReserveModal={toggleReserveModal}
+              content={
+                full ? (
+                  <>
+                    <Heading>Reservations Full</Heading>
+                    <Heading subtitle>
+                      There are no more slots available for this task.
+                    </Heading>
+                  </>
+                ) : (
+                  <>
+                    <Heading>Task Reserved</Heading>
+                    <Heading subtitle>
+                      You have reserved the task. You can now cast your vote:
+                    </Heading>
+                    <Heading subtitle className="is-flex">
+                      <span className="my-auto">
+                        Reservation expires: &nbsp;
+                      </span>
+                      <span className="has-background-grey p-1 box is-rounded my-auto">
+                        {time}
+                      </span>
+                    </Heading>
+                  </>
+                )
+              }
+            />
+
+            {/* full ?
+              <Card className="mt-5">
+                <Card.Content>
+                  <>
+                    <Heading>Reservations Full</Heading>
+                    <Heading subtitle>
+                      There are no more slots available for this task.
+                    </Heading>
+                  </>
+                </Card.Content>
+              </Card>
+            */}
+
+            {reserved && !task.hasVoted[0] && (
+              <Card className="mt-5">
+                <Card.Content className="is-flex is-justify-content-center">
+                  <>
+                    <Heading subtitle className="is-flex">
+                      <span className="my-auto">
+                        Reservation expires: &nbsp;
+                      </span>
+                      <span className="has-background-grey p-1 box is-rounded my-auto">
+                        {time}
+                      </span>
+                    </Heading>
+                  </>
+                </Card.Content>
+              </Card>
+            )}
+
+            {level != "novice" && !reserved && !task.hasVoted[0] && (
+              <Card className="mt-5">
+                <Card.Content className="is-flex is-justify-content-center">
+                  <>
+                    {full ? (
+                      <Heading subtitle className="is-flex">
+                        <span className="my-auto">Reservation full</span>
+                      </Heading>
+                    ) : (
+                      <Button
+                        color="primary"
+                        fullwidth={true}
+                        onClick={() => {
+                          toggleReserveModal();
+                        }}
+                        disabled={!!reserved || !!full || !!task.hasVoted[0]}
+                      >
+                        Reserve
+                      </Button>
+                    )}
+                  </>
+                </Card.Content>
+              </Card>
+            )}
+
+            {task.hasVoted[0] && (
+              <Card className="mt-5">
+                <Card.Content className="is-flex is-justify-content-center">
+                  <>
+                    <Heading subtitle className="is-flex">
+                      <span className="my-auto">Task voted</span>
+                    </Heading>
+                  </>
+                </Card.Content>
+              </Card>
+            )}
           </Columns.Column>
 
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 4 }}>

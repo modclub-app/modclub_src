@@ -433,3 +433,15 @@ export async function queryBalancePr(
       )
   );
 }
+// Reservation System
+export async function reserveContent(contentId: string): Promise<void> {
+  return trace_error(async () => (await getMC()).reserveContent(contentId));
+}
+export async function getReservedByContentId(contentId: string): Promise<void> {
+  return trace_error(async () =>
+    (await getMC()).getReservedByContentId(contentId)
+  );
+}
+export async function canReserveContent(contentId: string): Promise<any> {
+  return trace_error(async () => (await getMC()).canReserveContent(contentId));
+}

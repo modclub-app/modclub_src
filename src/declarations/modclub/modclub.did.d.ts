@@ -8,13 +8,13 @@ export interface Activity {
   voteCount: bigint;
   contentType: ContentType;
   rewardRelease: Timestamp;
-  minVotes: bigint;
   createdAt: Timestamp;
   vote: Vote;
   minStake: bigint;
   updatedAt: Timestamp;
   providerName: string;
   providerId: ProviderId;
+  requiredVotes: bigint;
 }
 export type AssocList = [] | [[[Key, Trie_1], List_1]];
 export type AssocList_1 = [] | [[[Key_1, null], List]];
@@ -40,11 +40,11 @@ export interface Branch_3 {
   size: bigint;
   right: Trie_3;
 }
-export type CanisterCyclesAggregatedData = BigUint64Array;
-export type CanisterHeapMemoryAggregatedData = BigUint64Array;
+export type CanisterCyclesAggregatedData = BigUint64Array | bigint[];
+export type CanisterHeapMemoryAggregatedData = BigUint64Array | bigint[];
 export interface CanisterHttpResponsePayload {
   status: bigint;
-  body: Uint8Array;
+  body: Uint8Array | number[];
   headers: Array<HttpHeader>;
 }
 export type CanisterLogFeature =
@@ -67,7 +67,7 @@ export type CanisterLogRequest =
 export type CanisterLogResponse =
   | { messagesInfo: CanisterLogMessagesInfo }
   | { messages: CanisterLogMessages };
-export type CanisterMemoryAggregatedData = BigUint64Array;
+export type CanisterMemoryAggregatedData = BigUint64Array | bigint[];
 export interface CanisterMetrics {
   data: CanisterMetricsData;
 }
@@ -81,35 +81,31 @@ export interface ChallengeResponse {
   challengeId: string;
   requestedAt: [] | [bigint];
 }
-export interface Claim {
-  id: ClaimId;
-  claimExpiryTime: Timestamp;
-  createdAt: Timestamp;
-  profileId: string;
-  updatedAt: Timestamp;
-}
-export type ClaimId = string;
 export interface Complexity {
   expiryTime: Timestamp;
   level: Level;
 }
+export type ConsumerPayload = { admins: Array<Principal> };
 export type ContentId = string;
 export interface ContentPlus {
   id: ContentId;
   status: ContentStatus;
   title: [] | [string];
   voteCount: bigint;
+  receipt: Receipt;
   contentType: ContentType;
-  minVotes: bigint;
   createdAt: Timestamp;
   text: [] | [string];
   sourceId: string;
   minStake: bigint;
   updatedAt: Timestamp;
+  reservedList: Array<Reserved>;
   providerName: string;
   image: [] | [Image];
   hasVoted: [] | [boolean];
   providerId: Principal;
+  voteParameters: VoteParameters;
+  requiredVotes: bigint;
 }
 export interface ContentResult {
   status: ContentStatus;
@@ -146,6 +142,7 @@ export type ENV =
         wallet_canister_id: Principal;
         modclub_canister_id: Principal;
         rs_canister_id: Principal;
+        auth_canister_id: Principal;
       };
     };
 export interface GetLatestLogMessagesParameters {
@@ -184,11 +181,11 @@ export interface HttpHeader {
 export interface HttpRequest {
   url: string;
   method: string;
-  body: Uint8Array;
+  body: Uint8Array | number[];
   headers: Array<HeaderField>;
 }
 export interface HttpResponse {
-  body: Uint8Array;
+  body: Uint8Array | number[];
   headers: Array<HeaderField>;
   upgrade: [] | [boolean];
   streaming_strategy: [] | [StreamingStrategy];
@@ -196,7 +193,7 @@ export interface HttpResponse {
 }
 export interface Image {
   imageType: string;
-  data: Uint8Array;
+  data: Uint8Array | number[];
 }
 export interface Key {
   key: string;
@@ -222,6 +219,11 @@ export interface Leaf_3 {
   size: bigint;
   keyvals: AssocList_3;
 }
+export type Level =
+  | { normal: null }
+  | { hard: null }
+  | { xhard: null }
+  | { simple: null };
 export type List = [] | [[[Key_1, null], List]];
 export type List_1 = [] | [[[Key, Trie_1], List_1]];
 export type List_2 = [] | [[[Key, null], List_2]];
@@ -244,6 +246,7 @@ export interface ModClub {
   addToAllowList: ActorMethod<[Principal], undefined>;
   adminInit: ActorMethod<[], undefined>;
   adminUpdateEmail: ActorMethod<[Principal, string], Profile>;
+  canReserveContent: ActorMethod<[string], Result_4>;
   checkIfUserOptToReciveAlerts: ActorMethod<[], boolean>;
   collectCanisterMetrics: ActorMethod<[], undefined>;
   configurePohForProvider: ActorMethod<
@@ -262,7 +265,6 @@ export interface ModClub {
   generateSigningKey: ActorMethod<[], undefined>;
   getActivity: ActorMethod<[boolean], Array<Activity>>;
   getAdminProviderIDs: ActorMethod<[], Array<Principal>>;
-  getAdmins: ActorMethod<[], Result_4>;
   getAllContent: ActorMethod<[ContentStatus], Array<ContentPlus>>;
   getAllDataCanisterIds: ActorMethod<[], [Array<Principal>, Array<string>]>;
   getAllPohTasksForAdminUsers: ActorMethod<
@@ -300,17 +302,18 @@ export interface ModClub {
     Array<ContentPlus>
   >;
   getProviderRules: ActorMethod<[], Array<Rule>>;
+  getReservedByContentId: ActorMethod<[string], Result_1>;
   getRules: ActorMethod<[Principal], Array<Rule>>;
   getTaskStats: ActorMethod<[bigint], [bigint, bigint, bigint, bigint]>;
   getTasks: ActorMethod<[bigint, bigint, boolean], Array<ContentPlus>>;
   getVotePerformance: ActorMethod<[], number>;
+  handleSubscription: ActorMethod<[ConsumerPayload], undefined>;
   http_request: ActorMethod<[HttpRequest], HttpResponse>;
   http_request_update: ActorMethod<[HttpRequest], HttpResponse>;
-  isUserAdmin: ActorMethod<[], boolean>;
   issueJwt: ActorMethod<[], string>;
   pohCallbackForModclub: ActorMethod<[PohVerificationResponsePlus], undefined>;
   populateChallenges: ActorMethod<[], undefined>;
-  registerAdmin: ActorMethod<[Principal], Result>;
+  providerSaBalance: ActorMethod<[string], Tokens>;
   registerModerator: ActorMethod<
     [string, [] | [string], [] | [Image]],
     Profile
@@ -319,11 +322,14 @@ export interface ModClub {
   registerUserToReceiveAlerts: ActorMethod<[Principal, boolean], boolean>;
   removeProviderAdmin: ActorMethod<[Principal, Principal], ProviderResult>;
   removeRules: ActorMethod<[Array<RuleId>, [] | [Principal]], undefined>;
-  resetUserChallengeAttempt: ActorMethod<[string], Result_1>;
+  reserveContent: ActorMethod<[string], undefined>;
+  resetUserChallengeAttempt: ActorMethod<[string], Result>;
   retiredDataCanisterIdForWriting: ActorMethod<[string], undefined>;
-  retrieveChallengesForUser: ActorMethod<[string], Result_1>;
+  retrieveChallengesForUser: ActorMethod<[string], Result>;
   sendVerificationEmail: ActorMethod<[string], boolean>;
   setRandomization: ActorMethod<[boolean], undefined>;
+  setVoteParamsForLevel: ActorMethod<[bigint, Level], undefined>;
+  showAdmins: ActorMethod<[], Array<Principal>>;
   shuffleContent: ActorMethod<[], undefined>;
   shufflePohContent: ActorMethod<[], undefined>;
   submitChallengeData: ActorMethod<
@@ -331,16 +337,25 @@ export interface ModClub {
     PohChallengeSubmissionResponse
   >;
   submitHtmlContent: ActorMethod<[string, string, [] | [string]], string>;
-  submitImage: ActorMethod<[string, Uint8Array, string, [] | [string]], string>;
+  submitImage: ActorMethod<
+    [string, Uint8Array | number[], string, [] | [string]],
+    string
+  >;
   submitText: ActorMethod<[string, string, [] | [string]], string>;
   subscribe: ActorMethod<[SubscribeMessage], undefined>;
   subscribePohCallback: ActorMethod<[SubscribePohMessage], undefined>;
   toggleAllowSubmission: ActorMethod<[boolean], undefined>;
+  topUpProviderReserve: ActorMethod<
+    [{ amount: bigint; providerId: [] | [Principal] }],
+    undefined
+  >;
   transform: ActorMethod<[TransformArgs], CanisterHttpResponsePayload>;
   unStakeTokens: ActorMethod<[bigint], string>;
-  unregisterAdmin: ActorMethod<[string], Result>;
   updateProvider: ActorMethod<[Principal, ProviderMeta], ProviderMetaResult>;
-  updateProviderLogo: ActorMethod<[Principal, Uint8Array, string], string>;
+  updateProviderLogo: ActorMethod<
+    [Principal, Uint8Array | number[], string],
+    string
+  >;
   updateRules: ActorMethod<[Array<Rule>, [] | [Principal]], undefined>;
   updateSettings: ActorMethod<
     [Principal, ProviderSettings],
@@ -397,7 +412,7 @@ export interface PohChallengeSubmissionRequest {
   offset: bigint;
   challengeId: string;
   dataSize: bigint;
-  challengeDataBlob: [] | [Uint8Array];
+  challengeDataBlob: [] | [Uint8Array | number[]];
 }
 export interface PohChallengeSubmissionResponse {
   submissionStatus: PohChallengeSubmissionStatus;
@@ -507,23 +522,23 @@ export interface PohTaskData {
 }
 export interface PohTaskDataAndVotesWrapperPlus {
   reward: number;
-  minVotes: bigint;
   createdAt: bigint;
   minStake: bigint;
   updatedAt: bigint;
   pohTaskData: Array<PohTaskData>;
   packageId: string;
+  requiredVotes: bigint;
   voteUserDetails: Array<VotePlusUser>;
 }
 export interface PohTaskDataWrapperPlus {
   reward: number;
-  minVotes: bigint;
   votes: bigint;
   createdAt: bigint;
   minStake: bigint;
   updatedAt: bigint;
   pohTaskData: Array<PohTaskData>;
   packageId: string;
+  requiredVotes: bigint;
 }
 export interface PohTaskPlus {
   status: ContentStatus;
@@ -531,12 +546,12 @@ export interface PohTaskPlus {
   title: [] | [string];
   profileImageUrlSuffix: [] | [string];
   voteCount: bigint;
-  minVotes: bigint;
   createdAt: bigint;
   minStake: bigint;
   updatedAt: bigint;
   hasVoted: [] | [boolean];
   packageId: string;
+  requiredVotes: bigint;
 }
 export interface PohTaskPlusForAdmin {
   status: ContentStatus;
@@ -611,22 +626,36 @@ export type ProviderSettingResult =
   | { ok: ProviderSettings }
   | { err: ProviderError };
 export interface ProviderSettings {
-  minVotes: bigint;
   minStaked: bigint;
+  requiredVotes: bigint;
 }
+export interface Receipt {
+  id: ReceiptId;
+  cost: bigint;
+  createdAt: Timestamp;
+}
+export type ReceiptId = string;
 export interface RelShared {
   forw: Trie2D;
 }
 export interface RelShared_1 {
   forw: Trie2D_1;
 }
-export type Result = { ok: null } | { err: string };
-export type Result_1 = { ok: Array<PohChallengesAttempt> } | { err: PohError };
+export interface Reserved {
+  id: ReservedId;
+  createdAt: Timestamp;
+  profileId: string;
+  reservedExpiryTime: Timestamp;
+  updatedAt: Timestamp;
+}
+export type ReservedId = string;
+export type Result = { ok: Array<PohChallengesAttempt> } | { err: PohError };
+export type Result_1 = { ok: Reserved } | { err: string };
 export type Result_2 =
   | { ok: PohTaskDataAndVotesWrapperPlus }
   | { err: PohError };
 export type Result_3 = { ok: PohTaskDataWrapperPlus } | { err: PohError };
-export type Result_4 = { ok: Array<Principal> } | { err: string };
+export type Result_4 = { ok: boolean } | { err: string };
 export type Role = { admin: null } | { moderator: null } | { owner: null };
 export interface Rule {
   id: RuleId;
@@ -635,7 +664,7 @@ export interface Rule {
 export type RuleId = string;
 export interface StreamingCallbackHttpResponse {
   token: Token;
-  body: Uint8Array;
+  body: Uint8Array | number[];
 }
 export type StreamingStrategy = {
   Callback: { token: Token; callback: [Principal, string] };
@@ -648,8 +677,9 @@ export interface SubscribePohMessage {
 }
 export type Timestamp = bigint;
 export type Token = {};
+export type Tokens = bigint;
 export interface TransformArgs {
-  context: Uint8Array;
+  context: Uint8Array | number[];
   response: CanisterHttpResponsePayload;
 }
 export type Trie = { branch: Branch } | { leaf: Leaf } | { empty: null };
@@ -661,7 +691,7 @@ export type Trie2D_1 =
 export type Trie_1 = { branch: Branch_1 } | { leaf: Leaf_1 } | { empty: null };
 export type Trie_2 = { branch: Branch_2 } | { leaf: Leaf_2 } | { empty: null };
 export type Trie_3 = { branch: Branch_3 } | { leaf: Leaf_3 } | { empty: null };
-export type UpdateCallsAggregatedData = BigUint64Array;
+export type UpdateCallsAggregatedData = BigUint64Array | bigint[];
 export type UserId = Principal;
 export interface VerifyHumanityResponse {
   status: PohVerificationStatus;
