@@ -8,6 +8,9 @@ import Nat8 "mo:base/Nat8";
 import Float "mo:base/Float";
 import Text "mo:base/Text";
 import Bool "mo:base/Bool";
+import Blob "mo:base/Blob";
+import Buffer "mo:base/Buffer";
+import Char "mo:base/Char";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
 import CommonTypes "types";
@@ -112,4 +115,47 @@ module {
     );
   };
 
+  public func textToBChunks(t : Text) : Buffer.Buffer<Blob> {
+    let chunks = Buffer.Buffer<Blob>(1);
+    switch (Text.size(t) <= Constants.CONTENT_CHUNK_LIMIT) {
+      case (true) {
+        chunks.add(Text.encodeUtf8(t));
+      };
+      case (false) {
+        var chunk = "";
+        for (c in Text.toIter(t)) {
+          if (Text.size(chunk) == Constants.CONTENT_CHUNK_LIMIT) {
+            chunks.add(Text.encodeUtf8(chunk));
+            chunk := "";
+          };
+          chunk #= Char.toText(c);
+        };
+        chunks.add(Text.encodeUtf8(chunk));
+        chunk := "";
+      };
+    };
+    chunks;
+  };
+
+  public func bytesToBChunks(bytes : [Nat8]) : Buffer.Buffer<Blob> {
+    let chunks = Buffer.Buffer<Blob>(1);
+    switch (Array.size(bytes) <= Constants.CONTENT_CHUNK_LIMIT) {
+      case (true) {
+        chunks.add(Blob.fromArray(bytes));
+      };
+      case (false) {
+        var chunk = Buffer.Buffer<Nat8>(1);
+        for (b in bytes.vals()) {
+          if (chunk.size() == Constants.CONTENT_CHUNK_LIMIT) {
+            chunks.add(Blob.fromArray(Buffer.toArray(chunk)));
+            chunk.clear();
+          };
+          chunk.add(b);
+        };
+        chunks.add(Blob.fromArray(Buffer.toArray(chunk)));
+        chunk.clear();
+      };
+    };
+    chunks;
+  };
 };

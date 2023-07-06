@@ -1,16 +1,19 @@
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
+import Blob "mo:base/Blob";
 import DownloadUtil "./downloadUtil";
 import GlobalState "./statev2";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
 import Bool "mo:base/Bool";
+import Text "mo:base/Text";
 import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import RelObj "./data_structures/RelObj";
 import TrieMap "mo:base/TrieMap";
 import Types "./types";
+import StorageSolution "./service/storage/storage";
 
 module {
 
@@ -19,8 +22,9 @@ module {
     state : GlobalState.State,
     varName : Text,
     start : Int,
-    end : Int
-  ) : [[Text]] {
+    end : Int,
+    storage : StorageSolution.StorageSolution
+  ) : async [[Text]] {
     switch (varName) {
       case ("GLOBAL_ID_MAP") {
         return serializeGLOBAL_ID_MAP(state.GLOBAL_ID_MAP);
@@ -53,10 +57,10 @@ module {
         return serializeVotes(state.votes);
       };
       case ("textContent") {
-        return serializeTextContent(state.textContent);
+        return await serializeTextContent(state.textContent, storage);
       };
       case ("imageContent") {
-        return serializeImageContent(state.imageContent);
+        return await serializeImageContent(state.imageContent, storage);
       };
       case ("content2votes") {
         return serializeContent2votes(state.content2votes);
@@ -234,27 +238,48 @@ module {
     return Buffer.toArray<[Text]>(buff);
   };
   func serializeTextContent(
-    textContents : HashMap.HashMap<Text, Types.TextContent>
-  ) : [[Text]] {
+    textContents : HashMap.HashMap<Text, Types.TextContent>,
+    storage : StorageSolution.StorageSolution
+  ) : async [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
-    for ((cId, textContent) in textContents.entries()) {
+    for ((cId, _) in textContents.entries()) {
+      let chunkedContent = await storage.getChunkedContent(cId);
+      var textContent = "";
+      for (c in Option.get(chunkedContent, []).vals()) {
+        let decoded = Text.decodeUtf8(c);
+        textContent #= Option.get(decoded, "");
+      };
       buff.add([
         cId,
-        DownloadUtil.joinArr(DownloadUtil.toString_TextContent([textContent]))
+        textContent
       ]);
     };
     return Buffer.toArray<[Text]>(buff);
   };
 
   func serializeImageContent(
-    imageContents : HashMap.HashMap<Text, Types.ImageContent>
-  ) : [[Text]] {
+    imageContents : HashMap.HashMap<Text, Types.ImageContent>,
+    storage : StorageSolution.StorageSolution
+  ) : async [[Text]] {
     let buff = Buffer.Buffer<[Text]>(1);
-    for ((cId, imageContent) in imageContents.entries()) {
+    for ((cId, imageMeta) in imageContents.entries()) {
+      let content = Buffer.Buffer<Nat8>(1);
+      let chunkedContent = await storage.getChunkedContent(cId);
+      for (blobChunk in Option.get(chunkedContent, []).vals()) {
+        content.append(Buffer.fromArray(Blob.toArray(blobChunk)));
+      };
       buff.add([
         cId,
         DownloadUtil.joinArr(
-          DownloadUtil.toString_ImageContent([imageContent])
+          DownloadUtil.toString_ImageContent([
+            {
+              id = cId;
+              image = {
+                data = Buffer.toArray(content);
+                imageType = imageMeta.image.imageType;
+              };
+            }
+          ])
         )
       ]);
     };

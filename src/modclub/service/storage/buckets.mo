@@ -1,6 +1,8 @@
 import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
 import Blob "mo:base/Blob";
+import Buffer "mo:base/Buffer";
+import Array "mo:base/Array";
 import Nat64 "mo:base/Nat64";
 import Debug "mo:base/Debug";
 import Prim "mo:prim";
@@ -12,6 +14,7 @@ import Error "mo:base/Error";
 import Iter "mo:base/Iter";
 import Time "mo:base/Time";
 import Timer "mo:base/Timer";
+import Result "mo:base/Result";
 import Constants "../../../common/constants";
 import Helpers "../../helpers";
 import ModClubParam "../parameters/params";
@@ -88,10 +91,7 @@ actor class Bucket() = this {
         break l;
       };
     };
-    if (found) {
-      return true;
-    };
-    return false;
+    found;
   };
 
   public shared ({ caller }) func setParams(
@@ -251,7 +251,7 @@ actor class Bucket() = this {
     };
   };
 
-  func getFileInfoData(contentId : Text) : async ?Types.ContentInfo {
+  public query func getFileInfoData(contentId : Text) : async ?Types.ContentInfo {
     do ? {
       let v = state.contentInfo.get(contentId)!;
       {
@@ -262,7 +262,7 @@ actor class Bucket() = this {
     };
   };
 
-  public query func getChunks(fileId : Text, chunkNum : Nat) : async ?Blob {
+  public query func getChunk(fileId : Text, chunkNum : Nat) : async ?Blob {
     state.chunks.get(chunkId(fileId, chunkNum));
   };
 

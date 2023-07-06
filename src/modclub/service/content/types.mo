@@ -6,6 +6,7 @@ import GlobalState "../../statev2";
 import Canistergeek "../../canistergeek/canistergeek";
 import CommonTypes "../../../common/types";
 import HashMap "mo:base/HashMap";
+import StorageSolution "../storage/storage";
 
 module {
   public type ReservedArg = {
@@ -16,6 +17,13 @@ module {
   };
 
   public type CommonArg = {
+    caller : Principal;
+    globalState : GlobalState.State;
+    contentState : ContentState.ContentStateStable;
+    storageSolution : StorageSolution.StorageSolution;
+  };
+
+  public type CreateReceiptArg = {
     caller : Principal;
     globalState : GlobalState.State;
     contentState : ContentState.ContentStateStable;
@@ -55,6 +63,7 @@ module {
     logger : Canistergeek.Logger;
     contentQueueManager : QueueManager.QueueManager;
     randomizationEnabled : Bool;
+    storageSolution : StorageSolution.StorageSolution;
   };
 
   public type ProviderContentArg = {
@@ -65,6 +74,7 @@ module {
     start : Nat;
     end : Nat;
     contentQueueManager : QueueManager.QueueManager;
+    storageSolution : StorageSolution.StorageSolution;
   };
 
   public type VoteArg = {

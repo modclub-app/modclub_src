@@ -490,16 +490,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   // ----------------------Content Related Methods------------------------------
-  public query ({ caller }) func getContent(id : Text) : async ?Types.ContentPlus {
+  public shared ({ caller }) func getContent(id : Text) : async ?Types.ContentPlus {
     let voteCount = getVoteCount(id, ?caller);
-    return ContentManager.getContent(caller, id, voteCount, stateV2);
+    return await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution);
   };
 
-  public query ({ caller }) func getContentResult(
+  public shared ({ caller }) func getContentResult(
     id : Text
   ) : async Types.ContentResult {
     let voteCount = getVoteCount(id, ?caller);
-    switch (ContentManager.getContent(caller, id, voteCount, stateV2)) {
+    let cp = await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution);
+    switch (cp) {
       case (?result) {
         switch (AuthManager.checkProviderPermission(caller, ?result.providerId, stateV2)) {
           case (#err(error)) return throw Error.reject("Unauthorized");
@@ -548,7 +549,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let voteParamId = getVoteParamIdByLevel(#simple);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
-    return ContentManager.submitTextOrHtmlContent(
+    return await ContentManager.submitTextOrHtmlContent(
       {
         sourceId;
         text;
@@ -561,6 +562,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         caller;
         globalState = stateV2;
         contentState = contentStableState;
+        storageSolution = storageSolution;
       }
     );
   };
@@ -590,7 +592,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let voteParamId = getVoteParamIdByLevel(#simple);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
-    var contentID = ContentManager.submitTextOrHtmlContent(
+    var contentID = await ContentManager.submitTextOrHtmlContent(
       {
         sourceId;
         text = htmlContent;
@@ -603,6 +605,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         caller;
         globalState = stateV2;
         contentState = contentStableState;
+        storageSolution;
       }
     );
     return contentID;
@@ -635,7 +638,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let voteParamId = getVoteParamIdByLevel(#simple);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
-    return ContentManager.submitImage(
+    return await ContentManager.submitImage(
       {
         sourceId;
         image;
@@ -648,12 +651,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         caller;
         globalState = stateV2;
         contentState = contentStableState;
+        storageSolution;
       }
     );
   };
 
   // Retrieve all content for the calling Provider
-  public query ({ caller }) func getProviderContent(
+  public shared ({ caller }) func getProviderContent(
     providerId : Principal,
     status : Types.ContentStatus,
     start : Nat,
@@ -666,7 +670,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (start < 0 or end < 0 or start > end) {
       throw Error.reject("Invalid range");
     };
-    return ContentManager.getProviderContent({
+    return await ContentManager.getProviderContent({
       providerId;
       getVoteCount;
       globalState = stateV2;
@@ -674,10 +678,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       start;
       end;
       contentQueueManager;
+      storageSolution;
     });
   };
 
-  public query ({ caller }) func getAllContent(status : Types.ContentStatus) : async [
+  public shared ({ caller }) func getAllContent(status : Types.ContentStatus) : async [
     Types.ContentPlus
   ] {
     switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
@@ -702,18 +707,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (_)();
     };
-    return ContentManager.getAllContent(
+    return await ContentManager.getAllContent(
       caller,
       status,
       getVoteCount,
       contentQueueManager,
       canistergeekLogger,
       stateV2,
-      randomizationEnabled
+      randomizationEnabled,
+      storageSolution
     );
   };
 
-  public query ({ caller }) func getTasks(
+  public shared ({ caller }) func getTasks(
     start : Nat,
     end : Nat,
     filterVoted : Bool
@@ -746,7 +752,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      ContentManager.getTasks({
+      await ContentManager.getTasks({
         caller;
         getVoteCount;
         globalState = stateV2;
@@ -756,6 +762,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         logger = canistergeekLogger;
         contentQueueManager;
         randomizationEnabled;
+        storageSolution;
       })
     ) {
       case (#err(e)) {
@@ -2122,7 +2129,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let reserved = await ContentManager.createReservation(
       contentId,
       voteCount,
-      { caller; globalState = stateV2; contentState = contentStableState }
+      {
+        caller;
+        globalState = stateV2;
+        contentState = contentStableState;
+        storageSolution;
+      }
     );
   };
 
@@ -2482,7 +2494,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public query ({ caller }) func downloadSupport(
+  public shared ({ caller }) func downloadSupport(
     stateName : Text,
     varName : Text,
     start : Nat,
@@ -2506,7 +2518,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           return storageSolution.downloadSupport(varName, start, end);
         };
         case ("stateV2") {
-          return DownloadSupport.download(stateV2, varName, start, end);
+          return await DownloadSupport.download(stateV2, varName, start, end, storageSolution);
         };
         case (_) {
           throw Error.reject("Invalid stateV2");

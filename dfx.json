@@ -2,7 +2,8 @@
   "canisters": {
     "modclub": {
       "main": "src/modclub/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432"
     },
     "modclub_assets": {
       "frontend": {
@@ -13,7 +14,8 @@
     },
     "modclub_dev": {
       "main": "src/modclub/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432"
     },
     "modclub_dev_assets": {
       "frontend": {
@@ -24,7 +26,8 @@
     },
     "modclub_qa": {
       "main": "src/modclub/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432"
     },
     "modclub_qa_assets": {
       "dependencies": ["modclub_qa"],

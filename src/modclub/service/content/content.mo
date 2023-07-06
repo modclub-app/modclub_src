@@ -10,14 +10,18 @@ import Principal "mo:base/Principal";
 import QueueManager "../queue/queue";
 import Rel "../../data_structures/Rel";
 import Result "mo:base/Result";
+import Option "mo:base/Option";
+import Blob "mo:base/Blob";
 import Text "mo:base/Text";
 import Types "../../types";
 import ContentState "./state";
 import Utils "../../../common/utils";
+import Constants "../../../common/constants";
 import Constant "constant";
 import ContentTypes "types";
 import Reserved "reserved";
 import Error "mo:base/Error";
+import StorageSolution "../storage/storage";
 
 module ContentModule {
 
@@ -25,15 +29,16 @@ module ContentModule {
     userId : Principal,
     contentId : Text,
     voteCount : Types.VoteCount,
-    state : GlobalState.State
-  ) : ?Types.ContentPlus {
-    return getContentPlus(contentId, ?userId, voteCount, state);
+    state : GlobalState.State,
+    storage : StorageSolution.StorageSolution
+  ) : async ?Types.ContentPlus {
+    return await getContentPlus(contentId, ?userId, voteCount, state, storage);
   };
 
   public func submitTextOrHtmlContent(
     arg : ContentTypes.TextOrHtmlContentArg,
     common : ContentTypes.CommonArg
-  ) : Text {
+  ) : async Text {
     let content = createContentObj(
       {
         sourceId = arg.sourceId;
@@ -45,14 +50,29 @@ module ContentModule {
       common.globalState,
       common.contentState
     );
+    let chunks = Utils.textToBChunks(arg.text);
+    var offset = 0;
+    for (chunk in Buffer.toArray<Blob>(chunks).vals()) {
+      offset += 1;
+      ignore await common.storageSolution.putBlobsInDataCanister(
+        content.id,
+        chunk,
+        offset,
+        chunks.size(),
+        Constants.DATA_TYPE_PLAIN_TEXT,
+        Array.size(Blob.toArray(chunk))
+      );
+    };
+
     let textContent : Types.TextContent = {
       id = content.id;
-      text = arg.text;
+      text = ""; // For backward compatibility in StableState
     };
+
     // Store and update relationships
     common.globalState.content.put(content.id, content);
-    common.globalState.textContent.put(content.id, textContent);
     common.globalState.provider2content.put(common.caller, content.id);
+    common.globalState.textContent.put(content.id, textContent);
     arg.contentQueueManager.changeContentStatus(content.id, #new);
     return content.id;
   };
@@ -60,7 +80,7 @@ module ContentModule {
   public func submitImage(
     arg : ContentTypes.ImageContentArg,
     common : ContentTypes.CommonArg
-  ) : Text {
+  ) : async Text {
     let contentT : Types.ContentType = #imageBlob;
     let content = createContentObj(
       {
@@ -76,10 +96,25 @@ module ContentModule {
     let imageContent : Types.ImageContent = {
       id = content.id;
       image = {
-        data = arg.image;
+        data = []; // For backward compatibility in StableState
         imageType = arg.imageType;
       };
     };
+
+    let chunks = Utils.bytesToBChunks(arg.image);
+    var offset = 0;
+    for (chunk in Buffer.toArray<Blob>(chunks).vals()) {
+      offset += 1;
+      ignore await common.storageSolution.putBlobsInDataCanister(
+        content.id,
+        chunk,
+        offset,
+        chunks.size(),
+        arg.imageType,
+        Array.size(Blob.toArray(chunk))
+      );
+    };
+
     // Store and update relationships
     common.globalState.content.put(content.id, content);
     common.globalState.imageContent.put(content.id, imageContent);
@@ -90,7 +125,7 @@ module ContentModule {
 
   public func getProviderContent(
     arg : ContentTypes.ProviderContentArg
-  ) : [Types.ContentPlus] {
+  ) : async [Types.ContentPlus] {
     let buf = Buffer.Buffer<Types.ContentPlus>(0);
     let maxReturn : Nat = arg.end - arg.start;
     var count : Nat = 0;
@@ -101,7 +136,7 @@ module ContentModule {
           case (null)();
           case (?result) {
             let voteCount = arg.getVoteCount(cid, ?arg.providerId);
-            switch (getContentPlus(cid, ?arg.providerId, voteCount, arg.globalState)) {
+            switch (await getContentPlus(cid, ?arg.providerId, voteCount, arg.globalState, arg.storageSolution)) {
               case (?result) {
                 if (result.status == arg.status) {
                   buf.add(result);
@@ -125,8 +160,9 @@ module ContentModule {
     contentQueueManager : QueueManager.QueueManager,
     logger : Canistergeek.Logger,
     globalState : GlobalState.State,
-    randomizationEnabled : Bool
-  ) : [Types.ContentPlus] {
+    randomizationEnabled : Bool,
+    storage : StorageSolution.StorageSolution
+  ) : async [Types.ContentPlus] {
     let buf = Buffer.Buffer<Types.ContentPlus>(0);
     var count = 0;
     let contentQueue = contentQueueManager.getUserContentQueue(
@@ -138,7 +174,8 @@ module ContentModule {
     for (cid in contentQueue.keys()) {
       if (count < 11) {
         let voteCount = getVoteCount(cid, ?caller);
-        switch (getContentPlus(cid, ?caller, voteCount, globalState)) {
+        let cp = await getContentPlus(cid, ?caller, voteCount, globalState, storage);
+        switch (cp) {
           case (?result) {
             buf.add(result);
             count := count + 1;
@@ -234,7 +271,7 @@ module ContentModule {
   ) : async () {
     switch (arg.globalState.content.get(contentId)) {
       case (?content) {
-        let contentPlus : ?Types.ContentPlus = getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState);
+        let contentPlus : ?Types.ContentPlus = await getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState, arg.storageSolution);
         switch (contentPlus) {
           case (?provider) {
             let oldReserved : [Types.Reserved] = provider.reservedList;
@@ -252,10 +289,12 @@ module ContentModule {
                 caller = arg.caller;
                 globalState = arg.globalState;
                 contentState = arg.contentState;
+                storageSolution = arg.storageSolution;
               },
               Constant.EXPIRE_TIME
             );
             let newReserved = Array.append<Types.Reserved>(oldReserved, [reservation]);
+            let chunkedContent = await arg.storageSolution.getChunkedContent(content.id);
             let result : Types.ContentPlus = {
               id = provider.id;
               providerName = provider.providerName;
@@ -272,13 +311,28 @@ module ContentModule {
               updatedAt = provider.updatedAt;
               text = do ? {
                 switch (arg.globalState.textContent.get(content.id)) {
-                  case (?x) x.text;
+                  case (?entry) {
+                    var textContent = "";
+                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
+                      textContent #= Option.get(Text.decodeUtf8(blobChunk), "");
+                    };
+                    textContent;
+                  };
                   case (_) "";
                 };
               };
               image = do ? {
                 switch (arg.globalState.imageContent.get(content.id)) {
-                  case (?x) x.image;
+                  case (?entry) {
+                    let imageContent = Buffer.Buffer<Nat8>(1);
+                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
+                      imageContent.append(Buffer.fromArray(Blob.toArray(blobChunk)));
+                    };
+                    {
+                      data = Buffer.toArray(imageContent);
+                      imageType = entry.image.imageType;
+                    };
+                  };
                   case (null) {
                     { data = []; imageType = "" };
                   };
@@ -308,7 +362,7 @@ module ContentModule {
   };
 
   public func createReceipt(
-    arg : ContentTypes.CommonArg,
+    arg : ContentTypes.CreateReceiptArg,
     cost : Int
   ) : Types.Receipt {
     let state = Reserved.ContentStateManager(arg.contentState);
@@ -328,12 +382,14 @@ module ContentModule {
     contentId : Types.ContentId,
     caller : ?Principal,
     voteCount : Types.VoteCount,
-    globalState : GlobalState.State
-  ) : ?Types.ContentPlus {
+    globalState : GlobalState.State,
+    storage : StorageSolution.StorageSolution
+  ) : async ?Types.ContentPlus {
     switch (globalState.content.get(contentId)) {
       case (?content) {
         switch (globalState.providers.get(content.providerId)) {
           case (?provider) {
+            let chunkedContent = await storage.getChunkedContent(content.id);
             let result : Types.ContentPlus = {
               id = content.id;
               providerName = provider.name;
@@ -353,13 +409,28 @@ module ContentModule {
               updatedAt = content.updatedAt;
               text = do ? {
                 switch (globalState.textContent.get(content.id)) {
-                  case (?x) x.text;
+                  case (?entry) {
+                    var textContent = "";
+                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
+                      textContent #= Option.get(Text.decodeUtf8(blobChunk), "");
+                    };
+                    textContent;
+                  };
                   case (_) "";
                 };
               };
               image = do ? {
                 switch (globalState.imageContent.get(content.id)) {
-                  case (?x) x.image;
+                  case (?entry) {
+                    let imageContent = Buffer.Buffer<Nat8>(1);
+                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
+                      imageContent.append(Buffer.fromArray(Blob.toArray(blobChunk)));
+                    };
+                    {
+                      data = Buffer.toArray(imageContent);
+                      imageType = entry.image.imageType;
+                    };
+                  };
                   case (null) {
                     { data = []; imageType = "" };
                   };
@@ -381,7 +452,7 @@ module ContentModule {
   // Retrieves only new content that needs to be approved ( i.e tasks )
   public func getTasks(
     arg : ContentTypes.TasksArg
-  ) : Result.Result<[Types.ContentPlus], Text> {
+  ) : async Result.Result<[Types.ContentPlus], Text> {
     if (arg.start < 0 or arg.end < 0 or arg.start > arg.end) {
       return #err("Invalid range");
     };
@@ -415,7 +486,7 @@ module ContentModule {
     for (content in Array.sort(Buffer.toArray<Types.Content>(items), sortAsc).vals()) {
       if (index >= arg.start and index <= arg.end and count < maxReturn) {
         let voteCount = arg.getVoteCount(content.id, ?arg.caller);
-        switch (getContentPlus(content.id, ?arg.caller, voteCount, arg.globalState)) {
+        switch (await getContentPlus(content.id, ?arg.caller, voteCount, arg.globalState, arg.storageSolution)) {
           case (?content) {
             result.add(content);
             count := count + 1;

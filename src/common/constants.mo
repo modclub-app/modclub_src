@@ -8,4 +8,6 @@ module Constants {
   public let REWARD_DEVIATION = 0.5;
   public let SENIOR_STAKING_MULTIPLYER = 5;
   public let SENIOR_STAKING_EXPONENT = 2;
+  public let CONTENT_CHUNK_LIMIT = 2097152; // 2Mb = 2 * 1024 * 1024
+  public let DATA_TYPE_PLAIN_TEXT = "text/plain";
 };

@@ -4,9 +4,11 @@ import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
 import List "mo:base/List";
+import Error "mo:base/Error";
 import IC "../../remote_canisters/IC";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";
+import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import StorageState "./storageState";
 import StorageTypes "./types";
@@ -23,8 +25,8 @@ module StorageModule {
     signingKeyFromMain : Text
   ) {
 
-    let DATA_CANISTER_MAX_STORAGE_LIMIT = 2147483648;
-    //  ~2GB
+    let DATA_CANISTER_MAX_STORAGE_LIMIT = 51_539_607_552;
+    //  ~48GB
 
     let storageState = StorageState.getState(storageStableState);
     var signingKey = signingKeyFromMain;
@@ -46,7 +48,29 @@ module StorageModule {
         let b : ?Bucket.Bucket = storageState.dataCanisters.get(
           contentCanisterId
         );
-        (await b!.getChunks(contentId, offset))!;
+        (await b!.getChunk(contentId, offset))!;
+      };
+    };
+
+    public func getChunkedContent(contentId : Text) : async ?[Blob] {
+      do ? {
+        let canId = storageState.contentIdToCanisterId.get(contentId)!;
+        let b : ?Bucket.Bucket = storageState.dataCanisters.get(canId);
+        switch (await b!.getFileInfoData(contentId)) {
+          case (?info) {
+            let content = Buffer.Buffer<Blob>(1);
+            var offset = 0;
+            while (info.numOfChunks > offset) {
+              offset += 1;
+              switch (await getBlob(contentId, offset)) {
+                case (?chunk) { content.add(chunk) };
+                case (_) { throw Error.reject("Unable to get content chunk!") };
+              };
+            };
+            return ?Buffer.toArray<Blob>(content);
+          };
+          case (_) { return null };
+        };
       };
     };
 
@@ -143,7 +167,7 @@ module StorageModule {
       };
     };
 
-    // persist chunks in bucket
+    // persist chunks in bucket. Main method to use.
     public func putBlobsInDataCanister(
       contentId : Text,
       chunkData : Blob,
@@ -196,10 +220,7 @@ module StorageModule {
     // check if there's an empty bucket we can use
     // create a new one in case none's available or have enough space
     private func getEmptyBucket(s : ?Nat) : async Bucket.Bucket {
-      let fs : Nat = switch (s) {
-        case null { 0 };
-        case (?s) { s };
-      };
+      let fs : Nat = Option.get(s, 0);
 
       for ((pId, bucket) in storageState.dataCanisters.entries()) {
         switch (retiredDataCanisterIdMap.get(Principal.toText(pId))) {
@@ -247,8 +268,8 @@ module StorageModule {
               controllers = ?List.toArray(adminListWithCanister);
               compute_allocation = null;
               //  memory_allocation = ?4_294_967_296; // 4GB
-              memory_allocation = null;
-              // 4GB
+              // memory_allocation = null;
+              memory_allocation = ?DATA_CANISTER_MAX_STORAGE_LIMIT; // 48GB
               freezing_threshold = ?2_676_000;
               // 30 days
             };
