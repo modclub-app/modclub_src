@@ -88,7 +88,7 @@ export default function Footer() {
           </div>
           <Link
             target="_blank"
-            href="https://ljyte-qiaaa-aaaah-qaiva-cai.raw.ic0.app/#/privacy"
+            href="https://ljyte-qiaaa-aaaah-qaiva-cai.ic0.app/#/privacy"
           >
             Privacy Policy
           </Link>
