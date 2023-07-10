@@ -8,8 +8,12 @@ import { Identity } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { getUserFromStorage } from "./util";
 import { Profile } from "./types";
-import { getUserFromCanister, getAdminProviderIDs, getProvider, checkUserRole } from "./api";
-
+import {
+  getUserFromCanister,
+  getAdminProviderIDs,
+  getProvider,
+  checkUserRole,
+} from "./api";
 
 export interface AuthContext {
   isAuthenticated: boolean;
@@ -25,14 +29,14 @@ export interface AuthContext {
   userPrincipalText: string;
   setSelectedProvider: (provider: Object) => void;
   selectedProvider: Object;
-  setUserAlertVal: (alerts:boolean) => void;
+  setUserAlertVal: (alerts: boolean) => void;
   userAlertVal: boolean;
   providers: Array<Object>;
   providerIdText: string;
 }
 
 const KEY_LOCALSTORAGE_USER = "user";
-let walletToUse = localStorage.getItem('_loginType') || "ii";
+let walletToUse = localStorage.getItem("_loginType") || "ii";
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
 
 let canisterId = process.env.MODCLUB_CANISTER_ID;
@@ -41,7 +45,6 @@ if (process.env.DEV_ENV == "dev") {
 } else if (process.env.DEV_ENV == "qa") {
   canisterId = process.env.MODCLUB_QA_CANISTER_ID;
 }
-
 
 const whitelist = [canisterId];
 const host = window.location.origin;
@@ -54,18 +57,18 @@ let checkAndConnectStoicCounter = 0;
 export function useProvideAuth(authClient): AuthContext {
   const [user, setUser] = useState<Profile | undefined>();
   const [userPrincipalText, setUserPrincipalText] = useState<string>("");
-  const [isAuthenticatedLocal, setIsAuthenticatedLocal] = useState<boolean>(
-    false
-  );
+  const [isAuthenticatedLocal, setIsAuthenticatedLocal] =
+    useState<boolean>(false);
   const [_identity, _setIdentity] = useState<Identity | undefined>();
   const [isAdminUser, setAdminUser] = useState(false);
   const [isAuthClientReady, setAuthClientReady] = useState(false);
   const [shouldSignup, setShouldSignup] = useState(false);
   const [providers, setProviders] = useState([]);
   const [providerIdText, setProviderIdText] = useState("");
-  const [selectedProvider, setSelectedProvider] = useState<Object | undefined>();
+  const [selectedProvider, setSelectedProvider] = useState<
+    Object | undefined
+  >();
   const [userAlertVal, setUserAlertVal] = useState(false);
-
 
   // Creating the auth client is async and no auth related checks can happen
   // until it's ready so we set a state variable to keep track of it
@@ -76,30 +79,24 @@ export function useProvideAuth(authClient): AuthContext {
   // Use the user from local storage if it is set so the flow doesn't have to
   // make an async query.
   const setUserFromLocalStorage = () => {
-    console.log("setUserFromLocalStorage");
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
-    console.log("lsUser", lsUser);
     if (lsUser && !user && !isAuthenticatedLocal) {
-      console.log('Setting User from local storage!!!!');
       setUser(lsUser);
       setIsAuthenticatedLocal(true);
       // Check to make sure your local storage user exists on the backend, and
       // log out if it doesn't (this is when you have your user stored in local
       // storage but the user was cleared from the backend)
       getUserFromCanister().then(async (user_) => {
-        // console.log("getUserFromCanister user_", user_);
         if (user_) {
           const checkAdmin = await checkUserRole();
           setAdminUser(checkAdmin);
         }
-        !user_ && logOut()
+        !user_ && logOut();
       });
       return () => void 0;
     } else {
-      console.log("no lsUser, fetching and setting from backend");
       // If there is no user in local storage, retrieve from the backend
       getUserFromCanister().then(async (user_) => {
-        console.log("getUserFromCanister user_", user_);
         // If the user doesn't exist on the backend then we need to sign up
         if (user_) {
           setUser(user_);
@@ -118,56 +115,58 @@ export function useProvideAuth(authClient): AuthContext {
     if (!authClient.ready) return;
     if (walletToUse) {
       switch (walletToUse) {
-        case 'ii':
-          Promise.all([authClient.getIdentity(), authClient.isAuthenticated()]).then(
-            ([identity, isAuthenticated]) => {
-              setIsAuthenticatedLocal(isAuthenticated || false);
-              _setIdentity(identity);
-              if (isAuthenticated) {
-                setUserFromLocalStorage();
-              }
-              setAuthClientReady(true);
+        case "ii":
+          Promise.all([
+            authClient.getIdentity(),
+            authClient.isAuthenticated(),
+          ]).then(([identity, isAuthenticated]) => {
+            setIsAuthenticatedLocal(isAuthenticated || false);
+            _setIdentity(identity);
+            if (isAuthenticated) {
+              setUserFromLocalStorage();
             }
-          );
+            setAuthClientReady(true);
+          });
           break;
-        case 'infinityWallet':
-        case 'plug':
-          if (checkAndConnectToPlugOrIWCounter == 0) checkAndConnectToPlugOrIW(walletToUse);
+        case "infinityWallet":
+        case "plug":
+          if (checkAndConnectToPlugOrIWCounter == 0)
+            checkAndConnectToPlugOrIW(walletToUse);
           break;
-        case 'stoic':
+        case "stoic":
           if (checkAndConnectStoicCounter == 0) checkAndConnectToStoic();
           break;
         default:
           break;
       }
-    };
+    }
   }, [isAuthClientReady]);
 
   async function checkAndConnectToPlugOrIW(walletToUse) {
     checkAndConnectToPlugOrIWCounter++;
     if (walletToUse) {
-      const connected = await window['ic'][walletToUse].isConnected();
+      const connected = await window["ic"][walletToUse].isConnected();
       if (connected) {
-        if (!window['ic'][walletToUse].agent) {
-          if (walletToUse == 'plug') {
-            await window['ic'][walletToUse].createAgent({ whitelist, host });
+        if (!window["ic"][walletToUse].agent) {
+          if (walletToUse == "plug") {
+            await window["ic"][walletToUse].createAgent({ whitelist, host });
           } else {
-            await window['ic'][walletToUse].requestConnect({
-              whitelist
+            await window["ic"][walletToUse].requestConnect({
+              whitelist,
             });
           }
-        };
-        const pID = await window['ic'][walletToUse].getPrincipal();
+        }
+        const pID = await window["ic"][walletToUse].getPrincipal();
         const identity = {
           type: walletToUse,
-          getPrincipal: () => pID
+          getPrincipal: () => pID,
         };
         setIsAuthenticatedLocal(true);
         setWalletIdentity(identity, walletToUse);
         setUserFromLocalStorage();
         setAuthClientReady(true);
       } else {
-        if (walletToUse == 'infinityWallet') {
+        if (walletToUse == "infinityWallet") {
           logOut();
           logIn(walletToUse);
         }
@@ -184,7 +183,7 @@ export function useProvideAuth(authClient): AuthContext {
       if (stcIdentityFromLocalStrg) {
         setIsAuthenticatedLocal(true);
         if (!_identity) {
-          setWalletIdentity(stcIdentityFromLocalStrg, 'stoic');
+          setWalletIdentity(stcIdentityFromLocalStrg, "stoic");
         }
         setUserFromLocalStorage();
       }
@@ -200,7 +199,6 @@ export function useProvideAuth(authClient): AuthContext {
   // every load. Then insure user is correctly logged in with identity service,
   // and set them to not logged in if not.
   useEffect(() => {
-    // console.log({check: true, user })
     if (user && !getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER)) {
       localStorage.setItem(
         KEY_LOCALSTORAGE_USER,
@@ -220,15 +218,17 @@ export function useProvideAuth(authClient): AuthContext {
     if (user && !fetchedProviders) {
       let adminInitProperties = async () => {
         fetchedProviders = true;
-        console.log("ADMIN INTI PROPERTIES FETCHING DATA");
         let adminProviders = await getAdminProviderIDs();
-        console.log("ADMIN INTI PROPERTIES FETCHING DATA AFTER AAIT");
         let providerListPromise = [];
         for (let provider of adminProviders) {
           providerListPromise.push(getProvider(provider));
-        };
-        let providerListPrm = await Promise.all(providerListPromise.map((providerPromise) => providerPromise.catch((error) => null)));
-        let providerList = providerListPrm.filter(provider => provider);
+        }
+        let providerListPrm = await Promise.all(
+          providerListPromise.map((providerPromise) =>
+            providerPromise.catch((error) => null)
+          )
+        );
+        let providerList = providerListPrm.filter((provider) => provider);
         setProviders(providerList);
         if (adminProviders.length > 0) {
           setProviderIdText(adminProviders[0].toText());
@@ -243,16 +243,18 @@ export function useProvideAuth(authClient): AuthContext {
       // The auth client isn't ready to make requests until it's completed the
       // async authenticate actor method.
       setAuthClientReady(false);
-      actorController.authenticateActor(_identity, walletToUse, canisterId).then(() => {
-        console.log("USER AUTHENTICATED");
-        setAuthClientReady(true);
-      });
+      actorController
+        .authenticateActor(_identity, walletToUse, canisterId)
+        .then(() => {
+          console.log("USER AUTHENTICATED");
+          setAuthClientReady(true);
+        });
       const principal: Principal = _identity.getPrincipal();
       Usergeek.setPrincipal(principal);
       setUserPrincipalText(principal.toText());
-      Usergeek.trackSession()
+      Usergeek.trackSession();
     } else {
-      console.log(" setting not authenticated");
+      console.log("Setting not authenticated");
       actorController.unauthenticateActor();
       Usergeek.setPrincipal(null);
       setUserPrincipalText("");
@@ -269,8 +271,7 @@ export function useProvideAuth(authClient): AuthContext {
     walletToUse = logInMethodToUse;
     if (!authClient) return;
     switch (logInMethodToUse) {
-
-      case 'ii':
+      case "ii":
         await authClient.login();
         const identity = await authClient.getIdentity();
         if (identity) {
@@ -279,18 +280,18 @@ export function useProvideAuth(authClient): AuthContext {
           console.error("Could not get identity from internet identity");
         }
         break;
-      case 'infinityWallet':
-      case 'plug':
+      case "infinityWallet":
+      case "plug":
         try {
           if (walletToUse) {
-            const result = await window['ic'][walletToUse].requestConnect({
-              whitelist
+            const result = await window["ic"][walletToUse].requestConnect({
+              whitelist,
             });
             if (result) {
-              const p = await window['ic'][walletToUse].getPrincipal();
+              const p = await window["ic"][walletToUse].getPrincipal();
               const identity = {
-                type: 'is',
-                getPrincipal: () => p
+                type: "is",
+                getPrincipal: () => p,
               };
               setWalletIdentity(identity, walletToUse);
             } else {
@@ -299,9 +300,9 @@ export function useProvideAuth(authClient): AuthContext {
           }
         } catch (error) {
           console.log("user declined connect request", error);
-        };
+        }
         break;
-      case 'stoic':
+      case "stoic":
         let stcIdentity = await StoicIdentity.load();
         if (!stcIdentity) {
           stcIdentity = await StoicIdentity.connect();
@@ -310,7 +311,6 @@ export function useProvideAuth(authClient): AuthContext {
         break;
 
       default:
-        console.log("default");
         break;
     }
   };
@@ -319,22 +319,22 @@ export function useProvideAuth(authClient): AuthContext {
     if (identity) {
       setIsAuthenticatedLocal(true);
       _setIdentity(identity);
-      localStorage.setItem('_loginType', wallet);
-    };
+      localStorage.setItem("_loginType", wallet);
+    }
   }
 
   // Clears the authClient of any cached data, and redirects user to root.
   function logOut() {
     switch (walletToUse) {
-      case 'ii':
+      case "ii":
         if (!authClient.ready) return;
         authClient.logout();
         break;
-      case 'infinityWallet':
-      case 'plug':
-        window['ic'].plug.disconnect();
+      case "infinityWallet":
+      case "plug":
+        window["ic"].plug.disconnect();
         break;
-      case 'stoic':
+      case "stoic":
         StoicIdentity.disconnect();
         break;
       default:
@@ -348,7 +348,7 @@ export function useProvideAuth(authClient): AuthContext {
     setUserAlertVal(false);
     setProviders([]);
     localStorage.removeItem(KEY_LOCALSTORAGE_USER);
-    localStorage.removeItem('_loginType');
+    localStorage.removeItem("_loginType");
     fetchedProviders = false;
     checkAndConnectToPlugOrIWCounter = 0;
     checkAndConnectStoicCounter = 0;

@@ -58,7 +58,7 @@ async function trace_error(_trace: any) {
   try {
     return Promise.resolve(_trace());
   } catch (e) {
-    console.log(e);
+    console.error(e);
     return Promise.reject(e);
   }
 }
@@ -86,7 +86,7 @@ export async function getUserFromCanister(): Promise<Profile | null> {
       return null;
     }
   } catch (e) {
-    console.log("error", e);
+    console.error("error", e);
     return null;
   }
 }
@@ -95,7 +95,7 @@ export async function getUserAlertOptInVal(): Promise<boolean> {
   try {
     return await (await getMC()).checkIfUserOptToReciveAlerts();
   } catch (e) {
-    console.log("error", e);
+    console.error("error", e);
     return false;
   }
 }
@@ -106,14 +106,12 @@ export async function addProviderAdmin(
   userName
 ): Promise<boolean> {
   try {
-    console.log("USERID", userId, principalId);
-
     let result = await (
       await getMC()
     ).addProviderAdmin(userId, userName, [principalId]);
     return result.hasOwnProperty("ok") ? true : false;
   } catch (e) {
-    console.log("error", e);
+    console.error("error", e);
     return false;
   }
 }
@@ -128,7 +126,7 @@ export async function removeProviderAdmin(
     let result = await (await getMC()).removeProviderAdmin(principalId, userId);
     return result.hasOwnProperty("ok") ? true : false;
   } catch (e) {
-    console.log("error", e);
+    console.error("error", e);
     return false;
   }
 }
@@ -139,14 +137,12 @@ export async function editProviderAdmin(
   userName
 ): Promise<boolean> {
   try {
-    console.log("USERID", userId, principalId);
-
     let result = await (
       await getMC()
     ).editProviderAdmin(principalId, userId, userName);
     return result.hasOwnProperty("ok") ? true : false;
   } catch (e) {
-    console.log("error", e);
+    console.error("error", e);
     return false;
   }
 }
@@ -246,7 +242,6 @@ export async function addRules(
   rules: string[],
   providerId: Principal
 ): Promise<void> {
-  var testActor = await getMC();
   if (rules[0] != undefined)
     return (await getMC()).addRules(rules, [providerId]);
 }
@@ -255,7 +250,6 @@ export async function updateRule(
   rules: Rule[],
   providerId: Principal
 ): Promise<void> {
-  var testActor = await getMC();
   return (await getMC()).updateRules(rules, [providerId]);
 }
 
@@ -298,7 +292,6 @@ export async function fetchProviderContent(
   startIndex: number,
   endIndex: number
 ): Promise<ContentPlus[]> {
-  console.log(startIndex, endIndex, status);
   return (await getMC()).getProviderContent(
     providerId,
     status,
@@ -322,7 +315,6 @@ export async function retrieveChallengesForUser(
 export async function submitChallengeData(
   pohDataRequest: PohChallengeSubmissionRequest
 ): Promise<PohChallengeSubmissionResponse> {
-  console.log("pohDataRequest", pohDataRequest);
   return (await getMC()).submitChallengeData(pohDataRequest);
 }
 
