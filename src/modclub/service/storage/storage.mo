@@ -40,6 +40,14 @@ module StorageModule {
       retiredDataCanisterIdMap.put(id, id);
     };
 
+    public func updateAdmins(admins : [Principal]) : () {
+      for (admin in admins.vals()) {
+        if (not List.some<Principal>(adminList, func(ca : Principal) { Principal.equal(ca, admin) })) {
+          adminList := List.push<Principal>(admin, adminList);
+        };
+      };
+    };
+
     public func getBlob(contentId : Text, offset : Nat) : async ?Blob {
       do ? {
         let contentCanisterId = storageState.contentIdToCanisterId.get(

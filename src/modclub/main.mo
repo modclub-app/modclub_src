@@ -157,7 +157,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     switch (payload) {
-      case (#admins(list)) { authGuard.handleSubscription(payload) };
+      case (#admins(list)) {
+        ignore authGuard.setUpDefaultAdmins(null, deployer, Principal.fromActor(this));
+        authGuard.handleSubscription(payload);
+        storageSolution.updateAdmins(authGuard.getAdmins());
+      };
       case (#events(events)) {
         // TODO: Refactor this and put logic to new refactored ModeratorManager.
         // TODO: Notify Moderator by email.
