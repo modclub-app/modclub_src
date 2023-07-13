@@ -29,6 +29,8 @@ declare LEDGER_ACCOUNT=$(dfx identity get-principal)
 declare MODCLUB_CANISTER_ID=$(dfx canister id modclub_qa)
 dfx identity use default
 declare DEPLOYER_ACCOUNT=$(dfx identity get-principal)
+dfx ledger fabricate-cycles --canister modclub_qa
+dfx ledger fabricate-cycles --canister modclub_qa
 
 # Verify balances
 function verify_balance() {
