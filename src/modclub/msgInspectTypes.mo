@@ -14,7 +14,6 @@ module {
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
     #AdminCheckPohVerificationResp : () -> (Text, Principal);
     #addProviderAdmin : () -> (Principal, Text, ?Principal);
-    #addToApprovedUser : () -> Principal;
     #topUpProviderReserve : () -> ({ providerId : ?Principal; amount : Nat });
     #providerSaBalance : () -> (Text);
     #addRules : () -> ([Text], ?Principal);
