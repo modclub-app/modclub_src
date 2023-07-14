@@ -83,18 +83,16 @@ export default function Task() {
     setTask(content);
   };
 
-  const fetchData = async () =>{
+  const fetchData = async () => {
     const [can_reserved, get_level] = await Promise.all([
       await canReserveContent(taskId.toString()),
-      await queryRSAndLevelByPrincipal(
-        identity.getPrincipal().toText()
-      )
+      await queryRSAndLevelByPrincipal(identity.getPrincipal().toText()),
     ]);
     if (Object.keys(can_reserved)[0] == "ok") {
       setFull(!Object.values<boolean>(can_reserved)[0]);
     }
     setLevel(Object.keys(get_level.level)[0].toString());
-  }
+  };
 
   /* useEffect(() => {
      if (full) {

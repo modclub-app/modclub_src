@@ -12,7 +12,14 @@ printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Modclub test infra START ...${NC}
 function create_qa_canisters() {
   printf  "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Creating QA Canisters...${NC}\n"
 	dfx identity use default
-  dfx canister create auth_qa && dfx canister create wallet_qa && dfx canister create rs_qa && dfx canister create modclub_qa && dfx canister create vesting_qa && printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
+  dfx canister create auth_qa &&
+  dfx canister create wallet_qa &&
+  dfx canister create rs_qa &&
+  dfx canister create modclub_qa &&
+  dfx canister create vesting_qa &&
+  dfx canister create provider_qa &&
+  dfx canister create modclub_qa_assets &&
+  printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
 }
 
@@ -46,10 +53,11 @@ function deploy_wallet_canister() {
       transfer_fee = 10_000;
     }}
   )"
+  return 0;
 }
 
 function get_local_canisters() {
-  echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }}"
+  echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }}"
 }
 
 function deploy_vesting_canister() {
@@ -61,18 +69,24 @@ function deploy_vesting_canister() {
 
 # Deploy AuthCanister
 function deploy_qa_canisters() {
+  export DEV_ENV=qa
   local local_env=$(get_local_canisters)
 
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Deploy QA Canisters...${NC}\n"
-	dfx deploy auth_qa --argument="($local_env)"
 
-	deploy_wallet_canister
-  deploy_vesting_canister
+	dfx deploy auth_qa --argument="($local_env)" &&
+	deploy_wallet_canister &&
+  deploy_vesting_canister &&
 
-  dfx deploy rs_qa  --argument="($local_env)"
-	dfx deploy modclub_qa  --argument="($local_env)"
+  dfx deploy rs_qa  --argument="($local_env)" &&
+	dfx deploy modclub_qa  --argument="($local_env)" &&
+	dfx deploy provider_qa &&
+  dfx generate rs_qa -v &&
+  dfx generate modclub_qa -v &&
+  dfx generate wallet_qa -v &&
+  DEV_ENV=qa dfx deploy modclub_qa_assets &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
-	return 0
+	return 0;
 }
 
 create_qa_canisters && deploy_qa_canisters

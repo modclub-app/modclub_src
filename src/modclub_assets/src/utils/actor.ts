@@ -1,7 +1,10 @@
 import { Actor, HttpAgent, Identity } from "@dfinity/agent";
 // Imports and re-exports candid interface
-import { idlFactory, modclub } from "../../../declarations/modclub/index";
+import { idlFactory as idlFactoryProd } from "../../../declarations/modclub/index";
+import { idlFactory as idlFactoryDev } from "../../../declarations/modclub_dev/index";
+import { idlFactory as idlFactoryQA } from "../../../declarations/modclub_qa/index";
 import { _SERVICE } from "./types";
+
 import dfxConfig from "../../../../dfx.json";
 
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
@@ -13,6 +16,16 @@ if (process.env.DEV_ENV == "dev") {
   host_url = "ftuce-kiaaa-aaaah-qc3fa-cai.ic0.app";
 }
 
+function getModIdlByEnv() {
+  if (process.env.DEV_ENV == "qa") {
+    return idlFactoryQA;
+  } else if (process.env.DEV_ENV == "dev") {
+    return idlFactoryDev;
+  } else {
+    return idlFactoryProd;
+  }
+}
+
 function getHost() {
   // Setting host to undefined will default to the window location 👍🏻
   return isLocalEnv ? dfxConfig.networks.local.bind : host_url;
@@ -22,7 +35,7 @@ const host = getHost();
 
 function createActor(identity?: Identity, canisterId?: any) {
   const agent = new HttpAgent({ host, identity });
-  const actor = Actor.createActor<_SERVICE>(idlFactory, {
+  const actor = Actor.createActor<_SERVICE>(getModIdlByEnv(), {
     agent,
     canisterId: canisterId,
   });
@@ -32,7 +45,7 @@ function createActor(identity?: Identity, canisterId?: any) {
 const createPlugOrISActor = async function (walletToUse, canisterId) {
   const actor = await window["ic"][walletToUse].createActor({
     canisterId: canisterId,
-    interfaceFactory: idlFactory,
+    interfaceFactory: getModIdlByEnv(),
   });
   return actor;
 };

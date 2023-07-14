@@ -1,6 +1,13 @@
 import type { Principal } from "@dfinity/principal";
 import type { ActorMethod } from "@dfinity/agent";
 
+export interface AccountsImportPayload {
+  adminsByProvider: Array<ProviderAdmins>;
+  providers: Array<ProviderInfo>;
+  approvedPOHUsers: Array<[Principal, Principal]>;
+  moderators: Array<OldModeratorLeaderboard>;
+}
+
 export interface Activity {
   status: ContentStatus;
   reward: number;
@@ -40,6 +47,13 @@ export interface Branch_3 {
   size: bigint;
   right: Trie_3;
 }
+
+export interface CanClaimLockedResponse {
+  claimPrice: Tokens;
+  claimAmount: Tokens;
+  canClaim: boolean;
+}
+
 export type CanisterCyclesAggregatedData = BigUint64Array | bigint[];
 export type CanisterHeapMemoryAggregatedData = BigUint64Array | bigint[];
 export interface CanisterHttpResponsePayload {
@@ -85,7 +99,10 @@ export interface Complexity {
   expiryTime: Timestamp;
   level: Level;
 }
-export type ConsumerPayload = { admins: Array<Principal> };
+export type ConsumerPayload =
+  | { events: Array<Event> }
+  | { admins: Array<Principal> };
+
 export type ContentId = string;
 export interface ContentPlus {
   id: ContentId;
@@ -140,11 +157,17 @@ export type ENV =
   | {
       local: {
         wallet_canister_id: Principal;
+        vesting_canister_id: Principal;
+        old_modclub_canister_id: Principal;
         modclub_canister_id: Principal;
         rs_canister_id: Principal;
         auth_canister_id: Principal;
       };
     };
+export interface Event {
+  topic: string;
+  payload: Principal;
+}
 export interface GetLatestLogMessagesParameters {
   upToTimeNanos: [] | [Nanos];
   count: number;
@@ -244,10 +267,13 @@ export interface ModClub {
   >;
   addRules: ActorMethod<[Array<string>, [] | [Principal]], undefined>;
   addToAllowList: ActorMethod<[Principal], undefined>;
+  addToApprovedUser: ActorMethod<[Principal], undefined>;
   adminInit: ActorMethod<[], undefined>;
   adminUpdateEmail: ActorMethod<[Principal, string], Profile>;
+  canClaimLockedReward: ActorMethod<[[] | [Tokens]], Result_5>;
   canReserveContent: ActorMethod<[string], Result_4>;
   checkIfUserOptToReciveAlerts: ActorMethod<[], boolean>;
+  claimLockedReward: ActorMethod<[Tokens], Result_4>;
   collectCanisterMetrics: ActorMethod<[], undefined>;
   configurePohForProvider: ActorMethod<
     [Principal, Array<string>, bigint, boolean],
@@ -310,6 +336,7 @@ export interface ModClub {
   handleSubscription: ActorMethod<[ConsumerPayload], undefined>;
   http_request: ActorMethod<[HttpRequest], HttpResponse>;
   http_request_update: ActorMethod<[HttpRequest], HttpResponse>;
+  importAccounts: ActorMethod<[AccountsImportPayload], { status: boolean }>;
   issueJwt: ActorMethod<[], string>;
   pohCallbackForModclub: ActorMethod<[PohVerificationResponsePlus], undefined>;
   populateChallenges: ActorMethod<[], undefined>;
@@ -386,6 +413,14 @@ export interface NumericEntity {
   min: bigint;
   first: bigint;
   last: bigint;
+}
+export interface OldModeratorLeaderboard {
+  id: UserId;
+  completedVoteCount: bigint;
+  userName: string;
+  rewardsEarned: bigint;
+  lastVoted: [] | [Timestamp];
+  performance: number;
 }
 export interface PohChallengePackage {
   id: string;
@@ -593,6 +628,10 @@ export interface Profile {
   email: string;
   updatedAt: Timestamp;
 }
+export interface ProviderAdmins {
+  pid: Principal;
+  admins: Array<Profile>;
+}
 export type ProviderError =
   | { ProviderAdminIsAlreadyRegistered: null }
   | { InvalidContentType: null }
@@ -603,6 +642,14 @@ export type ProviderError =
   | { InvalidProvider: null }
   | { ProviderIsRegistered: null };
 export type ProviderId = Principal;
+export interface ProviderInfo {
+  id: Principal;
+  name: string;
+  createdAt: Timestamp;
+  description: string;
+  updatedAt: Timestamp;
+  image: [] | [Image];
+}
 export interface ProviderMeta {
   name: string;
   description: string;
@@ -656,6 +703,7 @@ export type Result_2 =
   | { err: PohError };
 export type Result_3 = { ok: PohTaskDataWrapperPlus } | { err: PohError };
 export type Result_4 = { ok: boolean } | { err: string };
+export type Result_5 = { ok: CanClaimLockedResponse } | { err: string };
 export type Role = { admin: null } | { moderator: null } | { owner: null };
 export interface Rule {
   id: RuleId;

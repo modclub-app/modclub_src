@@ -81,6 +81,7 @@ export function useProvideAuth(authClient): AuthContext {
   const setUserFromLocalStorage = () => {
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
     if (lsUser && !user && !isAuthenticatedLocal) {
+      console.log("Setting User from local storage!!!!");
       setUser(lsUser);
       setIsAuthenticatedLocal(true);
       // Check to make sure your local storage user exists on the backend, and
@@ -88,7 +89,7 @@ export function useProvideAuth(authClient): AuthContext {
       // storage but the user was cleared from the backend)
       getUserFromCanister().then(async (user_) => {
         if (user_) {
-          const checkAdmin = await checkUserRole();
+          const checkAdmin = await checkUserRole(user_.id);
           setAdminUser(checkAdmin);
         }
         !user_ && logOut();

@@ -258,16 +258,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (?_)();
     };
 
-    // let subAccs = await Helpers.generateSubAccs();
-    let subAccs = HashMap.HashMap<Text, Blob>(
+    let subAccs = HashMap.fromIter<Text, Blob>(
+      (await Helpers.generateSubAccounts()).vals(),
       Array.size(Helpers.providerSubaccountTypes),
       Text.equal,
       Text.hash
     );
-    for (subAccType in Helpers.providerSubaccountTypes.vals()) {
-      let saUUID = await Helpers.generateUUID();
-      subAccs.put(subAccType, Text.encodeUtf8(Text.replace(saUUID, #char('-'), "")));
-    };
 
     ProviderManager.registerProvider({
       providerId = caller;
@@ -2256,6 +2252,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return (count, distinctUsersVoted);
   };
 
+  public shared ({ caller }) func addToApprovedUser(userId : Principal) : async () {
+    voteManager.addToAutoApprovedPOHUser(userId);
+  };
+
   // For testing purposes
   public query ({ caller }) func showAdmins() : async [Principal] {
     Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
@@ -2400,6 +2400,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         ProviderManager.providerExists(caller, stateV2) or authGuard.isAdmin(caller);
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
+      case (#importAccounts _) { authGuard.isOldModclubInstance(caller) };
+      case (#addToApprovedUser _) { authGuard.isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };
@@ -2663,6 +2665,101 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       provider2PohChallengeIds = stateSharedV1.provider2PohChallengeIds;
       provider2PohExpiry = stateSharedV1.provider2PohExpiry;
     };
+  };
+
+  public shared ({ caller }) func importAccounts(payload : Types.AccountsImportPayload) : async {
+    status : Bool;
+  } {
+    Debug.print("NEW Instanse has importAccounts call:: " # debug_show payload);
+
+    for (provider in payload.providers.vals()) {
+      Debug.print("CHECK IMPORT ProviderAccount For: " # provider.name);
+      switch (stateV2.providers.get(provider.id)) {
+        case (?p) {
+          Debug.print("FOUND ProviderAccount For: " # p.name);
+        };
+        case (null) {
+          await ProviderManager.addToAllowList(provider.id, stateV2, canistergeekLogger);
+          let subAccs = HashMap.fromIter<Text, Blob>(
+            (await Helpers.generateSubAccounts()).vals(),
+            Array.size(Helpers.providerSubaccountTypes),
+            Text.equal,
+            Text.hash
+          );
+
+          ignore ProviderManager.registerProvider({
+            providerId = provider.id;
+            name = provider.name;
+            description = provider.description;
+            image = provider.image;
+            subaccounts = subAccs;
+            state = stateV2;
+            logger = canistergeekLogger;
+          });
+          Debug.print("Imported ProviderAccount For: " # provider.name);
+        };
+      };
+    };
+    for (providerAdmins in payload.adminsByProvider.vals()) {
+      Debug.print("CHECK ADMINS IMPORT For provider: " # Principal.toText(providerAdmins.pid));
+      switch (stateV2.providers.get(providerAdmins.pid)) {
+        case (?p) {
+          Debug.print("FOUND ProviderAccount For: " # p.name);
+          for (admin in providerAdmins.admins.vals()) {
+            let result = await ProviderManager.addProviderAdmin({
+              userId = admin.id;
+              username = admin.userName;
+              caller = providerAdmins.pid;
+              providerId = ?providerAdmins.pid;
+              state = stateV2;
+              isModclubAdmin = authGuard.isAdmin(caller);
+              logger = canistergeekLogger;
+            });
+            switch (result) {
+              case (#ok(_)) {
+                Debug.print("IMPORTED ProviderAdmin: " # admin.userName # " For: " # p.name);
+              };
+              case (#err(e)) {
+                Debug.print("ERROR ON ProviderAdmin: " # admin.userName # " For: " # p.name);
+              };
+            };
+          };
+        };
+        case (_) {};
+      };
+    };
+
+    for (moderator in payload.moderators.vals()) {
+      try {
+        Debug.print("CHECK IMPORT ModeratorAccount For: " # moderator.userName);
+        let profile = await ModeratorManager.registerModerator(
+          moderator.id,
+          moderator.userName,
+          null,
+          null,
+          stateV2
+        );
+
+        await storageSolution.registerModerators([moderator.id]);
+        contentQueueManager.assignUserIds2QueueId([moderator.id]);
+        pohContentQueueManager.assignUserIds2QueueId([moderator.id]);
+        Debug.print("NEW Moderator Account has been Imported SUCCESSFULLY :: " # debug_show profile);
+      } catch (e) {
+        Debug.print("AN ERROR OCCURS DURING ModeratorAccount import :: " # Error.message(e));
+      };
+    };
+
+    for ((uid, _) in payload.approvedPOHUsers.vals()) {
+      try {
+        Debug.print("CHECK IMPORT approvedPOHUsers For: " # Principal.toText(uid));
+        voteManager.addToAutoApprovedPOHUser(uid);
+        Debug.print("NEW UserId has been addToAutoApprovedPOHUser SUCCESSFULLY :: " # debug_show uid);
+      } catch (e) {
+        Debug.print("AN ERROR OCCURS DURING approvedPOHUsers import :: " # Error.message(e));
+      };
+    };
+
+    { status = true };
   };
 
 };

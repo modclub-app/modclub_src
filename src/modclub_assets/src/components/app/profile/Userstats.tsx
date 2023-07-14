@@ -1,8 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import {
-  queryRSAndLevelByPrincipal,
-} from "../../../utils/api";
+import { queryRSAndLevelByPrincipal } from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { Columns, Card, Heading, Button } from "react-bulma-components";
 import walletImg from "../../../../assets/wallet.svg";
@@ -85,13 +83,13 @@ export default function Userstats({ detailed = false }) {
   useEffect(() => {
     const fetchTokenHoldings = async () => {
       // const tokenHoldings = await getTokenHoldings();
-      let perf;
+
       if (principalID !== "") {
-        perf = await (await queryRSAndLevelByPrincipal(principalID!)).score;
-        setPerformance(Number(perf));
+        let rs = await queryRSAndLevelByPrincipal(principalID!);
+        setPerformance(Number(rs.score) || 0);
       }
-      setTokenHoldings(tokenHoldings);
-      setHoldingsUpdated(false);
+      // setTokenHoldings(tokenHoldings);
+      // setHoldingsUpdated(false);
     };
     user && holdingsUpdated && fetchTokenHoldings();
   }, [user, holdingsUpdated]);

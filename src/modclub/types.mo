@@ -9,6 +9,18 @@ import JSON "mo:json/JSON";
 import ICRCTypes "../wallet/ICRC/types";
 
 module {
+  public type AccountsImportPayload = {
+    providers : [ProviderInfo];
+    adminsByProvider : [ProviderAdmins];
+    moderators : [OldModeratorLeaderboard];
+    approvedPOHUsers : [(Principal, Principal)];
+  };
+
+  public type ProviderAdmins = {
+    pid : Principal;
+    admins : [Profile];
+  };
+
   public type CanClaimLockedResponse = {
     canClaim : Bool;
     claimAmount : ICRCTypes.Tokens;
@@ -192,15 +204,20 @@ module {
     subaccounts : SubAccountsList;
   };
 
-  public type Provider = SubAccounts and {
+  public type ProviderInfo = {
     id : Principal;
     name : Text;
     description : Text;
     createdAt : Timestamp;
     updatedAt : Timestamp;
-    settings : ProviderSettings;
     image : ?Image;
   };
+
+  public type SettingsForProvider = {
+    settings : ProviderSettings;
+  };
+
+  public type Provider = ProviderInfo and SubAccounts and SettingsForProvider;
 
   public type ProviderStable = {
     id : Principal;
@@ -253,6 +270,15 @@ module {
     completedVoteCount : Int;
     rewardsEarned : Int;
     rs : Float;
+    performance : Float;
+    lastVoted : ?Timestamp;
+  };
+
+  public type OldModeratorLeaderboard = {
+    id : UserId;
+    userName : Text;
+    completedVoteCount : Int;
+    rewardsEarned : Int;
     performance : Float;
     lastVoted : ?Timestamp;
   };

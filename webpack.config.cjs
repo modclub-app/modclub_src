@@ -128,17 +128,18 @@ module.exports = {
     }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
-      MODCLUB_CANISTER_ID: canisters["modclub"],
+      MODCLUB_CANISTER_ID:
+        canisters["modclub"] || "la3yy-gaaaa-aaaah-qaiuq-cai",
       MODCLUB_DEV_CANISTER_ID:
         canisters["modclub_dev"] || "olc6u-lqaaa-aaaah-qcooq-cai",
       MODCLUB_QA_CANISTER_ID:
         canisters["modclub_qa"] || "f2xjy-4aaaa-aaaah-qc3eq-cai",
-      WALLET_CANISTER_ID: canisters["wallet"],
+      WALLET_CANISTER_ID: canisters["wallet"] || "vxnwt-gyaaa-aaaah-qc7vq-cai",
       WALLET_DEV_CANISTER_ID:
         canisters["wallet_dev"] || "vxnwt-gyaaa-aaaah-qc7vq-cai",
       WALLET_QA_CANISTER_ID:
         canisters["wallet_qa"] || "vckh6-hqaaa-aaaah-qc7wa-cai",
-      RS_CANISTER_ID: canisters["rs"],
+      RS_CANISTER_ID: canisters["rs"] || "vflbk-kiaaa-aaaah-qc7wq-cai",
       RS_DEV_CANISTER_ID: canisters["rs_dev"] || "vflbk-kiaaa-aaaah-qc7wq-cai",
       RS_QA_CANISTER_ID: canisters["rs_qa"] || "vmikw-4aaaa-aaaah-qc7xa-cai",
       LOCAL_II_CANISTER,

@@ -5,6 +5,8 @@ export const idlFactory = ({ IDL }) => {
     prod: IDL.Null,
     local: IDL.Record({
       wallet_canister_id: IDL.Principal,
+      vesting_canister_id: IDL.Principal,
+      old_modclub_canister_id: IDL.Principal,
       modclub_canister_id: IDL.Principal,
       rs_canister_id: IDL.Principal,
       auth_canister_id: IDL.Principal,
@@ -28,7 +30,11 @@ export const idlFactory = ({ IDL }) => {
     ok: IDL.Vec(IDL.Principal),
     err: IDL.Text,
   });
-  const ConsumerPayload = IDL.Variant({ admins: IDL.Vec(IDL.Principal) });
+  const Event = IDL.Record({ topic: IDL.Text, payload: IDL.Principal });
+  const ConsumerPayload = IDL.Variant({
+    events: IDL.Vec(Event),
+    admins: IDL.Vec(IDL.Principal),
+  });
   const Tokens = IDL.Nat;
   const Value = IDL.Variant({
     Int: IDL.Int,
@@ -165,7 +171,7 @@ export const idlFactory = ({ IDL }) => {
       [IDL.Float64],
       ["query"]
     ),
-    stakeTokens: IDL.Func([IDL.Float64], [], []),
+    stakeTokens: IDL.Func([IDL.Nat], [Result], []),
     tge: IDL.Func([], [], []),
     transfer: IDL.Func(
       [IDL.Opt(SubAccount), IDL.Principal, IDL.Opt(SubAccount), IDL.Float64],
@@ -174,6 +180,7 @@ export const idlFactory = ({ IDL }) => {
     ),
     transferBulk: IDL.Func([IDL.Vec(UserAndAmount)], [], []),
     transferToProvider: IDL.Func([TransferToProviderArgs], [Result], []),
+    unstakeTokens: IDL.Func([Tokens], [Result], []),
   });
   return Wallet;
 };
@@ -184,6 +191,8 @@ export const init = ({ IDL }) => {
     prod: IDL.Null,
     local: IDL.Record({
       wallet_canister_id: IDL.Principal,
+      vesting_canister_id: IDL.Principal,
+      old_modclub_canister_id: IDL.Principal,
       modclub_canister_id: IDL.Principal,
       rs_canister_id: IDL.Principal,
       auth_canister_id: IDL.Principal,

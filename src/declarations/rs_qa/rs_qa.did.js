@@ -5,12 +5,18 @@ export const idlFactory = ({ IDL }) => {
     prod: IDL.Null,
     local: IDL.Record({
       wallet_canister_id: IDL.Principal,
+      vesting_canister_id: IDL.Principal,
+      old_modclub_canister_id: IDL.Principal,
       modclub_canister_id: IDL.Principal,
       rs_canister_id: IDL.Principal,
       auth_canister_id: IDL.Principal,
     }),
   });
-  const ConsumerPayload = IDL.Variant({ admins: IDL.Vec(IDL.Principal) });
+  const Event = IDL.Record({ topic: IDL.Text, payload: IDL.Principal });
+  const ConsumerPayload = IDL.Variant({
+    events: IDL.Vec(Event),
+    admins: IDL.Vec(IDL.Principal),
+  });
   const UserLevel = IDL.Variant({
     junior: IDL.Null,
     novice: IDL.Null,
@@ -19,6 +25,7 @@ export const idlFactory = ({ IDL }) => {
     senior3: IDL.Null,
   });
   const RSAndLevel = IDL.Record({ level: UserLevel, score: IDL.Int });
+  const Result = IDL.Variant({ ok: IDL.Bool, err: IDL.Text });
   const UserAndRS = IDL.Record({ userId: IDL.Principal, score: IDL.Int });
   const Decision = IDL.Variant({
     approved: IDL.Null,
@@ -37,8 +44,9 @@ export const idlFactory = ({ IDL }) => {
       [RSAndLevel],
       ["query"]
     ),
-    setRS: IDL.Func([IDL.Principal, IDL.Int], [], []),
+    setRS: IDL.Func([IDL.Principal, IDL.Int], [Result], []),
     showAdmins: IDL.Func([], [IDL.Vec(IDL.Principal)], ["query"]),
+    subscribe: IDL.Func([IDL.Text], [], []),
     topUsers: IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(UserAndRS)], ["query"]),
     updateRS: IDL.Func([IDL.Principal, IDL.Bool, Decision], [UserAndRS], []),
     updateRSBulk: IDL.Func([IDL.Vec(UserAndVote)], [IDL.Vec(UserAndRS)], []),
@@ -52,6 +60,8 @@ export const init = ({ IDL }) => {
     prod: IDL.Null,
     local: IDL.Record({
       wallet_canister_id: IDL.Principal,
+      vesting_canister_id: IDL.Principal,
+      old_modclub_canister_id: IDL.Principal,
       modclub_canister_id: IDL.Principal,
       rs_canister_id: IDL.Principal,
       auth_canister_id: IDL.Principal,

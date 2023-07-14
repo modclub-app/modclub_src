@@ -80,6 +80,10 @@ module ModSecurity {
       Principal.equal(Utils.getCanisterId(#modclub, env), caller);
     };
 
+    public func isOldModclubInstance(caller : Principal) : Bool {
+      Principal.equal(Utils.getCanisterId(#modclub_old, env), caller);
+    };
+
     public func isModclubVesting(caller : Principal) : Bool {
       Principal.equal(Utils.getCanisterId(#vesting, env), caller);
     };

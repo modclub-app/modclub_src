@@ -62,7 +62,11 @@
       "type": "motoko"
     },
     "provider": {
-      "main": "src/modclub/main2.mo",
+      "main": "src/modclub/providerCanister.mo",
+      "type": "motoko"
+    },
+    "provider_qa": {
+      "main": "src/modclub/providerCanister.mo",
       "type": "motoko"
     },
     "auth": {

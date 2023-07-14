@@ -55,6 +55,14 @@ module {
           case (#qa) { Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai") };
         };
       };
+      case (#modclub_old) {
+        switch (env) {
+          case (#local(value)) { value.old_modclub_canister_id };
+          case (#prod) { Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai") };
+          case (#dev) { Principal.fromText("olc6u-lqaaa-aaaah-qcooq-cai") };
+          case (#qa) { Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai") };
+        };
+      };
       case (#rs) {
         switch (env) {
           case (#local(value)) { value.rs_canister_id };

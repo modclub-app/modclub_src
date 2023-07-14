@@ -50,8 +50,6 @@ module Helpers {
   ];
   private let base : Nat8 = 0x10;
 
-  // private let subAccTypes = ["RESERVE", "ACCOUNT_PAYABLE"];
-
   public func timeNow() : Types.Timestamp {
     Time.now() / NANOS_PER_MILLI;
     // Convert to milliseconds
@@ -256,4 +254,15 @@ module Helpers {
   };
 
   public let providerSubaccountTypes = ["RESERVE", "ACCOUNT_PAYABLE"];
+
+  public func generateSubAccounts() : async [(Text, Blob)] {
+    let subAccs = Buffer.Buffer<(Text, Blob)>(1);
+
+    for (subAccType in providerSubaccountTypes.vals()) {
+      let saUUID = await generateUUID();
+      subAccs.add((subAccType, Text.encodeUtf8(Text.replace(saUUID, #char('-'), ""))));
+    };
+
+    Buffer.toArray(subAccs);
+  };
 };

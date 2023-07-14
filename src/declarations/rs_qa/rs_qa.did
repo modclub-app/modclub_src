@@ -14,12 +14,17 @@ type UserAndRS = record {
   score : int;
   userId : principal;
 };
+type Result = variant {
+  err : text;
+  ok : bool;
+};
 type RSManager = service {
   handleSubscription : (ConsumerPayload) -> ();
   queryRSAndLevel : () -> (RSAndLevel) query;
   queryRSAndLevelByPrincipal : (principal) -> (RSAndLevel) query;
-  setRS : (principal, int) -> ();
+  setRS : (principal, int) -> (Result);
   showAdmins : () -> (vec principal) query;
+  subscribe : (text) -> ();
   topUsers : (nat, nat) -> (vec UserAndRS) query;
   updateRS : (principal, bool, Decision) -> (UserAndRS);
   updateRSBulk : (vec UserAndVote) -> (vec UserAndRS);
@@ -28,12 +33,18 @@ type RSAndLevel = record {
   level : UserLevel;
   score : int;
 };
+type Event = record {
+  payload : principal;
+  topic : text;
+};
 type ENV = variant {
   dev;
   local : record {
     auth_canister_id : principal;
     modclub_canister_id : principal;
+    old_modclub_canister_id : principal;
     rs_canister_id : principal;
+    vesting_canister_id : principal;
     wallet_canister_id : principal;
   };
   prod;
@@ -43,5 +54,8 @@ type Decision = variant {
   approved;
   rejected;
 };
-type ConsumerPayload = variant { admins : vec principal };
+type ConsumerPayload = variant {
+  admins : vec principal;
+  events : vec Event;
+};
 service : (ENV) -> RSManager;

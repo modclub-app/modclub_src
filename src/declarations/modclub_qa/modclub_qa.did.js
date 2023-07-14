@@ -13,6 +13,8 @@ export const idlFactory = ({ IDL }) => {
     prod: IDL.Null,
     local: IDL.Record({
       wallet_canister_id: IDL.Principal,
+      vesting_canister_id: IDL.Principal,
+      old_modclub_canister_id: IDL.Principal,
       modclub_canister_id: IDL.Principal,
       rs_canister_id: IDL.Principal,
       auth_canister_id: IDL.Principal,
@@ -85,6 +87,16 @@ export const idlFactory = ({ IDL }) => {
     role: Role,
     email: IDL.Text,
     updatedAt: Timestamp,
+  });
+  const Tokens = IDL.Nat;
+  const CanClaimLockedResponse = IDL.Record({
+    claimPrice: Tokens,
+    claimAmount: Tokens,
+    canClaim: IDL.Bool,
+  });
+  const Result_5 = IDL.Variant({
+    ok: CanClaimLockedResponse,
+    err: IDL.Text,
   });
   const Result_4 = IDL.Variant({ ok: IDL.Bool, err: IDL.Text });
   const ContentStatus = IDL.Variant({
@@ -522,7 +534,11 @@ export const idlFactory = ({ IDL }) => {
     rules: IDL.Vec(Rule),
   });
   const Result_1 = IDL.Variant({ ok: Reserved, err: IDL.Text });
-  const ConsumerPayload = IDL.Variant({ admins: IDL.Vec(IDL.Principal) });
+  const Event = IDL.Record({ topic: IDL.Text, payload: IDL.Principal });
+  const ConsumerPayload = IDL.Variant({
+    events: IDL.Vec(Event),
+    admins: IDL.Vec(IDL.Principal),
+  });
   const HeaderField = IDL.Tuple(IDL.Text, IDL.Text);
   const HttpRequest = IDL.Record({
     url: IDL.Text,
@@ -548,7 +564,32 @@ export const idlFactory = ({ IDL }) => {
     streaming_strategy: IDL.Opt(StreamingStrategy),
     status_code: IDL.Nat16,
   });
-  const Tokens = IDL.Nat;
+  const ProviderAdmins = IDL.Record({
+    pid: IDL.Principal,
+    admins: IDL.Vec(Profile),
+  });
+  const ProviderInfo = IDL.Record({
+    id: IDL.Principal,
+    name: IDL.Text,
+    createdAt: Timestamp,
+    description: IDL.Text,
+    updatedAt: Timestamp,
+    image: IDL.Opt(Image),
+  });
+  const OldModeratorLeaderboard = IDL.Record({
+    id: UserId,
+    completedVoteCount: IDL.Int,
+    userName: IDL.Text,
+    rewardsEarned: IDL.Int,
+    lastVoted: IDL.Opt(Timestamp),
+    performance: IDL.Float64,
+  });
+  const AccountsImportPayload = IDL.Record({
+    adminsByProvider: IDL.Vec(ProviderAdmins),
+    providers: IDL.Vec(ProviderInfo),
+    approvedPOHUsers: IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Principal)),
+    moderators: IDL.Vec(OldModeratorLeaderboard),
+  });
   const PohChallengesAttempt = IDL.Record({
     dataCanisterId: IDL.Opt(IDL.Principal),
     status: PohChallengeStatus,
@@ -636,10 +677,13 @@ export const idlFactory = ({ IDL }) => {
     ),
     addRules: IDL.Func([IDL.Vec(IDL.Text), IDL.Opt(IDL.Principal)], [], []),
     addToAllowList: IDL.Func([IDL.Principal], [], []),
+    addToApprovedUser: IDL.Func([IDL.Principal], [], []),
     adminInit: IDL.Func([], [], []),
     adminUpdateEmail: IDL.Func([IDL.Principal, IDL.Text], [Profile], []),
+    canClaimLockedReward: IDL.Func([IDL.Opt(Tokens)], [Result_5], []),
     canReserveContent: IDL.Func([IDL.Text], [Result_4], []),
     checkIfUserOptToReciveAlerts: IDL.Func([], [IDL.Bool], ["query"]),
+    claimLockedReward: IDL.Func([Tokens], [Result_4], []),
     collectCanisterMetrics: IDL.Func([], [], []),
     configurePohForProvider: IDL.Func(
       [IDL.Principal, IDL.Vec(IDL.Text), IDL.Nat, IDL.Bool],
@@ -726,6 +770,11 @@ export const idlFactory = ({ IDL }) => {
     handleSubscription: IDL.Func([ConsumerPayload], [], []),
     http_request: IDL.Func([HttpRequest], [HttpResponse], ["query"]),
     http_request_update: IDL.Func([HttpRequest], [HttpResponse], []),
+    importAccounts: IDL.Func(
+      [AccountsImportPayload],
+      [IDL.Record({ status: IDL.Bool })],
+      []
+    ),
     issueJwt: IDL.Func([], [IDL.Text], []),
     pohCallbackForModclub: IDL.Func(
       [PohVerificationResponsePlus],
@@ -843,6 +892,8 @@ export const init = ({ IDL }) => {
     prod: IDL.Null,
     local: IDL.Record({
       wallet_canister_id: IDL.Principal,
+      vesting_canister_id: IDL.Principal,
+      old_modclub_canister_id: IDL.Principal,
       modclub_canister_id: IDL.Principal,
       rs_canister_id: IDL.Principal,
       auth_canister_id: IDL.Principal,

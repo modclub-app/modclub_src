@@ -14,7 +14,7 @@ shared ({ caller = deployer }) actor class Provider() = this {
   };
 
   public shared ({ caller }) func verifyUserHumanityForProviderForQA(
-    userId : Principal,
+    userId : Principal
   ) : async PohTypes.PohVerificationResponsePlus {
     //qa canister id
     let modclubActor = actor "f2xjy-4aaaa-aaaah-qc3eq-cai" : ModclubActorType;
@@ -27,7 +27,7 @@ shared ({ caller = deployer }) actor class Provider() = this {
   };
 
   public shared ({ caller }) func verifyUserHumanityForProviderForDev(
-    userId : Principal,
+    userId : Principal
   ) : async PohTypes.PohVerificationResponsePlus {
     //qa canister id
     let modclubActor = actor "olc6u-lqaaa-aaaah-qcooq-cai" : ModclubActorType;
@@ -40,7 +40,7 @@ shared ({ caller = deployer }) actor class Provider() = this {
   };
 
   public shared ({ caller }) func verifyUserHumanityForProviderForProd(
-    userId : Principal,
+    userId : Principal
   ) : async PohTypes.PohVerificationResponsePlus {
     //qa canister id
     let modclubActor = actor "la3yy-gaaaa-aaaah-qaiuq-cai" : ModclubActorType;
@@ -56,18 +56,18 @@ shared ({ caller = deployer }) actor class Provider() = this {
     Helpers.logMessage(
       canistergeekLogger,
       "Calling back provider method",
-      #info,
+      #info
     );
     Helpers.logMessage(
       canistergeekLogger,
       "userId sent in callback: " # message.providerUserId,
-      #info,
+      #info
     );
     if (message.status == #verified) {
       Helpers.logMessage(
         canistergeekLogger,
         "status for user: verified ",
-        #info,
+        #info
       );
     };
 
@@ -75,7 +75,7 @@ shared ({ caller = deployer }) actor class Provider() = this {
       Helpers.logMessage(
         canistergeekLogger,
         "status for user: rejected ",
-        #info,
+        #info
       );
     };
   };
@@ -90,4 +90,3 @@ shared ({ caller = deployer }) actor class Provider() = this {
     canistergeekLogger.setMaxMessagesCount(3000);
   };
 };
-

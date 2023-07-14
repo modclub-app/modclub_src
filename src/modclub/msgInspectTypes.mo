@@ -18,6 +18,7 @@ module {
     #topUpProviderReserve : () -> ({ providerId : ?Principal; amount : Nat });
     #providerSaBalance : () -> (Text);
     #addRules : () -> ([Text], ?Principal);
+    #addToApprovedUser : () -> Principal;
     #addToAllowList : () -> Principal;
     #adminInit : () -> ();
     #adminUpdateEmail : () -> (Principal, Text);
@@ -101,6 +102,7 @@ module {
     #vote : () -> (Types.ContentId, Types.Decision, ?[Types.RuleId]);
     #votePohContent : () -> (Text, Types.Decision, [Types.PohRulesViolated]);
     #whoami : () -> ();
+    #importAccounts : () -> Types.AccountsImportPayload;
   };
 
 };

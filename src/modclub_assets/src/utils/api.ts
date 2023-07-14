@@ -35,17 +35,26 @@ import { modclub } from "../../../declarations/modclub/index";
 import { modclub_dev } from "../../../declarations/modclub_dev/index";
 import { modclub_qa } from "../../../declarations/modclub_qa/index";
 import { rs } from "../../../declarations/rs";
+import { rs_qa } from "../../../declarations/rs_qa";
 import { wallet } from "../../../declarations/wallet";
+import { wallet_qa } from "../../../declarations/wallet_qa";
 import { fetchObjectUrl, formatDate, getUrlForData } from "./util";
-import { RSAndLevel } from "../../../declarations/rs/rs.did";
+import { RSAndLevel as RSAndLevelType } from "../../../declarations/rs/rs.did.d.ts";
+import { RSAndLevel as RSAndLevelQAType } from "../../../declarations/rs_qa/rs_qa.did.d.ts";
 export type Optional<Type> = [Type] | [];
 
 var actor: _SERVICE = null;
 let MCToUse = modclub;
+var RSActor = rs;
+var WalletActor = wallet;
+var RSAndLevel = RSAndLevelType;
 if (process.env.DEV_ENV == "dev") {
   MCToUse = modclub_dev;
 } else if (process.env.DEV_ENV == "qa") {
   MCToUse = modclub_qa;
+  RSActor = rs_qa;
+  WalletActor = wallet_qa;
+  RSAndLevel = RSAndLevelQAType;
 }
 
 async function getMC(): Promise<_SERVICE> {
@@ -68,13 +77,18 @@ export async function registerModerator(
   imageData?: ImageData
 ): Promise<Profile> {
   const imgResult = null;
-  const _mc = await getMC();
-  const response = await _mc.registerModerator(
-    username,
-    email ? [email] : [],
-    imgResult ? [imgResult] : []
-  );
-  return response;
+  try {
+    const _mc = await getMC();
+    const response = await _mc.registerModerator(
+      username,
+      email ? [email] : [],
+      imgResult ? [imgResult] : []
+    );
+    return response;
+  } catch (e) {
+    console.log("ERROR in registerModerator", e);
+    return Promise.reject(e);
+  }
 }
 
 export async function getUserFromCanister(): Promise<Profile | null> {
@@ -196,7 +210,7 @@ export async function getProviderAdmins(
 }
 
 export async function stakeTokens(amount: number): Promise<string> {
-  return await wallet.stakeTokens(amount);
+  return await WalletActor.stakeTokens(amount);
 }
 
 export async function unStakeTokens(amount: number): Promise<string> {
@@ -207,8 +221,17 @@ export async function getAllProfiles(): Promise<Profile[]> {
   return (await getMC()).getAllProfiles();
 }
 
-export async function checkUserRole(): Promise<boolean> {
-  return (await getMC()).isUserAdmin();
+export async function checkUserRole(uid: Principal): Promise<boolean> {
+  uid && console.log("PRINCIPAL::", uid.toString()); // For Debug.
+  try {
+    let modclubActor = await getMC();
+    let admins = await modclubActor.showAdmins();
+    return admins.includes(uid);
+  } catch (e) {
+    !e.message.includes("Access denied") &&
+      console.log("ERROR::checkUserRole::", e);
+    return false;
+  }
 }
 
 export async function getProfileById(userId: Principal): Promise<Profile> {
@@ -402,15 +425,15 @@ export async function queryRSAndLevelByPrincipal(
 ): Promise<RSAndLevel> {
   return trace_error(
     async () =>
-      await rs.queryRSAndLevelByPrincipal(Principal.fromText(principalId))
+      await RSActor.queryRSAndLevelByPrincipal(Principal.fromText(principalId))
   );
 }
 export async function queryRSAndLevel(): Promise<RSAndLevel> {
-  return trace_error(async () => await rs.queryRSAndLevel());
+  return trace_error(async () => await RSActor.queryRSAndLevel());
 }
 export async function queryBalance(subAcc?: string): Promise<number> {
   return trace_error(
-    async () => await wallet.queryBalance(subAcc ? [subAcc] : [])
+    async () => await WalletActor.queryBalance(subAcc ? [subAcc] : [])
   );
 }
 export async function queryBalancePr(
@@ -419,7 +442,7 @@ export async function queryBalancePr(
 ): Promise<number> {
   return trace_error(
     async () =>
-      await wallet.queryBalancePr(
+      await WalletActor.queryBalancePr(
         Principal.fromText(principalId),
         subAcc ? [subAcc] : []
       )

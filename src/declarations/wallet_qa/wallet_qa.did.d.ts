@@ -33,7 +33,9 @@ export type ApproveError =
   | { TooOld: null }
   | { Expired: { ledger_time: bigint } }
   | { InsufficientFunds: { balance: Tokens } };
-export type ConsumerPayload = { admins: Array<Principal> };
+export type ConsumerPayload =
+  | { events: Array<Event> }
+  | { admins: Array<Principal> };
 export type ENV =
   | { qa: null }
   | { dev: null }
@@ -41,11 +43,17 @@ export type ENV =
   | {
       local: {
         wallet_canister_id: Principal;
+        vesting_canister_id: Principal;
+        old_modclub_canister_id: Principal;
         modclub_canister_id: Principal;
         rs_canister_id: Principal;
         auth_canister_id: Principal;
       };
     };
+export interface Event {
+  topic: string;
+  payload: Principal;
+}
 export interface LedgerInitParams {
   decimals: number;
   token_symbol: string;
@@ -148,7 +156,7 @@ export interface Wallet {
   ledger_account: ActorMethod<[], Account>;
   queryBalance: ActorMethod<[[] | [SubAccount]], number>;
   queryBalancePr: ActorMethod<[Principal, [] | [SubAccount]], number>;
-  stakeTokens: ActorMethod<[number], undefined>;
+  stakeTokens: ActorMethod<[bigint], Result>;
   tge: ActorMethod<[], undefined>;
   transfer: ActorMethod<
     [[] | [SubAccount], Principal, [] | [SubAccount], number],
@@ -156,5 +164,6 @@ export interface Wallet {
   >;
   transferBulk: ActorMethod<[Array<UserAndAmount>], undefined>;
   transferToProvider: ActorMethod<[TransferToProviderArgs], Result>;
+  unstakeTokens: ActorMethod<[Tokens], Result>;
 }
 export interface _SERVICE extends Wallet {}
