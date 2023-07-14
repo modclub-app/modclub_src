@@ -24,7 +24,7 @@ module {
     #adminUpdateEmail : () -> (Principal, Text);
     #canClaimLockedReward : () -> ?ICRCTypes.Tokens;
     #checkIfUserOptToReciveAlerts : () -> ();
-    #claimLockedReward : () -> ICRCTypes.Tokens;
+    #claimLockedReward : () -> (ICRCTypes.Tokens, ?Principal);
     #collectCanisterMetrics : () -> ();
     #configurePohForProvider : () -> (Principal, [Text], Nat, Bool);
     #deregisterProvider : () -> ();

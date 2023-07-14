@@ -945,7 +945,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public shared ({ caller }) func claimLockedReward(amount : ICRCTypes.Tokens) : async Result.Result<Bool, Text> {
+  public shared ({ caller }) func claimLockedReward(amount : ICRCTypes.Tokens, customReceiver : ?Principal) : async Result.Result<Bool, Text> {
     if (not ModeratorManager.canClaimReward(caller, claimRewardsWhitelistBuf)) {
       return throw Error.reject("Moderator not permitted to claim locked Tokens.");
     };
@@ -966,7 +966,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         let ledger = ModWallet.getActor(env);
         let _ = await ledger.icrc1_transfer({
           from_subaccount = ?ICRCModule.ICRC_VESTING_SA;
-          to = moderatorAcc;
+          to = switch (customReceiver) {
+            case (?p) { { owner = p; subaccount = null } };
+            case (null) { moderatorAcc };
+          };
           amount;
           fee = null;
           memo = null;
