@@ -1,12 +1,11 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
 import {
-  getAllContent,
   getProviderRules,
   getTasks,
-  shuffleContent,
+  queryRSAndLevelByPrincipal,
 } from "../../../utils/api";
 import {
   Modal,
@@ -27,7 +26,7 @@ import sanitizeHtml from "sanitize-html-react";
 const PAGE_SIZE = 20;
 const FILTER_VOTES = false;
 
-const Task = ({ task, setVoted }) => {
+const Task = ({ task, setVoted, level }) => {
   const [rules, setRules] = useState([]);
 
   const getImage = (data: any) => {
@@ -70,10 +69,10 @@ const Task = ({ task, setVoted }) => {
               Submitted by {task.sourceId} {formatDate(task.createdAt)}
             </span>
           </Card.Header.Title>
-          <Progress
+          {level != "novice" && <Progress
             value={Number(task.voteCount)}
             min={Number(task.requiredVotes)}
-          />
+          />}
         </Card.Header>
         <Card.Content>
           <Heading subtitle>{task.title}</Heading>
@@ -102,18 +101,7 @@ const Task = ({ task, setVoted }) => {
         </Card.Content>
         <Card.Footer className="tasks-footer">
           <Button.Group alignItems="flex-end">
-            <Button className="is-outlined">
-              <Icon align="left" size="small" className="has-text-white">
-                <span className="material-icons">local_atm</span>
-              </Icon>
-              <span>{"Rq Stake: " + task.minStake}</span>
-            </Button>
-            <Button className="is-outlined">
-              <Icon align="left" size="small" className="has-text-white">
-                <span className="material-icons">stars</span>
-              </Icon>
-              <span>{"Reward: " + task.minStake}</span>
-            </Button>
+            
           </Button.Group>
 
           <Button.Group style={{ flexWrap: "wrap" }}>
@@ -132,8 +120,10 @@ const Task = ({ task, setVoted }) => {
   );
 };
 
+
+
 export default function Tasks() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, identity, isAuthenticated } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [voted, setVoted] = useState<boolean>(false);
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
@@ -144,10 +134,17 @@ export default function Tasks() {
     endIndex: PAGE_SIZE,
   });
   const [firstLoad, setFirstLoad] = useState(true);
+  const [level, setLevel] = useState<string>("");
+
+  const fetchTokenHoldings = useCallback(async (identity) => {
+    let perf = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText()!);
+    setLevel(Object.keys(perf.level)[0]);
+  },[]);  
 
   useEffect(() => {
     if (user && firstLoad && !loading && fetchTasks()) {
       setFirstLoad(false);
+      fetchTokenHoldings(identity)
     }
   }, [user]);
 
@@ -207,7 +204,7 @@ export default function Tasks() {
           <div className="loader is-loading p-4 mt-6" />
         ) : (
           tasks.map((task) => (
-            <Task key={task.id} task={task} setVoted={setVoted} />
+            <Task key={task.id} task={task} setVoted={setVoted} level={level}/>
           ))
         )}
         {tasks != null && (

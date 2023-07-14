@@ -29,6 +29,8 @@ import {
   ProviderMeta,
   ProviderMetaResult,
   ProviderSettingResult,
+  Result_5,
+  Result_4,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 import { modclub } from "../../../declarations/modclub/index";
@@ -195,10 +197,6 @@ export async function getActivity(isComplete: boolean): Promise<Activity[]> {
   return (await getMC()).getActivity(isComplete);
 }
 
-export async function getTokenHoldings(): Promise<UserHoldings> {
-  return convertObj(await (await getMC()).getTokenHoldings());
-}
-
 export async function getAdminProviderIDs(): Promise<Principal[]> {
   return await (await getMC()).getAdminProviderIDs();
 }
@@ -213,7 +211,7 @@ export async function stakeTokens(amount: number): Promise<string> {
   return await WalletActor.stakeTokens(amount);
 }
 
-export async function unStakeTokens(amount: number): Promise<string> {
+export async function unStakeTokens(amount: number): Promise<any> {
   return (await getMC()).unStakeTokens(BigInt(amount));
 }
 
@@ -246,14 +244,6 @@ export async function getModeratorLeaderboard(
     BigInt((page - 1) * pageSize),
     BigInt(page * pageSize)
   );
-}
-
-export async function airdropRegister(): Promise<AirdropUser> {
-  return (await getMC()).airdropRegister();
-}
-
-export async function isAirdropRegistered(): Promise<AirdropUser> {
-  return (await getMC()).isAirdropRegistered();
 }
 
 export async function updateMC(): Promise<void> {
@@ -448,6 +438,7 @@ export async function queryBalancePr(
       )
   );
 }
+
 // Reservation System
 export async function reserveContent(contentId: string): Promise<void> {
   return trace_error(async () => (await getMC()).reserveContent(contentId));
@@ -459,4 +450,16 @@ export async function getReservedByContentId(contentId: string): Promise<void> {
 }
 export async function canReserveContent(contentId: string): Promise<any> {
   return trace_error(async () => (await getMC()).canReserveContent(contentId));
+}
+
+export async function claimLockedReward(amount: number) : Promise<Result_4>{
+  return trace_error(
+    async () => (await getMC()).claimLockedReward(BigInt(amount))
+  );
+}
+
+export async function canClaimLockedReward(amount: number) : Promise<Result_5>{
+  return trace_error(
+    async () => (await getMC()).canClaimLockedReward([BigInt(amount)])
+  );
 }

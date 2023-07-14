@@ -123,20 +123,6 @@ export default function Platform({ providerId }: { providerId: Principal }) {
           </ul>
         </Card.Content>
       </Card>
-
-      <Columns style={{ margin: "-.75rem" }}>
-        <GradientBox title="Rq Stake" showToken={false}>
-          {loading ? (
-            <div className="loader is-loading"></div>
-          ) : (
-            Number(content.settings.requiredVotes)
-          )}
-        </GradientBox>
-        <GradientBox title="Reward">5</GradientBox>
-        {/* <GradientBox title="Partner Rewards">
-        5
-      </GradientBox> */}
-      </Columns>
     </>
   );
 }

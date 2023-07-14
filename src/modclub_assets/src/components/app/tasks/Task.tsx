@@ -62,14 +62,14 @@ function resizeIframe(iframe) {
 }
 
 export default function Task() {
-  const initTime = "02:00";
-  const [full, setFull] = useState<boolean | null>(null);
-  const { user, identity } = useAuth();
-  const { taskId } = useParams();
+  const { user,identity } = useAuth();
+  const { taskId } = useParams<{taskId : string}>();
   const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
+  const [level, setLevel] = useState<string>("");
   const [reserved, setReserved] = useState(false);
-  const [level, setLevel] = useState("");
+  const initTime = "02:00";
+  const [full, setFull] = useState<boolean | null>(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [time, setTime] = useState("02:00");
 
@@ -220,10 +220,12 @@ export default function Task() {
                   {task.providerName}
                   <span>Submitted by {task.sourceId}</span>
                 </Card.Header.Title>
-                <Progress
+                {level != "novice" && (
+                  <Progress
                   value={Number(task.voteCount)}
                   min={Number(task.voteParameters.requiredVotes)}
-                />
+                />)}
+
               </Card.Header>
               <Card.Content>
                 <Heading>{task.title}</Heading>
@@ -271,13 +273,30 @@ export default function Task() {
                 </Card> */}
               </Card.Content>
 
-              {reserved && (
+              {reserved && level != "novice" && (
                 <>
                   {!task.hasVoted[0] && (
                     <Card.Footer className="pt-0" style={{ border: 0 }}>
                       <Button.Group>
                         <TaskConfirmationModal
                           task={task}
+                          level={level}
+                          fullWidth={true}
+                          onUpdate={() => setVoted(true)}
+                        />
+                      </Button.Group>
+                    </Card.Footer>
+                  )}
+                </>
+              )}
+              {level == "novice" && (
+                <>
+                  {!task.hasVoted[0] && (
+                    <Card.Footer className="pt-0" style={{ border: 0 }}>
+                      <Button.Group>
+                        <TaskConfirmationModal
+                          task={task}
+                          level={level}
                           fullWidth={true}
                           onUpdate={() => setVoted(true)}
                         />

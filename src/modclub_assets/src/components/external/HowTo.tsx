@@ -27,8 +27,11 @@ export default function HowTo() {
           <HashLink to="/how-to#Moderating" className="is-block has-text-white">
             4. Moderating content
           </HashLink>
+          <HashLink to="/how-to#Leveling" className="is-block has-text-white">
+            5. Reputation Score system
+          </HashLink>
           <HashLink to="/how-to#Receiving" className="is-block has-text-white">
-            5. Receiving rewards
+            6. Receiving rewards
           </HashLink>
         </Container>
       </Section>
@@ -130,6 +133,25 @@ export default function HowTo() {
             their own platform token, this is at the discretion of the platforms
             themselves.
           </p>
+        </Container>
+      </Section>
+
+      <Section id="Leveling">
+        <Container>
+          <Heading subtitle>
+            Reputation Score system
+          </Heading>
+          <p className="mb-4">
+            After you successfully vote with the majority, the score you received from each task will add up to your levelling or reputation score system and upgrade you to the next levels
+          </p>
+          <ul style={{ listStyle: "disc" }}>
+            <li>As <b>Novice</b> you will need 10 success votes to become <b>Junior</b> Moderator</li>
+            <li>Then from <b>Junior</b> you will need 100 success votes to become <b>Senior</b> Moderator</li>
+          </ul>
+          <p className="my-4">
+            Please keep in mind if you vote against the majority, the score will be deducted. If the score reaches the lower level, your position will be downgraded. Note that your score cannot go below zero.
+          </p>
+
         </Container>
       </Section>
 

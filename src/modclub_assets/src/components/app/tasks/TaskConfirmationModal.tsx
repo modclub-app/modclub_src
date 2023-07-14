@@ -15,17 +15,20 @@ import rejectImg from "../../../../assets/reject.svg";
 import { vote, getProviderRules } from "../../../utils/api";
 import { ContentPlus } from "../../../utils/types";
 import { getViolatedRules } from "../../../utils/util";
+import * as Constant from "../../../utils/constant";
 
 const ConfirmationModal = ({
   title,
   image,
   task,
+  level,
   toggle,
   onUpdate
 }: {
   title: string;
   image: string;
   task: ContentPlus;
+  level: string;
   toggle: () => void;
   onUpdate: () => void;
 }) => {
@@ -48,9 +51,17 @@ const ConfirmationModal = ({
     }
     return false;
   } 
+  const LevelMessage = {
+    novice: Constant.NOVICE_MSG_CONFIRM_VOTE,
+    junior: Constant.JUNIOR_MSG_CONFIRM_VOTE,
+    senior1: Constant.SENIOR_MSG_CONFIRM_VOTE,
+    senior2: Constant.SENIOR_MSG_CONFIRM_VOTE,
+    senior3: Constant.SENIOR_MSG_CONFIRM_VOTE
+  }
+  const levelMsg = LevelMessage[level];
 
   const onFormSubmit = async (values: any) => {
-    console.log("FormModal values", values);
+    // console.log("FormModal values", values);
     const checked = getViolatedRules(values);
 
     try {
@@ -138,6 +149,11 @@ const ConfirmationModal = ({
                 id="voteIncorrectlyConfirmation"
                 label={`I understand I will lose ${task.minStake} MOD if I vote incorrectly`}
               />
+              <Confirm
+                type="warning"
+                id="scoreAwarenessConfirmation"
+                label={levelMsg}
+              />
             </Modal.Card.Body>
             <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
               <Button.Group>
@@ -169,10 +185,12 @@ const ConfirmationModal = ({
 
 export default function ConfirmationModalToggle({
   task,
+  level,
   fullWidth = false,
   onUpdate,
 } : {
   task: ContentPlus;
+  level: string;
   fullWidth?: boolean;
   onUpdate: () => void;
 }) {
@@ -207,6 +225,7 @@ export default function ConfirmationModalToggle({
           title="Approve Confirmation"
           image={approveImg}
           task={task}
+          level={level}
           toggle={toggleApprove}
           onUpdate={onUpdate}
         />
@@ -216,6 +235,7 @@ export default function ConfirmationModalToggle({
           title="Reject Confirmation"
           image={rejectImg}
           task={task}
+          level={level}
           toggle={togglReject}
           onUpdate={onUpdate}
         />

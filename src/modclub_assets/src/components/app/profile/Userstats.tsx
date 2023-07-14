@@ -1,59 +1,43 @@
-import * as React from "react";
-import { useEffect, useState } from "react";
-import { queryRSAndLevelByPrincipal } from "../../../utils/api";
+import { useCallback, useEffect, useState } from "react";
+import { queryRSAndLevelByPrincipal} from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
-import { Columns, Card, Heading, Button } from "react-bulma-components";
+import { Columns, Button } from "react-bulma-components";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
 import performanceImg from "../../../../assets/performance.svg";
 import Withdraw from "../modals/Withdraw";
 import Stake from "../modals/Stake";
 import Unstake from "../modals/Unstake";
-import { Principal } from "@dfinity/principal";
+import Claim from "../modals/Claim";
+import { StatBox } from "../../common/statbox/StatBox";
+import * as Constant from "../../../utils/constant";
 
-const StatBox = ({
-  loading,
-  image,
-  title,
-  amount,
-  usd,
-  detailed,
-  children,
-}) => {
-  return (
-    <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-      <Card backgroundColor="circles" className="is-fullheight">
-        <Card.Content className="is-flex is-align-items-center">
-          <img src={image} className="mr-4" />
-          <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
-            <p className="has-text-light">{title}</p>
-            {loading ? (
-              <div className="loader is-loading" />
-            ) : (
-              <Heading size={1} style={{ lineHeight: 1 }}>
-                {amount}
-                {detailed && (
-                  <span className="has-text-weight-normal is-size-4 ml-4"></span>
-                )}
-              </Heading>
-            )}
-          </div>
-        </Card.Content>
-        {detailed && (
-          <Card.Footer
-            paddingless
-            style={{ border: 0, marginBottom: "1.5rem" }}
-          >
-            {children}
-          </Card.Footer>
-        )}
-      </Card>
-    </Columns.Column>
-  );
+
+const levelMessages = {
+  novice: {
+    rs: Constant.NOVICE_LEVEL_UPGRADE_MESSAGE,
+    claim: Constant.NOVICE_CLAIM_LIMIT_MESSAGE,
+  },
+  junior: {
+    rs: Constant.JUNIOR_LEVEL_UPGRADE_MESSAGE,
+    claim: Constant.JUNIOR_CLAIM_LIMIT_MESSAGE,
+  },
+  senior1: {
+    rs: Constant.SENIOR_MODERATOR_MESSAGE,
+    claim: Constant.FULL_CLAIM_MESSAGE,
+  },
+  senior2: {
+    rs: Constant.SENIOR_MODERATOR_MESSAGE,
+    claim: Constant.FULL_CLAIM_MESSAGE,
+  },
+  senior3: {
+    rs: Constant.SENIOR_MODERATOR_MESSAGE,
+    claim: Constant.FULL_CLAIM_MESSAGE,
+  },
 };
 
 export default function Userstats({ detailed = false }) {
-  const { user, identity } = useAuth();
+  const { user, identity} = useAuth();
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [principalID, setPrincipalID] = useState<string>("");
   const [tokenHoldings, setTokenHoldings] = useState({
@@ -62,6 +46,10 @@ export default function Userstats({ detailed = false }) {
     wallet: 0,
   });
   const [performance, setPerformance] = useState<number>(0);
+  const [level, setLevel] = useState<string>("");
+
+  const [showClaim, setShowClaim] = useState(false);
+  const toggleClaim = () => setShowClaim(!showClaim);
 
   const [showWithdraw, setShowWithdraw] = useState(false);
   const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
@@ -76,44 +64,54 @@ export default function Userstats({ detailed = false }) {
     const principalId = identity.getPrincipal().toText();
     setPrincipalID(principalId);
   };
+
+  const fetchTokenHoldings = async (identity) => {
+    try {
+      let perf = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText());
+      //TODO: tokenHolding update: Stake amount, Reward, Wallet
+      setPerformance(Number(perf.score));
+      setLevel(Object.keys(perf.level)[0]);
+      setHoldingsUpdated(false);
+    } catch (error) {
+      console.error('Failed to fetch token holdings:', error);
+    }
+  };
+
   useEffect(() => {
     identity && getUserData(identity);
+    fetchTokenHoldings(identity);
   }, [identity]);
 
   useEffect(() => {
-    const fetchTokenHoldings = async () => {
-      // const tokenHoldings = await getTokenHoldings();
-
-      if (principalID !== "") {
-        let rs = await queryRSAndLevelByPrincipal(principalID!);
-        setPerformance(Number(rs.score) || 0);
-      }
-      // setTokenHoldings(tokenHoldings);
-      // setHoldingsUpdated(false);
-    };
-    user && holdingsUpdated && fetchTokenHoldings();
+    user && holdingsUpdated;
   }, [user, holdingsUpdated]);
+
+  const getRSMessageByLevel = useCallback((level: string) => {
+    return levelMessages[level]?.rs || Constant.DEFAULT_MESSAGE;
+  }, []);
+  const getClaimMessageByLevel = useCallback((level: string) => {
+    return levelMessages[level]?.claim || Constant.DEFAULT_MESSAGE;
+  }, []);
+
+  const claimMessage = getClaimMessageByLevel(level);
+  const rsMessage = getRSMessageByLevel(level);
 
   return (
     <>
       <Columns>
         <StatBox
           loading={holdingsUpdated}
-          image={walletImg}
-          title="Wallet"
-          amount={tokenHoldings.wallet}
-          usd={17}
+          image={performanceImg}
+          title="Reputation Score"
+          amount={performance}
+          usd={12}
           detailed={detailed}
-        >
-          <Button.Group>
-            <Button color="dark" fullwidth>
-              Deposit
-            </Button>
-            <Button color="dark" fullwidth onClick={toggleWithdraw}>
-              Withdraw
-            </Button>
-          </Button.Group>
-        </StatBox>
+          message={rsMessage}
+          isBar={true}
+          showLevel={true}
+          level={level}
+        />
+
         <StatBox
           loading={holdingsUpdated}
           image={stakedImg}
@@ -121,6 +119,8 @@ export default function Userstats({ detailed = false }) {
           amount={tokenHoldings.stake}
           usd={170}
           detailed={detailed}
+          message="Staked"
+          isBar={false}
         >
           <Button.Group>
             <Button color="dark" fullwidth onClick={toggleStake}>
@@ -133,13 +133,29 @@ export default function Userstats({ detailed = false }) {
         </StatBox>
         <StatBox
           loading={holdingsUpdated}
-          image={performanceImg}
-          title="Reputation Score"
-          amount={performance.toFixed(0)}
-          usd={12}
+          image={walletImg}
+          title="Claims"
+          amount={tokenHoldings.wallet}
+          usd={17}
           detailed={detailed}
-        ></StatBox>
+          message={claimMessage}
+          isBar={false}
+        >
+          <Button.Group>
+            <Button
+              color="dark"
+              onClick={toggleClaim}
+              disabled={level == "novice" || level == "junior"}
+            >
+              Claim
+            </Button>
+          </Button.Group>
+        </StatBox>
       </Columns>
+
+      {showClaim && (
+        <Claim toggle={toggleClaim} tokenHoldings={tokenHoldings} />
+      )}
 
       {showWithdraw && (
         <Withdraw toggle={toggleWithdraw} tokenHoldings={tokenHoldings} />

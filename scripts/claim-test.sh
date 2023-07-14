@@ -142,6 +142,8 @@ MOD_PRINCIPAL_4=\"$(dfx identity get-principal)\"
 
 echo "+++++++++++++++++++ Step 4: submitText  +++++++++++++++++++"
 dfx identity use default
+dfx ledger fabricate-cycles --canister modclub
+dfx ledger fabricate-cycles --canister modclub
 echo "+++++++++++++++++++ Step 4.1: Set VoteParams  +++++++++++++++++++"
 dfx canister call modclub setVoteParamsForLevel "(3, variant {simple})"
 check_success "setVoteParams"
