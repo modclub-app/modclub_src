@@ -694,7 +694,7 @@ export const idlFactory = ({ IDL }) => {
     downloadSupport: IDL.Func(
       [IDL.Text, IDL.Text, IDL.Nat, IDL.Nat],
       [IDL.Vec(IDL.Vec(IDL.Text))],
-      ["query"]
+      []
     ),
     editProviderAdmin: IDL.Func(
       [IDL.Principal, IDL.Principal, IDL.Text],
@@ -704,7 +704,7 @@ export const idlFactory = ({ IDL }) => {
     generateSigningKey: IDL.Func([], [], []),
     getActivity: IDL.Func([IDL.Bool], [IDL.Vec(Activity)], ["query"]),
     getAdminProviderIDs: IDL.Func([], [IDL.Vec(IDL.Principal)], ["query"]),
-    getAllContent: IDL.Func([ContentStatus], [IDL.Vec(ContentPlus)], ["query"]),
+    getAllContent: IDL.Func([ContentStatus], [IDL.Vec(ContentPlus)], []),
     getAllDataCanisterIds: IDL.Func(
       [],
       [IDL.Vec(IDL.Principal), IDL.Vec(IDL.Text)],
@@ -731,8 +731,8 @@ export const idlFactory = ({ IDL }) => {
       [IDL.Opt(CanisterMetrics)],
       ["query"]
     ),
-    getContent: IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], ["query"]),
-    getContentResult: IDL.Func([IDL.Text], [ContentResult], ["query"]),
+    getContent: IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], []),
+    getContentResult: IDL.Func([IDL.Text], [ContentResult], []),
     getDeployer: IDL.Func([], [IDL.Principal], ["query"]),
     getModeratorEmailsForPOHAndSendEmail: IDL.Func([IDL.Text], [], []),
     getModeratorLeaderboard: IDL.Func(
@@ -755,7 +755,7 @@ export const idlFactory = ({ IDL }) => {
     getProviderContent: IDL.Func(
       [IDL.Principal, ContentStatus, IDL.Nat, IDL.Nat],
       [IDL.Vec(ContentPlus)],
-      ["query"]
+      []
     ),
     getProviderRules: IDL.Func([], [IDL.Vec(Rule)], ["query"]),
     getReservedByContentId: IDL.Func([IDL.Text], [Result_1], []),
@@ -764,7 +764,7 @@ export const idlFactory = ({ IDL }) => {
     getTasks: IDL.Func(
       [IDL.Nat, IDL.Nat, IDL.Bool],
       [IDL.Vec(ContentPlus)],
-      ["query"]
+      []
     ),
     getVotePerformance: IDL.Func([], [IDL.Float64], ["query"]),
     handleSubscription: IDL.Func([ConsumerPayload], [], []),

@@ -7,7 +7,6 @@ export interface AccountsImportPayload {
   approvedPOHUsers: Array<[Principal, Principal]>;
   moderators: Array<OldModeratorLeaderboard>;
 }
-
 export interface Activity {
   status: ContentStatus;
   reward: number;
@@ -47,13 +46,11 @@ export interface Branch_3 {
   size: bigint;
   right: Trie_3;
 }
-
 export interface CanClaimLockedResponse {
   claimPrice: Tokens;
   claimAmount: Tokens;
   canClaim: boolean;
 }
-
 export type CanisterCyclesAggregatedData = BigUint64Array | bigint[];
 export type CanisterHeapMemoryAggregatedData = BigUint64Array | bigint[];
 export interface CanisterHttpResponsePayload {
@@ -102,7 +99,6 @@ export interface Complexity {
 export type ConsumerPayload =
   | { events: Array<Event> }
   | { admins: Array<Principal> };
-
 export type ContentId = string;
 export interface ContentPlus {
   id: ContentId;

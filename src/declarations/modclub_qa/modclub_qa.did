@@ -98,12 +98,10 @@ type Role = variant {
   moderator;
   owner;
 };
-
 type Result_5 = variant {
   err : text;
   ok : CanClaimLockedResponse;
 };
-
 type Result_4 = variant {
   err : text;
   ok : bool;
@@ -173,7 +171,6 @@ type ProviderMeta = record {
   description : text;
   name : text;
 };
-
 type ProviderInfo = record {
   createdAt : Timestamp;
   description : text;
@@ -182,7 +179,6 @@ type ProviderInfo = record {
   name : text;
   updatedAt : Timestamp;
 };
-
 type ProviderId = principal;
 type ProviderError = variant {
   InvalidContentStatus;
@@ -194,12 +190,10 @@ type ProviderError = variant {
   RequiresWhitelisting;
   Unauthorized;
 };
-
 type ProviderAdmins = record {
   admins : vec Profile;
   pid : principal;
 };
-
 type Profile = record {
   createdAt : Timestamp;
   email : text;
@@ -437,7 +431,6 @@ type PohChallengePackage = record {
   updatedAt : int;
   userId : principal;
 };
-
 type OldModeratorLeaderboard = record {
   completedVoteCount : int;
   id : UserId;
@@ -446,7 +439,6 @@ type OldModeratorLeaderboard = record {
   rewardsEarned : int;
   userName : text;
 };
-
 type NumericEntity = record {
   avg : nat64;
   first : nat64;
@@ -479,12 +471,12 @@ type ModClub = service {
   collectCanisterMetrics : () -> ();
   configurePohForProvider : (principal, vec text, nat, bool) -> ();
   deregisterProvider : () -> (text);
-  downloadSupport : (text, text, nat, nat) -> (vec vec text) query;
+  downloadSupport : (text, text, nat, nat) -> (vec vec text);
   editProviderAdmin : (principal, principal, text) -> (ProviderResult);
   generateSigningKey : () -> ();
   getActivity : (bool) -> (vec Activity) query;
   getAdminProviderIDs : () -> (vec principal) query;
-  getAllContent : (ContentStatus) -> (vec ContentPlus) query;
+  getAllContent : (ContentStatus) -> (vec ContentPlus);
   getAllDataCanisterIds : () -> (vec principal, vec text);
   getAllPohTasksForAdminUsers : (
     ContentStatus,
@@ -498,8 +490,8 @@ type ModClub = service {
   getAllUsersWantToReceiveAlerts : () -> (vec text) query;
   getCanisterLog : (opt CanisterLogRequest) -> (opt CanisterLogResponse) query;
   getCanisterMetrics : (GetMetricsParameters) -> (opt CanisterMetrics) query;
-  getContent : (text) -> (opt ContentPlus) query;
-  getContentResult : (text) -> (ContentResult) query;
+  getContent : (text) -> (opt ContentPlus);
+  getContentResult : (text) -> (ContentResult);
   getDeployer : () -> (principal) query;
   getModeratorEmailsForPOHAndSendEmail : (text) -> ();
   getModeratorLeaderboard : (nat, nat) -> (vec ModeratorLeaderboard);
@@ -511,19 +503,17 @@ type ModClub = service {
   getProfileById : (principal) -> (Profile) query;
   getProvider : (principal) -> (ProviderPlus);
   getProviderAdmins : (principal) -> (vec Profile);
-  getProviderContent : (principal, ContentStatus, nat, nat) -> (vec ContentPlus) query;
+  getProviderContent : (principal, ContentStatus, nat, nat) -> (vec ContentPlus);
   getProviderRules : () -> (vec Rule) query;
   getReservedByContentId : (text) -> (Result_1);
   getRules : (principal) -> (vec Rule) query;
   getTaskStats : (int) -> (nat, nat, nat, nat);
-  getTasks : (nat, nat, bool) -> (vec ContentPlus) query;
+  getTasks : (nat, nat, bool) -> (vec ContentPlus);
   getVotePerformance : () -> (float64) query;
   handleSubscription : (ConsumerPayload) -> ();
   http_request : (HttpRequest) -> (HttpResponse) query;
   http_request_update : (HttpRequest) -> (HttpResponse);
-
   importAccounts : (AccountsImportPayload) -> (record { status : bool });
-
   issueJwt : () -> (text);
   pohCallbackForModclub : (PohVerificationResponsePlus) -> () oneway;
   populateChallenges : () -> ();
@@ -687,12 +677,10 @@ type GetLatestLogMessagesParameters = record {
   filter : opt GetLogMessagesFilter;
   upToTimeNanos : opt Nanos;
 };
-
 type Event = record {
   payload : principal;
   topic : text;
 };
-
 type ENV = variant {
   dev;
   local : record {
@@ -761,12 +749,10 @@ type ContentPlus = record {
   voteParameters : VoteParameters;
 };
 type ContentId = text;
-
 type ConsumerPayload = variant {
   admins : vec principal;
   events : vec Event;
 };
-
 type Complexity = record {
   expiryTime : Timestamp;
   level : Level;
@@ -814,13 +800,11 @@ type CanisterHttpResponsePayload = record {
 };
 type CanisterHeapMemoryAggregatedData = vec nat64;
 type CanisterCyclesAggregatedData = vec nat64;
-
 type CanClaimLockedResponse = record {
   canClaim : bool;
   claimAmount : Tokens;
   claimPrice : Tokens;
 };
-
 type Branch_3 = record {
   left : Trie_3;
   right : Trie_3;
@@ -884,7 +868,6 @@ type Activity = record {
   vote : Vote;
   voteCount : nat;
 };
-
 type AccountsImportPayload = record {
   adminsByProvider : vec ProviderAdmins;
   approvedPOHUsers : vec record {
@@ -894,5 +877,4 @@ type AccountsImportPayload = record {
   moderators : vec OldModeratorLeaderboard;
   providers : vec ProviderInfo;
 };
-
 service : (ENV) -> ModClub;
