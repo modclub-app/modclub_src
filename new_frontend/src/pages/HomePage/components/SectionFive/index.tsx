@@ -66,15 +66,7 @@ export default function SectionFive() {
                           </p>
                           <p>
                             To learn more about Modclub&#39;s tokenomics model
-                            you can access our{" "}
-                            <Link
-                              href="https://docsend.com/view/e9c3jdq6thia938y"
-                              target="_blank"
-                              className={`${Styles.link} underline`}
-                            >
-                              Tokenomics Paper
-                            </Link>
-                            .
+                            you can reach out to us to get access to our tokenomics paper.
                           </p>
                         </Disclosure.Panel>
                       </Transition>
