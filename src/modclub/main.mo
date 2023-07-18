@@ -80,6 +80,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   // In case someone spams us, limit the waitlist
   private stable var startTimeForPOHEmail = Helpers.timeNow();
+  private stable var keyToCallLambda : Text = "";
   private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
   // Airdrop Flags
@@ -1102,20 +1103,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         Principal.fromText(providerUserId)
       )
     ) {
-      return #ok(
-        {
-          providerUserId = providerUserId;
-          providerId = providerId;
-          status = #verified;
-          challenges = [];
-          requestedAt = null;
-          submittedAt = null;
-          completedAt = null;
-          token = null;
-          rejectionReasons = [];
-          isFirstAssociation = true;
-        }
-      );
+      return #ok({
+        providerUserId = providerUserId;
+        providerId = providerId;
+        status = #verified;
+        challenges = [];
+        requestedAt = null;
+        submittedAt = null;
+        completedAt = null;
+        token = null;
+        rejectionReasons = [];
+        isFirstAssociation = true;
+      });
     };
     let pohVerificationRequest : PohTypes.PohVerificationRequestV1 = {
       requestId = Helpers.generateId(providerId, "pohRequest", stateV2);
@@ -1558,18 +1557,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       return #err(#invalidPackageId);
     };
     let voteCount = voteManager.getVoteCountForPoh(caller, packageId);
-    #ok(
-      {
-        packageId = pohTasks[0].packageId;
-        pohTaskData = pohTasks[0].pohTaskData;
-        votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
-        requiredVotes = ModClubParam.MIN_VOTE_POH;
-        minStake = 0;
-        reward = 0.0;
-        createdAt = pohTasks[0].createdAt;
-        updatedAt = pohTasks[0].updatedAt;
-      }
-    );
+    #ok({
+      packageId = pohTasks[0].packageId;
+      pohTaskData = pohTasks[0].pohTaskData;
+      votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
+      requiredVotes = ModClubParam.MIN_VOTE_POH;
+      minStake = 0;
+      reward = 0.0;
+      createdAt = pohTasks[0].createdAt;
+      updatedAt = pohTasks[0].updatedAt;
+    });
   };
 
   public query ({ caller }) func getAllPohTasksForAdminUsers(
@@ -1702,18 +1699,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       packageId,
       stateV2
     );
-    #ok(
-      {
-        packageId = pohTasks[0].packageId;
-        pohTaskData = pohTasks[0].pohTaskData;
-        voteUserDetails = voteDetails;
-        requiredVotes = ModClubParam.MIN_VOTE_POH;
-        minStake = 0;
-        reward = 0.0;
-        createdAt = pohTasks[0].createdAt;
-        updatedAt = pohTasks[0].updatedAt;
-      }
-    );
+    #ok({
+      packageId = pohTasks[0].packageId;
+      pohTaskData = pohTasks[0].pohTaskData;
+      voteUserDetails = voteDetails;
+      requiredVotes = ModClubParam.MIN_VOTE_POH;
+      minStake = 0;
+      reward = 0.0;
+      createdAt = pohTasks[0].createdAt;
+      updatedAt = pohTasks[0].updatedAt;
+    });
   };
 
   public shared ({ caller }) func getModeratorEmailsForPOHAndSendEmail(emailType : Text) : async () {
@@ -2386,6 +2381,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#setRandomization _) { authGuard.isAdmin(caller) };
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };
+      case (#setLambdaToken _) { authGuard.isAdmin(caller) };
       case (#submitText _) { ProviderManager.providerExists(caller, stateV2) };
       case (#submitHtmlContent _) {
         ProviderManager.providerExists(caller, stateV2);
@@ -2554,6 +2550,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     transformed;
   };
 
+  public shared ({ caller }) func setLambdaToken(lambdaCallKey : Text) : async () {
+    if (lambdaCallKey == "") {
+      throw Error.reject("Lambda key is not provided.");
+    };
+    keyToCallLambda := lambdaCallKey;
+  };
+
   private func callLambdaToSendEmail(
     userEmail : Text,
     envForBaseURL : Text,
@@ -2566,11 +2569,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     var minCycles : Nat = 210244050000;
     // prepare system http_request call
 
+    if (keyToCallLambda == "") {
+      throw Error.reject("Lambda key is not provided. Please ask admin to set the key for lambda calls.");
+    };
+
     let request_headers = [
       { name = "Content-Type"; value = "application/json" },
       {
         name = "Authorization";
-        value = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MRs";
+        value = keyToCallLambda;
       }
     ];
     let url = "https://" # host # "/";

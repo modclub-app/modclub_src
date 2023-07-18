@@ -183,6 +183,9 @@ module Helpers {
       ),
       Principal.fromText(
         "mni5w-twhal-we6re-mvbh2-r3e6x-2djsc-nubmb-hw2ra-avyuu-mu2gj-5qe"
+      ),
+      Principal.fromText(
+        "dowzh-nyaaa-aaaai-qnowq-cai"
       )
     ];
     var exists = Array.find<Principal>(

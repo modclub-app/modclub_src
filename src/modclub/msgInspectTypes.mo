@@ -69,6 +69,7 @@ module {
     #populateChallenges : () -> ();
     #registerAdmin : () -> Principal;
     #registerModerator : () -> (Text, ?Text, ?Types.Image);
+    #setLambdaToken : () -> (Text);
     #registerProvider : () -> (Text, Text, ?Types.Image);
     #registerUserToReceiveAlerts : () -> (Principal, Bool);
     #removeProviderAdmin : () -> (Principal, Principal);
