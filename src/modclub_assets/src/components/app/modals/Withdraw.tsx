@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
-import { useState } from "react";
 
 const UpdateTable = ({ wallet, amount = 0 }) => {
   return (

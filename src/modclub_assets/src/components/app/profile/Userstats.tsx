@@ -66,14 +66,17 @@ export default function Userstats({ detailed = false }) {
   };
 
   const fetchTokenHoldings = async (identity) => {
-    try {
-      let perf = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText());
-      //TODO: tokenHolding update: Stake amount, Reward, Wallet
-      setPerformance(Number(perf.score));
-      setLevel(Object.keys(perf.level)[0]);
-      setHoldingsUpdated(false);
-    } catch (error) {
-      console.error('Failed to fetch token holdings:', error);
+    if(identity != undefined)
+    {
+      try {
+        let perf = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText());
+        //TODO: tokenHolding update: Stake amount, Reward, Wallet
+        setPerformance(Number(perf.score));
+        setLevel(Object.keys(perf.level)[0]);
+        setHoldingsUpdated(false);
+      } catch (error) {
+        console.error('Failed to fetch token holdings:', error);
+      }
     }
   };
 

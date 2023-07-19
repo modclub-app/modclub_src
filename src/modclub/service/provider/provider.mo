@@ -464,7 +464,6 @@ module ProviderModule {
       state.profiles.put(arg.userId, adminProfile);
     };
 
-    state.profiles.put(arg.userId, adminProfile);
     // TODO: Consider adding to username map to preserve uniqueness
     var IsUserAlreadyAdminOfProvider = false;
     switch (state.providerAdmins.get(_providerId)) {
@@ -705,6 +704,20 @@ module ProviderModule {
     state : GlobalState.State
   ) : Bool {
     switch (state.providers.get(providerId)) {
+      case (null) {
+        return false;
+      };
+      case (?p) {
+        return true;
+      };
+    };
+  };
+
+  public func isProviderAdmin(
+    providerId : Principal,
+    state : GlobalState.State
+  ) : Bool {
+    switch (state.providersWhitelist.get(providerId)) {
       case (null) {
         return false;
       };

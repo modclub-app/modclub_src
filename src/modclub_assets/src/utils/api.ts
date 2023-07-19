@@ -38,32 +38,110 @@ import { modclub_dev } from "../../../declarations/modclub_dev/index";
 import { modclub_qa } from "../../../declarations/modclub_qa/index";
 import { rs } from "../../../declarations/rs";
 import { rs_qa } from "../../../declarations/rs_qa";
-import { wallet } from "../../../declarations/wallet";
-import { wallet_qa } from "../../../declarations/wallet_qa";
-import { fetchObjectUrl, formatDate, getUrlForData } from "./util";
-import { RSAndLevel as RSAndLevelType } from "../../../declarations/rs/rs.did.d.ts";
-import { RSAndLevel as RSAndLevelQAType } from "../../../declarations/rs_qa/rs_qa.did.d.ts";
+import { canisterId as WalletCanisterID, createActor as WalletCreateActor, wallet} from "../../../declarations/wallet/index";
+import { canisterId as WalletQACanisterID, createActor as WalletQACreateActor, wallet_qa } from "../../../declarations/wallet_qa";
+import { canisterId as WalletDEVCanisterID, createActor as WalletDEVCreateActor,wallet_dev } from "../../../declarations/wallet_dev";
+import { RSAndLevel } from "../../../declarations/rs/rs.did";
+import { canisterId as VestingCanisterID, createActor as VestingCreateActor, vesting } from "../../../declarations/vesting";
+import { canisterId as VestingQACanisterID, createActor as VestingQACreateActor, vesting_qa } from "../../../declarations/vesting_qa";
+import { canisterId as VestingDEVCanisterID, createActor as VestingDEVCreateActor, vesting_dev } from "../../../declarations/vesting_dev";
+import { canisterId as ModCanisterId } from "../../../declarations/modclub";
+import { canisterId as ModQACanisterId } from "../../../declarations/modclub_qa";
+import { canisterId as ModDevCanisterId } from "../../../declarations/modclub_dev";
+import { ApproveArgs } from "../../../declarations/wallet_dev/wallet_dev.did";
+import { HttpAgent, Identity } from "@dfinity/agent";
+import { authClient } from "./authClient";
+import { StoicIdentity } from "ic-stoic-identity";
 export type Optional<Type> = [Type] | [];
 
 var actor: _SERVICE = null;
-let MCToUse = modclub;
-var RSActor = rs;
-var WalletActor = wallet;
-var RSAndLevel = RSAndLevelType;
-if (process.env.DEV_ENV == "dev") {
-  MCToUse = modclub_dev;
-} else if (process.env.DEV_ENV == "qa") {
-  MCToUse = modclub_qa;
-  RSActor = rs_qa;
-  WalletActor = wallet_qa;
-  RSAndLevel = RSAndLevelQAType;
+var Vesting: _SERVICE = null;
+var Wallet: _SERVICE = null;
+let walletToUse = localStorage.getItem("_loginType") || "ii";
+
+function getEnvironmentSpecificValues(env: string) {
+  switch(env) {
+    case "dev":
+      return {
+        MCToUse: modclub_dev,
+        CanisterId: ModDevCanisterId,
+        VestingActor: vesting_dev,
+        walletCanister: WalletDEVCanisterID
+      };
+    case "qa":
+      return {
+        MCToUse: modclub_qa,
+        RSActor: rs_qa,
+        WalletActor: wallet_qa,
+        VestingActor: vesting_qa,
+        CanisterId: ModQACanisterId,
+        walletCanister: WalletQACanisterID
+      };
+    default:
+      return {
+        MCToUse: modclub,
+        RSActor: rs,
+        WalletActor: wallet,
+        VestingActor: vesting,
+        CanisterId: ModCanisterId,
+        walletCanister: WalletCanisterID
+      };
+  }
 }
+const { CanisterId,  RSActor, walletCanister } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 async function getMC(): Promise<_SERVICE> {
   if (!actor) {
     actor = await actorController.actor;
   }
   return actor;
+}
+
+async function fetchIdentity(): Promise<Identity>{
+  let identity;
+  if(walletToUse == "plug"){
+    const result = await window["ic"][walletToUse].requestConnect({
+      walletCanister,
+    });
+    const pID = await window["ic"][walletToUse]["agent"].getPrincipal();
+      identity = {
+        type: walletToUse,
+        getPrincipal: () => pID,
+      };
+  }else if (walletToUse == "stoic"){
+    identity = await StoicIdentity.load();
+  }else{
+    identity = authClient.getIdentity();
+  }
+  return identity;
+}
+async function getWallet(): Promise<_SERVICE> {
+  if (!Wallet) {
+    const identity = await fetchIdentity();
+    const agent = new HttpAgent({ identity });
+    if (process.env.DEV_ENV == "dev") {
+      Wallet = await WalletDEVCreateActor(WalletDEVCanisterID, {agent} )
+    }else if (process.env.DEV_ENV == "qa") {
+      Wallet = await WalletQACreateActor(WalletQACanisterID, {agent} )
+    }else{
+      Wallet = await WalletCreateActor(WalletCanisterID, {agent} )
+    }
+  }
+  return Wallet;
+}
+async function getVesting(): Promise<_SERVICE> {
+  if (!Vesting) {
+    const identity = await fetchIdentity();
+    const agent = new HttpAgent({ identity });
+    if (process.env.DEV_ENV == "dev") {
+      Vesting = await VestingDEVCreateActor(VestingDEVCanisterID, {agent} )
+    }else if (process.env.DEV_ENV == "qa") {
+      Vesting = await VestingQACreateActor(VestingQACanisterID, {agent} )
+    }else{
+      Vesting = await VestingCreateActor(VestingCanisterID, {agent} )
+    }
+  }
+  return Vesting;
 }
 async function trace_error(_trace: any) {
   try {
@@ -91,6 +169,20 @@ export async function registerModerator(
     console.log("ERROR in registerModerator", e);
     return Promise.reject(e);
   }
+}
+export async function registerProvider(
+  username: string,
+  email: string,
+  imageData?: ImageData
+): Promise<string> {
+  const imgResult = null;
+  const _mc = await getMC();
+  const response = await _mc.registerProvider(
+    username,
+    email,
+    imgResult ? [imgResult] : []
+  );
+  return response;
 }
 
 export async function getUserFromCanister(): Promise<Profile | null> {
@@ -137,8 +229,6 @@ export async function removeProviderAdmin(
   principalId
 ): Promise<boolean> {
   try {
-    console.log("USERID", userId, principalId);
-
     let result = await (await getMC()).removeProviderAdmin(principalId, userId);
     return result.hasOwnProperty("ok") ? true : false;
   } catch (e) {
@@ -207,12 +297,12 @@ export async function getProviderAdmins(
   return await (await getMC()).getProviderAdmins(provider);
 }
 
-export async function stakeTokens(amount: number): Promise<string> {
-  return await WalletActor.stakeTokens(amount);
+export async function stakeTokens(amount: number): Promise<Result> {
+  return trace_error(async()=>{await (await getWallet()).stakeTokens(BigInt(amount));})
 }
 
 export async function unStakeTokens(amount: number): Promise<any> {
-  return (await getMC()).unStakeTokens(BigInt(amount));
+  return trace_error(async()=>{await (await getMC()).unStakeTokens(BigInt(amount));})
 }
 
 export async function getAllProfiles(): Promise<Profile[]> {
@@ -220,7 +310,6 @@ export async function getAllProfiles(): Promise<Profile[]> {
 }
 
 export async function checkUserRole(uid: Principal): Promise<boolean> {
-  uid && console.log("PRINCIPAL::", uid.toString()); // For Debug.
   try {
     let modclubActor = await getMC();
     let admins = await modclubActor.showAdmins();
@@ -373,7 +462,7 @@ export async function registerUserToReceiveAlerts(
   userId: string,
   wantToReceiveAlerts: boolean
 ): Promise<boolean> {
-  return await MCToUse.registerUserToReceiveAlerts(
+  return await (await getMC()).registerUserToReceiveAlerts(
     Principal.fromText(userId),
     wantToReceiveAlerts
   );
@@ -423,7 +512,7 @@ export async function queryRSAndLevel(): Promise<RSAndLevel> {
 }
 export async function queryBalance(subAcc?: string): Promise<number> {
   return trace_error(
-    async () => await WalletActor.queryBalance(subAcc ? [subAcc] : [])
+    async () => await (await getWallet()).queryBalance(subAcc ? [subAcc] : [])
   );
 }
 export async function queryBalancePr(
@@ -432,7 +521,7 @@ export async function queryBalancePr(
 ): Promise<number> {
   return trace_error(
     async () =>
-      await WalletActor.queryBalancePr(
+      await (await getWallet()).queryBalancePr(
         Principal.fromText(principalId),
         subAcc ? [subAcc] : []
       )
@@ -452,6 +541,38 @@ export async function canReserveContent(contentId: string): Promise<any> {
   return trace_error(async () => (await getMC()).canReserveContent(contentId));
 }
 
+//DEPOSIT PROVIDER
+export async function icrc1Balance(userId: string): Promise<bigint> {
+  return trace_error(async () => await (await getWallet()).icrc1_balance_of({owner: Principal.fromText(userId), subaccount: [] }));
+}
+export async function icrc1Decimal(): Promise<bigint> {
+  return trace_error(async () => await (await getWallet()).icrc1_decimals());
+}
+
+export async function icrc2Approve(amount: number): Promise<any> {
+  let input : ApproveArgs = {
+    amount: BigInt(amount),
+    spender: Principal.fromText(CanisterId),
+    fee: [],
+    memo: [],
+    from_subaccount: [],
+    created_at_time: [],
+    expires_at: []
+  }
+  return trace_error(async () => await (await getWallet()).icrc2_approve(input));
+}
+
+export async function topUpProviderReserve(amount: number, providerId?: Principal): Promise<any> {
+  return trace_error(
+    async () => (await getMC()).topUpProviderReserve({amount: BigInt(amount),providerId: [providerId]}));
+}
+
+export async function providerSaBalanceById(provider: Principal,opt?: string): Promise<any> {
+  return trace_error(
+    async () => (
+      await getMC()).providerSaBalance(opt? opt : "RESERVE", [provider]));
+}
+
 export async function claimLockedReward(amount: number) : Promise<Result_4>{
   return trace_error(
     async () => (await getMC()).claimLockedReward(BigInt(amount))
@@ -462,4 +583,18 @@ export async function canClaimLockedReward(amount: number) : Promise<Result_5>{
   return trace_error(
     async () => (await getMC()).canClaimLockedReward([BigInt(amount)])
   );
+}
+
+export async function stakeFor(userId: Identity): Promise<bigint> {
+  return trace_error(async()=>{ 
+    let res = await (await getVesting()).staked_for({ owner: userId, subaccount: [] });
+    return res
+  });
+}
+
+export async function lockedFor(userId: Identity): Promise<bigint> {
+  return trace_error(async()=>{ 
+    let res = await (await getVesting()).locked_for({ owner: userId, subaccount: [] });
+    return res
+  });
 }

@@ -342,14 +342,24 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     await ProviderManager.getProvider(providerId, stateV2);
   };
 
-  public shared ({ caller }) func providerSaBalance(saType : Text) : async ICRCTypes.Tokens {
-    let provider = switch (stateV2.providers.get(caller)) {
+  public shared ({ caller }) func providerSaBalance(saType : Text, providerId : ?Principal) : async ICRCTypes.Tokens {
+    let pid = switch (providerId) {
+      case (?pid) {
+        switch (AuthManager.checkProviderPermission(caller, ?pid, stateV2)) {
+          case (#err(error)) return throw Error.reject("Unauthorized");
+          case (#ok(p)) {};
+        };
+        pid;
+      };
+      case (_) caller;
+    };
+    let provider = switch (stateV2.providers.get(pid)) {
       case (?p) p;
-      case (_) return throw Error.reject("Provider doesn't exists.");
+      case (_) return throw Error.reject("Provider doesn't exist.");
     };
     let psa = switch (provider.subaccounts.get(saType)) {
       case (?psa) psa;
-      case (_) return throw Error.reject("Providers Subaccount doesn't exists.");
+      case (_) return throw Error.reject("Providers Subaccount doesn't exist.");
     };
     let tokens = await ProviderManager.getSaBalance(env, authGuard.getCanisterId(#modclub), psa);
     return tokens;
@@ -359,17 +369,28 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerId : ?Principal;
     amount : Nat;
   }) : async () {
+    if (Helpers.nonZeroNat(amount) == false) {
+      return throw Error.reject("Amount must be greater than zero");
+    };
     // Aproach for use case when admin is able to top Up providers entire balance
     let pid = switch (providerId) {
-      case (?pid) pid;
+      case (?pid) {
+        switch (AuthManager.checkProviderPermission(caller,?pid, stateV2)) {
+          case (#err(error)) {return throw Error.reject("Unauthorized")};
+          case (#ok(p)) {};
+        };
+        pid;
+      };
       case (_) caller;
     };
+
     let provider = switch (stateV2.providers.get(pid)) {
       case (?p) p;
-      case (_) return throw Error.reject("Provider doesn't exists.");
+      case (_) return throw Error.reject("Provider doesn't exist.");
     };
 
     await ProviderManager.topUpProviderReserve(env, authGuard.getCanisterId(#modclub), provider, amount);
+
   };
 
   private func getVoteParamIdByLevel(
@@ -2388,10 +2409,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (#submitImage _) { ProviderManager.providerExists(caller, stateV2) };
       case (#providerSaBalance _) {
-        ProviderManager.providerExists(caller, stateV2);
+        ProviderManager.isProviderAdmin(caller, stateV2);
       };
       case (#topUpProviderReserve _) {
-        ProviderManager.providerExists(caller, stateV2) or authGuard.isAdmin(caller);
+        ProviderManager.providerExists(caller, stateV2) or ProviderManager.isProviderAdmin(caller, stateV2) or authGuard.isAdmin(caller);
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
       case (#importAccounts _) { authGuard.isOldModclubInstance(caller) };

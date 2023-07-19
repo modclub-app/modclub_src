@@ -15,7 +15,7 @@ module {
     #AdminCheckPohVerificationResp : () -> (Text, Principal);
     #addProviderAdmin : () -> (Principal, Text, ?Principal);
     #topUpProviderReserve : () -> ({ providerId : ?Principal; amount : Nat });
-    #providerSaBalance : () -> (Text);
+    #providerSaBalance : () -> (Text, ?Principal);
     #addRules : () -> ([Text], ?Principal);
     #addToApprovedUser : () -> Principal;
     #addToAllowList : () -> Principal;

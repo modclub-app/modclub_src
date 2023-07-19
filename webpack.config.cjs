@@ -2,7 +2,6 @@ const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const CopyPlugin = require("copy-webpack-plugin");
 
 let LOCAL_II_CANISTER = "";
 try {
@@ -142,6 +141,7 @@ module.exports = {
       RS_CANISTER_ID: canisters["rs"] || "vflbk-kiaaa-aaaah-qc7wq-cai",
       RS_DEV_CANISTER_ID: canisters["rs_dev"] || "vflbk-kiaaa-aaaah-qc7wq-cai",
       RS_QA_CANISTER_ID: canisters["rs_qa"] || "vmikw-4aaaa-aaaah-qc7xa-cai",
+      VESTING_CANISTER_ID: canisters["vesting"],
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
       DEV_ENV: process.env.DEV_ENV || "production",

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Dropdown, Heading, Media, Image, Icon } from "react-bulma-components";
 import { useAuth } from "../../../utils/auth"

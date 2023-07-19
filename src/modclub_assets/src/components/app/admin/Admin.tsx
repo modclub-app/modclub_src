@@ -1,7 +1,5 @@
 import * as React from "react";
-import { Field } from "react-final-form";
-import { useEffect, useRef, useState } from "react";
-
+import { useEffect, useState } from "react";
 import {
   Columns,
   Card,
@@ -9,414 +7,25 @@ import {
   Heading,
   Modal,
   Media,
-  Image,
   Notification,
-  Icon,
 } from "react-bulma-components";
 import { Link } from "react-router-dom";
-import FormModal from "../modals/FormModal";
 import {
-  addRules,
-  updateRule,
-  removeRules,
-  getProviderRules,
-  getProvider,
-  updateProviderSettings,
-  updateProviderMetaData,
-  getUserFromCanister,
-  getAdminProviderIDs,
-  updateProviderLogo,
-  queryBalancePr,
+  icrc1Balance,
+  icrc1Decimal,
+  providerSaBalanceById,
 } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
-import placeholder from "../../../../assets/user_placeholder.png";
-import { ImageData } from "../../../utils/types";
-import { Principal } from "@dfinity/principal";
-import AdminIdentity from "../../external/AdminIdentity";
 import { useAuth } from "../../../utils/auth";
-
-const EditAppModal = ({
-  toggle,
-  principalID,
-  selectedProvider,
-  updateProvider,
-}) => {
-  const onFormSubmit = async (values: any) => {
-    await updateProviderMetaData(Principal.fromText(principalID), values);
-    selectedProvider.name = values.name;
-    selectedProvider.description = values.description;
-    updateProvider();
-    return "App Edited Successfully";
-  };
-
-  return (
-    <FormModal title="Edit App" toggle={toggle} handleSubmit={onFormSubmit}>
-      <div className="field" style={{ marginTop: "10px" }}>
-        <div className="control">
-          <Field
-            name="name"
-            component="input"
-            type="text"
-            className="input"
-            placeholder="App Name"
-            initialValue={!!selectedProvider ? selectedProvider.name : ""}
-          />
-        </div>
-      </div>
-
-      <div className="field">
-        <div className="control">
-          <Field
-            name="description"
-            component="textarea"
-            className="textarea"
-            placeholder="App Description"
-            initialValue={
-              !!selectedProvider ? selectedProvider.description : ""
-            }
-          />
-        </div>
-      </div>
-    </FormModal>
-  );
-};
-
-const getUrlFromArray = (imgData, imgType): string => {
-  const arrayBufferView = new Uint8Array(imgData);
-  const blob = new Blob([arrayBufferView], { type: imgType });
-  const urlCreator = window.URL || window.webkitURL;
-  const imageUrl = urlCreator.createObjectURL(blob);
-  return imageUrl;
-};
-
-const EditProviderLogo = ({
-  principalID,
-  selectedProvider,
-  setImageUploadedMsg,
-}) => {
-  const inputFile = useRef(null);
-  const [logoBeingUploaded, setLogoBeingUploaded] = useState<boolean>(false);
-  const [logoPicSrc, setLogoPicSrc] = useState("");
-  const handleUploadProviderLogo = async (e) => {
-    const files = e.target.files;
-    if (files.length > 0) {
-      const flToUpload = files[0];
-      const reader = new FileReader(); //.readAsArrayBuffer();
-      let imageData: ImageData;
-      reader.onload = async (evt) => {
-        const data =
-          typeof evt.target.result == "string" ? evt.target.result : null;
-        const buffer = await flToUpload.arrayBuffer();
-        imageData = {
-          src: data,
-          picUInt8Arr: Array.from(new Uint8Array(buffer)),
-          type: flToUpload.type,
-        };
-
-        try {
-          setLogoBeingUploaded(true);
-          await updateProviderLogo(Principal.fromText(principalID), imageData);
-          const imgSrcFromImgData = getUrlFromArray(
-            imageData.picUInt8Arr,
-            imageData.type
-          );
-          const updatedImg = [
-            {
-              data: imageData.picUInt8Arr,
-              imageType: imageData.type,
-              src: imgSrcFromImgData,
-            },
-          ];
-          setLogoPicSrc(imgSrcFromImgData);
-          selectedProvider.image = updatedImg;
-          setImageUploadedMsg({
-            success: true,
-            value: "Logo uploaded Successfully!",
-          });
-        } catch (e) {
-          setImageUploadedMsg({
-            success: false,
-            value: "Error in uploading logo. Try again.",
-          });
-        }
-        setLogoBeingUploaded(false);
-        setTimeout(() => setImageUploadedMsg(), 3000);
-      };
-      reader.readAsDataURL(flToUpload);
-    }
-  };
-
-  return (
-    <>
-      <input
-        style={{ display: "none" }}
-        ref={inputFile}
-        onChange={(e) => handleUploadProviderLogo(e)}
-        accept="image/*"
-        type="file"
-      />
-      <Media justifyContent="center" onClick={() => inputFile.current.click()}>
-        <Image
-          src={
-            logoPicSrc
-              ? logoPicSrc
-              : selectedProvider.image[0]?.src
-              ? selectedProvider.image[0].src
-              : placeholder
-          }
-          alt="profile"
-          size={128}
-          className="is-clickable is-hover-reduced"
-          style={{ overflow: "hidden", opacity: logoBeingUploaded ? 0.2 : 1 }}
-        />
-        {logoBeingUploaded ? (
-          <div
-            className="loader is-loading"
-            style={{ position: "absolute", top: "50%" }}
-          ></div>
-        ) : (
-          !selectedProvider.image[0]?.src && (
-            <div
-              style={{
-                position: "absolute",
-                backgroundColor: "rgba(0, 0, 0, .5)",
-                width: 128,
-                height: 128,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-                cursor: "pointer",
-              }}
-            >
-              <Icon color="white">
-                <span className="material-icons">backup</span>
-              </Icon>
-              <p>Click to add Logo</p>
-            </div>
-          )
-        )}
-      </Media>
-    </>
-  );
-};
-
-const EditRulesModal = ({
-  rules,
-  toggle,
-  principalID,
-  updateState,
-  selectedProvider,
-  updateProvider,
-}) => {
-  const [newRules, setNewRules] = useState(rules);
-  const [loader, setLoader] = useState(false);
-  let rulesBeingEdited = {};
-
-  let addNewRuleField = [{ id: 1, description: "" }];
-  const [newRulesFieldArr, setNewRulesFieldArr] = useState(addNewRuleField);
-
-  const createNewAddRuleField = (e) => {
-    e.preventDefault();
-    setNewRulesFieldArr((nfr) => {
-      return [...nfr, { id: newRulesFieldArr.length + 1, description: "" }];
-    });
-  };
-
-  const handleChange = (e) => {
-    e.preventDefault();
-    const index = e.target.id;
-    setNewRulesFieldArr((s) => {
-      const newArr = s.slice();
-      newArr[index].description = e.target.value;
-
-      return newArr;
-    });
-  };
-
-  const onFormSubmit = async (values: any) => {
-    let newRulesToAdd = [];
-    for (const [key, value] of Object.entries(values)) {
-      if (key.split("_")[0] == "newRule" && value !== "") {
-        newRulesToAdd.push(value);
-      }
-    }
-
-    let result;
-    await addRules(newRulesToAdd, Principal.fromText(principalID))
-      .then(async () => {
-        let updateRulePromise = [];
-        for (let principalID in rulesBeingEdited) {
-          updateRulePromise.push(
-            updateRule(
-              rulesBeingEdited[principalID],
-              Principal.fromText(principalID)
-            )
-          );
-        }
-        await Promise.all(updateRulePromise);
-        result = "Rules updated successfully";
-      })
-      .then(async () => {
-        let updatedRules = await getProviderRules(
-          Principal.fromText(principalID)
-        );
-        updateState(updatedRules);
-        setNewRules(updatedRules);
-        selectedProvider.rules = updatedRules;
-        updateProvider();
-      })
-      .catch((e) => {
-        console.log(e);
-        result = e.message;
-      });
-    rulesBeingEdited = {};
-    return result;
-  };
-
-  return (
-    <FormModal
-      title="Add Rules"
-      toggle={toggle}
-      handleSubmit={onFormSubmit}
-      loader={loader}
-      formStyle={{ maxHeight: "500px", overflow: "auto" }}
-    >
-      {newRulesFieldArr.map((rule, idx) => (
-        <div className="field level" key={rule.id}>
-          <Field
-            name={"newRule_" + idx.toString()}
-            component="input"
-            id={idx}
-            type="text"
-            className="input"
-            placeholder="Add New Restriction"
-            onBlur={handleChange}
-            initialValue={rule.description}
-          />
-          {idx == newRulesFieldArr.length - 1 ? (
-            <span className="icon has-text-success ml-3">
-              <span className="material-icons" onClick={createNewAddRuleField}>
-                add_circle
-              </span>
-            </span>
-          ) : (
-            ""
-          )}
-        </div>
-      ))}
-    </FormModal>
-  );
-};
-
-const EditModeratorSettingsModal = ({
-  toggle,
-  principalID,
-  selectedProvider,
-  requiredVotes,
-  minTokens,
-  setrequiredVotes,
-  setMinTokens,
-  updateProvider,
-}) => {
-  const onFormSubmit = async (values: any) => {
-    for (const k in values) {
-      if (!isNaN(values[k] / 1)) {
-        values[k] = values[k] / 1;
-      }
-    }
-    values["minStaked"] = values.minTokens;
-
-    await updateProviderSettings(Principal.fromText(principalID), values);
-    setrequiredVotes(parseInt(values.requiredVotes));
-    setMinTokens(parseInt(values.minTokens));
-    selectedProvider.settings.requiredVotes = parseInt(values.requiredVotes);
-    selectedProvider.settings.minTokens = parseInt(values.minTokens);
-    updateProvider();
-    return "Moderator settings updated successfully";
-  };
-
-  return (
-    <FormModal
-      title="Edit Moderator Settings"
-      toggle={toggle}
-      handleSubmit={onFormSubmit}
-    >
-      <div className="field level">
-        <p>Number of votes required to finalize decision:</p>
-        <Field
-          name="requiredVotes"
-          component="input"
-          className="input has-text-centered ml-3"
-          initialValue={requiredVotes}
-          style={{ width: 70 }}
-        />
-      </div>
-
-      <div className="field level">
-        <p>Required number of staked MOD tokens to vote:</p>
-        <Field
-          name="minTokens"
-          component="input"
-          type="number"
-          className="input has-text-centered ml-3"
-          initialValue={minTokens}
-          style={{ width: 70 }}
-        />
-      </div>
-    </FormModal>
-  );
-};
-
-const RemoveRuleModal = ({
-  toggle,
-  rule,
-  principalID,
-  updateState,
-  selectedProvider,
-  updateProvider,
-}) => {
-  const onRemoveRuleFormSubmit = async (values: any) => {
-    let result;
-
-    if (rule && rule.id) {
-      await removeRules([rule.id], Principal.fromText(principalID))
-        .then(async () => {
-          let updatedRules = await getProviderRules(
-            Principal.fromText(principalID)
-          );
-          updateState(updatedRules);
-          selectedProvider.rules = updatedRules;
-          updateProvider();
-          result = "Rule Removed Successfully!";
-        })
-        .catch((e) => {
-          console.log(e);
-          result = e.message;
-        })
-        .finally(() => console.log("removed"));
-      return result;
-    } else {
-      result = "Error in removing rule. RuleID is not provided.";
-    }
-  };
-
-  return (
-    <FormModal
-      title="Remove rule"
-      toggle={toggle}
-      handleSubmit={onRemoveRuleFormSubmit}
-    >
-      <strong style={{ color: "#fff" }}>
-        Are you really sure to remove following rule?
-      </strong>
-      <p style={{ marginTop: 8 }}>"{rule.description}"</p>
-    </FormModal>
-  );
-};
+import EditProviderLogo from "./EditProviderLogo";
+import EditRulesModal from "./EditRulesModal";
+import EditModeratorSettingsModal from "./EditModeratorSettingsModal";
+import RemoveRuleModal from "./RemoveRuleModal";
+import EditAppModal from "./EditAppModal";
+import { format_token, getUrlFromArray } from "../../../utils/util";
+import Deposit from "../modals/Deposit";
 
 export default function Admin({
   selectedProvider,
@@ -427,7 +36,9 @@ export default function Admin({
   const { identity } = useAuth();
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
-  const [mod_token, setModToken] = useState<number>(0);
+  const [providerTokenBalance, setProviderTokenBalance] = useState<number>(0);
+  const [userTokenBalance, setUserTokenBalance] = useState<number>(0);
+  const [digit, setDigit] = useState<number>(0);
 
   const [showEditRules, setShowEditRules] = useState(false);
   const toggleEditRules = () => setShowEditRules(!showEditRules);
@@ -458,6 +69,10 @@ export default function Admin({
   const [minTokens, setMinTokens] = useState(0);
 
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [loader, setLoader] = useState(false);
+
+  const toggleDeposit = () => {setIsDepositOpen(!isDepositOpen); get_token();};
 
   const updateProvider = () => {
     providers.map((prvd) => {
@@ -469,8 +84,20 @@ export default function Admin({
       }
     });
   };
+  let get_token = async () => {
+    let [token, amount, digits] = await Promise.all([
+      providerSaBalanceById(selectedProvider.id),
+      icrc1Balance(identity.getPrincipal().toText()),
+      icrc1Decimal()
+    ]);
+    setDigit(Number(digits))
+    setProviderTokenBalance(Number(token));
+    setUserTokenBalance(Number(amount)/Math.pow(10, Number(digits)));
+
+  };
 
   useEffect(() => {
+    get_token();
     let adminInit = () => {
       if (selectedProvider) {
         setrequiredVotes(
@@ -486,27 +113,11 @@ export default function Admin({
         setRules(selectedProvider.rules);
       }
     };
-    let get_token = async () => {
-      let token = await queryBalancePr(identity.getPrincipal().toText());
-      setModToken(token);
-    };
-    get_token();
-    adminInit();
+    adminInit();    
   }, []);
 
   const toggle = () => setShowModal(false);
-  const formet_token = (amount) => {
-    if (amount >= 1000 && amount < 1000000) {
-      return `${(amount / 1000).toFixed(2)}k`;
-    } else if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(2)}m`;
-    } else {
-      return `${amount}`;
-    }
-  };
-
-  const [loader, setLoader] = useState(false);
-  const [newRules, setNewRules] = useState(rules);
+  
   return (
     <>
       {selectedProvider == null && providers != [] ? (
@@ -665,7 +276,7 @@ export default function Admin({
                   style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
                 >
                   <Heading size={1} className="level">
-                    <span>{formet_token(mod_token)}</span>
+                    <span>{format_token(providerTokenBalance/Math.pow(10, digit))}</span>
                     <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
                       MOD
                       <br />
@@ -679,7 +290,7 @@ export default function Admin({
                   <Button color="dark" fullwidth>
                     Buy
                   </Button>
-                  <Button color="dark" fullwidth>
+                  <Button color="dark" fullwidth onClick={toggleDeposit}>
                     Deposit
                   </Button>
                 </Button.Group>
@@ -829,6 +440,15 @@ export default function Admin({
           updateProvider={updateProvider}
         />
       )}
+      {isDepositOpen && selectedProvider &&(
+        <Deposit 
+        toggle={toggleDeposit}
+        userTokenBalance={userTokenBalance}
+        identity={identity}
+        provider={selectedProvider.id.toString()}
+        />
+      )
+      }
     </>
   );
 }

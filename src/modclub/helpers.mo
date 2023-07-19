@@ -26,6 +26,7 @@ import Error "mo:base/Error";
 import Types "./types";
 import UUID "mo:uuid/UUID";
 import Constants "../common/constants";
+import Bool "mo:base/Bool";
 
 module Helpers {
 
@@ -83,6 +84,10 @@ module Helpers {
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
+  public func nonZeroNat(val : Nat): Bool{
+    return Nat.greater(val, 0);
+  };
+  
   // Generates a voteparameter semi unique ID
   public func generateVoteParamId(
     category : Text,

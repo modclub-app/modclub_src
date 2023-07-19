@@ -32,9 +32,11 @@ function getHost() {
 }
 
 const host = getHost();
+const rootKey = async(agent)=>{await agent.fetchRootKey()};
 
 function createActor(identity?: Identity, canisterId?: any) {
   const agent = new HttpAgent({ host, identity });
+  rootKey(agent);
   const actor = Actor.createActor<_SERVICE>(getModIdlByEnv(), {
     agent,
     canisterId: canisterId,
@@ -46,7 +48,7 @@ const createPlugOrISActor = async function (walletToUse, canisterId) {
   const actor = await window["ic"][walletToUse].createActor({
     canisterId: canisterId,
     interfaceFactory: getModIdlByEnv(),
-  });
+  });  
   return actor;
 };
 
@@ -77,7 +79,6 @@ class ActorController {
         if (isLocalEnv) {
           await agent.fetchRootKey();
         }
-        console.log("ACTOR", actor);
         return actor;
       case "infinityWallet":
       case "plug":
@@ -113,7 +114,7 @@ class ActorController {
   }
 
   /*
-   * If a user unauthenticates, recreate the actor without an identity.
+   * If a user unauthenticated, recreate the actor without an identity.
    */
   unauthenticateActor() {
     this._actor = this.initBaseActor();

@@ -163,3 +163,23 @@ export async function fetchObjectUrl(url: string): Promise<string> {
   const imageBlob = await res.blob();
   return URL.createObjectURL(imageBlob);
 }
+
+export function getUrlFromArray(imgData:any, imgType:any): string {
+  const arrayBufferView = new Uint8Array(imgData);
+  const blob = new Blob([arrayBufferView], { type: imgType });
+  const urlCreator = window.URL || window.webkitURL;
+  const imageUrl = urlCreator.createObjectURL(blob);
+  return imageUrl;
+};
+
+export function format_token(amount:number):string {
+  if (amount >= 1000 && amount < 1000000) {
+    return `${(amount / 1000).toFixed(2)}k`;
+  } else if (amount >= 1000000 && amount < 1000000000) {
+    return `${(amount / 1000000).toFixed(2)}m`;
+  } else if (amount >= 1000000000) {
+    return `${(amount / 1000000000).toFixed(2)}b`;
+  } else {
+    return `${amount.toFixed(2)}`;
+  }
+};
