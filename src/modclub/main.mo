@@ -1,5 +1,4 @@
 import Array "mo:base/Array";
-import AuthManager "./service/auth/auth";
 import Base32 "mo:encoding/Base32";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
@@ -13,7 +12,6 @@ import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import Trie "mo:base/Trie";
 import Helpers "./helpers";
-import IC "./remote_canisters/IC";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import List "mo:base/List";
@@ -32,6 +30,7 @@ import Principal "mo:base/Principal";
 import Cycles "mo:base/ExperimentalCycles";
 import JSON "mo:json/JSON";
 import ProviderManager "./service/provider/provider";
+import PermissionsModule "./service/provider/permissions";
 import QueueManager "./service/queue/queue";
 import QueueState "./service/queue/state";
 import Random "mo:base/Random";
@@ -44,7 +43,6 @@ import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Token "./token";
 import Types "./types";
 import MsgInspectTypes "msgInspectTypes";
 import EmailManager "./service/email/email";
@@ -53,8 +51,6 @@ import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/statev2";
 import VoteStateV2 "./service/vote/statev2";
 import DownloadSupport "./downloadSupport";
-import ModWallet "./remote_canisters/ModWallet";
-import RSManager "./remote_canisters/RSManager";
 import RSTypes "../rs/types";
 import WalletTypes "../wallet/types";
 import ICRCModule "../wallet/ICRC/ledger";
@@ -67,7 +63,6 @@ import CommonTypes "../common/types";
 import Reserved "service/content/reserved";
 import Constants "../common/constants";
 import ModSecurity "../common/security/guard";
-import Auth "../common/security/AuthCanister";
 import Timer "mo:base/Timer";
 import Nat64 "mo:base/Nat64";
 import Constant "service/content/constant";
@@ -75,10 +70,8 @@ import CommonTimer "../common/timer/timer";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
 
-  // Constants
   let MAX_WAIT_LIST_SIZE = 20000;
 
-  // In case someone spams us, limit the waitlist
   private stable var startTimeForPOHEmail = Helpers.timeNow();
   private stable var keyToCallLambda : Text = "";
   private var ranPOHUserEmailsOnce : Bool = false;
@@ -89,19 +82,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   var state = StateV1.empty();
   var stateV2 = StateV2.empty();
 
-  // Delete this and all token files if code runs fine.
-  stable var tokensStableV1 : Token.TokensStableV1 = Token.emptyStableV1(
-    ModClubParam.getModclubWallet()
-  );
-  var tokens = Token.Tokens(
-    tokensStableV1
-  );
-
   stable var storageStateStable = StorageState.emptyStableState();
   stable var retiredDataCanisterId : [Text] = [];
 
   stable var pohStableStateV2 = PohStateV2.emptyStableState();
-  // time when callback was sent by provider, then by provider user, then by status
   stable var pohCallbackDataByProvider : [(Principal, [(Text, [(Text, Int)])])] = [];
   stable var provider2ProviderUserId2Ip : [(Principal, [(Text, Text)])] = [];
   stable var provider2Ip2Wallet : [(Principal, Rel.RelShared<Text, Principal>)] = [];
@@ -138,19 +122,20 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   stable var claimRewardsWhitelist : List.List<Principal> = List.nil<Principal>();
   private var claimRewardsWhitelistBuf = Buffer.Buffer<Principal>(100);
-  // Will be updated with "this" in postupgrade. Motoko not allowing to use "this" here
-  var storageSolution = StorageSolution.StorageSolution(
-    storageStateStable,
-    retiredDataCanisterId,
-    admins,
-    signingKey
-  );
 
   private var commonTimer = CommonTimer.CommonTimer(env, "CommonTimer");
   commonTimer.initTimer(canistergeekMonitor);
 
   private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
   authGuard.subscribe("admins");
+
+  var storageSolution = StorageSolution.StorageSolution(
+    storageStateStable,
+    retiredDataCanisterId,
+    admins,
+    signingKey,
+    authGuard
+  );
 
   ModeratorManager.subscribeOnEvents(env, "moderator_became_senior");
 
@@ -244,7 +229,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     description : Text,
     image : ?Types.Image
   ) : async Text {
-    Debug.print("registerProvider caller: " # Principal.toText(caller));
     switch (stateV2.providersWhitelist.get(caller)) {
       case (null) {
         Helpers.logMessage(
@@ -281,12 +265,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerId : Principal,
     updatedProviderVal : Types.ProviderMeta
   ) : async Types.ProviderMetaResult {
-    Debug.print(
-      "updateProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(
-        providerId
-      )
-    );
-    return await ProviderManager.updateProviderMetaData({
+    await ProviderManager.updateProviderMetaData({
       providerId;
       updatedProviderVal;
       callerPrincipalId = caller;
@@ -319,12 +298,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerId : Principal,
     updatedSettings : Types.ProviderSettings
   ) : async Types.ProviderSettingResult {
-    Debug.print(
-      "updateSettings caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(
-        providerId
-      )
-    );
-    return await ProviderManager.updateProviderSettings(
+    await ProviderManager.updateProviderSettings(
       providerId,
       updatedSettings,
       caller,
@@ -334,18 +308,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func getProvider(providerId : Principal) : async Types.ProviderPlus {
-    Debug.print(
-      "getProvider caller: " # Principal.toText(caller) # ", providerId: " # Principal.toText(
-        providerId
-      )
-    );
     await ProviderManager.getProvider(providerId, stateV2);
   };
 
   public shared ({ caller }) func providerSaBalance(saType : Text, providerId : ?Principal) : async ICRCTypes.Tokens {
     let pid = switch (providerId) {
       case (?pid) {
-        switch (AuthManager.checkProviderPermission(caller, ?pid, stateV2)) {
+        switch (PermissionsModule.checkProviderPermission(caller, ?pid, stateV2)) {
           case (#err(error)) return throw Error.reject("Unauthorized");
           case (#ok(p)) {};
         };
@@ -369,13 +338,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerId : ?Principal;
     amount : Nat;
   }) : async () {
-    if (Helpers.nonZeroNat(amount) == false) {
-      return throw Error.reject("Amount must be greater than zero");
-    };
-    // Aproach for use case when admin is able to top Up providers entire balance
+    await Helpers.nonZeroNat(amount);
+
     let pid = switch (providerId) {
       case (?pid) {
-        switch (AuthManager.checkProviderPermission(caller,?pid, stateV2)) {
+        switch (PermissionsModule.checkProviderPermission(caller,?pid, stateV2)) {
           case (#err(error)) {return throw Error.reject("Unauthorized")};
           case (#ok(p)) {};
         };
@@ -448,7 +415,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerId : ?Principal
   ) : async () {
     // checkProviderPermission will return either the caller or the passed in providerId depending if the caller is the provider or not
-    switch (AuthManager.checkProviderPermission(caller, providerId, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p)) {
         ProviderManager.addRules(p, rules, stateV2, canistergeekLogger);
@@ -460,7 +427,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     ruleIds : [Types.RuleId],
     providerId : ?Principal
   ) : async () {
-    switch (AuthManager.checkProviderPermission(caller, providerId, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p)) {
         ProviderManager.removeRules(p, ruleIds, stateV2, canistergeekLogger);
@@ -472,7 +439,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     rulesList : [Types.Rule],
     providerId : ?Principal
   ) : async () {
-    switch (AuthManager.checkProviderPermission(caller, providerId, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p)) {
         ProviderManager.updateRules(p, rulesList, stateV2);
@@ -490,7 +457,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   // Subscribe function for providers to register their callback after a vote decision has been made
   public shared ({ caller }) func subscribe(sub : Types.SubscribeMessage) : async () {
-    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
@@ -500,7 +467,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func subscribePohCallback(
     sub : PohTypes.SubscribePohMessage
   ) : async () {
-    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
@@ -524,7 +491,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let cp = await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution);
     switch (cp) {
       case (?result) {
-        switch (AuthManager.checkProviderPermission(caller, ?result.providerId, stateV2)) {
+        switch (PermissionsModule.checkProviderPermission(caller, ?result.providerId, stateV2)) {
           case (#err(error)) return throw Error.reject("Unauthorized");
           case (#ok(p)) {
             let cr = ContentVotingManager.getContentResult(
@@ -556,7 +523,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, stateV2)) {
       throw Error.reject("Content already submitted");
     };
-    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
@@ -597,7 +564,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
-    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("No Permissions");
       case (#ok(p))();
     };
@@ -645,7 +612,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (ContentManager.checkIfAlreadySubmitted(sourceId, caller, stateV2)) {
       throw Error.reject("Content already submitted");
     };
-    switch (AuthManager.checkProviderPermission(caller, null, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, null, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
@@ -685,7 +652,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     start : Nat,
     end : Nat
   ) : async [Types.ContentPlus] {
-    switch (AuthManager.checkProviderPermission(caller, ?providerId, stateV2)) {
+    switch (PermissionsModule.checkProviderPermission(caller, ?providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
     };
@@ -707,7 +674,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func getAllContent(status : Types.ContentStatus) : async [
     Types.ContentPlus
   ] {
-    switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -751,7 +718,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       "getTasks - provider called with provider ID: " # Principal.toText(caller),
       #info
     );
-    switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -835,7 +802,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func getProfileById(pid : Principal) : async Types.Profile {
-    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
     };
@@ -877,7 +844,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     Types.ModeratorLeaderboard
   ] {
 
-    let topUsers = await RSManager.getActor(env).topUsers(start, end);
+    let topUsers = await authGuard.getRSActor().topUsers(start, end);
 
     switch (
       ModeratorManager.formModeratorLeaderboard(
@@ -903,7 +870,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public query ({ caller }) func getActivity(isComplete : Bool) : async [
     Types.Activity
   ] {
-    switch (AuthManager.checkProfilePermission(caller, #getActivity, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #getActivity, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
     };
@@ -985,7 +952,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let claimRes = await vestingActor.claim_vesting(moderatorAcc, amount);
     switch (claimRes) {
       case (#ok(_)) {
-        let ledger = ModWallet.getActor(env);
+        let ledger = authGuard.getWalletActor();
         let _ = await ledger.icrc1_transfer({
           from_subaccount = ?ICRCModule.ICRC_VESTING_SA;
           to = switch (customReceiver) {
@@ -1050,7 +1017,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       throw Error.reject("You are blocked from voting, due to multiple violations of the rules.");
     };
 
-    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
     };
@@ -1098,7 +1065,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   // ----------------------Token Methods------------------------------
   public shared ({ caller }) func unStakeTokens(amount : Nat) : async Text {
-    await ModWallet.getActor(env).transfer(?(Principal.toText(caller) # ModClubParam.STAKE_SA), caller, null, Float.fromInt(amount));
+    await authGuard.getWalletActor().transfer(?(Principal.toText(caller) # ModClubParam.STAKE_SA), caller, null, Float.fromInt(amount));
     "Unstaked " # Nat.toText(amount) # " tokens";
   };
   //----------------------POH Methods For Providers------------------------------
@@ -1424,7 +1391,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func populateChallenges() : async () {
-    Debug.print("Populating challenges called by: " # Principal.toText(caller));
     pohEngine.populateChallenges();
   };
 
@@ -1457,7 +1423,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     start : Nat,
     end : Nat
   ) : async [PohTypes.PohTaskPlus] {
-    switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -1551,7 +1517,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func getPohTaskData(packageId : Text) : async Result.Result<PohTypes.PohTaskDataWrapperPlus, PohTypes.PohError> {
-    switch (AuthManager.checkProfilePermission(caller, #getContent, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -1802,7 +1768,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     decision : Types.Decision,
     violatedRules : [Types.PohRulesViolated]
   ) : async () {
-    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
@@ -1824,10 +1790,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (_)();
     };
-    // let holdings = tokens.getHoldings(caller);
-    // if (holdings.stake < ModClubParam.MIN_STAKE_POH) {
-    //   throw Error.reject("Not enough tokens staked");
-    // };
+
     if (voteManager.checkPohUserHasVoted(caller, packageId)) {
       throw Error.reject("You have already voted");
     };
@@ -1838,7 +1801,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (pohEngine.validateRules(violatedRules) == false) {
       throw Error.reject("Valid rules not provided.");
     };
-    let ledger = ModWallet.getActor(env);
+    let ledger = authGuard.getWalletActor();
 
     let finishedVoting = await voteManager.votePohContent(
       caller,
@@ -1932,7 +1895,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           created_at_time = null;
         });
       };
-      let _ = await RSManager.getActor(env).updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
+      let _ = await authGuard.getRSActor().updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
       // treasury dist
       let tokensAmount = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
       let _ = await ledger.icrc1_transfer({
@@ -1970,14 +1933,22 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func issueJwt() : async Text {
-    Debug.print("Issue JWT called by " # Principal.toText(caller));
-    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
+    Helpers.logMessage(
+      canistergeekLogger,
+      "Issue JWT called by " # Principal.toText(caller),
+      #info
+    );
+    switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
       case (_)();
     };
-    Debug.print("Issue JWT Check user humanity " # Principal.toText(caller));
+    Helpers.logMessage(
+      canistergeekLogger,
+      "Issue JWT Check user humanity " # Principal.toText(caller),
+      #info
+    );
     switch (
       pohVerificationRequestHelper(
         Principal.toText(caller),
@@ -2042,9 +2013,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     userName : Text,
     providerId : ?Principal
   ) : async Types.ProviderResult {
-    Debug.print("addProviderAdmin caller: " # Principal.toText(caller));
-
-    let result = await ProviderManager.addProviderAdmin({
+    await ProviderManager.addProviderAdmin({
       userId;
       username = userName;
       caller;
@@ -2053,7 +2022,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       isModclubAdmin = authGuard.isAdmin(caller);
       logger = canistergeekLogger;
     });
-    return result;
   };
 
   public shared ({ caller }) func addToApprovedUser(userId : Principal) : async () {
@@ -2063,8 +2031,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func getProviderAdmins(providerId : Principal) : async [
     Types.Profile
   ] {
-    Debug.print("getProviderAdmins caller: " # Principal.toText(caller));
-    return ProviderManager.getProviderAdmins(providerId, stateV2);
+    ProviderManager.getProviderAdmins(providerId, stateV2);
   };
 
   public shared ({ caller }) func removeProviderAdmin(
@@ -2140,7 +2107,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func reserveContent(contentId : Text) : async () {
-    switch (AuthManager.checkProfilePermission(caller, #vote, stateV2)) {
+    switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
     };
@@ -2284,9 +2251,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
 
   system func preupgrade() {
-    Debug.print("MODCLUB PREUPGRRADE");
+    Helpers.logMessage(
+      canistergeekLogger,
+      "MODCLUB PREUPGRRADE",
+      #info
+    );
     stateSharedV2 := StateV2.fromState(stateV2);
-    tokensStableV1 := tokens.getStableV1();
 
     storageStateStable := storageSolution.getStableState();
     retiredDataCanisterId := storageSolution.getRetiredDataCanisterIdsStable();
@@ -2305,61 +2275,43 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     claimRewardsWhitelist := List.fromArray<Principal>(Buffer.toArray<Principal>(claimRewardsWhitelistBuf));
 
-    Debug.print("MODCLUB PREUPGRRADE FINISHED");
   };
 
   stable var migrationDone = false;
   stable var globalStateMigrationDone = false;
 
   system func postupgrade() {
-
+    Helpers.logMessage(
+      canistergeekLogger,
+      "MODCLUB POSTUPGRRADE",
+      #info
+    );
     authGuard.subscribe("admins");
-
-    // Reinitializing storage Solution to add "this" actor as a controller
-    // Refactor after deploy and state migrated.
     admins := authGuard.setUpDefaultAdmins(
       admins,
       deployer,
       Principal.fromActor(this)
     );
     claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
-
     storageSolution := StorageSolution.StorageSolution(
       storageStateStable,
       retiredDataCanisterId,
       admins,
-      signingKey
+      signingKey,
+      authGuard
     );
-    Debug.print("MODCLUB POSTUPGRADE");
 
-    // Delete from here after deployment
-    if (not globalStateMigrationDone) {
-      stateSharedV2 := migrateStateV1toV2(stateSharedV1, stateSharedV2);
-      globalStateMigrationDone := true;
-    };
-    stateSharedV1 := StateV1.emptyShared();
-    // Delete upto here
     stateV2 := StateV2.toState(stateSharedV2);
     stateSharedV2 := StateV2.emptyShared();
 
-    tokensStableV1 := Token.emptyStableV1(ModClubParam.getModclubWallet());
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
 
     pohStableStateV2 := PohStateV2.emptyStableState();
-    // Delete from here after deployment
-    if (not migrationDone) {
-      pohVoteStableStateV2 := voteManager.migrateV1ToV2(pohVoteStableState, pohVoteStableStateV2);
-      voteManager := VoteManager.VoteManager(pohVoteStableStateV2);
-      migrationDone := true;
-    };
-    pohVoteStableState := VoteState.emptyStableState();
-    // Delete upto here
     pohVoteStableStateV2 := VoteStateV2.emptyStableState();
     emailStableState := EmailState.emptyStableState();
     contentStableState := ContentState.emptyStableState();
 
-    // This statement should be run after the storagestate gets restored from stable stateV2
     storageSolution.setInitialModerators(ModeratorManager.getModerators(stateV2));
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
     _canistergeekMonitorUD := null;
@@ -2373,8 +2325,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
-
-    Debug.print("MODCLUB POSTUPGRADE FINISHED");
   };
 
   system func inspect({
@@ -2462,8 +2412,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         upgrade = null;
       };
     };
-    Debug.print(ip);
-    Debug.print(token);
+
     var ipRestrictionConfigured = false;
     var providerId = Principal.fromText("aaaaa-aa");
     var providerUserId = "";
@@ -2696,14 +2645,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func importAccounts(payload : Types.AccountsImportPayload) : async {
     status : Bool;
   } {
-    Debug.print("NEW Instanse has importAccounts call:: " # debug_show payload);
+    Helpers.logMessage(
+      canistergeekLogger,
+      "MODCLUB Instanse has importAccounts call:: " # debug_show payload,
+      #info
+    );
 
     for (provider in payload.providers.vals()) {
-      Debug.print("CHECK IMPORT ProviderAccount For: " # provider.name);
       switch (stateV2.providers.get(provider.id)) {
-        case (?p) {
-          Debug.print("FOUND ProviderAccount For: " # p.name);
-        };
+        case (?p) {};
         case (null) {
           await ProviderManager.addToAllowList(provider.id, stateV2, canistergeekLogger);
           let subAccs = HashMap.fromIter<Text, Blob>(
@@ -2722,15 +2672,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             state = stateV2;
             logger = canistergeekLogger;
           });
-          Debug.print("Imported ProviderAccount For: " # provider.name);
+          Helpers.logMessage(
+            canistergeekLogger,
+            "Imported ProviderAccount For: " # provider.name,
+            #info
+          );
         };
       };
     };
     for (providerAdmins in payload.adminsByProvider.vals()) {
-      Debug.print("CHECK ADMINS IMPORT For provider: " # Principal.toText(providerAdmins.pid));
       switch (stateV2.providers.get(providerAdmins.pid)) {
         case (?p) {
-          Debug.print("FOUND ProviderAccount For: " # p.name);
           for (admin in providerAdmins.admins.vals()) {
             let result = await ProviderManager.addProviderAdmin({
               userId = admin.id;
@@ -2743,10 +2695,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             });
             switch (result) {
               case (#ok(_)) {
-                Debug.print("IMPORTED ProviderAdmin: " # admin.userName # " For: " # p.name);
+                Helpers.logMessage(
+                  canistergeekLogger,
+                  "IMPORTED ProviderAdmin: " # admin.userName # " For: " # p.name,
+                  #info
+                );
               };
               case (#err(e)) {
-                Debug.print("ERROR ON ProviderAdmin: " # admin.userName # " For: " # p.name);
+                Helpers.logMessage(
+                  canistergeekLogger,
+                  "ERROR ON ProviderAdmin: " # admin.userName # " For: " # p.name,
+                  #error
+                );
               };
             };
           };
@@ -2757,7 +2717,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     for (moderator in payload.moderators.vals()) {
       try {
-        Debug.print("CHECK IMPORT ModeratorAccount For: " # moderator.userName);
         let profile = await ModeratorManager.registerModerator(
           moderator.id,
           moderator.userName,
@@ -2769,19 +2728,34 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         await storageSolution.registerModerators([moderator.id]);
         contentQueueManager.assignUserIds2QueueId([moderator.id]);
         pohContentQueueManager.assignUserIds2QueueId([moderator.id]);
-        Debug.print("NEW Moderator Account has been Imported SUCCESSFULLY :: " # debug_show profile);
+        Helpers.logMessage(
+          canistergeekLogger,
+          "NEW Moderator Account has been Imported :: " # debug_show profile,
+          #info
+        );
       } catch (e) {
-        Debug.print("AN ERROR OCCURS DURING ModeratorAccount import :: " # Error.message(e));
+        Helpers.logMessage(
+          canistergeekLogger,
+          "AN ERROR OCCURS DURING ModeratorAccount import :: " # Error.message(e),
+          #error
+        );
       };
     };
 
     for ((uid, _) in payload.approvedPOHUsers.vals()) {
       try {
-        Debug.print("CHECK IMPORT approvedPOHUsers For: " # Principal.toText(uid));
         voteManager.addToAutoApprovedPOHUser(uid);
-        Debug.print("NEW UserId has been addToAutoApprovedPOHUser SUCCESSFULLY :: " # debug_show uid);
+        Helpers.logMessage(
+          canistergeekLogger,
+          "NEW UserId has been addToAutoApprovedPOHUser SUCCESSFULLY :: " # debug_show uid,
+          #info
+        );
       } catch (e) {
-        Debug.print("AN ERROR OCCURS DURING approvedPOHUsers import :: " # Error.message(e));
+        Helpers.logMessage(
+          canistergeekLogger,
+          "AN ERROR OCCURS DURING approvedPOHUsers import :: " # Error.message(e),
+          #error
+        );
       };
     };
 

@@ -35,7 +35,6 @@ function initCanisterIds() {
     process.env.DFX_NETWORK ||
     (process.env.NODE_ENV === "production" ? "ic" : "local");
 
-  console.log("network: ", network);
   canisters = network === "local" ? localCanisters : prodCanisters;
 
   for (const canister in canisters) {
@@ -127,21 +126,18 @@ module.exports = {
     }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
-      MODCLUB_CANISTER_ID:
-        canisters["modclub"] || "la3yy-gaaaa-aaaah-qaiuq-cai",
-      MODCLUB_DEV_CANISTER_ID:
-        canisters["modclub_dev"] || "olc6u-lqaaa-aaaah-qcooq-cai",
-      MODCLUB_QA_CANISTER_ID:
-        canisters["modclub_qa"] || "f2xjy-4aaaa-aaaah-qc3eq-cai",
-      WALLET_CANISTER_ID: canisters["wallet"] || "vxnwt-gyaaa-aaaah-qc7vq-cai",
-      WALLET_DEV_CANISTER_ID:
-        canisters["wallet_dev"] || "vxnwt-gyaaa-aaaah-qc7vq-cai",
-      WALLET_QA_CANISTER_ID:
-        canisters["wallet_qa"] || "vckh6-hqaaa-aaaah-qc7wa-cai",
-      RS_CANISTER_ID: canisters["rs"] || "vflbk-kiaaa-aaaah-qc7wq-cai",
-      RS_DEV_CANISTER_ID: canisters["rs_dev"] || "vflbk-kiaaa-aaaah-qc7wq-cai",
-      RS_QA_CANISTER_ID: canisters["rs_qa"] || "vmikw-4aaaa-aaaah-qc7xa-cai",
-      VESTING_CANISTER_ID: canisters["vesting"],
+      MODCLUB_CANISTER_ID: canisters["modclub"] || "aaaaa-aa",
+      MODCLUB_DEV_CANISTER_ID: canisters["modclub_dev"] || "aaaaa-aa",
+      MODCLUB_QA_CANISTER_ID: canisters["modclub_qa"] || "aaaaa-aa",
+      WALLET_CANISTER_ID: canisters["wallet"] || "aaaaa-aa",
+      WALLET_DEV_CANISTER_ID: canisters["wallet_dev"] || "aaaaa-aa",
+      WALLET_QA_CANISTER_ID: canisters["wallet_qa"] || "aaaaa-aa",
+      RS_CANISTER_ID: canisters["rs"] || "aaaaa-aa",
+      RS_DEV_CANISTER_ID: canisters["rs_dev"] || "aaaaa-aa",
+      RS_QA_CANISTER_ID: canisters["rs_qa"] || "aaaaa-aa",
+      VESTING_CANISTER_ID: canisters["vesting"] || "aaaaa-aa",
+      VESTING_DEV_CANISTER_ID: canisters["vesting_dev"] || "aaaaa-aa",
+      VESTING_QA_CANISTER_ID: canisters["vesting_qa"] || "aaaaa-aa",
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
       DEV_ENV: process.env.DEV_ENV || "production",

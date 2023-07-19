@@ -16,13 +16,12 @@ import Types "../../types";
 import ProviderTypes "types";
 import Helpers "../../helpers";
 import ModClubParams "../parameters/params";
-import AuthManager "../auth/auth";
+import PermissionsModule "./permissions";
 import Canistergeek "../../canistergeek/canistergeek";
 import ModClubParam "../parameters/params";
-import ModWallet "../../remote_canisters/ModWallet";
 import CommonTypes "../../../common/types";
 import Utils "../../../common/utils";
-import AuthGuard "../../../common/security/guard";
+import ModSecurity "../../../common/security/guard";
 
 module ProviderModule {
 
@@ -77,11 +76,9 @@ module ProviderModule {
     //Check if user is authorized to perform the action
     var authorized = false;
     let state = arg.state;
-    Debug.print(
-      "Authenticating the caller: " # Principal.toText(arg.callerPrincipalId)
-    );
+
     switch (
-      AuthManager.checkProviderAdminPermission(
+      PermissionsModule.checkProviderAdminPermission(
         arg.providerId,
         arg.callerPrincipalId,
         state
@@ -207,11 +204,8 @@ module ProviderModule {
     logger : Canistergeek.Logger
   ) : async Types.ProviderSettingResult {
     var authorized = false;
-    Debug.print(
-      "Authenticating the caller: " # Principal.toText(callerPrincipalId)
-    );
     switch (
-      AuthManager.checkProviderAdminPermission(
+      PermissionsModule.checkProviderAdminPermission(
         providerId,
         callerPrincipalId,
         state
@@ -295,8 +289,7 @@ module ProviderModule {
   };
 
   public func getSaBalance(env : CommonTypes.ENV, mcCanister : Principal, providerSA : Blob) : async Nat {
-    let ledger = ModWallet.getActor(env);
-    // let ledger_account = await ledger.ledger_account();
+    let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
     await ledger.icrc1_balance_of({
       owner = mcCanister;
       subaccount = ?providerSA;
@@ -437,7 +430,7 @@ module ProviderModule {
     // Check if the caller is an admin of this provider
     if (authorized == false) {
       switch (
-        AuthManager.checkProviderAdminPermission(_providerId, arg.caller, state)
+        PermissionsModule.checkProviderAdminPermission(_providerId, arg.caller, state)
       ) {
         case (#err(error)) return #err(error);
         case (#ok()) authorized := true;
@@ -542,16 +535,11 @@ module ProviderModule {
     arg : ProviderTypes.ProviderAdminArg,
     logger : Canistergeek.Logger
   ) : async Types.ProviderResult {
-
-    Debug.print(
-      "Authenticating the caller: " # Principal.toText(arg.callerPrincipalId)
-    );
-    // Allow Modclub Admins
     let state = arg.state;
     var authorized = arg.isModclubAdmin;
     if (authorized == false) {
       switch (
-        AuthManager.checkProviderAdminPermission(
+        PermissionsModule.checkProviderAdminPermission(
           arg.providerId,
           arg.callerPrincipalId,
           state
@@ -581,13 +569,10 @@ module ProviderModule {
   ) : async Types.ProviderResult {
     var authorized = arg.isModclubAdmin;
     let state = arg.state;
-    Debug.print(
-      "Authenticating the caller: " # Principal.toText(arg.callerPrincipalId)
-    );
 
     if (authorized == false) {
       switch (
-        AuthManager.checkProviderAdminPermission(
+        PermissionsModule.checkProviderAdminPermission(
           arg.providerId,
           arg.callerPrincipalId,
           state
@@ -665,10 +650,12 @@ module ProviderModule {
     modclubCanisterPrincipal : Principal,
     amount : Float
   ) : async () {
-    let providerBalance = await ModWallet.getActor(env).icrc1_balance_of({
+    let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
+    let account = {
       owner = modclubCanisterPrincipal;
       subaccount = provider.subaccounts.get("RESERVE");
-    });
+    };
+    let providerBalance = await ledger.icrc1_balance_of(account);
     let tokens = Utils.floatToTokens(amount);
     if (providerBalance < tokens) {
       return throw Error.reject("Not enough balance in provider reserves to submit task.");
@@ -686,7 +673,8 @@ module ProviderModule {
     amount : Float
   ) : async () {
     let tokens = Utils.floatToTokens(amount);
-    let res = await ModWallet.getActor(env).icrc1_transfer({
+    let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
+    let res = await ledger.icrc1_transfer({
       from_subaccount = provider.subaccounts.get("RESERVE");
       to = {
         owner = modclubCanisterPrincipal;
@@ -728,8 +716,7 @@ module ProviderModule {
   };
 
   public func topUpProviderReserve(env : CommonTypes.ENV, mcCanister : Principal, provider : Types.Provider, tokens : Nat) : async () {
-    let ledger = ModWallet.getActor(env);
-    // let ledger_account = await ledger.ledger_account();
+    let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
     let res = await ledger.icrc2_transfer_from({
       from = {
         owner = provider.id;

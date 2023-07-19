@@ -1,7 +1,7 @@
-import PohTypes "./service/poh/types";
+import PohTypes "../modclub/service/poh/types";
 import Principal "mo:base/Principal";
-import Canistergeek "./canistergeek/canistergeek";
-import Helpers "./helpers";
+import Canistergeek "../modclub/canistergeek/canistergeek";
+import Helpers "../modclub/helpers";
 
 shared ({ caller = deployer }) actor class Provider() = this {
 

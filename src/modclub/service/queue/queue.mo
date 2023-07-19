@@ -185,11 +185,6 @@ module QueueManager {
             state.lastUserQueueIndex
           )
         );
-        Debug.print(
-          "QueueId: " # qId # " and state.lastUserQueueIndex: " # Int.toText(
-            state.lastUserQueueIndex
-          )
-        );
         state.userId2QueueId.put(allUserIds.get(i), qId);
       };
     };

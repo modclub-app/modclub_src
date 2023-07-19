@@ -14,12 +14,9 @@ import GlobalState "../../statev2";
 import ContentState "state";
 import Helpers "../../helpers";
 import Types "../../types";
-import Tokens "../../token";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
 import QueueManager "../queue/queue";
-import ModWallet "../../remote_canisters/ModWallet";
-import RSManager "../../remote_canisters/RSManager";
 import RSTypes "../../../rs/types";
 import RSConstants "../../../rs/constants";
 import ICRCModule "../../../wallet/ICRC/ledger";
@@ -84,6 +81,7 @@ module ContentVotingModule {
   public func vote(
     arg : ContentTypes.VoteArg
   ) : async Text {
+    let guard = ModSecurity.Guard(arg.env, "VOTE_SERVICE");
     if (
       not arg.contentQueueManager.isContentAssignedToUser(
         arg.userId,
@@ -102,7 +100,7 @@ module ContentVotingModule {
       };
       case (_)();
     };
-    let userRSAndLevel = await RSManager.getActor(arg.env).queryRSAndLevelByPrincipal(arg.userId);
+    let userRSAndLevel = await guard.getRSActor().queryRSAndLevelByPrincipal(arg.userId);
     switch (state.content.get(arg.contentId)) {
       case (?content) {
         if (content.status != #new) throw Error.reject(
@@ -286,11 +284,6 @@ module ContentVotingModule {
             violatedRules = getViolatedRuleCount(arg.violatedRulesCount);
           }
         );
-        Debug.print(
-          "Called callback for provider " # Principal.toText(
-            arg.content.providerId
-          )
-        );
         Helpers.logMessage(
           arg.logger,
           "Called callback for provider " # Principal.toText(
@@ -300,9 +293,6 @@ module ContentVotingModule {
         );
       };
       case (_) {
-        Debug.print(
-          "Provider " # Principal.toText(arg.content.providerId) # " has not subscribed a callback"
-        );
         Helpers.logMessage(
           arg.logger,
           "Provider " # Principal.toText(arg.content.providerId) # " has not subscribed a callback",
@@ -314,9 +304,10 @@ module ContentVotingModule {
   private func _rewardCalculation(
     arg : ContentTypes.RewardCalculationArg
   ) : async () {
-    let ledger = ModWallet.getActor(arg.env);
-    let rs = RSManager.getActor(arg.env);
-    let vesting = ModSecurity.Guard(arg.env, "VOTE_SERVICE").getVestingActor();
+    let guard = ModSecurity.Guard(arg.env, "VOTE_SERVICE");
+    let ledger = guard.getWalletActor();
+    let rs = guard.getRSActor();
+    let vesting = guard.getVestingActor();
     let state = arg.state;
     let provider = switch (state.providers.get(arg.content.providerId)) {
       case (?p) p;

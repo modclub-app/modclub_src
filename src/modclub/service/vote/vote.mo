@@ -16,11 +16,10 @@ import Helpers "../../helpers";
 import QueueManager "../queue/queue";
 import GlobalState "../../statev2";
 import DownloadSupport "./downloadSupport";
-import ModWallet "../../remote_canisters/ModWallet";
-import RSManager "../../remote_canisters/RSManager";
 import RSTypes "../../../rs/types";
 import WalletTypes "../../../wallet/types";
-import CommonTypes "../../../common/types"
+import CommonTypes "../../../common/types";
+import ModSecurity "../../../common/security/guard";
 
 module VoteModule {
 
@@ -29,7 +28,6 @@ module VoteModule {
     var state : VoteStateV2.PohVoteState = VoteStateV2.getState(stableState);
 
     public func isAutoApprovedPOHUser(userId : Principal) : Bool {
-      Debug.print("isAutoApprovedPOHUser: " # Principal.toText(userId));
       switch (state.autoApprovePOHUserIds.get(userId)) {
         case (null) {
           return false;
@@ -41,7 +39,6 @@ module VoteModule {
     };
 
     public func addToAutoApprovedPOHUser(userId : Principal) {
-      Debug.print("addToAudoapprovedUser: " # Principal.toText(userId));
       state.autoApprovePOHUserIds.put(userId, userId);
     };
 
@@ -91,9 +88,6 @@ module VoteModule {
       violatedRules : [Types.PohRulesViolated],
       pohContentQueueManager : QueueManager.QueueManager
     ) : async Result.Result<Bool, VoteTypes.VoteError> {
-      Debug.print(
-        "votePohContent: " # packageId # " UserId " # Principal.toText(userId)
-      );
       if (checkPohUserHasVoted(userId, packageId)) {
         return #err(#userAlreadyVoted);
       };
@@ -103,7 +97,8 @@ module VoteModule {
       };
 
       var voteCount = getVoteCountForPoh(userId, packageId);
-      let userRSAndLevel = await RSManager.getActor(env).queryRSAndLevelByPrincipal(userId);
+      let guard = ModSecurity.Guard(env, "VOTE_SERVICE");
+      let userRSAndLevel = await guard.getRSActor().queryRSAndLevelByPrincipal(userId);
 
       var voteApproved = voteCount.approvedCount;
       var voteRejected = voteCount.rejectedCount;
@@ -142,7 +137,6 @@ module VoteModule {
         voteRejected,
         pohContentQueueManager
       );
-      Debug.print("Finished voting: ");
       #ok(finishedVoting);
     };
 

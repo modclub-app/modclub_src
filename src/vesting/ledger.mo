@@ -20,7 +20,6 @@ module ModclubVestingLedger = {
 
   public class Ledger() {
 
-    // The list of all vestings and stakes by owner Principal.
     var ledger = HashMap.HashMap<Principal, Types.Locks>(0, Principal.equal, Principal.hash);
 
     public func applyVestingBlock(account : Principal, amount : Nat) : Result.Result<Nat, Text> {
@@ -66,7 +65,7 @@ module ModclubVestingLedger = {
         case (?logs) { logs };
         case (_) return #err("No locked tokens for account: " # Principal.toText(account));
       };
-      // IS NEEDED AMOUNT AVAILABLE IN LOCK
+
       let locked = lockedFor(account);
       if (amount > locked) {
         return #err("Not enough locked tokens for account: " # Principal.toText(account));
@@ -91,7 +90,7 @@ module ModclubVestingLedger = {
         case (?logs) { logs };
         case (_) return #err("No staked tokens for account: " # Principal.toText(account));
       };
-      // IS NEEDED AMOUNT AVAILABLE IN UNLOCKED_STAKES
+
       let unlocked = unlockedStakesFor(account);
       if (amount > unlocked) {
         return #err("Account: " # Principal.toText(account) # " claimed more tokens than actually unlocked.");
@@ -116,7 +115,7 @@ module ModclubVestingLedger = {
         case (?logs) { logs };
         case (_) return #err("No staked tokens for account: " # Principal.toText(account));
       };
-      // IS NEEDED AMOUNT AVAILABLE IN STAKE
+
       let staked = stakedFor(account);
       if (amount > staked) {
         return #err("Account: " # Principal.toText(account) # " claimed more tokens than actually staked.");

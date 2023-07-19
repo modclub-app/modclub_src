@@ -84,8 +84,10 @@ module Helpers {
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
-  public func nonZeroNat(val : Nat): Bool{
-    return Nat.greater(val, 0);
+  public func nonZeroNat(val : Nat) : async () {
+    if (not Nat.greater(val, 0)) {
+      throw Error.reject("Amount must be greater than zero");
+    };
   };
   
   // Generates a voteparameter semi unique ID

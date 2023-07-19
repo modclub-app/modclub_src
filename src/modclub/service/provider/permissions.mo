@@ -7,7 +7,7 @@ import List "mo:base/List";
 import GlobalState "../../statev2";
 import Types "../../types";
 
-module AuthModule {
+module PermissionsModule {
   public let Unauthorized = "Unauthorized";
 
   public func checkProviderPermission(
@@ -59,7 +59,6 @@ module AuthModule {
 
     // Anonymous principal
     if (Principal.toText(p) == "2vxsx-fae") {
-      Debug.print("Anonymous principal");
       return #err(#Unauthorized);
     };
     switch (state.profiles.get(p)) {
