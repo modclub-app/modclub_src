@@ -94,13 +94,6 @@ export default function Task() {
     setLevel(Object.keys(get_level.level)[0].toString());
   };
 
-  /* useEffect(() => {
-     if (full) {
-       setShowReserveModal(true)
-     }
-   }, [])
-  */
-
   useEffect(() => {
     user && !task && fetchTask() && fetchData();
   }, [user]);

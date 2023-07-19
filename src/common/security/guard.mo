@@ -5,7 +5,6 @@ import Blob "mo:base/Blob";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
 import Timer "mo:base/Timer";
-import AuthCanister "./AuthCanister";
 import CommonTypes "../types";
 import Utils "../utils";
 
@@ -23,29 +22,22 @@ module ModSecurity {
       ignore Timer.setTimer(
         #seconds(0),
         func() : async () {
-          Debug.print("SUBSCRIBING " # context # " on " # topic);
-          await AuthCanister.getActor(env).subscribe(topic);
+          await getAuthActor().subscribe(topic);
         }
       );
     };
 
     public func handleSubscription(payload : CommonTypes.ConsumerPayload) : () {
-      Debug.print("[" # context # "] [SUBSCRIPTION HANDLER] ==> Payload received");
       switch (payload) {
         case (#admins(list)) {
-          Debug.print("[" # context # "] [SUBSCRIPTION HANDLER] [ADMINS] ==> GOT ADMINS LIST");
           for (admin in list.vals()) {
             if (not isAdmin(admin)) {
-              Debug.print("[" # context # "] [SUBSCRIPTION HANDLER] [ADMINS] ==> PRINCIPAL " # Principal.toText(admin) # " is NEW");
               admins := List.push<Principal>(admin, admins);
             };
           };
         };
-        case (_) {
-          Debug.print("[WARNING][AuthGuard] Unknown subscription payload type!");
-        };
+        case (_) {};
       };
-      Debug.print("[" # context # "] [GUARD] ==> Payload Processed");
     };
 
     public func getAdmins() : [Principal] {
@@ -59,50 +51,60 @@ module ModSecurity {
       );
     };
 
-    // Correct checks if the principal is anonymous.
     public func isAnonymous(caller : Principal) : Bool {
       Blob.equal(Principal.toBlob(caller), Blob.fromArray([0x04]));
     };
 
     public func isModclubWallet(caller : Principal) : Bool {
-      Principal.equal(Utils.getCanisterId(#wallet, env), caller);
+      Principal.equal(getCanisterId(#wallet), caller);
     };
 
     public func isModclubAuth(caller : Principal) : Bool {
-      Principal.equal(Utils.getCanisterId(#auth, env), caller);
+      Principal.equal(getCanisterId(#auth), caller);
     };
 
     public func isModclubRs(caller : Principal) : Bool {
-      Principal.equal(Utils.getCanisterId(#rs, env), caller);
+      Principal.equal(getCanisterId(#rs), caller);
     };
 
     public func isModclubMain(caller : Principal) : Bool {
-      Principal.equal(Utils.getCanisterId(#modclub, env), caller);
+      Principal.equal(getCanisterId(#modclub), caller);
     };
 
     public func isOldModclubInstance(caller : Principal) : Bool {
-      Principal.equal(Utils.getCanisterId(#modclub_old, env), caller);
+      Principal.equal(getCanisterId(#modclub_old), caller);
     };
 
     public func isModclubVesting(caller : Principal) : Bool {
-      Principal.equal(Utils.getCanisterId(#vesting, env), caller);
+      Principal.equal(getCanisterId(#vesting), caller);
     };
 
     public func isModclubCanister(caller : Principal) : Bool {
       isModclubMain(caller) or isModclubWallet(caller) or isModclubRs(caller) or isModclubVesting(caller);
     };
 
-    public func getCanisterId(canisterType : CommonTypes.ModclubCanister) : Principal {
-      Utils.getCanisterId(canisterType, env);
-    };
-
-    // public func getCanisterActor<T>(canisterType : CommonTypes.ModclubCanister) : actor<T> {
-    //   let canisterActor = actor (getCanisterId(canisterType)) : actor<T>;
-    //   canisterActor;
-    // };
-
     public func getVestingActor() : CommonTypes.VestingCanisterActor {
       actor (Principal.toText(getCanisterId(#vesting)));
+    };
+
+    public func getAuthActor() : CommonTypes.AuthActorType {
+      actor (Principal.toText(getCanisterId(#auth)));
+    };
+
+    public func getWalletActor() : CommonTypes.WalletActorType {
+      actor (Principal.toText(getCanisterId(#wallet)));
+    };
+
+    public func getRSActor() : CommonTypes.RSActorType {
+      actor (Principal.toText(getCanisterId(#rs)));
+    };
+
+    public func getModclubCanisterActor() : CommonTypes.ModclubCanisterActorType {
+      actor (Principal.toText(getCanisterId(#modclub)));
+    };
+
+    public func getICRootActor() : CommonTypes.IcRootActorType {
+      actor ("aaaaa-aa");
     };
 
     public func setUpDefaultAdmins(
@@ -124,5 +126,15 @@ module ModSecurity {
       return admins;
     };
 
+    public func getCanisterId(canisterType : CommonTypes.ModclubCanister) : Principal {
+      switch (canisterType) {
+        case (#modclub) { env.modclub_canister_id; };
+        case (#modclub_old) { env.old_modclub_canister_id; };
+        case (#rs) { env.rs_canister_id; };
+        case (#wallet) { env.wallet_canister_id; };
+        case (#auth) { env.auth_canister_id; };
+        case (#vesting) {  env.vesting_canister_id;  };
+      };
+    };
   };
 };

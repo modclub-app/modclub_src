@@ -1,0 +1,44 @@
+type Vesting = 
+ service {
+   claim_staking: (Account, Tokens) -> (Result);
+   claim_vesting: (Account, Tokens) -> (Result);
+   handleSubscription: (ConsumerPayload) -> ();
+   locked_for: (Account) -> (nat);
+   stage_vesting_block: (Account, Tokens) -> (Result);
+   stake: (Account, Tokens) -> (Result);
+   staked_for: (Account) -> (nat);
+   unlock_staking: (Account, Tokens) -> (Result);
+   unlocked_stakes_for: (Account) -> (nat);
+ };
+type Tokens = nat;
+type Subaccount = blob;
+type Result = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Event = 
+ record {
+   payload: principal;
+   topic: text;
+ };
+type ENV = 
+ record {
+   auth_canister_id: principal;
+   modclub_canister_id: principal;
+   old_modclub_canister_id: principal;
+   rs_canister_id: principal;
+   vesting_canister_id: principal;
+   wallet_canister_id: principal;
+ };
+type ConsumerPayload = 
+ variant {
+   admins: vec principal;
+   events: vec Event;
+ };
+type Account = 
+ record {
+   owner: principal;
+   subaccount: opt Subaccount;
+ };
+service : (record {env: ENV;}) -> Vesting

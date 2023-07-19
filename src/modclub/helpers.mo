@@ -26,6 +26,7 @@ import Error "mo:base/Error";
 import Types "./types";
 import UUID "mo:uuid/UUID";
 import Constants "../common/constants";
+import Bool "mo:base/Bool";
 
 module Helpers {
 
@@ -83,6 +84,12 @@ module Helpers {
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
+  public func nonZeroNat(val : Nat) : async () {
+    if (not Nat.greater(val, 0)) {
+      throw Error.reject("Amount must be greater than zero");
+    };
+  };
+  
   // Generates a voteparameter semi unique ID
   public func generateVoteParamId(
     category : Text,
@@ -183,6 +190,9 @@ module Helpers {
       ),
       Principal.fromText(
         "mni5w-twhal-we6re-mvbh2-r3e6x-2djsc-nubmb-hw2ra-avyuu-mu2gj-5qe"
+      ),
+      Principal.fromText(
+        "dowzh-nyaaa-aaaai-qnowq-cai"
       )
     ];
     var exists = Array.find<Principal>(

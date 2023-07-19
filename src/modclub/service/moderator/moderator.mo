@@ -16,8 +16,7 @@ import Types "../../types";
 import RSTypes "../../../rs/types";
 import RSConstants "../../../rs/constants";
 import CommonTypes "../../../common/types";
-import RSManager "../../remote_canisters/RSManager";
-import Tokens "../../token";
+import ModSecurity "../../../common/security/guard";
 
 module ModeratorModule {
 
@@ -32,8 +31,7 @@ module ModeratorModule {
     ignore Timer.setTimer(
       #seconds(0),
       func() : async () {
-        Debug.print("SUBSCRIBING to RS_CANISTER on " # topic);
-        await RSManager.getActor(env).subscribe(topic);
+        await ModSecurity.Guard(env, "MODERATOT_SERVICE").getRSActor().subscribe(topic);
       }
     );
   };
@@ -43,7 +41,7 @@ module ModeratorModule {
   };
 
   public func getStats(moderId : Principal, env : CommonTypes.ENV) : async RSTypes.RSAndLevel {
-    let stats : RSTypes.RSAndLevel = await RSManager.getActor(env).queryRSAndLevelByPrincipal(moderId);
+    let stats : RSTypes.RSAndLevel = await ModSecurity.Guard(env, "MODERATOT_SERVICE").getRSActor().queryRSAndLevelByPrincipal(moderId);
     return stats;
   };
 
@@ -52,7 +50,7 @@ module ModeratorModule {
   };
 
   public func reduceToJunior(moderId : Principal, env : CommonTypes.ENV) : async Result.Result<Bool, Text> {
-    await RSManager.getActor(env).setRS(moderId, RSConstants.JUNIOR_THRESHOLD);
+    await ModSecurity.Guard(env, "MODERATOT_SERVICE").getRSActor().setRS(moderId, RSConstants.JUNIOR_THRESHOLD);
   };
 
   public func registerModerator(
@@ -69,14 +67,6 @@ module ModeratorModule {
       "Username length must be longer than 3 and less than 64 characters"
     );
 
-    switch (pic) {
-      case (null)();
-      case (?result) {
-        Debug.print(debug_show (result));
-      };
-    };
-
-    // Check if already registered
     switch (state.profiles.get(moderatorId)) {
       case (null) {
         switch (await checkUsernameAvailable(userName, state)) {
@@ -148,7 +138,6 @@ module ModeratorModule {
     for (user in topUsers.vals()) {
       switch (state.profiles.get(user.userId)) {
         case (?p) {
-          Debug.print("getModeratorLeaderboard pid " # Principal.toText(user.userId));
           var correctVoteCount : Int = 0;
           var completedVoteCount : Int = 0;
           var lastVoted : Int = 0;

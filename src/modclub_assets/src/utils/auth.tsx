@@ -4,7 +4,7 @@ import { authClient as authenticationClient } from "./authClient";
 import { Usergeek } from "usergeek-ic-js";
 
 import { actorController } from "./actor";
-import { Identity } from "@dfinity/agent";
+import { HttpAgent, Identity } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { getUserFromStorage } from "./util";
 import { Profile } from "./types";
@@ -81,7 +81,6 @@ export function useProvideAuth(authClient): AuthContext {
   const setUserFromLocalStorage = () => {
     const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
     if (lsUser && !user && !isAuthenticatedLocal) {
-      console.log("Setting User from local storage!!!!");
       setUser(lsUser);
       setIsAuthenticatedLocal(true);
       // Check to make sure your local storage user exists on the backend, and
@@ -101,7 +100,7 @@ export function useProvideAuth(authClient): AuthContext {
         // If the user doesn't exist on the backend then we need to sign up
         if (user_) {
           setUser(user_);
-          const checkAdmin = await checkUserRole();
+          const checkAdmin = await checkUserRole(user_.id);
           setAdminUser(checkAdmin);
         } else {
           setShouldSignup(true);
@@ -157,7 +156,7 @@ export function useProvideAuth(authClient): AuthContext {
             });
           }
         }
-        const pID = await window["ic"][walletToUse].getPrincipal();
+        const pID = await window["ic"][walletToUse]["agent"].getPrincipal();
         const identity = {
           type: walletToUse,
           getPrincipal: () => pID,
@@ -220,15 +219,13 @@ export function useProvideAuth(authClient): AuthContext {
       let adminInitProperties = async () => {
         fetchedProviders = true;
         let adminProviders = await getAdminProviderIDs();
+        console.log("AdminProvider:", adminProviders);
+        
         let providerListPromise = [];
         for (let provider of adminProviders) {
-          providerListPromise.push(getProvider(provider));
+          providerListPromise.push(await getProvider(provider));
         }
-        let providerListPrm = await Promise.all(
-          providerListPromise.map((providerPromise) =>
-            providerPromise.catch((error) => null)
-          )
-        );
+        let providerListPrm = await Promise.all(providerListPromise);
         let providerList = providerListPrm.filter((provider) => provider);
         setProviders(providerList);
         if (adminProviders.length > 0) {
@@ -285,11 +282,17 @@ export function useProvideAuth(authClient): AuthContext {
       case "plug":
         try {
           if (walletToUse) {
-            const result = await window["ic"][walletToUse].requestConnect({
-              whitelist,
-            });
+            let result;
+            const connected = await window["ic"][walletToUse].isConnected();
+            if(!connected){
+              const agent = new HttpAgent({ host })
+              await agent.fetchRootKey()
+              result = await window["ic"][walletToUse].requestConnect({
+                whitelist,
+              });
+            }
             if (result) {
-              const p = await window["ic"][walletToUse].getPrincipal();
+              const p = await window["ic"][walletToUse]["agent"].getPrincipal();
               const identity = {
                 type: "is",
                 getPrincipal: () => p,

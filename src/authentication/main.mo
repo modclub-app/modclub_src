@@ -2,6 +2,7 @@ import CommonTypes "../common/types";
 import Security "../common/security/guard";
 import Utils "../common/utils";
 import List "mo:base/List";
+import Error "mo:base/Error";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
@@ -18,23 +19,21 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   var guard = Security.Guard(env, "AUTH_CANISTER");
 
   private func publish(topic : Text) : async () {
-    Debug.print("PUBLISHING [" # topic # "] topic");
     for (subscriber in List.toArray(subscriptions).vals()) {
       if (subscriber.topic == topic) {
-        await subscriber._actor.handleSubscription(getPublicationPayload(topic));
+        await subscriber._actor.handleSubscription(await getPublicationPayload(topic));
       };
     };
   };
 
-  private func getPublicationPayload(topic : Text) : AuthTypes.ConsumerPayload {
+  private func getPublicationPayload(topic : Text) : async AuthTypes.ConsumerPayload {
     switch (topic) {
       case ("admins") { #admins(List.toArray<Principal>(admins)) };
-      case _ { Debug.trap("Unknown(malformed) subscriptin Topic.") };
+      case _ { throw Error.reject("Unknown(malformed) subscriptin Topic.") };
     };
   };
 
   public shared ({ caller }) func subscribe(_topic : Text) : async () {
-    Debug.print("CANISTER [" # Principal.toText(caller) # "] wants to subscribe on ADMINS");
     Utils.mod_assert(guard.isModclubCanister(caller), NotPermitted);
 
     let exists = List.some<AuthTypes.Subscriber>(
@@ -53,7 +52,6 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
         subscriptions
       );
     };
-    Debug.print("CANISTER [" # Principal.toText(caller) # "] subscribed on ADMINS");
 
     ignore Timer.setTimer(
       #seconds(0),
@@ -88,8 +86,6 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared ({ caller }) func registerAdmin(id : Principal) : async Result.Result<AuthTypes.AdminsList, Text> {
-    // Utils.mod_assert(_isAdmin(caller), NotPermitted);
-
     var adminList = admins;
     if (
       not List.some<Principal>(
@@ -106,7 +102,6 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared ({ caller }) func unregisterAdmin(id : Text) : async Result.Result<AuthTypes.AdminsList, Text> {
-    // Utils.mod_assert(_isAdmin(caller), NotPermitted);
     var adminList = admins;
     adminList := List.filter<Principal>(
       adminList,

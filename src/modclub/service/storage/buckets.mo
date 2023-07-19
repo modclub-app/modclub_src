@@ -16,12 +16,12 @@ import Time "mo:base/Time";
 import Timer "mo:base/Timer";
 import Result "mo:base/Result";
 import Constants "../../../common/constants";
+import CommonTypes "../../../common/types";
 import Helpers "../../helpers";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../canistergeek/canistergeek";
 import LoggerTypesModule "../../canistergeek/logger/typesModule";
 import Types "./types";
-import IC "../../remote_canisters/IC";
 
 actor class Bucket() = this {
 
@@ -81,7 +81,8 @@ actor class Bucket() = this {
   };
 
   func isOwner(caller : Principal) : async Bool {
-    let canisterDetails = await IC.IC.canister_status({
+    let ic : CommonTypes.IcRootActorType = actor ("aaaaa-aa");
+    let canisterDetails = await ic.canister_status({
       canister_id = Principal.fromActor(this);
     });
     var found = false;
@@ -102,19 +103,12 @@ actor class Bucket() = this {
 
     signingKey := signingKey1;
     for (modId in moderatorsId.vals()) {
-      Debug.print(
-        "Add moderator to new Bucket with modID " # Principal.toText(modId) # " mid: " # Principal.toText(
-          modId
-        )
-      );
       state.moderators.put(modId, modId);
     };
-    Debug.print("FINISHED ADDING MODERATORS TO BUCKET");
   };
 
   public shared ({ caller }) func getSize() : async Nat {
     await onlyOwners(caller);
-    Debug.print("canister balance: " # Nat.toText(Cycles.balance()));
     Prim.rts_memory_size();
   };
 
@@ -228,7 +222,6 @@ actor class Bucket() = this {
       throw Error.reject(ModClubParam.PER_CONTENT_SIZE_EXCEEDED_ERROR);
     };
     do ? {
-      // Debug.print("generated chunk id is " # debug_show(chunkId(contentId, chunkNum)) # "from"  #   debug_show(contentId) # "and " # debug_show(chunkNum)  #"  and chunk size..." # debug_show(Blob.toArray(chunkData).size()) );
       if (chunkNum == 1) {
         state.contentInfo.put(
           contentId,
@@ -266,35 +259,34 @@ actor class Bucket() = this {
     state.chunks.get(chunkId(fileId, chunkNum));
   };
 
-  /* public */ type StreamingCallbackToken = {
+  type StreamingCallbackToken = {
     key : Text;
     content_encoding : Text;
     index : Nat;
-    //starts at 1
     sha256 : ?[Nat8];
   };
 
-  /* public */ type StreamingCallbackHttpResponse = {
+  type StreamingCallbackHttpResponse = {
     token : ?StreamingCallbackToken;
     body : Blob;
   };
 
-  /* public */ type StreamingCallback = shared () -> async ();
+  type StreamingCallback = shared () -> async ();
 
-  /* public */ type StreamingStrategy = {
+  type StreamingStrategy = {
     #Callback : {
       token : StreamingCallbackToken;
       callback : StreamingCallback;
     };
   };
 
-  /* public */ type HttpRequest = {
+  type HttpRequest = {
     method : Text;
     url : Text;
     headers : [(Text, Text)];
     body : Blob;
   };
-  /* public */ type HttpResponse = {
+  type HttpResponse = {
     status_code : Nat16;
     headers : [(Text, Text)];
     body : Blob;
@@ -515,13 +507,10 @@ actor class Bucket() = this {
   };
 
   private func verifiedSignature(signature : Text, message : Text) : Bool {
-    Debug.print("singature: " # signature);
-
     if (signature == "") {
       return false;
     };
     let actualSignature = Helpers.generateHash(message # signingKey);
-    Debug.print("actualSignature: " # actualSignature);
 
     if (actualSignature != signature) {
       Helpers.logMessage(
@@ -535,8 +524,6 @@ actor class Bucket() = this {
   };
 
   private func jwtNotExpired(issueTime : Nat) : Bool {
-    Debug.print("actualSignature: " # Nat.toText(issueTime));
-
     if (
       issueTime == 0 or (Helpers.timeNow() - issueTime) > ModClubParam.JWT_VALIDITY_MILLI
     ) {
@@ -547,7 +534,6 @@ actor class Bucket() = this {
   };
 
   private func isUserModerator(modId : Text) : Bool {
-    Debug.print(modId);
     switch (state.moderators.get(Principal.fromText(modId))) {
       case (null) {
         Helpers.logMessage(
@@ -555,12 +541,9 @@ actor class Bucket() = this {
           "User " # modId # " is not a moderator",
           #error
         );
-        Debug.print("not present");
         return false;
       };
       case (?exists) {
-        Debug.print("present");
-
         return true;
       };
     };

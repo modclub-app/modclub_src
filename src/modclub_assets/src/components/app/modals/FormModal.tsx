@@ -3,21 +3,16 @@ import { useState } from "react";
 import { Modal, Heading, Button, Notification } from "react-bulma-components";
 import { Form } from "react-final-form";
 
-// export default function FormModal({
-//   toggle,
-//   title,
-//   handleSubmit,
-//   children,
-//   footerContent,
-//   updateTable
-// }: {
-//   toggle: () => void;
-//   title: string;
-//   handleSubmit: () => void;
-//   children: React.ReactNode;
-//   footerContent: any;
-//   updateTable: any;
-// }) {
+interface FormModalProps {
+  toggle: () => void;
+  title: string;
+  handleSubmit: (values) => any
+  children: React.ReactNode;
+  footerContent?: any;
+  updateTable?: any;
+  formStyle?: any;
+  loader?:any;
+}
 
 export default function FormModal({
   toggle,
@@ -28,12 +23,11 @@ export default function FormModal({
   updateTable = null,
   footerContent = null,
   loader = null
-}) {
+}: FormModalProps) {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
 
   const onFormSubmit = async (values: any) => {
-    console.log("FormModal values", values);
     setSubmitting(true);
 
     // const regEx = /Reject text: (.*)/g;
@@ -41,7 +35,7 @@ export default function FormModal({
       const result = await handleSubmit(values)
       setSubmitting(false);
       console.log("RESULT", result);
-      
+
       if (result) {
         if (typeof result == "string" &&  (result == "Values entered not valid") || (result.includes("checksum")))
           setMessage({ success: false, value: result });

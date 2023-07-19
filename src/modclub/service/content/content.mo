@@ -496,9 +496,6 @@ module ContentModule {
       };
       index := index + 1;
     };
-    Debug.print(
-      "Sending getTasks Resposnse for user: " # Principal.toText(arg.caller)
-    );
     return #ok(Buffer.toArray<Types.ContentPlus>(result));
   };
 

@@ -14,10 +14,10 @@
     "ic": "ocbvi-5yaaa-aaaah-qcopa-cai"
   },
   "modclub_qa": {
-    "ic": "f2xjy-4aaaa-aaaah-qc3eq-cai"
+    "ic": "hvyqe-cyaaa-aaaah-qdbiq-cai"
   },
   "modclub_qa_assets": {
-    "ic": "ftuce-kiaaa-aaaah-qc3fa-cai"
+    "ic": "h433y-uqaaa-aaaah-qdbja-cai"
   },
   "modclub_staging": {
     "ic": "o6fpz-kyaaa-aaaah-qcona-cai"
@@ -39,5 +39,11 @@
   },
   "wallet_qa": {
     "ic": "vckh6-hqaaa-aaaah-qc7wa-cai"
+  },
+  "vesting_qa": {
+    "ic": "idxpf-xiaaa-aaaap-abf2a-cai"
+  },
+  "auth_qa": {
+    "ic": "h3xck-uaaaa-aaaap-qbj7q-cai"
   }
 }

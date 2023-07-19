@@ -5,19 +5,14 @@ export type ConsumerPayload = { 'events' : Array<Event> } |
   { 'admins' : Array<Principal> };
 export type Decision = { 'approved' : null } |
   { 'rejected' : null };
-export type ENV = { 'qa' : null } |
-  { 'dev' : null } |
-  { 'prod' : null } |
-  {
-    'local' : {
-      'wallet_canister_id' : Principal,
-      'vesting_canister_id' : Principal,
-      'old_modclub_canister_id' : Principal,
-      'modclub_canister_id' : Principal,
-      'rs_canister_id' : Principal,
-      'auth_canister_id' : Principal,
-    }
-  };
+export interface ENV {
+  'wallet_canister_id' : Principal,
+  'vesting_canister_id' : Principal,
+  'old_modclub_canister_id' : Principal,
+  'modclub_canister_id' : Principal,
+  'rs_canister_id' : Principal,
+  'auth_canister_id' : Principal,
+}
 export interface Event { 'topic' : string, 'payload' : Principal }
 export interface RSAndLevel { 'level' : UserLevel, 'score' : bigint }
 export interface RSManager {

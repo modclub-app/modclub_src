@@ -29,7 +29,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const inputFile = useRef(null);
   const [message, setMessage] = useState(null);
   const instructionText = isPohFlow ? "To begin POH create your MODCLUB profile" : "Create your profile"
-
+  
   const handleFileChange = (e) => {
     const { files } = e.target;
     if (files.length > 0) {
@@ -92,7 +92,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
 
     setTimeout(() => setMessage(null), 2000);
   };
-
+  
   return (
     <>
       {message && (

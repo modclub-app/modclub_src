@@ -31,14 +31,8 @@ type Wallet =
    icrc2_allowance: (AllowanceArgs) -> (Allowance) query;
    icrc2_approve: (ApproveArgs) -> (Result_2);
    icrc2_transfer_from: (TransferFromArgs) -> (Result_1);
-   isUserAdmin: () -> (bool) query;
    ledger_account: () -> (Account) query;
-   queryBalance: (opt SubAccount) -> (float64) query;
-   queryBalancePr: (principal, opt SubAccount) -> (float64) query;
    stakeTokens: (nat) -> (Result);
-   tge: () -> ();
-   transfer: (opt SubAccount, principal, opt SubAccount, float64) -> ();
-   transferBulk: (vec UserAndAmount) -> ();
    transferToProvider: (TransferToProviderArgs) -> (Result);
    unstakeTokens: (Tokens) -> (Result);
  };
@@ -48,13 +42,6 @@ type Value =
    Int: int;
    Nat: nat;
    Text: text;
- };
-type UserAndAmount = 
- record {
-   amount: float64;
-   fromSA: opt text;
-   toOwner: principal;
-   toSA: opt text;
  };
 type TxIndex = nat;
 type TransferToProviderArgs = 
@@ -104,7 +91,6 @@ type TransferError =
 type Tokens = nat;
 type Timestamp = nat64;
 type Subaccount = blob;
-type SubAccount = text;
 type Result__1 = 
  variant {
    err: text;
@@ -145,19 +131,13 @@ type Event =
    topic: text;
  };
 type ENV = 
- variant {
-   dev;
-   local:
-    record {
-      auth_canister_id: principal;
-      modclub_canister_id: principal;
-      old_modclub_canister_id: principal;
-      rs_canister_id: principal;
-      vesting_canister_id: principal;
-      wallet_canister_id: principal;
-    };
-   prod;
-   qa;
+ record {
+   auth_canister_id: principal;
+   modclub_canister_id: principal;
+   old_modclub_canister_id: principal;
+   rs_canister_id: principal;
+   vesting_canister_id: principal;
+   wallet_canister_id: principal;
  };
 type ConsumerPayload = 
  variant {

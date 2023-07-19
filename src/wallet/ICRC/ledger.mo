@@ -22,7 +22,6 @@ module ModclubICRC = {
   public let ICRC_ADVISORS_SA = "------------------------ADVISORS" : Blob;
   public let ICRC_PRESEED_SA = "-------------------------PRESEED" : Blob;
   public let ICRC_PUBLICSALE_SA = "----------------------PUBLICSALE" : Blob;
-  // public let MAIN_SA = "----------------------------MAIN" : Blob;
   public let ICRC_SEED_SA = "----------------------------SEED" : Blob;
   public let ICRC_TEAM_SA = "----------------------------TEAM" : Blob;
   public let ICRC_TREASURY_SA = "------------------------TREASURY" : Blob;
@@ -34,10 +33,8 @@ module ModclubICRC = {
     let transactionWindowNanos : Types.Duration = 24 * 60 * 60 * 1_000_000_000;
     let defaultSubaccount : Types.Subaccount = Blob.fromArrayMut(Array.init(32, 0 : Nat8));
 
-    // The list of all transactions.
     var txLog : Types.TxLog = Buffer.Buffer<Types.Transaction>(100);
 
-    // Checks whether two accounts are semantically equal.
     public func accountsEqual(lhs : Types.Account, rhs : Types.Account) : Bool {
       let lhsSubaccount = Option.get(lhs.subaccount, defaultSubaccount);
       let rhsSubaccount = Option.get(rhs.subaccount, defaultSubaccount);
@@ -48,7 +45,6 @@ module ModclubICRC = {
       );
     };
 
-    // Computes the balance of the specified account.
     public func balance(account : Types.Account) : Nat {
       var sum = 0;
       for (tx in txLog.vals()) {
@@ -75,9 +71,7 @@ module ModclubICRC = {
       sum;
     };
 
-    // Computes the total token supply.
     public func totalSupply() : Types.Tokens {
-      Debug.print("Calculating Total Supply ...");
       var total = 0;
       for (tx in txLog.vals()) {
         switch (tx.operation) {
@@ -90,7 +84,6 @@ module ModclubICRC = {
       total;
     };
 
-    // Finds a transaction in the transaction log.
     public func findTransfer(transfer : Types.Transfer) : ?Types.TxIndex {
       var i = 0;
       for (tx in txLog.vals()) {
@@ -105,7 +98,6 @@ module ModclubICRC = {
       null;
     };
 
-    // Finds an approval in the transaction log.
     public func findApproval(approval : Types.Approve) : ?Types.TxIndex {
       var i = 0;
       for (tx in txLog.vals()) {
@@ -118,14 +110,12 @@ module ModclubICRC = {
       null;
     };
 
-    // Computes allowance of the spender for the specified account.
     public func allowance(account : Types.Account, spender : Principal, now : Nat64) : Types.Allowance {
       var i = 0;
       var allowance : Int = 0;
       var lastApprovalTs : ?Nat64 = null;
 
       for (tx in txLog.vals()) {
-        // Reset expired approvals, if any.
         switch (lastApprovalTs) {
           case (?expires_at) {
             if (expires_at < tx.timestamp) {
@@ -135,7 +125,6 @@ module ModclubICRC = {
           };
           case (null) {};
         };
-        // Add pending approvals.
         switch (tx.operation) {
           case (#Approve(args)) {
             if (args.from == account and args.spender == spender) {
@@ -165,9 +154,7 @@ module ModclubICRC = {
       };
     };
 
-    // Constructs the transaction log corresponding to the init argument.
     public func makeGenesisChain() : () {
-      Debug.print("Creating GENESIS ...");
       validateSubaccount(init.minting_account.subaccount);
 
       let now = Nat64.fromNat(Int.abs(Time.now()));
@@ -193,7 +180,6 @@ module ModclubICRC = {
       txLog := log;
     };
 
-    // Traps if the specified blob is not a valid subaccount.
     public func validateSubaccount(s : ?Types.Subaccount) {
       let subaccount = Option.get(s, defaultSubaccount);
       assert (subaccount.size() == 32);
@@ -355,10 +341,7 @@ module ModclubICRC = {
       });
 
       let newBallance = balance(approverAccount);
-      Debug.print("BALLANCE_NEW - " # Nat.toText(newBallance));
-      Debug.print("BALLANCE_BEFORE - " # Nat.toText(approverBalance));
-      Debug.print("FEE_BEFORE - " # Nat.toText(effectiveFee));
-      Debug.print("TX_INDEX - " # Nat.toText(txid));
+
       assert (newBallance == overflowOk(approverBalance - effectiveFee));
 
       #Ok(txid);

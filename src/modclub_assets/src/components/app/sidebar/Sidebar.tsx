@@ -19,7 +19,6 @@ import { SignIn } from "../../auth/SignIn";
 import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
-import { Principal } from "@dfinity/principal";
 
 const InviteModerator = ({ toggle }) => {
   const link = "Coming Soon"; //`${window.location.origin}/referral=${Date.now()}`

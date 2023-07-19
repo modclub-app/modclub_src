@@ -46,13 +46,8 @@ module {
     #burn : () -> (?ICRCTypes.Subaccount, Nat);
     #getAdmins : () -> ();
     #isUserAdmin : () -> ();
-    #queryBalance : () -> ?SubAccount;
-    #queryBalancePr : () -> (Principal, ?SubAccount);
     #stakeTokens : () -> ICRCTypes.Tokens;
     #unstakeTokens : () -> ICRCTypes.Tokens;
-    #tge : () -> ();
-    #transfer : () -> (?SubAccount, Principal, ?SubAccount, Float);
-    #transferBulk : () -> [UserAndAmount];
     #transferToProvider : () -> TransferToProviderArgs;
   };
 

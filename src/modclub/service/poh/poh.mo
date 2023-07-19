@@ -657,7 +657,6 @@ module PohModule {
       challengeData : PohTypes.PohChallengeSubmissionRequest,
       userId : Principal
     ) : PohTypes.PohChallengeSubmissionStatus {
-      Debug.print(Principal.toText(userId));
       switch (state.pohChallenges.get(challengeData.challengeId)) {
         case (null) return #incorrectChallenge;
         case (?pohChallenge) {
@@ -671,17 +670,14 @@ module PohModule {
 
       switch (state.pohUserChallengeAttempts.get(userId)) {
         case (null) {
-          Debug.print("Empty null");
           return #notPendingForSubmission;
         };
         case (?challengeAttempts) {
           switch (challengeAttempts.get(challengeData.challengeId)) {
             case (null) {
-              Debug.print("It's a null");
               return #notPendingForSubmission;
             };
             case (?attempts) {
-              Debug.print(Nat.toText(attempts.size()));
               if (attempts.size() == 0) {
                 return #notPendingForSubmission;
               } else if (attempts.get(attempts.size() -1).status == #pending) {
@@ -941,7 +937,6 @@ module PohModule {
         // Now check again if we are left something for voting.
         if (potentialChallengeIdsForPackageMap.size() > 0) {
 
-          Debug.print("Creating Package");
           let pohPackage = {
             id = Helpers.generateId(userId, "poh-content", globalState);
             challengeIds = Iter.toArray(

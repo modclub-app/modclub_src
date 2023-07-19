@@ -579,7 +579,7 @@ type ModClub =
    issueJwt: () -> (text);
    pohCallbackForModclub: (PohVerificationResponsePlus) -> () oneway;
    populateChallenges: () -> ();
-   providerSaBalance: (text) -> (Tokens);
+   providerSaBalance: (text, opt principal) -> (Tokens);
    registerModerator: (text, opt text, opt Image) -> (Profile);
    registerProvider: (text, text, opt Image) -> (text);
    registerUserToReceiveAlerts: (principal, bool) -> (bool);
@@ -590,6 +590,7 @@ type ModClub =
    retiredDataCanisterIdForWriting: (text) -> () oneway;
    retrieveChallengesForUser: (text) -> (Result);
    sendVerificationEmail: (text) -> (bool);
+   setLambdaToken: (text) -> ();
    setRandomization: (bool) -> ();
    setVoteParamsForLevel: (int, Level) -> ();
    showAdmins: () -> (vec principal) query;
@@ -767,19 +768,13 @@ type Event =
    topic: text;
  };
 type ENV = 
- variant {
-   dev;
-   local:
-    record {
-      auth_canister_id: principal;
-      modclub_canister_id: principal;
-      old_modclub_canister_id: principal;
-      rs_canister_id: principal;
-      vesting_canister_id: principal;
-      wallet_canister_id: principal;
-    };
-   prod;
-   qa;
+ record {
+   auth_canister_id: principal;
+   modclub_canister_id: principal;
+   old_modclub_canister_id: principal;
+   rs_canister_id: principal;
+   vesting_canister_id: principal;
+   wallet_canister_id: principal;
  };
 type Decision__1 = 
  variant {

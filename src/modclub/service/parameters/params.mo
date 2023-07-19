@@ -42,7 +42,7 @@ module {
   public let TEAM_SA = "TEAM";
   public let ACCOUNT_PAYABLE = "AP";
   public let STAKE_SA = "STAKE";
-  public let MOD_RELEASE_PER_DAY : Float = 125770;
+  public let MOD_RELEASE_PER_DAY = 12_577_000_000_000;
 
   public func getModclubWallet() : Principal {
     return Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai");

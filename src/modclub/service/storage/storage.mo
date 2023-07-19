@@ -5,7 +5,6 @@ import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
 import List "mo:base/List";
 import Error "mo:base/Error";
-import IC "../../remote_canisters/IC";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
@@ -15,6 +14,7 @@ import StorageTypes "./types";
 import Text "mo:base/Text";
 import Types "./types";
 import DownloadSupport "./downloadSupport";
+import ModSecurity "../../../common/security/guard";
 
 module StorageModule {
 
@@ -22,11 +22,11 @@ module StorageModule {
     storageStableState : StorageState.DataCanisterStateStable,
     retiredDataCanisterIds : [Text],
     admins : List.List<Principal>,
-    signingKeyFromMain : Text
+    signingKeyFromMain : Text,
+    guard : ModSecurity.Guard
   ) {
 
-    let DATA_CANISTER_MAX_STORAGE_LIMIT = 51_539_607_552;
-    //  ~48GB
+    let DATA_CANISTER_MAX_STORAGE_LIMIT = 51_539_607_552; // ~48GB
 
     let storageState = StorageState.getState(storageStableState);
     var signingKey = signingKeyFromMain;
@@ -36,6 +36,8 @@ module StorageModule {
       Text.hash
     );
     var adminList = admins;
+    let icRoot = guard.getICRootActor();
+
     for (id in retiredDataCanisterIds.vals()) {
       retiredDataCanisterIdMap.put(id, id);
     };
@@ -119,7 +121,6 @@ module StorageModule {
     public func updateBucketControllers(admins : List.List<Principal>) : async () {
       adminList := admins;
       for ((_, bucket) in storageState.dataCanisters.entries()) {
-        // updateCanisters with new controllers
         await updateCanister(bucket);
       };
     };
@@ -175,7 +176,6 @@ module StorageModule {
       };
     };
 
-    // persist chunks in bucket. Main method to use.
     public func putBlobsInDataCanister(
       contentId : Text,
       chunkData : Blob,
@@ -225,8 +225,6 @@ module StorageModule {
       return storageState.contentIdToCanisterId.get(contentId);
     };
 
-    // check if there's an empty bucket we can use
-    // create a new one in case none's available or have enough space
     private func getEmptyBucket(s : ?Nat) : async Bucket.Bucket {
       let fs : Nat = Option.get(s, 0);
 
@@ -244,42 +242,28 @@ module StorageModule {
       await newEmptyBucket();
     };
 
-    // dynamically install a new Bucket
     private func newEmptyBucket() : async Bucket.Bucket {
-      Cycles.add(15_000_000_000_000); // 15T
+      Cycles.add(20_000_000_000_000);
       let b = await Bucket.Bucket();
       let _ = await updateCanister(b);
-      // update canister permissions and settings
       b.setParams(Iter.toArray(storageState.moderatorsId.keys()), signingKey);
       storageState.dataCanisters.put(Principal.fromActor(b), b);
       return b;
     };
 
-    // canister memory is set to 4GB and compute allocation to 5 as the purpose
-    // of this canisters is mostly storage
-    // set canister owners to the wallet canister and the container canister ie: this
     private func updateCanister(a : actor {}) : async () {
-      Debug.print("balance before: " # Nat.toText(Cycles.balance()));
-      // Cycles.add(Cycles.balance()/2);
       let cid = { canister_id = Principal.fromActor(a) };
-      Debug.print(
-        "IC status..." # debug_show (await IC.IC.canister_status(cid))
-      );
-      // let cid = await IC.create_canister(  {
-      //    settings = ?{controllers = [?(owner)]; compute_allocation = null; memory_allocation = ?(4294967296); freezing_threshold = null; } } );
+
       let adminListWithCanister = List.push(cid.canister_id, adminList);
       await (
-        IC.IC.update_settings(
+        icRoot.update_settings(
           {
             canister_id = cid.canister_id;
             settings = {
               controllers = ?List.toArray(adminListWithCanister);
               compute_allocation = null;
-              //  memory_allocation = ?4_294_967_296; // 4GB
-              // memory_allocation = null;
               memory_allocation = ?DATA_CANISTER_MAX_STORAGE_LIMIT; // 48GB
-              freezing_threshold = ?2_676_000;
-              // 30 days
+              freezing_threshold = ?2_676_000; // 30 days
             };
           }
         )

@@ -44,64 +44,9 @@ module {
     };
   };
 
-  // auth_canister_id = principal "t6rzw-2iaaa-aaaaa-aaama-cai";
-  public func getCanisterId(canisterType : CommonTypes.ModclubCanister, env : CommonTypes.ENV) : Principal {
-    switch (canisterType) {
-      case (#modclub) {
-        switch (env) {
-          case (#local(value)) { value.modclub_canister_id };
-          case (#prod) { Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai") };
-          case (#dev) { Principal.fromText("olc6u-lqaaa-aaaah-qcooq-cai") };
-          case (#qa) { Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai") };
-        };
-      };
-      case (#modclub_old) {
-        switch (env) {
-          case (#local(value)) { value.old_modclub_canister_id };
-          case (#prod) { Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai") };
-          case (#dev) { Principal.fromText("olc6u-lqaaa-aaaah-qcooq-cai") };
-          case (#qa) { Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai") };
-        };
-      };
-      case (#rs) {
-        switch (env) {
-          case (#local(value)) { value.rs_canister_id };
-          case (#prod) { Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai") };
-          case (#dev) { Principal.fromText("olc6u-lqaaa-aaaah-qcooq-cai") };
-          case (#qa) { Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai") };
-        };
-      };
-      case (#wallet) {
-        switch (env) {
-          case (#local(value)) { value.wallet_canister_id };
-          case (#prod) { Principal.fromText("la3yy-gaaaa-aaaah-qaiuq-cai") };
-          case (#dev) { Principal.fromText("olc6u-lqaaa-aaaah-qcooq-cai") };
-          case (#qa) { Principal.fromText("f2xjy-4aaaa-aaaah-qc3eq-cai") };
-        };
-      };
-      case (#auth) {
-        switch (env) {
-          case (#local(value)) { value.auth_canister_id };
-          case (#prod) { Principal.fromText("t6rzw-2iaaa-aaaaa-aaama-cai") };
-          case (#dev) { Principal.fromText("tzq7c-xqaaa-aaaaa-aaamq-cai") };
-          case (#qa) { Principal.fromText("tqtu6-byaaa-aaaaa-aaana-cai") };
-        };
-      };
-      case (#vesting) {
-        switch (env) {
-          case (#local(value)) { value.vesting_canister_id };
-          case (#prod) { Principal.fromText("t6rzw-2iaaa-aaaaa-aaama-cai") };
-          case (#dev) { Principal.fromText("tzq7c-xqaaa-aaaaa-aaamq-cai") };
-          case (#qa) { Principal.fromText("tqtu6-byaaa-aaaaa-aaana-cai") };
-        };
-      };
-    };
-  };
-
   public func blobToText(b : Blob) : Text {
     var res = "";
     for (byte : Nat8 in b.vals()) {
-      // iterator over the Blob
       res := res # Nat8.toText(byte);
     };
     res;

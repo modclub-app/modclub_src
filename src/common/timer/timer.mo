@@ -4,36 +4,41 @@ import HashMap "mo:base/HashMap";
 import CommonTypes "../types";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
-import ModclubCanister "./ModclubCanister";
 import Canistergeek "../../modclub/canistergeek/canistergeek";
 import Constants "../constants";
-import ModWallet "../../modclub/remote_canisters/ModWallet";
 import ModClubParam "../../modclub/service/parameters/params";
+import ICRCModule "../../wallet/ICRC/ledger";
+import ModSecurity "../security/guard";
 import Principal "mo:base/Principal";
 
 module CommonTimer {
 
   public class CommonTimer(env : CommonTypes.ENV, context : Text) {
+    private let guard = ModSecurity.Guard(env, "TIMERS_SERVICE");
+    private let ledger = guard.getWalletActor();
+    private let mcactor = guard.getModclubCanisterActor();
+
     public var isTimerSet : Bool = false;
     public func emailtimer() : async () {
-      Debug.print("[Start Email Timer]");
-      let mcactor = ModclubCanister.getActor(env);
       let _ = mcactor.getModeratorEmailsForPOHAndSendEmail("p");
       let _ = mcactor.getModeratorEmailsForPOHAndSendEmail("shc");
     };
 
     public func releaseNextToken() : async () {
-      //TODO: Update with new ICRC
-      Debug.print("[Start Next Token Timer]");
-      let mcactor = ModclubCanister.getActor(env);
-      let _ = await ModWallet.getActor(env).transfer(?ModClubParam.RESERVE_SA, Principal.fromActor(mcactor), ?ModClubParam.TREASURY_SA, ModClubParam.MOD_RELEASE_PER_DAY);
+      let _ = await ledger.icrc1_transfer({
+          from_subaccount = ?ICRCModule.ICRC_RESERVE_SA;
+          to = { owner = Principal.fromActor(mcactor); subaccount = ?ICRCModule.ICRC_TREASURY_SA };
+          amount = ModClubParam.MOD_RELEASE_PER_DAY;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        });
     };
 
     public func initTimer(
       canistergeekMonitor : Canistergeek.Monitor
     ) : () {
       if (not isTimerSet) {
-        Debug.print("[INIT TIMER]");
         canistergeekMonitor.collectMetrics();
         ignore Timer.setTimer(
           #seconds(0),

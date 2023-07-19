@@ -1,16 +1,11 @@
 export const idlFactory = ({ IDL }) => {
-  const ENV = IDL.Variant({
-    'qa' : IDL.Null,
-    'dev' : IDL.Null,
-    'prod' : IDL.Null,
-    'local' : IDL.Record({
-      'wallet_canister_id' : IDL.Principal,
-      'vesting_canister_id' : IDL.Principal,
-      'old_modclub_canister_id' : IDL.Principal,
-      'modclub_canister_id' : IDL.Principal,
-      'rs_canister_id' : IDL.Principal,
-      'auth_canister_id' : IDL.Principal,
-    }),
+  const ENV = IDL.Record({
+    'wallet_canister_id' : IDL.Principal,
+    'vesting_canister_id' : IDL.Principal,
+    'old_modclub_canister_id' : IDL.Principal,
+    'modclub_canister_id' : IDL.Principal,
+    'rs_canister_id' : IDL.Principal,
+    'auth_canister_id' : IDL.Principal,
   });
   const Event = IDL.Record({ 'topic' : IDL.Text, 'payload' : IDL.Principal });
   const ConsumerPayload = IDL.Variant({
@@ -54,18 +49,13 @@ export const idlFactory = ({ IDL }) => {
   return RSManager;
 };
 export const init = ({ IDL }) => {
-  const ENV = IDL.Variant({
-    'qa' : IDL.Null,
-    'dev' : IDL.Null,
-    'prod' : IDL.Null,
-    'local' : IDL.Record({
-      'wallet_canister_id' : IDL.Principal,
-      'vesting_canister_id' : IDL.Principal,
-      'old_modclub_canister_id' : IDL.Principal,
-      'modclub_canister_id' : IDL.Principal,
-      'rs_canister_id' : IDL.Principal,
-      'auth_canister_id' : IDL.Principal,
-    }),
+  const ENV = IDL.Record({
+    'wallet_canister_id' : IDL.Principal,
+    'vesting_canister_id' : IDL.Principal,
+    'old_modclub_canister_id' : IDL.Principal,
+    'modclub_canister_id' : IDL.Principal,
+    'rs_canister_id' : IDL.Principal,
+    'auth_canister_id' : IDL.Principal,
   });
   return [ENV];
 };

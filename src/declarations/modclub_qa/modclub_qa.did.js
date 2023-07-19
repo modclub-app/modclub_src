@@ -7,18 +7,13 @@ export const idlFactory = ({ IDL }) => {
   const List_3 = IDL.Rec();
   const Trie_1 = IDL.Rec();
   const Trie_3 = IDL.Rec();
-  const ENV = IDL.Variant({
-    'qa' : IDL.Null,
-    'dev' : IDL.Null,
-    'prod' : IDL.Null,
-    'local' : IDL.Record({
-      'wallet_canister_id' : IDL.Principal,
-      'vesting_canister_id' : IDL.Principal,
-      'old_modclub_canister_id' : IDL.Principal,
-      'modclub_canister_id' : IDL.Principal,
-      'rs_canister_id' : IDL.Principal,
-      'auth_canister_id' : IDL.Principal,
-    }),
+  const ENV = IDL.Record({
+    'wallet_canister_id' : IDL.Principal,
+    'vesting_canister_id' : IDL.Principal,
+    'old_modclub_canister_id' : IDL.Principal,
+    'modclub_canister_id' : IDL.Principal,
+    'rs_canister_id' : IDL.Principal,
+    'auth_canister_id' : IDL.Principal,
   });
   const PohVerificationStatus = IDL.Variant({
     'notSubmitted' : IDL.Null,
@@ -798,7 +793,11 @@ export const idlFactory = ({ IDL }) => {
         ['oneway'],
       ),
     'populateChallenges' : IDL.Func([], [], []),
-    'providerSaBalance' : IDL.Func([IDL.Text], [Tokens], []),
+    'providerSaBalance' : IDL.Func(
+        [IDL.Text, IDL.Opt(IDL.Principal)],
+        [Tokens],
+        [],
+      ),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(Image)],
         [Profile],
@@ -825,6 +824,7 @@ export const idlFactory = ({ IDL }) => {
     'retiredDataCanisterIdForWriting' : IDL.Func([IDL.Text], [], ['oneway']),
     'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result], []),
     'sendVerificationEmail' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'setLambdaToken' : IDL.Func([IDL.Text], [], []),
     'setRandomization' : IDL.Func([IDL.Bool], [], []),
     'setVoteParamsForLevel' : IDL.Func([IDL.Int, Level], [], []),
     'showAdmins' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
@@ -902,18 +902,13 @@ export const idlFactory = ({ IDL }) => {
   return ModClub;
 };
 export const init = ({ IDL }) => {
-  const ENV = IDL.Variant({
-    'qa' : IDL.Null,
-    'dev' : IDL.Null,
-    'prod' : IDL.Null,
-    'local' : IDL.Record({
-      'wallet_canister_id' : IDL.Principal,
-      'vesting_canister_id' : IDL.Principal,
-      'old_modclub_canister_id' : IDL.Principal,
-      'modclub_canister_id' : IDL.Principal,
-      'rs_canister_id' : IDL.Principal,
-      'auth_canister_id' : IDL.Principal,
-    }),
+  const ENV = IDL.Record({
+    'wallet_canister_id' : IDL.Principal,
+    'vesting_canister_id' : IDL.Principal,
+    'old_modclub_canister_id' : IDL.Principal,
+    'modclub_canister_id' : IDL.Principal,
+    'rs_canister_id' : IDL.Principal,
+    'auth_canister_id' : IDL.Principal,
   });
   return [ENV];
 };

@@ -1,16 +1,11 @@
 export const idlFactory = ({ IDL }) => {
-  const ENV = IDL.Variant({
-    'qa' : IDL.Null,
-    'dev' : IDL.Null,
-    'prod' : IDL.Null,
-    'local' : IDL.Record({
-      'wallet_canister_id' : IDL.Principal,
-      'vesting_canister_id' : IDL.Principal,
-      'old_modclub_canister_id' : IDL.Principal,
-      'modclub_canister_id' : IDL.Principal,
-      'rs_canister_id' : IDL.Principal,
-      'auth_canister_id' : IDL.Principal,
-    }),
+  const ENV = IDL.Record({
+    'wallet_canister_id' : IDL.Principal,
+    'vesting_canister_id' : IDL.Principal,
+    'old_modclub_canister_id' : IDL.Principal,
+    'modclub_canister_id' : IDL.Principal,
+    'rs_canister_id' : IDL.Principal,
+    'auth_canister_id' : IDL.Principal,
   });
   const Subaccount = IDL.Vec(IDL.Nat8);
   const Account = IDL.Record({
@@ -115,13 +110,6 @@ export const idlFactory = ({ IDL }) => {
     'InsufficientFunds' : IDL.Record({ 'balance' : Tokens }),
   });
   const Result_1 = IDL.Variant({ 'Ok' : TxIndex, 'Err' : TransferFromError });
-  const SubAccount = IDL.Text;
-  const UserAndAmount = IDL.Record({
-    'toOwner' : IDL.Principal,
-    'toSA' : IDL.Opt(IDL.Text),
-    'fromSA' : IDL.Opt(IDL.Text),
-    'amount' : IDL.Float64,
-  });
   const TransferToProviderArgs = IDL.Record({
     'to' : Account,
     'from' : Account,
@@ -165,40 +153,21 @@ export const idlFactory = ({ IDL }) => {
     'icrc2_allowance' : IDL.Func([AllowanceArgs], [Allowance], ['query']),
     'icrc2_approve' : IDL.Func([ApproveArgs], [Result_2], []),
     'icrc2_transfer_from' : IDL.Func([TransferFromArgs], [Result_1], []),
-    'isUserAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'ledger_account' : IDL.Func([], [Account], ['query']),
-    'queryBalance' : IDL.Func([IDL.Opt(SubAccount)], [IDL.Float64], ['query']),
-    'queryBalancePr' : IDL.Func(
-        [IDL.Principal, IDL.Opt(SubAccount)],
-        [IDL.Float64],
-        ['query'],
-      ),
     'stakeTokens' : IDL.Func([IDL.Nat], [Result], []),
-    'tge' : IDL.Func([], [], []),
-    'transfer' : IDL.Func(
-        [IDL.Opt(SubAccount), IDL.Principal, IDL.Opt(SubAccount), IDL.Float64],
-        [],
-        [],
-      ),
-    'transferBulk' : IDL.Func([IDL.Vec(UserAndAmount)], [], []),
     'transferToProvider' : IDL.Func([TransferToProviderArgs], [Result], []),
     'unstakeTokens' : IDL.Func([Tokens], [Result], []),
   });
   return Wallet;
 };
 export const init = ({ IDL }) => {
-  const ENV = IDL.Variant({
-    'qa' : IDL.Null,
-    'dev' : IDL.Null,
-    'prod' : IDL.Null,
-    'local' : IDL.Record({
-      'wallet_canister_id' : IDL.Principal,
-      'vesting_canister_id' : IDL.Principal,
-      'old_modclub_canister_id' : IDL.Principal,
-      'modclub_canister_id' : IDL.Principal,
-      'rs_canister_id' : IDL.Principal,
-      'auth_canister_id' : IDL.Principal,
-    }),
+  const ENV = IDL.Record({
+    'wallet_canister_id' : IDL.Principal,
+    'vesting_canister_id' : IDL.Principal,
+    'old_modclub_canister_id' : IDL.Principal,
+    'modclub_canister_id' : IDL.Principal,
+    'rs_canister_id' : IDL.Principal,
+    'auth_canister_id' : IDL.Principal,
   });
   const Subaccount = IDL.Vec(IDL.Nat8);
   const Account = IDL.Record({

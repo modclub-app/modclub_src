@@ -15,7 +15,7 @@ module {
     #AdminCheckPohVerificationResp : () -> (Text, Principal);
     #addProviderAdmin : () -> (Principal, Text, ?Principal);
     #topUpProviderReserve : () -> ({ providerId : ?Principal; amount : Nat });
-    #providerSaBalance : () -> (Text);
+    #providerSaBalance : () -> (Text, ?Principal);
     #addRules : () -> ([Text], ?Principal);
     #addToApprovedUser : () -> Principal;
     #addToAllowList : () -> Principal;
@@ -69,6 +69,7 @@ module {
     #populateChallenges : () -> ();
     #registerAdmin : () -> Principal;
     #registerModerator : () -> (Text, ?Text, ?Types.Image);
+    #setLambdaToken : () -> (Text);
     #registerProvider : () -> (Text, Text, ?Types.Image);
     #registerUserToReceiveAlerts : () -> (Principal, Bool);
     #removeProviderAdmin : () -> (Principal, Principal);

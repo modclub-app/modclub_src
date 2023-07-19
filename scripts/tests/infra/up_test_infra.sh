@@ -49,7 +49,7 @@ function deploy_wallet_canister() {
       ledger_account = record { owner = principal \"$qa_ledger_principal\"; };
       token_name = \"MODCLUB TEST TOKEN\";
       token_symbol = \"MODTEST\";
-      decimals = 6;
+      decimals = 8;
       transfer_fee = 10_000;
     }}
   )"
@@ -57,7 +57,7 @@ function deploy_wallet_canister() {
 }
 
 function get_local_canisters() {
-  echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }}"
+  echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }"
 }
 
 function deploy_vesting_canister() {
@@ -84,6 +84,7 @@ function deploy_qa_canisters() {
   dfx generate rs_qa -v &&
   dfx generate modclub_qa -v &&
   dfx generate wallet_qa -v &&
+  dfx generate vesting_qa -v &&
   DEV_ENV=qa dfx deploy modclub_qa_assets &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
 	return 0;

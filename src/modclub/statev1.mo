@@ -356,7 +356,6 @@ module StateV1 {
     for ((id, image) in stateShared.imageContent.vals()) {
       state.imageContent.put(id, image);
     };
-    Debug.print("MODCLUB AIRDROP STATE RESTORING");
     for ((id, airdropUser) in stateShared.airdropUsers.vals()) {
       state.airdropUsers.put(id, airdropUser);
     };

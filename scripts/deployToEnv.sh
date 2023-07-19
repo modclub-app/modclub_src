@@ -46,7 +46,7 @@ function deploy_wallet_canister() {
       ledger_account = record { owner = principal \"$ledger_acc_principal\"; };
       token_name = \"MODCLUB TEST TOKEN\";
       token_symbol = \"MODTEST\";
-      decimals = 6;
+      decimals = 8;
       transfer_fee = 10_000;
     }}
   )"
@@ -55,11 +55,11 @@ function deploy_wallet_canister() {
 
 function get_env_canisters() {
   case $1 in
-		qa) echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"${OLD_MODCLUB_INSTANCE}\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }}"
+		qa) echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_qa --network=${DEPLOY_NETWORK})\"; old_modclub_canister_id = principal \"${OLD_MODCLUB_INSTANCE}\"; rs_canister_id = principal \"$(dfx canister id rs_qa --network=${DEPLOY_NETWORK})\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa --network=${DEPLOY_NETWORK})\"; auth_canister_id = principal \"$(dfx canister id auth_qa --network=${DEPLOY_NETWORK})\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa --network=${DEPLOY_NETWORK})\"; }"
 		;;
-		dev) echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub_dev)\"; old_modclub_canister_id = principal \"${OLD_MODCLUB_INSTANCE}\"; rs_canister_id = principal \"$(dfx canister id rs_dev)\"; wallet_canister_id = principal \"$(dfx canister id wallet_dev)\"; auth_canister_id = principal \"$(dfx canister id auth_dev)\"; vesting_canister_id = principal \"$(dfx canister id vesting_dev)\"; }}"
+		dev) echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_dev --network=${DEPLOY_NETWORK})\"; old_modclub_canister_id = principal \"${OLD_MODCLUB_INSTANCE}\"; rs_canister_id = principal \"$(dfx canister id rs_dev --network=${DEPLOY_NETWORK})\"; wallet_canister_id = principal \"$(dfx canister id wallet_dev --network=${DEPLOY_NETWORK})\"; auth_canister_id = principal \"$(dfx canister id auth_dev --network=${DEPLOY_NETWORK})\"; vesting_canister_id = principal \"$(dfx canister id vesting_dev --network=${DEPLOY_NETWORK})\"; }"
 		;;
-		prod) echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub)\"; old_modclub_canister_id = principal \"${OLD_MODCLUB_INSTANCE}\"; rs_canister_id = principal \"$(dfx canister id rs)\"; wallet_canister_id = principal \"$(dfx canister id wallet)\"; auth_canister_id = principal \"$(dfx canister id auth)\"; vesting_canister_id = principal \"$(dfx canister id vesting)\"; }}"
+		prod) echo "record { modclub_canister_id = principal \"$(dfx canister id modclub --network=${DEPLOY_NETWORK})\"; old_modclub_canister_id = principal \"${OLD_MODCLUB_INSTANCE}\"; rs_canister_id = principal \"$(dfx canister id rs --network=${DEPLOY_NETWORK})\"; wallet_canister_id = principal \"$(dfx canister id wallet --network=${DEPLOY_NETWORK})\"; auth_canister_id = principal \"$(dfx canister id auth --network=${DEPLOY_NETWORK})\"; vesting_canister_id = principal \"$(dfx canister id vesting --network=${DEPLOY_NETWORK})\"; }"
 		;;
 	esac
 }
@@ -91,7 +91,7 @@ function deploy_qa_canisters() {
 
   dfx deploy rs_qa --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
 	dfx deploy modclub_qa --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
-	dfx deploy provider_qa --network=${DEPLOY_NETWORK} &&
+	# dfx deploy provider_qa --network=${DEPLOY_NETWORK} &&
   dfx generate rs_qa -v &&
   dfx generate modclub_qa -v &&
   dfx generate wallet_qa -v &&
@@ -147,6 +147,7 @@ usage() {
  echo "Usage: $0 [OPTIONS]"
  echo "Options:"
  echo " -h, --help        Display this help message"
+ echo " -e, --env         Set Environment to deploy to. Default value is qa"
  echo " -n, --network     Set Network to deploy to. Default value is <local>"
  echo " -m, --minter      Set Minter principal to deploy Ledger(Wallet canister). Default value is generated from default identity."
  echo " -l, --ledger_acc  Set LedgerAccount principal to deploy Ledger(Wallet canister). Default value is generated from default identity."

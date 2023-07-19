@@ -31,19 +31,14 @@ export type ApproveError = {
   { 'InsufficientFunds' : { 'balance' : Tokens } };
 export type ConsumerPayload = { 'events' : Array<Event> } |
   { 'admins' : Array<Principal> };
-export type ENV = { 'qa' : null } |
-  { 'dev' : null } |
-  { 'prod' : null } |
-  {
-    'local' : {
-      'wallet_canister_id' : Principal,
-      'vesting_canister_id' : Principal,
-      'old_modclub_canister_id' : Principal,
-      'modclub_canister_id' : Principal,
-      'rs_canister_id' : Principal,
-      'auth_canister_id' : Principal,
-    }
-  };
+export interface ENV {
+  'wallet_canister_id' : Principal,
+  'vesting_canister_id' : Principal,
+  'old_modclub_canister_id' : Principal,
+  'modclub_canister_id' : Principal,
+  'rs_canister_id' : Principal,
+  'auth_canister_id' : Principal,
+}
 export interface Event { 'topic' : string, 'payload' : Principal }
 export interface LedgerInitParams {
   'decimals' : number,
@@ -63,7 +58,6 @@ export type Result_2 = { 'Ok' : TxIndex } |
   { 'Err' : ApproveError };
 export type Result__1 = { 'ok' : Array<Principal> } |
   { 'err' : string };
-export type SubAccount = string;
 export type Subaccount = Uint8Array | number[];
 export type Timestamp = bigint;
 export type Tokens = bigint;
@@ -102,12 +96,6 @@ export interface TransferToProviderArgs {
   'amount' : Tokens,
 }
 export type TxIndex = bigint;
-export interface UserAndAmount {
-  'toOwner' : Principal,
-  'toSA' : [] | [string],
-  'fromSA' : [] | [string],
-  'amount' : number,
-}
 export type Value = { 'Int' : bigint } |
   { 'Nat' : bigint } |
   { 'Blob' : Uint8Array | number[] } |
@@ -144,17 +132,8 @@ export interface Wallet {
   'icrc2_allowance' : ActorMethod<[AllowanceArgs], Allowance>,
   'icrc2_approve' : ActorMethod<[ApproveArgs], Result_2>,
   'icrc2_transfer_from' : ActorMethod<[TransferFromArgs], Result_1>,
-  'isUserAdmin' : ActorMethod<[], boolean>,
   'ledger_account' : ActorMethod<[], Account>,
-  'queryBalance' : ActorMethod<[[] | [SubAccount]], number>,
-  'queryBalancePr' : ActorMethod<[Principal, [] | [SubAccount]], number>,
   'stakeTokens' : ActorMethod<[bigint], Result>,
-  'tge' : ActorMethod<[], undefined>,
-  'transfer' : ActorMethod<
-    [[] | [SubAccount], Principal, [] | [SubAccount], number],
-    undefined
-  >,
-  'transferBulk' : ActorMethod<[Array<UserAndAmount>], undefined>,
   'transferToProvider' : ActorMethod<[TransferToProviderArgs], Result>,
   'unstakeTokens' : ActorMethod<[Tokens], Result>,
 }

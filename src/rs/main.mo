@@ -14,7 +14,6 @@ import Result "mo:base/Result";
 import List "mo:base/List";
 import Debug "mo:base/Debug";
 import Types "./types";
-import AuthManager "../modclub/service/auth/auth";
 import Utils "../common/utils";
 import CommonTypes "../common/types";
 import ModSecurity "../common/security/guard";
@@ -35,7 +34,6 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   stable var subscriptions = List.nil<Types.Subscriber>();
 
   private func publish(topic : Text, payload : Principal) : async () {
-    Debug.print("PUBLISHING [" # topic # "] topic");
     try {
       for (subscriber in List.toArray(subscriptions).vals()) {
         if (subscriber.topic == topic) {
@@ -43,12 +41,11 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
         };
       };
     } catch (e) {
-      Debug.print("Error while publishing: " # Error.message(e));
+      throw Error.reject("Error while publishing: " # Error.message(e));
     };
   };
 
   public shared ({ caller }) func subscribe(_topic : Text) : async () {
-    Debug.print("[RS_CANISTER] Canister [" # Principal.toText(caller) # "] wants to subscribe on RS_EVENTS");
     Utils.mod_assert(authGuard.isModclubCanister(caller), ModSecurity.AccessMode.NotPermitted);
 
     let exists = List.some<Types.Subscriber>(
@@ -68,26 +65,21 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
           subscriptions
         );
       } catch (e) {
-        Debug.print("Error while subscribing: " # Error.message(e));
+        throw Error.reject("Error while subscribing: " # Error.message(e));
       };
     };
-    Debug.print("[RS_CANISTER] Canister [" # Principal.toText(caller) # "] subscribed on RS_EVENTS");
   };
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
-    // Debug.print("[RS_CANISTER] [SUBSCRIPTION HANDLER] ==> Payload received");
     authGuard.handleSubscription(payload);
   };
 
-  // For testing purposes
   public query ({ caller }) func showAdmins() : async [Principal] {
     Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     authGuard.getAdmins();
   };
 
   public query ({ caller }) func topUsers(start : Nat, end : Nat) : async [Types.UserAndRS] {
-    // Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
-
     let allUsers : [(Principal, Int)] = Iter.toArray(rsByUserId.entries());
     let topUsers = Array.sort(allUsers, sortTopUser);
     let topK = Buffer.Buffer<Types.UserAndRS>(end - start);
@@ -103,8 +95,6 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public query ({ caller }) func queryRSAndLevel() : async Types.RSAndLevel {
-    // Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
-
     let rs = Option.get(rsByUserId.get(caller), 0);
     {
       score = rs;
@@ -113,7 +103,6 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public query ({ caller }) func queryRSAndLevelByPrincipal(user : Principal) : async Types.RSAndLevel {
-    // Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     let rs = Option.get(rsByUserId.get(user), 0);
     {
       score = rs;
@@ -194,10 +183,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   system func postupgrade() {
-    Debug.print("POSTUPGRADE FOR RS CANISTER");
-
     authGuard.subscribe("admins");
-
     admins := authGuard.setUpDefaultAdmins(
       admins,
       deployer,

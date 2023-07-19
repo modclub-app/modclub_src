@@ -103,7 +103,7 @@ echo "Check Modclub canister balance"
 dfx canister call wallet icrc1_balance_of '( record { owner = principal "'$(dfx canister id modclub)'" } )'
 echo "Check Provider RESERVE balance"
 P_BAL_BEFORE_SUBMIT=$(dfx canister call modclub providerSaBalance '("RESERVE")')
-echo "Provider RESERVE ballance: $P_BAL_BEFORE_SUBMIT"
+echo "Provider RESERVE balance: $P_BAL_BEFORE_SUBMIT"
 
 # Submit a task and verify
 echo "++++++++++++++ Step 3: create Moderator with Junior status ++++++++++"

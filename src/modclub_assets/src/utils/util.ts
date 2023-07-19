@@ -138,7 +138,7 @@ export function getUrlForData(canisterId: String, contentId: String) {
   if (window.location.hostname.includes("localhost")) {
     return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}`;
   } else {
-    return "https://" + canisterId + ".ic0.app/storage?contentId=" + contentId;
+    return "https://" + canisterId + ".icp0.io/storage?contentId=" + contentId;
   }
 }
 
@@ -163,3 +163,23 @@ export async function fetchObjectUrl(url: string): Promise<string> {
   const imageBlob = await res.blob();
   return URL.createObjectURL(imageBlob);
 }
+
+export function getUrlFromArray(imgData:any, imgType:any): string {
+  const arrayBufferView = new Uint8Array(imgData);
+  const blob = new Blob([arrayBufferView], { type: imgType });
+  const urlCreator = window.URL || window.webkitURL;
+  const imageUrl = urlCreator.createObjectURL(blob);
+  return imageUrl;
+};
+
+export function format_token(amount:number):string {
+  if (amount >= 1000 && amount < 1000000) {
+    return `${(amount / 1000).toFixed(2)}k`;
+  } else if (amount >= 1000000 && amount < 1000000000) {
+    return `${(amount / 1000000).toFixed(2)}m`;
+  } else if (amount >= 1000000000) {
+    return `${(amount / 1000000000).toFixed(2)}b`;
+  } else {
+    return `${amount.toFixed(2)}`;
+  }
+};
