@@ -1,4 +1,4 @@
-#! bin/bash
+#!/bin/bash
 
 echo "####################### Deploy started ###########################"
 rm -rf ../.dfx

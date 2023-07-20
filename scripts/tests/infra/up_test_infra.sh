@@ -17,7 +17,6 @@ function create_qa_canisters() {
   dfx canister create rs_qa &&
   dfx canister create modclub_qa &&
   dfx canister create vesting_qa &&
-  dfx canister create provider_qa &&
   dfx canister create modclub_qa_assets &&
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
@@ -80,7 +79,6 @@ function deploy_qa_canisters() {
 
   dfx deploy rs_qa  --argument="($local_env)" &&
 	dfx deploy modclub_qa  --argument="($local_env)" &&
-	dfx deploy provider_qa &&
   dfx generate rs_qa -v &&
   dfx generate modclub_qa -v &&
   dfx generate wallet_qa -v &&

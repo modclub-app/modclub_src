@@ -91,7 +91,6 @@ function deploy_qa_canisters() {
 
   dfx deploy rs_qa --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
 	dfx deploy modclub_qa --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
-	# dfx deploy provider_qa --network=${DEPLOY_NETWORK} &&
   dfx generate rs_qa -v &&
   dfx generate modclub_qa -v &&
   dfx generate wallet_qa -v &&
@@ -112,7 +111,6 @@ function deploy_dev_canisters() {
 
   dfx deploy rs_dev --network=${DEPLOY_NETWORK} --argument="($dev_env)" &&
 	dfx deploy modclub_dev --network=${DEPLOY_NETWORK} --argument="($dev_env)" &&
-	dfx deploy provider_dev --network=${DEPLOY_NETWORK} &&
   dfx generate rs_dev -v &&
   dfx generate modclub_dev -v &&
   dfx generate wallet_dev -v &&
@@ -133,7 +131,6 @@ function deploy_prod_canisters() {
 
   dfx deploy rs --network=${DEPLOY_NETWORK} --argument="($dev)" &&
 	dfx deploy modclub --network=${DEPLOY_NETWORK} --argument="($dev)" &&
-	dfx deploy provider --network=${DEPLOY_NETWORK} &&
   dfx generate rs -v &&
   dfx generate modclub -v &&
   dfx generate wallet -v &&

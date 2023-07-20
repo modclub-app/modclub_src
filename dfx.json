@@ -61,14 +61,6 @@
       "main": "src/rs/main.mo",
       "type": "motoko"
     },
-    "provider": {
-      "main": "src/provider/main.mo",
-      "type": "motoko"
-    },
-    "provider_qa": {
-      "main": "src/provider/main.mo",
-      "type": "motoko"
-    },
     "auth": {
       "main": "src/authentication/main.mo",
       "type": "motoko"
