@@ -37,7 +37,6 @@ import Random "mo:base/Random";
 import Rel "./data_structures/Rel";
 import RelObj "./data_structures/RelObj";
 import Result "mo:base/Result";
-import StateV1 "./statev1";
 import StateV2 "./statev2";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
@@ -76,10 +75,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private stable var keyToCallLambda : Text = "";
   private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
-  // Airdrop Flags
   stable var allowSubmissionFlag : Bool = true;
+  
   // Global Objects
-  var state = StateV1.empty();
   var stateV2 = StateV2.empty();
 
   stable var storageStateStable = StorageState.emptyStableState();
@@ -2246,8 +2244,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
-  // Delete here after deployment
-  stable var stateSharedV1 : StateV1.StateShared = StateV1.emptyShared();
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
 
   system func preupgrade() {
@@ -2592,53 +2588,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       return false;
     } catch (err) {
       throw Error.reject(Error.message(err));
-    };
-  };
-
-  // Delete after deployment
-  private func migrateStateV1toV2(stateSharedV1 : StateV1.StateShared, stateSharedV2 : StateV2.StateShared) : StateV2.StateShared {
-
-    let buff = Buffer.Buffer<(Text, Types.VoteV2)>(pohVoteStableState.pohVotes.size());
-    for ((voteId, vote) in stateSharedV1.votes.vals()) {
-      buff.add((
-        voteId,
-        {
-          id = vote.id;
-          contentId = vote.contentId;
-          userId = vote.userId;
-          decision = vote.decision;
-          rsBeforeVoting = 0;
-          level = #novice;
-          violatedRules = vote.violatedRules;
-          createdAt = vote.createdAt;
-        }
-      ));
-    };
-
-    return {
-      GLOBAL_ID_MAP = stateSharedV1.GLOBAL_ID_MAP;
-      providers = stateSharedV1.providers;
-      providerSubs = stateSharedV1.providerSubs;
-      providersWhitelist = stateSharedV1.providersWhitelist;
-      providerAdmins = stateSharedV1.providerAdmins;
-      airdropUsers = stateSharedV1.airdropUsers;
-      airdropWhitelist = stateSharedV1.airdropWhitelist;
-      profiles = stateSharedV1.profiles;
-      usernames = stateSharedV1.usernames;
-      content = stateSharedV1.content;
-      rules = stateSharedV1.rules;
-      votes = Buffer.toArray<(Text, Types.VoteV2)>(buff);
-      textContent = stateSharedV1.textContent;
-      imageContent = stateSharedV1.imageContent;
-      content2votes = stateSharedV1.content2votes;
-      mods2votes = stateSharedV1.mods2votes;
-      provider2content = stateSharedV1.provider2content;
-      provider2rules = stateSharedV1.provider2rules;
-      admin2Provider = stateSharedV1.admin2Provider;
-      appName = stateSharedV1.appName;
-      providerAllowedForAIFiltering = stateSharedV1.providerAllowedForAIFiltering;
-      provider2PohChallengeIds = stateSharedV1.provider2PohChallengeIds;
-      provider2PohExpiry = stateSharedV1.provider2PohExpiry;
     };
   };
 
