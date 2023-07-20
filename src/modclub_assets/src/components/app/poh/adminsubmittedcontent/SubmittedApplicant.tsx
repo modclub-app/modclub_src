@@ -15,9 +15,6 @@ import { useHistory } from "react-router-dom";
 
 export default function PohSubmittedApplicant() {
   const { user, isAdminUser } = useAuth();
-  //Need to change
-  //  const { user } = useAuth();
-  //  const isAdminUser = true;
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);

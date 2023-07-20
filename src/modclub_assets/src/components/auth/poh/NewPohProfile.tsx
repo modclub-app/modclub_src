@@ -16,7 +16,7 @@ import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
-import { verifyUserHumanity, retrieveChallengesForUser } from '../../../utils/api';
+import { retrieveChallengesForUser } from '../../../utils/api';
 import DrawingChallenge from './DrawingChallenge';
 import { PohError } from '../../../utils/types';
 

@@ -11,7 +11,7 @@ const RemoveRuleModal = ({
     updateProvider,
   }) => {
     const onRemoveRuleFormSubmit = async (values: any) => {
-      let result;
+      let result: string;
   
       if (rule && rule.id) {
         await removeRules([rule.id], Principal.fromText(principalID))

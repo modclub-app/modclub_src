@@ -1,6 +1,6 @@
 import * as React from 'react'
 import styled from "styled-components";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Modal,
@@ -12,7 +12,7 @@ import {
 } from "react-bulma-components";
 import MicRecorder from "mic-recorder-to-mp3";
 import { processAndUploadChunk } from "../../../utils/util";
-import { format, formatDuration } from "date-fns";
+import { format } from "date-fns";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
 
 
@@ -73,13 +73,11 @@ const Timer = styled.div`
 `;
 
 export default function UserPhrases({ step, goToNextStep }) {
-  // const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const phrases = step.wordList[0];
 
   const [capturing, setCapturing] = useState<boolean>(false);
   const [seconds, setSeconds] = useState<number>(0);
-  // const [recordState, setRecordState] = useState(null);
   const [audioData, setAudioData] = useState(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
@@ -153,12 +151,6 @@ export default function UserPhrases({ step, goToNextStep }) {
     });
   };
 
-  // const handlePauseCaptureClick = () => {
-  //   setCapturing(false);
-  //   setRecordState(RecordState.PAUSE);
-  //   // setRecordState(RecordState.STOP);
-  // };
-
   const handleStopCaptureClick = () => {
     recorder.current
       .stop()
@@ -231,7 +223,7 @@ export default function UserPhrases({ step, goToNextStep }) {
             <>
               {
                   !hasAudioPermission &&
-                  <div class="notification is-danger">
+                  <div className="notification is-danger">
                       Microphone permission not enabled
                   </div>
               }

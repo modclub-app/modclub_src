@@ -18,7 +18,6 @@ import {
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
-import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";

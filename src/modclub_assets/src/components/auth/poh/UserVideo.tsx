@@ -13,7 +13,7 @@ import {
 import Webcam from "react-webcam";
 import { CaptureButton } from "./Webcam"
 import { processAndUploadChunk } from "../../../utils/util";
-import { format, formatDuration } from "date-fns";
+import { format } from "date-fns";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
 
 const RecordButton = styled.div`
@@ -71,7 +71,6 @@ const Timer = styled.div`
 `;
 
 export default function UserVideo({ step, goToNextStep }) {
-  // const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);

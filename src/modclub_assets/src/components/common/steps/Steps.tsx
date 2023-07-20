@@ -9,8 +9,6 @@ const Step = ({ id, details }) => {
   return (
     <StepConsumer>
       {context => {
-        // console.log("context", context);
-
         return (
           <li className={`step-item
             ${context == Number(id) ? "is-active" : ""}

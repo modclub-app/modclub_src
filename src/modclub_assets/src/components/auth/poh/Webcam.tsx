@@ -117,7 +117,6 @@ export function WebcamWrapper({ setFile, file, newCrop, setNewCrop, mirrored = t
       }
     }
     catch (e) {
-      console.log("Couldn't crop image due to", e);
       callback(imgUri);
     }
   }

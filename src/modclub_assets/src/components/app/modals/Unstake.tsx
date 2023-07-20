@@ -3,7 +3,6 @@ import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { unStakeTokens } from '../../../utils/api';
-import { resourceUsage } from "process";
 
 const UpdateTable = ({ stake, amount = 0 }) => {
   return (

@@ -4,7 +4,6 @@ import { useParams } from "react-router";
 import { useAuth } from "../../../utils/auth";
 import {
   getContent,
-  getReservedByContentId,
   canReserveContent,
   reserveContent,
   queryRSAndLevelByPrincipal,

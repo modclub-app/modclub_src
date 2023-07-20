@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Columns, Card, Heading, Button } from "react-bulma-components";
 
 export default function Moderators() {
-  const [content, setContent] = useState(null);
 
   useEffect(() => {
   }, []);

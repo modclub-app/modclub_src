@@ -22,7 +22,6 @@ export default function Withdraw({ toggle, tokenHoldings }) {
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
     const { amount } = values;
-    // return await unStakeTokens(amount);
   };
 
   const preventMax = (e) => {

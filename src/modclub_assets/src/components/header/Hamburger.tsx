@@ -1,4 +1,4 @@
-import React, { ReactDOM } from "react";
+import React from "react";
 import styled from "styled-components";
 import "./Hamburger.scss";
 import { HashLink } from "react-router-hash-link";

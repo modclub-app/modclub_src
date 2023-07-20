@@ -1,14 +1,12 @@
 import * as React from 'react'
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Modal,
   Heading,
   Button,
   Icon,
-  Card,
-  Columns,
-  Content
+  Card
 } from "react-bulma-components";
 import { WebcamWrapper } from "./Webcam"
 import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
@@ -21,7 +19,6 @@ import square from '../../../../assets/shapes/square.png';
 
 
 export default function DrawingChallenge({ step, goToNextStep }) {
-  // const history = useHistory();
   const inputFile = useRef(null);
   const [file, setFile] = useState({
     type: '',

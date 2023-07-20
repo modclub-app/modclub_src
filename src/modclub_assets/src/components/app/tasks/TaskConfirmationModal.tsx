@@ -61,7 +61,6 @@ const ConfirmationModal = ({
   const levelMsg = LevelMessage[level];
 
   const onFormSubmit = async (values: any) => {
-    // console.log("FormModal values", values);
     const checked = getViolatedRules(values);
 
     try {

@@ -6,7 +6,7 @@ import FormModal from "../modals/FormModal";
 
 import { Link } from "react-router-dom";
 
-import { addProviderAdmin, getAllProfiles, removeProviderAdmin, editProviderAdmin, getProviderAdmins } from "../../../utils/api";
+import { addProviderAdmin, removeProviderAdmin, editProviderAdmin, getProviderAdmins } from "../../../utils/api";
 import { Principal } from "@dfinity/principal";
 
 const principalIDValidationForInput = (ID, principalIDS) => {
@@ -46,8 +46,7 @@ const AddModal = ({ toggle, principalIDS, setPrincipleIDs, Provider }) => {
       )
     ) {
       values.id = Principal.fromText(values.id);
-      setPrincipleIDs([...principalIDS, values]);
-      console.log([...principalIDS, values]);
+      setPrincipleIDs([...principalIDS, values]);      
       return "Add Trust Identity form submitted";
     }
 
@@ -194,8 +193,6 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
 
   const [showRemove, setRemove] = useState(false);
   const toggleRemove = (id) => {
-    console.log("toggle remove", id);
-
     setRemove(!showRemove);
     setEntryToRemove(id);
   };
@@ -207,9 +204,7 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
   useEffect(() => {
     const controller = new AbortController();
     let trustedIdentitiesInit = async () => {
-      console.log("Before call", selectedProvider);
       let allProfiles = await getProviderAdmins(selectedProvider.id);
-      console.log("After call", allProfiles, controller);
       setTrustedPrincipleIDs(allProfiles);
       return () => controller.abort();
     };
@@ -228,9 +223,6 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
   const handleCheckAll = () => {
     setChecked([...checked, trustedPrincipleIDs]);
   };
-
-  //CALL THIS ON INIT TO GET ALL PROFILES AND FILTER ADMIN TO DISPLAT UNDER TRUSTED IDENTITIES
-  //console.log("THISIS TESTING", getAllProfiles());
 
   return (
     <>

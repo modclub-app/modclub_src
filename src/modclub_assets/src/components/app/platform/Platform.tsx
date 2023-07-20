@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
-import { getContent, getProvider } from "../../../utils/api";
+import { getProvider } from "../../../utils/api";
 import { Columns, Card, Level, Heading, Icon } from "react-bulma-components";
 
 const GradientBox = ({ children, title, showToken = true }) => {

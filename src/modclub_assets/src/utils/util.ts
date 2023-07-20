@@ -1,4 +1,3 @@
-import { Principal } from "@dfinity/principal";
 import { Optional } from "./api";
 import { Profile } from "./types";
 import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";

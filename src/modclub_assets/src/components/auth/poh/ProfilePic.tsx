@@ -12,7 +12,6 @@ import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
 
 export default function ProfilePic({ goToNextStep }) {
-  // const history = useHistory();
   const inputFile = useRef(null);
   const [file, setFile] = useState({
     type: '',

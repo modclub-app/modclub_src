@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Switch, Route, Link, useHistory, useLocation } from 'react-router-dom';
-import { Columns, Modal, Heading } from "react-bulma-components";
+import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
+import { Columns } from "react-bulma-components";
 import NotAuthenticatedModal from './modals/NotAuthenticated';
 import UserIncompleteModal from './modals/UserIncompleteModal';
 import Sidebar from "./sidebar/Sidebar";

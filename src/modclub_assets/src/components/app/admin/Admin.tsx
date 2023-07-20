@@ -64,14 +64,11 @@ export default function Admin({
     );
   }
   const [showModal, setShowModal] = useState(true);
-
   const [requiredVotes, setrequiredVotes] = useState(0);
   const [minTokens, setMinTokens] = useState(0);
-
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [loader, setLoader] = useState(false);
-
   const toggleDeposit = () => {setIsDepositOpen(!isDepositOpen); get_token();};
 
   const updateProvider = () => {
@@ -117,7 +114,6 @@ export default function Admin({
   }, []);
 
   const toggle = () => setShowModal(false);
-  
   return (
     <>
       {selectedProvider == null && providers != [] ? (
