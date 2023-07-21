@@ -15,7 +15,6 @@ import VoteTypes "./types";
 import Helpers "../../helpers";
 import QueueManager "../queue/queue";
 import GlobalState "../../statev2";
-import DownloadSupport "./downloadSupport";
 import RSTypes "../../../rs/types";
 import WalletTypes "../../../wallet/types";
 import CommonTypes "../../../common/types";
@@ -240,10 +239,6 @@ module VoteModule {
         };
       };
       return Buffer.toArray<VoteTypes.VotePlusUser>(buffer);
-    };
-
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
-      DownloadSupport.download(state, varName, start, end);
     };
 
     public func getStableState() : VoteStateV2.PohVoteStableState {

@@ -214,10 +214,6 @@ export interface ModClub {
     undefined
   >,
   'deregisterProvider' : ActorMethod<[], string>,
-  'downloadSupport' : ActorMethod<
-    [string, string, bigint, bigint],
-    Array<Array<string>>
-  >,
   'editProviderAdmin' : ActorMethod<
     [Principal, Principal, string],
     ProviderResult

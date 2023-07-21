@@ -275,4 +275,19 @@ module Helpers {
 
     Buffer.toArray(subAccs);
   };
+
+   public func joinArrOpt(array : ?[Text]) : Text {
+    switch (array) {
+      case (null)();
+      case (?arr) {
+        return joinArr(arr);
+      };
+    };
+    return "";
+  };
+
+  public func joinArr(arr : [Text]) : Text {
+    return Text.join(",", arr.vals());
+  };
 };
+

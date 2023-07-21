@@ -4,8 +4,6 @@ import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Canistergeek "../../canistergeek/canistergeek";
 import Debug "mo:base/Debug";
-import DownloadSupport "./downloadSupport";
-import DownloadUtil "../../downloadUtil";
 import Error "mo:base/Error";
 import GlobalState "../../statev2";
 import HashMap "mo:base/HashMap";
@@ -880,7 +878,7 @@ module PohModule {
       for ((pid, challengeIds) in challengeIdByProviderArr.vals()) {
         Helpers.logMessage(
           canistergeekLogger,
-          "provider: " # Principal.toText(pid) # " challengeIds: " # DownloadUtil.joinArr(
+          "provider: " # Principal.toText(pid) # " challengeIds: " # Helpers.joinArr(
             challengeIds
           ),
           #info
@@ -893,7 +891,7 @@ module PohModule {
         );
         Helpers.logMessage(
           canistergeekLogger,
-          "provider: " # Principal.toText(pid) # "  potentialChallengeIdsForPackage: " # DownloadUtil.joinArr(
+          "provider: " # Principal.toText(pid) # "  potentialChallengeIdsForPackage: " # Helpers.joinArr(
             potentialChallengeIdsForPackage
           ),
           #info
@@ -929,7 +927,7 @@ module PohModule {
 
         Helpers.logMessage(
           canistergeekLogger,
-          "provider: " # Principal.toText(pid) # "  potentialChallengeIdsForPackage after removing already submitted challenge: " # DownloadUtil.joinArr(
+          "provider: " # Principal.toText(pid) # "  potentialChallengeIdsForPackage after removing already submitted challenge: " # Helpers.joinArr(
             Iter.toArray(potentialChallengeIdsForPackageMap.keys())
           ),
           #info
@@ -1543,16 +1541,6 @@ module PohModule {
         Buffer.toArray<(Principal, [(Text, [(Text, Int)])])>(pohCallbackDataByProviderStableStateBuff),
         Buffer.toArray<(Principal, [(Text, Text)])>(provider2ProviderUserId2IpBuff),
         Buffer.toArray<(Principal, Rel.RelShared<Text, Principal>)>(provider2Ip2WalletBuff)
-      );
-    };
-
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
-      DownloadSupport.download(
-        state,
-        pohCallbackByProvider,
-        varName,
-        start,
-        end
       );
     };
 

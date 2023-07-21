@@ -13,7 +13,6 @@ import StorageState "./storageState";
 import StorageTypes "./types";
 import Text "mo:base/Text";
 import Types "./types";
-import DownloadSupport "./downloadSupport";
 import ModSecurity "../../../common/security/guard";
 
 module StorageModule {
@@ -268,10 +267,6 @@ module StorageModule {
           }
         )
       );
-    };
-
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
-      DownloadSupport.download(storageState, varName, start, end);
     };
 
     public func getStableState() : StorageState.DataCanisterStateStable {

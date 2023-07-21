@@ -17,7 +17,6 @@ import LFSR "mo:rand/LFSR";
 import Time "mo:base/Time";
 import Nat8 "mo:base/Nat8";
 import Types "../../types";
-import DownloadSupport "./downloadSupport";
 
 module QueueManager {
 
@@ -258,10 +257,6 @@ module QueueManager {
       for (id in rejectedContentIds.vals()) {
         state.rejectedContentQueue.put(id, null);
       };
-    };
-
-    public func downloadSupport(varName : Text, start : Nat, end : Nat) : [[Text]] {
-      DownloadSupport.download(state, varName, start, end);
     };
 
     public func getQueueState() : QueueState.QueueState {

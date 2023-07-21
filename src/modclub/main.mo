@@ -6,7 +6,6 @@ import Buffer "mo:base/Buffer";
 import Canistergeek "./canistergeek/canistergeek";
 import ContentVotingManager "./service/content/vote";
 import Debug "mo:base/Debug";
-import DownloadUtil "downloadUtil";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
@@ -49,7 +48,6 @@ import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/statev2";
 import VoteStateV2 "./service/vote/statev2";
-import DownloadSupport "./downloadSupport";
 import RSTypes "../rs/types";
 import WalletTypes "../wallet/types";
 import ICRCModule "../wallet/ICRC/ledger";
@@ -2458,40 +2456,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       streaming_strategy = null;
       upgrade = null;
     };
-  };
-
-  public shared ({ caller }) func downloadSupport(
-    stateName : Text,
-    varName : Text,
-    start : Nat,
-    end : Nat
-  ) : async [[Text]] {
-    if (Principal.toText(caller) == "edc6a-bltzx-3jexk-vn7wo-xrpzh-hazpe-fibv6-gqgqx-gkff6-la6uj-gae") {
-      switch (stateName) {
-        case ("pohState") {
-          return pohEngine.downloadSupport(varName, start, end);
-        };
-        case ("contentQueueState") {
-          return contentQueueManager.downloadSupport(varName, start, end);
-        };
-        case ("pohContentQueueState") {
-          return pohContentQueueManager.downloadSupport(varName, start, end);
-        };
-        case ("pohVoteState") {
-          return voteManager.downloadSupport(varName, start, end);
-        };
-        case ("storageState") {
-          return storageSolution.downloadSupport(varName, start, end);
-        };
-        case ("stateV2") {
-          return await DownloadSupport.download(stateV2, varName, start, end, storageSolution);
-        };
-        case (_) {
-          throw Error.reject("Invalid stateV2");
-        };
-      };
-    };
-    throw Error.reject("Unauthorized");
   };
 
   public query func transform(raw : Types.TransformArgs) : async Types.CanisterHttpResponsePayload {

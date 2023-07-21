@@ -537,7 +537,6 @@ type ModClub =
    collectCanisterMetrics: () -> ();
    configurePohForProvider: (principal, vec text, nat, bool) -> ();
    deregisterProvider: () -> (text);
-   downloadSupport: (text, text, nat, nat) -> (vec vec text);
    editProviderAdmin: (principal, principal, text) -> (ProviderResult);
    generateSigningKey: () -> ();
    getActivity: (bool) -> (vec Activity) query;

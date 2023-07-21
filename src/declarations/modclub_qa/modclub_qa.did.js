@@ -698,11 +698,6 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'deregisterProvider' : IDL.Func([], [IDL.Text], []),
-    'downloadSupport' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Nat, IDL.Nat],
-        [IDL.Vec(IDL.Vec(IDL.Text))],
-        [],
-      ),
     'editProviderAdmin' : IDL.Func(
         [IDL.Principal, IDL.Principal, IDL.Text],
         [ProviderResult],
