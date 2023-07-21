@@ -608,13 +608,13 @@ actor class Bucket() = this {
         #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
         func() : async () { canistergeekMonitor.collectMetrics() }
       );
-      // ignore Timer.recurringTimer(
-      //   #nanoseconds(Constants.TWENTY_FOUR_HOUR_NANO_SECS),
-      //   func() : async () {
-      //     Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
-      //     deleteContentAfterExpiry();
-      //   }
-      // );
+      ignore Timer.recurringTimer(
+        #nanoseconds(Constants.TWENTY_FOUR_HOUR_NANO_SECS),
+        func() : async () {
+          Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
+          deleteContentAfterExpiry();
+        }
+      );
     }
   );
 
