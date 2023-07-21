@@ -33,21 +33,19 @@ import {
   Result_4,
 } from "./types";
 import { Principal } from "@dfinity/principal";
-import { modclub } from "../../../declarations/modclub/index";
-import { modclub_dev } from "../../../declarations/modclub_dev/index";
-import { modclub_qa } from "../../../declarations/modclub_qa/index";
-import { rs } from "../../../declarations/rs";
-import { rs_qa } from "../../../declarations/rs_qa";
-import { canisterId as WalletCanisterID, createActor as WalletCreateActor, wallet} from "../../../declarations/wallet/index";
-import { canisterId as WalletQACanisterID, createActor as WalletQACreateActor, wallet_qa } from "../../../declarations/wallet_qa";
-import { canisterId as WalletDEVCanisterID, createActor as WalletDEVCreateActor,wallet_dev } from "../../../declarations/wallet_dev";
+import { canisterId as ModCanisterId} from "../../../declarations/modclub/index";
+import { canisterId as ModDevCanisterId } from "../../../declarations/modclub_dev/index";
+import { canisterId as ModQACanisterId } from "../../../declarations/modclub_qa/index";
+import { canisterId as RSCanisterID, createActor as RSCreateActor, idlFactory as RSIdl} from "../../../declarations/rs";
+import { canisterId as RSQACanisterID, createActor as RSQACreateActor, idlFactory as RSQAIdl } from "../../../declarations/rs_qa";
+import { canisterId as RSDEVCanisterID, createActor as RSDEVCreateActor, idlFactory as RSDEVIdl } from "../../../declarations/rs_dev";
+import { canisterId as WalletCanisterID, createActor as WalletCreateActor, idlFactory as WalletIdl} from "../../../declarations/wallet/index";
+import { canisterId as WalletQACanisterID, createActor as WalletQACreateActor,idlFactory as WalletQAIdl } from "../../../declarations/wallet_qa";
+import { canisterId as WalletDEVCanisterID, createActor as WalletDEVCreateActor, idlFactory as WalletDEVIdl, } from "../../../declarations/wallet_dev";
 import { RSAndLevel } from "../../../declarations/rs/rs.did";
-import { canisterId as VestingCanisterID, createActor as VestingCreateActor, vesting } from "../../../declarations/vesting";
-import { canisterId as VestingQACanisterID, createActor as VestingQACreateActor, vesting_qa } from "../../../declarations/vesting_qa";
-import { canisterId as VestingDEVCanisterID, createActor as VestingDEVCreateActor, vesting_dev } from "../../../declarations/vesting_dev";
-import { canisterId as ModCanisterId } from "../../../declarations/modclub";
-import { canisterId as ModQACanisterId } from "../../../declarations/modclub_qa";
-import { canisterId as ModDevCanisterId } from "../../../declarations/modclub_dev";
+import { canisterId as VestingCanisterID, createActor as VestingCreateActor, idlFactory as VestingIdl } from "../../../declarations/vesting";
+import { canisterId as VestingQACanisterID, createActor as VestingQACreateActor, idlFactory as VestingQAIdl } from "../../../declarations/vesting_qa";
+import { canisterId as VestingDEVCanisterID, createActor as VestingDEVCreateActor, idlFactory as VestingDEVIdl } from "../../../declarations/vesting_dev";
 import { ApproveArgs } from "../../../declarations/wallet_dev/wallet_dev.did";
 import { HttpAgent, Identity } from "@dfinity/agent";
 import { authClient } from "./authClient";
@@ -57,38 +55,53 @@ export type Optional<Type> = [Type] | [];
 var actor: _SERVICE = null;
 var Vesting: _SERVICE = null;
 var Wallet: _SERVICE = null;
+var RS:_SERVICE=null;
 let walletToUse = localStorage.getItem("_loginType") || "ii";
 
-function getEnvironmentSpecificValues(env: string) {
+export function getEnvironmentSpecificValues(env: string) {
   switch(env) {
     case "dev":
       return {
-        MCToUse: modclub_dev,
         CanisterId: ModDevCanisterId,
-        VestingActor: vesting_dev,
-        walletCanister: WalletDEVCanisterID
+        walletCanisterId: WalletDEVCanisterID,
+        walletIDL: WalletDEVIdl,
+        walletActor: WalletDEVCreateActor,
+        vestingCanisterID: VestingDEVCanisterID,
+        vestingIDL: VestingDEVIdl,
+        vestingActor: VestingDEVCreateActor,
+        rsCanisterID: RSDEVCanisterID,
+        rsIDL: RSDEVIdl,
+        rsActor: RSDEVCreateActor
       };
     case "qa":
       return {
-        MCToUse: modclub_qa,
-        RSActor: rs_qa,
-        WalletActor: wallet_qa,
-        VestingActor: vesting_qa,
         CanisterId: ModQACanisterId,
-        walletCanister: WalletQACanisterID
+        walletCanisterId: WalletQACanisterID,
+        walletIDL: WalletQAIdl,
+        walletActor: WalletQACreateActor,
+        vestingCanisterID: VestingQACanisterID,
+        vestingIDL: VestingQAIdl,
+        vestingActor: VestingQACreateActor,
+        rsCanisterID: RSQACanisterID,
+        rsIDL: RSQAIdl,
+        rsActor: RSQACreateActor
       };
     default:
       return {
-        MCToUse: modclub,
-        RSActor: rs,
-        WalletActor: wallet,
-        VestingActor: vesting,
         CanisterId: ModCanisterId,
-        walletCanister: WalletCanisterID
+        walletCanisterId: WalletCanisterID,
+        walletIDL: WalletIdl,
+        walletActor: WalletCreateActor,
+        vestingCanisterID: VestingCanisterID,
+        vestingIDL: VestingIdl,
+        vestingActor: VestingCreateActor,
+        rsCanisterID: RSCanisterID,
+        rsIDL: RSIdl,
+        rsActor: RSCreateActor
       };
   }
 }
-const { CanisterId,  RSActor, walletCanister } = getEnvironmentSpecificValues(process.env.DEV_ENV);
+const { CanisterId,  walletCanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 async function getMC(): Promise<_SERVICE> {
   if (!actor) {
@@ -101,7 +114,7 @@ async function fetchIdentity(): Promise<Identity>{
   let identity;
   if(walletToUse == "plug"){
     const result = await window["ic"][walletToUse].requestConnect({
-      walletCanister,
+      walletCanisterId,
     });
     const pID = await window["ic"][walletToUse]["agent"].getPrincipal();
       identity = {
@@ -142,6 +155,20 @@ async function getVesting(): Promise<_SERVICE> {
     }
   }
   return Vesting;
+}
+async function getRS(): Promise<_SERVICE> {
+  if (!RS) {
+    const identity = await fetchIdentity();
+    const agent = new HttpAgent({ identity });
+    if (process.env.DEV_ENV == "dev") {
+      RS = await RSDEVCreateActor(RSDEVCanisterID, {agent} )
+    }else if (process.env.DEV_ENV == "qa") {
+      RS = await RSQACreateActor(RSQACanisterID, {agent} )
+    }else{
+      RS = await RSCreateActor(RSCanisterID, {agent} )
+    }
+  }
+  return RS;
 }
 async function trace_error(_trace: any) {
   try {
@@ -504,11 +531,11 @@ export async function queryRSAndLevelByPrincipal(
 ): Promise<RSAndLevel> {
   return trace_error(
     async () =>
-      await RSActor.queryRSAndLevelByPrincipal(Principal.fromText(principalId))
+      await (await getRS()).queryRSAndLevelByPrincipal(Principal.fromText(principalId))
   );
 }
 export async function queryRSAndLevel(): Promise<RSAndLevel> {
-  return trace_error(async () => await RSActor.queryRSAndLevel());
+  return trace_error(async () => await (await getRS()).queryRSAndLevel());
 }
 export async function queryBalance(subAcc?: string): Promise<number> {
   return trace_error(

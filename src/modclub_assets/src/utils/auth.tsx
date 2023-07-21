@@ -13,7 +13,9 @@ import {
   getAdminProviderIDs,
   getProvider,
   checkUserRole,
+  getEnvironmentSpecificValues
 } from "./api";
+
 
 export interface AuthContext {
   isAuthenticated: boolean;
@@ -39,14 +41,8 @@ const KEY_LOCALSTORAGE_USER = "user";
 let walletToUse = localStorage.getItem("_loginType") || "ii";
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
 
-let canisterId = process.env.MODCLUB_CANISTER_ID;
-if (process.env.DEV_ENV == "dev") {
-  canisterId = process.env.MODCLUB_DEV_CANISTER_ID;
-} else if (process.env.DEV_ENV == "qa") {
-  canisterId = process.env.MODCLUB_QA_CANISTER_ID;
-}
-
-const whitelist = [canisterId];
+const { CanisterId} = getEnvironmentSpecificValues(process.env.DEV_ENV)
+const whitelist = [CanisterId];
 const host = window.location.origin;
 let fetchedProviders = false;
 // Safe hook to not connect multiple times using plugin
@@ -145,8 +141,7 @@ export function useProvideAuth(authClient): AuthContext {
   async function checkAndConnectToPlugOrIW(walletToUse) {
     checkAndConnectToPlugOrIWCounter++;
     if (walletToUse) {
-      const connected = await window["ic"][walletToUse].isConnected();
-      if (connected) {
+
         if (!window["ic"][walletToUse].agent) {
           if (walletToUse == "plug") {
             await window["ic"][walletToUse].createAgent({ whitelist, host });
@@ -155,7 +150,6 @@ export function useProvideAuth(authClient): AuthContext {
               whitelist,
             });
           }
-        }
         const pID = await window["ic"][walletToUse]["agent"].getPrincipal();
         const identity = {
           type: walletToUse,
@@ -219,8 +213,6 @@ export function useProvideAuth(authClient): AuthContext {
       let adminInitProperties = async () => {
         fetchedProviders = true;
         let adminProviders = await getAdminProviderIDs();
-        console.log("AdminProvider:", adminProviders);
-        
         let providerListPromise = [];
         for (let provider of adminProviders) {
           providerListPromise.push(await getProvider(provider));
@@ -242,7 +234,7 @@ export function useProvideAuth(authClient): AuthContext {
       // async authenticate actor method.
       setAuthClientReady(false);
       actorController
-        .authenticateActor(_identity, walletToUse, canisterId)
+        .authenticateActor(_identity, walletToUse, CanisterId)
         .then(() => {
           console.log("USER AUTHENTICATED");
           setAuthClientReady(true);

@@ -1,12 +1,11 @@
 #!/bin/bash
 
 echo "####################### Deploy started ###########################"
-rm -rf ../.dfx
 function get_local_canisters() {
-  echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub)\"; rs_canister_id = principal \"$(dfx canister id rs)\"; wallet_canister_id = principal \"$(dfx canister id wallet)\"; auth_canister_id = principal \"$(dfx canister id auth)\"; vesting_canister_id = principal \"$(dfx canister id vesting)\"; }}"
+  echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub)\";old_modclub_canister_id = principal \"$(dfx canister id modclub)\";rs_canister_id = principal \"$(dfx canister id rs)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";auth_canister_id = principal \"$(dfx canister id auth)\";vesting_canister_id = principal \"$(dfx canister id vesting)\"; }}"
 }
 function get_qa_canisters() {
-  echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }}"
+  echo "variant { local = record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }}"
 }
 function run_qa() {
   dfx canister create modclub_qa && dfx canister create wallet_qa && dfx canister create rs_qa && dfx canister create auth_qa && dfx canister create vesting_qa
@@ -39,7 +38,7 @@ function run_qa() {
   dfx deploy modclub_qa --argument="($QA_ENV)"
 }
 function run_local() {
-  dfx canister create modclub && dfx canister create wallet && dfx canister create rs && dfx canister create auth && dfx canister create vesting
+  # dfx canister create modclub && dfx canister create wallet && dfx canister create rs && dfx canister create auth && dfx canister create vesting
   LOCAL_ENV=$(get_local_canisters)
   dfx deploy auth --argument="($LOCAL_ENV)"
   dfx deploy wallet --argument="(record {
@@ -69,6 +68,8 @@ function run_local() {
   dfx deploy modclub --argument="($LOCAL_ENV)"
 }
 
+# rm -rf ../.dfx
+# dfx canister stop --all && dfx canister delete --all
 dfx identity use default
 DEFAULT_PRINCIPAL=$(dfx identity get-principal)
 run_local
