@@ -138,7 +138,7 @@ export function getUrlForData(canisterId: String, contentId: String) {
     return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}`;
   } else {
     return (
-      "https://" + canisterId + "raw.icp0.io/storage?contentId=" + contentId
+      "https://" + canisterId + ".raw.icp0.io/storage?contentId=" + contentId
     );
   }
 }
