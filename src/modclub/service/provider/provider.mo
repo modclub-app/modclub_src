@@ -28,8 +28,6 @@ module ProviderModule {
   public func registerProvider(
     arg : ProviderTypes.ProviderArg
   ) : Text {
-    // Todo remove this after airdrop
-    // await onlyOwner(caller);
     let state = arg.state;
     switch (state.providers.get(arg.providerId)) {
       case (null) {
@@ -257,7 +255,6 @@ module ProviderModule {
       };
       case (null) return #err(#NotFound);
     };
-    // todo: Re-evaluate all new content with votes to determine if a potential decision can be made
   };
 
   public func getProvider(providerId : Principal, state : GlobalState.State) : async Types.ProviderPlus {
@@ -445,7 +442,6 @@ module ProviderModule {
     let adminProfile : Types.Profile = {
       id = arg.userId;
       userName = arg.username;
-      // Todo accept username as a paramater
       email = "";
       pic = null;
       role = #moderator;
@@ -457,7 +453,6 @@ module ProviderModule {
       state.profiles.put(arg.userId, adminProfile);
     };
 
-    // TODO: Consider adding to username map to preserve uniqueness
     var IsUserAlreadyAdminOfProvider = false;
     switch (state.providerAdmins.get(_providerId)) {
       case (null) {

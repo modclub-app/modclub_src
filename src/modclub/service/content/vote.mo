@@ -114,7 +114,7 @@ module ContentVotingModule {
       };
       case (_)(throw Error.reject("Content does not exist"));
     };
-    // TODO: validation check staking requirement fulfilled for senior levels
+
     var voteApproved : Nat = 0;
     var voteRejected : Nat = 0;
     voteApproved := voteApproved + arg.voteCount.approvedCount;

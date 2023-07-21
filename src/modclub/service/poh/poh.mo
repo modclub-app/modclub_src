@@ -91,11 +91,6 @@ module PohModule {
       getAllUniqueViolatedRules : Text -> [Types.PohRulesViolated],
       getContentStatus : Text -> Types.ContentStatus
     ) : PohTypes.PohVerificationResponsePlus {
-      // request audit
-      // TODO: Audit Fixing
-      // state.pohVerificationRequests.put(pohVerificationRequest.requestId, pohVerificationRequest);
-      // state.provider2PohVerificationRequests.put(pohVerificationRequest.providerId, pohVerificationRequest.requestId);
-
       let modclubUserIdOpt = findModclubId(
         pohVerificationRequest.providerUserId,
         pohVerificationRequest.providerId
@@ -1297,8 +1292,7 @@ module PohModule {
           challengeName = "Please record your audio reading these words";
           challengeDescription = "Please record your audio reading these words";
           requiredField = #videoBlob;
-          // TODO: Switch to just blob or audio blob
-          // assuming there will be no transitive dependencies. else graph needs to be used
+          // TODO: Minor, Switch to just blob or audio blob, front end handles this correctly
           dependentChallengeId = null;
           challengeType = #selfVideo;
           allowedViolationRules = Buffer.toArray<PohTypes.ViolatedRules>(allowedViolationRules4);

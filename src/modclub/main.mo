@@ -165,7 +165,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     allowSubmissionFlag := allow;
   };
 
-  // TODO: Transfer to Auth canister.
   public shared ({ caller }) func generateSigningKey() : async () {
     switch (Helpers.encodeNat8ArraytoBase32(Blob.toArray(await Random.blob()))) {
       case (null) { throw Error.reject("Couldn't generate key") };
@@ -218,8 +217,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   // ---------------------- END Email Methods------------------------------
 
   // ----------------------Provider Methods------------------------------
-  // TODO: REFACTOR AND CUT OFF PERMISSION-CHECK LAYER FROM ProviderManager!!!
-  // todo: Require cylces on provider registration, add provider imageURl, description
   public shared ({ caller }) func registerProvider(
     name : Text,
     description : Text,
@@ -1489,7 +1486,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               packageId = id;
               status = pohContentQueueManager.getContentStatus(id);
               profileImageUrlSuffix = profileImageUrlSuffix;
-              // TODO: change these vote settings
               voteCount = Nat.max(
                 voteCount.approvedCount,
                 voteCount.rejectedCount
@@ -1648,7 +1644,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             let taskPlus = {
               packageId = id;
               status = pohContentQueueManager.getContentStatus(id);
-              // TODO: change these vote settings
               voteCount = Nat.max(
                 voteCount.approvedCount,
                 voteCount.rejectedCount
@@ -1841,8 +1836,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       for (cId in contentIds.vals()) {
         await storageSolution.markContentNotAccessible(cId);
       };
-      // should be taken out to some job
-      // TODO: Take out to helper function as it's used twice in the codebase
+
       let rewardingVotes = Buffer.Buffer<VoteTypes.VoteV2>(1);
       let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
       for (id in votesId.vals()) {
