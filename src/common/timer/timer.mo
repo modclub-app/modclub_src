@@ -51,13 +51,14 @@ module CommonTimer {
           }
         );
 
-        ignore Timer.setTimer(
-          #seconds(0),
-          func() : async () {
-            let _ = await releaseNextToken();
-            ignore Timer.recurringTimer(#nanoseconds(Constants.ONE_YEAR_NANO_SECS), releaseNextToken);
-          }
-        );
+        // TODO: Uncomment this when MOD-364 is complete
+        // ignore Timer.setTimer(
+        //   #seconds(0),
+        //   func() : async () {
+        //     let _ = await releaseNextToken();
+        //     ignore Timer.recurringTimer(#nanoseconds(Constants.ONE_YEAR_NANO_SECS), releaseNextToken);
+        //   }
+        // );
         isTimerSet := true;
       };
       isTimerSet := isTimerSet;
