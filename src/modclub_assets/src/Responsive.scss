@@ -1,0 +1,131 @@
+@import "./common.scss";
+
+html {
+  @media screen and (min-width: 768px) {
+    font-size: 14px;
+  }
+  @media screen and (min-width: 769px) {
+    font-size: 12px;
+  }
+  @media screen and (min-width: 1024px) {
+    font-size: 14px;
+  }
+  @media screen and (min-width: 1408px) {
+    font-size: 16px;
+  }
+}
+
+.container:not(.is-max-desktop):not(.is-max-widescreen) {
+  max-width: none;
+
+  @media screen and (min-width: 769px) and (max-width: 1024px) {
+    padding-right: 1rem;
+  }
+  @media screen and (min-width: 1408px) {
+    max-width: 1344px;
+  }
+}
+.navbar > .container {
+  padding: 0 2rem;
+}
+
+
+@mixin columns($gap, $mainPadding) {
+  #main-content {
+    padding-left: $mainPadding;
+  }
+  .columns {
+    margin-left: -$gap;
+    margin-right: -$gap;
+    margin-top: -$gap;
+  
+    &:not(:last-child) {
+      margin-bottom: $gap;
+    }
+    &:last-child {
+      margin-bottom: -$gap;
+    }
+  
+    .column {
+      padding: $gap;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .is-11-mobile {
+    margin: auto;
+  }
+  @include columns($gap: 2.5%, $mainPadding: 2.5%);
+}
+@media screen and (min-width: 769px) {
+  @include columns($gap: 1.5%, $mainPadding: 4%);
+}
+
+.level {
+  display: flex;
+}
+
+.card {
+  @media screen and (max-width: 768px) {
+    .card-footer {
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+  }
+}
+
+.tasks-footer .buttons + .buttons {
+  @media screen and (max-width: 768px) {
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+  }
+  @media screen and (min-width: 769px) {
+    justify-content: flex-end;
+    margin-top: -1rem;
+    text-align: right;
+  }
+}
+
+.modal-card, .modal-card.is-small {
+  @media screen and (max-width: 768px) {
+    width: 90%;
+
+    .modal-card-body {
+      padding: 1.5rem;
+    }
+    .modal-card-foot {
+      padding: .5rem 1.5rem 1.5rem;
+      flex-wrap: wrap;
+
+      & * + .buttons {
+        width: 100%;
+        margin-top: 1rem;
+        justify-content: flex-end;
+      }
+    }
+  }
+}
+
+footer.footer {
+  @media screen and (min-width: 769px) {
+    padding: 5rem 1.5rem;
+
+    .container {
+      padding: 0 4rem;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .columns {
+      display: flex;
+
+      .column:first-child {
+        width: 100%;
+        flex: none;
+      }
+    }
+  }
+}
