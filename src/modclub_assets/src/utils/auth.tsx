@@ -275,14 +275,12 @@ export function useProvideAuth(authClient): AuthContext {
         try {
           if (walletToUse) {
             let result;
-            const connected = await window["ic"][walletToUse].isConnected();
-            if(!connected){
-              const agent = new HttpAgent({ host })
-              await agent.fetchRootKey()
-              result = await window["ic"][walletToUse].requestConnect({
-                whitelist,
-              });
-            }
+            const agent = new HttpAgent({ host })
+            await agent.fetchRootKey()
+            result = await window["ic"][walletToUse].requestConnect({
+              whitelist,
+            });
+
             if (result) {
               const p = await window["ic"][walletToUse]["agent"].getPrincipal();
               const identity = {

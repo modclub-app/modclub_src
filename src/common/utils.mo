@@ -53,7 +53,7 @@ module {
   };
 
   public func floatToTokens(f : Float) : Nat {
-    switch (Nat.fromText(Int.toText(Float.toInt(Float.abs(f * Constants.TOKENS_DECIMAL))))) {
+    switch (Nat.fromText(Int.toText(Float.toInt(Float.abs(f * Float.pow(10.0, Constants.TOKENS_DECIMAL)))))) {
       case (?n) n;
       case (_) { 0 };
     };
