@@ -3,17 +3,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 
-let LOCAL_II_CANISTER = "";
-try {
-  const config = require("./generated.config.json");
-  // Replace this value with the ID of your local Internet Identity canister
-  LOCAL_II_CANISTER = `http://${config["IDENTITY_CANISTER"]}.localhost:8000/#authorize`;
-} catch (e) {
-  LOCAL_II_CANISTER =
-    "http://rwlgt-iiaaa-aaaaa-aaaaa-cai.localhost:8000/#authorize";
-}
-
-let localCanisters, prodCanisters, canisters;
+let localCanisters, prodCanisters, canisters, network;
 
 function initCanisterIds() {
   try {
@@ -31,7 +21,7 @@ function initCanisterIds() {
     console.log("No production canister_ids.json found. Continuing with local");
   }
 
-  const network =
+  network =
     process.env.DFX_NETWORK ||
     (process.env.NODE_ENV === "production" ? "ic" : "local");
 
@@ -41,12 +31,18 @@ function initCanisterIds() {
     process.env[canister.toUpperCase() + "_CANISTER_ID"] =
       canisters[canister][network];
   }
+let LOCAL_II_CANISTER = "";
+try {
+  // Replace this value with the ID of your local Internet Identity canister
+  LOCAL_II_CANISTER =
+    network === "local"
+      ? `http://localhost:8000/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
+      : `https://identity.ic0.app`;
+} catch (e) {
+  console.error("Error setting LOCAL_II_CANISTER: ", e);
+  LOCAL_II_CANISTER =
+    "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
 }
-initCanisterIds();
-
-const isDevelopment = process.env.NODE_ENV !== "production";
-const asset_entry = path.join("src", "modclub_assets", "src", "index.html");
-
 module.exports = {
   target: "web",
   mode: isDevelopment ? "development" : "production",

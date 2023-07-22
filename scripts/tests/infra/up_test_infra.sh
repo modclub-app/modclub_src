@@ -12,6 +12,7 @@ printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Modclub test infra START ...${NC}
 function create_qa_canisters() {
   printf  "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Creating QA Canisters...${NC}\n"
 	dfx identity use default
+  dfx canister create internet_identity &&
   dfx canister create auth_qa &&
   dfx canister create wallet_qa &&
   dfx canister create rs_qa &&
@@ -76,7 +77,7 @@ function deploy_qa_canisters() {
 	dfx deploy auth_qa --argument="($local_env)" &&
 	deploy_wallet_canister &&
   deploy_vesting_canister &&
-
+  dfx deploy internet_identity &&
   dfx deploy rs_qa  --argument="($local_env)" &&
 	dfx deploy modclub_qa  --argument="($local_env)" &&
   dfx generate rs_qa -v &&
@@ -88,4 +89,14 @@ function deploy_qa_canisters() {
 	return 0;
 }
 
-create_qa_canisters && deploy_qa_canisters
+# Run init
+function init_qa_canisters() {
+  printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Init QA Canisters...${NC}\n"
+  dfx canister call modclub_qa adminInit &&
+  dfx canister call modclub_qa configurePohForProvider "(principal \"$(dfx canister id modclub_qa)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)" &&
+  dfx canister call modclub_qa populateChallenges
+  printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters INITIALIZED${NC}\n"
+  return 0;
+}
+
+create_qa_canisters && deploy_qa_canisters && init_qa_canisters

@@ -45,5 +45,8 @@
   },
   "auth_qa": {
     "ic": "h3xck-uaaaa-aaaap-qbj7q-cai"
+  },
+  "internet_identity": {
+    "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
   }
 }
