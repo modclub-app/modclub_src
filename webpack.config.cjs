@@ -31,6 +31,9 @@ function initCanisterIds() {
     process.env[canister.toUpperCase() + "_CANISTER_ID"] =
       canisters[canister][network];
   }
+}
+initCanisterIds();
+
 let LOCAL_II_CANISTER = "";
 try {
   // Replace this value with the ID of your local Internet Identity canister
