@@ -1,0 +1,46 @@
+{
+  "modclub": {
+    "ic": "la3yy-gaaaa-aaaah-qaiuq-cai",
+    "staging": "oqhcr-riaaa-aaaah-qcoma-cai"
+  },
+  "modclub_assets": {
+    "ic": "ljyte-qiaaa-aaaah-qaiva-cai",
+    "staging": "oxgef-4qaaa-aaaah-qcomq-cai"
+  },
+  "modclub_dev": {
+    "ic": "olc6u-lqaaa-aaaah-qcooq-cai"
+  },
+  "modclub_dev_assets": {
+    "ic": "ocbvi-5yaaa-aaaah-qcopa-cai"
+  },
+  "modclub_qa": {
+    "ic": "hvyqe-cyaaa-aaaah-qdbiq-cai"
+  },
+  "modclub_qa_assets": {
+    "ic": "h433y-uqaaa-aaaah-qdbja-cai"
+  },
+  "modclub_staging": {
+    "ic": "o6fpz-kyaaa-aaaah-qcona-cai"
+  },
+  "modclub_staging_assets": {
+    "ic": "ozejn-haaaa-aaaah-qconq-cai"
+  },
+  "provider": {
+    "ic": "h4p3v-vqaaa-aaaah-qc3jq-cai"
+  },
+  "rs_dev": {
+    "ic": "vflbk-kiaaa-aaaah-qc7wq-cai"
+  },
+  "rs_qa": {
+    "ic": "vmikw-4aaaa-aaaah-qc7xa-cai"
+  },
+  "vesting_qa": {
+    "ic": "idxpf-xiaaa-aaaap-abf2a-cai"
+  },
+  "auth_qa": {
+    "ic": "h3xck-uaaaa-aaaap-qbj7q-cai"
+  },
+  "internet_identity": {
+    "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+  }
+}

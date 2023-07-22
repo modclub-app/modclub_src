@@ -1,0 +1,102 @@
+{
+  "canisters": {
+    "modclub": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432"
+    },
+    "modclub_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
+      "type": "assets"
+    },
+    "modclub_dev": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432"
+    },
+    "modclub_dev_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
+      "type": "assets"
+    },
+    "modclub_qa": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432"
+    },
+    "modclub_qa_assets": {
+      "dependencies": ["modclub_qa"],
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
+      "type": "assets"
+    },
+    "rs": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_qa": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_dev": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "auth": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
+    "auth_dev": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
+    "auth_qa": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
+    "vesting": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "vesting_dev": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "vesting_qa": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+        }
+      },
+      "frontend": {}
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "vessel sources"
+    }
+  },
+  "dfx": "0.13.1",
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "stoicbind": "127.0.0.1:3000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}
