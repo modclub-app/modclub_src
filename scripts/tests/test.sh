@@ -8,7 +8,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-source ./scripts/tests/infra/up_test_infra.sh
+source ./scripts/infra/up_infra.sh
 
 function run_tests() {
 	clear
@@ -17,9 +17,9 @@ function run_tests() {
 	source ./scripts/tests/security-test.sh
 	source ./scripts/tests/ledger-tests.sh
 	source ./scripts/tests/vesting-canister-tests.sh
-	# source ./scripts/tests/new-e2e-test.sh
+	source ./scripts/tests/e2e-test.sh
 }
 
 run_tests
 
-source ./scripts/tests/infra/shutdown_test_infra.sh
+source ./scripts/tests/infra/shutdown_infra.sh
