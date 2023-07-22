@@ -46,6 +46,9 @@ try {
   LOCAL_II_CANISTER =
     "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
 }
+const isDevelopment = process.env.NODE_ENV !== "production";
+const asset_entry = path.join("src", "modclub_assets", "src", "index.html");
+
 module.exports = {
   target: "web",
   mode: isDevelopment ? "development" : "production",
