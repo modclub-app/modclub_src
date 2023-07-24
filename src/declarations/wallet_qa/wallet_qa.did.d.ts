@@ -58,6 +58,8 @@ export type Result_2 = { 'Ok' : TxIndex } |
   { 'Err' : ApproveError };
 export type Result__1 = { 'ok' : Array<Principal> } |
   { 'err' : string };
+export type Result__1_1 = { 'ok' : bigint } |
+  { 'err' : string };
 export type Subaccount = Uint8Array | number[];
 export type Timestamp = bigint;
 export type Tokens = bigint;
@@ -102,6 +104,7 @@ export type Value = { 'Int' : bigint } |
   { 'Text' : string };
 export interface Wallet {
   'burn' : ActorMethod<[[] | [Subaccount], bigint], undefined>,
+  'claimStakedTokens' : ActorMethod<[Tokens], Result__1_1>,
   'getAdmins' : ActorMethod<[], Result__1>,
   'handleSubscription' : ActorMethod<[ConsumerPayload], undefined>,
   'icrc1_balance_of' : ActorMethod<[Account], Tokens>,
@@ -133,8 +136,8 @@ export interface Wallet {
   'icrc2_approve' : ActorMethod<[ApproveArgs], Result_2>,
   'icrc2_transfer_from' : ActorMethod<[TransferFromArgs], Result_1>,
   'ledger_account' : ActorMethod<[], Account>,
+  'releaseTokens' : ActorMethod<[Tokens], Result>,
   'stakeTokens' : ActorMethod<[bigint], Result>,
   'transferToProvider' : ActorMethod<[TransferToProviderArgs], Result>,
-  'unstakeTokens' : ActorMethod<[Tokens], Result>,
 }
 export interface _SERVICE extends Wallet {}

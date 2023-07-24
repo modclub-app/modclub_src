@@ -73,6 +73,12 @@ shared ({ caller = deployer }) actor class Vesting({
     ledger.unlockedStakesFor(account.owner);
   };
 
+  public shared ({ caller }) func claimed_stakes_for(
+    account : ICRCTypes.Account
+  ) : async Nat {
+    ledger.dissolvedStakesFor(account.owner);
+  };
+
   public shared ({ caller }) func claim_vesting(
     account : ICRCTypes.Account,
     amount : ICRCTypes.Tokens
@@ -92,6 +98,13 @@ shared ({ caller = deployer }) actor class Vesting({
     amount : ICRCTypes.Tokens
   ) : async Result.Result<Nat, Text> {
     ledger.unlockStaking(account.owner, amount);
+  };
+
+  public shared ({ caller }) func release_staking(
+    account : ICRCTypes.Account,
+    amount : ICRCTypes.Tokens
+  ) : async Result.Result<Nat, Text> {
+    ledger.releaseStaking(account.owner, amount);
   };
 
   system func preupgrade() {
@@ -124,7 +137,10 @@ shared ({ caller = deployer }) actor class Vesting({
       case (#claim_vesting _) {
         authGuard.isModclubCanister(caller) or authGuard.isAdmin(caller);
       };
-      case (#claim_staking _) {
+      case (#unlock_staking _) {
+        authGuard.isModclubCanister(caller) or authGuard.isAdmin(caller);
+      };
+      case (#release_staking _) {
         authGuard.isModclubCanister(caller) or authGuard.isAdmin(caller);
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };

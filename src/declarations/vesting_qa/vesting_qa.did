@@ -2,8 +2,10 @@ type Vesting =
  service {
    claim_staking: (Account, Tokens) -> (Result);
    claim_vesting: (Account, Tokens) -> (Result);
+   claimed_stakes_for: (Account) -> (nat);
    handleSubscription: (ConsumerPayload) -> ();
    locked_for: (Account) -> (nat);
+   release_staking: (Account, Tokens) -> (Result);
    stage_vesting_block: (Account, Tokens) -> (Result);
    stake: (Account, Tokens) -> (Result);
    staked_for: (Account) -> (nat);

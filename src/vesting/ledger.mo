@@ -84,7 +84,7 @@ module ModclubVestingLedger = {
       #ok(logs.vesting.size());
     };
 
-    public func claimStaking(account : Principal, amount : Nat) : Result.Result<Nat, Text> {
+    public func releaseStaking(account : Principal, amount : Nat) : Result.Result<Nat, Text> {
       let now = Nat64.fromNat(Int.abs(Time.now()));
       let logs : Types.Locks = switch (ledger.get(account)) {
         case (?logs) { logs };
@@ -93,7 +93,7 @@ module ModclubVestingLedger = {
 
       let unlocked = unlockedStakesFor(account);
       if (amount > unlocked) {
-        return #err("Account: " # Principal.toText(account) # " claimed more tokens than actually unlocked.");
+        return #err("Account: " # Principal.toText(account) # " want to release more tokens than actually unlocked.");
       };
 
       let block = {
@@ -109,7 +109,7 @@ module ModclubVestingLedger = {
       #ok(logs.vesting.size());
     };
 
-    public func unlockStaking(account : Principal, amount : Nat) : Result.Result<Nat, Text> {
+    public func claimStaking(account : Principal, amount : Nat) : Result.Result<Nat, Text> {
       let now = Nat64.fromNat(Int.abs(Time.now()));
       let logs : Types.Locks = switch (ledger.get(account)) {
         case (?logs) { logs };
@@ -119,6 +119,31 @@ module ModclubVestingLedger = {
       let staked = stakedFor(account);
       if (amount > staked) {
         return #err("Account: " # Principal.toText(account) # " claimed more tokens than actually staked.");
+      };
+
+      let block = {
+        operation = #StakingDissolve;
+        amount;
+        rewardsAmount = null;
+        dissolveDelay = ?Nat64.fromNat(Constants.VESTING_DISSOLVE_DELAY_SECONDS);
+        created_at_time = now;
+      };
+      logs.staking.add(block);
+
+      ignore ledger.replace(account, logs);
+      #ok(logs.vesting.size());
+    };
+
+    public func unlockStaking(account : Principal, amount : Nat) : Result.Result<Nat, Text> {
+      let now = Nat64.fromNat(Int.abs(Time.now()));
+      let logs : Types.Locks = switch (ledger.get(account)) {
+        case (?logs) { logs };
+        case (_) return #err("No staked tokens for account: " # Principal.toText(account));
+      };
+
+      let dissolved = dissolvedStakesFor(account);
+      if (amount > dissolved) {
+        return #err("Account: " # Principal.toText(account) # " wants to unlock more tokens than already dissolved.");
       };
 
       let block = {
@@ -149,6 +174,56 @@ module ModclubVestingLedger = {
             switch (block.operation) {
               case (#StakingLock) {
                 sum += block.amount;
+              };
+              case (#StakingDissolve or #StakingUnlock or #StakingRelease) {
+                sum -= block.amount;
+              };
+              case (_) {};
+            };
+          };
+        };
+        case (_) {};
+      };
+      sum;
+    };
+
+    public func claimedStakesFor(account : Principal) : Nat {
+      var sum = 0;
+      switch (get_locks(account, #Staking)) {
+        case (#ok(log)) {
+          for (block in log.vals()) {
+            switch (block.operation) {
+              case (#StakingDissolve) {
+                sum += block.amount;
+              };
+              case (#StakingUnlock or #StakingRelease) {
+                sum -= block.amount;
+              };
+              case (_) {};
+            };
+          };
+        };
+        case (_) {};
+      };
+      sum;
+    };
+
+    public func dissolvedStakesFor(account : Principal) : Nat {
+      let now = Nat64.fromNat(Int.abs(Time.now()));
+      var sum = 0;
+      switch (get_locks(account, #Staking)) {
+        case (#ok(log)) {
+          for (block in log.vals()) {
+            switch (block.operation) {
+              case (#StakingDissolve) {
+                if(
+                  Nat64.lessOrEqual(
+                    Nat64.add(block.created_at_time, Option.get<Nat64>(block.dissolveDelay, 0)),
+                    now
+                  )
+                ) {
+                  sum += block.amount;
+                };
               };
               case (#StakingUnlock or #StakingRelease) {
                 sum -= block.amount;

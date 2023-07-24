@@ -47,7 +47,8 @@ module {
     #getAdmins : () -> ();
     #isUserAdmin : () -> ();
     #stakeTokens : () -> ICRCTypes.Tokens;
-    #unstakeTokens : () -> ICRCTypes.Tokens;
+    #claimStakedTokens : () -> ICRCTypes.Tokens;
+    #releaseTokens : () -> ICRCTypes.Tokens;
     #transferToProvider : () -> TransferToProviderArgs;
   };
 

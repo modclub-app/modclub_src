@@ -230,13 +230,6 @@ shared ({ caller = deployer }) actor class Wallet({
         let stakeRes = await vestingActor.stake(moderatorAcc, amount);
         switch (stakeRes) {
           case (#ok(_)) {
-            ignore Timer.setTimer(
-              #seconds(Constants.VESTING_DISSOLVE_DELAY_SECONDS),
-              func() : async () {
-                let releaseStaked = await vestingActor.unlock_staking(moderatorAcc, amount);
-              }
-            );
-
             #Ok(txIndex);
           };
           case (#err(e)) { return throw Error.reject(e) };
@@ -248,7 +241,7 @@ shared ({ caller = deployer }) actor class Wallet({
     };
   };
 
-  public shared ({ caller }) func unstakeTokens(amount : ICRCTypes.Tokens) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
+  public shared ({ caller }) func releaseTokens(amount : ICRCTypes.Tokens) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
     let moderatorAcc = { owner = caller; subaccount = null };
     let modclubPrincipal = authGuard.getCanisterId(#modclub);
     let modclubStakingAcc = {
@@ -260,8 +253,8 @@ shared ({ caller = deployer }) actor class Wallet({
       return throw Error.reject("Withdraw amount cant be more than unlocked amount of tokens.");
     };
 
-    let claimStaked = await vestingActor.claim_staking(moderatorAcc, amount);
-    switch (claimStaked) {
+    let release = await vestingActor.release_staking(moderatorAcc, amount);
+    switch (release) {
       case (#Ok(res)) {
         let releaseTransfer = ledger.applyTransfer({
           spender = modclubPrincipal;
@@ -286,6 +279,25 @@ shared ({ caller = deployer }) actor class Wallet({
         return throw Error.reject("Can't withdraw unlocked amount of tokens.");
       };
     };
+  };
+
+  public shared ({ caller }) func claimStakedTokens(amount : ICRCTypes.Tokens) : async Result.Result<Nat, Text> {
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let stakedAmount = await vestingActor.staked_for(moderatorAcc);
+    if (stakedAmount < amount) {
+      return throw Error.reject("Amount can't be more than staked amount of tokens.");
+    };
+
+    let claimStaked = await vestingActor.claim_staking(moderatorAcc, amount);
+
+    ignore Timer.setTimer(
+      #seconds(Constants.VESTING_DISSOLVE_DELAY_SECONDS + 10),
+      func() : async () {
+        let releaseStaked = await vestingActor.unlock_staking(moderatorAcc, amount);
+      }
+    );
+
+    claimStaked;
   };
 
   system func preupgrade() {

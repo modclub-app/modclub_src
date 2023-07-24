@@ -23,6 +23,8 @@ export const idlFactory = ({ IDL }) => {
     'ledger_account' : Account,
     'token_name' : IDL.Text,
   });
+  const Tokens = IDL.Nat;
+  const Result__1_1 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
   const Result__1 = IDL.Variant({
     'ok' : IDL.Vec(IDL.Principal),
     'err' : IDL.Text,
@@ -32,7 +34,6 @@ export const idlFactory = ({ IDL }) => {
     'events' : IDL.Vec(Event),
     'admins' : IDL.Vec(IDL.Principal),
   });
-  const Tokens = IDL.Nat;
   const Value = IDL.Variant({
     'Int' : IDL.Int,
     'Nat' : IDL.Nat,
@@ -117,6 +118,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const Wallet = IDL.Service({
     'burn' : IDL.Func([IDL.Opt(Subaccount), IDL.Nat], [], []),
+    'claimStakedTokens' : IDL.Func([Tokens], [Result__1_1], []),
     'getAdmins' : IDL.Func([], [Result__1], ['query']),
     'handleSubscription' : IDL.Func([ConsumerPayload], [], []),
     'icrc1_balance_of' : IDL.Func([Account], [Tokens], ['query']),
@@ -154,9 +156,9 @@ export const idlFactory = ({ IDL }) => {
     'icrc2_approve' : IDL.Func([ApproveArgs], [Result_2], []),
     'icrc2_transfer_from' : IDL.Func([TransferFromArgs], [Result_1], []),
     'ledger_account' : IDL.Func([], [Account], ['query']),
+    'releaseTokens' : IDL.Func([Tokens], [Result], []),
     'stakeTokens' : IDL.Func([IDL.Nat], [Result], []),
     'transferToProvider' : IDL.Func([TransferToProviderArgs], [Result], []),
-    'unstakeTokens' : IDL.Func([Tokens], [Result], []),
   });
   return Wallet;
 };

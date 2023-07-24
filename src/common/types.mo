@@ -18,8 +18,9 @@ module {
 
   public type VestingCanisterActor = actor {
     stake : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
-    unlock_staking : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
     claim_staking : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
+    unlock_staking : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
+    release_staking : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
     stage_vesting_block : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
     claim_vesting : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
     locked_for : (ICRCTypes.Account) -> async Nat;

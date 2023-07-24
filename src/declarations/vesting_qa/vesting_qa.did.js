@@ -22,8 +22,10 @@ export const idlFactory = ({ IDL }) => {
   const Vesting = IDL.Service({
     'claim_staking' : IDL.Func([Account, Tokens], [Result], []),
     'claim_vesting' : IDL.Func([Account, Tokens], [Result], []),
+    'claimed_stakes_for' : IDL.Func([Account], [IDL.Nat], []),
     'handleSubscription' : IDL.Func([ConsumerPayload], [], []),
     'locked_for' : IDL.Func([Account], [IDL.Nat], []),
+    'release_staking' : IDL.Func([Account, Tokens], [Result], []),
     'stage_vesting_block' : IDL.Func([Account, Tokens], [Result], []),
     'stake' : IDL.Func([Account, Tokens], [Result], []),
     'staked_for' : IDL.Func([Account], [IDL.Nat], []),

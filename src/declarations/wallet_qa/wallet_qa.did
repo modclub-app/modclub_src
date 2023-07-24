@@ -1,6 +1,7 @@
 type Wallet = 
  service {
    burn: (opt Subaccount, nat) -> ();
+   claimStakedTokens: (Tokens) -> (Result__1_1);
    getAdmins: () -> (Result__1) query;
    handleSubscription: (ConsumerPayload) -> ();
    icrc1_balance_of: (Account) -> (Tokens) query;
@@ -32,9 +33,9 @@ type Wallet =
    icrc2_approve: (ApproveArgs) -> (Result_2);
    icrc2_transfer_from: (TransferFromArgs) -> (Result_1);
    ledger_account: () -> (Account) query;
+   releaseTokens: (Tokens) -> (Result);
    stakeTokens: (nat) -> (Result);
    transferToProvider: (TransferToProviderArgs) -> (Result);
-   unstakeTokens: (Tokens) -> (Result);
  };
 type Value = 
  variant {
@@ -91,6 +92,11 @@ type TransferError =
 type Tokens = nat;
 type Timestamp = nat64;
 type Subaccount = blob;
+type Result__1_1 = 
+ variant {
+   err: text;
+   ok: nat;
+ };
 type Result__1 = 
  variant {
    err: text;

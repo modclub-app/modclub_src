@@ -23,8 +23,10 @@ export type Tokens = bigint;
 export interface Vesting {
   'claim_staking' : ActorMethod<[Account, Tokens], Result>,
   'claim_vesting' : ActorMethod<[Account, Tokens], Result>,
+  'claimed_stakes_for' : ActorMethod<[Account], bigint>,
   'handleSubscription' : ActorMethod<[ConsumerPayload], undefined>,
   'locked_for' : ActorMethod<[Account], bigint>,
+  'release_staking' : ActorMethod<[Account, Tokens], Result>,
   'stage_vesting_block' : ActorMethod<[Account, Tokens], Result>,
   'stake' : ActorMethod<[Account, Tokens], Result>,
   'staked_for' : ActorMethod<[Account], bigint>,
