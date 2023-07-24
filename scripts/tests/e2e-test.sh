@@ -110,13 +110,13 @@ function check_equal() {
 	echo "+++++++++++++++++++ Step 3: Call submitText and check amount of tokens  +++++++++++++++++++"
 	dfx identity use qa_test_provider
 	echo "Check Provider RESERVE balance"
-	declare P_BAL_BEFORE_SUBMIT=$(dfx canister call modclub_qa providerSaBalance '("RESERVE")')
-	echo "Provider RESERVE ballance: $P_BAL_BEFORE_SUBMIT"
+	declare P_BAL_BEFORE_SUBMIT=$(dfx canister call modclub_qa providerSaBalance '("RESERVE", null)')
+	echo "Provider RESERVE balance: $P_BAL_BEFORE_SUBMIT"
 	dfx canister call modclub_qa submitText '("01","Text", opt "TitleText")'
 
 	echo "------- Check balance after call submitText ---------"
-	declare PROV_RESERVE_AFTER_SUB_TEXT=$(dfx canister call modclub_qa providerSaBalance '("RESERVE")')
-	echo "RESERVE ballance: $PROV_RESERVE_AFTER_SUB_TEXT"
+	declare PROV_RESERVE_AFTER_SUB_TEXT=$(dfx canister call modclub_qa providerSaBalance '("RESERVE", null)')
+	echo "RESERVE balance: $PROV_RESERVE_AFTER_SUB_TEXT"
 
 	if [[ "$PROV_RESERVE_AFTER_SUB_TEXT" != *"96_990_000"* ]]; then
 			echo "RESERVE Balance after submitText is wrong: $PROV_RESERVE_AFTER_SUB_TEXT"
@@ -124,8 +124,8 @@ function check_equal() {
 			exit 1
 	fi
 
-	declare PROV_AP_AFTER_SUB_TEXT=$(dfx canister call modclub_qa providerSaBalance '("ACCOUNT_PAYABLE")')
-	echo "ACCOUNT_PAYABLE ballance: $PROV_AP_AFTER_SUB_TEXT"
+	declare PROV_AP_AFTER_SUB_TEXT=$(dfx canister call modclub_qa providerSaBalance '("ACCOUNT_PAYABLE", null)')
+	echo "ACCOUNT_PAYABLE balance: $PROV_AP_AFTER_SUB_TEXT"
 
 	if [[ "$PROV_AP_AFTER_SUB_TEXT" != *"3_000_000"* ]]; then
 			echo "AP Balance after submitText is wrong: $PROV_AP_AFTER_SUB_TEXT"
@@ -137,16 +137,16 @@ function check_equal() {
 	dfx canister call modclub_qa submitHtmlContent '("02","HTML", opt "TitleHTML")'
 
 	echo "------- Check balance after call submitHtmlContent ---------"
-	declare PROV_RESERVE_AFTER_SUB_HTML=$(dfx canister call modclub_qa providerSaBalance '("RESERVE")')
-	echo "RESERVE ballance: $PROV_RESERVE_AFTER_SUB_HTML"
+	declare PROV_RESERVE_AFTER_SUB_HTML=$(dfx canister call modclub_qa providerSaBalance '("RESERVE", null)')
+	echo "RESERVE balance: $PROV_RESERVE_AFTER_SUB_HTML"
 	if [[ "$PROV_RESERVE_AFTER_SUB_HTML" != *"93_980_000"* ]]; then
 			echo "RESERVE Balance after submitHtml is wrong: $PROV_RESERVE_AFTER_SUB_HTML"
 			source ./scripts/tests/infra/shutdown_test_infra.sh
 			exit 1
 	fi
 
-	declare PROV_AP_AFTER_SUB_HTML=$(dfx canister call modclub_qa providerSaBalance '("ACCOUNT_PAYABLE")')
-	echo "ACCOUNT_PAYABLE ballance: $PROV_AP_AFTER_SUB_HTML"
+	declare PROV_AP_AFTER_SUB_HTML=$(dfx canister call modclub_qa providerSaBalance '("ACCOUNT_PAYABLE", null)')
+	echo "ACCOUNT_PAYABLE balance: $PROV_AP_AFTER_SUB_HTML"
 	if [[ "$PROV_AP_AFTER_SUB_HTML" != *"6_000_000"* ]]; then
 			echo "AP Balance after submitText is wrong: $PROV_AP_AFTER_SUB_HTML"
 			source ./scripts/tests/infra/shutdown_test_infra.sh
@@ -179,7 +179,7 @@ function check_equal() {
 	echo "......#VOTE#......."
 	for j in {1..2}
 	do
-			dfx canister call modclub_qa vote "(\""$TEST_PROVIDER_PRINCIPAL"-content-"$j"\", variant {approved}, null)"
+		dfx canister call modclub_qa vote "(\""$TEST_PROVIDER_PRINCIPAL"-content-"$j"\", variant {approved}, null)"
 	done
 	declare NEW_LEVEL=$(dfx canister call rs queryRSAndLevel)
 

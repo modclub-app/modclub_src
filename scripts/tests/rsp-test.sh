@@ -1,153 +1,143 @@
 #!/bin/bash
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+printf "${GREEN}[TEST] ${CYAN}[System] ${YELLOW}Modclub Reputation Score System test module...${NC}\n"
+
+dfx identity use qa_ledger_identity
+declare LEDGER_ACCOUNT=$(dfx identity get-principal)
+dfx identity use default
+dfx ledger fabricate-cycles --canister modclub_qa
+dfx ledger fabricate-cycles --canister modclub_qa
+
+declare DEPLOYER_ACCOUNT=$(dfx identity get-principal)
+declare MODCLUB_CANISTER_ID=$(dfx canister id modclub_qa)
+declare TOKEN_DECIMALS="_000_000"
+
 # Check a is equal to b
 function check_equal() {
     if [[ $1 = $2 ]]; then
-        echo "Correct: $1, is equal to: $2"
+        printf "${GREEN}[RESULT] Correct: $1, is equal to: $2 ${NC}\n"
     else
-        echo "Incorrect: $1, is not equal to: $2"
+        printf "${RED}[RESULT]Incorrect: $1, is not equal to: $2 ${NC}\n"
     fi
 }
 function check_less() {
     if [[ $1 < $2 ]]; then
-        echo "Correct: $1, is less than: $2"
+        printf "${GREEN}[RESULT]Correct: $1, is less than: $2 ${NC}\n"
     else
-        echo "Inorrect: $1, is NOT less than: $2"
+        printf "${RED}[RESULT]Inorrect: $1, is NOT less than: $2 ${NC}\n"
     fi
 }
 function check_greater() {
     if [[ $1 > $2 ]]; then
-        echo "Correct: $1, is greater than: $2"
+        printf "${GREEN}[RESULT]Correct: $1, is greater than: $2 ${NC}\n"
     else
-        echo "Inorrect: $1, is NOT greater than: $2"
+        printf "${RED}[RESULT]Inorrect: $1, is NOT greater than: $2 ${NC}\n"
     fi
 }
-case $1 in
-1)
-    echo "----------------- Generate Modclub --------------------"
-    dfx generate modclub
-    dfx deploy modclub --argument="(variant { local = { modclub_canister_id = principal \"$(dfx canister id modclub)\"; rs_canister_id = principal \"$(dfx canister id rs)\"; wallet_canister_id = principal \"$(dfx canister id wallet)\" } })"
-    ;;
-*)
-    dfx identity use default
-    # clean up
-    rm -rf ../.dfx
 
-    # deploy
-    echo "++++++++++++++++++++Deploy has started++++++++++++++++++++"
-    dfx canister create modclub && dfx canister create wallet && dfx canister create rs && dfx canister create auth
-    dfx deploy auth --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\"; auth_canister_id = principal \"$(dfx canister id auth)\";}})"
-    dfx deploy modclub --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\"; auth_canister_id = principal \"$(dfx canister id auth)\";}})"
-    dfx deploy wallet --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\"; auth_canister_id = principal \"$(dfx canister id auth)\";}})"
-    dfx deploy rs --argument="(variant {local = record{modclub_canister_id = principal \"$(dfx canister id modclub)\";wallet_canister_id = principal \"$(dfx canister id wallet)\";rs_canister_id = principal \"$(dfx canister id rs)\"; auth_canister_id = principal \"$(dfx canister id auth)\";}})"
+printf "+++++++++++++++++++ ${YELLOW} Step 1: create Provider and setup environments  ${NC}\n"
+if ! dfx identity use mod_provider >/dev/null 2>&1; then
+    dfx identity new mod_provider --disable-encryption
+    dfx identity use mod_provider
+fi
+declare TEST_PROVIDER_PRINCIPAL=$(dfx identity get-principal)
+dfx identity use default
+dfx canister call auth_qa registerAdmin '(principal "'$DEPLOYER_ACCOUNT'")'
+dfx canister call modclub_qa addToAllowList '(principal "'$TEST_PROVIDER_PRINCIPAL'" )'
+dfx identity use mod_provider
+dfx canister call modclub_qa registerProvider "(\""PROVIDER"\",\""DESCRIPTION_PROVIDER_A"\", null)"
+dfx canister call modclub_qa addProviderAdmin "(principal \"$(dfx identity get-principal)\" , \""PROVIDER_NAME"\", null)"
+dfx canister call modclub_qa updateSettings "(principal \"$(dfx identity get-principal)\", record {requiredVotes=1; minStaked=0})"
+dfx canister call modclub_qa addRules '(vec{"1st-Rule"},null)'
+dfx identity use default
+echo "Transfering Tokens to QA_Provider main account..."
+dfx canister call wallet_qa transferToProvider '( record { from = record { owner = principal "'$LEDGER_ACCOUNT'" }; to = record { owner= principal "'$TEST_PROVIDER_PRINCIPAL'" }; amount = 10_000_000'$TOKEN_DECIMALS' })'
 
-    # call registerAdmin
-    echo "++++++++++++++++++++Setup has started++++++++++++++++++++"
-    dfx canister call wallet registerAdmin "( principal \"$(dfx identity get-principal)\" )"
-    dfx canister call wallet tge
-    dfx canister call modclub registerAdmin "( principal \"$(dfx identity get-principal)\" )"
-    DEFAULT_PRINCIPAL=$(dfx identity get-principal)
-
-    # create provider and setup environment
-    echo "+++++++++++++++++++ Step 1: create Provider and setup environments"
-    dfx canister call modclub addToAllowList "(principal \"$(dfx identity get-principal)\" )"
-    dfx canister call modclub registerProvider "(\""TEMP_PROVIDER_NAME"\",\""DESCRIPTION_A"\", null)"
-    dfx canister call modclub addProviderAdmin "(principal \"$(dfx identity get-principal)\" , \""TEMP_PROVIDER_NAME"\", null)"
-    dfx canister call modclub updateSettings "(principal \"$(dfx identity get-principal)\", record {requiredVotes=1; minStaked=0})"
-    dfx canister call modclub addRules '(vec{"Passed"},null)'
-    dfx canister call rs registerAdmin "( principal \"$(dfx identity get-principal)\" )"
-    dfx canister call modclub setRandomization false
-
-    # add mod token
-    echo "++++++++++++++ Step 2: Mod tokens to Provider ++++++++++++++++"
-    dfx canister call wallet transferToProvider "(principal \"$(dfx canister id modclub)\",opt \""MAIN"\", principal \"$(dfx canister id modclub)\",opt \"$(dfx identity get-principal)"RESERVE"\", 10000.0 )"
-    # Start Novice and Senior
-    echo "###### Step 3: Check Moderator with Novice and Senior status ########"
-    if ! dfx identity use mod_senior >/dev/null 2>&1; then
-        dfx identity new mod_senior --disable-encryption
-    fi
+dfx identity use default
+dfx canister call modclub_qa setRandomization '(false)'
+printf "###### ${YELLOW} Step 2: Check Moderator with Novice and Senior status ########  ${NC}\n"
+if ! dfx identity use mod_senior >/dev/null 2>&1; then
+    dfx identity new mod_senior --disable-encryption
     dfx identity use mod_senior
-    dfx canister call modclub registerModerator '("TEMP_MOD_SENIOR", null,null)'
-    INITIAL_LEVEL=$(dfx canister call rs queryRSAndLevel)
-    MOD_SENIOR=\"$(dfx identity get-principal)\"
-    if ! dfx identity use mod_novice >/dev/null 2>&1; then
-        dfx identity new mod_novice --disable-encryption
-    fi
+fi
+dfx canister call modclub_qa registerModerator '("MOD_SENIOR", null,null)'
+declare MOD_SENIOR=$(dfx identity get-principal)
+if ! dfx identity use mod_junior >/dev/null 2>&1; then
+    dfx identity new mod_junior --disable-encryption
+    dfx identity use mod_junior
+fi
+dfx canister call modclub_qa registerModerator '("MOD_JUNIOR", null,null)'
+declare MOD_JUNIOR=$(dfx identity get-principal)
+if ! dfx identity use mod_novice >/dev/null 2>&1; then
+    dfx identity new mod_novice --disable-encryption
     dfx identity use mod_novice
-    dfx canister call modclub registerModerator '("TEMP_MOD_NOVICE", null,null)'
-    MOD_NOVICE=\"$(dfx identity get-principal)\"
-    echo "#### Set RS score to Novice and Senior account"
-    dfx identity use default
-    dfx canister call rs setRS "(principal $MOD_SENIOR, 6900)"
-    dfx canister call rs setRS "(principal $MOD_NOVICE, 500)"
+fi
+dfx canister call modclub_qa registerModerator '("MOD_NOVICE", null,null)'
+declare MOD_NOVICE=$(dfx identity get-principal)
+declare RULES="$TEST_PROVIDER_PRINCIPAL"-rule-1
 
-    #start cases
-    echo "#### Start creating content for vote"
-    for i in {1..15}; do
-        dfx canister call modclub submitText "(\""$i"\",\"Text"$i"\", opt \"TitleText"$i"\")"
-    done
-    dfx identity use mod_novice
-    INITIAL_LEVEL_2=$(dfx canister call rs queryRSAndLevel)
-    INIT_BALANCE=$(dfx canister call rs queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
-    RULES=$(dfx canister call modclub getRules "(principal \"$DEFAULT_PRINCIPAL\")" | grep -o 'id = "[^"]*"' | sed 's/id = "//;s/"//')
-    # Novice vote
-    echo "......#VOTE#......."
-    echo "Start generate 10 approved vote for novice "
-    for j in {1..10}; do
-        dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-"$j"\", variant {approved}, null)"
-    done
-    echo "Start generate 5 rejected vote for novice"
-    for j in {11..15}; do
-        dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-"$j"\", variant {rejected}, opt vec {\""$RULES"\"})"
-    done
-    dfx identity use mod_senior
-    SENIOR_BALANCE=$(dfx canister call rs queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
+printf "${YELLOW}#### STEP 3: Set RS score to Novice to Senior account  ${NC}\n"
+dfx identity use default
+dfx canister call rs_qa setRS "(principal \"$MOD_SENIOR\", 6900)"
+dfx canister call rs_qa setRS "(principal \"$MOD_JUNIOR\", 4900)"
+dfx canister call rs_qa setRS "(principal \"$MOD_NOVICE\", 500)"
 
-    # senior start vote : 1st case
-    echo "---------- Run Senior votes and check the value in Novice account (5 INCORRECT APPROVED) ---------"
-    dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-1""\", variant {rejected}, opt vec {\""$RULES"\"})"
-    echo "Currrent MOD_NOVICE RS check it should have deducted by 200 point"
-    dfx identity use mod_novice
-    PREV_BALANCE=$(dfx canister call rs queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
-    check_equal $PREV_BALANCE $((INIT_BALANCE - 200))
-    dfx identity use mod_senior
-    for j in {2..5}; do
-        dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-"$j"\", variant {rejected}, opt vec {\""$RULES"\"})"
-    done
-    dfx identity use mod_novice
-    echo "Currrent MOD_NOVICE RS check it should not go below 0"
-    PREV_BALANCE=$(dfx canister call rs queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
-    check_equal $PREV_BALANCE 0
+printf "${YELLOW}#### STEP 4: Start creating content for vote ${NC}\n"
+dfx identity use mod_provider
+dfx canister call wallet_qa icrc1_balance_of '( record { owner = principal "'$(dfx identity get-principal)'" } )'
+echo "Creating Approve..."
+dfx canister call wallet_qa icrc2_approve '( record { spender = principal "'$(dfx canister id modclub_qa)'"; amount = 10_000'$TOKEN_DECIMALS' } )'
+echo "TopUp Provider Subaccount..."
+dfx canister call modclub_qa topUpProviderReserve '( record { amount = 10_000'$TOKEN_DECIMALS' } )'
+echo "Check Provider RESERVE balance"
+dfx canister call wallet_qa icrc2_approve '( record { spender = principal "'$(dfx canister id modclub_qa)'"; amount = 10_000'$TOKEN_DECIMALS' } )'
+echo "TopUp Provider Subaccount..."
+dfx canister call modclub_qa topUpProviderReserve '( record { amount = 10_000'$TOKEN_DECIMALS' } )'
+declare P_BAL_BEFORE_SUBMIT=$(dfx canister call modclub_qa providerSaBalance '("RESERVE",null)')
+echo "Provider RESERVE balance: $P_BAL_BEFORE_SUBMIT"
+for i in {1..15}; do
+    dfx canister call modclub_qa submitText "(\""$i"\",\"Text"$i"\", opt \"TitleText"$i"\")"
+done
+dfx identity use mod_novice
+declare PREV_LV=$(dfx canister call rs_qa queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
+printf "${YELLOW}#### STEP 5 :.......#VOTE#....... ${NC}\n"
+echo "Start generate 10 approved vote for novice "
+for j in {1..10}; do
+    dfx canister call modclub_qa vote "(\""$TEST_PROVIDER_PRINCIPAL"-content-"$j"\", variant {approved}, null)"
+done
+echo "Start generate 5 rejected vote for novice"
+for j in {11..15}; do
+    dfx canister call modclub_qa vote "(\""$TEST_PROVIDER_PRINCIPAL"-content-"$j"\", variant {rejected}, opt vec {\"$RULES\"})"
+done
+dfx identity use mod_senior
+declare MOD_SENIOR_LV=$(dfx canister call rs_qa queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
+dfx canister call modclub_qa reserveContent "(\""$TEST_PROVIDER_PRINCIPAL"-content-1""\")"
+echo "#### Run Senior votes and check the value in Novice account (5 INCORRECT APPROVED) "
+dfx canister call modclub_qa vote "(\""$TEST_PROVIDER_PRINCIPAL"-content-1""\", variant {rejected}, opt vec {\""$RULES"\"})"
+echo "Currrent MOD_NOVICE RS(500 pts) deducted by 200 pts MUST equal to 300 pts"
+dfx identity use mod_novice
+declare CUR_LV=$(dfx canister call rs_qa queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
+check_equal $CUR_LV $((PREV_LV - 200))
+dfx identity use mod_senior
+for j in {2..5}; do
+    dfx canister call modclub_qa reserveContent "(\""$TEST_PROVIDER_PRINCIPAL"-content-"$j"\")"
+    dfx canister call modclub_qa vote "(\""$TEST_PROVIDER_PRINCIPAL"-content-"$j"\", variant {rejected}, opt vec {\"$RULES\"})"
+done
 
-    # 2nd case
-    echo "---------- Run Senior votes and check the value in Novice account (5 CORRECT APPROVED) ---------"
-    dfx identity use mod_senior
-    for j in {6..10}; do
-        dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-"$j"\", variant {approved}, null)"
-    done
-    dfx identity use mod_novice
-    echo "Currrent MOD_NOVICE RS should equal to the 500 from 5 correct vote"
-    NV_BALANCE=$(dfx canister call rs queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
-    check_equal $NV_BALANCE $((PREV_BALANCE + 500))
-    PREV_BALANCE=$NV_BALANCE
+dfx identity use mod_novice
+echo "Currrent MOD_NOVICE RS should be less than previous rs_qa point"
+declare NOVICE_NV_LV=$(dfx canister call rs_qa queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
+check_less $NOVICE_NV_LV $PREV_LV
 
-    # 3rd case
-    echo "---------- Run Senior votes and check the value in Novice account (3 INCORRECT REJECTED) ---------"
-    dfx identity use mod_senior
-    for j in {11..13}; do
-        dfx canister call modclub vote "(\""$DEFAULT_PRINCIPAL"-content-"$j"\", variant {approved}, null)"
-    done
-    dfx identity use mod_novice
-    echo "Currrent MOD_NOVICE RS should be less than previous rs point"
-    NV_BALANCE=$(dfx canister call rs queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
-    check_equal $NV_BALANCE $((PREV_BALANCE - 300))
-
-    # 4th case
-    echo "-------------Check MOD_SENIOR RS point after:---------------------"
-    dfx identity use mod_senior
-    SENIOR_CUR_BALANCE=$(dfx canister call rs queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
-    check_greater $SENIOR_CUR_BALANCE $SENIOR_BALANCE
-    echo "and must equal to 7_030, from 13 votes"
-    check_equal $SENIOR_CUR_BALANCE 7_030
-    ;;
-esac
+printf "${YELLOW}--------Check MOD_SENIOR RS point after:------------- ${NC}\n"
+dfx identity use mod_senior
+declare SENIOR_NV_LV=$(dfx canister call rs_qa queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)
+check_greater $SENIOR_NV_LV $MOD_SENIOR_LV
+echo "and must equal to 6_950, from 13 votes"
+check_equal $SENIOR_NV_LV 6_950
