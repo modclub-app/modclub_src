@@ -11,6 +11,7 @@ import Types "./types";
 
 module StateV1 {
   type Profile = Types.Profile;
+  type ProfileStable = Types.ProfileStable;
   type ProviderId = Types.ProviderId;
   type Content = Types.Content;
   type Provider = Types.Provider;
@@ -88,7 +89,7 @@ module StateV1 {
     providerAdmins : [(Principal, [(Principal, ())])];
     airdropUsers : [(Principal, Types.AirdropUser)];
     airdropWhitelist : [(Principal, Principal)];
-    profiles : [(Types.UserId, Profile)];
+    profiles : [(Types.UserId, ProfileStable)];
     usernames : [(Text, Types.UserId)];
     content : [(Types.ContentId, Types.Content)];
     rules : [(Types.RuleId, Types.Rule)];
@@ -267,13 +268,28 @@ module StateV1 {
         subaccounts = Iter.toArray(p.subaccounts.entries());
       }
     );
+    let profilesStable = HashMap.map<Types.UserId, Profile, ProfileStable>(
+      state.profiles,
+      Principal.equal,
+      Principal.hash,
+      func(k, p) = {
+        id = p.id;
+        userName = p.userName;
+        email = p.email;
+        pic = p.pic;
+        role = p.role;
+        subaccounts = Iter.toArray(p.subaccounts.entries());
+        createdAt = p.createdAt;
+        updatedAt = p.updatedAt;
+      }
+    );
     let st : StateShared = {
       GLOBAL_ID_MAP = Iter.toArray(state.GLOBAL_ID_MAP.entries());
       providers = Iter.toArray(providersStable.entries());
       providerSubs = Iter.toArray(state.providerSubs.entries());
       usernames = Iter.toArray(state.usernames.entries());
       providersWhitelist = Iter.toArray(state.providersWhitelist.entries());
-      profiles = Iter.toArray(state.profiles.entries());
+      profiles = Iter.toArray(profilesStable.entries());
       content = Iter.toArray(state.content.entries());
       rules = Iter.toArray(state.rules.entries());
       votes = Iter.toArray(state.votes.entries());
@@ -344,7 +360,21 @@ module StateV1 {
       state.providersWhitelist.put(id, val);
     };
     for ((id, profile) in stateShared.profiles.vals()) {
-      state.profiles.put(id, profile);
+      var updatedProfile = {
+        id = profile.id;
+        userName = profile.userName;
+        email = profile.email;
+        pic = profile.pic;
+        role = profile.role;
+        subaccounts = HashMap.HashMap<Text, Blob>(2, Text.equal, Text.hash);
+        createdAt = profile.createdAt;
+        updatedAt = profile.updatedAt;
+      };
+      for ((saType, sa) in profile.subaccounts.vals()) {
+        updatedProfile.subaccounts.put(saType, sa);
+      };
+
+      state.profiles.put(id, updatedProfile);
     };
     for ((id, rule) in stateShared.rules.vals()) {
       state.rules.put(id, rule);

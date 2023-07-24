@@ -203,11 +203,11 @@ export interface ModClub {
   'addToAllowList' : ActorMethod<[Principal], undefined>,
   'addToApprovedUser' : ActorMethod<[Principal], undefined>,
   'adminInit' : ActorMethod<[], undefined>,
-  'adminUpdateEmail' : ActorMethod<[Principal, string], Profile>,
-  'canClaimLockedReward' : ActorMethod<[[] | [Tokens]], Result_5>,
-  'canReserveContent' : ActorMethod<[string], Result_4>,
+  'adminUpdateEmail' : ActorMethod<[Principal, string], ProfileStable>,
+  'canClaimLockedReward' : ActorMethod<[[] | [Tokens]], Result_6>,
+  'canReserveContent' : ActorMethod<[string], Result_5>,
   'checkIfUserOptToReciveAlerts' : ActorMethod<[], boolean>,
-  'claimLockedReward' : ActorMethod<[Tokens, [] | [Principal]], Result_4>,
+  'claimLockedReward' : ActorMethod<[Tokens, [] | [Principal]], Result_5>,
   'collectCanisterMetrics' : ActorMethod<[], undefined>,
   'configurePohForProvider' : ActorMethod<
     [Principal, Array<string>, bigint, boolean],
@@ -227,7 +227,7 @@ export interface ModClub {
     [ContentStatus, bigint, bigint, Array<string>, bigint, bigint],
     Array<PohTaskPlusForAdmin>
   >,
-  'getAllProfiles' : ActorMethod<[], Array<Profile>>,
+  'getAllProfiles' : ActorMethod<[], Array<ProfileStable>>,
   'getAllUsersWantToReceiveAlerts' : ActorMethod<[], Array<string>>,
   'getCanisterLog' : ActorMethod<
     [[] | [CanisterLogRequest]],
@@ -246,22 +246,22 @@ export interface ModClub {
     Array<ModeratorLeaderboard>
   >,
   'getPohAttempts' : ActorMethod<[], PohStableState>,
-  'getPohTaskData' : ActorMethod<[string], Result_3>,
-  'getPohTaskDataForAdminUsers' : ActorMethod<[string], Result_2>,
+  'getPohTaskData' : ActorMethod<[string], Result_4>,
+  'getPohTaskDataForAdminUsers' : ActorMethod<[string], Result_3>,
   'getPohTasks' : ActorMethod<
     [ContentStatus, bigint, bigint],
     Array<PohTaskPlus>
   >,
-  'getProfile' : ActorMethod<[], Profile>,
-  'getProfileById' : ActorMethod<[Principal], Profile>,
+  'getProfile' : ActorMethod<[], ProfileStable>,
+  'getProfileById' : ActorMethod<[Principal], ProfileStable>,
   'getProvider' : ActorMethod<[Principal], ProviderPlus>,
-  'getProviderAdmins' : ActorMethod<[Principal], Array<Profile>>,
+  'getProviderAdmins' : ActorMethod<[Principal], Array<ProfileStable>>,
   'getProviderContent' : ActorMethod<
     [Principal, ContentStatus, bigint, bigint],
     Array<ContentPlus>
   >,
   'getProviderRules' : ActorMethod<[], Array<Rule>>,
-  'getReservedByContentId' : ActorMethod<[string], Result_1>,
+  'getReservedByContentId' : ActorMethod<[string], Result_2>,
   'getRules' : ActorMethod<[Principal], Array<Rule>>,
   'getTaskStats' : ActorMethod<[bigint], [bigint, bigint, bigint, bigint]>,
   'getTasks' : ActorMethod<[bigint, bigint, boolean], Array<ContentPlus>>,
@@ -282,16 +282,16 @@ export interface ModClub {
   'providerSaBalance' : ActorMethod<[string, [] | [Principal]], Tokens>,
   'registerModerator' : ActorMethod<
     [string, [] | [string], [] | [Image]],
-    Profile
+    ProfileStable
   >,
   'registerProvider' : ActorMethod<[string, string, [] | [Image]], string>,
   'registerUserToReceiveAlerts' : ActorMethod<[Principal, boolean], boolean>,
   'removeProviderAdmin' : ActorMethod<[Principal, Principal], ProviderResult>,
   'removeRules' : ActorMethod<[Array<RuleId>, [] | [Principal]], undefined>,
   'reserveContent' : ActorMethod<[string], undefined>,
-  'resetUserChallengeAttempt' : ActorMethod<[string], Result>,
+  'resetUserChallengeAttempt' : ActorMethod<[string], Result_1>,
   'retiredDataCanisterIdForWriting' : ActorMethod<[string], undefined>,
-  'retrieveChallengesForUser' : ActorMethod<[string], Result>,
+  'retrieveChallengesForUser' : ActorMethod<[string], Result_1>,
   'sendVerificationEmail' : ActorMethod<[string], boolean>,
   'setLambdaToken' : ActorMethod<[string], undefined>,
   'setRandomization' : ActorMethod<[boolean], undefined>,
@@ -336,6 +336,7 @@ export interface ModClub {
     undefined
   >,
   'whoami' : ActorMethod<[], Principal>,
+  'withdrawModeratorReward' : ActorMethod<[Tokens, [] | [Principal]], Result>,
 }
 export interface ModeratorLeaderboard {
   'id' : UserId,
@@ -550,16 +551,20 @@ export type PohVerificationStatus = { 'notSubmitted' : null } |
   { 'pending' : null } |
   { 'startPoh' : null } |
   { 'rejected' : null };
-export interface Profile {
+export interface ProfileStable {
   'id' : UserId,
   'pic' : [] | [Image],
   'userName' : string,
+  'subaccounts' : Array<[string, Uint8Array | number[]]>,
   'createdAt' : Timestamp,
   'role' : Role,
   'email' : string,
   'updatedAt' : Timestamp,
 }
-export interface ProviderAdmins { 'pid' : Principal, 'admins' : Array<Profile> }
+export interface ProviderAdmins {
+  'pid' : Principal,
+  'admins' : Array<ProfileStable>,
+}
 export type ProviderError = { 'ProviderAdminIsAlreadyRegistered' : null } |
   { 'InvalidContentType' : null } |
   { 'NotFound' : null } |
@@ -617,17 +622,19 @@ export interface Reserved {
   'updatedAt' : Timestamp,
 }
 export type ReservedId = string;
-export type Result = { 'ok' : Array<PohChallengesAttempt> } |
-  { 'err' : PohError };
-export type Result_1 = { 'ok' : Reserved } |
+export type Result = { 'ok' : TxIndex } |
   { 'err' : string };
-export type Result_2 = { 'ok' : PohTaskDataAndVotesWrapperPlus } |
+export type Result_1 = { 'ok' : Array<PohChallengesAttempt> } |
   { 'err' : PohError };
-export type Result_3 = { 'ok' : PohTaskDataWrapperPlus } |
-  { 'err' : PohError };
-export type Result_4 = { 'ok' : boolean } |
+export type Result_2 = { 'ok' : Reserved } |
   { 'err' : string };
-export type Result_5 = { 'ok' : CanClaimLockedResponse } |
+export type Result_3 = { 'ok' : PohTaskDataAndVotesWrapperPlus } |
+  { 'err' : PohError };
+export type Result_4 = { 'ok' : PohTaskDataWrapperPlus } |
+  { 'err' : PohError };
+export type Result_5 = { 'ok' : boolean } |
+  { 'err' : string };
+export type Result_6 = { 'ok' : CanClaimLockedResponse } |
   { 'err' : string };
 export type Role = { 'admin' : null } |
   { 'moderator' : null } |
@@ -668,6 +675,7 @@ export type Trie_2 = { 'branch' : Branch_2 } |
 export type Trie_3 = { 'branch' : Branch_3 } |
   { 'leaf' : Leaf_3 } |
   { 'empty' : null };
+export type TxIndex = bigint;
 export type UpdateCallsAggregatedData = BigUint64Array | bigint[];
 export type UserId = Principal;
 export interface VerifyHumanityResponse {

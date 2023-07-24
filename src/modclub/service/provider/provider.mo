@@ -9,6 +9,7 @@ import List "mo:base/List";
 import Float "mo:base/Float";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
+import Text "mo:base/Text";
 
 import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
@@ -444,6 +445,7 @@ module ProviderModule {
       userName = arg.username;
       email = "";
       pic = null;
+      subaccounts = HashMap.HashMap<Text, Blob>(2, Text.equal, Text.hash);
       role = #moderator;
       createdAt = now;
       updatedAt = now;
@@ -597,6 +599,7 @@ module ProviderModule {
           email = currentAdminProfile.email;
           pic = null;
           role = currentAdminProfile.role;
+          subaccounts = currentAdminProfile.subaccounts;
           createdAt = currentAdminProfile.createdAt;
           updatedAt = Helpers.timeNow();
         }

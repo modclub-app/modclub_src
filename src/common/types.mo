@@ -41,6 +41,7 @@ module {
     transferBulk : ([ICRCTypes.UserAndAmount]) -> async ();
     burn : (?ICRCTypes.Subaccount, ICRCTypes.Tokens) -> async ();
     icrc1_balance_of : (ICRCTypes.Account) -> async ICRCTypes.Tokens;
+    icrc1_fee : () -> async Nat;
     icrc1_transfer : ({
       from_subaccount : ?ICRCTypes.Subaccount;
       to : ICRCTypes.Account;

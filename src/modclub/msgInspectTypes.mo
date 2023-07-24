@@ -103,6 +103,7 @@ module {
     #votePohContent : () -> (Text, Types.Decision, [Types.PohRulesViolated]);
     #whoami : () -> ();
     #importAccounts : () -> Types.AccountsImportPayload;
+    #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal)
   };
 
 };

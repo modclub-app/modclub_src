@@ -18,7 +18,7 @@ module {
 
   public type ProviderAdmins = {
     pid : Principal;
-    admins : [Profile];
+    admins : [ProfileStable];
   };
 
   public type CanClaimLockedResponse = {
@@ -254,12 +254,23 @@ module {
     minStaked : Nat;
   };
 
-  public type Profile = {
+  public type Profile = SubAccounts and {
     id : UserId;
     userName : Text;
     email : Text;
     pic : ?Image;
     role : Role;
+    createdAt : Timestamp;
+    updatedAt : Timestamp;
+  };
+
+  public type ProfileStable = {
+    id : UserId;
+    userName : Text;
+    email : Text;
+    pic : ?Image;
+    role : Role;
+    subaccounts : [(Text, Blob)];
     createdAt : Timestamp;
     updatedAt : Timestamp;
   };

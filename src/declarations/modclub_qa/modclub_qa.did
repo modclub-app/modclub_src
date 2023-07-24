@@ -43,6 +43,7 @@ type VerifyHumanityResponse =
  };
 type UserId = principal;
 type UpdateCallsAggregatedData = vec nat64;
+type TxIndex = nat;
 type Trie_3 = 
  variant {
    branch: Branch_3;
@@ -117,35 +118,40 @@ type Role =
    moderator;
    owner;
  };
-type Result_5 = 
+type Result_6 = 
  variant {
    err: text;
    ok: CanClaimLockedResponse;
  };
-type Result_4 = 
+type Result_5 = 
  variant {
    err: text;
    ok: bool;
  };
-type Result_3 = 
+type Result_4 = 
  variant {
    err: PohError;
    ok: PohTaskDataWrapperPlus;
  };
-type Result_2 = 
+type Result_3 = 
  variant {
    err: PohError;
    ok: PohTaskDataAndVotesWrapperPlus;
  };
-type Result_1 = 
+type Result_2 = 
  variant {
    err: text;
    ok: Reserved;
  };
-type Result = 
+type Result_1 = 
  variant {
    err: PohError;
    ok: vec PohChallengesAttempt;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: TxIndex;
  };
 type ReservedId = text;
 type Reserved = 
@@ -227,16 +233,20 @@ type ProviderError =
  };
 type ProviderAdmins = 
  record {
-   admins: vec Profile;
+   admins: vec ProfileStable;
    pid: principal;
  };
-type Profile = 
+type ProfileStable = 
  record {
    createdAt: Timestamp;
    email: text;
    id: UserId;
    pic: opt Image;
    role: Role;
+   subaccounts: vec record {
+                      text;
+                      blob;
+                    };
    updatedAt: Timestamp;
    userName: text;
  };
@@ -529,11 +539,11 @@ type ModClub =
    addToAllowList: (principal) -> ();
    addToApprovedUser: (principal) -> ();
    adminInit: () -> ();
-   adminUpdateEmail: (principal, text) -> (Profile);
-   canClaimLockedReward: (opt Tokens) -> (Result_5);
-   canReserveContent: (text) -> (Result_4);
+   adminUpdateEmail: (principal, text) -> (ProfileStable);
+   canClaimLockedReward: (opt Tokens) -> (Result_6);
+   canReserveContent: (text) -> (Result_5);
    checkIfUserOptToReciveAlerts: () -> (bool) query;
-   claimLockedReward: (Tokens, opt principal) -> (Result_4);
+   claimLockedReward: (Tokens, opt principal) -> (Result_5);
    collectCanisterMetrics: () -> ();
    configurePohForProvider: (principal, vec text, nat, bool) -> ();
    deregisterProvider: () -> (text);
@@ -545,7 +555,7 @@ type ModClub =
    getAllDataCanisterIds: () -> (vec principal, vec text);
    getAllPohTasksForAdminUsers: (ContentStatus, nat, nat, vec text, int,
     int) -> (vec PohTaskPlusForAdmin) query;
-   getAllProfiles: () -> (vec Profile) query;
+   getAllProfiles: () -> (vec ProfileStable) query;
    getAllUsersWantToReceiveAlerts: () -> (vec text) query;
    getCanisterLog: (opt CanisterLogRequest) ->
     (opt CanisterLogResponse) query;
@@ -556,17 +566,17 @@ type ModClub =
    getModeratorEmailsForPOHAndSendEmail: (text) -> ();
    getModeratorLeaderboard: (nat, nat) -> (vec ModeratorLeaderboard);
    getPohAttempts: () -> (PohStableState);
-   getPohTaskData: (text) -> (Result_3) query;
-   getPohTaskDataForAdminUsers: (text) -> (Result_2) query;
+   getPohTaskData: (text) -> (Result_4) query;
+   getPohTaskDataForAdminUsers: (text) -> (Result_3) query;
    getPohTasks: (ContentStatus, nat, nat) -> (vec PohTaskPlus) query;
-   getProfile: () -> (Profile) query;
-   getProfileById: (principal) -> (Profile) query;
+   getProfile: () -> (ProfileStable) query;
+   getProfileById: (principal) -> (ProfileStable) query;
    getProvider: (principal) -> (ProviderPlus);
-   getProviderAdmins: (principal) -> (vec Profile);
+   getProviderAdmins: (principal) -> (vec ProfileStable);
    getProviderContent: (principal, ContentStatus, nat, nat) ->
     (vec ContentPlus);
    getProviderRules: () -> (vec Rule) query;
-   getReservedByContentId: (text) -> (Result_1);
+   getReservedByContentId: (text) -> (Result_2);
    getRules: (principal) -> (vec Rule) query;
    getTaskStats: (int) -> (nat, nat, nat, nat);
    getTasks: (nat, nat, bool) -> (vec ContentPlus);
@@ -579,15 +589,15 @@ type ModClub =
    pohCallbackForModclub: (PohVerificationResponsePlus) -> () oneway;
    populateChallenges: () -> ();
    providerSaBalance: (text, opt principal) -> (Tokens);
-   registerModerator: (text, opt text, opt Image) -> (Profile);
+   registerModerator: (text, opt text, opt Image) -> (ProfileStable);
    registerProvider: (text, text, opt Image) -> (text);
    registerUserToReceiveAlerts: (principal, bool) -> (bool);
    removeProviderAdmin: (principal, principal) -> (ProviderResult);
    removeRules: (vec RuleId, opt principal) -> ();
    reserveContent: (text) -> ();
-   resetUserChallengeAttempt: (text) -> (Result);
+   resetUserChallengeAttempt: (text) -> (Result_1);
    retiredDataCanisterIdForWriting: (text) -> () oneway;
-   retrieveChallengesForUser: (text) -> (Result);
+   retrieveChallengesForUser: (text) -> (Result_1);
    sendVerificationEmail: (text) -> (bool);
    setLambdaToken: (text) -> ();
    setRandomization: (bool) -> ();
@@ -618,6 +628,7 @@ type ModClub =
    vote: (ContentId, Decision, opt vec RuleId) -> (text);
    votePohContent: (text, Decision, vec PohRulesViolated) -> ();
    whoami: () -> (principal);
+   withdrawModeratorReward: (Tokens, opt principal) -> (Result);
  };
 type MetricsGranularity = 
  variant {

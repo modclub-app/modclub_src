@@ -264,11 +264,12 @@ module Helpers {
   };
 
   public let providerSubaccountTypes = ["RESERVE", "ACCOUNT_PAYABLE"];
+  public let moderatorSubaccountTypes = ["RESERVE", "ACCOUNT_PAYABLE"];
 
-  public func generateSubAccounts() : async [(Text, Blob)] {
+  public func generateSubAccounts(subaccountTypes : [Text]) : async [(Text, Blob)] {
     let subAccs = Buffer.Buffer<(Text, Blob)>(1);
 
-    for (subAccType in providerSubaccountTypes.vals()) {
+    for (subAccType in subaccountTypes.vals()) {
       let saUUID = await generateUUID();
       subAccs.add((subAccType, Text.encodeUtf8(Text.replace(saUUID, #char('-'), ""))));
     };

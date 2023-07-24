@@ -9,6 +9,8 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Option "mo:base/Option";
 import Timer "mo:base/Timer";
+import HashMap "mo:base/HashMap";
+import Iter "mo:base/Iter";
 
 import GlobalState "../../statev2";
 import Helpers "../../helpers";
@@ -58,8 +60,9 @@ module ModeratorModule {
     userName : Text,
     email : ?Text,
     pic : ?Types.Image,
-    state : GlobalState.State
-  ) : async Types.Profile {
+    state : GlobalState.State,
+    subAccs : HashMap.HashMap<Text, Blob>
+  ) : async Types.ProfileStable {
     var _userName = Text.trim(userName, #text " ");
     var _email = Text.trim(Option.get(email, ""), #text " ");
     if (_email.size() > 320) throw Error.reject("Invalid email, too long");
@@ -78,11 +81,21 @@ module ModeratorModule {
               pic = pic;
               role = #moderator;
               email = _email;
+              subaccounts = subAccs;
               createdAt = now;
               updatedAt = now;
             };
             state.profiles.put(moderatorId, profile);
-            return profile;
+            return {
+              id = moderatorId;
+              userName = _userName;
+              pic = pic;
+              role = #moderator;
+              email = _email;
+              subaccounts = [];
+              createdAt = now;
+              updatedAt = now;
+            };
           };
           case (false) throw Error.reject("username already taken");
         };
@@ -111,6 +124,7 @@ module ModeratorModule {
           userName = result.userName;
           pic = result.pic;
           role = result.role;
+          subaccounts = result.subaccounts;
           email = newEmail;
           createdAt = result.createdAt;
           updatedAt = Helpers.timeNow();
@@ -121,12 +135,21 @@ module ModeratorModule {
     };
   };
 
-  public func getAllProfiles(state : GlobalState.State) : [Types.Profile] {
-    let buf = Buffer.Buffer<Types.Profile>(0);
+  public func getAllProfiles(state : GlobalState.State) : [Types.ProfileStable] {
+    let buf = Buffer.Buffer<Types.ProfileStable>(0);
     for ((pid, p) in state.profiles.entries()) {
-      buf.add(p);
+      buf.add({
+          id = p.id;
+          userName = p.userName;
+          email = "";
+          pic = p.pic;
+          role = p.role;
+          subaccounts = Iter.toArray(p.subaccounts.entries());
+          createdAt = p.createdAt;
+          updatedAt = p.updatedAt;
+        });
     };
-    return Buffer.toArray<Types.Profile>(buf);
+    return Buffer.toArray<Types.ProfileStable>(buf);
   };
 
   public func formModeratorLeaderboard(

@@ -74,10 +74,11 @@ export const idlFactory = ({ IDL }) => {
     'moderator' : IDL.Null,
     'owner' : IDL.Null,
   });
-  const Profile = IDL.Record({
+  const ProfileStable = IDL.Record({
     'id' : UserId,
     'pic' : IDL.Opt(Image),
     'userName' : IDL.Text,
+    'subaccounts' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Nat8))),
     'createdAt' : Timestamp,
     'role' : Role,
     'email' : IDL.Text,
@@ -89,11 +90,11 @@ export const idlFactory = ({ IDL }) => {
     'claimAmount' : Tokens,
     'canClaim' : IDL.Bool,
   });
-  const Result_5 = IDL.Variant({
+  const Result_6 = IDL.Variant({
     'ok' : CanClaimLockedResponse,
     'err' : IDL.Text,
   });
-  const Result_4 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
+  const Result_5 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
   const ContentStatus = IDL.Variant({
     'new' : IDL.Null,
     'approved' : IDL.Null,
@@ -476,7 +477,7 @@ export const idlFactory = ({ IDL }) => {
     'attemptToCreateMultipleWalletsWithSameIp' : IDL.Null,
     'attemptToAssociateMultipleModclubAccounts' : IDL.Principal,
   });
-  const Result_3 = IDL.Variant({
+  const Result_4 = IDL.Variant({
     'ok' : PohTaskDataWrapperPlus,
     'err' : PohError,
   });
@@ -501,7 +502,7 @@ export const idlFactory = ({ IDL }) => {
     'requiredVotes' : IDL.Int,
     'voteUserDetails' : IDL.Vec(VotePlusUser),
   });
-  const Result_2 = IDL.Variant({
+  const Result_3 = IDL.Variant({
     'ok' : PohTaskDataAndVotesWrapperPlus,
     'err' : PohError,
   });
@@ -536,7 +537,7 @@ export const idlFactory = ({ IDL }) => {
     'image' : IDL.Opt(Image),
     'rules' : IDL.Vec(Rule),
   });
-  const Result_1 = IDL.Variant({ 'ok' : Reserved, 'err' : IDL.Text });
+  const Result_2 = IDL.Variant({ 'ok' : Reserved, 'err' : IDL.Text });
   const Event = IDL.Record({ 'topic' : IDL.Text, 'payload' : IDL.Principal });
   const ConsumerPayload = IDL.Variant({
     'events' : IDL.Vec(Event),
@@ -569,7 +570,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const ProviderAdmins = IDL.Record({
     'pid' : IDL.Principal,
-    'admins' : IDL.Vec(Profile),
+    'admins' : IDL.Vec(ProfileStable),
   });
   const ProviderInfo = IDL.Record({
     'id' : IDL.Principal,
@@ -607,7 +608,7 @@ export const idlFactory = ({ IDL }) => {
     'challengeType' : PohChallengeType,
     'wordList' : IDL.Opt(IDL.Vec(IDL.Text)),
   });
-  const Result = IDL.Variant({
+  const Result_1 = IDL.Variant({
     'ok' : IDL.Vec(PohChallengesAttempt),
     'err' : PohError,
   });
@@ -667,6 +668,8 @@ export const idlFactory = ({ IDL }) => {
     'ruleId' : IDL.Text,
     'challengeId' : IDL.Text,
   });
+  const TxIndex = IDL.Nat;
+  const Result = IDL.Variant({ 'ok' : TxIndex, 'err' : IDL.Text });
   const ModClub = IDL.Service({
     'AdminCheckPohVerificationResp' : IDL.Func(
         [IDL.Text, IDL.Principal],
@@ -682,13 +685,17 @@ export const idlFactory = ({ IDL }) => {
     'addToAllowList' : IDL.Func([IDL.Principal], [], []),
     'addToApprovedUser' : IDL.Func([IDL.Principal], [], []),
     'adminInit' : IDL.Func([], [], []),
-    'adminUpdateEmail' : IDL.Func([IDL.Principal, IDL.Text], [Profile], []),
-    'canClaimLockedReward' : IDL.Func([IDL.Opt(Tokens)], [Result_5], []),
-    'canReserveContent' : IDL.Func([IDL.Text], [Result_4], []),
+    'adminUpdateEmail' : IDL.Func(
+        [IDL.Principal, IDL.Text],
+        [ProfileStable],
+        [],
+      ),
+    'canClaimLockedReward' : IDL.Func([IDL.Opt(Tokens)], [Result_6], []),
+    'canReserveContent' : IDL.Func([IDL.Text], [Result_5], []),
     'checkIfUserOptToReciveAlerts' : IDL.Func([], [IDL.Bool], ['query']),
     'claimLockedReward' : IDL.Func(
         [Tokens, IDL.Opt(IDL.Principal)],
-        [Result_4],
+        [Result_5],
         [],
       ),
     'collectCanisterMetrics' : IDL.Func([], [], []),
@@ -717,7 +724,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(PohTaskPlusForAdmin)],
         ['query'],
       ),
-    'getAllProfiles' : IDL.Func([], [IDL.Vec(Profile)], ['query']),
+    'getAllProfiles' : IDL.Func([], [IDL.Vec(ProfileStable)], ['query']),
     'getAllUsersWantToReceiveAlerts' : IDL.Func(
         [],
         [IDL.Vec(IDL.Text)],
@@ -743,24 +750,28 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'getPohAttempts' : IDL.Func([], [PohStableState], []),
-    'getPohTaskData' : IDL.Func([IDL.Text], [Result_3], ['query']),
-    'getPohTaskDataForAdminUsers' : IDL.Func([IDL.Text], [Result_2], ['query']),
+    'getPohTaskData' : IDL.Func([IDL.Text], [Result_4], ['query']),
+    'getPohTaskDataForAdminUsers' : IDL.Func([IDL.Text], [Result_3], ['query']),
     'getPohTasks' : IDL.Func(
         [ContentStatus, IDL.Nat, IDL.Nat],
         [IDL.Vec(PohTaskPlus)],
         ['query'],
       ),
-    'getProfile' : IDL.Func([], [Profile], ['query']),
-    'getProfileById' : IDL.Func([IDL.Principal], [Profile], ['query']),
+    'getProfile' : IDL.Func([], [ProfileStable], ['query']),
+    'getProfileById' : IDL.Func([IDL.Principal], [ProfileStable], ['query']),
     'getProvider' : IDL.Func([IDL.Principal], [ProviderPlus], []),
-    'getProviderAdmins' : IDL.Func([IDL.Principal], [IDL.Vec(Profile)], []),
+    'getProviderAdmins' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(ProfileStable)],
+        [],
+      ),
     'getProviderContent' : IDL.Func(
         [IDL.Principal, ContentStatus, IDL.Nat, IDL.Nat],
         [IDL.Vec(ContentPlus)],
         [],
       ),
     'getProviderRules' : IDL.Func([], [IDL.Vec(Rule)], ['query']),
-    'getReservedByContentId' : IDL.Func([IDL.Text], [Result_1], []),
+    'getReservedByContentId' : IDL.Func([IDL.Text], [Result_2], []),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTaskStats' : IDL.Func(
         [IDL.Int],
@@ -795,7 +806,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'registerModerator' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(Image)],
-        [Profile],
+        [ProfileStable],
         [],
       ),
     'registerProvider' : IDL.Func(
@@ -815,9 +826,9 @@ export const idlFactory = ({ IDL }) => {
       ),
     'removeRules' : IDL.Func([IDL.Vec(RuleId), IDL.Opt(IDL.Principal)], [], []),
     'reserveContent' : IDL.Func([IDL.Text], [], []),
-    'resetUserChallengeAttempt' : IDL.Func([IDL.Text], [Result], []),
+    'resetUserChallengeAttempt' : IDL.Func([IDL.Text], [Result_1], []),
     'retiredDataCanisterIdForWriting' : IDL.Func([IDL.Text], [], ['oneway']),
-    'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result], []),
+    'retrieveChallengesForUser' : IDL.Func([IDL.Text], [Result_1], []),
     'sendVerificationEmail' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'setLambdaToken' : IDL.Func([IDL.Text], [], []),
     'setRandomization' : IDL.Func([IDL.Bool], [], []),
@@ -893,6 +904,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'whoami' : IDL.Func([], [IDL.Principal], []),
+    'withdrawModeratorReward' : IDL.Func(
+        [Tokens, IDL.Opt(IDL.Principal)],
+        [Result],
+        [],
+      ),
   });
   return ModClub;
 };

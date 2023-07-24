@@ -347,7 +347,12 @@ module ContentVotingModule {
     let CT : Float = ModClubParam.CS * Float.fromInt(arg.requiredVotes);
     // moderator dist
     for (userVote in rewardingVotes.vals()) {
-      let moderatorAcc = { owner = userVote.userId; subaccount = null };
+      let moderator = switch (state.profiles.get(userVote.userId)) {
+        case (?p) p;
+        case (_)(throw Error.reject("Moderator does not exist"));
+      };
+      let moderatorAcc = { owner = moderator.id; subaccount = null };
+      let moderatorSystemAcc = { owner = arg.modclubCanisterId; subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE") };
       let fullReward = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
       let isSenior = switch (await rs.queryRSAndLevelByPrincipal(userVote.userId)) {
         case (stat) { stat.score >= RSConstants.SENIOR1_THRESHOLD };
@@ -357,7 +362,7 @@ module ContentVotingModule {
       // Dist of free part of rewarded tokens
       let _ = await ledger.icrc1_transfer({
         from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
-        to = moderatorAcc;
+        to = moderatorSystemAcc;
         amount = modDistTokens;
         fee = null;
         memo = null;

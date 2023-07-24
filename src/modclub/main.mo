@@ -237,7 +237,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     let subAccs = HashMap.fromIter<Text, Blob>(
-      (await Helpers.generateSubAccounts()).vals(),
+      (await Helpers.generateSubAccounts(Helpers.providerSubaccountTypes)).vals(),
       Array.size(Helpers.providerSubaccountTypes),
       Text.equal,
       Text.hash
@@ -768,13 +768,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     userName : Text,
     email : ?Text,
     pic : ?Types.Image
-  ) : async Types.Profile {
+  ) : async Types.ProfileStable {
+    let subAccs = HashMap.fromIter<Text, Blob>(
+      (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
+      Array.size(Helpers.moderatorSubaccountTypes),
+      Text.equal,
+      Text.hash
+    );
+
     let profile = await ModeratorManager.registerModerator(
       caller,
       userName,
       email,
       pic,
-      stateV2
+      stateV2,
+      subAccs
     );
 
     await storageSolution.registerModerators([caller]);
@@ -783,10 +791,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return profile;
   };
 
-  public query ({ caller }) func getProfile() : async Types.Profile {
+  public query ({ caller }) func getProfile() : async Types.ProfileStable {
     switch (ModeratorManager.getProfile(caller, stateV2)) {
       case (#ok(p)) {
-        return p;
+        return {
+            id = p.id;
+            userName = p.userName;
+            email = p.email;
+            pic = p.pic;
+            role = p.role;
+            subaccounts = Iter.toArray(p.subaccounts.entries());
+            createdAt = p.createdAt;
+            updatedAt = p.updatedAt;
+          };
       };
       case (_) {
         throw Error.reject("profile not found");
@@ -794,7 +811,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public query ({ caller }) func getProfileById(pid : Principal) : async Types.Profile {
+  public query ({ caller }) func getProfileById(pid : Principal) : async Types.ProfileStable {
     switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
@@ -807,6 +824,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           email = "";
           pic = p.pic;
           role = p.role;
+          subaccounts = Iter.toArray(p.subaccounts.entries());
           createdAt = p.createdAt;
           updatedAt = p.updatedAt;
         };
@@ -817,15 +835,24 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public query ({ caller }) func getAllProfiles() : async [Types.Profile] {
+  public query ({ caller }) func getAllProfiles() : async [Types.ProfileStable] {
     Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     return ModeratorManager.getAllProfiles(stateV2);
   };
 
-  public shared ({ caller }) func adminUpdateEmail(pid : Principal, email : Text) : async Types.Profile {
+  public shared ({ caller }) func adminUpdateEmail(pid : Principal, email : Text) : async Types.ProfileStable {
     switch (ModeratorManager.adminUpdateEmail(pid, email, stateV2)) {
-      case (#ok(moderator)) {
-        return moderator;
+      case (#ok(p)) {
+        return {
+          id = p.id;
+          userName = p.userName;
+          email = "";
+          pic = p.pic;
+          role = p.role;
+          subaccounts = Iter.toArray(p.subaccounts.entries());
+          createdAt = p.createdAt;
+          updatedAt = p.updatedAt;
+        };
       };
       case (_) {
         throw Error.reject("profile not found");
@@ -967,6 +994,38 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         #ok(true);
       };
       case (#err(e)) { return throw Error.reject(e) };
+    };
+  };
+
+  public shared ({ caller }) func withdrawModeratorReward(amount : ICRCTypes.Tokens, customReceiver : ?Principal) : async Result.Result<ICRCTypes.TxIndex, Text> {
+    let moderator = switch (ModeratorManager.getProfile(caller, stateV2)) {
+      case (#ok(p)) p;
+      case (_)(throw Error.reject("Moderator does not exist"));
+    };
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let ledger = authGuard.getWalletActor();
+    switch (await ledger.icrc1_balance_of(moderatorAcc)) {
+      case(tokensAvailable) {
+        let fee = await ledger.icrc1_fee();
+        if ( (amount + fee) < tokensAvailable ) {
+          throw Error.reject("Insufficient ballance");
+        };
+        switch(await ledger.icrc1_transfer({
+          from_subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+          to = switch (customReceiver) {
+            case (?p) { { owner = p; subaccount = null } };
+            case (null) { moderatorAcc };
+          };
+          amount;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        })) {
+          case(#Ok(tsidx)) {#ok(tsidx)};
+          case(_) { #err("Error occurs on icrc1_transfer for withdrawModeratorReward.")};
+        };
+      };
+      case(_) { throw Error.reject("Unable to get Moderators ballance"); };
     };
   };
 
@@ -2018,10 +2077,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     voteManager.addToAutoApprovedPOHUser(userId);
   };
 
-  public shared ({ caller }) func getProviderAdmins(providerId : Principal) : async [
-    Types.Profile
-  ] {
-    ProviderManager.getProviderAdmins(providerId, stateV2);
+  public shared ({ caller }) func getProviderAdmins(providerId : Principal) : async [Types.ProfileStable] {
+    let pStable = Buffer.Buffer<Types.ProfileStable>(1);
+    for (p in ProviderManager.getProviderAdmins(providerId, stateV2).vals()) {
+      pStable.add({
+          id = p.id;
+          userName = p.userName;
+          email = "";
+          pic = p.pic;
+          role = p.role;
+          subaccounts = Iter.toArray(p.subaccounts.entries());
+          createdAt = p.createdAt;
+          updatedAt = p.updatedAt;
+        });
+    };
+    Buffer.toArray<Types.ProfileStable>(pStable);
   };
 
   public shared ({ caller }) func removeProviderAdmin(
@@ -2554,7 +2624,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   } {
     Helpers.logMessage(
       canistergeekLogger,
-      "MODCLUB Instanse has importAccounts call:: " # debug_show payload,
+      "MODCLUB Instanse has importAccounts call:: ",
       #info
     );
 
@@ -2564,7 +2634,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         case (null) {
           await ProviderManager.addToAllowList(provider.id, stateV2, canistergeekLogger);
           let subAccs = HashMap.fromIter<Text, Blob>(
-            (await Helpers.generateSubAccounts()).vals(),
+            (await Helpers.generateSubAccounts(Helpers.providerSubaccountTypes)).vals(),
             Array.size(Helpers.providerSubaccountTypes),
             Text.equal,
             Text.hash
@@ -2624,12 +2694,20 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     for (moderator in payload.moderators.vals()) {
       try {
+        let subAccs = HashMap.fromIter<Text, Blob>(
+          (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
+          Array.size(Helpers.moderatorSubaccountTypes),
+          Text.equal,
+          Text.hash
+        );
+
         let profile = await ModeratorManager.registerModerator(
           moderator.id,
           moderator.userName,
           null,
           null,
-          stateV2
+          stateV2,
+          subAccs
         );
 
         await storageSolution.registerModerators([moderator.id]);
