@@ -1,0 +1,5 @@
+*.* text eol=lf
+*.sh text eol=lf
+*.tsx text eol=lf
+*.mo text eol=lf
+
