@@ -26,6 +26,7 @@ module StorageModule {
   ) {
 
     let DATA_CANISTER_MAX_STORAGE_LIMIT = 51_539_607_552; // ~48GB
+    let DATA_CANISTER_CYCLE_TOPUP = 60_000_000_000_000; // 60T cycles
 
     let storageState = StorageState.getState(storageStableState);
     var signingKey = signingKeyFromMain;
@@ -242,7 +243,7 @@ module StorageModule {
     };
 
     private func newEmptyBucket() : async Bucket.Bucket {
-      Cycles.add(20_000_000_000_000);
+      Cycles.add(DATA_CANISTER_CYCLE_TOPUP);
       let b = await Bucket.Bucket();
       let _ = await updateCanister(b);
       b.setParams(Iter.toArray(storageState.moderatorsId.keys()), signingKey);

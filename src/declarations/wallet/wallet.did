@@ -1,184 +1,195 @@
-type Wallet = service {
-  burn : (opt Subaccount, nat) -> ();
-  getAdmins : () -> (Result__1) query;
-  handleSubscription : (ConsumerPayload) -> ();
-  icrc1_balance_of : (Account) -> (Tokens) query;
-  icrc1_decimals : () -> (nat8) query;
-  icrc1_fee : () -> (nat) query;
-  icrc1_metadata : () -> (
-    vec record {
-      text;
-      Value;
-    }
-  ) query;
-  icrc1_minting_account : () -> (opt Account) query;
-  icrc1_name : () -> (text) query;
-  icrc1_supported_standards : () -> (
-    vec record {
-      name : text;
-      url : text;
-    }
-  ) query;
-  icrc1_symbol : () -> (text) query;
-  icrc1_total_supply : () -> (Tokens) query;
-  icrc1_transfer : (
-    record {
-      amount : Tokens;
-      created_at_time : opt Timestamp;
-      fee : opt Tokens;
-      from_subaccount : opt Subaccount;
-      memo : opt Memo;
-      to : Account;
-    }
-  ) -> (Result);
-  icrc2_allowance : (AllowanceArgs) -> (Allowance) query;
-  icrc2_approve : (ApproveArgs) -> (Result_2);
-  icrc2_transfer_from : (TransferFromArgs) -> (Result_1);
-  isUserAdmin : () -> (bool) query;
-  ledger_account : () -> (Account) query;
-  queryBalance : (opt SubAccount) -> (float64) query;
-  queryBalancePr : (principal, opt SubAccount) -> (float64) query;
-  stakeTokens : (float64) -> ();
-  tge : () -> ();
-  transfer : (opt SubAccount, principal, opt SubAccount, float64) -> ();
-  transferBulk : (vec UserAndAmount) -> ();
-  transferToProvider : (TransferToProviderArgs) -> (Result);
-};
-type Value = variant {
-  Blob : blob;
-  Int : int;
-  Nat : nat;
-  Text : text;
-};
-type UserAndAmount = record {
-  amount : float64;
-  fromSA : opt text;
-  toOwner : principal;
-  toSA : opt text;
-};
+type Wallet = 
+ service {
+   burn: (opt Subaccount, nat) -> ();
+   claimStakedTokens: (Tokens) -> (Result__1_1);
+   getAdmins: () -> (Result__1) query;
+   handleSubscription: (ConsumerPayload) -> ();
+   icrc1_balance_of: (Account) -> (Tokens) query;
+   icrc1_decimals: () -> (nat8) query;
+   icrc1_fee: () -> (nat) query;
+   icrc1_metadata: () -> (vec record {
+                                text;
+                                Value;
+                              }) query;
+   icrc1_minting_account: () -> (opt Account) query;
+   icrc1_name: () -> (text) query;
+   icrc1_supported_standards: () ->
+    (vec record {
+           name: text;
+           url: text;
+         }) query;
+   icrc1_symbol: () -> (text) query;
+   icrc1_total_supply: () -> (Tokens) query;
+   icrc1_transfer:
+    (record {
+       amount: Tokens;
+       created_at_time: opt Timestamp;
+       fee: opt Tokens;
+       from_subaccount: opt Subaccount;
+       memo: opt Memo;
+       to: Account;
+     }) -> (Result);
+   icrc2_allowance: (AllowanceArgs) -> (Allowance) query;
+   icrc2_approve: (ApproveArgs) -> (Result_2);
+   icrc2_transfer_from: (TransferFromArgs) -> (Result_1);
+   ledger_account: () -> (Account) query;
+   releaseTokens: (Tokens) -> (Result);
+   stakeTokens: (nat) -> (Result);
+   transferToProvider: (TransferToProviderArgs) -> (Result);
+ };
+type Value = 
+ variant {
+   Blob: blob;
+   Int: int;
+   Nat: nat;
+   Text: text;
+ };
 type TxIndex = nat;
-type TransferToProviderArgs = record {
-  amount : Tokens;
-  from : Account;
-  to : Account;
-};
-type TransferFromError = variant {
-  BadBurn : record { min_burn_amount : Tokens };
-  BadFee : record { expected_fee : Tokens };
-  CreatedInFuture : record { ledger_time : Timestamp };
-  Duplicate : record { duplicate_of : TxIndex };
-  GenericError : record {
-    error_code : nat;
-    message : text;
-  };
-  InsufficientAllowance : record { allowance : nat };
-  InsufficientFunds : record { balance : Tokens };
-  TemporarilyUnavailable;
-  TooOld;
-};
-type TransferFromArgs = record {
-  amount : Tokens;
-  created_at_time : opt Timestamp;
-  fee : opt Tokens;
-  from : Account;
-  memo : opt Memo;
-  to : Account;
-};
-type TransferError = variant {
-  BadBurn : record { min_burn_amount : Tokens };
-  BadFee : record { expected_fee : Tokens };
-  CreatedInFuture : record { ledger_time : Timestamp };
-  Duplicate : record { duplicate_of : TxIndex };
-  GenericError : record {
-    error_code : nat;
-    message : text;
-  };
-  InsufficientFunds : record { balance : Tokens };
-  TemporarilyUnavailable;
-  TooOld;
-};
+type TransferToProviderArgs = 
+ record {
+   amount: Tokens;
+   from: Account;
+   to: Account;
+ };
+type TransferFromError = 
+ variant {
+   BadBurn: record {min_burn_amount: Tokens;};
+   BadFee: record {expected_fee: Tokens;};
+   CreatedInFuture: record {ledger_time: Timestamp;};
+   Duplicate: record {duplicate_of: TxIndex;};
+   GenericError: record {
+                   error_code: nat;
+                   message: text;
+                 };
+   InsufficientAllowance: record {allowance: nat;};
+   InsufficientFunds: record {balance: Tokens;};
+   TemporarilyUnavailable;
+   TooOld;
+ };
+type TransferFromArgs = 
+ record {
+   amount: Tokens;
+   created_at_time: opt Timestamp;
+   fee: opt Tokens;
+   from: Account;
+   memo: opt Memo;
+   to: Account;
+ };
+type TransferError = 
+ variant {
+   BadBurn: record {min_burn_amount: Tokens;};
+   BadFee: record {expected_fee: Tokens;};
+   CreatedInFuture: record {ledger_time: Timestamp;};
+   Duplicate: record {duplicate_of: TxIndex;};
+   GenericError: record {
+                   error_code: nat;
+                   message: text;
+                 };
+   InsufficientFunds: record {balance: Tokens;};
+   TemporarilyUnavailable;
+   TooOld;
+ };
 type Tokens = nat;
 type Timestamp = nat64;
 type Subaccount = blob;
-type SubAccount = text;
-type Result__1 = variant {
-  err : text;
-  ok : vec principal;
-};
-type Result_2 = variant {
-  Err : ApproveError;
-  Ok : TxIndex;
-};
-type Result_1 = variant {
-  Err : TransferFromError;
-  Ok : TxIndex;
-};
-type Result = variant {
-  Err : TransferError;
-  Ok : TxIndex;
-};
+type Result__1_1 = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Result__1 = 
+ variant {
+   err: text;
+   ok: vec principal;
+ };
+type Result_2 = 
+ variant {
+   Err: ApproveError;
+   Ok: TxIndex;
+ };
+type Result_1 = 
+ variant {
+   Err: TransferFromError;
+   Ok: TxIndex;
+ };
+type Result = 
+ variant {
+   Err: TransferError;
+   Ok: TxIndex;
+ };
 type Memo = blob;
-type LedgerInitParams = record {
-  decimals : nat8;
-  initial_mints : vec record {
-    account : Account;
-    amount : nat;
-  };
-  ledger_account : Account;
-  minting_account : Account;
-  token_name : text;
-  token_symbol : text;
-  transfer_fee : nat;
-};
-type ENV = variant {
-  dev;
-  local : record {
-    auth_canister_id : principal;
-    modclub_canister_id : principal;
-    rs_canister_id : principal;
-    wallet_canister_id : principal;
-  };
-  prod;
-  qa;
-};
-type ConsumerPayload = variant { admins : vec principal };
-type ApproveError = variant {
-  BadFee : record { expected_fee : Tokens };
-  CreatedInFuture : record { ledger_time : Timestamp };
-  Duplicate : record { duplicate_of : TxIndex };
-  Expired : record { ledger_time : nat64 };
-  GenericError : record {
-    error_code : nat;
-    message : text;
-  };
-  InsufficientFunds : record { balance : Tokens };
-  TemporarilyUnavailable;
-  TooOld;
-};
-type ApproveArgs = record {
-  amount : int;
-  created_at_time : opt Timestamp;
-  expires_at : opt nat64;
-  fee : opt Tokens;
-  from_subaccount : opt Subaccount;
-  memo : opt Memo;
-  spender : principal;
-};
-type AllowanceArgs = record {
-  account : Account;
-  spender : principal;
-};
-type Allowance = record {
-  allowance : nat;
-  expires_at : opt nat64;
-};
-type Account = record {
-  owner : principal;
-  subaccount : opt Subaccount;
-};
-service : (
-  record {
-    env : ENV;
-    ledgerInit : LedgerInitParams;
-  }
-) -> Wallet;
+type LedgerInitParams = 
+ record {
+   decimals: nat8;
+   initial_mints: vec record {
+                        account: Account;
+                        amount: nat;
+                      };
+   ledger_account: Account;
+   minting_account: Account;
+   token_name: text;
+   token_symbol: text;
+   transfer_fee: nat;
+ };
+type Event = 
+ record {
+   payload: principal;
+   topic: text;
+ };
+type ENV = 
+ record {
+   auth_canister_id: principal;
+   modclub_canister_id: principal;
+   old_modclub_canister_id: principal;
+   rs_canister_id: principal;
+   vesting_canister_id: principal;
+   wallet_canister_id: principal;
+ };
+type ConsumerPayload = 
+ variant {
+   admins: vec principal;
+   events: vec Event;
+ };
+type ApproveError = 
+ variant {
+   BadFee: record {expected_fee: Tokens;};
+   CreatedInFuture: record {ledger_time: Timestamp;};
+   Duplicate: record {duplicate_of: TxIndex;};
+   Expired: record {ledger_time: nat64;};
+   GenericError: record {
+                   error_code: nat;
+                   message: text;
+                 };
+   InsufficientFunds: record {balance: Tokens;};
+   TemporarilyUnavailable;
+   TooOld;
+ };
+type ApproveArgs = 
+ record {
+   amount: int;
+   created_at_time: opt Timestamp;
+   expires_at: opt nat64;
+   fee: opt Tokens;
+   from_subaccount: opt Subaccount;
+   memo: opt Memo;
+   spender: principal;
+ };
+type AllowanceArgs = 
+ record {
+   account: Account;
+   spender: principal;
+ };
+type Allowance = 
+ record {
+   allowance: nat;
+   expires_at: opt nat64;
+ };
+type Account = 
+ record {
+   owner: principal;
+   subaccount: opt Subaccount;
+ };
+service : (record {
+             env: ENV;
+             ledgerInit: LedgerInitParams;
+           }) -> Wallet
