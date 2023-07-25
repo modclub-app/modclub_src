@@ -69,5 +69,7 @@ jobs:
             Avoid commenting on style, documentation, compliments, non-improving positive feedback, and unused fields.
 
             Aim for accuracy and provide clear suggestions to address identified concerns.
+            
+            Only comment if you have a code change suggestion and the code change suggestion is a potential critical issue.
           disable_release_notes: true
           openai_heavy_model: 'gpt-4'
