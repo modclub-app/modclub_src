@@ -140,6 +140,7 @@ export default function Tasks() {
     setLevel(Object.keys(perf.level)[0]);
   },[]);  
 
+
   useEffect(() => {
     if (user && firstLoad && !loading && fetchTasks()) {
       setFirstLoad(false);

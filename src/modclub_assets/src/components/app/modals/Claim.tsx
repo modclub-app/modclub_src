@@ -1,18 +1,19 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import FormModal from "../modals/FormModal";
-import { claimLockedReward } from "../../../utils/api";
+import { claimLockedReward, lockedFor } from "../../../utils/api";
 import { useState } from "react";
 import { UpdateTable } from "../../common/updateTable/UpdateTable";
 
-export default function Claim({ toggle, tokenHoldings }) {
+export default function Claim({ toggle, tokenHoldings, userId }) {
   const [amount, setAmount] = useState(tokenHoldings.pendingRewards);
   const [error, setError] = useState(null);
 
-  const onFormSubmit = async (values: any) => {
-    const { amount } = values;
+  const onFormSubmit = async () => {
     try {
-      return await claimLockedReward(amount);
+      const locked = await lockedFor(userId);
+      const res = await claimLockedReward(Number(locked));
+      return res.ok
     } catch (err) {
       setError(err.message);
     }

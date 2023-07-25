@@ -924,34 +924,34 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func canClaimLockedReward(amount : ?ICRCTypes.Tokens) : async Result.Result<Types.CanClaimLockedResponse, Text> {
+    var canClaim = true;
     let stats = await ModeratorManager.getStats(caller, env);
     if (not ModeratorManager.isSenior(stats.score)) {
-      return throw Error.reject("Moderator not permitted to claim locked Tokens.");
+      canClaim := false;
     };
     let moderatorAcc = { owner = caller; subaccount = null };
     let lockedAmount = await vestingActor.locked_for(moderatorAcc);
     let claimAmount = Option.get(amount, lockedAmount);
     if (lockedAmount < claimAmount) {
-      return throw Error.reject("Wrong amount to claim locked Tokens.");
+      canClaim := false;
     };
-
+    let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
     switch (ModeratorManager.canClaimReward(caller, claimRewardsWhitelistBuf)) {
       case (true) {
         let stakedAmount = await vestingActor.staked_for(moderatorAcc);
-        let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
         if (stakedAmount < minStake) {
-          return throw Error.reject("You MUST stake amount of tokens to claim locked Tokens.");
+          canClaim := false;
         };
-        #ok({
-          canClaim = true;
-          claimAmount;
-          claimPrice = minStake;
-        });
       };
       case (false) {
-        return throw Error.reject("Moderator not permitted to claim locked Tokens.");
+        canClaim := false;
       };
     };
+    #ok({
+      canClaim;
+      claimAmount;
+      claimPrice = minStake;
+    });
   };
 
   public shared ({ caller }) func claimLockedReward(amount : ICRCTypes.Tokens, customReceiver : ?Principal) : async Result.Result<Bool, Text> {

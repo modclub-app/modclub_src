@@ -37,7 +37,7 @@ export default function FormModal({
       console.log("RESULT", result);
 
       if (result) {
-        if (typeof result == "string" &&  (result == "Values entered not valid") || (result.includes("checksum")))
+        if (typeof result == "string" &&  (result == "Values entered not valid"))
           setMessage({ success: false, value: result });
         else
           setMessage({ success: true, value: result });

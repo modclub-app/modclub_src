@@ -8,4 +8,5 @@ export const FULL_CLAIM_MESSAGE = "You can fully claim your rewards";
 export const NOVICE_MSG_CONFIRM_VOTE = "I understand I need 10 success votes to get to Junior level";
 export const JUNIOR_MSG_CONFIRM_VOTE = "I understand I need 100 success votes to get to Senior level";
 export const SENIOR_MSG_CONFIRM_VOTE = ""
+export const CLAIM_LIMIT_MSG =(value: number) => `Stake ${value} MOD to unlock reward`;
 

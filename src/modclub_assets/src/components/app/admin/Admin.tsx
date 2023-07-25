@@ -24,7 +24,7 @@ import EditRulesModal from "./EditRulesModal";
 import EditModeratorSettingsModal from "./EditModeratorSettingsModal";
 import RemoveRuleModal from "./RemoveRuleModal";
 import EditAppModal from "./EditAppModal";
-import { format_token, getUrlFromArray } from "../../../utils/util";
+import { convert_to_mod, format_token, getUrlFromArray } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
 
 export default function Admin({
@@ -36,9 +36,9 @@ export default function Admin({
   const { identity } = useAuth();
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
-  const [providerTokenBalance, setProviderTokenBalance] = useState<number>(0);
+  const [providerTokenBalance, setProviderTokenBalance] = useState<bigint>(0);
   const [userTokenBalance, setUserTokenBalance] = useState<number>(0);
-  const [digit, setDigit] = useState<number>(0);
+  const [digit, setDigit] = useState<bigint>(0);
 
   const [showEditRules, setShowEditRules] = useState(false);
   const toggleEditRules = () => setShowEditRules(!showEditRules);
@@ -87,10 +87,9 @@ export default function Admin({
       icrc1Balance(identity.getPrincipal().toText()),
       icrc1Decimal()
     ]);
-    setDigit(Number(digits))
-    setProviderTokenBalance(Number(token));
-    setUserTokenBalance(Number(amount)/Math.pow(10, Number(digits)));
-
+    setDigit(digits)
+    setProviderTokenBalance(token);
+    setUserTokenBalance(convert_to_mod(amount, digits));
   };
 
   useEffect(() => {
@@ -272,7 +271,7 @@ export default function Admin({
                   style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
                 >
                   <Heading size={1} className="level">
-                    <span>{format_token(providerTokenBalance/Math.pow(10, digit))}</span>
+                    <span>{format_token(convert_to_mod(providerTokenBalance, digit))}</span>
                     <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
                       MOD
                       <br />

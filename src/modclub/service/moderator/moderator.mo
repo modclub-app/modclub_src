@@ -48,7 +48,7 @@ module ModeratorModule {
   };
 
   public func isSenior(rs : Int) : Bool {
-    return rs >= RSConstants.SENIOR1_THRESHOLD;
+    return rs >= RSConstants.JUNIOR_THRESHOLD;
   };
 
   public func reduceToJunior(moderId : Principal, env : CommonTypes.ENV) : async Result.Result<Bool, Text> {

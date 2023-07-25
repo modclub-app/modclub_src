@@ -355,7 +355,7 @@ module ContentVotingModule {
       let moderatorSystemAcc = { owner = arg.modclubCanisterId; subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE") };
       let fullReward = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
       let isSenior = switch (await rs.queryRSAndLevelByPrincipal(userVote.userId)) {
-        case (stat) { stat.score >= RSConstants.SENIOR1_THRESHOLD };
+        case (stat) { stat.score >= RSConstants.JUNIOR_THRESHOLD };
         case (_) { false };
       };
       let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);

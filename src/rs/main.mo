@@ -132,7 +132,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     var pointMultiplier : Int = 1;
     let statBefore = (await queryRSAndLevelByPrincipal(userId));
     let isNovice = statBefore.level == #novice;
-    let isSeniorBefore = statBefore.score > Constants.SENIOR1_THRESHOLD;
+    let isSeniorBefore = statBefore.score > Constants.JUNIOR_THRESHOLD;
 
     if (isNovice) {
       pointMultiplier := 10;
@@ -151,7 +151,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
     let clampedRS = Int.min(Int.max(updateRS, 0), Constants.MAX_RS);
     rsByUserId.put(userId, clampedRS);
-    if ((not isSeniorBefore) and clampedRS > Constants.SENIOR1_THRESHOLD) {
+    if ((not isSeniorBefore) and clampedRS > Constants.JUNIOR_THRESHOLD) {
       await publish("moderator_became_senior", userId);
     };
 
@@ -169,12 +169,8 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
       return #novice;
     } else if (score < Constants.JUNIOR_THRESHOLD) {
       return #junior;
-    } else if (score < Constants.SENIOR1_THRESHOLD) {
+   } else {
       return #senior1;
-    } else if (score < Constants.SENIOR2_THRESHOLD) {
-      return #senior2;
-    } else {
-      return #senior3;
     };
   };
 

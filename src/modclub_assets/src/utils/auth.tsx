@@ -7,7 +7,7 @@ import { actorController } from "./actor";
 import { HttpAgent, Identity } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { getUserFromStorage } from "./util";
-import { Profile } from "./types";
+import { ProfileStable } from "./types";
 import {
   getUserFromCanister,
   getAdminProviderIDs,
@@ -25,9 +25,9 @@ export interface AuthContext {
   requiresSignUp: boolean;
   logIn: (logInMethodToUse: string) => Promise<void>;
   logOut: () => void;
-  user: Profile;
+  user: ProfileStable;
   isAdminUser: boolean;
-  setUser: (user: Profile) => void;
+  setUser: (user: ProfileStable) => void;
   userPrincipalText: string;
   setSelectedProvider: (provider: Object) => void;
   selectedProvider: Object;
@@ -51,7 +51,7 @@ let checkAndConnectStoicCounter = 0;
 
 // Provider hook that creates auth object and handles state
 export function useProvideAuth(authClient): AuthContext {
-  const [user, setUser] = useState<Profile | undefined>();
+  const [user, setUser] = useState<ProfileStable | undefined>();
   const [userPrincipalText, setUserPrincipalText] = useState<string>("");
   const [isAuthenticatedLocal, setIsAuthenticatedLocal] =
     useState<boolean>(false);

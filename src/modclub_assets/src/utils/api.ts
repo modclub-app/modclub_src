@@ -31,6 +31,7 @@ import {
   ProviderSettingResult,
   Result_5,
   Result_4,
+  ProfileStable
 } from "./types";
 import { Principal } from "@dfinity/principal";
 import { canisterId as ModCanisterId} from "../../../declarations/modclub/index";
@@ -182,7 +183,7 @@ export async function registerModerator(
   username: string,
   email?: string,
   imageData?: ImageData
-): Promise<Profile> {
+): Promise<ProfileStable> {
   const imgResult = null;
   try {
     const _mc = await getMC();
@@ -212,7 +213,7 @@ export async function registerProvider(
   return response;
 }
 
-export async function getUserFromCanister(): Promise<Profile | null> {
+export async function getUserFromCanister(): Promise<ProfileStable | null> {
   try {
     const icUser = await (await getMC()).getProfile();
     if (icUser) {
@@ -320,7 +321,7 @@ export async function getAdminProviderIDs(): Promise<Principal[]> {
 
 export async function getProviderAdmins(
   provider: Principal
-): Promise<Profile[]> {
+): Promise<ProfileStable[]> {
   return await (await getMC()).getProviderAdmins(provider);
 }
 
@@ -332,7 +333,7 @@ export async function unStakeTokens(amount: number): Promise<any> {
   return trace_error(async()=>{await (await getMC()).unStakeTokens(BigInt(amount));})
 }
 
-export async function getAllProfiles(): Promise<Profile[]> {
+export async function getAllProfiles(): Promise<ProfileStable[]> {
   return (await getMC()).getAllProfiles();
 }
 
@@ -348,7 +349,7 @@ export async function checkUserRole(uid: Principal): Promise<boolean> {
   }
 }
 
-export async function getProfileById(userId: Principal): Promise<Profile> {
+export async function getProfileById(userId: Principal): Promise<ProfileStable> {
   return (await getMC()).getProfileById(userId);
 }
 
@@ -602,7 +603,7 @@ export async function providerSaBalanceById(provider: Principal,opt?: string): P
 
 export async function claimLockedReward(amount: number) : Promise<Result_4>{
   return trace_error(
-    async () => (await getMC()).claimLockedReward(BigInt(amount))
+    async () => (await getMC()).claimLockedReward(BigInt(amount),[])
   );
 }
 
@@ -612,16 +613,16 @@ export async function canClaimLockedReward(amount: number) : Promise<Result_5>{
   );
 }
 
-export async function stakeFor(userId: Identity): Promise<bigint> {
+export async function stakeFor(userId: string): Promise<bigint> {
   return trace_error(async()=>{ 
-    let res = await (await getVesting()).staked_for({ owner: userId, subaccount: [] });
+    let res = await (await getVesting()).staked_for({ owner: Principal.fromText(userId), subaccount: [] });
     return res
   });
 }
 
-export async function lockedFor(userId: Identity): Promise<bigint> {
+export async function lockedFor(userId: string): Promise<bigint> {
   return trace_error(async()=>{ 
-    let res = await (await getVesting()).locked_for({ owner: userId, subaccount: [] });
+    let res = await (await getVesting()).locked_for({ owner: Principal.fromText(userId), subaccount: [] });
     return res
   });
 }
