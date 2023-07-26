@@ -3,12 +3,14 @@ import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import Buffer "mo:base/Buffer";
 import CommonTypes "../common/types";
+import ICRCTypes "../common/ICRCTypes";
 
 module {
   public type Operation = {
     #VestingLock;
     #VestingClaim;
     #StakingLock;
+    #StakingDissolve;
     #StakingUnlock;
     #StakingRelease;
   };
@@ -45,8 +47,10 @@ module {
     #stake : () -> (account : ICRCTypes.Account, amount : ICRCTypes.Tokens);
     #unlock_staking : () -> (ICRCTypes.Account, ICRCTypes.Tokens);
     #claim_staking : () -> (account : ICRCTypes.Account, amount : ICRCTypes.Tokens);
+    #release_staking : () -> (account : ICRCTypes.Account, amount : ICRCTypes.Tokens);
     #locked_for : () -> ICRCTypes.Account;
     #staked_for : () -> ICRCTypes.Account;
     #unlocked_stakes_for : () -> ICRCTypes.Account;
+    #claimed_stakes_for : () -> ICRCTypes.Account;
   };
 };
