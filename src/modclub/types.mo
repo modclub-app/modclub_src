@@ -5,10 +5,17 @@ import Nat "mo:base/Nat";
 import Result "mo:base/Result";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
+import Blob "mo:base/Blob";
 import JSON "mo:json/JSON";
-import ICRCTypes "../wallet/ICRC/types";
+import ICRCTypes "../common/ICRCTypes";
 
 module {
+  public type TransferToProviderArgs = {
+    fromSubaccount : Blob;
+    to : ICRCTypes.Account;
+    amount : ICRCTypes.Tokens;
+  };
+
   public type AccountsImportPayload = {
     providers : [ProviderInfo];
     adminsByProvider : [ProviderAdmins];
@@ -242,6 +249,7 @@ module {
     createdAt : Timestamp;
     updatedAt : Timestamp;
     settings : ProviderSettings;
+    subaccounts : [(Text, Blob)];
     image : ?Image;
     contentCount : Nat;
     activeCount : Nat;

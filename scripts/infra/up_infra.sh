@@ -24,35 +24,41 @@ function create_qa_canisters() {
 }
 
 function deploy_wallet_canister() {
-	dfx identity use default && dfx identity new qa_ledger_minter && dfx identity use qa_ledger_minter
+	dfx identity use default && dfx identity new qa_ledger_minter && dfx identity use qa_ledger_minter || dfx identity use qa_ledger_minter
 	local qa_minter_principal=$(dfx identity get-principal)
-	dfx identity use default && dfx identity new qa_ledger_identity && dfx identity use qa_ledger_identity
+	dfx identity use default && dfx identity new qa_ledger_identity && dfx identity use qa_ledger_identity || dfx identity use qa_ledger_identity
 	local qa_ledger_principal=$(dfx identity get-principal)
-	dfx identity use default
-  local env=$(get_local_canisters)
+  dfx identity use default
 
-  dfx deploy wallet_qa  --argument="(record {
-    env = $env;
-    ledgerInit = record {
-      initial_mints = vec { 
-        record { account = record { owner = principal \"$qa_ledger_principal\"; }; amount = 100_000_000_000_000; };
-        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"-------------------------RESERVE\"}; amount = 367_500_000_000_000; };
-        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"-------------------------AIRDROP\"}; amount = 10_000_000_000_000; };
-        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"-----------------------MARKETING\"}; amount = 50_000_000_000_000; };
-        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"------------------------ADVISORS\"}; amount = 50_000_000_000_000; };
-        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"-------------------------PRESEED\"}; amount = 62_500_000_000_000; };
-        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"----------------------PUBLICSALE\"}; amount = 100_000_000_000_000; };
-        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"----------------------------SEED\"}; amount = 100_000_000_000_000; };
-        record { account = record { owner = principal \"$qa_ledger_principal\"; subaccount = opt blob \"----------------------------TEAM\"}; amount = 160_000_000_000_000; };
-      };
-      minting_account = record { owner = principal \"$qa_minter_principal\"; };
-      ledger_account = record { owner = principal \"$qa_ledger_principal\"; };
-      token_name = \"MODCLUB TEST TOKEN\";
-      token_symbol = \"MODTEST\";
-      decimals = 8;
-      transfer_fee = 10_000;
-    }}
-  )"
+  local ARCHIVE_CONTROLLER=$(dfx identity get-principal)
+  local TOKEN_NAME="Modclub_test_token"
+  local TOKEN_SYMBOL=MODT
+
+  dfx deploy wallet_qa --mode=reinstall --argument '(variant { Init = 
+      record {
+        token_name = "'${TOKEN_NAME}'";
+        token_symbol = "'${TOKEN_SYMBOL}'";
+        minting_account = record { owner = principal "'${qa_minter_principal}'";};
+        initial_balances = vec {
+          record { record { owner = principal "'${qa_ledger_principal}'"; }; 100_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "-------------------------RESERVE"}; 367_500_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "-------------------------AIRDROP"}; 10_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "-----------------------MARKETING"}; 50_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "------------------------ADVISORS"}; 50_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "-------------------------PRESEED"}; 62_500_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "----------------------PUBLICSALE"}; 100_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "----------------------------SEED"}; 100_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "----------------------------TEAM"}; 160_000_000_000_000; };
+        };
+        metadata = vec {};
+        transfer_fee = 10;
+        archive_options = record {
+          trigger_threshold = 2000;
+          num_blocks_to_archive = 1000;
+          controller_id = principal "'${ARCHIVE_CONTROLLER}'";
+        }
+  }})'
+
   return 0;
 }
 
@@ -85,6 +91,7 @@ function deploy_qa_canisters() {
   dfx generate wallet_qa -v &&
   dfx generate vesting_qa -v &&
   DEV_ENV=qa dfx deploy modclub_qa_assets &&
+  dfx ledger fabricate-cycles --canister $(dfx canister id modclub_qa) --amount 10 &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
 	return 0;
 }

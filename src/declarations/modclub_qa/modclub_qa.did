@@ -10,16 +10,16 @@ type VoteParamsId = text;
 type VoteParameters = 
  record {
    complexity: Complexity;
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    id: VoteParamsId;
    requiredVotes: int;
-   updatedAt: Timestamp;
+   updatedAt: Timestamp__1;
  };
 type VoteId = text;
 type Vote = 
  record {
    contentId: text;
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    decision: Decision;
    id: VoteId;
    userId: UserId;
@@ -85,14 +85,30 @@ type TransformArgs =
    context: blob;
    response: CanisterHttpResponsePayload;
  };
+type TransferError = 
+ variant {
+   BadBurn: record {min_burn_amount: Tokens;};
+   BadFee: record {expected_fee: Tokens;};
+   CreatedInFuture: record {ledger_time: Timestamp;};
+   Duplicate: record {duplicate_of: TxIndex;};
+   GenericError: record {
+                   error_code: nat;
+                   message: text;
+                 };
+   InsufficientFunds: record {balance: Tokens;};
+   TemporarilyUnavailable;
+   TooOld;
+ };
 type Tokens = nat;
 type Token = record {};
-type Timestamp = int;
+type Timestamp__1 = int;
+type Timestamp = nat64;
 type SubscribePohMessage = record {
                              callback:
                               func (PohVerificationResponsePlus) -> () oneway;
                            };
 type SubscribeMessage = record {callback: func (ContentResult) -> () oneway;};
+type Subaccount = blob;
 type StreamingStrategy = variant {
                            Callback:
                             record {
@@ -118,15 +134,25 @@ type Role =
    moderator;
    owner;
  };
-type Result_6 = 
+type Result__1 = 
+ variant {
+   Err: TransferError;
+   Ok: TxIndex;
+ };
+type Result_7 = 
  variant {
    err: text;
    ok: CanClaimLockedResponse;
  };
-type Result_5 = 
+type Result_6 = 
  variant {
    err: text;
    ok: bool;
+ };
+type Result_5 = 
+ variant {
+   err: text;
+   ok: nat;
  };
 type Result_4 = 
  variant {
@@ -156,11 +182,11 @@ type Result =
 type ReservedId = text;
 type Reserved = 
  record {
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    id: ReservedId;
    profileId: text;
-   reservedExpiryTime: Timestamp;
-   updatedAt: Timestamp;
+   reservedExpiryTime: Timestamp__1;
+   updatedAt: Timestamp__1;
  };
 type RelShared_1 = record {forw: Trie2D_1;};
 type RelShared = record {forw: Trie2D;};
@@ -168,7 +194,7 @@ type ReceiptId = text;
 type Receipt = 
  record {
    cost: int;
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    id: ReceiptId;
  };
 type ProviderSettings = 
@@ -190,7 +216,7 @@ type ProviderPlus =
  record {
    activeCount: nat;
    contentCount: nat;
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    description: text;
    id: principal;
    image: opt Image;
@@ -198,7 +224,11 @@ type ProviderPlus =
    rewardsSpent: nat;
    rules: vec Rule;
    settings: ProviderSettings;
-   updatedAt: Timestamp;
+   subaccounts: vec record {
+                      text;
+                      blob;
+                    };
+   updatedAt: Timestamp__1;
  };
 type ProviderMetaResult = 
  variant {
@@ -212,12 +242,12 @@ type ProviderMeta =
  };
 type ProviderInfo = 
  record {
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    description: text;
    id: principal;
    image: opt Image;
    name: text;
-   updatedAt: Timestamp;
+   updatedAt: Timestamp__1;
  };
 type ProviderId = principal;
 type ProviderError = 
@@ -238,7 +268,7 @@ type ProviderAdmins =
  };
 type ProfileStable = 
  record {
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    email: text;
    id: UserId;
    pic: opt Image;
@@ -247,7 +277,7 @@ type ProfileStable =
                       text;
                       blob;
                     };
-   updatedAt: Timestamp;
+   updatedAt: Timestamp__1;
    userName: text;
  };
 type PohVerificationStatus = 
@@ -506,7 +536,7 @@ type OldModeratorLeaderboard =
  record {
    completedVoteCount: int;
    id: UserId;
-   lastVoted: opt Timestamp;
+   lastVoted: opt Timestamp__1;
    performance: float64;
    rewardsEarned: int;
    userName: text;
@@ -524,7 +554,7 @@ type ModeratorLeaderboard =
  record {
    completedVoteCount: int;
    id: UserId;
-   lastVoted: opt Timestamp;
+   lastVoted: opt Timestamp__1;
    performance: float64;
    rewardsEarned: int;
    rs: float64;
@@ -540,10 +570,12 @@ type ModClub =
    addToApprovedUser: (principal) -> ();
    adminInit: () -> ();
    adminUpdateEmail: (principal, text) -> (ProfileStable);
-   canClaimLockedReward: (opt Tokens) -> (Result_6);
-   canReserveContent: (text) -> (Result_5);
+   burn: (opt Subaccount, nat) -> ();
+   canClaimLockedReward: (opt Tokens) -> (Result_7);
+   canReserveContent: (text) -> (Result_6);
    checkIfUserOptToReciveAlerts: () -> (bool) query;
-   claimLockedReward: (Tokens, opt principal) -> (Result_5);
+   claimLockedReward: (Tokens, opt principal) -> (Result_6);
+   claimStakedTokens: (Tokens) -> (Result_5);
    collectCanisterMetrics: () -> ();
    configurePohForProvider: (principal, vec text, nat, bool) -> ();
    deregisterProvider: () -> (text);
@@ -576,6 +608,7 @@ type ModClub =
    getProviderContent: (principal, ContentStatus, nat, nat) ->
     (vec ContentPlus);
    getProviderRules: () -> (vec Rule) query;
+   getProviderSa: (text, opt principal) -> (blob);
    getReservedByContentId: (text) -> (Result_2);
    getRules: (principal) -> (vec Rule) query;
    getTaskStats: (int) -> (nat, nat, nat, nat);
@@ -592,6 +625,7 @@ type ModClub =
    registerModerator: (text, opt text, opt Image) -> (ProfileStable);
    registerProvider: (text, text, opt Image) -> (text);
    registerUserToReceiveAlerts: (principal, bool) -> (bool);
+   releaseTokens: (Tokens) -> (Result__1);
    removeProviderAdmin: (principal, principal) -> (ProviderResult);
    removeRules: (vec RuleId, opt principal) -> ();
    reserveContent: (text) -> ();
@@ -605,6 +639,7 @@ type ModClub =
    showAdmins: () -> (vec principal) query;
    shuffleContent: () -> ();
    shufflePohContent: () -> ();
+   stakeTokens: (nat) -> (Result__1);
    submitChallengeData: (PohChallengeSubmissionRequest) ->
     (PohChallengeSubmissionResponse);
    submitHtmlContent: (text, text, opt text) -> (text);
@@ -613,10 +648,6 @@ type ModClub =
    subscribe: (SubscribeMessage) -> ();
    subscribePohCallback: (SubscribePohMessage) -> ();
    toggleAllowSubmission: (bool) -> ();
-   topUpProviderReserve: (record {
-                            amount: nat;
-                            providerId: opt principal;
-                          }) -> ();
    transform: (TransformArgs) -> (CanisterHttpResponsePayload) query;
    unStakeTokens: (nat) -> (text);
    updateProvider: (principal, ProviderMeta) -> (ProviderMetaResult);
@@ -829,7 +860,7 @@ type ContentResult =
 type ContentPlus = 
  record {
    contentType: ContentType;
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    hasVoted: opt bool;
    id: ContentId;
    image: opt Image;
@@ -843,7 +874,7 @@ type ContentPlus =
    status: ContentStatus;
    "text": opt text;
    title: opt text;
-   updatedAt: Timestamp;
+   updatedAt: Timestamp__1;
    voteCount: nat;
    voteParameters: VoteParameters;
  };
@@ -855,7 +886,7 @@ type ConsumerPayload =
  };
 type Complexity = 
  record {
-   expiryTime: Timestamp;
+   expiryTime: Timestamp__1;
    level: Level;
  };
 type ChallengeResponse = 
@@ -974,16 +1005,16 @@ type AssocList =
 type Activity = 
  record {
    contentType: ContentType;
-   createdAt: Timestamp;
+   createdAt: Timestamp__1;
    minStake: nat;
    providerId: ProviderId;
    providerName: text;
    requiredVotes: nat;
    reward: float64;
-   rewardRelease: Timestamp;
+   rewardRelease: Timestamp__1;
    status: ContentStatus;
    title: opt text;
-   updatedAt: Timestamp;
+   updatedAt: Timestamp__1;
    vote: Vote;
    voteCount: nat;
  };

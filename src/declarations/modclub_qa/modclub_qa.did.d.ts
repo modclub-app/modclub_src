@@ -13,11 +13,11 @@ export interface Activity {
   'title' : [] | [string],
   'voteCount' : bigint,
   'contentType' : ContentType,
-  'rewardRelease' : Timestamp,
-  'createdAt' : Timestamp,
+  'rewardRelease' : Timestamp__1,
+  'createdAt' : Timestamp__1,
   'vote' : Vote,
   'minStake' : bigint,
-  'updatedAt' : Timestamp,
+  'updatedAt' : Timestamp__1,
   'providerName' : string,
   'providerId' : ProviderId,
   'requiredVotes' : bigint,
@@ -70,7 +70,7 @@ export interface ChallengeResponse {
   'challengeId' : string,
   'requestedAt' : [] | [bigint],
 }
-export interface Complexity { 'expiryTime' : Timestamp, 'level' : Level }
+export interface Complexity { 'expiryTime' : Timestamp__1, 'level' : Level }
 export type ConsumerPayload = { 'events' : Array<Event> } |
   { 'admins' : Array<Principal> };
 export type ContentId = string;
@@ -81,11 +81,11 @@ export interface ContentPlus {
   'voteCount' : bigint,
   'receipt' : Receipt,
   'contentType' : ContentType,
-  'createdAt' : Timestamp,
+  'createdAt' : Timestamp__1,
   'text' : [] | [string],
   'sourceId' : string,
   'minStake' : bigint,
-  'updatedAt' : Timestamp,
+  'updatedAt' : Timestamp__1,
   'reservedList' : Array<Reserved>,
   'providerName' : string,
   'image' : [] | [Image],
@@ -204,10 +204,12 @@ export interface ModClub {
   'addToApprovedUser' : ActorMethod<[Principal], undefined>,
   'adminInit' : ActorMethod<[], undefined>,
   'adminUpdateEmail' : ActorMethod<[Principal, string], ProfileStable>,
-  'canClaimLockedReward' : ActorMethod<[[] | [Tokens]], Result_6>,
-  'canReserveContent' : ActorMethod<[string], Result_5>,
+  'burn' : ActorMethod<[[] | [Subaccount], bigint], undefined>,
+  'canClaimLockedReward' : ActorMethod<[[] | [Tokens]], Result_7>,
+  'canReserveContent' : ActorMethod<[string], Result_6>,
   'checkIfUserOptToReciveAlerts' : ActorMethod<[], boolean>,
-  'claimLockedReward' : ActorMethod<[Tokens, [] | [Principal]], Result_5>,
+  'claimLockedReward' : ActorMethod<[Tokens, [] | [Principal]], Result_6>,
+  'claimStakedTokens' : ActorMethod<[Tokens], Result_5>,
   'collectCanisterMetrics' : ActorMethod<[], undefined>,
   'configurePohForProvider' : ActorMethod<
     [Principal, Array<string>, bigint, boolean],
@@ -261,6 +263,10 @@ export interface ModClub {
     Array<ContentPlus>
   >,
   'getProviderRules' : ActorMethod<[], Array<Rule>>,
+  'getProviderSa' : ActorMethod<
+    [string, [] | [Principal]],
+    Uint8Array | number[]
+  >,
   'getReservedByContentId' : ActorMethod<[string], Result_2>,
   'getRules' : ActorMethod<[Principal], Array<Rule>>,
   'getTaskStats' : ActorMethod<[bigint], [bigint, bigint, bigint, bigint]>,
@@ -286,6 +292,7 @@ export interface ModClub {
   >,
   'registerProvider' : ActorMethod<[string, string, [] | [Image]], string>,
   'registerUserToReceiveAlerts' : ActorMethod<[Principal, boolean], boolean>,
+  'releaseTokens' : ActorMethod<[Tokens], Result__1>,
   'removeProviderAdmin' : ActorMethod<[Principal, Principal], ProviderResult>,
   'removeRules' : ActorMethod<[Array<RuleId>, [] | [Principal]], undefined>,
   'reserveContent' : ActorMethod<[string], undefined>,
@@ -299,6 +306,7 @@ export interface ModClub {
   'showAdmins' : ActorMethod<[], Array<Principal>>,
   'shuffleContent' : ActorMethod<[], undefined>,
   'shufflePohContent' : ActorMethod<[], undefined>,
+  'stakeTokens' : ActorMethod<[bigint], Result__1>,
   'submitChallengeData' : ActorMethod<
     [PohChallengeSubmissionRequest],
     PohChallengeSubmissionResponse
@@ -312,10 +320,6 @@ export interface ModClub {
   'subscribe' : ActorMethod<[SubscribeMessage], undefined>,
   'subscribePohCallback' : ActorMethod<[SubscribePohMessage], undefined>,
   'toggleAllowSubmission' : ActorMethod<[boolean], undefined>,
-  'topUpProviderReserve' : ActorMethod<
-    [{ 'amount' : bigint, 'providerId' : [] | [Principal] }],
-    undefined
-  >,
   'transform' : ActorMethod<[TransformArgs], CanisterHttpResponsePayload>,
   'unStakeTokens' : ActorMethod<[bigint], string>,
   'updateProvider' : ActorMethod<[Principal, ProviderMeta], ProviderMetaResult>,
@@ -344,7 +348,7 @@ export interface ModeratorLeaderboard {
   'completedVoteCount' : bigint,
   'userName' : string,
   'rewardsEarned' : bigint,
-  'lastVoted' : [] | [Timestamp],
+  'lastVoted' : [] | [Timestamp__1],
   'performance' : number,
 }
 export type Nanos = bigint;
@@ -360,7 +364,7 @@ export interface OldModeratorLeaderboard {
   'completedVoteCount' : bigint,
   'userName' : string,
   'rewardsEarned' : bigint,
-  'lastVoted' : [] | [Timestamp],
+  'lastVoted' : [] | [Timestamp__1],
   'performance' : number,
 }
 export interface PohChallengePackage {
@@ -556,10 +560,10 @@ export interface ProfileStable {
   'pic' : [] | [Image],
   'userName' : string,
   'subaccounts' : Array<[string, Uint8Array | number[]]>,
-  'createdAt' : Timestamp,
+  'createdAt' : Timestamp__1,
   'role' : Role,
   'email' : string,
-  'updatedAt' : Timestamp,
+  'updatedAt' : Timestamp__1,
 }
 export interface ProviderAdmins {
   'pid' : Principal,
@@ -577,9 +581,9 @@ export type ProviderId = Principal;
 export interface ProviderInfo {
   'id' : Principal,
   'name' : string,
-  'createdAt' : Timestamp,
+  'createdAt' : Timestamp__1,
   'description' : string,
-  'updatedAt' : Timestamp,
+  'updatedAt' : Timestamp__1,
   'image' : [] | [Image],
 }
 export interface ProviderMeta { 'name' : string, 'description' : string }
@@ -587,12 +591,13 @@ export type ProviderMetaResult = { 'ok' : ProviderMeta } |
   { 'err' : ProviderError };
 export interface ProviderPlus {
   'id' : Principal,
+  'subaccounts' : Array<[string, Uint8Array | number[]]>,
   'contentCount' : bigint,
   'rewardsSpent' : bigint,
   'name' : string,
-  'createdAt' : Timestamp,
+  'createdAt' : Timestamp__1,
   'description' : string,
-  'updatedAt' : Timestamp,
+  'updatedAt' : Timestamp__1,
   'settings' : ProviderSettings,
   'activeCount' : bigint,
   'image' : [] | [Image],
@@ -609,17 +614,17 @@ export interface ProviderSettings {
 export interface Receipt {
   'id' : ReceiptId,
   'cost' : bigint,
-  'createdAt' : Timestamp,
+  'createdAt' : Timestamp__1,
 }
 export type ReceiptId = string;
 export interface RelShared { 'forw' : Trie2D }
 export interface RelShared_1 { 'forw' : Trie2D_1 }
 export interface Reserved {
   'id' : ReservedId,
-  'createdAt' : Timestamp,
+  'createdAt' : Timestamp__1,
   'profileId' : string,
-  'reservedExpiryTime' : Timestamp,
-  'updatedAt' : Timestamp,
+  'reservedExpiryTime' : Timestamp__1,
+  'updatedAt' : Timestamp__1,
 }
 export type ReservedId = string;
 export type Result = { 'ok' : TxIndex } |
@@ -632,10 +637,14 @@ export type Result_3 = { 'ok' : PohTaskDataAndVotesWrapperPlus } |
   { 'err' : PohError };
 export type Result_4 = { 'ok' : PohTaskDataWrapperPlus } |
   { 'err' : PohError };
-export type Result_5 = { 'ok' : boolean } |
+export type Result_5 = { 'ok' : bigint } |
   { 'err' : string };
-export type Result_6 = { 'ok' : CanClaimLockedResponse } |
+export type Result_6 = { 'ok' : boolean } |
   { 'err' : string };
+export type Result_7 = { 'ok' : CanClaimLockedResponse } |
+  { 'err' : string };
+export type Result__1 = { 'Ok' : TxIndex } |
+  { 'Err' : TransferError };
 export type Role = { 'admin' : null } |
   { 'moderator' : null } |
   { 'owner' : null };
@@ -648,11 +657,23 @@ export interface StreamingCallbackHttpResponse {
 export type StreamingStrategy = {
     'Callback' : { 'token' : Token, 'callback' : [Principal, string] }
   };
+export type Subaccount = Uint8Array | number[];
 export interface SubscribeMessage { 'callback' : [Principal, string] }
 export interface SubscribePohMessage { 'callback' : [Principal, string] }
 export type Timestamp = bigint;
+export type Timestamp__1 = bigint;
 export type Token = {};
 export type Tokens = bigint;
+export type TransferError = {
+    'GenericError' : { 'message' : string, 'error_code' : bigint }
+  } |
+  { 'TemporarilyUnavailable' : null } |
+  { 'BadBurn' : { 'min_burn_amount' : Tokens } } |
+  { 'Duplicate' : { 'duplicate_of' : TxIndex } } |
+  { 'BadFee' : { 'expected_fee' : Tokens } } |
+  { 'CreatedInFuture' : { 'ledger_time' : Timestamp } } |
+  { 'TooOld' : null } |
+  { 'InsufficientFunds' : { 'balance' : Tokens } };
 export interface TransformArgs {
   'context' : Uint8Array | number[],
   'response' : CanisterHttpResponsePayload,
@@ -690,15 +711,15 @@ export interface Vote {
   'contentId' : string,
   'decision' : Decision,
   'userId' : UserId,
-  'createdAt' : Timestamp,
+  'createdAt' : Timestamp__1,
   'violatedRules' : [] | [Array<RuleId>],
 }
 export type VoteId = string;
 export interface VoteParameters {
   'id' : VoteParamsId,
   'complexity' : Complexity,
-  'createdAt' : Timestamp,
-  'updatedAt' : Timestamp,
+  'createdAt' : Timestamp__1,
+  'updatedAt' : Timestamp__1,
   'requiredVotes' : bigint,
 }
 export type VoteParamsId = string;

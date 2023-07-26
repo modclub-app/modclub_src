@@ -87,22 +87,24 @@ function check_equal() {
 	dfx canister call modclub_qa addProviderAdmin '(principal "'$TEST_PROVIDER_PRINCIPAL'" , "TEMP_PROVIDER_NAME", null)'
 	dfx canister call modclub_qa updateSettings '(principal "'$TEST_PROVIDER_PRINCIPAL'", record {requiredVotes=1; minStaked=0})'
 
-	dfx identity use default
+	# dfx identity use default
+	dfx identity use qa_ledger_identity
 	echo "Transfering Tokens to QA_Provider main account..."
 	# For imitation that Provider has some amount of Tokens
-	dfx canister call wallet_qa transferToProvider '( record { from = record { owner = principal "'$LEDGER_ACCOUNT'" }; to = record { owner= principal "'$TEST_PROVIDER_PRINCIPAL'" }; amount = 10_000'$TOKEN_DECIMALS' })'
+	declare provider_topUp_result=$(dfx canister call wallet_qa icrc1_transfer '( record { from_subaccount = opt blob "-------------------------RESERVE"; to = record { owner = principal "'$TEST_PROVIDER_PRINCIPAL'" }; amount = 10_000'$TOKEN_DECIMALS' } )')
+	echo "$provider_topUp_result"
 
 	# add mod token
-	echo "+++++++++++++++++++ Step 2: Mod tokens +++++++++++++++++++"
+	# echo "+++++++++++++++++++ Step 2: Mod tokens +++++++++++++++++++"
 	dfx identity use qa_test_provider
-	echo "Creating Approve..."
-	dfx canister call wallet_qa icrc2_approve '( record { spender = principal "'$MODCLUB_CANISTER_ID'"; amount = 1000'$TOKEN_DECIMALS' } )'
-	echo "TopUp Provider Subaccount..."
-	dfx canister call modclub_qa topUpProviderReserve '( record { amount = 100'$TOKEN_DECIMALS' } )'
-	dfx identity use default
+	declare providerSaReserveRaw=$(dfx canister call modclub_qa getProviderSa '("RESERVE", null)')
+	declare pSaReserve1=${providerSaReserveRaw#"(blob \""}
+	declare pSaReserve=${pSaReserve1%"\")"}
+	echo "${pSaReserve}"
+	declare transfer_result=$(dfx canister call wallet_qa icrc1_transfer '( record { to = record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "'$pSaReserve'" }; amount = 1000_000_000 } )')
 
 	echo "Check Modclub canister balance"
-	dfx canister call wallet_qa icrc1_balance_of '( record { owner = principal "'$MODCLUB_CANISTER_ID'" } )'
+	dfx canister call wallet_qa icrc1_balance_of '( record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "'$pSaReserve'" } )'
 
 	dfx canister call modclub_qa setRandomization '(false)'
 

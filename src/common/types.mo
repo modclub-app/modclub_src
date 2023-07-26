@@ -4,7 +4,7 @@ import Bool "mo:base/Bool";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import Float "mo:base/Float";
-import ICRCTypes "../wallet/ICRC/types";
+import ICRCTypes "./ICRCTypes";
 
 module {
   public type ENV = {
@@ -43,6 +43,7 @@ module {
     burn : (?ICRCTypes.Subaccount, ICRCTypes.Tokens) -> async ();
     icrc1_balance_of : (ICRCTypes.Account) -> async ICRCTypes.Tokens;
     icrc1_fee : () -> async Nat;
+    icrc1_minting_account : () -> async ?ICRCTypes.Account;
     icrc1_transfer : ({
       from_subaccount : ?ICRCTypes.Subaccount;
       to : ICRCTypes.Account;

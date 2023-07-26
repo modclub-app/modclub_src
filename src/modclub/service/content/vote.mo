@@ -20,7 +20,7 @@ import QueueManager "../queue/queue";
 import RSTypes "../../../rs/types";
 import RSConstants "../../../rs/constants";
 import ICRCModule "../../../wallet/ICRC/ledger";
-import ICRCTypes "../../../wallet/ICRC/types";
+import ICRCTypes "../../../common/ICRCTypes";
 import WalletTypes "../../../wallet/types";
 import Utils "../../../common/utils";
 import CommonTypes "../../../common/types";
@@ -408,12 +408,20 @@ module ContentVotingModule {
       created_at_time = null;
     });
 
-    // burn.
-    let _ = await ledger.burn(
-      provider.subaccounts.get("ACCOUNT_PAYABLE"),
-      Utils.floatToTokens(ModClubParam.GAMMA_B * CT)
-    );
+    let minting_account = switch(await ledger.icrc1_minting_account()) {
+      case(?mAcc : ?ICRCTypes.Account) mAcc;
+      case(_) { throw Error.reject("Unable to get minting_account from ledger."); };
+    };
 
+    // burn.
+    ignore await ledger.icrc1_transfer({
+        from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+        to = minting_account;
+        amount = Utils.floatToTokens(ModClubParam.GAMMA_B * CT);
+        fee = null;
+        memo = null;
+        created_at_time = null;
+      });
   };
 
   private func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {

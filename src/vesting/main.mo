@@ -15,7 +15,7 @@ import Buffer "mo:base/Buffer";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
 import Utils "../common/utils";
-import ICRCTypes "../wallet/ICRC/types";
+import ICRCTypes "../common/ICRCTypes";
 import CommonTypes "../common/types";
 import ModSecurity "../common/security/guard";
 import VestingLedger "./ledger";

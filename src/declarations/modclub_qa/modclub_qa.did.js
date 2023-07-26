@@ -68,7 +68,7 @@ export const idlFactory = ({ IDL }) => {
     'imageType' : IDL.Text,
     'data' : IDL.Vec(IDL.Nat8),
   });
-  const Timestamp = IDL.Int;
+  const Timestamp__1 = IDL.Int;
   const Role = IDL.Variant({
     'admin' : IDL.Null,
     'moderator' : IDL.Null,
@@ -79,22 +79,24 @@ export const idlFactory = ({ IDL }) => {
     'pic' : IDL.Opt(Image),
     'userName' : IDL.Text,
     'subaccounts' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Nat8))),
-    'createdAt' : Timestamp,
+    'createdAt' : Timestamp__1,
     'role' : Role,
     'email' : IDL.Text,
-    'updatedAt' : Timestamp,
+    'updatedAt' : Timestamp__1,
   });
+  const Subaccount = IDL.Vec(IDL.Nat8);
   const Tokens = IDL.Nat;
   const CanClaimLockedResponse = IDL.Record({
     'claimPrice' : Tokens,
     'claimAmount' : Tokens,
     'canClaim' : IDL.Bool,
   });
-  const Result_6 = IDL.Variant({
+  const Result_7 = IDL.Variant({
     'ok' : CanClaimLockedResponse,
     'err' : IDL.Text,
   });
-  const Result_5 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
+  const Result_6 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
+  const Result_5 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
   const ContentStatus = IDL.Variant({
     'new' : IDL.Null,
     'approved' : IDL.Null,
@@ -118,7 +120,7 @@ export const idlFactory = ({ IDL }) => {
     'contentId' : IDL.Text,
     'decision' : Decision,
     'userId' : UserId,
-    'createdAt' : Timestamp,
+    'createdAt' : Timestamp__1,
     'violatedRules' : IDL.Opt(IDL.Vec(RuleId)),
   });
   const ProviderId = IDL.Principal;
@@ -128,11 +130,11 @@ export const idlFactory = ({ IDL }) => {
     'title' : IDL.Opt(IDL.Text),
     'voteCount' : IDL.Nat,
     'contentType' : ContentType,
-    'rewardRelease' : Timestamp,
-    'createdAt' : Timestamp,
+    'rewardRelease' : Timestamp__1,
+    'createdAt' : Timestamp__1,
     'vote' : Vote,
     'minStake' : IDL.Nat,
-    'updatedAt' : Timestamp,
+    'updatedAt' : Timestamp__1,
     'providerName' : IDL.Text,
     'providerId' : ProviderId,
     'requiredVotes' : IDL.Nat,
@@ -142,15 +144,15 @@ export const idlFactory = ({ IDL }) => {
   const Receipt = IDL.Record({
     'id' : ReceiptId,
     'cost' : IDL.Int,
-    'createdAt' : Timestamp,
+    'createdAt' : Timestamp__1,
   });
   const ReservedId = IDL.Text;
   const Reserved = IDL.Record({
     'id' : ReservedId,
-    'createdAt' : Timestamp,
+    'createdAt' : Timestamp__1,
     'profileId' : IDL.Text,
-    'reservedExpiryTime' : Timestamp,
-    'updatedAt' : Timestamp,
+    'reservedExpiryTime' : Timestamp__1,
+    'updatedAt' : Timestamp__1,
   });
   const VoteParamsId = IDL.Text;
   const Level = IDL.Variant({
@@ -159,12 +161,15 @@ export const idlFactory = ({ IDL }) => {
     'xhard' : IDL.Null,
     'simple' : IDL.Null,
   });
-  const Complexity = IDL.Record({ 'expiryTime' : Timestamp, 'level' : Level });
+  const Complexity = IDL.Record({
+    'expiryTime' : Timestamp__1,
+    'level' : Level,
+  });
   const VoteParameters = IDL.Record({
     'id' : VoteParamsId,
     'complexity' : Complexity,
-    'createdAt' : Timestamp,
-    'updatedAt' : Timestamp,
+    'createdAt' : Timestamp__1,
+    'updatedAt' : Timestamp__1,
     'requiredVotes' : IDL.Int,
   });
   const ContentPlus = IDL.Record({
@@ -174,11 +179,11 @@ export const idlFactory = ({ IDL }) => {
     'voteCount' : IDL.Nat,
     'receipt' : Receipt,
     'contentType' : ContentType,
-    'createdAt' : Timestamp,
+    'createdAt' : Timestamp__1,
     'text' : IDL.Opt(IDL.Text),
     'sourceId' : IDL.Text,
     'minStake' : IDL.Nat,
-    'updatedAt' : Timestamp,
+    'updatedAt' : Timestamp__1,
     'reservedList' : IDL.Vec(Reserved),
     'providerName' : IDL.Text,
     'image' : IDL.Opt(Image),
@@ -325,7 +330,7 @@ export const idlFactory = ({ IDL }) => {
     'completedVoteCount' : IDL.Int,
     'userName' : IDL.Text,
     'rewardsEarned' : IDL.Int,
-    'lastVoted' : IDL.Opt(Timestamp),
+    'lastVoted' : IDL.Opt(Timestamp__1),
     'performance' : IDL.Float64,
   });
   const Hash = IDL.Nat32;
@@ -526,12 +531,13 @@ export const idlFactory = ({ IDL }) => {
   const Rule = IDL.Record({ 'id' : RuleId, 'description' : IDL.Text });
   const ProviderPlus = IDL.Record({
     'id' : IDL.Principal,
+    'subaccounts' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Nat8))),
     'contentCount' : IDL.Nat,
     'rewardsSpent' : IDL.Nat,
     'name' : IDL.Text,
-    'createdAt' : Timestamp,
+    'createdAt' : Timestamp__1,
     'description' : IDL.Text,
-    'updatedAt' : Timestamp,
+    'updatedAt' : Timestamp__1,
     'settings' : ProviderSettings,
     'activeCount' : IDL.Nat,
     'image' : IDL.Opt(Image),
@@ -575,9 +581,9 @@ export const idlFactory = ({ IDL }) => {
   const ProviderInfo = IDL.Record({
     'id' : IDL.Principal,
     'name' : IDL.Text,
-    'createdAt' : Timestamp,
+    'createdAt' : Timestamp__1,
     'description' : IDL.Text,
-    'updatedAt' : Timestamp,
+    'updatedAt' : Timestamp__1,
     'image' : IDL.Opt(Image),
   });
   const OldModeratorLeaderboard = IDL.Record({
@@ -585,7 +591,7 @@ export const idlFactory = ({ IDL }) => {
     'completedVoteCount' : IDL.Int,
     'userName' : IDL.Text,
     'rewardsEarned' : IDL.Int,
-    'lastVoted' : IDL.Opt(Timestamp),
+    'lastVoted' : IDL.Opt(Timestamp__1),
     'performance' : IDL.Float64,
   });
   const AccountsImportPayload = IDL.Record({
@@ -594,6 +600,22 @@ export const idlFactory = ({ IDL }) => {
     'approvedPOHUsers' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Principal)),
     'moderators' : IDL.Vec(OldModeratorLeaderboard),
   });
+  const TxIndex = IDL.Nat;
+  const Timestamp = IDL.Nat64;
+  const TransferError = IDL.Variant({
+    'GenericError' : IDL.Record({
+      'message' : IDL.Text,
+      'error_code' : IDL.Nat,
+    }),
+    'TemporarilyUnavailable' : IDL.Null,
+    'BadBurn' : IDL.Record({ 'min_burn_amount' : Tokens }),
+    'Duplicate' : IDL.Record({ 'duplicate_of' : TxIndex }),
+    'BadFee' : IDL.Record({ 'expected_fee' : Tokens }),
+    'CreatedInFuture' : IDL.Record({ 'ledger_time' : Timestamp }),
+    'TooOld' : IDL.Null,
+    'InsufficientFunds' : IDL.Record({ 'balance' : Tokens }),
+  });
+  const Result__1 = IDL.Variant({ 'Ok' : TxIndex, 'Err' : TransferError });
   const PohChallengesAttempt = IDL.Record({
     'dataCanisterId' : IDL.Opt(IDL.Principal),
     'status' : PohChallengeStatus,
@@ -668,7 +690,6 @@ export const idlFactory = ({ IDL }) => {
     'ruleId' : IDL.Text,
     'challengeId' : IDL.Text,
   });
-  const TxIndex = IDL.Nat;
   const Result = IDL.Variant({ 'ok' : TxIndex, 'err' : IDL.Text });
   const ModClub = IDL.Service({
     'AdminCheckPohVerificationResp' : IDL.Func(
@@ -690,14 +711,16 @@ export const idlFactory = ({ IDL }) => {
         [ProfileStable],
         [],
       ),
-    'canClaimLockedReward' : IDL.Func([IDL.Opt(Tokens)], [Result_6], []),
-    'canReserveContent' : IDL.Func([IDL.Text], [Result_5], []),
+    'burn' : IDL.Func([IDL.Opt(Subaccount), IDL.Nat], [], []),
+    'canClaimLockedReward' : IDL.Func([IDL.Opt(Tokens)], [Result_7], []),
+    'canReserveContent' : IDL.Func([IDL.Text], [Result_6], []),
     'checkIfUserOptToReciveAlerts' : IDL.Func([], [IDL.Bool], ['query']),
     'claimLockedReward' : IDL.Func(
         [Tokens, IDL.Opt(IDL.Principal)],
-        [Result_5],
+        [Result_6],
         [],
       ),
+    'claimStakedTokens' : IDL.Func([Tokens], [Result_5], []),
     'collectCanisterMetrics' : IDL.Func([], [], []),
     'configurePohForProvider' : IDL.Func(
         [IDL.Principal, IDL.Vec(IDL.Text), IDL.Nat, IDL.Bool],
@@ -771,6 +794,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'getProviderRules' : IDL.Func([], [IDL.Vec(Rule)], ['query']),
+    'getProviderSa' : IDL.Func(
+        [IDL.Text, IDL.Opt(IDL.Principal)],
+        [IDL.Vec(IDL.Nat8)],
+        [],
+      ),
     'getReservedByContentId' : IDL.Func([IDL.Text], [Result_2], []),
     'getRules' : IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ['query']),
     'getTaskStats' : IDL.Func(
@@ -819,6 +847,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Bool],
         [],
       ),
+    'releaseTokens' : IDL.Func([Tokens], [Result__1], []),
     'removeProviderAdmin' : IDL.Func(
         [IDL.Principal, IDL.Principal],
         [ProviderResult],
@@ -836,6 +865,7 @@ export const idlFactory = ({ IDL }) => {
     'showAdmins' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'shuffleContent' : IDL.Func([], [], []),
     'shufflePohContent' : IDL.Func([], [], []),
+    'stakeTokens' : IDL.Func([IDL.Nat], [Result__1], []),
     'submitChallengeData' : IDL.Func(
         [PohChallengeSubmissionRequest],
         [PohChallengeSubmissionResponse],
@@ -859,16 +889,6 @@ export const idlFactory = ({ IDL }) => {
     'subscribe' : IDL.Func([SubscribeMessage], [], []),
     'subscribePohCallback' : IDL.Func([SubscribePohMessage], [], []),
     'toggleAllowSubmission' : IDL.Func([IDL.Bool], [], []),
-    'topUpProviderReserve' : IDL.Func(
-        [
-          IDL.Record({
-            'amount' : IDL.Nat,
-            'providerId' : IDL.Opt(IDL.Principal),
-          }),
-        ],
-        [],
-        [],
-      ),
     'transform' : IDL.Func(
         [TransformArgs],
         [CanisterHttpResponsePayload],

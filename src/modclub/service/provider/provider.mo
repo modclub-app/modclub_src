@@ -10,6 +10,7 @@ import Float "mo:base/Float";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
 import Text "mo:base/Text";
+import Iter "mo:base/Iter";
 
 import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
@@ -270,6 +271,7 @@ module ProviderModule {
           updatedAt = provider.updatedAt;
           settings = provider.settings;
           rules = getProviderRules(providerId, state);
+          subaccounts = Iter.toArray(provider.subaccounts.entries());
           contentCount = state.provider2content.get0Size(provider.id);
           activeCount = getNewContentCount(
             provider.id,
@@ -711,24 +713,6 @@ module ProviderModule {
         return true;
       };
     };
-  };
-
-  public func topUpProviderReserve(env : CommonTypes.ENV, mcCanister : Principal, provider : Types.Provider, tokens : Nat) : async () {
-    let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
-    let res = await ledger.icrc2_transfer_from({
-      from = {
-        owner = provider.id;
-        subaccount = null;
-      };
-      to = {
-        owner = mcCanister; // ledger_account.owner;
-        subaccount = provider.subaccounts.get("RESERVE");
-      };
-      amount = tokens;
-      created_at_time = null;
-      fee = null;
-      memo = null;
-    });
   };
 
   private func getNewContentCount(

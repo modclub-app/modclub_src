@@ -10,4 +10,18 @@ module Constants {
   public let SENIOR_STAKING_EXPONENT = 2;
   public let CONTENT_CHUNK_LIMIT = 2097152; // 2Mb = 2 * 1024 * 1024
   public let DATA_TYPE_PLAIN_TEXT = "text/plain";
+
+  public let ICRC_RESERVE_SA = "-------------------------RESERVE" : Blob;
+  public let ICRC_ACCOUNT_PAYABLE_SA = "-----------------ACCOUNT_PAYABLE" : Blob;
+  public let ICRC_AIRDROP_SA = "-------------------------AIRDROP" : Blob;
+  public let ICRC_MARKETING_SA = "-----------------------MARKETING" : Blob;
+  public let ICRC_ADVISORS_SA = "------------------------ADVISORS" : Blob;
+  public let ICRC_PRESEED_SA = "-------------------------PRESEED" : Blob;
+  public let ICRC_PUBLICSALE_SA = "----------------------PUBLICSALE" : Blob;
+  public let ICRC_SEED_SA = "----------------------------SEED" : Blob;
+  public let ICRC_TEAM_SA = "----------------------------TEAM" : Blob;
+  public let ICRC_TREASURY_SA = "------------------------TREASURY" : Blob;
+  public let ICRC_STAKING_SA = "-------------------------STAKING" : Blob;
+  public let ICRC_VESTING_SA = "-------------------------VESTING" : Blob;
+
 };

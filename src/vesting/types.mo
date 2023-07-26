@@ -3,7 +3,7 @@ import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import Buffer "mo:base/Buffer";
 import CommonTypes "../common/types";
-import ICRCTypes "../wallet/ICRC/types";
+import ICRCTypes "../common/ICRCTypes";
 
 module {
   public type Operation = {
