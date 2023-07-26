@@ -4,6 +4,7 @@ import Bool "mo:base/Bool";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import Float "mo:base/Float";
+import ICRCTypes "./ICRCTypes";
 
 module {
   public type ENV = {
@@ -17,8 +18,9 @@ module {
 
   public type VestingCanisterActor = actor {
     stake : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
-    unlock_staking : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
     claim_staking : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
+    unlock_staking : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
+    release_staking : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
     stage_vesting_block : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
     claim_vesting : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
     locked_for : (ICRCTypes.Account) -> async Nat;
@@ -32,6 +34,26 @@ module {
     isAdmin : (Principal) -> async Bool;
     registerAdmin : (Principal) -> async Result.Result<List.List<Principal>, Text>;
     unregisterAdmin : (Principal) -> async Result.Result<List.List<Principal>, Text>;
+  };
+
+  public type WalletActorType = actor {
+    queryBalance : (?Text) -> async Float;
+    transfer : (?Text, Principal, ?Text, Float) -> async ();
+    transferBulk : ([ICRCTypes.UserAndAmount]) -> async ();
+    burn : (?ICRCTypes.Subaccount, ICRCTypes.Tokens) -> async ();
+    icrc1_balance_of : (ICRCTypes.Account) -> async ICRCTypes.Tokens;
+    icrc1_fee : () -> async Nat;
+    icrc1_minting_account : () -> async ?ICRCTypes.Account;
+    icrc1_transfer : ({
+      from_subaccount : ?ICRCTypes.Subaccount;
+      to : ICRCTypes.Account;
+      amount : ICRCTypes.Tokens;
+      fee : ?ICRCTypes.Tokens;
+      memo : ?ICRCTypes.Memo;
+      created_at_time : ?ICRCTypes.Timestamp;
+    }) -> async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError>;
+    icrc2_transfer_from : (args : ICRCTypes.TransferFromArgs) -> async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferFromError>;
+    ledger_account : () -> async ICRCTypes.Account;
   };
 
   public type RSActorType = actor {
