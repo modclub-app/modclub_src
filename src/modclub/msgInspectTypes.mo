@@ -2,12 +2,14 @@ import LoggerTypesModule "./canistergeek/logger/typesModule";
 import Canistergeek "./canistergeek/canistergeek";
 import CommonTypes "../common/types";
 import PohTypes "./service/poh/types";
+import ICRCTypes "../common/ICRCTypes";
 import Types "./types";
 import Principal "mo:base/Principal";
 
 module {
 
   public type ModclubCanisterMethods = {
+    #burn : () -> (?ICRCTypes.Subaccount, Nat);
     #subscribeOnAdmins : () -> ();
     #showAdmins : () -> ();
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
@@ -23,6 +25,7 @@ module {
     #canClaimLockedReward : () -> ?ICRCTypes.Tokens;
     #checkIfUserOptToReciveAlerts : () -> ();
     #claimLockedReward : () -> (ICRCTypes.Tokens, ?Principal);
+    #claimStakedTokens : () -> ICRCTypes.Tokens;
     #collectCanisterMetrics : () -> ();
     #configurePohForProvider : () -> (Principal, [Text], Nat, Bool);
     #deregisterProvider : () -> ();
@@ -71,6 +74,7 @@ module {
     #setLambdaToken : () -> (Text);
     #registerProvider : () -> (Text, Text, ?Types.Image);
     #registerUserToReceiveAlerts : () -> (Principal, Bool);
+    #releaseTokens : () -> ICRCTypes.Tokens;
     #removeProviderAdmin : () -> (Principal, Principal);
     #removeRules : () -> ([Types.RuleId], ?Principal);
     #resetUserChallengeAttempt : () -> Text;
@@ -82,6 +86,7 @@ module {
     #setVoteParamsForLevel : () -> (Int, Types.Level);
     #shuffleContent : () -> ();
     #shufflePohContent : () -> ();
+    #stakeTokens : () -> Nat;
     #submitChallengeData : () -> PohTypes.PohChallengeSubmissionRequest;
     #submitHtmlContent : () -> (Text, Text, ?Text);
     #submitImage : () -> (Text, [Nat8], Text, ?Text);
@@ -102,6 +107,7 @@ module {
     #votePohContent : () -> (Text, Types.Decision, [Types.PohRulesViolated]);
     #whoami : () -> ();
     #importAccounts : () -> Types.AccountsImportPayload;
+    #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal)
   };
 
 };

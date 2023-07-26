@@ -49,7 +49,8 @@ import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/statev2";
 import VoteStateV2 "./service/vote/statev2";
 import RSTypes "../rs/types";
-// TODO: Update in progress for wallet canister
+import WalletTypes "../wallet/types";
+import ICRCTypes "../common/ICRCTypes";
 import Utils "../common/utils";
 import ContentManager "./service/content/content";
 import ContentStateManager "./service/content/reserved";
@@ -134,6 +135,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ModeratorManager.subscribeOnEvents(env, "moderator_became_senior");
 
   let vestingActor = authGuard.getVestingActor();
+  let ledger = authGuard.getWalletActor();
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     switch (payload) {
@@ -235,7 +237,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     let subAccs = HashMap.fromIter<Text, Blob>(
-      (await Helpers.generateSubAccounts()).vals(),
+      (await Helpers.generateSubAccounts(Helpers.providerSubaccountTypes)).vals(),
       Array.size(Helpers.providerSubaccountTypes),
       Text.equal,
       Text.hash
@@ -323,32 +325,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     let tokens = await ProviderManager.getSaBalance(env, authGuard.getCanisterId(#modclub), psa);
     return tokens;
-  };
-
-  public shared ({ caller }) func topUpProviderReserve({
-    providerId : ?Principal;
-    amount : Nat;
-  }) : async () {
-    await Helpers.nonZeroNat(amount);
-
-    let pid = switch (providerId) {
-      case (?pid) {
-        switch (PermissionsModule.checkProviderPermission(caller,?pid, stateV2)) {
-          case (#err(error)) {return throw Error.reject("Unauthorized")};
-          case (#ok(p)) {};
-        };
-        pid;
-      };
-      case (_) caller;
-    };
-
-    let provider = switch (stateV2.providers.get(pid)) {
-      case (?p) p;
-      case (_) return throw Error.reject("Provider doesn't exist.");
-    };
-
-    await ProviderManager.topUpProviderReserve(env, authGuard.getCanisterId(#modclub), provider, amount);
-
   };
 
   private func getVoteParamIdByLevel(
@@ -766,13 +742,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     userName : Text,
     email : ?Text,
     pic : ?Types.Image
-  ) : async Types.Profile {
+  ) : async Types.ProfileStable {
+    let subAccs = HashMap.fromIter<Text, Blob>(
+      (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
+      Array.size(Helpers.moderatorSubaccountTypes),
+      Text.equal,
+      Text.hash
+    );
+
     let profile = await ModeratorManager.registerModerator(
       caller,
       userName,
       email,
       pic,
-      stateV2
+      stateV2,
+      subAccs
     );
 
     await storageSolution.registerModerators([caller]);
@@ -781,10 +765,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return profile;
   };
 
-  public query ({ caller }) func getProfile() : async Types.Profile {
+  public query ({ caller }) func getProfile() : async Types.ProfileStable {
     switch (ModeratorManager.getProfile(caller, stateV2)) {
       case (#ok(p)) {
-        return p;
+        return {
+            id = p.id;
+            userName = p.userName;
+            email = p.email;
+            pic = p.pic;
+            role = p.role;
+            subaccounts = Iter.toArray(p.subaccounts.entries());
+            createdAt = p.createdAt;
+            updatedAt = p.updatedAt;
+          };
       };
       case (_) {
         throw Error.reject("profile not found");
@@ -792,7 +785,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public query ({ caller }) func getProfileById(pid : Principal) : async Types.Profile {
+  public query ({ caller }) func getProfileById(pid : Principal) : async Types.ProfileStable {
     switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
@@ -805,6 +798,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           email = "";
           pic = p.pic;
           role = p.role;
+          subaccounts = Iter.toArray(p.subaccounts.entries());
           createdAt = p.createdAt;
           updatedAt = p.updatedAt;
         };
@@ -815,15 +809,24 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public query ({ caller }) func getAllProfiles() : async [Types.Profile] {
+  public query ({ caller }) func getAllProfiles() : async [Types.ProfileStable] {
     Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     return ModeratorManager.getAllProfiles(stateV2);
   };
 
-  public shared ({ caller }) func adminUpdateEmail(pid : Principal, email : Text) : async Types.Profile {
+  public shared ({ caller }) func adminUpdateEmail(pid : Principal, email : Text) : async Types.ProfileStable {
     switch (ModeratorManager.adminUpdateEmail(pid, email, stateV2)) {
-      case (#ok(moderator)) {
-        return moderator;
+      case (#ok(p)) {
+        return {
+          id = p.id;
+          userName = p.userName;
+          email = "";
+          pic = p.pic;
+          role = p.role;
+          subaccounts = Iter.toArray(p.subaccounts.entries());
+          createdAt = p.createdAt;
+          updatedAt = p.updatedAt;
+        };
       };
       case (_) {
         throw Error.reject("profile not found");
@@ -943,8 +946,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let claimRes = await vestingActor.claim_vesting(moderatorAcc, amount);
     switch (claimRes) {
       case (#ok(_)) {
-        let ledger = authGuard.getWalletActor();
-        // TODO: Wallet canister update in progress
+        let _ = await ledger.icrc1_transfer({
+          from_subaccount = ?Constants.ICRC_VESTING_SA;
+          to = switch (customReceiver) {
+            case (?p) { { owner = p; subaccount = null } };
+            case (null) { moderatorAcc };
+          };
+          amount;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        });
 
         if (reduceReputation) {
           // REDUCE REPUTATION
@@ -955,6 +967,37 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         #ok(true);
       };
       case (#err(e)) { return throw Error.reject(e) };
+    };
+  };
+
+  public shared ({ caller }) func withdrawModeratorReward(amount : ICRCTypes.Tokens, customReceiver : ?Principal) : async Result.Result<ICRCTypes.TxIndex, Text> {
+    let moderator = switch (ModeratorManager.getProfile(caller, stateV2)) {
+      case (#ok(p)) p;
+      case (_)(throw Error.reject("Moderator does not exist"));
+    };
+    let moderatorAcc = { owner = caller; subaccount = null };
+    switch (await ledger.icrc1_balance_of(moderatorAcc)) {
+      case(tokensAvailable) {
+        let fee = await ledger.icrc1_fee();
+        if ( (amount + fee) < tokensAvailable ) {
+          throw Error.reject("Insufficient ballance");
+        };
+        switch(await ledger.icrc1_transfer({
+          from_subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+          to = switch (customReceiver) {
+            case (?p) { { owner = p; subaccount = null } };
+            case (null) { moderatorAcc };
+          };
+          amount;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        })) {
+          case(#Ok(tsidx)) {#ok(tsidx)};
+          case(_) { #err("Error occurs on icrc1_transfer for withdrawModeratorReward.")};
+        };
+      };
+      case(_) { throw Error.reject("Unable to get Moderators ballance"); };
     };
   };
 
@@ -1780,7 +1823,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (pohEngine.validateRules(violatedRules) == false) {
       throw Error.reject("Valid rules not provided.");
     };
-    let ledger = authGuard.getWalletActor();
 
     let finishedVoting = await voteManager.votePohContent(
       caller,
@@ -1864,15 +1906,35 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         let modReward = Utils.floatToTokens(
           (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS
         );
-        // TODO: Wallet canister update in progress
+        let _ = await ledger.icrc1_transfer({
+          from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+          to = { owner = userVote.userId; subaccount = null };
+          amount = modReward;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        });
       };
       let _ = await authGuard.getRSActor().updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
       // treasury dist
       let tokensAmount = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
-      // TODO: Wallet canister update in progress
+      let _ = await ledger.icrc1_transfer({
+        from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+        to = {
+          owner = Principal.fromActor(this);
+          subaccount = ?Constants.ICRC_TREASURY_SA;
+        };
+        amount = tokensAmount;
+        fee = null;
+        memo = null;
+        created_at_time = null;
+      });
 
       // burn
-      // TODO: Wallet canister update in progress
+      let _ = await this.burn(
+        ?Constants.ICRC_ACCOUNT_PAYABLE_SA,
+        Utils.floatToTokens(ModClubParam.GAMMA_B * CT)
+      );
 
       // inform all providers
       switch (pohEngine.getPohChallengePackage(packageId)) {
@@ -1986,10 +2048,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     voteManager.addToAutoApprovedPOHUser(userId);
   };
 
-  public shared ({ caller }) func getProviderAdmins(providerId : Principal) : async [
-    Types.Profile
-  ] {
-    ProviderManager.getProviderAdmins(providerId, stateV2);
+  public shared ({ caller }) func getProviderAdmins(providerId : Principal) : async [Types.ProfileStable] {
+    let pStable = Buffer.Buffer<Types.ProfileStable>(1);
+    for (p in ProviderManager.getProviderAdmins(providerId, stateV2).vals()) {
+      pStable.add({
+          id = p.id;
+          userName = p.userName;
+          email = "";
+          pic = p.pic;
+          role = p.role;
+          subaccounts = Iter.toArray(p.subaccounts.entries());
+          createdAt = p.createdAt;
+          updatedAt = p.updatedAt;
+        });
+    };
+    Buffer.toArray<Types.ProfileStable>(pStable);
   };
 
   public shared ({ caller }) func removeProviderAdmin(
@@ -2202,6 +2275,134 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     authGuard.getAdmins();
   };
 
+  public func burn(fromSA : ?ICRCTypes.Subaccount, amount : Nat) : async () {
+    let minting_account = switch(await ledger.icrc1_minting_account()) {
+      case(?mAcc : ?ICRCTypes.Account) mAcc;
+      case(_) { throw Error.reject("Unable to get minting_account from ledger."); };
+    };
+
+    ignore await ledger.icrc1_transfer({
+        from_subaccount = fromSA;
+        to = minting_account;
+        amount;
+        fee = null;
+        memo = null;
+        created_at_time = null;
+      });
+  };
+
+  public shared ({ caller }) func stakeTokens(amount : Nat) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let modclubPrincipal = Principal.fromActor(this);
+    let modclubStakingAcc = {
+      owner = modclubPrincipal;
+      subaccount = ?Constants.ICRC_STAKING_SA;
+    };
+
+    let moderatorSubAccs = switch(stateV2.profiles.get(caller)) {
+      case(?moderator) {moderator.subaccounts};
+      case(_) { throw Error.reject("Unable to find user with principal::" # Principal.toText(caller)); };
+    };
+    let reserveSubAcc = switch(moderatorSubAccs.get("RESERVE")) {
+      case(?reserveSA) ?reserveSA;
+      case(_) { throw Error.reject("No reserve subaccount for moderator::" # Principal.toText(caller)); };
+    };
+    let moderReserveBalance = await ledger.icrc1_balance_of({ owner = modclubPrincipal; subaccount = reserveSubAcc });
+    switch(Nat.greater(moderReserveBalance, amount)) {
+      case(true) {
+        let stakeTransfer = await ledger.icrc1_transfer({
+            from_subaccount = reserveSubAcc;
+            to = modclubStakingAcc;
+            amount;
+            fee = null;
+            memo = null;
+            created_at_time = null;
+          });
+
+        switch (stakeTransfer) {
+          case (#Ok(txIndex)) {
+            let stakeRes = await vestingActor.stake(moderatorAcc, amount);
+            switch (stakeRes) {
+              case (#ok(_)) {
+                #Ok(txIndex);
+              };
+              case (#err(e)) { return throw Error.reject(e) };
+            };
+          };
+          case (#Err(e)) {
+            return throw Error.reject("Can't stake necessary amount of tokens: InsufficientAllowance.");
+          };
+        };
+      };
+      case(_) { throw Error.reject("Insufficient balance on reserve subaccount for moderator::" # Principal.toText(caller)); };
+    };
+  };
+
+  public shared ({ caller }) func releaseTokens(amount : ICRCTypes.Tokens) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let modclubPrincipal = Principal.fromActor(this);
+
+    let moderatorSubAccs = switch(stateV2.profiles.get(caller)) {
+      case(?moderator) {moderator.subaccounts};
+      case(_) { throw Error.reject("Unable to find user with principal::" # Principal.toText(caller)); };
+    };
+    let reserveSubAcc = switch(moderatorSubAccs.get("RESERVE")) {
+      case(?reserveSA) ?reserveSA;
+      case(_) { throw Error.reject("No reserve subaccount for moderator::" # Principal.toText(caller)); };
+    };
+
+    let unlockedAmount = await vestingActor.unlocked_stakes_for(moderatorAcc);
+    if (unlockedAmount < amount) {
+      return throw Error.reject("Withdraw amount cant be more than unlocked amount of tokens.");
+    };
+
+    let releaseStakeTransfer = await ledger.icrc1_transfer({
+        from_subaccount = ?Constants.ICRC_STAKING_SA;
+        to = { owner = modclubPrincipal; subaccount = reserveSubAcc };
+        amount;
+        fee = null;
+        memo = null;
+        created_at_time = null;
+      });
+
+    switch (releaseStakeTransfer) {
+      case (#Ok(txIndex)) {
+        let release = await vestingActor.release_staking(moderatorAcc, amount);
+        switch (release) {
+          case (#Ok(res)) {
+            #Ok(txIndex);
+          };
+          case (#Err(e)) {
+            return throw Error.reject("Can't withdraw unlocked amount of tokens.");
+          };
+        };
+      };
+      case (#Ok(txIndex)) {
+        return throw Error.reject("Can't withdraw unlocked amount of tokens.");
+      };
+    };
+  };
+
+  public shared ({ caller }) func claimStakedTokens(amount : ICRCTypes.Tokens) : async Result.Result<Nat, Text> {
+    let moderatorAcc = { owner = caller; subaccount = null };
+    let stakedAmount = await vestingActor.staked_for(moderatorAcc);
+    if (stakedAmount < amount) {
+      return throw Error.reject("Amount can't be more than staked amount of tokens.");
+    };
+
+    let claimStaked = await vestingActor.claim_staking(moderatorAcc, amount);
+
+    ignore Timer.setTimer(
+      #seconds(Constants.VESTING_DISSOLVE_DELAY_SECONDS + 10),
+      func() : async () {
+        let releaseStaked = await vestingActor.unlock_staking(moderatorAcc, amount);
+      }
+    );
+
+    claimStaked;
+  };
+
+
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
@@ -2316,9 +2517,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#submitImage _) { ProviderManager.providerExists(caller, stateV2) };
       case (#providerSaBalance _) {
         ProviderManager.isProviderAdmin(caller, stateV2);
-      };
-      case (#topUpProviderReserve _) {
-        ProviderManager.providerExists(caller, stateV2) or ProviderManager.isProviderAdmin(caller, stateV2) or authGuard.isAdmin(caller);
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
       case (#importAccounts _) { authGuard.isOldModclubInstance(caller) };
@@ -2522,7 +2720,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   } {
     Helpers.logMessage(
       canistergeekLogger,
-      "MODCLUB Instanse has importAccounts call:: " # debug_show payload,
+      "MODCLUB Instanse has importAccounts call:: ",
       #info
     );
 
@@ -2532,7 +2730,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         case (null) {
           await ProviderManager.addToAllowList(provider.id, stateV2, canistergeekLogger);
           let subAccs = HashMap.fromIter<Text, Blob>(
-            (await Helpers.generateSubAccounts()).vals(),
+            (await Helpers.generateSubAccounts(Helpers.providerSubaccountTypes)).vals(),
             Array.size(Helpers.providerSubaccountTypes),
             Text.equal,
             Text.hash
@@ -2592,12 +2790,20 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     for (moderator in payload.moderators.vals()) {
       try {
+        let subAccs = HashMap.fromIter<Text, Blob>(
+          (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
+          Array.size(Helpers.moderatorSubaccountTypes),
+          Text.equal,
+          Text.hash
+        );
+
         let profile = await ModeratorManager.registerModerator(
           moderator.id,
           moderator.userName,
           null,
           null,
-          stateV2
+          stateV2,
+          subAccs
         );
 
         await storageSolution.registerModerators([moderator.id]);
