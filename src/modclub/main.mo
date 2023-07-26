@@ -1824,6 +1824,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (_)();
     };
+    let stats = await ModeratorManager.getStats(caller, env);
+    if (ModeratorManager.isNovice(stats.score)) {
+      return throw Error.reject("Novice Moderators are not permitted to vote on POH content.");
+    };
     switch (
       pohVerificationRequestHelper(
         Principal.toText(caller),

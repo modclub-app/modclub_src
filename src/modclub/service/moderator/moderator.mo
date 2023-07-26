@@ -50,6 +50,9 @@ module ModeratorModule {
   public func isSenior(rs : Int) : Bool {
     return rs >= RSConstants.JUNIOR_THRESHOLD;
   };
+  public func isNovice(rs : Int) : Bool {
+    return rs < RSConstants.NOVICE_THRESHOLD;
+  };
 
   public func reduceToJunior(moderId : Principal, env : CommonTypes.ENV) : async Result.Result<Bool, Text> {
     await ModSecurity.Guard(env, "MODERATOT_SERVICE").getRSActor().setRS(moderId, RSConstants.JUNIOR_THRESHOLD);

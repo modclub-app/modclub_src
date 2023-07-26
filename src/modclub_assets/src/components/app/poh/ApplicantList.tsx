@@ -13,7 +13,7 @@ import Userstats from "../profile/Userstats";
 import FilterBar from "../../common/filterbar/FilterBar";
 import Progress from "../../common/progress/Progress";
 import { useAuth } from "../../../utils/auth";
-import { getPohTasks } from "../../../utils/api";
+import { getPohTasks, queryRSAndLevelByPrincipal } from "../../../utils/api";
 import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
 import { PohTaskPlus } from "../../../utils/types";
 import placeholder from "../../../../assets/user_placeholder.png";
@@ -115,7 +115,7 @@ const ApplicantSnippet = ({ applicant }: { applicant: PohTaskPlus }) => {
 };
 
 export default function PohApplicantList() {
-  const { user } = useAuth();
+  const { user, identity } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([]);
   const [page, setPage] = useState({
@@ -125,6 +125,7 @@ export default function PohApplicantList() {
   });
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [level, setLevel] = useState("novice");
 
   const apps = ["Reddit", "4chan", "Medium"];
   const [currentApp, setCurrentApp] = useState<string>(null);
@@ -151,14 +152,30 @@ export default function PohApplicantList() {
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);
   };
+  const getUserLv = async()=>{
+    if(identity){
+      try {
+        const res = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText())
+        if (typeof res.level === 'object') {
+          setLevel(Object.keys(res.level)[0])
+        } 
+      } catch (error) {
+        console.error("Error GET LEVEL:",error);
+        setLevel("novice")
+      }
+    }
+  };
 
   useEffect(() => {
+    const applicantsResult = getApplicants();
+    const userLevelResult = getUserLv();
     if (
       user &&
       firstLoad &&
       !loading &&
       !applicants.length &&
-      getApplicants()
+      applicantsResult &&
+      userLevelResult
     ) {
       setFirstLoad(false);
     }
@@ -200,6 +217,7 @@ export default function PohApplicantList() {
     <>
       <Userstats />
 
+    {level !== "novice" && (
       <Columns>
         <Columns.Column size={12}>
           <FilterBar
@@ -238,7 +256,7 @@ export default function PohApplicantList() {
             </Card.Footer>
           </Card>
         </Columns.Column>
-      </Columns>
+      </Columns>)}
     </>
   );
 }

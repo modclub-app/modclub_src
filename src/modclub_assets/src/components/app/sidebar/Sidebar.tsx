@@ -14,7 +14,7 @@ import {
 import LogoImg from "../../../../assets/logo.png";
 import SidebarUser from "./SidebarUser";
 import { useAuth } from "../../../utils/auth";
-import { addUserToQueueAndSendVerificationEmail, getUserAlertOptInVal, registerUserToReceiveAlerts } from "../../../utils/api";
+import { addUserToQueueAndSendVerificationEmail, getUserAlertOptInVal, queryRSAndLevel, queryRSAndLevelByPrincipal, registerUserToReceiveAlerts } from "../../../utils/api";
 import { SignIn } from "../../auth/SignIn";
 import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -87,15 +87,13 @@ const DropdownLabel = ({ toggle }) => {
 
 export default function Sidebar() {
   const history = useHistory();
-  const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider, isAdminUser, userPrincipalText, userAlertVal, setUserAlertVal } = useAuth();
-  // Need to change
-  // const { isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider } = useAuth();
-  // const isAdminUser = true;
+  const {identity, isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider, isAdminUser, userPrincipalText, userAlertVal, setUserAlertVal } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [notificationMsg, setNotificationMsg] = useState(null);
   const toggleModal = () => setShowModal(!showModal);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loadSpinner, setLoadSpinner] = useState(false);
+  const [level, setLevel] = useState("");
   const toggle = () => setShowDropdown(!showDropdown);
 
   const subscribeToAlert = async () => {
@@ -129,14 +127,25 @@ export default function Sidebar() {
     setLoadSpinner(false);
     setUserAlertVal(result);
   }
-
+  
   useEffect(() => {
+    let isMounted = true;
     if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
       history.push("/signup");
     }
     if (isAuthReady && isAuthenticated && user) {
       fetchUserAlertOptinVal();
     }
+    const getUserLv = async()=>{
+      const res = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText())
+      if (res && res.level && Object.keys(res.level).length > 0 && isMounted) {
+        setLevel(Object.keys(res.level)[0]);
+      }
+    };
+    getUserLv()
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthReady, isAuthenticated, user, requiresSignUp]);
   return (
     <Columns.Column
@@ -166,12 +175,12 @@ export default function Sidebar() {
             </Icon>
             Tasks
           </Link>
-          <Link to="/app/poh">
+          {level != "novice" && <Link to="/app/poh">
             <Icon>
               <span className="material-icons">check_circle_outline</span>
             </Icon>
             Human Verification
-          </Link>
+          </Link>}
           {/* ADMIN POH CONTENT APPROVED AND REJECTED */}
           {user && isAdminUser &&
             <Link to="/app/admin/poh">
