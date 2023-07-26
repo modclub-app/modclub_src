@@ -9,6 +9,8 @@ import List "mo:base/List";
 import Float "mo:base/Float";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
+import Text "mo:base/Text";
+import Iter "mo:base/Iter";
 
 import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
@@ -269,6 +271,7 @@ module ProviderModule {
           updatedAt = provider.updatedAt;
           settings = provider.settings;
           rules = getProviderRules(providerId, state);
+          subaccounts = Iter.toArray(provider.subaccounts.entries());
           contentCount = state.provider2content.get0Size(provider.id);
           activeCount = getNewContentCount(
             provider.id,
@@ -286,7 +289,11 @@ module ProviderModule {
   };
 
   public func getSaBalance(env : CommonTypes.ENV, mcCanister : Principal, providerSA : Blob) : async Nat {
-    // TODO: Update in progress for wallet canister
+    let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
+    await ledger.icrc1_balance_of({
+      owner = mcCanister;
+      subaccount = ?providerSA;
+    });
   };
 
   public func addRules(
@@ -440,6 +447,7 @@ module ProviderModule {
       userName = arg.username;
       email = "";
       pic = null;
+      subaccounts = HashMap.HashMap<Text, Blob>(2, Text.equal, Text.hash);
       role = #moderator;
       createdAt = now;
       updatedAt = now;
@@ -593,6 +601,7 @@ module ProviderModule {
           email = currentAdminProfile.email;
           pic = null;
           role = currentAdminProfile.role;
+          subaccounts = currentAdminProfile.subaccounts;
           createdAt = currentAdminProfile.createdAt;
           updatedAt = Helpers.timeNow();
         }
@@ -641,7 +650,16 @@ module ProviderModule {
     modclubCanisterPrincipal : Principal,
     amount : Float
   ) : async () {
-    // TODO: Update in progress for wallet canister
+    let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
+    let account = {
+      owner = modclubCanisterPrincipal;
+      subaccount = provider.subaccounts.get("RESERVE");
+    };
+    let providerBalance = await ledger.icrc1_balance_of(account);
+    let tokens = Utils.floatToTokens(amount);
+    if (providerBalance < tokens) {
+      return throw Error.reject("Not enough balance in provider reserves to submit task.");
+    };
   };
 
   public func getTaskFee(p : Types.Provider) : Float {
@@ -654,7 +672,19 @@ module ProviderModule {
     modclubCanisterPrincipal : Principal,
     amount : Float
   ) : async () {
-    // TODO: Update in progress for wallet canister
+    let tokens = Utils.floatToTokens(amount);
+    let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
+    let res = await ledger.icrc1_transfer({
+      from_subaccount = provider.subaccounts.get("RESERVE");
+      to = {
+        owner = modclubCanisterPrincipal;
+        subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+      };
+      amount = tokens;
+      created_at_time = null;
+      fee = null;
+      memo = null;
+    });
   };
 
   public func providerExists(
@@ -683,10 +713,6 @@ module ProviderModule {
         return true;
       };
     };
-  };
-
-  public func topUpProviderReserve(env : CommonTypes.ENV, mcCanister : Principal, provider : Types.Provider, tokens : Nat) : async () {
-    // TODO: Update in progress for wallet canister
   };
 
   private func getNewContentCount(
