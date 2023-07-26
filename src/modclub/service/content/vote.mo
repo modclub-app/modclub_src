@@ -19,7 +19,9 @@ import Canistergeek "../../canistergeek/canistergeek";
 import QueueManager "../queue/queue";
 import RSTypes "../../../rs/types";
 import RSConstants "../../../rs/constants";
-// TODO: Update in progress for wallet canister
+import ICRCModule "../../../wallet/ICRC/ledger";
+import ICRCTypes "../../../common/ICRCTypes";
+import WalletTypes "../../../wallet/types";
 import Utils "../../../common/utils";
 import CommonTypes "../../../common/types";
 import Constants "../../../common/constants";
@@ -341,10 +343,16 @@ module ContentVotingModule {
       sumRS := sumRS + userVote.rsBeforeVoting;
     };
 
+    //TODO: Needs to be updated to handle junior case where they only receive half the rewards and the remaining is locked. until they become senior
     let CT : Float = ModClubParam.CS * Float.fromInt(arg.requiredVotes);
     // moderator dist
     for (userVote in rewardingVotes.vals()) {
-      let moderatorAcc = { owner = userVote.userId; subaccount = null };
+      let moderator = switch (state.profiles.get(userVote.userId)) {
+        case (?p) p;
+        case (_)(throw Error.reject("Moderator does not exist"));
+      };
+      let moderatorAcc = { owner = moderator.id; subaccount = null };
+      let moderatorSystemAcc = { owner = arg.modclubCanisterId; subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE") };
       let fullReward = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
       let isSenior = switch (await rs.queryRSAndLevelByPrincipal(userVote.userId)) {
         case (stat) { stat.score >= RSConstants.SENIOR1_THRESHOLD };
@@ -352,14 +360,31 @@ module ContentVotingModule {
       };
       let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
       // Dist of free part of rewarded tokens
-      // TODO: Wallet canister update in progress
+      let _ = await ledger.icrc1_transfer({
+        from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+        to = moderatorSystemAcc;
+        amount = modDistTokens;
+        fee = null;
+        memo = null;
+        created_at_time = null;
+      });
 
       // Dist of locked part of rewarded tokens
       let lockedReward = Utils.floatToTokens(fullReward - (fullReward * Constants.REWARD_DEVIATION));
       let lockRes = await vesting.stage_vesting_block(moderatorAcc, lockedReward);
       switch (lockRes) {
         case (#ok(lockLen)) {
-          // TODO: Wallet canister update in progress
+          let _ = await ledger.icrc1_transfer({
+            from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+            to = {
+              owner = arg.modclubCanisterId;
+              subaccount = ?ICRCModule.ICRC_VESTING_SA;
+            };
+            amount = lockedReward;
+            fee = null;
+            memo = null;
+            created_at_time = null;
+          });
         };
         case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedReward)));
       };
@@ -371,14 +396,32 @@ module ContentVotingModule {
     let treasuryDistTokens = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
 
     // treasury dist
-   // TODO: Wallet canister update in progress
+    let _ = await ledger.icrc1_transfer({
+      from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+      to = {
+        owner = arg.modclubCanisterId;
+        subaccount = ?ICRCModule.ICRC_TREASURY_SA;
+      };
+      amount = treasuryDistTokens;
+      fee = null;
+      memo = null;
+      created_at_time = null;
+    });
+
+    let minting_account = switch(await ledger.icrc1_minting_account()) {
+      case(?mAcc : ?ICRCTypes.Account) mAcc;
+      case(_) { throw Error.reject("Unable to get minting_account from ledger."); };
+    };
 
     // burn.
-    let _ = await ledger.burn(
-      provider.subaccounts.get("ACCOUNT_PAYABLE"),
-      Utils.floatToTokens(ModClubParam.GAMMA_B * CT)
-    );
-
+    ignore await ledger.icrc1_transfer({
+        from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+        to = minting_account;
+        amount = Utils.floatToTokens(ModClubParam.GAMMA_B * CT);
+        fee = null;
+        memo = null;
+        created_at_time = null;
+      });
   };
 
   private func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
