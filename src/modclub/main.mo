@@ -49,7 +49,6 @@ import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/statev2";
 import VoteStateV2 "./service/vote/statev2";
 import RSTypes "../rs/types";
-import WalletTypes "../wallet/types";
 import ICRCTypes "../common/ICRCTypes";
 import Utils "../common/utils";
 import ContentManager "./service/content/content";
@@ -73,7 +72,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
   stable var allowSubmissionFlag : Bool = true;
-  
+
   // Global Objects
   var stateV2 = StateV2.empty();
 
@@ -791,15 +790,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     switch (ModeratorManager.getProfile(caller, stateV2)) {
       case (#ok(p)) {
         return {
-            id = p.id;
-            userName = p.userName;
-            email = p.email;
-            pic = p.pic;
-            role = p.role;
-            subaccounts = Iter.toArray(p.subaccounts.entries());
-            createdAt = p.createdAt;
-            updatedAt = p.updatedAt;
-          };
+          id = p.id;
+          userName = p.userName;
+          email = p.email;
+          pic = p.pic;
+          role = p.role;
+          subaccounts = Iter.toArray(p.subaccounts.entries());
+          createdAt = p.createdAt;
+          updatedAt = p.updatedAt;
+        };
       };
       case (_) {
         throw Error.reject("profile not found");
@@ -999,27 +998,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     let moderatorAcc = { owner = caller; subaccount = null };
     switch (await ledger.icrc1_balance_of(moderatorAcc)) {
-      case(tokensAvailable) {
+      case (tokensAvailable) {
         let fee = await ledger.icrc1_fee();
-        if ( (amount + fee) < tokensAvailable ) {
+        if ((amount + fee) < tokensAvailable) {
           throw Error.reject("Insufficient ballance");
         };
-        switch(await ledger.icrc1_transfer({
-          from_subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
-          to = switch (customReceiver) {
-            case (?p) { { owner = p; subaccount = null } };
-            case (null) { moderatorAcc };
+        switch (await ledger.icrc1_transfer({ from_subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE"); to = switch (customReceiver) { case (?p) { { owner = p; subaccount = null } }; case (null) { moderatorAcc } }; amount; fee = null; memo = null; created_at_time = null })) {
+          case (#Ok(tsidx)) { #ok(tsidx) };
+          case (_) {
+            #err("Error occurs on icrc1_transfer for withdrawModeratorReward.");
           };
-          amount;
-          fee = null;
-          memo = null;
-          created_at_time = null;
-        })) {
-          case(#Ok(tsidx)) {#ok(tsidx)};
-          case(_) { #err("Error occurs on icrc1_transfer for withdrawModeratorReward.")};
         };
       };
-      case(_) { throw Error.reject("Unable to get Moderators ballance"); };
+      case (_) { throw Error.reject("Unable to get Moderators ballance") };
     };
   };
 
@@ -2078,15 +2069,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let pStable = Buffer.Buffer<Types.ProfileStable>(1);
     for (p in ProviderManager.getProviderAdmins(providerId, stateV2).vals()) {
       pStable.add({
-          id = p.id;
-          userName = p.userName;
-          email = "";
-          pic = p.pic;
-          role = p.role;
-          subaccounts = Iter.toArray(p.subaccounts.entries());
-          createdAt = p.createdAt;
-          updatedAt = p.updatedAt;
-        });
+        id = p.id;
+        userName = p.userName;
+        email = "";
+        pic = p.pic;
+        role = p.role;
+        subaccounts = Iter.toArray(p.subaccounts.entries());
+        createdAt = p.createdAt;
+        updatedAt = p.updatedAt;
+      });
     };
     Buffer.toArray<Types.ProfileStable>(pStable);
   };
@@ -2302,19 +2293,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public func burn(fromSA : ?ICRCTypes.Subaccount, amount : Nat) : async () {
-    let minting_account = switch(await ledger.icrc1_minting_account()) {
-      case(?mAcc : ?ICRCTypes.Account) mAcc;
-      case(_) { throw Error.reject("Unable to get minting_account from ledger."); };
+    let minting_account = switch (await ledger.icrc1_minting_account()) {
+      case (?mAcc : ?ICRCTypes.Account) mAcc;
+      case (_) {
+        throw Error.reject("Unable to get minting_account from ledger.");
+      };
     };
 
     ignore await ledger.icrc1_transfer({
-        from_subaccount = fromSA;
-        to = minting_account;
-        amount;
-        fee = null;
-        memo = null;
-        created_at_time = null;
-      });
+      from_subaccount = fromSA;
+      to = minting_account;
+      amount;
+      fee = null;
+      memo = null;
+      created_at_time = null;
+    });
   };
 
   public shared ({ caller }) func stakeTokens(amount : Nat) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
@@ -2325,25 +2318,32 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       subaccount = ?Constants.ICRC_STAKING_SA;
     };
 
-    let moderatorSubAccs = switch(stateV2.profiles.get(caller)) {
-      case(?moderator) {moderator.subaccounts};
-      case(_) { throw Error.reject("Unable to find user with principal::" # Principal.toText(caller)); };
+    let moderatorSubAccs = switch (stateV2.profiles.get(caller)) {
+      case (?moderator) { moderator.subaccounts };
+      case (_) {
+        throw Error.reject("Unable to find user with principal::" # Principal.toText(caller));
+      };
     };
-    let reserveSubAcc = switch(moderatorSubAccs.get("RESERVE")) {
-      case(?reserveSA) ?reserveSA;
-      case(_) { throw Error.reject("No reserve subaccount for moderator::" # Principal.toText(caller)); };
+    let reserveSubAcc = switch (moderatorSubAccs.get("RESERVE")) {
+      case (?reserveSA) ?reserveSA;
+      case (_) {
+        throw Error.reject("No reserve subaccount for moderator::" # Principal.toText(caller));
+      };
     };
-    let moderReserveBalance = await ledger.icrc1_balance_of({ owner = modclubPrincipal; subaccount = reserveSubAcc });
-    switch(Nat.greater(moderReserveBalance, amount)) {
-      case(true) {
+    let moderReserveBalance = await ledger.icrc1_balance_of({
+      owner = modclubPrincipal;
+      subaccount = reserveSubAcc;
+    });
+    switch (Nat.greater(moderReserveBalance, amount)) {
+      case (true) {
         let stakeTransfer = await ledger.icrc1_transfer({
-            from_subaccount = reserveSubAcc;
-            to = modclubStakingAcc;
-            amount;
-            fee = null;
-            memo = null;
-            created_at_time = null;
-          });
+          from_subaccount = reserveSubAcc;
+          to = modclubStakingAcc;
+          amount;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        });
 
         switch (stakeTransfer) {
           case (#Ok(txIndex)) {
@@ -2360,7 +2360,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           };
         };
       };
-      case(_) { throw Error.reject("Insufficient balance on reserve subaccount for moderator::" # Principal.toText(caller)); };
+      case (_) {
+        throw Error.reject("Insufficient balance on reserve subaccount for moderator::" # Principal.toText(caller));
+      };
     };
   };
 
@@ -2368,13 +2370,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let moderatorAcc = { owner = caller; subaccount = null };
     let modclubPrincipal = Principal.fromActor(this);
 
-    let moderatorSubAccs = switch(stateV2.profiles.get(caller)) {
-      case(?moderator) {moderator.subaccounts};
-      case(_) { throw Error.reject("Unable to find user with principal::" # Principal.toText(caller)); };
+    let moderatorSubAccs = switch (stateV2.profiles.get(caller)) {
+      case (?moderator) { moderator.subaccounts };
+      case (_) {
+        throw Error.reject("Unable to find user with principal::" # Principal.toText(caller));
+      };
     };
-    let reserveSubAcc = switch(moderatorSubAccs.get("RESERVE")) {
-      case(?reserveSA) ?reserveSA;
-      case(_) { throw Error.reject("No reserve subaccount for moderator::" # Principal.toText(caller)); };
+    let reserveSubAcc = switch (moderatorSubAccs.get("RESERVE")) {
+      case (?reserveSA) ?reserveSA;
+      case (_) {
+        throw Error.reject("No reserve subaccount for moderator::" # Principal.toText(caller));
+      };
     };
 
     let unlockedAmount = await vestingActor.unlocked_stakes_for(moderatorAcc);
@@ -2383,13 +2389,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     let releaseStakeTransfer = await ledger.icrc1_transfer({
-        from_subaccount = ?Constants.ICRC_STAKING_SA;
-        to = { owner = modclubPrincipal; subaccount = reserveSubAcc };
-        amount;
-        fee = null;
-        memo = null;
-        created_at_time = null;
-      });
+      from_subaccount = ?Constants.ICRC_STAKING_SA;
+      to = { owner = modclubPrincipal; subaccount = reserveSubAcc };
+      amount;
+      fee = null;
+      memo = null;
+      created_at_time = null;
+    });
 
     switch (releaseStakeTransfer) {
       case (#Ok(txIndex)) {
@@ -2427,7 +2433,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     claimStaked;
   };
-
 
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();

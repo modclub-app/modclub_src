@@ -16,7 +16,6 @@ import Helpers "../../helpers";
 import QueueManager "../queue/queue";
 import GlobalState "../../statev2";
 import RSTypes "../../../rs/types";
-import WalletTypes "../../../wallet/types";
 import CommonTypes "../../../common/types";
 import ModSecurity "../../../common/security/guard";
 

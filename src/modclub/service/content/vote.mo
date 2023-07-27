@@ -19,9 +19,7 @@ import Canistergeek "../../canistergeek/canistergeek";
 import QueueManager "../queue/queue";
 import RSTypes "../../../rs/types";
 import RSConstants "../../../rs/constants";
-import ICRCModule "../../../wallet/ICRC/ledger";
 import ICRCTypes "../../../common/ICRCTypes";
-import WalletTypes "../../../wallet/types";
 import Utils "../../../common/utils";
 import CommonTypes "../../../common/types";
 import Constants "../../../common/constants";
@@ -352,7 +350,10 @@ module ContentVotingModule {
         case (_)(throw Error.reject("Moderator does not exist"));
       };
       let moderatorAcc = { owner = moderator.id; subaccount = null };
-      let moderatorSystemAcc = { owner = arg.modclubCanisterId; subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE") };
+      let moderatorSystemAcc = {
+        owner = arg.modclubCanisterId;
+        subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+      };
       let fullReward = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
       let isSenior = switch (await rs.queryRSAndLevelByPrincipal(userVote.userId)) {
         case (stat) { stat.score >= RSConstants.JUNIOR_THRESHOLD };
@@ -378,7 +379,7 @@ module ContentVotingModule {
             from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
             to = {
               owner = arg.modclubCanisterId;
-              subaccount = ?ICRCModule.ICRC_VESTING_SA;
+              subaccount = ?Constants.ICRC_VESTING_SA;
             };
             amount = lockedReward;
             fee = null;
@@ -400,7 +401,7 @@ module ContentVotingModule {
       from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
       to = {
         owner = arg.modclubCanisterId;
-        subaccount = ?ICRCModule.ICRC_TREASURY_SA;
+        subaccount = ?Constants.ICRC_TREASURY_SA;
       };
       amount = treasuryDistTokens;
       fee = null;
@@ -408,20 +409,22 @@ module ContentVotingModule {
       created_at_time = null;
     });
 
-    let minting_account = switch(await ledger.icrc1_minting_account()) {
-      case(?mAcc : ?ICRCTypes.Account) mAcc;
-      case(_) { throw Error.reject("Unable to get minting_account from ledger."); };
+    let minting_account = switch (await ledger.icrc1_minting_account()) {
+      case (?mAcc : ?ICRCTypes.Account) mAcc;
+      case (_) {
+        throw Error.reject("Unable to get minting_account from ledger.");
+      };
     };
 
     // burn.
     ignore await ledger.icrc1_transfer({
-        from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
-        to = minting_account;
-        amount = Utils.floatToTokens(ModClubParam.GAMMA_B * CT);
-        fee = null;
-        memo = null;
-        created_at_time = null;
-      });
+      from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+      to = minting_account;
+      amount = Utils.floatToTokens(ModClubParam.GAMMA_B * CT);
+      fee = null;
+      memo = null;
+      created_at_time = null;
+    });
   };
 
   private func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {

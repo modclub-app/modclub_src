@@ -42,8 +42,9 @@
       "type": "motoko"
     },
     "wallet_qa": {
-      "main": "src/wallet/main.mo",
-      "type": "motoko"
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
     },
     "wallet_dev": {
       "main": "src/wallet/main.mo",
@@ -102,7 +103,7 @@
       "packtool": "vessel sources"
     }
   },
-  "dfx": "0.13.1",
+  "dfx": "0.14.3",
   "networks": {
     "local": {
       "bind": "127.0.0.1:8000",

@@ -7,7 +7,6 @@ import Nat "mo:base/Nat";
 import Canistergeek "../../modclub/canistergeek/canistergeek";
 import Constants "../constants";
 import ModClubParam "../../modclub/service/parameters/params";
-import ICRCModule "../../wallet/ICRC/ledger";
 import ModSecurity "../security/guard";
 import Principal "mo:base/Principal";
 
@@ -26,13 +25,16 @@ module CommonTimer {
 
     public func releaseNextToken() : async () {
       let _ = await ledger.icrc1_transfer({
-          from_subaccount = ?ICRCModule.ICRC_RESERVE_SA;
-          to = { owner = Principal.fromActor(mcactor); subaccount = ?ICRCModule.ICRC_TREASURY_SA };
-          amount = ModClubParam.MOD_RELEASE_PER_DAY;
-          fee = null;
-          memo = null;
-          created_at_time = null;
-        });
+        from_subaccount = ?Constants.ICRC_RESERVE_SA;
+        to = {
+          owner = Principal.fromActor(mcactor);
+          subaccount = ?Constants.ICRC_TREASURY_SA;
+        };
+        amount = ModClubParam.MOD_RELEASE_PER_DAY;
+        fee = null;
+        memo = null;
+        created_at_time = null;
+      });
     };
 
     public func initTimer(
