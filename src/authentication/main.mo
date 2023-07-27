@@ -8,6 +8,10 @@ import Result "mo:base/Result";
 import Debug "mo:base/Debug";
 import Timer "mo:base/Timer";
 import AuthTypes "./types";
+import GlobalConstants "../common/constants";
+import Canistergeek "../common/canistergeek/canistergeek";
+import LoggerTypesModule "../common/canistergeek/logger/typesModule";
+import Helpers "../common/helpers";
 
 shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = this {
   let Unauthorized = "Unauthorized";
@@ -15,6 +19,12 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
 
   stable var admins : AuthTypes.AdminsList = List.nil<Principal>();
   stable var subscriptions = List.nil<AuthTypes.Subscriber>();
+
+  stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
+  private let canistergeekMonitor = Canistergeek.Monitor();
+
+  stable var _canistergeekLoggerUD : ?Canistergeek.LoggerUpgradeData = null;
+  private let canistergeekLogger = Canistergeek.Logger();
 
   var guard = Security.Guard(env, "AUTH_CANISTER");
 
@@ -112,6 +122,31 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     #ok(adminList);
   };
 
+  public query ({ caller }) func getCanisterMetrics(
+    parameters : Canistergeek.GetMetricsParameters
+  ) : async ?Canistergeek.CanisterMetrics {
+    if (not Helpers.allowedCanistergeekCaller(caller)) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekMonitor.getMetrics(parameters);
+  };
+
+  public shared ({ caller }) func collectCanisterMetrics() : async () {
+    if (not Helpers.allowedCanistergeekCaller(caller)) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekMonitor.collectMetrics();
+  };
+
+  public query ({ caller }) func getCanisterLog(
+    request : ?LoggerTypesModule.CanisterLogRequest
+  ) : async ?LoggerTypesModule.CanisterLogResponse {
+    if (not Helpers.allowedCanistergeekCaller(caller)) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekLogger.getLog(request);
+  };
+
   system func inspect({
     arg : Blob;
     caller : Principal;
@@ -125,6 +160,27 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     };
   };
 
-  system func postupgrade() {};
-  system func preupgrade() {};
+  ignore Timer.setTimer(
+    #seconds 0,
+    func() : async () {
+      canistergeekMonitor.collectMetrics();
+      ignore Timer.recurringTimer(
+        #nanoseconds(GlobalConstants.FIVE_MIN_NANO_SECS),
+        func() : async () { canistergeekMonitor.collectMetrics() }
+      );
+    }
+  );
+
+  system func preupgrade() {
+    _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
+    _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
+  };
+
+  system func postupgrade() {
+    canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
+    _canistergeekMonitorUD := null;
+    canistergeekLogger.postupgrade(_canistergeekLoggerUD);
+    _canistergeekLoggerUD := null;
+    canistergeekLogger.setMaxMessagesCount(3000);
+  };
 };

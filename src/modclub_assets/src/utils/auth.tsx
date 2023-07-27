@@ -13,9 +13,8 @@ import {
   getAdminProviderIDs,
   getProvider,
   checkUserRole,
-  getEnvironmentSpecificValues
+  getEnvironmentSpecificValues,
 } from "./api";
-
 
 export interface AuthContext {
   isAuthenticated: boolean;
@@ -41,7 +40,7 @@ const KEY_LOCALSTORAGE_USER = "user";
 let walletToUse = localStorage.getItem("_loginType") || "ii";
 const DFX_NETWORK = process.env.DFX_NETWORK || "local";
 
-const { CanisterId} = getEnvironmentSpecificValues(process.env.DEV_ENV)
+const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 const whitelist = [CanisterId];
 const host = window.location.origin;
 let fetchedProviders = false;
@@ -141,15 +140,14 @@ export function useProvideAuth(authClient): AuthContext {
   async function checkAndConnectToPlugOrIW(walletToUse) {
     checkAndConnectToPlugOrIWCounter++;
     if (walletToUse) {
-
-        if (!window["ic"][walletToUse].agent) {
-          if (walletToUse == "plug") {
-            await window["ic"][walletToUse].createAgent({ whitelist, host });
-          } else {
-            await window["ic"][walletToUse].requestConnect({
-              whitelist,
-            });
-          }
+      if (!window["ic"][walletToUse].agent) {
+        if (walletToUse == "plug") {
+          await window["ic"][walletToUse].createAgent({ whitelist, host });
+        } else {
+          await window["ic"][walletToUse].requestConnect({
+            whitelist,
+          });
+        }
         const pID = await window["ic"][walletToUse]["agent"].getPrincipal();
         const identity = {
           type: walletToUse,
@@ -275,8 +273,8 @@ export function useProvideAuth(authClient): AuthContext {
         try {
           if (walletToUse) {
             let result;
-            const agent = new HttpAgent({ host })
-            await agent.fetchRootKey()
+            const agent = new HttpAgent({ host });
+            await agent.fetchRootKey();
             result = await window["ic"][walletToUse].requestConnect({
               whitelist,
             });

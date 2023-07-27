@@ -17,10 +17,10 @@ import Timer "mo:base/Timer";
 import Result "mo:base/Result";
 import Constants "../../../common/constants";
 import CommonTypes "../../../common/types";
-import Helpers "../../helpers";
+import Helpers "../../../common/helpers";
 import ModClubParam "../parameters/params";
-import Canistergeek "../../canistergeek/canistergeek";
-import LoggerTypesModule "../../canistergeek/logger/typesModule";
+import Canistergeek "../../../common/canistergeek/canistergeek";
+import LoggerTypesModule "../../../common/canistergeek/logger/typesModule";
 import Types "./types";
 
 actor class Bucket() = this {

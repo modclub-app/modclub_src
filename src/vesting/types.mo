@@ -4,6 +4,8 @@ import Nat64 "mo:base/Nat64";
 import Buffer "mo:base/Buffer";
 import CommonTypes "../common/types";
 import ICRCTypes "../common/ICRCTypes";
+import Canistergeek "../common/canistergeek/canistergeek";
+import LoggerTypesModule "../common/canistergeek/logger/typesModule";
 
 module {
   public type Operation = {
@@ -42,6 +44,9 @@ module {
 
   public type VestingCanisterMethods = {
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
+    #collectCanisterMetrics : () -> ();
+    #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
+    #getCanisterLog : () -> ?LoggerTypesModule.CanisterLogRequest;
     #claim_vesting : () -> (account : ICRCTypes.Account, amount : ICRCTypes.Tokens);
     #stage_vesting_block : () -> (account : ICRCTypes.Account, amount : ICRCTypes.Tokens);
     #stake : () -> (account : ICRCTypes.Account, amount : ICRCTypes.Tokens);

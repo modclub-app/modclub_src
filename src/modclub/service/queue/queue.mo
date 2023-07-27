@@ -1,9 +1,9 @@
 import Buffer "mo:base/Buffer";
-import Canistergeek "../../canistergeek/canistergeek";
+import Canistergeek "../../../common/canistergeek/canistergeek";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
 import Array "mo:base/Array";
-import Helpers "../../helpers";
+import Helpers "../../../common/helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";

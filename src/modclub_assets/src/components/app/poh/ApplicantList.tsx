@@ -152,16 +152,18 @@ export default function PohApplicantList() {
     setApplicants([...applicants, ...newApplicants]);
     setLoading(false);
   };
-  const getUserLv = async()=>{
-    if(identity){
+  const getUserLv = async () => {
+    if (identity) {
       try {
-        const res = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText())
-        if (typeof res.level === 'object') {
-          setLevel(Object.keys(res.level)[0])
-        } 
+        const res = await queryRSAndLevelByPrincipal(
+          identity.getPrincipal().toText()
+        );
+        if (typeof res.level === "object") {
+          setLevel(Object.keys(res.level)[0]);
+        }
       } catch (error) {
-        console.error("Error GET LEVEL:",error);
-        setLevel("novice")
+        console.error("Error GET LEVEL:", error);
+        setLevel("novice");
       }
     }
   };
@@ -217,46 +219,47 @@ export default function PohApplicantList() {
     <>
       <Userstats />
 
-    {level !== "novice" && (
-      <Columns>
-        <Columns.Column size={12}>
-          <FilterBar
-            apps={apps}
-            currentApp={currentApp}
-            onAppChange={handleAppChange}
-            filters={filters}
-            currentFilter={currentFilter}
-            onFilterChange={handleFilterChange}
-          />
-        </Columns.Column>
+      {level !== "novice" && (
+        <Columns>
+          <Columns.Column size={12}>
+            <FilterBar
+              apps={apps}
+              currentApp={currentApp}
+              onAppChange={handleAppChange}
+              filters={filters}
+              currentFilter={currentFilter}
+              onFilterChange={handleFilterChange}
+            />
+          </Columns.Column>
 
-        {applicants.length &&
-          applicants.map((applicant, index) => (
-            <Columns.Column
-              key={applicant.packageId}
-              mobile={{ size: 11 }}
-              tablet={{ size: 6 }}
-              fullhd={{ size: 4 }}
-            >
-              <ApplicantSnippet applicant={applicant} />
-            </Columns.Column>
-          ))}
-        <Columns.Column size={12}>
-          <Card>
-            <Card.Footer alignItems="center">
-              <div>Showing 1 to {applicants.length} feeds</div>
-              <Button
-                color="primary"
-                onClick={() => nextPage()}
-                className="ml-4 px-7 py-3"
-                disabled={hasReachedEnd}
+          {applicants.length &&
+            applicants.map((applicant, index) => (
+              <Columns.Column
+                key={applicant.packageId}
+                mobile={{ size: 11 }}
+                tablet={{ size: 6 }}
+                fullhd={{ size: 4 }}
               >
-                See more
-              </Button>
-            </Card.Footer>
-          </Card>
-        </Columns.Column>
-      </Columns>)}
+                <ApplicantSnippet applicant={applicant} />
+              </Columns.Column>
+            ))}
+          <Columns.Column size={12}>
+            <Card>
+              <Card.Footer alignItems="center">
+                <div>Showing 1 to {applicants.length} feeds</div>
+                <Button
+                  color="primary"
+                  onClick={() => nextPage()}
+                  className="ml-4 px-7 py-3"
+                  disabled={hasReachedEnd}
+                >
+                  See more
+                </Button>
+              </Card.Footer>
+            </Card>
+          </Columns.Column>
+        </Columns>
+      )}
     </>
   );
 }

@@ -9,12 +9,18 @@ import {
   Button,
   Modal,
   Dropdown,
-  Notification
+  Notification,
 } from "react-bulma-components";
 import LogoImg from "../../../../assets/logo.png";
 import SidebarUser from "./SidebarUser";
 import { useAuth } from "../../../utils/auth";
-import { addUserToQueueAndSendVerificationEmail, getUserAlertOptInVal, queryRSAndLevel, queryRSAndLevelByPrincipal, registerUserToReceiveAlerts } from "../../../utils/api";
+import {
+  addUserToQueueAndSendVerificationEmail,
+  getUserAlertOptInVal,
+  queryRSAndLevel,
+  queryRSAndLevelByPrincipal,
+  registerUserToReceiveAlerts,
+} from "../../../utils/api";
 import { SignIn } from "../../auth/SignIn";
 import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -68,7 +74,6 @@ const InviteModerator = ({ toggle }) => {
 };
 
 const DropdownLabel = ({ toggle }) => {
-
   return (
     <>
       <Icon style={{ marginLeft: "3px" }}>
@@ -76,18 +81,29 @@ const DropdownLabel = ({ toggle }) => {
       </Icon>
       <div className="is-flex" onClick={toggle}>
         <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center has-text-left">
-          <Heading size={6} >
-            Switch to Provider Dashboard
-          </Heading>
+          <Heading size={6}>Switch to Provider Dashboard</Heading>
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
 export default function Sidebar() {
   const history = useHistory();
-  const {identity, isAuthReady, user, isAuthenticated, requiresSignUp, providers, setSelectedProvider, selectedProvider, isAdminUser, userPrincipalText, userAlertVal, setUserAlertVal } = useAuth();
+  const {
+    identity,
+    isAuthReady,
+    user,
+    isAuthenticated,
+    requiresSignUp,
+    providers,
+    setSelectedProvider,
+    selectedProvider,
+    isAdminUser,
+    userPrincipalText,
+    userAlertVal,
+    setUserAlertVal,
+  } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [notificationMsg, setNotificationMsg] = useState(null);
   const toggleModal = () => setShowModal(!showModal);
@@ -105,29 +121,44 @@ export default function Sidebar() {
       return;
     }
     const email = user.email;
-    if (!email) setNotificationMsg({ success: false, value:'Email Id is not provided!!'});
-    const msgToDisplay = { success: true, value:'Please check your email to receive email alerts!!'};
+    if (!email)
+      setNotificationMsg({
+        success: false,
+        value: "Email Id is not provided!!",
+      });
+    const msgToDisplay = {
+      success: true,
+      value: "Please check your email to receive email alerts!!",
+    };
     try {
-      const envToUse = process.env.DFX_NETWORK == 'local' ? 'dev':process.env.DEV_ENV ? process.env.DEV_ENV : 'dev';
-      console.log(envToUse)
+      const envToUse =
+        process.env.DFX_NETWORK == "local"
+          ? "dev"
+          : process.env.DEV_ENV
+          ? process.env.DEV_ENV
+          : "dev";
+      console.log(envToUse);
       await addUserToQueueAndSendVerificationEmail(envToUse);
     } catch (error) {
       console.log(error);
       msgToDisplay.success = false;
-      msgToDisplay.value = 'Error occurred while sending email. Please try again later.';
+      msgToDisplay.value =
+        "Error occurred while sending email. Please try again later.";
     }
     setLoadSpinner(false);
     setNotificationMsg(msgToDisplay);
-    setTimeout(() => {setNotificationMsg(null);}, 5000);
-  }
+    setTimeout(() => {
+      setNotificationMsg(null);
+    }, 5000);
+  };
 
   const fetchUserAlertOptinVal = async () => {
     setLoadSpinner(true);
     const result = await getUserAlertOptInVal();
     setLoadSpinner(false);
     setUserAlertVal(result);
-  }
-  
+  };
+
   useEffect(() => {
     let isMounted = true;
     if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
@@ -136,13 +167,15 @@ export default function Sidebar() {
     if (isAuthReady && isAuthenticated && user) {
       fetchUserAlertOptinVal();
     }
-    const getUserLv = async()=>{
-      const res = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText())
+    const getUserLv = async () => {
+      const res = await queryRSAndLevelByPrincipal(
+        identity.getPrincipal().toText()
+      );
       if (res && res.level && Object.keys(res.level).length > 0 && isMounted) {
         setLevel(Object.keys(res.level)[0]);
       }
     };
-    getUserLv()
+    getUserLv();
     return () => {
       isMounted = false;
     };
@@ -175,21 +208,23 @@ export default function Sidebar() {
             </Icon>
             Tasks
           </Link>
-          {level != "novice" && <Link to="/app/poh">
-            <Icon>
-              <span className="material-icons">check_circle_outline</span>
-            </Icon>
-            Human Verification
-          </Link>}
+          {level != "novice" && (
+            <Link to="/app/poh">
+              <Icon>
+                <span className="material-icons">check_circle_outline</span>
+              </Icon>
+              Human Verification
+            </Link>
+          )}
           {/* ADMIN POH CONTENT APPROVED AND REJECTED */}
-          {user && isAdminUser &&
+          {user && isAdminUser && (
             <Link to="/app/admin/poh">
               <Icon>
                 <span className="material-icons">check_circle_outline</span>
               </Icon>
               Admin POH Content
             </Link>
-          }
+          )}
           {/* END ADMIN POH CONTENT APPROVED AND REJECTED */}
           <Link to="/app/leaderboard">
             <Icon>
@@ -206,7 +241,16 @@ export default function Sidebar() {
           {providers.length > 0 ? (
             <>
               {selectedProvider ? (
-                <Link to="/app" onClick={() => setSelectedProvider(null)} style={{ position: "absolute", top: "0px", right: "2.5em", maxWidth: "18em" }}>
+                <Link
+                  to="/app"
+                  onClick={() => setSelectedProvider(null)}
+                  style={{
+                    position: "absolute",
+                    top: "0px",
+                    right: "2.5em",
+                    maxWidth: "18em",
+                  }}
+                >
                   <Icon>
                     <span className="material-icons">playlist_add_check</span>
                   </Icon>
@@ -216,45 +260,69 @@ export default function Sidebar() {
                 <Dropdown
                   className="mb-5"
                   color="ghost"
-                  style={{ position: "absolute", top: "0.5em", right: "1em", maxWidth: "18em", zIndex: 999 }}
+                  style={{
+                    position: "absolute",
+                    top: "0.5em",
+                    right: "1em",
+                    maxWidth: "18em",
+                    zIndex: 999,
+                  }}
                   icon={
                     <Icon color="white">
                       <span className="material-icons">expand_more</span>
                     </Icon>
                   }
-                  label={<DropdownLabel
-                    toggle={toggle}
-                  />}
+                  label={<DropdownLabel toggle={toggle} />}
                 >
-
                   {providers.map((provider) => {
                     return (
-                      <Link to="/app/admin" key={provider['id']} className="dropdown-item" onClick={() => setSelectedProvider(provider)}>
-                        {provider['name']}
+                      <Link
+                        to="/app/admin"
+                        key={provider["id"]}
+                        className="dropdown-item"
+                        onClick={() => setSelectedProvider(provider)}
+                      >
+                        {provider["name"]}
                       </Link>
                     );
                   })}
                 </Dropdown>
               )}
             </>
-
           ) : (
             ""
           )}
         </Menu.List>
-        {user && user.email && <div>
-          <strong style={{ position: 'relative', top: '10px', marginRight: '20px', marginLeft: '20px', color: '#FFF' }}>Alerts?</strong>
-          <ToggleSwitch
-            id="userAlerts"
-            checked={userAlertVal}
-            onChange={subscribeToAlert}
-            style={{ top: '10px' }}
-          />
-          {loadSpinner && <div className="loader is-loading" style={{
-            display: "inline-block",
-            top: "13px"
-          }}></div>}
-        </div>}
+        {user && user.email && (
+          <div>
+            <strong
+              style={{
+                position: "relative",
+                top: "10px",
+                marginRight: "20px",
+                marginLeft: "20px",
+                color: "#FFF",
+              }}
+            >
+              Alerts?
+            </strong>
+            <ToggleSwitch
+              id="userAlerts"
+              checked={userAlertVal}
+              onChange={subscribeToAlert}
+              style={{ top: "10px" }}
+            />
+            {loadSpinner && (
+              <div
+                className="loader is-loading"
+                style={{
+                  display: "inline-block",
+                  top: "13px",
+                }}
+              ></div>
+            )}
+          </div>
+        )}
         <Button
           color="primary"
           fullwidth
@@ -265,13 +333,16 @@ export default function Sidebar() {
           Invite a Moderator
         </Button>
       </Menu>
-      {notificationMsg &&
-        <Notification className="has-text-centered" color={notificationMsg.success ? "success" : "danger"}>
+      {notificationMsg && (
+        <Notification
+          className="has-text-centered"
+          color={notificationMsg.success ? "success" : "danger"}
+        >
           {notificationMsg.value}
         </Notification>
-      }
+      )}
 
       {showModal && <InviteModerator toggle={toggleModal} />}
-    </Columns.Column >
+    </Columns.Column>
   );
 }

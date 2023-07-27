@@ -1,5 +1,7 @@
 import List "mo:base/List";
 import Principal "mo:base/Principal";
+import Canistergeek "../common/canistergeek/canistergeek";
+import LoggerTypesModule "../common/canistergeek/logger/typesModule";
 
 module {
   public type AdminsList = List.List<Principal>;
@@ -26,5 +28,8 @@ module {
     #subscribe : () -> (Text);
     #manualPublish : () -> ();
     #unregisterAdmin : () -> Text;
+    #collectCanisterMetrics : () -> ();
+    #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
+    #getCanisterLog : () -> ?LoggerTypesModule.CanisterLogRequest;
   };
 };

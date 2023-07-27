@@ -5,7 +5,7 @@ import Blob "mo:base/Blob";
 import CommonTypes "../../../common/types";
 import Types "../../types";
 import GlobalState "../../statev2";
-import Canistergeek "../../canistergeek/canistergeek";
+import Canistergeek "../../../common/canistergeek/canistergeek";
 
 module ProviderTypes {
   public type ProviderArg = {

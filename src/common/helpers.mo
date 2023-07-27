@@ -4,7 +4,7 @@ import Blob "mo:base/Blob";
 import Buffer "mo:base/Buffer";
 import Canistergeek "./canistergeek/canistergeek";
 import Char "mo:base/Char";
-import GlobalState "statev2";
+import GlobalState "../modclub/statev2";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Int64 "mo:base/Int64";
@@ -23,9 +23,9 @@ import Source "mo:uuid/async/SourceV4";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Error "mo:base/Error";
-import Types "./types";
+import Types "../modclub/types";
 import UUID "mo:uuid/UUID";
-import Constants "../common/constants";
+import Constants "constants";
 import Bool "mo:base/Bool";
 
 module Helpers {

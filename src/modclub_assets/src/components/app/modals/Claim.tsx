@@ -13,7 +13,7 @@ export default function Claim({ toggle, tokenHoldings, userId }) {
     try {
       const locked = await lockedFor(userId);
       const res = await claimLockedReward(Number(locked));
-      return res.ok
+      return res.ok;
     } catch (err) {
       setError(err.message);
     }
@@ -38,14 +38,14 @@ export default function Claim({ toggle, tokenHoldings, userId }) {
       {error && <div className="error">{error}</div>}
       <div className="field">
         <div className="control">
-           <Field
-             name="amount"
-             component="input"
-             type="hidden"
-             className="input"
-             initialValue={tokenHoldings.pendingRewards}
-             onInput={preventMax}
-           />
+          <Field
+            name="amount"
+            component="input"
+            type="hidden"
+            className="input"
+            initialValue={tokenHoldings.pendingRewards}
+            onInput={preventMax}
+          />
         </div>
       </div>
     </FormModal>

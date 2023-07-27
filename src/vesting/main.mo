@@ -11,6 +11,7 @@ import Int "mo:base/Int";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import Types "./types";
+import Timer "mo:base/Timer";
 import Buffer "mo:base/Buffer";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
@@ -19,10 +20,20 @@ import ICRCTypes "../common/ICRCTypes";
 import CommonTypes "../common/types";
 import ModSecurity "../common/security/guard";
 import VestingLedger "./ledger";
+import GlobalConstants "../common/constants";
+import Canistergeek "../common/canistergeek/canistergeek";
+import LoggerTypesModule "../common/canistergeek/logger/typesModule";
+import Helpers "../common/helpers";
 
 shared ({ caller = deployer }) actor class Vesting({
   env : CommonTypes.ENV;
 }) = this {
+
+  stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
+  private let canistergeekMonitor = Canistergeek.Monitor();
+
+  stable var _canistergeekLoggerUD : ?Canistergeek.LoggerUpgradeData = null;
+  private let canistergeekLogger = Canistergeek.Logger();
 
   stable var persistedVestingsStorage : [(Principal, Types.LocksStable)] = [];
 
@@ -107,7 +118,45 @@ shared ({ caller = deployer }) actor class Vesting({
     ledger.releaseStaking(account.owner, amount);
   };
 
+  public query ({ caller }) func getCanisterMetrics(
+    parameters : Canistergeek.GetMetricsParameters
+  ) : async ?Canistergeek.CanisterMetrics {
+    if (not Helpers.allowedCanistergeekCaller(caller)) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekMonitor.getMetrics(parameters);
+  };
+
+  public shared ({ caller }) func collectCanisterMetrics() : async () {
+    if (not Helpers.allowedCanistergeekCaller(caller)) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekMonitor.collectMetrics();
+  };
+
+  public query ({ caller }) func getCanisterLog(
+    request : ?LoggerTypesModule.CanisterLogRequest
+  ) : async ?LoggerTypesModule.CanisterLogResponse {
+    if (not Helpers.allowedCanistergeekCaller(caller)) {
+      throw Error.reject("Unauthorized");
+    };
+    canistergeekLogger.getLog(request);
+  };
+
+  ignore Timer.setTimer(
+    #seconds 0,
+    func() : async () {
+      canistergeekMonitor.collectMetrics();
+      ignore Timer.recurringTimer(
+        #nanoseconds(GlobalConstants.FIVE_MIN_NANO_SECS),
+        func() : async () { canistergeekMonitor.collectMetrics() }
+      );
+    }
+  );
+
   system func preupgrade() {
+    _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
+    _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
     persistedVestingsStorage := ledger.toPersistedStorage();
   };
 
@@ -120,6 +169,11 @@ shared ({ caller = deployer }) actor class Vesting({
       deployer,
       Principal.fromActor(this)
     );
+    canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
+    _canistergeekMonitorUD := null;
+    canistergeekLogger.postupgrade(_canistergeekLoggerUD);
+    _canistergeekLoggerUD := null;
+    canistergeekLogger.setMaxMessagesCount(3000);
   };
 
   system func inspect({

@@ -31,22 +31,58 @@ import {
   ProviderSettingResult,
   Result_5,
   Result_4,
-  ProfileStable
+  ProfileStable,
 } from "./types";
 import { Principal } from "@dfinity/principal";
-import { canisterId as ModCanisterId} from "../../../declarations/modclub/index";
+import { canisterId as ModCanisterId } from "../../../declarations/modclub/index";
 import { canisterId as ModDevCanisterId } from "../../../declarations/modclub_dev/index";
 import { canisterId as ModQACanisterId } from "../../../declarations/modclub_qa/index";
-import { canisterId as RSCanisterID, createActor as RSCreateActor, idlFactory as RSIdl} from "../../../declarations/rs";
-import { canisterId as RSQACanisterID, createActor as RSQACreateActor, idlFactory as RSQAIdl } from "../../../declarations/rs_qa";
-import { canisterId as RSDEVCanisterID, createActor as RSDEVCreateActor, idlFactory as RSDEVIdl } from "../../../declarations/rs_dev";
-import { canisterId as WalletCanisterID, createActor as WalletCreateActor, idlFactory as WalletIdl} from "../../../declarations/wallet/index";
-import { canisterId as WalletQACanisterID, createActor as WalletQACreateActor,idlFactory as WalletQAIdl } from "../../../declarations/wallet_qa";
-import { canisterId as WalletDEVCanisterID, createActor as WalletDEVCreateActor, idlFactory as WalletDEVIdl, } from "../../../declarations/wallet_dev";
+import {
+  canisterId as RSCanisterID,
+  createActor as RSCreateActor,
+  idlFactory as RSIdl,
+} from "../../../declarations/rs";
+import {
+  canisterId as RSQACanisterID,
+  createActor as RSQACreateActor,
+  idlFactory as RSQAIdl,
+} from "../../../declarations/rs_qa";
+import {
+  canisterId as RSDEVCanisterID,
+  createActor as RSDEVCreateActor,
+  idlFactory as RSDEVIdl,
+} from "../../../declarations/rs_dev";
+import {
+  canisterId as WalletCanisterID,
+  createActor as WalletCreateActor,
+  idlFactory as WalletIdl,
+} from "../../../declarations/wallet/index";
+import {
+  canisterId as WalletQACanisterID,
+  createActor as WalletQACreateActor,
+  idlFactory as WalletQAIdl,
+} from "../../../declarations/wallet_qa";
+import {
+  canisterId as WalletDEVCanisterID,
+  createActor as WalletDEVCreateActor,
+  idlFactory as WalletDEVIdl,
+} from "../../../declarations/wallet_dev";
 import { RSAndLevel } from "../../../declarations/rs/rs.did";
-import { canisterId as VestingCanisterID, createActor as VestingCreateActor, idlFactory as VestingIdl } from "../../../declarations/vesting";
-import { canisterId as VestingQACanisterID, createActor as VestingQACreateActor, idlFactory as VestingQAIdl } from "../../../declarations/vesting_qa";
-import { canisterId as VestingDEVCanisterID, createActor as VestingDEVCreateActor, idlFactory as VestingDEVIdl } from "../../../declarations/vesting_dev";
+import {
+  canisterId as VestingCanisterID,
+  createActor as VestingCreateActor,
+  idlFactory as VestingIdl,
+} from "../../../declarations/vesting";
+import {
+  canisterId as VestingQACanisterID,
+  createActor as VestingQACreateActor,
+  idlFactory as VestingQAIdl,
+} from "../../../declarations/vesting_qa";
+import {
+  canisterId as VestingDEVCanisterID,
+  createActor as VestingDEVCreateActor,
+  idlFactory as VestingDEVIdl,
+} from "../../../declarations/vesting_dev";
 import { ApproveArgs } from "../../../declarations/wallet_dev/wallet_dev.did";
 import { HttpAgent, Identity } from "@dfinity/agent";
 import { authClient } from "./authClient";
@@ -56,11 +92,11 @@ export type Optional<Type> = [Type] | [];
 var actor: _SERVICE = null;
 var Vesting: _SERVICE = null;
 var Wallet: _SERVICE = null;
-var RS:_SERVICE=null;
+var RS: _SERVICE = null;
 let walletToUse = localStorage.getItem("_loginType") || "ii";
 
 export function getEnvironmentSpecificValues(env: string) {
-  switch(env) {
+  switch (env) {
     case "dev":
       return {
         CanisterId: ModDevCanisterId,
@@ -72,7 +108,7 @@ export function getEnvironmentSpecificValues(env: string) {
         vestingActor: VestingDEVCreateActor,
         rsCanisterID: RSDEVCanisterID,
         rsIDL: RSDEVIdl,
-        rsActor: RSDEVCreateActor
+        rsActor: RSDEVCreateActor,
       };
     case "qa":
       return {
@@ -85,7 +121,7 @@ export function getEnvironmentSpecificValues(env: string) {
         vestingActor: VestingQACreateActor,
         rsCanisterID: RSQACanisterID,
         rsIDL: RSQAIdl,
-        rsActor: RSQACreateActor
+        rsActor: RSQACreateActor,
       };
     default:
       return {
@@ -98,11 +134,13 @@ export function getEnvironmentSpecificValues(env: string) {
         vestingActor: VestingCreateActor,
         rsCanisterID: RSCanisterID,
         rsIDL: RSIdl,
-        rsActor: RSCreateActor
+        rsActor: RSCreateActor,
       };
   }
 }
-const { CanisterId,  walletCanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
+const { CanisterId, walletCanisterId } = getEnvironmentSpecificValues(
+  process.env.DEV_ENV
+);
 
 async function getMC(): Promise<_SERVICE> {
   if (!actor) {
@@ -111,20 +149,20 @@ async function getMC(): Promise<_SERVICE> {
   return actor;
 }
 
-async function fetchIdentity(): Promise<Identity>{
+async function fetchIdentity(): Promise<Identity> {
   let identity;
-  if(walletToUse == "plug"){
+  if (walletToUse == "plug") {
     const result = await window["ic"][walletToUse].requestConnect({
       walletCanisterId,
     });
     const pID = await window["ic"][walletToUse]["agent"].getPrincipal();
-      identity = {
-        type: walletToUse,
-        getPrincipal: () => pID,
-      };
-  }else if (walletToUse == "stoic"){
+    identity = {
+      type: walletToUse,
+      getPrincipal: () => pID,
+    };
+  } else if (walletToUse == "stoic") {
     identity = await StoicIdentity.load();
-  }else{
+  } else {
     identity = authClient.getIdentity();
   }
   return identity;
@@ -134,11 +172,11 @@ async function getWallet(): Promise<_SERVICE> {
     const identity = await fetchIdentity();
     const agent = new HttpAgent({ identity });
     if (process.env.DEV_ENV == "dev") {
-      Wallet = await WalletDEVCreateActor(WalletDEVCanisterID, {agent} )
-    }else if (process.env.DEV_ENV == "qa") {
-      Wallet = await WalletQACreateActor(WalletQACanisterID, {agent} )
-    }else{
-      Wallet = await WalletCreateActor(WalletCanisterID, {agent} )
+      Wallet = await WalletDEVCreateActor(WalletDEVCanisterID, { agent });
+    } else if (process.env.DEV_ENV == "qa") {
+      Wallet = await WalletQACreateActor(WalletQACanisterID, { agent });
+    } else {
+      Wallet = await WalletCreateActor(WalletCanisterID, { agent });
     }
   }
   return Wallet;
@@ -148,11 +186,11 @@ async function getVesting(): Promise<_SERVICE> {
     const identity = await fetchIdentity();
     const agent = new HttpAgent({ identity });
     if (process.env.DEV_ENV == "dev") {
-      Vesting = await VestingDEVCreateActor(VestingDEVCanisterID, {agent} )
-    }else if (process.env.DEV_ENV == "qa") {
-      Vesting = await VestingQACreateActor(VestingQACanisterID, {agent} )
-    }else{
-      Vesting = await VestingCreateActor(VestingCanisterID, {agent} )
+      Vesting = await VestingDEVCreateActor(VestingDEVCanisterID, { agent });
+    } else if (process.env.DEV_ENV == "qa") {
+      Vesting = await VestingQACreateActor(VestingQACanisterID, { agent });
+    } else {
+      Vesting = await VestingCreateActor(VestingCanisterID, { agent });
     }
   }
   return Vesting;
@@ -162,11 +200,11 @@ async function getRS(): Promise<_SERVICE> {
     const identity = await fetchIdentity();
     const agent = new HttpAgent({ identity });
     if (process.env.DEV_ENV == "dev") {
-      RS = await RSDEVCreateActor(RSDEVCanisterID, {agent} )
-    }else if (process.env.DEV_ENV == "qa") {
-      RS = await RSQACreateActor(RSQACanisterID, {agent} )
-    }else{
-      RS = await RSCreateActor(RSCanisterID, {agent} )
+      RS = await RSDEVCreateActor(RSDEVCanisterID, { agent });
+    } else if (process.env.DEV_ENV == "qa") {
+      RS = await RSQACreateActor(RSQACanisterID, { agent });
+    } else {
+      RS = await RSCreateActor(RSCanisterID, { agent });
     }
   }
   return RS;
@@ -326,11 +364,15 @@ export async function getProviderAdmins(
 }
 
 export async function stakeTokens(amount: number): Promise<Result> {
-  return trace_error(async()=>{await (await getWallet()).stakeTokens(BigInt(amount));})
+  return trace_error(async () => {
+    await (await getWallet()).stakeTokens(BigInt(amount));
+  });
 }
 
 export async function unStakeTokens(amount: number): Promise<any> {
-  return trace_error(async()=>{await (await getMC()).unStakeTokens(BigInt(amount));})
+  return trace_error(async () => {
+    await (await getMC()).unStakeTokens(BigInt(amount));
+  });
 }
 
 export async function getAllProfiles(): Promise<ProfileStable[]> {
@@ -349,7 +391,9 @@ export async function checkUserRole(uid: Principal): Promise<boolean> {
   }
 }
 
-export async function getProfileById(userId: Principal): Promise<ProfileStable> {
+export async function getProfileById(
+  userId: Principal
+): Promise<ProfileStable> {
   return (await getMC()).getProfileById(userId);
 }
 
@@ -490,7 +534,9 @@ export async function registerUserToReceiveAlerts(
   userId: string,
   wantToReceiveAlerts: boolean
 ): Promise<boolean> {
-  return await (await getMC()).registerUserToReceiveAlerts(
+  return await (
+    await getMC()
+  ).registerUserToReceiveAlerts(
     Principal.fromText(userId),
     wantToReceiveAlerts
   );
@@ -532,7 +578,9 @@ export async function queryRSAndLevelByPrincipal(
 ): Promise<RSAndLevel> {
   return trace_error(
     async () =>
-      await (await getRS()).queryRSAndLevelByPrincipal(Principal.fromText(principalId))
+      await (
+        await getRS()
+      ).queryRSAndLevelByPrincipal(Principal.fromText(principalId))
   );
 }
 export async function queryRSAndLevel(): Promise<RSAndLevel> {
@@ -549,10 +597,9 @@ export async function queryBalancePr(
 ): Promise<number> {
   return trace_error(
     async () =>
-      await (await getWallet()).queryBalancePr(
-        Principal.fromText(principalId),
-        subAcc ? [subAcc] : []
-      )
+      await (
+        await getWallet()
+      ).queryBalancePr(Principal.fromText(principalId), subAcc ? [subAcc] : [])
   );
 }
 
@@ -571,58 +618,79 @@ export async function canReserveContent(contentId: string): Promise<any> {
 
 //DEPOSIT PROVIDER
 export async function icrc1Balance(userId: string): Promise<bigint> {
-  return trace_error(async () => await (await getWallet()).icrc1_balance_of({owner: Principal.fromText(userId), subaccount: [] }));
+  return trace_error(
+    async () =>
+      await (
+        await getWallet()
+      ).icrc1_balance_of({ owner: Principal.fromText(userId), subaccount: [] })
+  );
 }
 export async function icrc1Decimal(): Promise<bigint> {
   return trace_error(async () => await (await getWallet()).icrc1_decimals());
 }
 
 export async function icrc2Approve(amount: number): Promise<any> {
-  let input : ApproveArgs = {
+  let input: ApproveArgs = {
     amount: BigInt(amount),
     spender: Principal.fromText(CanisterId),
     fee: [],
     memo: [],
     from_subaccount: [],
     created_at_time: [],
-    expires_at: []
-  }
-  return trace_error(async () => await (await getWallet()).icrc2_approve(input));
-}
-
-export async function topUpProviderReserve(amount: number, providerId?: Principal): Promise<any> {
+    expires_at: [],
+  };
   return trace_error(
-    async () => (await getMC()).topUpProviderReserve({amount: BigInt(amount),providerId: [providerId]}));
-}
-
-export async function providerSaBalanceById(provider: Principal,opt?: string): Promise<any> {
-  return trace_error(
-    async () => (
-      await getMC()).providerSaBalance(opt? opt : "RESERVE", [provider]));
-}
-
-export async function claimLockedReward(amount: number) : Promise<Result_4>{
-  return trace_error(
-    async () => (await getMC()).claimLockedReward(BigInt(amount),[])
+    async () => await (await getWallet()).icrc2_approve(input)
   );
 }
 
-export async function canClaimLockedReward(amount: number) : Promise<Result_5>{
-  return trace_error(
-    async () => (await getMC()).canClaimLockedReward([BigInt(amount)])
+export async function topUpProviderReserve(
+  amount: number,
+  providerId?: Principal
+): Promise<any> {
+  return trace_error(async () =>
+    (await getMC()).topUpProviderReserve({
+      amount: BigInt(amount),
+      providerId: [providerId],
+    })
+  );
+}
+
+export async function providerSaBalanceById(
+  provider: Principal,
+  opt?: string
+): Promise<any> {
+  return trace_error(async () =>
+    (await getMC()).providerSaBalance(opt ? opt : "RESERVE", [provider])
+  );
+}
+
+export async function claimLockedReward(amount: number): Promise<Result_4> {
+  return trace_error(async () =>
+    (await getMC()).claimLockedReward(BigInt(amount), [])
+  );
+}
+
+export async function canClaimLockedReward(amount: number): Promise<Result_5> {
+  return trace_error(async () =>
+    (await getMC()).canClaimLockedReward([BigInt(amount)])
   );
 }
 
 export async function stakeFor(userId: string): Promise<bigint> {
-  return trace_error(async()=>{ 
-    let res = await (await getVesting()).staked_for({ owner: Principal.fromText(userId), subaccount: [] });
-    return res
+  return trace_error(async () => {
+    let res = await (
+      await getVesting()
+    ).staked_for({ owner: Principal.fromText(userId), subaccount: [] });
+    return res;
   });
 }
 
 export async function lockedFor(userId: string): Promise<bigint> {
-  return trace_error(async()=>{ 
-    let res = await (await getVesting()).locked_for({ owner: Principal.fromText(userId), subaccount: [] });
-    return res
+  return trace_error(async () => {
+    let res = await (
+      await getVesting()
+    ).locked_for({ owner: Principal.fromText(userId), subaccount: [] });
+    return res;
   });
 }

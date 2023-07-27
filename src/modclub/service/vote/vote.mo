@@ -12,7 +12,7 @@ import Types "../../types";
 import VoteState "./state";
 import VoteStateV2 "./statev2";
 import VoteTypes "./types";
-import Helpers "../../helpers";
+import Helpers "../../../common/helpers";
 import QueueManager "../queue/queue";
 import GlobalState "../../statev2";
 import RSTypes "../../../rs/types";

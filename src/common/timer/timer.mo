@@ -4,7 +4,7 @@ import HashMap "mo:base/HashMap";
 import CommonTypes "../types";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
-import Canistergeek "../../modclub/canistergeek/canistergeek";
+import Canistergeek "../canistergeek/canistergeek";
 import Constants "../constants";
 import ModClubParam "../../modclub/service/parameters/params";
 import ModSecurity "../security/guard";

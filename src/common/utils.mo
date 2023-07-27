@@ -15,7 +15,7 @@ import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
 import CommonTypes "types";
 import Constants "constants";
-import Helpers "../modclub/helpers";
+import Helpers "helpers";
 
 module {
   public type Timestamp = Int;

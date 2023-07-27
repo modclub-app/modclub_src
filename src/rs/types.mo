@@ -1,6 +1,8 @@
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import CommonTypes "../common/types";
+import Canistergeek "../common/canistergeek/canistergeek";
+import LoggerTypesModule "../common/canistergeek/logger/typesModule";
 
 module {
 
@@ -44,6 +46,9 @@ module {
   };
 
   public type RSCanisterMessageInspection = {
+    #collectCanisterMetrics : () -> ();
+    #getCanisterLog : () -> ?LoggerTypesModule.CanisterLogRequest;
+    #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
     #subscribe : () -> Text;
     #queryRSAndLevel : () -> ();

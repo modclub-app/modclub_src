@@ -24,7 +24,11 @@ import EditRulesModal from "./EditRulesModal";
 import EditModeratorSettingsModal from "./EditModeratorSettingsModal";
 import RemoveRuleModal from "./RemoveRuleModal";
 import EditAppModal from "./EditAppModal";
-import { convert_to_mod, format_token, getUrlFromArray } from "../../../utils/util";
+import {
+  convert_to_mod,
+  format_token,
+  getUrlFromArray,
+} from "../../../utils/util";
 import Deposit from "../modals/Deposit";
 
 export default function Admin({
@@ -69,7 +73,10 @@ export default function Admin({
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [loader, setLoader] = useState(false);
-  const toggleDeposit = () => {setIsDepositOpen(!isDepositOpen); get_token();};
+  const toggleDeposit = () => {
+    setIsDepositOpen(!isDepositOpen);
+    get_token();
+  };
 
   const updateProvider = () => {
     providers.map((prvd) => {
@@ -85,9 +92,9 @@ export default function Admin({
     let [token, amount, digits] = await Promise.all([
       providerSaBalanceById(selectedProvider.id),
       icrc1Balance(identity.getPrincipal().toText()),
-      icrc1Decimal()
+      icrc1Decimal(),
     ]);
-    setDigit(digits)
+    setDigit(digits);
     setProviderTokenBalance(token);
     setUserTokenBalance(convert_to_mod(amount, digits));
   };
@@ -109,7 +116,7 @@ export default function Admin({
         setRules(selectedProvider.rules);
       }
     };
-    adminInit();    
+    adminInit();
   }, []);
 
   const toggle = () => setShowModal(false);
@@ -271,7 +278,11 @@ export default function Admin({
                   style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
                 >
                   <Heading size={1} className="level">
-                    <span>{format_token(convert_to_mod(providerTokenBalance, digit))}</span>
+                    <span>
+                      {format_token(
+                        convert_to_mod(providerTokenBalance, digit)
+                      )}
+                    </span>
                     <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
                       MOD
                       <br />
@@ -435,15 +446,14 @@ export default function Admin({
           updateProvider={updateProvider}
         />
       )}
-      {isDepositOpen && selectedProvider &&(
-        <Deposit 
-        toggle={toggleDeposit}
-        userTokenBalance={userTokenBalance}
-        identity={identity}
-        provider={selectedProvider.id.toString()}
+      {isDepositOpen && selectedProvider && (
+        <Deposit
+          toggle={toggleDeposit}
+          userTokenBalance={userTokenBalance}
+          identity={identity}
+          provider={selectedProvider.id.toString()}
         />
-      )
-      }
+      )}
     </>
   );
 }

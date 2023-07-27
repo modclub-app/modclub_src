@@ -175,20 +175,20 @@ export function getUrlFromArray(imgData: any, imgType: any): string {
 
 export function format_token(amount: number): string {
   if (amount >= 1000 && amount < 1000000) {
-    return `${String(amount / 1000).slice(0,5)}k`;
+    return `${String(amount / 1000).slice(0, 5)}k`;
   } else if (amount >= 1000000 && amount < 1000000000) {
-    return `${String(amount / 1000000).slice(0,5)}m`;
+    return `${String(amount / 1000000).slice(0, 5)}m`;
   } else if (amount >= 1000000000) {
-    return `${String(amount / 1000000000).slice(0,5)}b`;
+    return `${String(amount / 1000000000).slice(0, 5)}b`;
   } else {
-    return `${String(amount).slice(0,6)}`;
+    return `${String(amount).slice(0, 6)}`;
   }
-};
+}
 
-export function convert_to_mod(amount:bigint, digit: bigint):number {
-  return Number(amount)/Math.pow(10, Number(digit))
-};
+export function convert_to_mod(amount: bigint, digit: bigint): number {
+  return Number(amount) / Math.pow(10, Number(digit));
+}
 
-export function convert_from_mod(amount:bigint, digit: bigint):number {
-  return Number(amount)*Math.pow(10, Number(digit))
-};
+export function convert_from_mod(amount: bigint, digit: bigint): number {
+  return Number(amount) * Math.pow(10, Number(digit));
+}

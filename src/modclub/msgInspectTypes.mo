@@ -1,5 +1,5 @@
-import LoggerTypesModule "./canistergeek/logger/typesModule";
-import Canistergeek "./canistergeek/canistergeek";
+import LoggerTypesModule "../common/canistergeek/logger/typesModule";
+import Canistergeek "../common/canistergeek/canistergeek";
 import CommonTypes "../common/types";
 import PohTypes "./service/poh/types";
 import ICRCTypes "../common/ICRCTypes";
@@ -108,7 +108,7 @@ module {
     #votePohContent : () -> (Text, Types.Decision, [Types.PohRulesViolated]);
     #whoami : () -> ();
     #importAccounts : () -> Types.AccountsImportPayload;
-    #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal)
+    #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal);
   };
 
 };

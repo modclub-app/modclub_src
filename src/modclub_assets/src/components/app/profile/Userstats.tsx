@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { canClaimLockedReward, icrc1Decimal, lockedFor, queryRSAndLevelByPrincipal, stakeFor} from "../../../utils/api";
+import {
+  canClaimLockedReward,
+  icrc1Decimal,
+  lockedFor,
+  queryRSAndLevelByPrincipal,
+  stakeFor,
+} from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { Columns, Button } from "react-bulma-components";
 import walletImg from "../../../../assets/wallet.svg";
@@ -12,7 +18,6 @@ import Claim from "../modals/Claim";
 import { StatBox } from "../../common/statbox/StatBox";
 import * as Constant from "../../../utils/constant";
 import { convert_from_mod, convert_to_mod } from "../../../utils/util";
-
 
 const levelMessages = {
   novice: {
@@ -38,7 +43,7 @@ const levelMessages = {
 };
 
 export default function Userstats({ detailed = false }) {
-  const { user, identity} = useAuth();
+  const { user, identity } = useAuth();
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards: 0,
@@ -67,12 +72,11 @@ export default function Userstats({ detailed = false }) {
   const toggleUnstake = () => setShowUnstake(!showUnstake);
 
   const fetchTokenHoldings = async (identity) => {
-    if(identity != undefined)
-    {
+    if (identity != undefined) {
       try {
         const principalId = identity.getPrincipal().toText();
         let perf, digit, stake, locked;
-      
+
         try {
           [perf, digit] = await Promise.all([
             queryRSAndLevelByPrincipal(principalId),
@@ -80,48 +84,54 @@ export default function Userstats({ detailed = false }) {
           ]);
           setDigits(digit);
         } catch (error) {
-          console.error('Error fetching performance and digit:', error);
+          console.error("Error fetching performance and digit:", error);
         }
         try {
           [stake, locked] = await Promise.all([
-            stakeFor(principalId).then(stake => convert_to_mod(stake, digit)),
-            lockedFor(principalId).then(locked => {
+            stakeFor(principalId).then((stake) => convert_to_mod(stake, digit)),
+            lockedFor(principalId).then((locked) => {
               fetchCanClaim(Number(locked));
               return convert_to_mod(locked, digit);
             }),
           ]);
         } catch (error) {
-          console.error('Error fetching stake and locked:', error);
+          console.error("Error fetching stake and locked:", error);
         }
         setTokenHoldings({
           pendingRewards: locked,
           stake: stake,
           wallet: 0,
-        })
+        });
         setPerformance(Number(perf.score));
         setLevel(Object.keys(perf.level)[0]);
         setHoldingsUpdated(false);
       } catch (error) {
-        console.error('Failed to fetch token holdings:', error);
+        console.error("Failed to fetch token holdings:", error);
       }
     }
   };
-  const fetchCanClaim = async(value : number) =>{
-    const claimCheck = await canClaimLockedReward(value).then((res)=>{return res}).catch(()=>{return ""});
-    if(Object.keys(claimCheck)[0] === "ok"){
+  const fetchCanClaim = async (value: number) => {
+    const claimCheck = await canClaimLockedReward(value)
+      .then((res) => {
+        return res;
+      })
+      .catch(() => {
+        return "";
+      });
+    if (Object.keys(claimCheck)[0] === "ok") {
       setClaimRewards({
         canClaim: claimCheck.ok?.canClaim,
         claimAmount: claimCheck.ok?.claimAmount,
         claimPrice: claimCheck.ok?.claimPrice,
-      })
-    }else{
+      });
+    } else {
       setClaimRewards({
         canClaim: false,
         claimAmount: 0,
         claimPrice: 0,
-      })
+      });
     }
-  }
+  };
 
   useEffect(() => {
     identity && fetchTokenHoldings(identity);
@@ -188,22 +198,34 @@ export default function Userstats({ detailed = false }) {
         >
           {claimRewards.canClaim ? (
             <Button.Group>
-            <Button
-              color="dark"
-              onClick={toggleClaim}
-              disabled={level == "novice" || level == "junior" }
-            >
-              Claim
-            </Button>
+              <Button
+                color="dark"
+                onClick={toggleClaim}
+                disabled={level == "novice" || level == "junior"}
+              >
+                Claim
+              </Button>
             </Button.Group>
-          ):(
-            <>{claimRewards.claimPrice > 0 && Constant.CLAIM_LIMIT_MSG(convert_to_mod(BigInt(claimRewards.claimPrice), BigInt(digits)))}</>
+          ) : (
+            <>
+              {claimRewards.claimPrice > 0 &&
+                Constant.CLAIM_LIMIT_MSG(
+                  convert_to_mod(
+                    BigInt(claimRewards.claimPrice),
+                    BigInt(digits)
+                  )
+                )}
+            </>
           )}
         </StatBox>
       </Columns>
 
       {showClaim && (
-        <Claim toggle={toggleClaim} tokenHoldings={tokenHoldings} userId={identity.getPrincipal().toText()}/>
+        <Claim
+          toggle={toggleClaim}
+          tokenHoldings={tokenHoldings}
+          userId={identity.getPrincipal().toText()}
+        />
       )}
 
       {showWithdraw && (

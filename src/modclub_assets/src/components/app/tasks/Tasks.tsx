@@ -68,10 +68,12 @@ const Task = ({ task, setVoted, level }) => {
               Submitted by {task.sourceId} {formatDate(task.createdAt)}
             </span>
           </Card.Header.Title>
-          {level != "novice" && <Progress
-            value={Number(task.voteCount)}
-            min={Number(task.requiredVotes)}
-          />}
+          {level != "novice" && (
+            <Progress
+              value={Number(task.voteCount)}
+              min={Number(task.requiredVotes)}
+            />
+          )}
         </Card.Header>
         <Card.Content>
           <Heading subtitle>{task.title}</Heading>
@@ -99,9 +101,7 @@ const Task = ({ task, setVoted, level }) => {
           </Link>*/}
         </Card.Content>
         <Card.Footer className="tasks-footer">
-          <Button.Group alignItems="flex-end">
-            
-          </Button.Group>
+          <Button.Group alignItems="flex-end"></Button.Group>
 
           <Button.Group style={{ flexWrap: "wrap" }}>
             <div className="mb-4 mt-1" style={{ width: "100%" }}>
@@ -119,8 +119,6 @@ const Task = ({ task, setVoted, level }) => {
   );
 };
 
-
-
 export default function Tasks() {
   const { user, identity, isAuthenticated } = useAuth();
   const [tasks, setTasks] = useState([]);
@@ -136,15 +134,16 @@ export default function Tasks() {
   const [level, setLevel] = useState<string>("");
 
   const fetchTokenHoldings = useCallback(async (identity) => {
-    let perf = await queryRSAndLevelByPrincipal(identity.getPrincipal().toText()!);
+    let perf = await queryRSAndLevelByPrincipal(
+      identity.getPrincipal().toText()!
+    );
     setLevel(Object.keys(perf.level)[0]);
-  },[]);  
-
+  }, []);
 
   useEffect(() => {
     if (user && firstLoad && !loading && fetchTasks()) {
       setFirstLoad(false);
-      fetchTokenHoldings(identity)
+      fetchTokenHoldings(identity);
     }
   }, [user]);
 
@@ -204,7 +203,7 @@ export default function Tasks() {
           <div className="loader is-loading p-4 mt-6" />
         ) : (
           tasks.map((task) => (
-            <Task key={task.id} task={task} setVoted={setVoted} level={level}/>
+            <Task key={task.id} task={task} setVoted={setVoted} level={level} />
           ))
         )}
         {tasks != null && (

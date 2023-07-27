@@ -3,7 +3,7 @@ import Types "../../types";
 import QueueManager "../queue/queue";
 import ContentState "./state";
 import GlobalState "../../statev2";
-import Canistergeek "../../canistergeek/canistergeek";
+import Canistergeek "../../../common/canistergeek/canistergeek";
 import CommonTypes "../../../common/types";
 import HashMap "mo:base/HashMap";
 import StorageSolution "../storage/storage";

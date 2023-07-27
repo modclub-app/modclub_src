@@ -13,7 +13,7 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 
 import GlobalState "../../statev2";
-import Helpers "../../helpers";
+import Helpers "../../../common/helpers";
 import Types "../../types";
 import RSTypes "../../../rs/types";
 import RSConstants "../../../rs/constants";
@@ -142,15 +142,15 @@ module ModeratorModule {
     let buf = Buffer.Buffer<Types.ProfileStable>(0);
     for ((pid, p) in state.profiles.entries()) {
       buf.add({
-          id = p.id;
-          userName = p.userName;
-          email = "";
-          pic = p.pic;
-          role = p.role;
-          subaccounts = Iter.toArray(p.subaccounts.entries());
-          createdAt = p.createdAt;
-          updatedAt = p.updatedAt;
-        });
+        id = p.id;
+        userName = p.userName;
+        email = "";
+        pic = p.pic;
+        role = p.role;
+        subaccounts = Iter.toArray(p.subaccounts.entries());
+        createdAt = p.createdAt;
+        updatedAt = p.updatedAt;
+      });
     };
     return Buffer.toArray<Types.ProfileStable>(buf);
   };
