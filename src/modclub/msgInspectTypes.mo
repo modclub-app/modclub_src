@@ -96,7 +96,6 @@ module {
     #subscribePohCallback : () -> PohTypes.SubscribePohMessage;
     #toggleAllowSubmission : () -> Bool;
     #transform : () -> Types.TransformArgs;
-    #unStakeTokens : () -> Nat;
     #unregisterAdmin : () -> Text;
     #updateProvider : () -> (Principal, Types.ProviderMeta);
     #updateProviderLogo : () -> (Principal, [Nat8], Text);

@@ -1100,11 +1100,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     });
   };
 
-  // ----------------------Token Methods------------------------------
-  public shared ({ caller }) func unStakeTokens(amount : Nat) : async Text {
-    await authGuard.getWalletActor().transfer(?(Principal.toText(caller) # ModClubParam.STAKE_SA), caller, null, Float.fromInt(amount));
-    "Unstaked " # Nat.toText(amount) # " tokens";
-  };
   //----------------------POH Methods For Providers------------------------------
   public shared ({ caller }) func verifyHumanity(providerUserId : Text) : async PohTypes.PohVerificationResponsePlus {
     switch (pohVerificationRequestHelper(providerUserId, caller)) {
@@ -2324,10 +2319,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         throw Error.reject("Unable to find user with principal::" # Principal.toText(caller));
       };
     };
-    let reserveSubAcc = switch (moderatorSubAccs.get("RESERVE")) {
+    let reserveSubAcc = switch (moderatorSubAccs.get("ACCOUNT_PAYABLE")) {
       case (?reserveSA) ?reserveSA;
       case (_) {
-        throw Error.reject("No reserve subaccount for moderator::" # Principal.toText(caller));
+        throw Error.reject("No AP subaccount for moderator::" # Principal.toText(caller));
       };
     };
     let moderReserveBalance = await ledger.icrc1_balance_of({
@@ -2376,10 +2371,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         throw Error.reject("Unable to find user with principal::" # Principal.toText(caller));
       };
     };
-    let reserveSubAcc = switch (moderatorSubAccs.get("RESERVE")) {
+    let reserveSubAcc = switch (moderatorSubAccs.get("ACCOUNT_PAYABLE")) {
       case (?reserveSA) ?reserveSA;
       case (_) {
-        throw Error.reject("No reserve subaccount for moderator::" # Principal.toText(caller));
+        throw Error.reject("No AP subaccount for moderator::" # Principal.toText(caller));
       };
     };
 
