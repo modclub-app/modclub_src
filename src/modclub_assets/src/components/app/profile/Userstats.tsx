@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  canClaimLockedReward,
-  icrc1Decimal,
-  lockedFor,
-  queryRSAndLevelByPrincipal,
-  stakeFor,
-} from "../../../utils/api";
+import { canClaimLockedReward, getEnvironmentSpecificValues, getProfileById, icrc1Balance, icrc1Decimal, lockedFor, queryRSAndLevelByPrincipal, stakeFor, unLockedFor} from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { Columns, Button } from "react-bulma-components";
 import walletImg from "../../../../assets/wallet.svg";
@@ -17,7 +11,8 @@ import Unstake from "../modals/Unstake";
 import Claim from "../modals/Claim";
 import { StatBox } from "../../common/statbox/StatBox";
 import * as Constant from "../../../utils/constant";
-import { convert_from_mod, convert_to_mod } from "../../../utils/util";
+import { convert_to_mod } from "../../../utils/util";
+import Deposit from "../modals/Deposit";
 
 const levelMessages = {
   novice: {
@@ -42,6 +37,8 @@ const levelMessages = {
   },
 };
 
+const {CanisterId} = getEnvironmentSpecificValues(process.env.DEV_ENV);
+
 export default function Userstats({ detailed = false }) {
   const { user, identity } = useAuth();
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
@@ -49,6 +46,8 @@ export default function Userstats({ detailed = false }) {
     pendingRewards: 0,
     stake: 0,
     wallet: 0,
+    userBalance: 0,
+    unLockedFor: 0
   });
   const [claimRewards, setClaimRewards] = useState({
     canClaim: false,
@@ -57,10 +56,15 @@ export default function Userstats({ detailed = false }) {
   });
   const [performance, setPerformance] = useState<number>(0);
   const [digits, setDigits] = useState<number>(0);
+  const [unlockFor, setUnlockFor] = useState<number>(0);
   const [level, setLevel] = useState<string>("");
+  const [subacc, setSubacc] = useState<any>([]);
 
   const [showClaim, setShowClaim] = useState(false);
   const toggleClaim = () => setShowClaim(!showClaim);
+
+  const [showDeposit, setShowWDeposit] = useState(false);
+  const toggleDeposit = () => setShowWDeposit(!showDeposit);
 
   const [showWithdraw, setShowWithdraw] = useState(false);
   const toggleWithdraw = () => setShowWithdraw(!showWithdraw);
@@ -75,8 +79,8 @@ export default function Userstats({ detailed = false }) {
     if (identity != undefined) {
       try {
         const principalId = identity.getPrincipal().toText();
-        let perf, digit, stake, locked;
-
+        let perf, digit, stake, locked, bal, userBal,unlocked;
+      
         try {
           [perf, digit] = await Promise.all([
             queryRSAndLevelByPrincipal(principalId),
@@ -87,21 +91,38 @@ export default function Userstats({ detailed = false }) {
           console.error("Error fetching performance and digit:", error);
         }
         try {
-          [stake, locked] = await Promise.all([
+          [stake, locked, unlocked] = await Promise.all([
             stakeFor(principalId).then((stake) => convert_to_mod(stake, digit)),
             lockedFor(principalId).then((locked) => {
               fetchCanClaim(Number(locked));
               return convert_to_mod(locked, digit);
             }),
+            unLockedFor(principalId).then((unlock) => convert_to_mod(unlock, digit)),
           ]);
         } catch (error) {
           console.error("Error fetching stake and locked:", error);
         }
+
+        try {
+          let subacc: any = Object.values((await getProfileById(identity.getPrincipal())).subaccounts);
+          if(subacc.length > 0){
+              subacc = subacc.find((item) => item[0] === 'ACCOUNT_PAYABLE')
+          }else{
+              subacc = [];
+          }
+          setSubacc(subacc.length > 0 ? subacc[1]: subacc);
+          bal = await icrc1Balance(CanisterId, subacc.length > 0 ? subacc[1]: subacc);
+          userBal = await icrc1Balance(identity.getPrincipal().toText());
+        } catch (error) {
+          console.error("USER PROFILE:", error);
+        }
         setTokenHoldings({
           pendingRewards: locked,
           stake: stake,
-          wallet: 0,
-        });
+          wallet: convert_to_mod(bal, BigInt(digit)),
+          userBalance: convert_to_mod(userBal, BigInt(digit)),
+          unLockedFor: unlocked
+        })
         setPerformance(Number(perf.score));
         setLevel(Object.keys(perf.level)[0]);
         setHoldingsUpdated(false);
@@ -135,7 +156,7 @@ export default function Userstats({ detailed = false }) {
 
   useEffect(() => {
     identity && fetchTokenHoldings(identity);
-  }, [identity]);
+  }, [identity, tokenHoldings]);
 
   useEffect(() => {
     user && holdingsUpdated;
@@ -154,7 +175,26 @@ export default function Userstats({ detailed = false }) {
   return (
     <>
       <Columns>
-        <StatBox
+{detailed && <StatBox
+          loading={holdingsUpdated}
+          image={walletImg}
+          title="Wallet"
+          amount={tokenHoldings.wallet}
+          usd={170}
+          detailed={detailed}
+          message="Wallet"
+          isBar={false}
+        >
+          <Button.Group>
+            <Button color="dark" fullwidth onClick={toggleDeposit}>
+              Deposit
+            </Button>
+            <Button color="dark" fullwidth onClick={toggleWithdraw}>
+              Withdraw
+            </Button>
+          </Button.Group>
+        </StatBox>}
+        {!detailed && <StatBox
           loading={holdingsUpdated}
           image={performanceImg}
           title="Reputation Score"
@@ -165,7 +205,7 @@ export default function Userstats({ detailed = false }) {
           isBar={true}
           showLevel={true}
           level={level}
-        />
+        />}
 
         <StatBox
           loading={holdingsUpdated}
@@ -188,8 +228,8 @@ export default function Userstats({ detailed = false }) {
         </StatBox>
         <StatBox
           loading={holdingsUpdated}
-          image={walletImg}
-          title="Claims"
+          image={performanceImg}
+          title="Pending Rewards"
           amount={tokenHoldings.pendingRewards}
           usd={17}
           detailed={detailed}
@@ -198,13 +238,13 @@ export default function Userstats({ detailed = false }) {
         >
           {claimRewards.canClaim ? (
             <Button.Group>
-              <Button
-                color="dark"
-                onClick={toggleClaim}
-                disabled={level == "novice" || level == "junior"}
-              >
-                Claim
-              </Button>
+            <Button
+              color="dark"
+              onClick={toggleClaim}
+              disabled={level == "novice" || level == "junior" }
+            >
+              Claims
+            </Button>
             </Button.Group>
           ) : (
             <>
@@ -218,6 +258,8 @@ export default function Userstats({ detailed = false }) {
             </>
           )}
         </StatBox>
+        
+
       </Columns>
 
       {showClaim && (
@@ -227,9 +269,13 @@ export default function Userstats({ detailed = false }) {
           userId={identity.getPrincipal().toText()}
         />
       )}
+      
+      {showDeposit && (
+        <Deposit toggle={toggleDeposit} userTokenBalance={tokenHoldings.userBalance} isProvider={false} receiver={CanisterId} subacc={subacc}/>
+      )}
 
       {showWithdraw && (
-        <Withdraw toggle={toggleWithdraw} tokenHoldings={tokenHoldings} />
+        <Withdraw toggle={toggleWithdraw} userTokenBalance={tokenHoldings.wallet} subacc={subacc} to={identity.getPrincipal()} />
       )}
       {showStake && (
         <Stake

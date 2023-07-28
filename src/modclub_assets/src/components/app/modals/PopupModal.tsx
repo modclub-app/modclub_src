@@ -36,13 +36,13 @@ export default function PopupModal({
       const result = await handleSubmit(values)
       setSubmitting(false);
       if (result.transfer) {
-        if(result.transfer.Ok){
+        if(result.transfer.Ok || result.transfer.ok){
             setMessage({ success: true, value: `You have successfully deposit ${format_token(result.reserved)} AMT into your Mod wallet. Time to start your moderator journey with Modclub.` });
         }else{
-          setMessage({ success: false, value: `${Object.keys(result.transfer.Err)}` });            
+          setMessage({ success: false, value: `${Object.keys(result.transfer.Err || result.transfer.err)}` });            
         }
       } else {
-        setMessage({ success: false, value: "Deposit is failed, Please try again later." });
+        setMessage({ success: false, value: `${title} is failed, Please try again later.` });
       }
     } catch (e) {
       setSubmitting(false);

@@ -1,8 +1,9 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
-import FormModal from "../modals/FormModal";
-import { stakeTokens } from "../../../utils/api";
+import { icrc1Decimal, stakeTokens } from "../../../utils/api";
+import PopupModal from "./PopupModal";
+import { useState } from "react";
 
 const UpdateTable = ({ wallet, stake, amount = 0 }) => {
   return (
@@ -28,22 +29,35 @@ const UpdateTable = ({ wallet, stake, amount = 0 }) => {
 };
 
 export default function Stake({ toggle, tokenHoldings, onUpdate }) {
+  const [inputValue, setInputValue] = useState(tokenHoldings.wallet);
+
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
-    let res = await stakeTokens(parseFloat(amount));
-    onUpdate();
-    return res;
+    try {
+      const digit = await icrc1Decimal();
+      const amounts : number = Number(amount)*Math.pow(10, Number(digit))
+      const res = await stakeTokens(amounts);
+      return {reserved: Number(amount), transfer: res};
+    } catch (error) {
+      console.error("Stake Failed:", error);
+    }
+
   };
 
   const preventMax = (e) => {
-    if (parseInt(e.target.value) > tokenHoldings.wallet) {
-      e.target.value = tokenHoldings.wallet;
+    const newValue = parseInt(e.target.value);
+    if (newValue > tokenHoldings.wallet) {
+        setInputValue(tokenHoldings.wallet);
+        e.target.value = tokenHoldings.wallet;
+    } else {
+        setInputValue(newValue);
     }
-  };
+};
 
   return (
-    <FormModal
+    <PopupModal
       title="Stake"
+      subtitle="Congratulation!"
       toggle={toggle}
       handleSubmit={onFormSubmit}
       updateTable={
@@ -60,7 +74,7 @@ export default function Stake({ toggle, tokenHoldings, onUpdate }) {
             component="input"
             type="number"
             className="input"
-            initialValue={100}
+            initialValue={inputValue}
             onInput={preventMax}
           />
           <Icon align="right" color="white" className="mr-4">
@@ -68,6 +82,6 @@ export default function Stake({ toggle, tokenHoldings, onUpdate }) {
           </Icon>
         </div>
       </div>
-    </FormModal>
+    </PopupModal>
   );
 }

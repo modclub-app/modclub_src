@@ -448,13 +448,13 @@ export default function Admin({
           updateProvider={updateProvider}
         />
       )}
-      {isDepositOpen && selectedProvider && (
-        <Deposit
-          toggle={toggleDeposit}
-          userTokenBalance={userTokenBalance}
-          provider={selectedProvider.id.toString()}
-          receiver={CanisterId}
-          isProvider={true}
+      {isDepositOpen && selectedProvider &&(
+        <Deposit 
+        toggle={toggleDeposit}
+        userTokenBalance={userTokenBalance}
+        provider={selectedProvider.id.toString()}
+        receiver={CanisterId}
+        isProvider={true}
         />
       )}
     </>

@@ -996,11 +996,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#ok(p)) p;
       case (_)(throw Error.reject("Moderator does not exist"));
     };
+    let moderatorSubAcc = { owner = Principal.fromActor(this); subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE") };
     let moderatorAcc = { owner = caller; subaccount = null };
-    switch (await ledger.icrc1_balance_of(moderatorAcc)) {
+    switch (await ledger.icrc1_balance_of(moderatorSubAcc)) {
       case (tokensAvailable) {
         let fee = await ledger.icrc1_fee();
-        if ((amount + fee) < tokensAvailable) {
+        if ((amount + fee) > tokensAvailable) {
           throw Error.reject("Insufficient ballance");
         };
         switch (await ledger.icrc1_transfer({ from_subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE"); to = switch (customReceiver) { case (?p) { { owner = p; subaccount = null } }; case (null) { moderatorAcc } }; amount; fee = null; memo = null; created_at_time = null })) {

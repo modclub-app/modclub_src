@@ -11,9 +11,10 @@ interface DepositProps {
     userTokenBalance: number;
     receiver: string;
     provider?: string;
+    subacc?: Uint8Array;
     isProvider: boolean;
 }
-export default function Deposit({ toggle, userTokenBalance, receiver, provider, isProvider } : DepositProps) {
+export default function Deposit({ toggle, userTokenBalance, receiver, provider, isProvider, subacc } : DepositProps) {
     const [error, setError] = useState(null);
     const [inputValue, setInputValue] = useState(userTokenBalance);
 
@@ -24,7 +25,6 @@ export default function Deposit({ toggle, userTokenBalance, receiver, provider, 
         {
             const digit = await icrc1Decimal();
             const amount : number = Number(reserved)*Math.pow(10, Number(digit))
-            let subacc: any = [];
             const transfer = await icrc1Transfer(BigInt(amount), Principal.fromText(receiver), subacc)
             return {reserved: Number(reserved), transfer: transfer};
         } catch (err) {
@@ -76,7 +76,8 @@ export default function Deposit({ toggle, userTokenBalance, receiver, provider, 
         handleSubmit={isProvider ? handleDepositProvider : handleDeposit}
     >
         <label className="label">Enter the amount you want to deposit</label>
-        <label className="label">your current balance {format_token(userTokenBalance)}</label>
+        <br/>
+        <label className="label">Your current balance {format_token(userTokenBalance)}</label>
         <div className="field">
             <div className="control">
                 <div className="is-flex is-align-items-center">
@@ -94,8 +95,11 @@ export default function Deposit({ toggle, userTokenBalance, receiver, provider, 
                 </div>
             </div>
         </div>
-        <label className="label">Deposit to this principal ID:</label>
-        <p className="is-flex is-justify-content-center has-text-white">{isProvider ? provider : receiver}</p>
-    </PopupModal></>
+        {isProvider &&(<>
+            <label className="label">Deposit to this principal ID:</label>
+            <p className="is-flex is-justify-content-center has-text-white">{isProvider ? provider : receiver}</p>
+            </>
+        )}
+        </PopupModal></>
     );
 }

@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
-import FormModal from "../modals/FormModal";
-import { unStakeTokens } from '../../../utils/api';
+import { icrc1Decimal, unStakeTokens } from '../../../utils/api';
+import PopupModal from './PopupModal';
 
-const UpdateTable = ({ stake, amount = 0 }) => {
+const UpdateTable = ({ stake, amount = 0, unlocked }) => {
   return (
     <>
       <Level className="has-text-silver px-5">
@@ -12,8 +12,12 @@ const UpdateTable = ({ stake, amount = 0 }) => {
         <span className="has-text-weight-bold">{stake}</span>
       </Level>
       <Level className="has-text-silver px-5">
-        <span>After Stake</span>
-        <span className="has-text-weight-bold">{stake - amount}</span>
+        <span>Unlock amount:</span>
+        <span className="has-text-weight-bold">{unlocked}</span>
+      </Level>
+      <Level className="has-text-silver px-5">
+        <span>After Unstake</span>
+        <span className="has-text-weight-bold">{Math.max(0, stake - amount)}</span>
       </Level>
       <Level className="has-text-silver px-5">
         <span>Stake will be released on</span>
@@ -26,9 +30,14 @@ const UpdateTable = ({ stake, amount = 0 }) => {
 export default function Unstake({ toggle, tokenHoldings, onUpdate }) {  
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
-    let res = await unStakeTokens(amount);
-    onUpdate();
-    return res;
+    try {
+      const digit = await icrc1Decimal();
+      const amounts : number = Number(amount)*Math.pow(10, Number(digit))
+      const res = await unStakeTokens(amounts);
+      return {reserved: Number(amount), transfer: res};
+    } catch (error) {
+      console.error("unStake Failed:", error);
+    }
   };
 
   const preventMax = (e) => {
@@ -38,11 +47,12 @@ export default function Unstake({ toggle, tokenHoldings, onUpdate }) {
   }
 
   return (
-    <FormModal
+    <PopupModal
       title="Unstake"
+      subtitle="Congratulation!"
       toggle={toggle}
       handleSubmit={onFormSubmit}
-      updateTable={<UpdateTable stake={tokenHoldings.stake} />}
+      updateTable={<UpdateTable stake={tokenHoldings.stake} unlocked = {tokenHoldings.unLockedFor}/>}
     >
       <div className="field">
         <div className="control has-icons-right">
@@ -51,7 +61,7 @@ export default function Unstake({ toggle, tokenHoldings, onUpdate }) {
             component="input"
             type="number"
             className="input"
-            initialValue={100}
+            initialValue={tokenHoldings.stake}
             onInput={preventMax}
           />
           <Icon align="right" color="white" className="mr-4">
@@ -59,6 +69,6 @@ export default function Unstake({ toggle, tokenHoldings, onUpdate }) {
           </Icon>
         </div>
       </div>
-    </FormModal>
+    </PopupModal>
   );
 };
