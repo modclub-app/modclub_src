@@ -35,6 +35,10 @@ type VerifyHumanityResponse = record {
   status : PohVerificationStatus;
   token : opt text;
 };
+type Validate = variant {
+  Err : text;
+  Ok : text;
+};
 type UserId = principal;
 type UpdateCallsAggregatedData = vec nat64;
 type TxIndex = nat;
@@ -582,11 +586,11 @@ type ModClub = service {
   subscribePohCallback : (SubscribePohMessage) -> ();
   toggleAllowSubmission : (bool) -> ();
   transform : (TransformArgs) -> (CanisterHttpResponsePayload) query;
-  unStakeTokens : (nat) -> (text);
   updateProvider : (principal, ProviderMeta) -> (ProviderMetaResult);
   updateProviderLogo : (principal, vec nat8, text) -> (text);
   updateRules : (vec Rule, opt principal) -> ();
   updateSettings : (principal, ProviderSettings) -> (ProviderSettingResult);
+  validate : (reserved) -> (Validate);
   verifyHumanity : (text) -> (PohVerificationResponsePlus);
   verifyUserHumanityForModclub : () -> (VerifyHumanityResponse);
   vote : (ContentId, Decision, opt vec RuleId) -> (text);

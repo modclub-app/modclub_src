@@ -216,7 +216,7 @@ module ModclubVestingLedger = {
           for (block in log.vals()) {
             switch (block.operation) {
               case (#StakingDissolve) {
-                if(
+                if (
                   Nat64.lessOrEqual(
                     Nat64.add(block.created_at_time, Option.get<Nat64>(block.dissolveDelay, 0)),
                     now
@@ -256,6 +256,32 @@ module ModclubVestingLedger = {
         case (_) {};
       };
       sum;
+    };
+
+    public func pendingStakesFor(account : Principal) : Types.LocksLog {
+      var pending = Buffer.Buffer<Types.LockBlock>(1);
+      let now = Nat64.fromNat(Int.abs(Time.now()));
+      switch (get_locks(account, #Staking)) {
+        case (#ok(log)) {
+          for (block in log.vals()) {
+            switch (block.operation) {
+              case (#StakingDissolve) {
+                if (
+                  Nat64.less(
+                    now,
+                    Nat64.add(block.created_at_time, Option.get<Nat64>(block.dissolveDelay, 0))
+                  )
+                ) {
+                  pending.add(block);
+                };
+              };
+              case (_) {};
+            };
+          };
+        };
+        case (_) {};
+      };
+      pending;
     };
 
     public func lockedFor(account : Principal) : Nat {

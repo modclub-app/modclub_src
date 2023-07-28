@@ -365,7 +365,6 @@ export interface ModClub {
   subscribePohCallback: ActorMethod<[SubscribePohMessage], undefined>;
   toggleAllowSubmission: ActorMethod<[boolean], undefined>;
   transform: ActorMethod<[TransformArgs], CanisterHttpResponsePayload>;
-  unStakeTokens: ActorMethod<[bigint], string>;
   updateProvider: ActorMethod<[Principal, ProviderMeta], ProviderMetaResult>;
   updateProviderLogo: ActorMethod<
     [Principal, Uint8Array | number[], string],
@@ -376,6 +375,7 @@ export interface ModClub {
     [Principal, ProviderSettings],
     ProviderSettingResult
   >;
+  validate: ActorMethod<[any], Validate>;
   verifyHumanity: ActorMethod<[string], PohVerificationResponsePlus>;
   verifyUserHumanityForModclub: ActorMethod<[], VerifyHumanityResponse>;
   vote: ActorMethod<[ContentId, Decision, [] | [Array<RuleId>]], string>;
@@ -749,6 +749,7 @@ export type Trie_3 = { branch: Branch_3 } | { leaf: Leaf_3 } | { empty: null };
 export type TxIndex = bigint;
 export type UpdateCallsAggregatedData = BigUint64Array | bigint[];
 export type UserId = Principal;
+export type Validate = { Ok: string } | { Err: string };
 export interface VerifyHumanityResponse {
   status: PohVerificationStatus;
   token: [] | [string];

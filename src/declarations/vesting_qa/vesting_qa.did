@@ -7,12 +7,18 @@ type Vesting = service {
   getCanisterMetrics : (GetMetricsParameters) -> (opt CanisterMetrics) query;
   handleSubscription : (ConsumerPayload) -> ();
   locked_for : (Account) -> (nat);
+  pending_stakes_for : (Account) -> (vec LockBlock);
   release_staking : (Account, Tokens) -> (Result);
   stage_vesting_block : (Account, Tokens) -> (Result);
   stake : (Account, Tokens) -> (Result);
   staked_for : (Account) -> (nat);
   unlock_staking : (Account, Tokens) -> (Result);
   unlocked_stakes_for : (Account) -> (nat);
+  validate : (reserved) -> (Validate);
+};
+type Validate = variant {
+  Err : text;
+  Ok : text;
 };
 type UpdateCallsAggregatedData = vec nat64;
 type Tokens = nat;
@@ -20,6 +26,14 @@ type Subaccount = blob;
 type Result = variant {
   err : text;
   ok : nat;
+};
+type Operation = variant {
+  StakingDissolve;
+  StakingLock;
+  StakingRelease;
+  StakingUnlock;
+  VestingClaim;
+  VestingLock;
 };
 type NumericEntity = record {
   avg : nat64;
@@ -36,6 +50,13 @@ type MetricsGranularity = variant {
 type LogMessagesData = record {
   message : text;
   timeNanos : Nanos;
+};
+type LockBlock = record {
+  amount : nat;
+  created_at_time : nat64;
+  dissolveDelay : opt nat64;
+  operation : Operation;
+  rewardsAmount : opt nat;
 };
 type HourlyMetricsData = record {
   canisterCycles : CanisterCyclesAggregatedData;

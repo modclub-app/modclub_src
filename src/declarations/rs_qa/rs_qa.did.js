@@ -113,6 +113,7 @@ export const idlFactory = ({ IDL }) => {
     decision: Decision,
     userId: IDL.Principal,
   });
+  const Validate = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
   const RSManager = IDL.Service({
     collectCanisterMetrics: IDL.Func([], [], []),
     getCanisterLog: IDL.Func(
@@ -138,6 +139,7 @@ export const idlFactory = ({ IDL }) => {
     topUsers: IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(UserAndRS)], ["query"]),
     updateRS: IDL.Func([IDL.Principal, IDL.Bool, Decision], [UserAndRS], []),
     updateRSBulk: IDL.Func([IDL.Vec(UserAndVote)], [IDL.Vec(UserAndRS)], []),
+    validate: IDL.Func([IDL.Reserved], [Validate], []),
   });
   return RSManager;
 };

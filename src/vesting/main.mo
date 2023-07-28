@@ -84,6 +84,13 @@ shared ({ caller = deployer }) actor class Vesting({
     ledger.unlockedStakesFor(account.owner);
   };
 
+  public shared ({ caller }) func pending_stakes_for(
+    account : ICRCTypes.Account
+  ) : async [Types.LockBlock] {
+    let pending = ledger.pendingStakesFor(account.owner);
+    Buffer.toArray<Types.LockBlock>(pending);
+  };
+
   public shared ({ caller }) func claimed_stakes_for(
     account : ICRCTypes.Account
   ) : async Nat {

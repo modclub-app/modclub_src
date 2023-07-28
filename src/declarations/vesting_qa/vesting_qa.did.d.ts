@@ -83,6 +83,13 @@ export interface HourlyMetricsData {
   canisterMemorySize: CanisterMemoryAggregatedData;
   timeMillis: bigint;
 }
+export interface LockBlock {
+  dissolveDelay: [] | [bigint];
+  operation: Operation;
+  created_at_time: bigint;
+  rewardsAmount: [] | [bigint];
+  amount: bigint;
+}
 export interface LogMessagesData {
   timeNanos: Nanos;
   message: string;
@@ -96,10 +103,18 @@ export interface NumericEntity {
   first: bigint;
   last: bigint;
 }
+export type Operation =
+  | { StakingUnlock: null }
+  | { StakingRelease: null }
+  | { VestingClaim: null }
+  | { StakingLock: null }
+  | { VestingLock: null }
+  | { StakingDissolve: null };
 export type Result = { ok: bigint } | { err: string };
 export type Subaccount = Uint8Array | number[];
 export type Tokens = bigint;
 export type UpdateCallsAggregatedData = BigUint64Array | bigint[];
+export type Validate = { Ok: string } | { Err: string };
 export interface Vesting {
   claim_staking: ActorMethod<[Account, Tokens], Result>;
   claim_vesting: ActorMethod<[Account, Tokens], Result>;
@@ -115,11 +130,13 @@ export interface Vesting {
   >;
   handleSubscription: ActorMethod<[ConsumerPayload], undefined>;
   locked_for: ActorMethod<[Account], bigint>;
+  pending_stakes_for: ActorMethod<[Account], Array<LockBlock>>;
   release_staking: ActorMethod<[Account, Tokens], Result>;
   stage_vesting_block: ActorMethod<[Account, Tokens], Result>;
   stake: ActorMethod<[Account, Tokens], Result>;
   staked_for: ActorMethod<[Account], bigint>;
   unlock_staking: ActorMethod<[Account, Tokens], Result>;
   unlocked_stakes_for: ActorMethod<[Account], bigint>;
+  validate: ActorMethod<[any], Validate>;
 }
 export interface _SERVICE extends Vesting {}

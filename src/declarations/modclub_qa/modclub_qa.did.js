@@ -673,6 +673,7 @@ export const idlFactory = ({ IDL }) => {
     ok: ProviderSettings,
     err: ProviderError,
   });
+  const Validate = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
   const VerifyHumanityResponse = IDL.Record({
     status: PohVerificationStatus,
     token: IDL.Opt(IDL.Text),
@@ -874,7 +875,6 @@ export const idlFactory = ({ IDL }) => {
       [CanisterHttpResponsePayload],
       ["query"]
     ),
-    unStakeTokens: IDL.Func([IDL.Nat], [IDL.Text], []),
     updateProvider: IDL.Func(
       [IDL.Principal, ProviderMeta],
       [ProviderMetaResult],
@@ -891,6 +891,7 @@ export const idlFactory = ({ IDL }) => {
       [ProviderSettingResult],
       []
     ),
+    validate: IDL.Func([IDL.Reserved], [Validate], []),
     verifyHumanity: IDL.Func([IDL.Text], [PohVerificationResponsePlus], []),
     verifyUserHumanityForModclub: IDL.Func([], [VerifyHumanityResponse], []),
     vote: IDL.Func(

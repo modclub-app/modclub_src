@@ -1,3 +1,7 @@
+type Validate = variant {
+  Err : text;
+  Ok : text;
+};
 type UserLevel = variant {
   junior;
   novice;
@@ -32,6 +36,7 @@ type RSManager = service {
   topUsers : (nat, nat) -> (vec UserAndRS) query;
   updateRS : (principal, bool, Decision) -> (UserAndRS);
   updateRSBulk : (vec UserAndVote) -> (vec UserAndRS);
+  validate : (reserved) -> (Validate);
 };
 type RSAndLevel = record {
   level : UserLevel;

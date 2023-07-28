@@ -101,6 +101,22 @@ export const idlFactory = ({ IDL }) => {
     events: IDL.Vec(Event),
     admins: IDL.Vec(IDL.Principal),
   });
+  const Operation = IDL.Variant({
+    StakingUnlock: IDL.Null,
+    StakingRelease: IDL.Null,
+    VestingClaim: IDL.Null,
+    StakingLock: IDL.Null,
+    VestingLock: IDL.Null,
+    StakingDissolve: IDL.Null,
+  });
+  const LockBlock = IDL.Record({
+    dissolveDelay: IDL.Opt(IDL.Nat64),
+    operation: Operation,
+    created_at_time: IDL.Nat64,
+    rewardsAmount: IDL.Opt(IDL.Nat),
+    amount: IDL.Nat,
+  });
+  const Validate = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
   const Vesting = IDL.Service({
     claim_staking: IDL.Func([Account, Tokens], [Result], []),
     claim_vesting: IDL.Func([Account, Tokens], [Result], []),
@@ -118,12 +134,14 @@ export const idlFactory = ({ IDL }) => {
     ),
     handleSubscription: IDL.Func([ConsumerPayload], [], []),
     locked_for: IDL.Func([Account], [IDL.Nat], []),
+    pending_stakes_for: IDL.Func([Account], [IDL.Vec(LockBlock)], []),
     release_staking: IDL.Func([Account, Tokens], [Result], []),
     stage_vesting_block: IDL.Func([Account, Tokens], [Result], []),
     stake: IDL.Func([Account, Tokens], [Result], []),
     staked_for: IDL.Func([Account], [IDL.Nat], []),
     unlock_staking: IDL.Func([Account, Tokens], [Result], []),
     unlocked_stakes_for: IDL.Func([Account], [IDL.Nat], []),
+    validate: IDL.Func([IDL.Reserved], [Validate], []),
   });
   return Vesting;
 };

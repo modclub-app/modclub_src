@@ -116,6 +116,7 @@ export interface RSManager {
   topUsers: ActorMethod<[bigint, bigint], Array<UserAndRS>>;
   updateRS: ActorMethod<[Principal, boolean, Decision], UserAndRS>;
   updateRSBulk: ActorMethod<[Array<UserAndVote>], Array<UserAndRS>>;
+  validate: ActorMethod<[any], Validate>;
 }
 export type Result = { ok: boolean } | { err: string };
 export type UpdateCallsAggregatedData = BigUint64Array | bigint[];
@@ -134,4 +135,5 @@ export type UserLevel =
   | { senior1: null }
   | { senior2: null }
   | { senior3: null };
+export type Validate = { Ok: string } | { Err: string };
 export interface _SERVICE extends RSManager {}
