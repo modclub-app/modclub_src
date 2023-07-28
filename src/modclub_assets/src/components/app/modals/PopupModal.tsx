@@ -35,11 +35,12 @@ export default function PopupModal({
     try {
       const result = await handleSubmit(values)
       setSubmitting(false);
-      if (result) {
-        if (typeof result == "string" &&  (result == "Values entered not valid"))
-          setMessage({ success: false, value: result });
-        else
-          setMessage({ success: true, value: `You have successfully deposit ${format_token(result)} AMT into your Mod wallet. Time to start your moderator journey with Modclub.` });
+      if (result.transfer) {
+        if(result.transfer.Ok){
+            setMessage({ success: true, value: `You have successfully deposit ${format_token(result.reserved)} AMT into your Mod wallet. Time to start your moderator journey with Modclub.` });
+        }else{
+          setMessage({ success: false, value: `${Object.keys(result.transfer.Err)}` });            
+        }
       } else {
         setMessage({ success: false, value: "Deposit is failed, Please try again later." });
       }

@@ -158,10 +158,10 @@ module {
       case null { newCanisterMonitoringState() };
       case (?upgradeDataValue) {
         let migratedUpgradeData : UpgradeData = migrateUpgradeData(
-          upgradeDataValue,
+          upgradeDataValue
         );
         let state : CanisterMonitoringState = createCanisterMonitoringStateFromMigratedUpgradeData(
-          migratedUpgradeData,
+          migratedUpgradeData
         );
         return state;
       };
@@ -183,7 +183,7 @@ module {
 
   private func prepareCurrentUpgradeData_v1(state : CanisterMonitoringState) : UpgradeData {
     let dayData : [UpgradeDataDayTuple] = Iter.toArray<(DayDataId, DayData)>(
-      state.dayDataMap.entries(),
+      state.dayDataMap.entries()
     );
     let upgradeData : UpgradeData = #v1 {
       dayData = dayData;
@@ -200,7 +200,7 @@ module {
   };
 
   private func createCanisterMonitoringStateFromMigratedUpgradeData(
-    upgradeData : UpgradeData,
+    upgradeData : UpgradeData
   ) : CanisterMonitoringState {
     switch (upgradeData) {
       case (#v1 value) {
@@ -210,7 +210,7 @@ module {
           dayDataIter,
           count * 2,
           dayDataIdKeyEq,
-          dayDataIdKeyHash,
+          dayDataIdKeyHash
         );
         return {
           dayDataMap = newDayDataMap;
@@ -225,23 +225,23 @@ module {
     state : CanisterMonitoringState,
     dayDataId : DayDataId,
     intervalIndex : Nat,
-    granularitySeconds : Nat,
+    granularitySeconds : Nat
   ) {
     ignore do ? {
       //obtain day data (create new one if does not exist)
       let dayData_v1 : DayData = obtainDayDataFromMap(
         state,
         dayDataId,
-        granularitySeconds,
+        granularitySeconds
       );
       //bump number of update calls
       let newNumberOfUpdateCalls : Nat64 = tryToBumpUpdateCalls(
         dayData_v1.updateCallsData,
-        intervalIndex,
+        intervalIndex
       )!;
       //analyze if we need to collect additional info
       let shouldCollectAdditionalInfo = shouldCollectHeapMemoryAndCycles(
-        newNumberOfUpdateCalls,
+        newNumberOfUpdateCalls
       );
       if (shouldCollectAdditionalInfo) {
         collectHeapMemory(dayData_v1.canisterHeapMemorySizeData, intervalIndex);
@@ -266,7 +266,7 @@ module {
   private func obtainDayDataFromMap(
     state : CanisterMonitoringState,
     dayDataId : DayDataId,
-    granularitySeconds : Nat,
+    granularitySeconds : Nat
   ) : DayData {
     let dayData : DayData = switch (state.dayDataMap.get(dayDataId)) {
       case (null) {
@@ -288,19 +288,19 @@ module {
     {
       updateCallsData : DayUpdateCallsCountData = Array.tabulateVar<Nat64>(
         numberOfIntervals,
-        func(index : Nat) : Nat64 { 0 },
+        func(index : Nat) : Nat64 { 0 }
       );
       canisterHeapMemorySizeData : DayCanisterHeapMemorySizeData = Array.tabulateVar<Nat64>(
         numberOfIntervals,
-        func(index : Nat) : Nat64 { 0 },
+        func(index : Nat) : Nat64 { 0 }
       );
       canisterMemorySizeData : DayCanisterMemorySizeData = Array.tabulateVar<Nat64>(
         numberOfIntervals,
-        func(index : Nat) : Nat64 { 0 },
+        func(index : Nat) : Nat64 { 0 }
       );
       canisterCyclesData : DayCanisterCyclesData = Array.tabulateVar<Nat64>(
         numberOfIntervals,
-        func(index : Nat) : Nat64 { 0 },
+        func(index : Nat) : Nat64 { 0 }
       );
     };
   };
@@ -309,7 +309,7 @@ module {
 
   private func tryToBumpUpdateCalls(
     updateCallsData : DayUpdateCallsCountData,
-    intervalIndex : Nat,
+    intervalIndex : Nat
   ) : ?Nat64 {
     if (updateCallsData.size() > intervalIndex) {
       updateCallsData[intervalIndex] := updateCallsData[intervalIndex] + 1;
@@ -322,7 +322,7 @@ module {
 
   private func collectHeapMemory(
     heapMemorySizeData : DayCanisterHeapMemorySizeData,
-    intervalIndex : Nat,
+    intervalIndex : Nat
   ) {
     if (heapMemorySizeData.size() > intervalIndex) {
       heapMemorySizeData[intervalIndex] := Nat64.fromNat(Prim.rts_heap_size());
@@ -333,7 +333,7 @@ module {
 
   private func collectMemory(
     memorySizeData : DayCanisterMemorySizeData,
-    intervalIndex : Nat,
+    intervalIndex : Nat
   ) {
     if (memorySizeData.size() > intervalIndex) {
       memorySizeData[intervalIndex] := Nat64.fromNat(Prim.rts_memory_size());
@@ -344,7 +344,7 @@ module {
 
   private func collectCycles(
     cyclesData : DayCanisterCyclesData,
-    intervalIndex : Nat,
+    intervalIndex : Nat
   ) {
     if (cyclesData.size() > intervalIndex) {
       cyclesData[intervalIndex] := Nat64.fromNat(ExperimentalCycles.balance());

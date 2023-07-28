@@ -89,7 +89,7 @@ module Helpers {
       throw Error.reject("Amount must be greater than zero");
     };
   };
-  
+
   // Generates a voteparameter semi unique ID
   public func generateVoteParamId(
     category : Text,
@@ -277,7 +277,7 @@ module Helpers {
     Buffer.toArray(subAccs);
   };
 
-   public func joinArrOpt(array : ?[Text]) : Text {
+  public func joinArrOpt(array : ?[Text]) : Text {
     switch (array) {
       case (null)();
       case (?arr) {
@@ -291,4 +291,3 @@ module Helpers {
     return Text.join(",", arr.vals());
   };
 };
-

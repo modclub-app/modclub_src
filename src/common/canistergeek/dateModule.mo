@@ -39,7 +39,7 @@ module {
       public func updateTime(time : Int) : () {
         timeNanoseconds := time;
         let dateParts : ?ISO8601.DatePartsISO8601 = Date.toDatePartsISO8601(
-          timeNanoseconds,
+          timeNanoseconds
         );
         switch (dateParts) {
           case (null) {};
@@ -116,7 +116,7 @@ module {
     public func appendDays((year, month, day) : (Nat, Nat, Nat), days : Int16) : (
       Nat,
       Nat,
-      Nat,
+      Nat
     ) {
       if (days > 0) {
         let maxDays : Nat = Date.getNumberOfDaysInMonth(year, month);
@@ -133,12 +133,12 @@ module {
         } else {
           let (previousYear, previousMonth) : (Nat, Nat) = getPreviousMonth(
             year,
-            month,
+            month
           );
           let maxDays = Date.getNumberOfDaysInMonth(previousYear, previousMonth);
           return appendDays(
             (previousYear, previousMonth, maxDays),
-            days + Int16.fromNat16(Nat16.fromNat(day)),
+            days + Int16.fromNat16(Nat16.fromNat(day))
           );
         };
       } else {
@@ -169,14 +169,14 @@ module {
       return ?(
         UtilsModule.intToNat(year),
         UtilsModule.intToNat(monthNumeral),
-        UtilsModule.intToNat(dayNumeral),
+        UtilsModule.intToNat(dayNumeral)
       );
     };
 
     public func toDateTimePartsISO8601(time : Int) : ?ISO8601.DateTimePartsISO8601 {
       let dateBase : ChronosphereDate.Date = toDate(time);
       let dateParts : ChronosphereDate.DateParts = ChronosphereDate.unpack(
-        dateBase,
+        dateBase
       );
 
       let #Year year = dateParts.year;
@@ -185,7 +185,7 @@ module {
 
       let dateTimeBase : ChronosphereDate.DateTime = toDateTime(time);
       let dateTimeParts : ChronosphereDate.DateTimeParts = ChronosphereDate.unpackTime(
-        dateTimeBase,
+        dateTimeBase
       );
 
       let #Hour hours = dateTimeParts.hours;
@@ -193,7 +193,7 @@ module {
       let #Second seconds = dateTimeParts.seconds;
 
       if (
-        year < 0 or monthNumeral < 0 or dayNumeral < 0 or hours < 0 or minutes < 0 or seconds < 0,
+        year < 0 or monthNumeral < 0 or dayNumeral < 0 or hours < 0 or minutes < 0 or seconds < 0
       ) {
         return null;
       };
@@ -203,14 +203,14 @@ module {
         UtilsModule.intToNat(dayNumeral),
         UtilsModule.intToNat(hours),
         UtilsModule.intToNat(minutes),
-        UtilsModule.intToNat(seconds),
+        UtilsModule.intToNat(seconds)
       );
     };
 
     public func datePartsISO8601ToTime(dateParts : ISO8601.DatePartsISO8601) : ?Int {
       let (years, months, days) : ISO8601.DatePartsISO8601 = dateParts;
       let month : ?ChronosphereDate.Month = ChronosphereDate.monthNumeralToMonth(
-        months,
+        months
       );
       switch (month) {
         case (null) { null };
@@ -218,7 +218,7 @@ module {
           let daysSinceEpoch : Int = ChronosphereDate.epochToDate(
             #Year(years),
             monthValue,
-            #Day(days),
+            #Day(days)
           );
           let timeNanos : Int = daysSinceEpoch * Constants.ONE_DAY_NANOS;
           ?timeNanos;
@@ -227,11 +227,11 @@ module {
     };
 
     public func dateTimePartsISO8601ToTime(
-      dateTimeParts : ISO8601.DateTimePartsISO8601,
+      dateTimeParts : ISO8601.DateTimePartsISO8601
     ) : ?Int {
       let (years, months, days, hours, minutes, seconds) : ISO8601.DateTimePartsISO8601 = dateTimeParts;
       let month : ?ChronosphereDate.Month = ChronosphereDate.monthNumeralToMonth(
-        months,
+        months
       );
       switch (month) {
         case (null) { null };
@@ -239,13 +239,13 @@ module {
           let daysSinceEpoch : Int = ChronosphereDate.epochToDate(
             #Year(years),
             monthValue,
-            #Day(days),
+            #Day(days)
           );
           let daysSinceEpochToSeconds = daysSinceEpoch * Constants.ONE_DAY_SECONDS;
           let hoursInSeconds = hours * 60 * 60;
           let minutesInSeconds = minutes * 60;
           let timeNanos : Int = (
-            daysSinceEpochToSeconds + hoursInSeconds + minutesInSeconds + seconds,
+            daysSinceEpochToSeconds + hoursInSeconds + minutesInSeconds + seconds
           ) * Constants.ONE_SECOND_NANOS;
           ?timeNanos;
         };
@@ -303,7 +303,7 @@ module {
 
     private func toDate(time : Int) : ChronosphereDate.Date {
       let base = Int32.fromInt(
-        time / (24 * 60 * 60 * Constants.ONE_SECOND_NANOS),
+        time / (24 * 60 * 60 * Constants.ONE_SECOND_NANOS)
       );
       let date : ChronosphereDate.Date = #Date base;
     };
@@ -318,4 +318,3 @@ module {
   };
 
 };
-

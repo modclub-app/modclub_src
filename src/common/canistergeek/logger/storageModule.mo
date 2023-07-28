@@ -17,7 +17,7 @@ module {
     state : TypesModule.State,
     _index : Nat,
     _delta : Int,
-    _nextCount : Nat,
+    _nextCount : Nat
   ) {
     public var index : Nat = _index;
     public var delta : Int = _delta;
@@ -82,7 +82,7 @@ module {
 
   public func storeLogMessage(
     state : TypesModule.State,
-    logMessageData : TypesModule.LogMessagesData,
+    logMessageData : TypesModule.LogMessagesData
   ) {
     if (state.full) {
       state.queue.put(state.next, logMessageData);
@@ -100,7 +100,7 @@ module {
 
   public func setMaxMessagesCount(
     state : TypesModule.State,
-    newMaxMessagesCount : Nat,
+    newMaxMessagesCount : Nat
   ) {
     if (state.maxCount == newMaxMessagesCount) {
       return;
@@ -133,7 +133,7 @@ module {
 
   public func getLogMessagesIterator(
     state : TypesModule.State,
-    fromTimeNanos : ?TypesModule.Nanos,
+    fromTimeNanos : ?TypesModule.Nanos
   ) : LogMessageIterator {
     if (state.queue.size() == 0) {
       return LogMessageIterator(state, 0, 0, 0);
@@ -148,7 +148,7 @@ module {
     ignore do ? {
       let fromTimeNanosUnwrapped = fromTimeNanos!;
       while (
-        not iterator.isDone() and iterator.getCurrentMessage()!.timeNanos <= fromTimeNanosUnwrapped,
+        not iterator.isDone() and iterator.getCurrentMessage()!.timeNanos <= fromTimeNanosUnwrapped
       ) {
         iterator.shiftToNext();
       };
@@ -159,7 +159,7 @@ module {
 
   public func getLogMessagesIteratorReverse(
     state : TypesModule.State,
-    upToTimeNanos : ?TypesModule.Nanos,
+    upToTimeNanos : ?TypesModule.Nanos
   ) : LogMessageIterator {
     if (state.queue.size() == 0) {
       return LogMessageIterator(state, 0, 0, 0);
@@ -170,7 +170,7 @@ module {
         state,
         state.maxCount + state.next - 1,
         -1,
-        state.maxCount,
+        state.maxCount
       );
     } else {
       LogMessageIterator(state, state.next - 1, -1, state.next);
@@ -179,7 +179,7 @@ module {
     ignore do ? {
       let upToTimeNanosUnwrapped = upToTimeNanos!;
       while (
-        not iterator.isDone() and iterator.getCurrentMessage()!.timeNanos >= upToTimeNanosUnwrapped,
+        not iterator.isDone() and iterator.getCurrentMessage()!.timeNanos >= upToTimeNanosUnwrapped
       ) {
         iterator.shiftToNext();
       };
@@ -400,7 +400,7 @@ module {
   private func test_validateMessage(
     message : TypesModule.LogMessagesData,
     nanos : TypesModule.Nanos,
-    text : TypesModule.Message,
+    text : TypesModule.Message
   ) {
     assert (message.timeNanos == nanos);
     assert (Text.equal(message.message, text));

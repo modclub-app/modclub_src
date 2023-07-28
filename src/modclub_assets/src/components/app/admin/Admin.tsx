@@ -11,6 +11,7 @@ import {
 } from "react-bulma-components";
 import { Link } from "react-router-dom";
 import {
+  getEnvironmentSpecificValues,
   icrc1Balance,
   icrc1Decimal,
   providerSaBalanceById,
@@ -30,6 +31,7 @@ import {
   getUrlFromArray,
 } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
+const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 export default function Admin({
   selectedProvider,
@@ -450,8 +452,9 @@ export default function Admin({
         <Deposit
           toggle={toggleDeposit}
           userTokenBalance={userTokenBalance}
-          identity={identity}
           provider={selectedProvider.id.toString()}
+          receiver={CanisterId}
+          isProvider={true}
         />
       )}
     </>

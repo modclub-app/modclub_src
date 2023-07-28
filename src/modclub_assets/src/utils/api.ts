@@ -32,6 +32,8 @@ import {
   Result_5,
   Result_4,
   ProfileStable,
+  Subaccount,
+  Account,
 } from "./types";
 import { Principal } from "@dfinity/principal";
 import { canisterId as ModCanisterId } from "../../../declarations/modclub/index";
@@ -83,7 +85,7 @@ import {
   createActor as VestingDEVCreateActor,
   idlFactory as VestingDEVIdl,
 } from "../../../declarations/vesting_dev";
-import { ApproveArgs } from "../../../declarations/wallet_dev/wallet_dev.did";
+
 import { HttpAgent, Identity } from "@dfinity/agent";
 import { authClient } from "./authClient";
 import { StoicIdentity } from "ic-stoic-identity";
@@ -343,6 +345,13 @@ export async function getProvider(
   providerId: Principal
 ): Promise<ProviderPlus> {
   return (await getMC()).getProvider(providerId);
+}
+
+export async function getProviderSa(
+  providerId: Principal,
+  sub?: string
+): Promise<ProviderPlus> {
+  return (await getMC()).getProviderSa(sub ? sub : "RESERVE", [providerId]);
 }
 
 export async function getProviderRules(providerId: Principal): Promise<Rule[]> {
@@ -617,31 +626,46 @@ export async function canReserveContent(contentId: string): Promise<any> {
 }
 
 //DEPOSIT PROVIDER
-export async function icrc1Balance(userId: string): Promise<bigint> {
+export async function icrc1Balance(
+  userId: string,
+  subAcc?: Subaccount
+): Promise<bigint> {
   return trace_error(
     async () =>
       await (
         await getWallet()
-      ).icrc1_balance_of({ owner: Principal.fromText(userId), subaccount: [] })
+      ).icrc1_balance_of({
+        owner: Principal.fromText(userId),
+        subaccount: subAcc && subAcc.length > 0 ? [subAcc] : [],
+      })
   );
 }
 export async function icrc1Decimal(): Promise<bigint> {
   return trace_error(async () => await (await getWallet()).icrc1_decimals());
 }
 
-export async function icrc2Approve(amount: number): Promise<any> {
-  let input: ApproveArgs = {
-    amount: BigInt(amount),
-    spender: Principal.fromText(CanisterId),
-    fee: [],
-    memo: [],
-    from_subaccount: [],
-    created_at_time: [],
-    expires_at: [],
-  };
-  return trace_error(
-    async () => await (await getWallet()).icrc2_approve(input)
-  );
+export async function icrc1Transfer(
+  amount: bigint,
+  userId: Principal,
+  subAcc?: Subaccount
+): Promise<any> {
+  return trace_error(async () => {
+    const acc: Account = { owner: userId, subaccount: subAcc ? [subAcc] : [] };
+    const input: any = {
+      to: acc,
+      fee: [],
+      memo: [],
+      from_subaccount: [],
+      created_at_time: [],
+      amount: amount,
+    };
+    if (walletToUse === "ii" || walletToUse === "stoic") {
+      const res = await (await getWallet()).icrc1_transfer(input);
+      return res;
+    } else {
+      throw new Error(`Unsupported wallet: ${walletToUse}`);
+    }
+  });
 }
 
 export async function topUpProviderReserve(

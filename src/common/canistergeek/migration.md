@@ -5,7 +5,7 @@
 ```
 public type DayCanisterMemoryMaxLiveSizeData = [var Nat64];
 public type DayData_v2 = { // specific day data with all necessary metrics
-    updateCallsData: DayUpdateCallsCountData;                    
+    updateCallsData: DayUpdateCallsCountData;
     canisterHeapMemorySizeData: DayCanisterHeapMemorySizeData;
     canisterMemorySizeData: DayCanisterMemorySizeData;
     canisterCyclesData: DayCanisterCyclesData;
@@ -74,10 +74,10 @@ private func migrateUpgradeData(upgradeData: UpgradeData): UpgradeData {
         case (#v1 value) {
             let from_v1_to_v2: [UpgradeDataDayTuple_v2] = Array.map<UpgradeDataDayTuple,UpgradeDataDayTuple_v2>(
                 value.dayData,
-                func (dayDataId: DayDataId, dayData: DayData) { 
+                func (dayDataId: DayDataId, dayData: DayData) {
                     let numberOfIntervals = dayData.updateCallsData.size();
                     let dayData_v2: DayData_v2 = {
-                        updateCallsData: DayUpdateCallsCountData = dayData.updateCallsData;                    
+                        updateCallsData: DayUpdateCallsCountData = dayData.updateCallsData;
                         canisterHeapMemorySizeData: DayCanisterHeapMemorySizeData = dayData.canisterHeapMemorySizeData;
                         canisterMemorySizeData: DayCanisterMemorySizeData = dayData.canisterMemorySizeData;
                         canisterCyclesData: DayCanisterCyclesData = dayData.canisterCyclesData;

@@ -58,13 +58,13 @@ module Canistergeek {
                 let dayDataId : TypesModule.DayDataId = TypesModule.toDayDataId(
                   year,
                   month,
-                  day,
+                  day
                 )!;
                 TypesModule.collectMetrics(
                   state,
                   dayDataId,
                   currentDataIntervalIndexValue,
-                  granularitySeconds,
+                  granularitySeconds
                 );
               };
             };
@@ -98,7 +98,7 @@ module Canistergeek {
   public class Logger() {
 
     private var state : LoggerTypesModule.State = LoggerTypesModule.newState(
-      LoggerTypesModule.DEFAULT_MAX_LOG_MESSAGES_COUNT,
+      LoggerTypesModule.DEFAULT_MAX_LOG_MESSAGES_COUNT
     );
 
     // PUBLIC API
@@ -116,7 +116,7 @@ module Canistergeek {
         state,
         message,
         Time.now(),
-        LoggerTypesModule.DEFAULT_MAX_LOG_MESSAGE_LENGTH,
+        LoggerTypesModule.DEFAULT_MAX_LOG_MESSAGE_LENGTH
       );
     };
 

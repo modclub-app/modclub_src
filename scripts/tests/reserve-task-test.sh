@@ -63,6 +63,7 @@ dfx identity use qa_ledger_identity
 declare LEDGER_ACCOUNT=$(dfx identity get-principal)
 dfx identity use default
 declare DEFAULT_PRINCIPAL=$(dfx identity get-principal)
+declare MODCLUB_CANISTER_ID=$(dfx canister id modclub_qa)
 declare TOKEN_DECIMALS="_000_000"
 
 # call registerAdmin
@@ -81,22 +82,19 @@ dfx canister call modclub_qa addToAllowList "(principal \"$MODPROVIDER_PRINCIPAL
 dfx identity use mod_provider
 dfx canister call modclub_qa registerProvider "(\""MOD_PROVIDER_NAME"\",\""DESCRIPTION_A"\", null)"
 dfx canister call modclub_qa addProviderAdmin "(principal \"$(dfx identity get-principal)\" , \""TEMP_PROVIDER_NAME"\", null)"
-dfx identity use default
+dfx identity use qa_ledger_identity
 echo "Transfering Tokens to Modclub..."
-dfx canister call wallet_qa transferToProvider '( record { from = record { owner = principal "'$LEDGER_ACCOUNT'" }; to = record { owner= principal "'$MODPROVIDER_PRINCIPAL'" }; amount = 10_000_000'$TOKEN_DECIMALS' })'
-
+dfx canister call wallet_qa icrc1_transfer '( record { from_subaccount = opt blob "-------------------------RESERVE"; to = record { owner = principal "'$MODPROVIDER_PRINCIPAL'" }; amount = 10_000'$TOKEN_DECIMALS' } )'
 echo "+++++++++++++++++++ Step 2: Mod tokens +++++++++++++++++++"
 dfx identity use mod_provider
-dfx canister call wallet_qa icrc1_balance_of '( record { owner = principal "'$(dfx identity get-principal)'"})'
-echo "Creating Approve..."
-dfx canister call wallet_qa icrc2_approve '( record { spender = principal "'$(dfx canister id modclub_qa)'"; amount = 10_000'$TOKEN_DECIMALS' } )'
-echo "TopUp Provider Subaccount..."
-dfx canister call modclub_qa topUpProviderReserve '( record { amount = 10_000'$TOKEN_DECIMALS' } )'
-dfx canister call wallet_qa icrc2_approve '( record { spender = principal "'$(dfx canister id modclub_qa)'"; amount = 10_000'$TOKEN_DECIMALS' } )'
-dfx canister call modclub_qa topUpProviderReserve '( record { amount = 10_000'$TOKEN_DECIMALS' } )'
-echo "Check Provider RESERVE balance"
-declare P_BAL_BEFORE_SUBMIT=$(dfx canister call modclub_qa providerSaBalance '("RESERVE",null)')
-echo "Provider RESERVE balance: $P_BAL_BEFORE_SUBMIT"
+declare providerSaReserveRaw=$(dfx canister call modclub_qa getProviderSa '("RESERVE", null)')
+declare pSaReserve1=${providerSaReserveRaw#"(blob \""}
+declare pSaReserve=${pSaReserve1%"\")"}
+echo "${pSaReserve}"
+dfx canister call wallet_qa icrc1_transfer '( record { to = record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "'$pSaReserve'" }; amount = 1000_000_000 } )'
+dfx canister call wallet_qa icrc1_transfer '( record { to = record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "'$pSaReserve'" }; amount = 1000_000_000 } )'
+echo "Check Modclub canister balance"
+dfx canister call wallet_qa icrc1_balance_of '( record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "'$pSaReserve'" } )'
 
 # Submit a task and verify
 echo "++++++++++++++ Step 3: create Moderator with Junior status ++++++++++"
@@ -131,6 +129,10 @@ declare MOD_PRINCIPAL_4=\"$(dfx identity get-principal)\"
 
 echo "+++++++++++++++++++ Step 4: submitText  +++++++++++++++++++"
 dfx identity use default
+dfx ledger fabricate-cycles --canister modclub_qa
+dfx ledger fabricate-cycles --canister modclub_qa
+dfx ledger fabricate-cycles --canister modclub_qa
+dfx ledger fabricate-cycles --canister modclub_qa
 dfx ledger fabricate-cycles --canister modclub_qa
 dfx ledger fabricate-cycles --canister modclub_qa
 echo "+++++++++++++++++++ Step 4.1: Set VoteParams  +++++++++++++++++++"

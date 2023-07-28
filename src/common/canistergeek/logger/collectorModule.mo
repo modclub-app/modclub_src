@@ -12,7 +12,7 @@ module {
     state : TypesModule.State,
     message : TypesModule.Message,
     time : Time.Time,
-    maxMessageLength : Nat,
+    maxMessageLength : Nat
   ) {
     let timeNanos = UtilsModule.intToNat64(time);
     let timeNanosCorrected = switch (StorageModule.getLastLogMessageTime(state)) {
@@ -38,7 +38,7 @@ module {
 
   private func validateMessage(
     message : TypesModule.Message,
-    maxMessageLength : Nat,
+    maxMessageLength : Nat
   ) : Text {
     if (Text.size(message) > maxMessageLength) {
       return UtilsModule.extractText(message, 0, maxMessageLength);
