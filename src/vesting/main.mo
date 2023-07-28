@@ -143,6 +143,11 @@ shared ({ caller = deployer }) actor class Vesting({
     canistergeekLogger.getLog(request);
   };
 
+  //SNS generic validate function
+  public shared ({ caller }) func validate(input : Any) : async CommonTypes.Validate {
+    return #Ok("success");
+  };
+
   ignore Timer.setTimer(
     #seconds 0,
     func() : async () {
@@ -198,6 +203,7 @@ shared ({ caller = deployer }) actor class Vesting({
         authGuard.isModclubCanister(caller) or authGuard.isAdmin(caller);
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
+      case (#validate _) { authGuard.isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };

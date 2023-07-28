@@ -108,6 +108,7 @@ module {
     #whoami : () -> ();
     #importAccounts : () -> Types.AccountsImportPayload;
     #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal);
+    #validate : () -> Any;
   };
 
 };

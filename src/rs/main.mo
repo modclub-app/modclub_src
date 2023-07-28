@@ -210,6 +210,11 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     };
   };
 
+  //SNS generic validate function
+  public shared ({ caller }) func validate(input : Any) : async CommonTypes.Validate {
+    return #Ok("success");
+  };
+
   ignore Timer.setTimer(
     #seconds 0,
     func() : async () {
@@ -252,6 +257,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
       case (#updateRS _) { authGuard.isModclubWallet(caller) };
       case (#updateRSBulk _) { authGuard.isModclubWallet(caller) };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
+      case (#validate _) { authGuard.isAdmin(caller) };
       case (#collectCanisterMetrics _) { true };
       case (#getCanisterLog _) { true };
       case (#getCanisterMetrics _) { true };

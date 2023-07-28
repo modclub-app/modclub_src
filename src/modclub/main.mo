@@ -2510,6 +2510,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     canistergeekLogger.setMaxMessagesCount(3000);
   };
 
+  //SNS generic validate function
+  public shared ({ caller }) func validate(input : Any) : async CommonTypes.Validate {
+    return #Ok("success");
+  };
+
   system func inspect({
     arg : Blob;
     caller : Principal;
@@ -2547,6 +2552,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
       case (#importAccounts _) { authGuard.isOldModclubInstance(caller) };
       case (#addToApprovedUser _) { authGuard.isAdmin(caller) };
+      case (#validate _) { authGuard.isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };

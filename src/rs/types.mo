@@ -58,6 +58,7 @@ module {
     #topUsers : () -> (Nat, Nat);
     #updateRS : () -> (Principal, Bool, Decision);
     #updateRSBulk : () -> [UserAndVote];
+    #validate : () -> Any;
   };
 
 };

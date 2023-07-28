@@ -57,5 +57,6 @@ module {
     #staked_for : () -> ICRCTypes.Account;
     #unlocked_stakes_for : () -> ICRCTypes.Account;
     #claimed_stakes_for : () -> ICRCTypes.Account;
+    #validate : () -> Any;
   };
 };

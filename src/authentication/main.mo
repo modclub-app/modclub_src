@@ -147,6 +147,11 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     canistergeekLogger.getLog(request);
   };
 
+  //SNS generic validate function
+  public shared ({ caller }) func validate(input : Any) : async CommonTypes.Validate {
+    return #Ok("success");
+  };
+
   system func inspect({
     arg : Blob;
     caller : Principal;
@@ -156,6 +161,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
       case (#registerAdmin _) { _isAdmin(caller) };
       case (#unregisterAdmin _) { _isAdmin(caller) };
       case (#getSubscriptions _) { _isAdmin(caller) };
+      case (#validate _) { _isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };

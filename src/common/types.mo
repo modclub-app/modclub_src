@@ -171,4 +171,10 @@ module {
   };
   public type WasmModule = [Nat8];
 
+  //rust result type
+  public type Validate = {
+    #Ok : Text;
+    #Err : Text;
+  };
+
 };
