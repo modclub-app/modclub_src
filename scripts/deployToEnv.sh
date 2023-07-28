@@ -21,11 +21,14 @@ DEPLOY_NETWORK=local
 minter_principal=""
 ledger_acc_principal=""
 
+wallet_canister=""
+
 OLD_MODCLUB_INSTANCE=""
 
  function deploy_wallet_canister() {
-  local env=$1
-  local canister_env=$(get_env_canisters $env)
+  local ARCHIVE_CONTROLLER=$(dfx identity get-principal)
+  local TOKEN_NAME="Modclub_Token"
+  local TOKEN_SYMBOL=MODT
 
   # Determine the wallet canister name based on the environment
   local wallet_canister_name="wallet_${env}"
@@ -34,28 +37,31 @@ OLD_MODCLUB_INSTANCE=""
     wallet_canister_name="wallet"
   fi
 
-  dfx deploy ${wallet_canister_name} --network=${DEPLOY_NETWORK}  --argument="(record {
-    env = ${canister_env};
-    ledgerInit = record {
-      initial_mints = vec { 
-        record { account = record { owner = principal \"$ledger_acc_principal\"; }; amount = 100_000_000_000_000; };
-        record { account = record { owner = principal \"$ledger_acc_principal\"; subaccount = opt blob \"-------------------------RESERVE\"}; amount = 367_500_000_000_000; };
-        record { account = record { owner = principal \"$ledger_acc_principal\"; subaccount = opt blob \"-------------------------AIRDROP\"}; amount = 10_000_000_000_000; };
-        record { account = record { owner = principal \"$ledger_acc_principal\"; subaccount = opt blob \"-----------------------MARKETING\"}; amount = 50_000_000_000_000; };
-        record { account = record { owner = principal \"$ledger_acc_principal\"; subaccount = opt blob \"------------------------ADVISORS\"}; amount = 50_000_000_000_000; };
-        record { account = record { owner = principal \"$ledger_acc_principal\"; subaccount = opt blob \"-------------------------PRESEED\"}; amount = 62_500_000_000_000; };
-        record { account = record { owner = principal \"$ledger_acc_principal\"; subaccount = opt blob \"----------------------PUBLICSALE\"}; amount = 100_000_000_000_000; };
-        record { account = record { owner = principal \"$ledger_acc_principal\"; subaccount = opt blob \"----------------------------SEED\"}; amount = 100_000_000_000_000; };
-        record { account = record { owner = principal \"$ledger_acc_principal\"; subaccount = opt blob \"----------------------------TEAM\"}; amount = 160_000_000_000_000; };
-      };
-      minting_account = record { owner = principal \"$minter_principal\"; };
-      ledger_account = record { owner = principal \"$ledger_acc_principal\"; };
-      token_name = \"MODCLUB TEST TOKEN\";
-      token_symbol = \"MODTEST\";
-      decimals = 8;
-      transfer_fee = 10_000;
-    }}
-  )"
+  dfx deploy ${wallet_canister_name} --network=${DEPLOY_NETWORK}  --argument='(variant { Init = 
+      record {
+        token_name = "'${TOKEN_NAME}'";
+        token_symbol = "'${TOKEN_SYMBOL}'";
+        minting_account = record { owner = principal "'${minter_principal}'";};
+        initial_balances = vec {
+          record { record { owner = principal "'${ledger_acc_principal}'"; }; 100_000_000_000_000; };
+          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "-------------------------RESERVE"}; 367_500_000_000_000; };
+          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "-------------------------AIRDROP"}; 10_000_000_000_000; };
+          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "-----------------------MARKETING"}; 50_000_000_000_000; };
+          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "------------------------ADVISORS"}; 50_000_000_000_000; };
+          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "-------------------------PRESEED"}; 62_500_000_000_000; };
+          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "----------------------PUBLICSALE"}; 100_000_000_000_000; };
+          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "----------------------------SEED"}; 100_000_000_000_000; };
+          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "----------------------------TEAM"}; 160_000_000_000_000; };
+        };
+        metadata = vec {};
+        transfer_fee = 10;
+        archive_options = record {
+          trigger_threshold = 2000;
+          num_blocks_to_archive = 1000;
+          controller_id = principal "'${ARCHIVE_CONTROLLER}'";
+        }
+  }})'
+
   return 0;
 }
 
@@ -77,7 +83,13 @@ function get_env_canisters() {
     vesting_canister_name="vesting"
   fi
 
-  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${DEPLOY_NETWORK})\"; old_modclub_canister_id = principal \"${OLD_MODCLUB_INSTANCE}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${DEPLOY_NETWORK})\"; wallet_canister_id = principal \"$(dfx canister id ${wallet_canister_name} --network=${DEPLOY_NETWORK})\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${DEPLOY_NETWORK})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${DEPLOY_NETWORK})\"; }"
+  local wallet_canister_id=$(dfx canister id ${modclub_canister_name} --network=${DEPLOY_NETWORK})
+
+  if [ "$wallet_canister" != "" ]; then
+    wallet_canister_id=$wallet_canister
+  fi
+
+  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${DEPLOY_NETWORK})\"; old_modclub_canister_id = principal \"${OLD_MODCLUB_INSTANCE}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${DEPLOY_NETWORK})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${DEPLOY_NETWORK})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${DEPLOY_NETWORK})\"; }"
 }
 
 
@@ -167,6 +179,7 @@ usage() {
  echo " -m, --minter      Set Minter principal to deploy Ledger(Wallet canister). Default value is generated from default identity."
  echo " -l, --ledger_acc  Set LedgerAccount principal to deploy Ledger(Wallet canister). Default value is generated from default identity."
  echo " -old, --old_modclub_canister  Set Old MODCLUB canister ID. Need for Accounts import from old instance."
+ echo " -w, --wallet_canister         Set Wallet(TokenLedger) canister ID."
  echo ""
  echo "Usage Example:  $0 -e qa -n local -old v43e5-wqaaa-aaaaa-aaa2q-cai"
  echo ""
@@ -251,6 +264,16 @@ run_with_options() {
         fi
 
 				OLD_MODCLUB_INSTANCE=$(extract_argument $@)
+        shift
+        ;;
+      -w | --wallet_canister*)
+        if ! has_argument $@; then
+          echo "Wallet canister ID not specified." >&2
+          usage
+          exit 1
+        fi
+
+				wallet_canister=$(extract_argument $@)
         shift
         ;;
       *)
