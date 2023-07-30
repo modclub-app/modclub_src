@@ -2,6 +2,9 @@
   "auth": {
     "ic": "gdtip-xiaaa-aaaah-qdbnq-cai"
   },
+  "auth_dev": {
+    "ic": "dnoft-qqaaa-aaaah-qdbra-cai"
+  },
   "auth_qa": {
     "ic": "h3xck-uaaaa-aaaap-qbj7q-cai"
   },
@@ -15,10 +18,10 @@
     "ic": "ddmi3-laaaa-aaaah-qdbqa-cai"
   },
   "modclub_dev": {
-    "ic": "olc6u-lqaaa-aaaah-qcooq-cai"
+    "ic": "d7isk-4aaaa-aaaah-qdbsa-cai"
   },
   "modclub_dev_assets": {
-    "ic": "ocbvi-5yaaa-aaaah-qcopa-cai"
+    "ic": "dyju6-ryaaa-aaaah-qdbsq-cai"
   },
   "modclub_old": {
     "ic": "la3yy-gaaaa-aaaah-qaiuq-cai",
@@ -54,6 +57,9 @@
   },
   "vesting": {
     "ic": "g7xs6-aiaaa-aaaah-qdbpq-cai"
+  },
+  "vesting_dev": {
+    "ic": "dkpdh-5iaaa-aaaah-qdbrq-cai"
   },
   "vesting_qa": {
     "ic": "idxpf-xiaaa-aaaap-abf2a-cai"
