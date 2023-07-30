@@ -27,10 +27,10 @@ dfx sns import
 dfx sns download
 
 if [ "$network" = "ic" ]; then
-  sudo sns-cli deploy-testflight --network ic
+  sudo sns-cli deploy-testflight --init-config-file ./sns.yml --network ic
 else
   echo "Deploying to local network..."
-  sudo sns-cli deploy-testflight
+  sudo sns-cli deploy-testflight --init-config-file ./sns.yml --network local
 fi
 
 echo "Record the developer neuronID and update snsConfig.cjs 👆"
