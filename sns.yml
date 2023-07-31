@@ -44,8 +44,8 @@ initial_reward_rate_percentage: 1.5
 final_reward_rate_percentage: 1.5
 
 # The maximum dissolve delay that a neuron can have.
-# 4 years
-max_dissolve_delay_seconds: 126230400
+# 1 years
+max_dissolve_delay_seconds: 31557600
 
 # The age at which the maximum bonus will be given. All older neurons will be treated as if they are this age.
 # Roughly 2 years
@@ -87,47 +87,47 @@ initial_token_distribution:
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 0
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 31558800
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 1
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 34188700
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 2
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 36818600
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 3
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 39448500
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 4
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 42078400
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 5
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 44708300
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 6
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 47338200
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 7
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 49968100
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
           memo: 8
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 52598000
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
           stake_e8s: 444444444444444
@@ -431,32 +431,32 @@ initial_token_distribution:
         - controller: 4hmmk-uynbn-mlvmi-2lckw-emhui-z5lcy-4b5uw-h5pgj-2c2t2-f7vp5-rae
           stake_e8s: 70000000000000
           memo: 32
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 94676400
         - controller: 4hmmk-uynbn-mlvmi-2lckw-emhui-z5lcy-4b5uw-h5pgj-2c2t2-f7vp5-rae
           stake_e8s: 70000000000000
           memo: 33
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 97306300
         - controller: 4hmmk-uynbn-mlvmi-2lckw-emhui-z5lcy-4b5uw-h5pgj-2c2t2-f7vp5-rae
           stake_e8s: 70000000000000
           memo: 34
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 99936200
         - controller: 4hmmk-uynbn-mlvmi-2lckw-emhui-z5lcy-4b5uw-h5pgj-2c2t2-f7vp5-rae
           stake_e8s: 70000000000000
           memo: 35
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 102566100
         - controller: 4hmmk-uynbn-mlvmi-2lckw-emhui-z5lcy-4b5uw-h5pgj-2c2t2-f7vp5-rae
           stake_e8s: 70000000000000
           memo: 36
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 105196000
         - controller: 4hmmk-uynbn-mlvmi-2lckw-emhui-z5lcy-4b5uw-h5pgj-2c2t2-f7vp5-rae
           stake_e8s: 70000000000000
           memo: 37
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 107825900
         # End of 4hmmk-uynbn-mlvmi-2lckw-emhui-z5lcy-4b5uw-h5pgj-2c2t2-f7vp5-rae neurons
 
@@ -619,37 +619,37 @@ initial_token_distribution:
         - controller: h3rvv-6ug2w-qfzzh-3pi7v-uvhok-jci6f-to2t7-xvheo-nosvj-6ibfp-fqe
           stake_e8s: 6066666666666
           memo: 31
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 92046500
         - controller: h3rvv-6ug2w-qfzzh-3pi7v-uvhok-jci6f-to2t7-xvheo-nosvj-6ibfp-fqe
           stake_e8s: 6066666666666
           memo: 32
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 94676400
         - controller: h3rvv-6ug2w-qfzzh-3pi7v-uvhok-jci6f-to2t7-xvheo-nosvj-6ibfp-fqe
           stake_e8s: 6066666666666
           memo: 33
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 97306300
         - controller: h3rvv-6ug2w-qfzzh-3pi7v-uvhok-jci6f-to2t7-xvheo-nosvj-6ibfp-fqe
           stake_e8s: 6066666666666
           memo: 34
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 99936200
         - controller: h3rvv-6ug2w-qfzzh-3pi7v-uvhok-jci6f-to2t7-xvheo-nosvj-6ibfp-fqe
           stake_e8s: 6066666666666
           memo: 35
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 102566100
         - controller: h3rvv-6ug2w-qfzzh-3pi7v-uvhok-jci6f-to2t7-xvheo-nosvj-6ibfp-fqe
           stake_e8s: 6066666666666
           memo: 36
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 105196000
         - controller: h3rvv-6ug2w-qfzzh-3pi7v-uvhok-jci6f-to2t7-xvheo-nosvj-6ibfp-fqe
           stake_e8s: 6066666666690
           memo: 37
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 107825900
         # End of h3rvv-6ug2w-qfzzh-3pi7v-uvhok-jci6f-to2t7-xvheo-nosvj-6ibfp-fqe neurons
 
@@ -812,37 +812,37 @@ initial_token_distribution:
         - controller: jri4p-3obu5-hnvte-xums2-w4ncj-u3ong-g27th-dozvy-5f7fc-yd266-iae
           stake_e8s: 10266666666666
           memo: 31
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 92046500
         - controller: jri4p-3obu5-hnvte-xums2-w4ncj-u3ong-g27th-dozvy-5f7fc-yd266-iae
           stake_e8s: 10266666666666
           memo: 32
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 94676400
         - controller: jri4p-3obu5-hnvte-xums2-w4ncj-u3ong-g27th-dozvy-5f7fc-yd266-iae
           stake_e8s: 10266666666666
           memo: 33
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 97306300
         - controller: jri4p-3obu5-hnvte-xums2-w4ncj-u3ong-g27th-dozvy-5f7fc-yd266-iae
           stake_e8s: 10266666666666
           memo: 34
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 99936200
         - controller: jri4p-3obu5-hnvte-xums2-w4ncj-u3ong-g27th-dozvy-5f7fc-yd266-iae
           stake_e8s: 10266666666666
           memo: 35
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 102566100
         - controller: jri4p-3obu5-hnvte-xums2-w4ncj-u3ong-g27th-dozvy-5f7fc-yd266-iae
           stake_e8s: 10266666666666
           memo: 36
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 105196000
         - controller: jri4p-3obu5-hnvte-xums2-w4ncj-u3ong-g27th-dozvy-5f7fc-yd266-iae
           stake_e8s: 10266666666690
           memo: 37
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 107825900
         # End of jri4p-3obu5-hnvte-xums2-w4ncj-u3ong-g27th-dozvy-5f7fc-yd266-iae neurons
 
@@ -1005,37 +1005,37 @@ initial_token_distribution:
         - controller: ss2b5-2f3o7-3d5vw-bulrx-xxp3d-5lymy-gjbs2-7r652-zkz66-h7zxc-3qe
           stake_e8s: 25900000000000
           memo: 31
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 92046500
         - controller: ss2b5-2f3o7-3d5vw-bulrx-xxp3d-5lymy-gjbs2-7r652-zkz66-h7zxc-3qe
           stake_e8s: 25900000000000
           memo: 32
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 94676400
         - controller: ss2b5-2f3o7-3d5vw-bulrx-xxp3d-5lymy-gjbs2-7r652-zkz66-h7zxc-3qe
           stake_e8s: 25900000000000
           memo: 33
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 97306300
         - controller: ss2b5-2f3o7-3d5vw-bulrx-xxp3d-5lymy-gjbs2-7r652-zkz66-h7zxc-3qe
           stake_e8s: 25900000000000
           memo: 34
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 99936200
         - controller: ss2b5-2f3o7-3d5vw-bulrx-xxp3d-5lymy-gjbs2-7r652-zkz66-h7zxc-3qe
           stake_e8s: 25900000000000
           memo: 35
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 102566100
         - controller: ss2b5-2f3o7-3d5vw-bulrx-xxp3d-5lymy-gjbs2-7r652-zkz66-h7zxc-3qe
           stake_e8s: 25900000000000
           memo: 36
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 105196000
         - controller: ss2b5-2f3o7-3d5vw-bulrx-xxp3d-5lymy-gjbs2-7r652-zkz66-h7zxc-3qe
           stake_e8s: 25900000000000
           memo: 37
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 107825900
         # End of ss2b5-2f3o7-3d5vw-bulrx-xxp3d-5lymy-gjbs2-7r652-zkz66-h7zxc-3qe neurons
 
@@ -1198,37 +1198,37 @@ initial_token_distribution:
         - controller: eyedy-kogr2-hc7m2-ax2uz-ox7tj-5djyu-eibqe-bdlhk-f7zdj-u5wmx-hae
           stake_e8s: 43750000000000
           memo: 31
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 92046500
         - controller: eyedy-kogr2-hc7m2-ax2uz-ox7tj-5djyu-eibqe-bdlhk-f7zdj-u5wmx-hae
           stake_e8s: 43750000000000
           memo: 32
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 94676400
         - controller: eyedy-kogr2-hc7m2-ax2uz-ox7tj-5djyu-eibqe-bdlhk-f7zdj-u5wmx-hae
           stake_e8s: 43750000000000
           memo: 33
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 97306300
         - controller: eyedy-kogr2-hc7m2-ax2uz-ox7tj-5djyu-eibqe-bdlhk-f7zdj-u5wmx-hae
           stake_e8s: 43750000000000
           memo: 34
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 99936200
         - controller: eyedy-kogr2-hc7m2-ax2uz-ox7tj-5djyu-eibqe-bdlhk-f7zdj-u5wmx-hae
           stake_e8s: 43750000000000
           memo: 35
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 102566100
         - controller: eyedy-kogr2-hc7m2-ax2uz-ox7tj-5djyu-eibqe-bdlhk-f7zdj-u5wmx-hae
           stake_e8s: 43750000000000
           memo: 36
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 105196000
         - controller: eyedy-kogr2-hc7m2-ax2uz-ox7tj-5djyu-eibqe-bdlhk-f7zdj-u5wmx-hae
           stake_e8s: 43750000000000
           memo: 37
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 107825900
         # End of eyedy-kogr2-hc7m2-ax2uz-ox7tj-5djyu-eibqe-bdlhk-f7zdj-u5wmx-hae neurons
 
@@ -1715,32 +1715,32 @@ initial_token_distribution:
         - controller: hj4ba-knsqa-jqawm-h3vio-b4luv-lzr67-zrh54-yg6sd-x7bdk-rtceo-5ae
           stake_e8s: 83333333333333
           memo: 56
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 47338200
         - controller: hj4ba-knsqa-jqawm-h3vio-b4luv-lzr67-zrh54-yg6sd-x7bdk-rtceo-5ae
           stake_e8s: 83333333333333
           memo: 57
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 49968100
         - controller: hj4ba-knsqa-jqawm-h3vio-b4luv-lzr67-zrh54-yg6sd-x7bdk-rtceo-5ae
           stake_e8s: 83333333333333
           memo: 58
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 52598000
         - controller: hj4ba-knsqa-jqawm-h3vio-b4luv-lzr67-zrh54-yg6sd-x7bdk-rtceo-5ae
           stake_e8s: 83333333333333
           memo: 59
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 55227900
         - controller: hj4ba-knsqa-jqawm-h3vio-b4luv-lzr67-zrh54-yg6sd-x7bdk-rtceo-5ae
           stake_e8s: 83333333333333
           memo: 60
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 57857800
         - controller: hj4ba-knsqa-jqawm-h3vio-b4luv-lzr67-zrh54-yg6sd-x7bdk-rtceo-5ae
           stake_e8s: 83333333333341
           memo: 61
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 60487700
         # End of hj4ba-knsqa-jqawm-h3vio-b4luv-lzr67-zrh54-yg6sd-x7bdk-rtceo-5ae neurons
 
@@ -2226,32 +2226,32 @@ initial_token_distribution:
         - controller: kmm32-clm67-m2mkz-un543-s4ztj-srzga-vwsxo-yyeq5-bosnt-5eafi-vqe
           stake_e8s: 10000000000000
           memo: 56
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 47338200
         - controller: kmm32-clm67-m2mkz-un543-s4ztj-srzga-vwsxo-yyeq5-bosnt-5eafi-vqe
           stake_e8s: 10000000000000
           memo: 57
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 49968100
         - controller: kmm32-clm67-m2mkz-un543-s4ztj-srzga-vwsxo-yyeq5-bosnt-5eafi-vqe
           stake_e8s: 10000000000000
           memo: 58
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 52598000
         - controller: kmm32-clm67-m2mkz-un543-s4ztj-srzga-vwsxo-yyeq5-bosnt-5eafi-vqe
           stake_e8s: 10000000000000
           memo: 59
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 55227900
         - controller: kmm32-clm67-m2mkz-un543-s4ztj-srzga-vwsxo-yyeq5-bosnt-5eafi-vqe
           stake_e8s: 10000000000000
           memo: 60
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 57857800
         - controller: kmm32-clm67-m2mkz-un543-s4ztj-srzga-vwsxo-yyeq5-bosnt-5eafi-vqe
           stake_e8s: 10000000000000
           memo: 61
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 60487700
         # End of kmm32-clm67-m2mkz-un543-s4ztj-srzga-vwsxo-yyeq5-bosnt-5eafi-vqe neurons
 
@@ -2462,7 +2462,7 @@ initial_token_distribution:
         - controller: zinq6-neoei-6e4hd-wojqw-gsshe-rvmlb-la4tz-2alvn-yakyy-kusbu-eae
           stake_e8s: 20444444444444
           memo: 2
-          dissolve_delay_seconds: 2629900
+          dissolve_delay_seconds: 0
           vesting_period_seconds: 110460000 #Adjusted to 42 months because advisors have no dissovle delay
         - controller: zinq6-neoei-6e4hd-wojqw-gsshe-rvmlb-la4tz-2alvn-yakyy-kusbu-eae
           stake_e8s: 20444444444444
@@ -2929,32 +2929,32 @@ initial_token_distribution:
         - controller: l2b22-ddaqq-twc4j-rfaob-vqhi5-pj4yw-se7s3-dcbc5-u7sp2-wr2cx-7qe
           stake_e8s: 4166666666666
           memo: 18
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 47338200
         - controller: l2b22-ddaqq-twc4j-rfaob-vqhi5-pj4yw-se7s3-dcbc5-u7sp2-wr2cx-7qe
           stake_e8s: 4166666666666
           memo: 19
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 49968100
         - controller: l2b22-ddaqq-twc4j-rfaob-vqhi5-pj4yw-se7s3-dcbc5-u7sp2-wr2cx-7qe
           stake_e8s: 4166666666666
           memo: 20
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 52598000
         - controller: l2b22-ddaqq-twc4j-rfaob-vqhi5-pj4yw-se7s3-dcbc5-u7sp2-wr2cx-7qe
           stake_e8s: 4166666666666
           memo: 21
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 55227900
         - controller: l2b22-ddaqq-twc4j-rfaob-vqhi5-pj4yw-se7s3-dcbc5-u7sp2-wr2cx-7qe
           stake_e8s: 4166666666666
           memo: 22
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 57857800
         - controller: l2b22-ddaqq-twc4j-rfaob-vqhi5-pj4yw-se7s3-dcbc5-u7sp2-wr2cx-7qe
           stake_e8s: 4166666666682
           memo: 23
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 60487700
         # End of l2b22-ddaqq-twc4j-rfaob-vqhi5-pj4yw-se7s3-dcbc5-u7sp2-wr2cx-7qe neurons
 
@@ -3052,32 +3052,32 @@ initial_token_distribution:
         - controller: xru3z-rt6l3-g7ofo-bcszz-knzat-jdxfa-i4xt5-rpgk3-vneh6-si4ds-mae
           stake_e8s: 34375000000000
           memo: 18
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 47338200
         - controller: xru3z-rt6l3-g7ofo-bcszz-knzat-jdxfa-i4xt5-rpgk3-vneh6-si4ds-mae
           stake_e8s: 34375000000000
           memo: 19
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 49968100
         - controller: xru3z-rt6l3-g7ofo-bcszz-knzat-jdxfa-i4xt5-rpgk3-vneh6-si4ds-mae
           stake_e8s: 34375000000000
           memo: 20
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 52598000
         - controller: xru3z-rt6l3-g7ofo-bcszz-knzat-jdxfa-i4xt5-rpgk3-vneh6-si4ds-mae
           stake_e8s: 34375000000000
           memo: 21
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 55227900
         - controller: xru3z-rt6l3-g7ofo-bcszz-knzat-jdxfa-i4xt5-rpgk3-vneh6-si4ds-mae
           stake_e8s: 34375000000000
           memo: 22
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 57857800
         - controller: xru3z-rt6l3-g7ofo-bcszz-knzat-jdxfa-i4xt5-rpgk3-vneh6-si4ds-mae
           stake_e8s: 34375000000000
           memo: 23
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 60487700
         # End of xru3z-rt6l3-g7ofo-bcszz-knzat-jdxfa-i4xt5-rpgk3-vneh6-si4ds-mae neurons
 
@@ -3180,27 +3180,27 @@ initial_token_distribution:
         - controller: 3v7he-zs7vh-finyi-czyiw-u6q6u-iubep-szm54-6gmcv-hc6qg-azcvv-kae
           stake_e8s: 41666666666666
           memo: 19
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 49968100
         - controller: 3v7he-zs7vh-finyi-czyiw-u6q6u-iubep-szm54-6gmcv-hc6qg-azcvv-kae
           stake_e8s: 41666666666666
           memo: 20
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 52598000
         - controller: 3v7he-zs7vh-finyi-czyiw-u6q6u-iubep-szm54-6gmcv-hc6qg-azcvv-kae
           stake_e8s: 41666666666666
           memo: 21
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 55227900
         - controller: 3v7he-zs7vh-finyi-czyiw-u6q6u-iubep-szm54-6gmcv-hc6qg-azcvv-kae
           stake_e8s: 41666666666666
           memo: 22
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 57857800
         - controller: 3v7he-zs7vh-finyi-czyiw-u6q6u-iubep-szm54-6gmcv-hc6qg-azcvv-kae
           stake_e8s: 41666666666682
           memo: 23
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 60487700
         # End of 3v7he-zs7vh-finyi-czyiw-u6q6u-iubep-szm54-6gmcv-hc6qg-azcvv-kae neurons
 
@@ -3298,32 +3298,32 @@ initial_token_distribution:
         - controller: o25ji-4u3or-jom4x-sdt3j-gyvqb-fqqdt-dl4jc-lhzxy-ftkw3-bz3ul-hqe
           stake_e8s: 41666666666666
           memo: 18
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 47338200
         - controller: o25ji-4u3or-jom4x-sdt3j-gyvqb-fqqdt-dl4jc-lhzxy-ftkw3-bz3ul-hqe
           stake_e8s: 41666666666666
           memo: 19
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 49968100
         - controller: o25ji-4u3or-jom4x-sdt3j-gyvqb-fqqdt-dl4jc-lhzxy-ftkw3-bz3ul-hqe
           stake_e8s: 41666666666666
           memo: 20
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 52598000
         - controller: o25ji-4u3or-jom4x-sdt3j-gyvqb-fqqdt-dl4jc-lhzxy-ftkw3-bz3ul-hqe
           stake_e8s: 41666666666666
           memo: 21
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 55227900
         - controller: o25ji-4u3or-jom4x-sdt3j-gyvqb-fqqdt-dl4jc-lhzxy-ftkw3-bz3ul-hqe
           stake_e8s: 41666666666666
           memo: 22
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 57857800
         - controller: o25ji-4u3or-jom4x-sdt3j-gyvqb-fqqdt-dl4jc-lhzxy-ftkw3-bz3ul-hqe
           stake_e8s: 41666666666682
           memo: 23
-          dissolve_delay_seconds: 0
+          dissolve_delay_seconds: 2629900
           vesting_period_seconds: 60487700
         # End of o25ji-4u3or-jom4x-sdt3j-gyvqb-fqqdt-dl4jc-lhzxy-ftkw3-bz3ul-hqe neurons
         # End of Seed investor neurons
