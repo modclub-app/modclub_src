@@ -25,3 +25,9 @@ downloads_archive/
 
 #ignore gzipped files
 .gz
+
+#Ignore any generated wasms
+*.wasm
+
+#Ignore candid forlder
+candid/
