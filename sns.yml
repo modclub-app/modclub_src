@@ -3327,3 +3327,5 @@ initial_token_distribution:
           vesting_period_seconds: 60487700
         # End of o25ji-4u3or-jom4x-sdt3j-gyvqb-fqqdt-dl4jc-lhzxy-ftkw3-bz3ul-hqe neurons
         # End of Seed investor neurons
+
+restricted_countries: ["US"]
