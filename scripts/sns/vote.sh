@@ -1,7 +1,5 @@
 #!/bin/bash
-
-# Replace 'quill' with the actual command if necessary
-# Replace the path to the 'quill' command if necessary
+#remove --insecure-local-dev from all commands for mainnet, also be sure to remove ic_url
 quill_register_vote="quill sns register-vote --proposal-id 1 --vote y --canister-ids-file ./sns_canister_ids.json --pem-file ../.config/dfx/identity/$(dfx identity whoami)/identity.pem --insecure-local-dev-mode"
 quill_send="quill send --yes --insecure-local-dev-mode --pem-file ../.config/dfx/identity/$(dfx identity whoami)/identity.pem"
 export IC_URL="http://localhost:8080/"
