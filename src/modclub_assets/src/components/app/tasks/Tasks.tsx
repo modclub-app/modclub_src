@@ -70,7 +70,7 @@ const Task = ({ task, setVoted, level }) => {
           {level != "novice" && (
             <Progress
               value={Number(task.voteCount)}
-              min={Number(task.requiredVotes)}
+              min={Number(task.voteParameters.requiredVotes)}
             />
           )}
         </Card.Header>

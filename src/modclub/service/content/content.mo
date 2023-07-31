@@ -503,7 +503,6 @@ module ContentModule {
     switch (globalState.content.get(contentId)) {
       case (null) { return #err("Invalid Content") };
       case (?content) {
-        Debug.print(debug_show (content));
         let requiredVote = content.voteParameters.requiredVotes;
         let activeReservations = Utils.getNonExpiredList(content.reservedList, Helpers.timeNow());
         if (activeReservations.size() == requiredVote or Utils.isReserved(Principal.toText(caller), activeReservations)) {

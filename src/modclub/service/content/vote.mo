@@ -221,7 +221,7 @@ module ContentVotingModule {
       case (_)(throw Error.reject("Provider does not exist"));
     };
 
-    var requiredVotes = provider.settings.requiredVotes;
+    var requiredVotes = Int.abs(arg.content.voteParameters.requiredVotes);
 
     if (arg.aCount >= requiredVotes) {
       // Approved

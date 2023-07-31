@@ -11,7 +11,7 @@ import Option "mo:base/Option";
 import Timer "mo:base/Timer";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
-
+import Int "mo:base/Int";
 import GlobalState "../../statev2";
 import Helpers "../../../common/helpers";
 import Types "../../types";
@@ -258,7 +258,7 @@ module ModeratorModule {
                       voteCount.approvedCount,
                       voteCount.rejectedCount
                     );
-                    requiredVotes = provider.settings.requiredVotes;
+                    requiredVotes = Int.abs(content.voteParameters.requiredVotes);
                     minStake = provider.settings.minStaked;
                     rewardRelease = Helpers.timeNow();
                     reward = do {
