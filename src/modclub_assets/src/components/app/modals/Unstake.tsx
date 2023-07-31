@@ -1,10 +1,27 @@
 import * as React from 'react'
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
-import { icrc1Decimal, unStakeTokens } from '../../../utils/api';
+import { claimStake, icrc1Decimal, releaseStake, unStakeTokens } from '../../../utils/api';
 import PopupModal from './PopupModal';
+import { convert_to_mod, format_token, timestampToDate } from '../../../utils/util';
+import { useState } from 'react';
 
-const UpdateTable = ({ stake, amount = 0, unlocked }) => {
+const UpdateTable = ({ stake, amount = 0, tokenHoldings, lockBlock, digit, userId }) => {
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const hasLockBlock = Array.isArray(lockBlock) && lockBlock.length > 0;
+  const [releaseUnlocked, setReleaseUnlocked]= useState(false);
+  const unlockPrice = convert_to_mod(tokenHoldings.unLockedFor,digit);
+  const claimPrice = convert_to_mod(tokenHoldings.claimStakedFor,digit);
+
+  const onFormSubmit = async () => {
+    try {
+      const res = await releaseStake(tokenHoldings.unLockedFor)
+      return {reserved: unlockPrice, transfer: res};
+    } catch (error) {
+      console.error("unStake Failed:", error);
+    }
+  };
+
   return (
     <>
       <Level className="has-text-silver px-5">
@@ -12,34 +29,79 @@ const UpdateTable = ({ stake, amount = 0, unlocked }) => {
         <span className="has-text-weight-bold">{stake}</span>
       </Level>
       <Level className="has-text-silver px-5">
+        <span>Claim Stake amount: </span>
+        <span className="has-text-weight-bold">{claimPrice}</span>
+      </Level>
+      <Level className="has-text-silver px-5">
         <span>Unlock amount:</span>
-        <span className="has-text-weight-bold">{unlocked}</span>
+        <span className="has-text-weight-bold">{unlockPrice}</span>
       </Level>
       <Level className="has-text-silver px-5">
         <span>After Unstake</span>
         <span className="has-text-weight-bold">{Math.max(0, stake - amount)}</span>
       </Level>
-      <Level className="has-text-silver px-5">
-        <span>Stake will be released on</span>
-        <span className="has-text-weight-bold">9/12/2021</span>
+      {hasLockBlock && (
+        <Level className="has-text-silver px-5" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} onClick={()=>setIsHistoryOpen(!isHistoryOpen)}>
+          Show Unstake History
+          {isHistoryOpen ? <Icon style={{color:"info", alignItems:"right", fontSize: "30px", marginLeft: 'auto' }}><b>{"<"}</b></Icon> : <Icon style={{color:"info", alignItems:"right", fontSize: "35px", marginLeft: 'auto' }}><b>{">"}</b></Icon>}
+        </Level>
+      )}
+      {hasLockBlock && isHistoryOpen && (
+        <>
+          {lockBlock.map((block, index) => (
+            <Level key={index} className="has-text-silver px-5">
+                <span className="has-text-weight-bold">
+                  {convert_to_mod(block.amount, digit)}
+                </span>
+                <span className="has-text-silver px-5">
+                  MOD tokens release on 
+                </span>
+                <span className="has-text-weight-bold">
+                  {timestampToDate((Number(block.created_at_time)+Number(block.dissolveDelay)))}
+                </span>
+              </Level>
+          ))}
+        </>
+      )}
+      {tokenHoldings.unLockedFor > 0 && (
+        <Level className="has-text-silver px-5" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} onClick={()=>setReleaseUnlocked(!releaseUnlocked)}>
+        Release Unlocked Token
+        {releaseUnlocked ? <Icon style={{color:"info", alignItems:"right", fontSize: "30px", marginLeft: 'auto' }}><b>{"<"}</b></Icon> : <Icon style={{color:"info", alignItems:"right", fontSize: "35px", marginLeft: 'auto' }}><b>{">"}</b></Icon>}
       </Level>
+      )}
+      {releaseUnlocked && (
+        <PopupModal
+        title="Release Token"
+        subtitle="Congratulation!"
+        toggle={()=>{setReleaseUnlocked(!releaseUnlocked)}}
+        handleSubmit={onFormSubmit}
+        >
+          <Level className="has-text-silver px-5">
+            <span className="has-text-weight-bold">
+              {format_token(unlockPrice)}
+            </span>
+            <span className="has-text-silver px-5">
+              AMT
+            </span>
+          </Level>
+        </PopupModal>
+      )
+      }
     </>
   )
 }
 
-export default function Unstake({ toggle, tokenHoldings, onUpdate }) {  
+export default function Unstake({ toggle, tokenHoldings, userId, lockBlock, digit, onUpdate }) {  
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
-      const digit = await icrc1Decimal();
       const amounts : number = Number(amount)*Math.pow(10, Number(digit))
-      const res = await unStakeTokens(amounts);
+      const res = await claimStake(BigInt(amounts));
       return {reserved: Number(amount), transfer: res};
     } catch (error) {
       console.error("unStake Failed:", error);
     }
   };
-
   const preventMax = (e) => {
     if (parseInt(e.target.value) > tokenHoldings.stake) {
       e.target.value = tokenHoldings.stake; 
@@ -52,7 +114,8 @@ export default function Unstake({ toggle, tokenHoldings, onUpdate }) {
       subtitle="Congratulation!"
       toggle={toggle}
       handleSubmit={onFormSubmit}
-      updateTable={<UpdateTable stake={tokenHoldings.stake} unlocked = {tokenHoldings.unLockedFor}/>}
+      button1='Release Stake'
+      updateTable={<UpdateTable stake={tokenHoldings.stake} tokenHoldings = {tokenHoldings} lockBlock={lockBlock} digit={digit} userId={userId} />}
     >
       <div className="field">
         <div className="control has-icons-right">

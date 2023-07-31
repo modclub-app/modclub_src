@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { canClaimLockedReward, getEnvironmentSpecificValues, getProfileById, icrc1Balance, icrc1Decimal, lockedFor, queryRSAndLevelByPrincipal, stakeFor, unLockedFor} from "../../../utils/api";
+import { canClaimLockedReward, claimStakeFor, getEnvironmentSpecificValues, getProfileById, icrc1Balance, icrc1Decimal, lockedFor, pendingStake, queryRSAndLevelByPrincipal, stakeFor, unLockedFor} from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { Columns, Button } from "react-bulma-components";
 import walletImg from "../../../../assets/wallet.svg";
@@ -47,13 +47,16 @@ export default function Userstats({ detailed = false }) {
     stake: 0,
     wallet: 0,
     userBalance: 0,
-    unLockedFor: 0
+    unLockedFor: 0,
+    claimStakedFor: 0
   });
   const [claimRewards, setClaimRewards] = useState({
     canClaim: false,
     claimAmount: 0,
     claimPrice: 0,
   });
+
+  const [lockBlock, setLockBlock] = useState([]);
   const [performance, setPerformance] = useState<number>(0);
   const [digits, setDigits] = useState<number>(0);
   const [unlockFor, setUnlockFor] = useState<number>(0);
@@ -79,7 +82,7 @@ export default function Userstats({ detailed = false }) {
     if (identity != undefined) {
       try {
         const principalId = identity.getPrincipal().toText();
-        let perf, digit, stake, locked, bal, userBal,unlocked;
+        let perf, digit, stake, locked, bal, userBal, unlocked, pending, claimStaked;
       
         try {
           [perf, digit] = await Promise.all([
@@ -91,13 +94,14 @@ export default function Userstats({ detailed = false }) {
           console.error("Error fetching performance and digit:", error);
         }
         try {
-          [stake, locked, unlocked] = await Promise.all([
-            stakeFor(principalId).then((stake) => convert_to_mod(stake, digit)),
+          [stake, locked, unlocked, claimStaked] = await Promise.all([
+            stakeFor(principalId).then((stake) => convert_to_mod(stake, digit)).catch(error => console.error("Error fetching stake:", error)),
             lockedFor(principalId).then((locked) => {
               fetchCanClaim(Number(locked));
               return convert_to_mod(locked, digit);
-            }),
-            unLockedFor(principalId).then((unlock) => convert_to_mod(unlock, digit)),
+            }).catch(error => console.error("Error fetching locked:", error)),
+            unLockedFor(principalId).then((unlock) => unlock).catch(error => console.error("Error fetching unlocked:", error)),
+            claimStakeFor(principalId).then((claim) => claim).catch(error => console.error("Error fetching claimStaked:", error)),
           ]);
         } catch (error) {
           console.error("Error fetching stake and locked:", error);
@@ -116,12 +120,23 @@ export default function Userstats({ detailed = false }) {
         } catch (error) {
           console.error("USER PROFILE:", error);
         }
+        try {
+          [pending] = await Promise.all([
+            pendingStake(identity.getPrincipal().toText()),
+          ])
+        } catch (error) {
+          console.error("Error fetching pending stake:", error);
+        }
+        if(pending[0] != undefined){
+          setLockBlock(pending)
+        }
         setTokenHoldings({
           pendingRewards: locked,
           stake: stake,
           wallet: convert_to_mod(bal, BigInt(digit)),
           userBalance: convert_to_mod(userBal, BigInt(digit)),
-          unLockedFor: unlocked
+          unLockedFor: unlocked,
+          claimStakedFor: claimStaked
         })
         setPerformance(Number(perf.score));
         setLevel(Object.keys(perf.level)[0]);
@@ -186,10 +201,10 @@ export default function Userstats({ detailed = false }) {
           isBar={false}
         >
           <Button.Group>
-            <Button color="dark" fullwidth onClick={toggleDeposit}>
+            <Button color="dark" fullwidth onClick={toggleDeposit} disabled={holdingsUpdated}>
               Deposit
             </Button>
-            <Button color="dark" fullwidth onClick={toggleWithdraw}>
+            <Button color="dark" fullwidth onClick={toggleWithdraw} disabled={holdingsUpdated}>
               Withdraw
             </Button>
           </Button.Group>
@@ -218,10 +233,10 @@ export default function Userstats({ detailed = false }) {
           isBar={false}
         >
           <Button.Group>
-            <Button color="dark" fullwidth onClick={toggleStake}>
+            <Button color="dark" fullwidth onClick={toggleStake} disabled={holdingsUpdated}>
               Stake
             </Button>
-            <Button color="dark" fullwidth onClick={toggleUnstake}>
+            <Button color="dark" fullwidth onClick={toggleUnstake} disabled={holdingsUpdated}>
               Unstake
             </Button>
           </Button.Group>
@@ -241,7 +256,7 @@ export default function Userstats({ detailed = false }) {
             <Button
               color="dark"
               onClick={toggleClaim}
-              disabled={level == "novice" || level == "junior" }
+              disabled={level == "novice" || level == "junior" || holdingsUpdated}
             >
               Claims
             </Button>
@@ -289,6 +304,9 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleUnstake}
           tokenHoldings={tokenHoldings}
           onUpdate={() => setHoldingsUpdated(true)}
+          userId={identity.getPrincipal().toText()}
+          lockBlock={lockBlock.length > 0 ? lockBlock : []}
+          digit={digits}
         />
       )}
     </>

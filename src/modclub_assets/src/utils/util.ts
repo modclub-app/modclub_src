@@ -192,3 +192,10 @@ export function convert_to_mod(amount: bigint, digit: bigint): number {
 export function convert_from_mod(amount: bigint, digit: bigint): number {
   return Number(amount) * Math.pow(10, Number(digit));
 }
+
+export function timestampToDate(timestamp:number): any {
+  const date = new Date(timestamp/1000000);
+  const formattedDate = date.toDateString();
+  const formattedTime = date.toLocaleTimeString(); 
+  return `${formattedDate}/${formattedTime}`
+}

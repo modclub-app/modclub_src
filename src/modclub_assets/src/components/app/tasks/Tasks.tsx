@@ -13,7 +13,6 @@ import {
   Card,
   Heading,
   Button,
-  Icon,
 } from "react-bulma-components";
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";

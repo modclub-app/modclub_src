@@ -13,6 +13,7 @@ interface PopupModal {
   updateTable?: any;
   formStyle?: any;
   loader?:any;
+  button1?:string;
 }
 
 export default function PopupModal({
@@ -24,7 +25,8 @@ export default function PopupModal({
   formStyle = null,
   updateTable = null,
   footerContent = null,
-  loader = null
+  loader = null,
+  button1 = "Submit"
 }: PopupModal) {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
@@ -36,8 +38,8 @@ export default function PopupModal({
       const result = await handleSubmit(values)
       setSubmitting(false);
       if (result.transfer) {
-        if(result.transfer.Ok || result.transfer.ok){
-            setMessage({ success: true, value: `You have successfully deposit ${format_token(result.reserved)} AMT into your Mod wallet. Time to start your moderator journey with Modclub.` });
+        if(result.transfer.Ok !== undefined || result.transfer.ok !== undefined){
+          setMessage({ success: true, value: `You have successfully deposit ${format_token(result.reserved)} AMT into your Mod wallet. Time to start your moderator journey with Modclub.` });
         }else{
           setMessage({ success: false, value: `${Object.keys(result.transfer.Err || result.transfer.err)}` });            
         }
@@ -80,7 +82,7 @@ export default function PopupModal({
                   disabled={message || submitting || loader}
                   className={ (submitting || loader) && "is-loading"}
                 >
-                  Submit
+                  {button1}
                 </Button>
               </Button.Group>
             </Modal.Card.Footer>

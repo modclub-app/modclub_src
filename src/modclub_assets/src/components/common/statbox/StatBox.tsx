@@ -51,7 +51,7 @@ export const StatBox: React.FC<StatBoxProps> = ({
                 {detailed && (
                     <span className="has-text-weight-normal is-size-4 ml-4"></span>
                 )}
-                {!isBar && amount.toFixed(4)}
+                {!isBar && amount !== undefined && amount.toFixed(4)}
                 {isBar && (
                     <PowerBar
                       points={amount / 100}

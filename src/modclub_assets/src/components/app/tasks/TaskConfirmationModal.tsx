@@ -148,11 +148,14 @@ const ConfirmationModal = ({
                 id="voteIncorrectlyConfirmation"
                 label={`I understand I will lose ${task.minStake} MOD if I vote incorrectly`}
               />
-              <Confirm
+              {level !== "senior1" &&level !== "senior2" && level !== "senior3" && (<>
+                <Confirm
                 type="warning"
                 id="scoreAwarenessConfirmation"
                 label={levelMsg}
               />
+              </>)}
+              
             </Modal.Card.Body>
             <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
               <Button.Group>
