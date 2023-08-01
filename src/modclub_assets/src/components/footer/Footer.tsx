@@ -53,12 +53,18 @@ export default function Footer_() {
 
         <Level>
           <p className="has-text-silver">
-            &copy; 2021 MODCLUB. All Rights Reserved
+            &copy; MODCLUB Foundation 2023
           </p>
-          <a href="#main" className="has-text-silver">
+          <a href="#" className="has-text-silver">
             Go to the top
           </a>
         </Level>
+        <Level>
+          <p className="has-text-silver">
+          MODCLUB FOUNDATION Torre Advanced Building, 1st Floor Ricardo Arlas Street Panama City, Republic of Panama
+          </p>
+        </Level>
+
       </Container>
     </Footer>
   );

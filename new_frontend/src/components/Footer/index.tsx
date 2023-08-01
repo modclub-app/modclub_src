@@ -61,7 +61,7 @@ export default function Footer() {
           className={`p-10 mt-5 text-xl mx-auto md:text-center md:flex justify-center md:justify-between text-white ${Styles.container}`}
         >
           <Link href="#header-section" onClick={handleScroll}>
-            Modclub 2023
+            &copy; MODCLUB Foundation 2023
           </Link>
           <div className="flex gap-x-6 w-1/3 flex-wrap md:justify-center mt-8 mb-10 md:my-0">
             <Link
@@ -92,6 +92,12 @@ export default function Footer() {
           >
             Privacy Policy
           </Link>
+        </div>
+        <div
+          className={`p-10 mt-5 text-xl mx-auto md:text-center md:flex justify-center md:justify-between text-white ${Styles.container}`}
+        >
+          MODCLUB FOUNDATION Torre Advanced Building, 1st Floor Ricardo Arlas
+          Street Panama City, Republic of Panama
         </div>
       </div>
     </footer>
