@@ -55,6 +55,21 @@
   "rs_qa": {
     "ic": "vmikw-4aaaa-aaaah-qc7xa-cai"
   },
+  "sns_governance": {
+    "ic": "wyhyp-aiaaa-aaaaq-aabcq-cai"
+  },
+  "sns_index": {
+    "ic": "x3lrj-uqaaa-aaaaq-aabea-cai"
+  },
+  "sns_ledger": {
+    "ic": "wrett-waaaa-aaaaq-aabda-cai"
+  },
+  "sns_root": {
+    "ic": "w7g63-nqaaa-aaaaq-aabca-cai"
+  },
+  "sns_swap": {
+    "ic": "wwfvh-3yaaa-aaaaq-aabdq-cai"
+  },
   "vesting": {
     "ic": "g7xs6-aiaaa-aaaah-qdbpq-cai"
   },
