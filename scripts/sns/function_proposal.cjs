@@ -1,7 +1,7 @@
 const path = require("path");
 const readline = require("readline");
 const { spawn } = require("child_process");
-const { developerNeuronId, pemFilePath } = require("./snsConfig.cjs");
+const { developerNeuronId, pemFilePath } = require("./sns_config.cjs");
 const canisterIds = require(path.join(
   process.cwd(),
   "./.dfx/local/canister_ids.json"

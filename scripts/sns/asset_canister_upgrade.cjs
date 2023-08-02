@@ -1,8 +1,9 @@
 const readline = require("readline");
-const { spawn, exec } = require("child_process");
-const { developerNeuronId, pemFilePath } = require("./snsConfig.cjs");
+const { spawn } = require("child_process");
+const { developerNeuronId, pemFilePath } = require("./sns_config.cjs");
+const path = require("path");
 
-async function prompt(question) {
+async function prompt(question, defaultValue = "") {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -10,7 +11,7 @@ async function prompt(question) {
 
   return new Promise((resolve) => {
     rl.question(question, (answer) => {
-      resolve(answer);
+      resolve(answer || defaultValue);
       rl.close();
     });
   });
@@ -43,10 +44,22 @@ const snsCanisterIdsFile = "./sns_canister_ids.json";
   const network = await prompt(
     '🌐 Do you want to execute function on local or ic? (Enter "local" or "ic"): '
   );
-  const functionId = (await prompt("🔖 Enter the Function ID: ")).trim();
-  const argument = (
-    await prompt("🔖 Enter the function argument (if none, press enter): ")
+  const functionId = (
+    await prompt(
+      "🔖 Enter the commit_batch Function ID (from function proposal): "
+    )
   ).trim();
+  const batch_id = (await prompt("🔖 Enter the batch id: ")).trim();
+  const evidence = (await prompt("🔖 Enter the evidence: ")).trim();
+  const url = await prompt(
+    "🔖 Enter a URL or hit enter for https://modclub.ai: ",
+    "https://modclub.ai"
+  );
+
+  // Prepare evidence and batch_id
+  const formattedEvidence = `blob "\\${evidence.match(/.{1,2}/g).join("\\")}"`;
+  const argument = `(record {batch_id=${batch_id}:nat; evidence= ${formattedEvidence}})`;
+
   const argumentEncoded = await execShellCommand(
     `didc encode '(${argument})' --format blob`
   );
@@ -55,8 +68,7 @@ const snsCanisterIdsFile = "./sns_canister_ids.json";
     console.log("🚀 Preparing function execution proposal...");
     const payload = argumentEncoded;
 
-    console.log("🚀 Preparing function execution proposal...");
-    const proposalStr = `(record { title="Execute function with ID ${functionId}."; url="https://example.com/"; summary="This proposal executes function with ID ${functionId}."; action=opt variant {ExecuteGenericNervousSystemFunction = record {function_id=${functionId}:nat64; payload=${payload}}}})`;
+    const proposalStr = `(record { title="Execute function with ID ${functionId}."; url="${url}"; summary="This proposal executes function with ID ${functionId}, to upgrade the assets canister."; action=opt variant {ExecuteGenericNervousSystemFunction = record {function_id=${functionId}:nat64; payload=${payload}}}})`;
     const escapedProposalStr = proposalStr.replace(/"/g, '\\"');
 
     const executeCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-proposal --proposal "${escapedProposalStr}" ${developerNeuronId} > execute-function-${functionId}.json`;
@@ -73,6 +85,5 @@ const snsCanisterIdsFile = "./sns_canister_ids.json";
     );
   } catch (err) {
     console.error("❌ Error:", err);
-    console.log("debug proposal: ", executeCommand);
   }
 })();

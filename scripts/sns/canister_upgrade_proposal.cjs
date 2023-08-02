@@ -5,7 +5,7 @@ const {
   developerNeuronId,
   pemFilePath,
   canisterCommands,
-} = require("./snsConfig.cjs");
+} = require("./sns_config.cjs");
 const canisterIds = require(path.join(
   process.cwd(),
   ".dfx/local/canister_ids.json"
@@ -99,7 +99,6 @@ function execShellCommand(cmd) {
   const vestingCanisterId = getCanisterId("vesting");
 
   const upgradeArg = `record { modclub_canister_id = principal \\"${modclubCanisterId}\\"; old_modclub_canister_id = principal \\"t6rzw-2iaaa-aaaaa-aaama-cai\\"; rs_canister_id = principal \\"${rsCanisterId}\\"; wallet_canister_id = principal \\"${walletCanisterId}\\"; auth_canister_id = principal \\"${authCanisterId}\\"; vesting_canister_id = principal \\"${vestingCanisterId}\\"; }`;
-  
 
   try {
     console.log("🚀 Preparing upgrade proposal...");

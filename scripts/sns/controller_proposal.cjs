@@ -4,7 +4,7 @@ const {
   developerNeuronId,
   pemFilePath,
   canisterCommands,
-} = require("./snsConfig.cjs");
+} = require("./sns_config.cjs");
 
 function prompt(question) {
   const rl = readline.createInterface({

@@ -33,4 +33,4 @@ else
   sudo sns-cli deploy-testflight --init-config-file ./sns.yml --network local
 fi
 
-echo "Record the developer neuronID and update snsConfig.cjs 👆"
+echo "Record the developer neuronID and update sns_config.cjs 👆"

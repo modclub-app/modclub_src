@@ -19,12 +19,12 @@ else
     exit 1
 fi
 
-"$DIR/snsCanisters.sh" "$@"
+"$DIR/sns_canisters.sh" "$@"
 
 if [ $? -eq 0 ]; then
-    echo "snsCanisters.sh ran successfully."
+    echo "sns_canisters.sh ran successfully."
 else
-    echo "snsCanisters.sh encountered an error."
+    echo "sns_canisters.sh encountered an error."
     exit 1
 fi
 
