@@ -38,9 +38,16 @@
       "type": "assets"
     },
     "wallet": {
-      "type": "custom",
+      "build": "",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
-      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
+      "remote": {
+        "id": {
+          "ic": "wrett-waaaa-aaaaq-aabda-cai",
+          "local": "r7inp-6aaaa-aaaaa-aaabq-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
     },
     "wallet_qa": {
       "type": "custom",
