@@ -28,7 +28,7 @@ function check_stage_vesting_block() {
 
 	local assert_zero_balance="(0 : nat)"
 
-  local locked_before=$(dfx canister call vesting_qa locked_for '(record { owner = principal "'$TEST_J_MODERATOR_PRINCIPAL'" })')
+  	local locked_before=$(dfx canister call vesting_qa locked_for '(record { owner = principal "'$TEST_J_MODERATOR_PRINCIPAL'" })')
 	local stage_result1=$(dfx canister call vesting_qa stage_vesting_block '(record { owner = principal "'$TEST_J_MODERATOR_PRINCIPAL'" }, 10_000_000 )')
 	local stage_result2=$(dfx canister call vesting_qa stage_vesting_block '(record { owner = principal "'$TEST_J_MODERATOR_PRINCIPAL'" }, 10_000_000 )')
 	local locked_after=$(dfx canister call vesting_qa locked_for '(record { owner = principal "'$TEST_J_MODERATOR_PRINCIPAL'" })')

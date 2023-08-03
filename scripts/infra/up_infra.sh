@@ -24,10 +24,18 @@ function create_qa_canisters() {
 }
 
 function deploy_wallet_canister() {
-	dfx identity use default && dfx identity new qa_ledger_minter && dfx identity use qa_ledger_minter || dfx identity use qa_ledger_minter
-	local qa_minter_principal=$(dfx identity get-principal)
-	dfx identity use default && dfx identity new qa_ledger_identity && dfx identity use qa_ledger_identity || dfx identity use qa_ledger_identity
-	local qa_ledger_principal=$(dfx identity get-principal)
+  dfx identity use default 
+	if ! dfx identity use qa_ledger_minter >/dev/null 2>&1; then
+		dfx identity new qa_ledger_minter --disable-encryption
+		dfx identity use qa_ledger_minter
+	fi
+
+  local qa_minter_principal=$(dfx identity get-principal)
+	if ! dfx identity use qa_ledger_identity >/dev/null 2>&1; then
+		dfx identity new qa_ledger_identity --disable-encryption
+		dfx identity use qa_ledger_identity
+	fi
+  local qa_ledger_principal=$(dfx identity get-principal)
   dfx identity use default
 
   local ARCHIVE_CONTROLLER=$(dfx identity get-principal)
