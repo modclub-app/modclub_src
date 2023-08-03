@@ -65,9 +65,26 @@ import {
   idlFactory as WalletQAIdl,
 } from "../../../declarations/wallet_qa";
 import { RSAndLevel } from "../../../declarations/rs/rs.did";
-import { canisterId as VestingCanisterID, createActor as VestingCreateActor, idlFactory as VestingIdl } from "../../../declarations/vesting";
-import { canisterId as VestingQACanisterID, createActor as VestingQACreateActor, idlFactory as VestingQAIdl } from "../../../declarations/vesting_qa";
-import { canisterId as VestingDEVCanisterID, createActor as VestingDEVCreateActor, idlFactory as VestingDEVIdl } from "../../../declarations/vesting_dev";
+import {
+  canisterId as VestingCanisterID,
+  createActor as VestingCreateActor,
+  idlFactory as VestingIdl,
+} from "../../../declarations/vesting";
+import {
+  canisterId as VestingQACanisterID,
+  createActor as VestingQACreateActor,
+  idlFactory as VestingQAIdl,
+} from "../../../declarations/vesting_qa";
+import {
+  canisterId as VestingDEVCanisterID,
+  createActor as VestingDEVCreateActor,
+  idlFactory as VestingDEVIdl,
+} from "../../../declarations/vesting_dev";
+import {
+  canisterId as WalletDEVCanisterID,
+  createActor as WalletDEVCreateActor,
+  idlFactory as WalletDEVIdl,
+} from "../../../declarations/wallet_dev";
 import { HttpAgent, Identity } from "@dfinity/agent";
 import { authClient } from "./authClient";
 import { StoicIdentity } from "ic-stoic-identity";
@@ -331,7 +348,7 @@ export async function getProvider(
 
 export async function getProviderSa(
   providerId: Principal,
-  sub? : string
+  sub?: string
 ): Promise<ProviderPlus> {
   return (await getMC()).getProviderSa(sub ? sub : "RESERVE", [providerId]);
 }
@@ -608,40 +625,55 @@ export async function canReserveContent(contentId: string): Promise<any> {
 }
 
 //DEPOSIT PROVIDER
-export async function icrc1Balance(userId: string, subAcc? : Subaccount): Promise<bigint> {
-  return trace_error(async () => 
-  await (await getWallet()).icrc1_balance_of({owner: Principal.fromText(userId), subaccount: subAcc && subAcc.length > 0 ? [subAcc] : [] }));
+export async function icrc1Balance(
+  userId: string,
+  subAcc?: Subaccount
+): Promise<bigint> {
+  return trace_error(
+    async () =>
+      await (
+        await getWallet()
+      ).icrc1_balance_of({
+        owner: Principal.fromText(userId),
+        subaccount: subAcc && subAcc.length > 0 ? [subAcc] : [],
+      })
+  );
 }
 export async function icrc1Decimal(): Promise<bigint> {
   return trace_error(async () => await (await getWallet()).icrc1_decimals());
 }
 
-export async function icrc1Transfer(amount: bigint, userId: Principal, subAcc?: Subaccount, from?: Subaccount): Promise<any> {
+export async function icrc1Transfer(
+  amount: bigint,
+  userId: Principal,
+  subAcc?: Subaccount,
+  from?: Subaccount
+): Promise<any> {
   return trace_error(async () => {
-    const acc: Account = {owner: userId, subaccount: subAcc ? [subAcc]: []}
-    const input : any = {
-      to:  acc,
+    const acc: Account = { owner: userId, subaccount: subAcc ? [subAcc] : [] };
+    const input: any = {
+      to: acc,
       fee: [],
       memo: [],
-      from_subaccount: from ? [from]: [],
+      from_subaccount: from ? [from] : [],
       created_at_time: [],
       amount: amount,
-    }
-    if(walletToUse === "ii" || walletToUse === "stoic"){
+    };
+    if (walletToUse === "ii" || walletToUse === "stoic") {
       try {
-        const res = await (await getWallet()).icrc1_transfer(input)
-        return res
+        const res = await (await getWallet()).icrc1_transfer(input);
+        return res;
       } catch (error) {
         console.error("Transfer Failed:", error);
-        return ;
+        return;
       }
-    }else {
+    } else {
       try {
-        const res = await (await getWallet()).icrc1_transfer(input)
-        return res
+        const res = await (await getWallet()).icrc1_transfer(input);
+        return res;
       } catch (error) {
         console.error("Transfer Failed:", error);
-        return ;
+        return;
       }
     }
   });
@@ -690,17 +722,18 @@ export async function unLockedFor(userId: string): Promise<bigint> {
   return trace_error(async () => {
     let res = await (
       await getVesting()
-    ).unlocked_stakes_for({ owner: Principal.fromText(userId), subaccount: [] });
+    ).unlocked_stakes_for({
+      owner: Principal.fromText(userId),
+      subaccount: [],
+    });
     return res;
   });
 }
 
 export async function claimStake(amount: bigint): Promise<bigint> {
   return trace_error(async () => {
-    let res = await (
-      await getMC()
-    ).claimStakedTokens(amount).catch((e)=>{
-      console.log("Unstake Claim error:",e);
+    let res = await (await getMC()).claimStakedTokens(amount).catch((e) => {
+      console.log("Unstake Claim error:", e);
     });
     return res;
   });
@@ -710,15 +743,15 @@ export async function claimStakeFor(userId: string): Promise<bigint> {
   return trace_error(async () => {
     let res = await (
       await getVesting()
-    ).claimed_stakes_for({ owner: Principal.fromText(userId), subaccount: [] })
+    ).claimed_stakes_for({ owner: Principal.fromText(userId), subaccount: [] });
     return res;
   });
 }
 
 export async function releaseStake(amount: bigint): Promise<bigint> {
   return trace_error(async () => {
-    let res = await (await getMC()).releaseTokens(amount).catch((e)=>{
-      console.log("Unstake Release error:",e);
+    let res = await (await getMC()).releaseTokens(amount).catch((e) => {
+      console.log("Unstake Release error:", e);
     });
     return res;
   });
@@ -733,20 +766,34 @@ export async function pendingStake(userId: string): Promise<bigint> {
   });
 }
 
-export async function unlock_staking(userId: string, amount: number): Promise<bigint> {
+export async function unlock_staking(
+  userId: string,
+  amount: number
+): Promise<bigint> {
   return trace_error(async () => {
-    let res = await (
-      await getVesting()
-    ).unlock_staking({ owner: Principal.fromText(userId), subaccount: [] }, BigInt(amount)).catch((e)=>{
-      console.log("Unstake Release error:",e);
-    });
+    let res = await (await getVesting())
+      .unlock_staking(
+        { owner: Principal.fromText(userId), subaccount: [] },
+        BigInt(amount)
+      )
+      .catch((e) => {
+        console.log("Unstake Release error:", e);
+      });
     return res;
   });
 }
 
-export async function withdrawModeratorReward(amount: bigint,receiver?: string): Promise<bigint> {
-  return trace_error(async()=>{ 
-    let res = await (await getMC()).withdrawModeratorReward(amount, receiver ? [Principal.fromText(receiver)]: []);
-    return res
+export async function withdrawModeratorReward(
+  amount: bigint,
+  receiver?: string
+): Promise<bigint> {
+  return trace_error(async () => {
+    let res = await (
+      await getMC()
+    ).withdrawModeratorReward(
+      amount,
+      receiver ? [Principal.fromText(receiver)] : []
+    );
+    return res;
   });
 }
