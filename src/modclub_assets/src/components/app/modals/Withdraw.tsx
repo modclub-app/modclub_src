@@ -55,6 +55,7 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
       subtitle="Congratulation!"
       updateTable={<UpdateTable wallet={userTokenBalance} />}
     >
+<label className="label">Enter your wallet address: </label>
       <div className="field">
         <div className="control">
           <Field
@@ -67,6 +68,18 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
           />
         </div>
       </div>
+
+<label className="label">Enter your withdraw amount:</label>
+<Field
+  validate={value => {
+    if (isNaN(value) || Number(value) <= 0) {
+      return 'Please enter a positive number';
+    }
+    if (Number(value) > userTokenBalance) {
+      return 'Insufficient balance';
+    }
+  }}
+/>
       <div className="field">
         <div className="control has-icons-right">
           <Field
