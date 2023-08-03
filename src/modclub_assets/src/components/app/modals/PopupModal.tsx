@@ -39,7 +39,17 @@ export default function PopupModal({
       setSubmitting(false);
       if (result.transfer) {
         if(result.transfer.Ok !== undefined || result.transfer.ok !== undefined){
-          setMessage({ success: true, value: `You have successfully deposit ${format_token(result.reserved)} AMT into your Mod wallet. Time to start your moderator journey with Modclub.` });
+          if(title.toLowerCase() == "deposit"){
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT into your Mod wallet. Time to start your moderator journey with Modclub.` });
+          }else if (title.toLowerCase() == "withdraw"){
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT back into your own wallet.` });
+          }else if (title.toLowerCase() == "unstake"){
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT back into your locked wallet that you can release within 7days.` });
+          }else if (title.toLowerCase() == "claim"){
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT back into your locked wallet that you can release within 7days.` });
+          }else {
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT.` })
+          }
         }else{
           setMessage({ success: false, value: `${Object.keys(result.transfer.Err || result.transfer.err)}` });            
         }
