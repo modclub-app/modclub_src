@@ -996,7 +996,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#ok(p)) p;
       case (_)(throw Error.reject("Moderator does not exist"));
     };
-    let moderatorSubAcc = { owner = Principal.fromActor(this); subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE") };
+    let moderatorSubAcc = {
+      owner = Principal.fromActor(this);
+      subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+    };
     let moderatorAcc = { owner = caller; subaccount = null };
     switch (await ledger.icrc1_balance_of(moderatorSubAcc)) {
       case (tokensAvailable) {
@@ -2372,13 +2375,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         throw Error.reject("Unable to find user with principal::" # Principal.toText(caller));
       };
     };
-    let reserveSubAcc = switch (moderatorSubAccs.get("ACCOUNT_PAYABLE")) {
+    let pSubAcc = switch (moderatorSubAccs.get("ACCOUNT_PAYABLE")) {
       case (?reserveSA) ?reserveSA;
       case (_) {
         throw Error.reject("No AP subaccount for moderator::" # Principal.toText(caller));
       };
     };
 
+    let fee = await ledger.icrc1_fee();
     let unlockedAmount = await vestingActor.unlocked_stakes_for(moderatorAcc);
     if (unlockedAmount < amount) {
       return throw Error.reject("Withdraw amount cant be more than unlocked amount of tokens.");
@@ -2386,27 +2390,32 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     let releaseStakeTransfer = await ledger.icrc1_transfer({
       from_subaccount = ?Constants.ICRC_STAKING_SA;
-      to = { owner = modclubPrincipal; subaccount = reserveSubAcc };
-      amount;
-      fee = null;
+      to = { owner = modclubPrincipal; subaccount = pSubAcc };
+      amount = (amount - fee);
+      fee = ?fee;
       memo = null;
       created_at_time = null;
     });
-
     switch (releaseStakeTransfer) {
       case (#Ok(txIndex)) {
         let release = await vestingActor.release_staking(moderatorAcc, amount);
         switch (release) {
-          case (#Ok(res)) {
+          case (#ok(res)) {
             #Ok(txIndex);
           };
-          case (#Err(e)) {
+          case (#err(e)) {
             return throw Error.reject("Can't withdraw unlocked amount of tokens.");
+          };
+          case (_) {
+            return throw Error.reject("UNKNOWN PATTERN FOR release_staking result");
           };
         };
       };
-      case (#Ok(txIndex)) {
-        return throw Error.reject("Can't withdraw unlocked amount of tokens.");
+      case (#Err(e)) {
+        return throw Error.reject("Can't withdraw unlocked amount of tokens." # debug_show e);
+      };
+      case (_) {
+        return throw Error.reject("UNKNOWN PATTERN FOR releaseStakeTransfer result");
       };
     };
   };
@@ -2421,7 +2430,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let claimStaked = await vestingActor.claim_staking(moderatorAcc, amount);
 
     ignore Timer.setTimer(
-      #seconds(Constants.VESTING_DISSOLVE_DELAY_SECONDS + 10),
+      #seconds(Constants.VESTING_DISSOLVE_DELAY_SECONDS + 1),
       func() : async () {
         let releaseStaked = await vestingActor.unlock_staking(moderatorAcc, amount);
       }

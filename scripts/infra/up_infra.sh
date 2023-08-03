@@ -34,7 +34,7 @@ function deploy_wallet_canister() {
   local TOKEN_NAME="Modclub_test_token"
   local TOKEN_SYMBOL=MODT
 
-  dfx deploy wallet_qa --mode=reinstall --argument '(variant { Init = 
+  dfx deploy wallet_qa --argument '(variant { Init = 
       record {
         token_name = "'${TOKEN_NAME}'";
         token_symbol = "'${TOKEN_SYMBOL}'";

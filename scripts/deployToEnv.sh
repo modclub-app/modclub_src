@@ -83,7 +83,7 @@ function get_env_canisters() {
     vesting_canister_name="vesting"
   fi
 
-  local wallet_canister_id=$(dfx canister id ${modclub_canister_name} --network=${DEPLOY_NETWORK})
+  local wallet_canister_id=$(dfx canister id ${wallet_canister_name} --network=${DEPLOY_NETWORK})
 
   if [ "$wallet_canister" != "" ]; then
     wallet_canister_id=$wallet_canister
@@ -119,8 +119,8 @@ function deploy_canisters() {
   local modclub_canister_name="modclub_${env}"
   local wallet_canister_name="wallet_${env}"
   local assets_canister_name="modclub_${env}_assets"
-  local ledger_principal=""
-  local minter_principal=""
+  # local ledger_principal=""
+  # local minter_principal=""
 
   if [ "$env" == "prod" ]; then
     auth_canister_name="auth"
@@ -130,15 +130,15 @@ function deploy_canisters() {
     assets_canister_name="modclub_assets"
   fi
 
-  if [ "$env" == "qa" ]; then
-    ledger_principal=$qa_ledger_principal
-    minter_principal=$qa_minter_principal
-  fi
+  # if [ "$env" == "qa" ]; then
+  #   ledger_principal=$qa_ledger_principal
+  #   minter_principal=$qa_minter_principal
+  # fi
 
   log "Deploy ${env} Canisters..."
 
   dfx deploy ${auth_canister_name} --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
-  deploy_wallet_canister $env -ledger_principal $ledger_principal -minter $minter_principal &&
+  deploy_wallet_canister $env &&
   deploy_vesting_canister $env &&
 
   dfx deploy ${rs_canister_name} --network=${DEPLOY_NETWORK} --argument="($local_env)" &&

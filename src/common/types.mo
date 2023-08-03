@@ -26,6 +26,7 @@ module {
     locked_for : (ICRCTypes.Account) -> async Nat;
     staked_for : (ICRCTypes.Account) -> async Nat;
     unlocked_stakes_for : (ICRCTypes.Account) -> async Nat;
+    claimed_stakes_for : (ICRCTypes.Account) -> async Nat;
   };
 
   public type AuthActorType = actor {

@@ -6,6 +6,7 @@ import Option "mo:base/Option";
 import Error "mo:base/Error";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
+import Nat "mo:base/Nat";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import Debug "mo:base/Debug";
@@ -125,7 +126,7 @@ module ModclubVestingLedger = {
         operation = #StakingDissolve;
         amount;
         rewardsAmount = null;
-        dissolveDelay = ?Nat64.fromNat(Constants.VESTING_DISSOLVE_DELAY_SECONDS);
+        dissolveDelay = ?Nat64.fromNat(Nat.mul(Constants.VESTING_DISSOLVE_DELAY_SECONDS, 1000000000));
         created_at_time = now;
       };
       logs.staking.add(block);
@@ -175,7 +176,7 @@ module ModclubVestingLedger = {
               case (#StakingLock) {
                 sum += block.amount;
               };
-              case (#StakingDissolve or #StakingUnlock or #StakingRelease) {
+              case (#StakingDissolve) {
                 sum -= block.amount;
               };
               case (_) {};
@@ -196,7 +197,7 @@ module ModclubVestingLedger = {
               case (#StakingDissolve) {
                 sum += block.amount;
               };
-              case (#StakingUnlock or #StakingRelease) {
+              case (#StakingUnlock) {
                 sum -= block.amount;
               };
               case (_) {};
@@ -225,7 +226,7 @@ module ModclubVestingLedger = {
                   sum += block.amount;
                 };
               };
-              case (#StakingUnlock or #StakingRelease) {
+              case (#StakingUnlock) {
                 sum -= block.amount;
               };
               case (_) {};
