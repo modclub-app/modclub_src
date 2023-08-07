@@ -21,6 +21,7 @@ module {
     adminsByProvider : [ProviderAdmins];
     moderators : [OldModeratorLeaderboard];
     approvedPOHUsers : [(Principal, Principal)];
+    userPoints : [(Principal, Int)];
   };
 
   public type ProviderAdmins = {
