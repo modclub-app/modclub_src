@@ -70,16 +70,6 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
       </div>
 
 <label className="label">Enter your withdraw amount:</label>
-<Field
-  validate={value => {
-    if (isNaN(value) || Number(value) <= 0) {
-      return 'Please enter a positive number';
-    }
-    if (Number(value) > userTokenBalance) {
-      return 'Insufficient balance';
-    }
-  }}
-/>
       <div className="field">
         <div className="control has-icons-right">
           <Field
@@ -89,6 +79,13 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
             className="input"
             initialValue={userTokenBalance}
             onInput={preventMax}
+            validate={value => {
+              if (isNaN(value) || Number(value) <= 0) {
+                return 'Please enter a positive number';
+              }
+              if (Number(value) > userTokenBalance) {
+                return 'Insufficient balance';
+              }}}
           />
           <Icon align="right" color="white" className="mr-4">
             AMT

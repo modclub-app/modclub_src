@@ -266,7 +266,6 @@ module {
     id : UserId;
     userName : Text;
     email : Text;
-    pic : ?Image;
     role : Role;
     createdAt : Timestamp;
     updatedAt : Timestamp;
@@ -276,7 +275,6 @@ module {
     id : UserId;
     userName : Text;
     email : Text;
-    pic : ?Image;
     role : Role;
     subaccounts : [(Text, Blob)];
     createdAt : Timestamp;

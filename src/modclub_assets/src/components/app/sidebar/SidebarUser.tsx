@@ -41,8 +41,7 @@ const DropdownLabel = ({ pic, user, toggle }) => {
 
 export default function SidebarUser() {
   const { user, logOut, identity } = useAuth();
-  const imgData = unwrap(user.pic);
-  const pic = imgData ? fileToImgSrc(imgData.data, imgData.imageType) : placeholder;
+  const pic = placeholder;
 
   const [showDropdown, setShowDropdown] = useState(false);
   const toggle = () => {

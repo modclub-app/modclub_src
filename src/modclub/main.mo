@@ -761,8 +761,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   // ----------------------Moderator Methods------------------------------
   public shared ({ caller }) func registerModerator(
     userName : Text,
-    email : ?Text,
-    pic : ?Types.Image
+    email : ?Text
   ) : async Types.ProfileStable {
     let subAccs = HashMap.fromIter<Text, Blob>(
       (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
@@ -775,7 +774,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       caller,
       userName,
       email,
-      pic,
       stateV2,
       subAccs
     );
@@ -793,7 +791,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           id = p.id;
           userName = p.userName;
           email = p.email;
-          pic = p.pic;
           role = p.role;
           subaccounts = Iter.toArray(p.subaccounts.entries());
           createdAt = p.createdAt;
@@ -817,7 +814,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           id = p.id;
           userName = p.userName;
           email = "";
-          pic = p.pic;
           role = p.role;
           subaccounts = Iter.toArray(p.subaccounts.entries());
           createdAt = p.createdAt;
@@ -842,7 +838,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           id = p.id;
           userName = p.userName;
           email = "";
-          pic = p.pic;
           role = p.role;
           subaccounts = Iter.toArray(p.subaccounts.entries());
           createdAt = p.createdAt;
@@ -2071,7 +2066,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         id = p.id;
         userName = p.userName;
         email = "";
-        pic = p.pic;
         role = p.role;
         subaccounts = Iter.toArray(p.subaccounts.entries());
         createdAt = p.createdAt;
@@ -2842,7 +2836,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         let profile = await ModeratorManager.registerModerator(
           moderator.id,
           moderator.userName,
-          null,
           null,
           stateV2,
           subAccs

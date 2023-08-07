@@ -221,15 +221,12 @@ async function trace_error(_trace: any) {
 export async function registerModerator(
   username: string,
   email?: string,
-  imageData?: ImageData
 ): Promise<ProfileStable> {
-  const imgResult = null;
   try {
     const _mc = await getMC();
     const response = await _mc.registerModerator(
       username,
-      email ? [email] : [],
-      imgResult ? [imgResult] : []
+      email ? [email] : []
     );
     return response;
   } catch (e) {

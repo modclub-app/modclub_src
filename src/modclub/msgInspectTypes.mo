@@ -71,7 +71,7 @@ module {
     #pohCallbackForModclub : () -> PohTypes.PohVerificationResponsePlus;
     #populateChallenges : () -> ();
     #registerAdmin : () -> Principal;
-    #registerModerator : () -> (Text, ?Text, ?Types.Image);
+    #registerModerator : () -> (Text, ?Text);
     #setLambdaToken : () -> (Text);
     #registerProvider : () -> (Text, Text, ?Types.Image);
     #registerUserToReceiveAlerts : () -> (Principal, Bool);

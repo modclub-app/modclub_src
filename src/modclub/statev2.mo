@@ -276,7 +276,6 @@ module StateV1 {
         id = p.id;
         userName = p.userName;
         email = p.email;
-        pic = p.pic;
         role = p.role;
         subaccounts = Iter.toArray(p.subaccounts.entries());
         createdAt = p.createdAt;
@@ -364,7 +363,6 @@ module StateV1 {
         id = profile.id;
         userName = profile.userName;
         email = profile.email;
-        pic = profile.pic;
         role = profile.role;
         subaccounts = HashMap.HashMap<Text, Blob>(2, Text.equal, Text.hash);
         createdAt = profile.createdAt;

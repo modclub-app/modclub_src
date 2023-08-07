@@ -62,7 +62,6 @@ module ModeratorModule {
     moderatorId : Principal,
     userName : Text,
     email : ?Text,
-    pic : ?Types.Image,
     state : GlobalState.State,
     subAccs : HashMap.HashMap<Text, Blob>
   ) : async Types.ProfileStable {
@@ -81,7 +80,6 @@ module ModeratorModule {
             let profile : Types.Profile = {
               id = moderatorId;
               userName = _userName;
-              pic = pic;
               role = #moderator;
               email = _email;
               subaccounts = subAccs;
@@ -92,7 +90,6 @@ module ModeratorModule {
             return {
               id = moderatorId;
               userName = _userName;
-              pic = pic;
               role = #moderator;
               email = _email;
               subaccounts = [];
@@ -125,7 +122,6 @@ module ModeratorModule {
         let profile : Types.Profile = {
           id = result.id;
           userName = result.userName;
-          pic = result.pic;
           role = result.role;
           subaccounts = result.subaccounts;
           email = newEmail;
@@ -145,7 +141,6 @@ module ModeratorModule {
         id = p.id;
         userName = p.userName;
         email = "";
-        pic = p.pic;
         role = p.role;
         subaccounts = Iter.toArray(p.subaccounts.entries());
         createdAt = p.createdAt;
