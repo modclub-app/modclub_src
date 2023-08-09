@@ -8,6 +8,7 @@ import AdminIdentity from "./AdminIdentity";
 import Privacy from "./Privacy";
 import Terms from "./Terms";
 import HowTo from "./HowTo";
+import Logout from "../auth/Logout";
 
 export default function External() {
   return (
@@ -15,6 +16,7 @@ export default function External() {
       <Header />
       <Switch>
         <Route exact path="/" component={Home} />
+        <Route path="/logout" component={Logout} />
         <Route path="/signup" component={NewProfile} />
         <Route path="/new-poh-profile" component={NewPohProfile} />
         <Route path="/admin-identity" component={AdminIdentity} />

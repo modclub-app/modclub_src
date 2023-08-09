@@ -15,6 +15,7 @@ import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
 import { Activity } from "../../../utils/types";
+import { useProfile } from "../../../utils/profile";
 
 const Table = ({
   loading,
@@ -95,7 +96,8 @@ const Table = ({
 };
 
 export default function Activity() {
-  const { user, identity } = useAuth();
+  const { identity } = useAuth();
+  const { user } = useProfile();
   const [completedActivity, setCompletedActivity] = useState<Activity[]>([]);
   const [inProgressActivity, setInProgressActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

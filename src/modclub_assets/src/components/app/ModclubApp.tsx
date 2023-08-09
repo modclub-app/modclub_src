@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
+import { Switch, Route, useHistory, useLocation } from "react-router-dom";
 import { Columns } from "react-bulma-components";
-import NotAuthenticatedModal from './modals/NotAuthenticated';
-import UserIncompleteModal from './modals/UserIncompleteModal';
+import NotAuthenticatedModal from "./modals/NotAuthenticated";
+import UserIncompleteModal from "./modals/UserIncompleteModal";
 import Sidebar from "./sidebar/Sidebar";
 import Footer from "../footer/Footer";
 import Tasks from "./tasks/Tasks";
@@ -21,12 +21,18 @@ import AdminActivity from "./admin/RecentActivities";
 import { useAuth } from "../../utils/auth";
 import { verifyUserHumanity } from "../../utils/api";
 import { refreshJwt } from "../../utils/jwt";
-
-import { getUserFromCanister } from "../../utils/api";
+import { useProfile } from "../../utils/profile";
 
 export default function ModclubApp() {
   const history = useHistory();
-  const { isAuthenticated, isAuthReady, user, selectedProvider, providerIdText, providers, setSelectedProvider } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const {
+    user,
+    providerIdText,
+    providers,
+    selectedProvider,
+    setSelectedProvider,
+  } = useProfile();
   const [status, setStatus] = useState(null);
   const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([]);
   const [token, setToken] = useState(null);
@@ -44,7 +50,7 @@ export default function ModclubApp() {
     const token = result?.token;
     setToken(token);
 
-    if (status == "verified" && await refreshJwt()) {
+    if (status == "verified" && (await refreshJwt())) {
       setJwt(true);
     }
   };
@@ -59,22 +65,32 @@ export default function ModclubApp() {
     }
   }, [user, isAuthenticated]);
   const location = useLocation();
-  const displayVerificationEmail = location.pathname.startsWith('/app/confirm/poh/alerts/');
-
-  if (isAuthReady && !isAuthenticated) return (
-    displayVerificationEmail ? <AlertConfirmation /> : <NotAuthenticatedModal />
+  const displayVerificationEmail = location.pathname.startsWith(
+    "/app/confirm/poh/alerts/"
   );
+
+  if (!isAuthenticated)
+    return displayVerificationEmail ? (
+      <AlertConfirmation />
+    ) : (
+      <NotAuthenticatedModal />
+    );
 
   return (
     <>
-      {user && status && status != "verified" && !selectedProvider && token &&
+      {user && status && status != "verified" && !selectedProvider && token && (
         <UserIncompleteModal
           status={status}
           rejectionReasons={rejectionReasons}
           token={token}
         />
-      }
-      <Columns className="container" marginless multiline={false} style={{ position: 'static' }}>
+      )}
+      <Columns
+        className="container"
+        marginless
+        multiline={false}
+        style={{ position: "static" }}
+      >
         <Sidebar />
 
         <Columns.Column id="main-content" className="mt-6 pb-6">
@@ -114,9 +130,16 @@ export default function ModclubApp() {
             </Route>
             {user ? (
               <Route exact path="/app/admin">
-                {
-                  selectedProvider ? (<Admin selectedProvider={selectedProvider} providerIdText={providerIdText} setSelectedProvider={setSelectedProvider} providers={providers} />) : (<Tasks />)
-                }
+                {selectedProvider ? (
+                  <Admin
+                    selectedProvider={selectedProvider}
+                    providerIdText={providerIdText}
+                    setSelectedProvider={setSelectedProvider}
+                    providers={providers}
+                  />
+                ) : (
+                  <Tasks />
+                )}
               </Route>
             ) : (
               <Route exact path="/app">

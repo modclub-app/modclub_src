@@ -1,7 +1,9 @@
-import * as React from 'react'
-import ReactDOM from 'react-dom';
+import * as React from "react";
+import ReactDOM from "react-dom";
 import App from "./App";
 import { ProvideAuth } from "./utils/auth";
+import { ProfileProvider } from "./utils/profile";
+
 import "./index.scss";
 
 /**
@@ -9,11 +11,13 @@ import "./index.scss";
  */
 window.global = window;
 
-ReactDOM.render(  
-    <React.StrictMode>
-        <ProvideAuth>
-            <App />
-        </ProvideAuth>
-    </React.StrictMode>,
-   document.getElementById("app")
+ReactDOM.render(
+  <React.StrictMode>
+    <ProvideAuth>
+      <ProfileProvider>
+        <App />
+      </ProfileProvider>
+    </ProvideAuth>
+  </React.StrictMode>,
+  document.getElementById("app")
 );

@@ -20,6 +20,7 @@ import Userstats from "../profile/Userstats";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { Image } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
+import { useProfile } from "../../../utils/profile";
 
 const PAGE_SIZE = 20;
 const FILTER_VOTES = false;
@@ -119,7 +120,8 @@ const Task = ({ task, setVoted, level }) => {
 };
 
 export default function Tasks() {
-  const { user, identity, isAuthenticated } = useAuth();
+  const { identity } = useAuth();
+  const { user } = useProfile();
   const [tasks, setTasks] = useState([]);
   const [voted, setVoted] = useState<boolean>(false);
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);

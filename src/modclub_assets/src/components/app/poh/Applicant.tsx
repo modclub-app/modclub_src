@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { useAuth } from "../../../utils/auth";
 import { formatDate } from "../../../utils/util";
 import { getPohTaskData } from "../../../utils/api";
 import { ViolatedRules } from "../../../utils/types";
@@ -22,6 +21,7 @@ import UserVideo from "./UserVideo";
 import UserAudio from "./UserAudio";
 import DrawingChallenge from "./DrawingChallenge";
 import POHConfirmationModal from "./POHConfirmationModal";
+import { useProfile } from "../../../utils/profile";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -85,7 +85,7 @@ const CheckBox = ({ id, label, values }) => {
 };
 
 export default function PohApplicant() {
-  const { user } = useAuth();
+  const { user } = useProfile();
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);

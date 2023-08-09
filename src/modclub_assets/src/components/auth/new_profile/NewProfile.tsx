@@ -5,24 +5,28 @@ import {
   Columns,
   Card,
   Heading,
-  Media,
-  Image,
   Button,
   Icon,
 } from "react-bulma-components";
 import { registerModerator } from "../../../utils/api";
-import { useAuth } from "../../../utils/auth";
+import { useProfile } from "../../../utils/profile";
 import { useHistory } from "react-router-dom";
 import { useRef, useState } from "react";
 import { validateEmail } from "../../../utils/util";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
-  const { setUser } = useAuth();
+  const { updateProfile, user } = useProfile();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
-  const instructionText = isPohFlow ? "To begin POH create your MODCLUB profile" : "Create your profile"
-  
+  const instructionText = isPohFlow
+    ? "To begin POH create your MODCLUB profile"
+    : "Create your profile";
+
+  if (user) {
+    history.push("/app");
+  }
+
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
     const validEmail = validateEmail(email);
@@ -36,7 +40,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
     try {
       setSubmitting(true);
       const user = await registerModerator(username, email);
-      setUser(user);
+      await updateProfile(user);
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });
         setTimeout(() => {
@@ -53,7 +57,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
 
     setTimeout(() => setMessage(null), 2000);
   };
-  
+
   return (
     <>
       {message && (
@@ -103,7 +107,9 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
                         </Icon>
                       </div>
                     </div>
-                    <div className="has-text-centered">Please provide your email in order to receive email alerts</div>
+                    <div className="has-text-centered">
+                      Please provide your email in order to receive email alerts
+                    </div>
                     <Button
                       type="submit"
                       disabled={!values.username || submitting}
