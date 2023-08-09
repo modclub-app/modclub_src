@@ -78,7 +78,7 @@ initial_token_distribution:
       developer_neurons:
         # Main dev voting neuron, other neurons will follow this one
         - controller: g3oob-3zgck-6amut-ggiq6-oegmw-ygi25-46z7p-y2sn5-6v2wc-jcbhz-wae
-          stake_e8s: 444440844444460
+          stake_e8s: 444444444444444
           memo: 0
           dissolve_delay_seconds: 2629900
           vesting_period_seconds: 123605300
@@ -255,7 +255,7 @@ initial_token_distribution:
           dissolve_delay_seconds: 2629900
           vesting_period_seconds: 118345500
         - controller: upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae
-          stake_e8s: 444444444444444
+          stake_e8s: 444448044444444
           memo: 34
           dissolve_delay_seconds: 2629900
           vesting_period_seconds: 120975400
