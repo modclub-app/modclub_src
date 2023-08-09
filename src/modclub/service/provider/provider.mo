@@ -446,7 +446,6 @@ module ProviderModule {
       id = arg.userId;
       userName = arg.username;
       email = "";
-      pic = null;
       subaccounts = HashMap.HashMap<Text, Blob>(2, Text.equal, Text.hash);
       role = #moderator;
       createdAt = now;
@@ -599,7 +598,6 @@ module ProviderModule {
           id = currentAdminProfile.id;
           userName = newUserName;
           email = currentAdminProfile.email;
-          pic = null;
           role = currentAdminProfile.role;
           subaccounts = currentAdminProfile.subaccounts;
           createdAt = currentAdminProfile.createdAt;
