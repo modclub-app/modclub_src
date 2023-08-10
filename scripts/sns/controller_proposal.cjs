@@ -37,11 +37,10 @@ prompt("Choose network: local or ic? ").then((network) => {
   if (network === "local" || network === "ic") {
     Promise.all(
       canisterCommands.map((cmd) => {
+        // console.log("Executing: ");
         return executeCommand(cmd + ` --network=${network}`).then(
           (canisterId) => {
-            return executeCommand(
-              `dfx canister --network=${network} update-settings --add-controller $(dfx canister --network=${network} id sns_root) ${canisterId}`
-            ).then((output) => {
+            return executeCommand(`echo ${canisterId}`).then((output) => {
               console.log(`${output}`);
               return canisterId;
             });
@@ -55,7 +54,7 @@ prompt("Choose network: local or ic? ").then((network) => {
           .join("; ");
 
         // Create proposal
-        const quillCommand = `quill sns --canister-ids-file ./sns_canister_ids.json --pem-file ${pemFilePath} make-proposal --proposal "(record { title=\\"Register dapp's canisters with SNS.\\"; url=\\"https://modclub.ai/\\";
+        const quillCommand = `quill sns --canister-ids-file ./sns_canister_ids.json --pem-file ${pemFilePath} make-proposal --proposal "(record { title=\\"Register dapp's canisters with SNS.\\"; url=\\"https://modclub.app/\\";
           summary=\\"This proposal registers dapp's canisters with SNS.\\";
           action=opt variant {RegisterDappCanisters = record {canister_ids=vec {${idsString}}}}})" ${developerNeuronId} > register.json`;
 

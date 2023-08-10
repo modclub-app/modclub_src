@@ -1,11 +1,11 @@
 // sns_config.js
 exports.developerNeuronId =
-  "fe3037864547b825a53e0fa0e83110809905f8080aeb53cddad9e313d0a1ec6a";
-exports.pemFilePath = `../.config/dfx/identity/$(dfx identity whoami)/identity.pem`;
+  "fd052a2a6648357c984cd8a04edcb9e34a48967a46f44db9264f5156d7e96c61";
+exports.pemFilePath = `~/.config/dfx/identity/$(dfx identity whoami)/identity.pem`;
 exports.canisterCommands = [
-  "dfx canister id auth_qa",
-  "dfx canister id modclub_qa",
-  "dfx canister id rs_qa",
-  "dfx canister id vesting_qa",
-  "dfx canister id modclub_qa_assets",
+  "dfx canister id auth",
+  "dfx canister id modclub",
+  "dfx canister id rs",
+  "dfx canister id vesting",
+  "dfx canister id modclub_assets",
 ];
