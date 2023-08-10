@@ -147,6 +147,9 @@ async function getMC(): Promise<_SERVICE> {
   if (!actor) {
     actor = await actorController.actor;
   }
+  if (!actor) {
+    throw new Error("Failed to fetch Modclub actor");
+  }
   return actor;
 }
 
@@ -250,6 +253,7 @@ export async function registerProvider(
 }
 
 export async function getUserFromCanister(): Promise<ProfileStable | null> {
+  console.warn("calling getUserFromCanister");
   try {
     const icUser = await (await getMC()).getProfile();
     if (icUser) {

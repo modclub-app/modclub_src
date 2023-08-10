@@ -87,6 +87,19 @@ export function getUserFromStorage(
   }
 }
 
+export function setUserToStorage(
+  storage = window.localStorage,
+  key: string,
+  user: Profile
+): Profile | null {
+  storage.setItem(
+    key,
+    JSON.stringify({ ...user }, (key, value) =>
+      typeof value === "bigint" ? value.toString() : value
+    )
+  );
+}
+
 export function convertObj(obj: any): any {
   return Object.entries(obj).reduce((acc, [k, v]) => {
     if (typeof v === "object") {

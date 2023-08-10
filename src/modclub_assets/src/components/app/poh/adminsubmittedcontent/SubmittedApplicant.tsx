@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { useAuth } from "../../../../utils/auth";
 import { formatDate } from "../../../../utils/util";
 import { getPohTaskDataForAdminUsers } from "../../../../utils/api";
 import { Heading, Card, Modal, Notification } from "react-bulma-components";
@@ -12,9 +11,11 @@ import UserVideo from "../UserVideo";
 import UserAudio from "../UserAudio";
 import DrawingChallenge from "../DrawingChallenge";
 import { useHistory } from "react-router-dom";
+import { useProfile } from "../../../../utils/profile";
 
 export default function PohSubmittedApplicant() {
-  const { user, isAdminUser } = useAuth();
+  const { user, isAdminUser } = useProfile();
+
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);

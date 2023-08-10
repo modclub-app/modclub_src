@@ -21,10 +21,12 @@ import {
   queryRSAndLevelByPrincipal,
   registerUserToReceiveAlerts,
 } from "../../../utils/api";
+import { useProfile } from "../../../utils/profile";
 import { SignIn } from "../../auth/SignIn";
 import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
+import logger from "../../../utils/logger";
 
 const InviteModerator = ({ toggle }) => {
   const link = "Coming Soon"; //`${window.location.origin}/referral=${Date.now()}`
@@ -90,20 +92,20 @@ const DropdownLabel = ({ toggle }) => {
 
 export default function Sidebar() {
   const history = useHistory();
+  const { isAuthenticated, userPrincipalText, identity } = useAuth();
+
   const {
-    identity,
-    isAuthReady,
     user,
-    isAuthenticated,
     requiresSignUp,
     providers,
-    setSelectedProvider,
-    selectedProvider,
     isAdminUser,
-    userPrincipalText,
     userAlertVal,
     setUserAlertVal,
-  } = useAuth();
+    selectedProvider,
+    setSelectedProvider,
+    isProfileReady,
+  } = useProfile();
+
   const [showModal, setShowModal] = useState(false);
   const [notificationMsg, setNotificationMsg] = useState(null);
   const toggleModal = () => setShowModal(!showModal);
@@ -137,10 +139,11 @@ export default function Sidebar() {
           : process.env.DEV_ENV
           ? process.env.DEV_ENV
           : "dev";
-      console.log(envToUse);
+
+      logger.log("env to use", envToUse);
       await addUserToQueueAndSendVerificationEmail(envToUse);
     } catch (error) {
-      console.log(error);
+      logger.error("Error occurred while sending email", error);
       msgToDisplay.success = false;
       msgToDisplay.value =
         "Error occurred while sending email. Please try again later.";
@@ -161,10 +164,12 @@ export default function Sidebar() {
 
   useEffect(() => {
     let isMounted = true;
-    if (isAuthReady && isAuthenticated && !user && requiresSignUp) {
-      history.push("/signup");
+    if (isAuthenticated && isProfileReady) {
+      if (requiresSignUp) {
+        history.push("/signup");
+      }
     }
-    if (isAuthReady && isAuthenticated && user) {
+    if (isAuthenticated && user) {
       fetchUserAlertOptinVal();
     }
     const getUserLv = async () => {
@@ -175,11 +180,12 @@ export default function Sidebar() {
         setLevel(Object.keys(res.level)[0]);
       }
     };
-    getUserLv();
+    identity && getUserLv();
     return () => {
       isMounted = false;
     };
-  }, [isAuthReady, isAuthenticated, user, requiresSignUp]);
+  }, [isAuthenticated, user, isProfileReady, requiresSignUp]);
+
   return (
     <Columns.Column
       size="one-fifth"

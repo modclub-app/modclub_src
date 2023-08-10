@@ -1,5 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import { canClaimLockedReward, claimStakeFor, getEnvironmentSpecificValues, getProfileById, icrc1Balance, icrc1Decimal, lockedFor, pendingStake, queryRSAndLevelByPrincipal, stakeFor, unLockedFor} from "../../../utils/api";
+import {
+  canClaimLockedReward,
+  claimStakeFor,
+  getEnvironmentSpecificValues,
+  getProfileById,
+  icrc1Balance,
+  icrc1Decimal,
+  lockedFor,
+  pendingStake,
+  queryRSAndLevelByPrincipal,
+  stakeFor,
+  unLockedFor,
+} from "../../../utils/api";
 import { useAuth } from "../../../utils/auth";
 import { Columns, Button } from "react-bulma-components";
 import walletImg from "../../../../assets/wallet.svg";
@@ -13,6 +25,8 @@ import { StatBox } from "../../common/statbox/StatBox";
 import * as Constant from "../../../utils/constant";
 import { convert_to_mod } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
+import { useProfile } from "../../../utils/profile";
+import { async } from "q";
 
 const levelMessages = {
   novice: {
@@ -37,10 +51,11 @@ const levelMessages = {
   },
 };
 
-const {CanisterId} = getEnvironmentSpecificValues(process.env.DEV_ENV);
+const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 export default function Userstats({ detailed = false }) {
-  const { user, identity } = useAuth();
+  const { identity } = useAuth();
+  const { user } = useProfile();
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards: 0,
@@ -48,7 +63,7 @@ export default function Userstats({ detailed = false }) {
     wallet: 0,
     userBalance: 0,
     unLockedFor: 0,
-    claimStakedFor: 0
+    claimStakedFor: 0,
   });
   const [claimRewards, setClaimRewards] = useState({
     canClaim: false,
@@ -82,8 +97,16 @@ export default function Userstats({ detailed = false }) {
     if (identity != undefined) {
       try {
         const principalId = identity.getPrincipal().toText();
-        let perf, digit, stake, locked, bal, userBal, unlocked, pending, claimStaked;
-      
+        let perf,
+          digit,
+          stake,
+          locked,
+          bal,
+          userBal,
+          unlocked,
+          pending,
+          claimStaked;
+
         try {
           [perf, digit] = await Promise.all([
             queryRSAndLevelByPrincipal(principalId),
@@ -95,27 +118,44 @@ export default function Userstats({ detailed = false }) {
         }
         try {
           [stake, locked, unlocked, claimStaked] = await Promise.all([
-            stakeFor(principalId).then((stake) => convert_to_mod(stake, digit)).catch(error => console.error("Error fetching stake:", error)),
-            lockedFor(principalId).then((locked) => {
-              fetchCanClaim(Number(locked));
-              return convert_to_mod(locked, digit);
-            }).catch(error => console.error("Error fetching locked:", error)),
-            unLockedFor(principalId).then((unlock) => unlock).catch(error => console.error("Error fetching unlocked:", error)),
-            claimStakeFor(principalId).then((claim) => claim).catch(error => console.error("Error fetching claimStaked:", error)),
+            stakeFor(principalId)
+              .then((stake) => convert_to_mod(stake, digit))
+              .catch((error) => console.error("Error fetching stake:", error)),
+            lockedFor(principalId)
+              .then((locked) => {
+                fetchCanClaim(Number(locked));
+                return convert_to_mod(locked, digit);
+              })
+              .catch((error) => console.error("Error fetching locked:", error)),
+            unLockedFor(principalId)
+              .then((unlock) => unlock)
+              .catch((error) =>
+                console.error("Error fetching unlocked:", error)
+              ),
+            claimStakeFor(principalId)
+              .then((claim) => claim)
+              .catch((error) =>
+                console.error("Error fetching claimStaked:", error)
+              ),
           ]);
         } catch (error) {
           console.error("Error fetching stake and locked:", error);
         }
 
         try {
-          let subacc: any = Object.values((await getProfileById(identity.getPrincipal())).subaccounts);
-          if(subacc.length > 0){
-              subacc = subacc.find((item) => item[0] === 'ACCOUNT_PAYABLE')
-          }else{
-              subacc = [];
+          let subacc: any = Object.values(
+            (await getProfileById(identity.getPrincipal())).subaccounts
+          );
+          if (subacc.length > 0) {
+            subacc = subacc.find((item) => item[0] === "ACCOUNT_PAYABLE");
+          } else {
+            subacc = [];
           }
-          setSubacc(subacc.length > 0 ? subacc[1]: subacc);
-          bal = await icrc1Balance(CanisterId, subacc.length > 0 ? subacc[1]: subacc);
+          setSubacc(subacc.length > 0 ? subacc[1] : subacc);
+          bal = await icrc1Balance(
+            CanisterId,
+            subacc.length > 0 ? subacc[1] : subacc
+          );
           userBal = await icrc1Balance(identity.getPrincipal().toText());
         } catch (error) {
           console.error("USER PROFILE:", error);
@@ -123,12 +163,12 @@ export default function Userstats({ detailed = false }) {
         try {
           [pending] = await Promise.all([
             pendingStake(identity.getPrincipal().toText()),
-          ])
+          ]);
         } catch (error) {
           console.error("Error fetching pending stake:", error);
         }
-        if(pending[0] != undefined){
-          setLockBlock(pending)
+        if (pending[0] != undefined) {
+          setLockBlock(pending);
         }
         setTokenHoldings({
           pendingRewards: locked,
@@ -136,8 +176,8 @@ export default function Userstats({ detailed = false }) {
           wallet: convert_to_mod(bal, BigInt(digit)),
           userBalance: convert_to_mod(userBal, BigInt(digit)),
           unLockedFor: unlocked,
-          claimStakedFor: claimStaked
-        })
+          claimStakedFor: claimStaked,
+        });
         setPerformance(Number(perf.score));
         setLevel(Object.keys(perf.level)[0]);
         setHoldingsUpdated(false);
@@ -190,37 +230,51 @@ export default function Userstats({ detailed = false }) {
   return (
     <>
       <Columns>
-{detailed && <StatBox
-          loading={holdingsUpdated}
-          image={walletImg}
-          title="Wallet"
-          amount={tokenHoldings.wallet}
-          usd={170}
-          detailed={detailed}
-          message="Wallet"
-          isBar={false}
-        >
-          <Button.Group>
-            <Button color="dark" fullwidth onClick={toggleDeposit} disabled={holdingsUpdated}>
-              Deposit
-            </Button>
-            <Button color="dark" fullwidth onClick={toggleWithdraw} disabled={holdingsUpdated}>
-              Withdraw
-            </Button>
-          </Button.Group>
-        </StatBox>}
-        {!detailed && <StatBox
-          loading={holdingsUpdated}
-          image={performanceImg}
-          title="Reputation Score"
-          amount={performance}
-          usd={12}
-          detailed={detailed}
-          message={rsMessage}
-          isBar={true}
-          showLevel={true}
-          level={level}
-        />}
+        {detailed && (
+          <StatBox
+            loading={holdingsUpdated}
+            image={walletImg}
+            title="Wallet"
+            amount={tokenHoldings.wallet}
+            usd={170}
+            detailed={detailed}
+            message="Wallet"
+            isBar={false}
+          >
+            <Button.Group>
+              <Button
+                color="dark"
+                fullwidth
+                onClick={toggleDeposit}
+                disabled={holdingsUpdated}
+              >
+                Deposit
+              </Button>
+              <Button
+                color="dark"
+                fullwidth
+                onClick={toggleWithdraw}
+                disabled={holdingsUpdated}
+              >
+                Withdraw
+              </Button>
+            </Button.Group>
+          </StatBox>
+        )}
+        {!detailed && (
+          <StatBox
+            loading={holdingsUpdated}
+            image={performanceImg}
+            title="Reputation Score"
+            amount={performance}
+            usd={12}
+            detailed={detailed}
+            message={rsMessage}
+            isBar={true}
+            showLevel={true}
+            level={level}
+          />
+        )}
 
         <StatBox
           loading={holdingsUpdated}
@@ -233,10 +287,20 @@ export default function Userstats({ detailed = false }) {
           isBar={false}
         >
           <Button.Group>
-            <Button color="dark" fullwidth onClick={toggleStake} disabled={holdingsUpdated}>
+            <Button
+              color="dark"
+              fullwidth
+              onClick={toggleStake}
+              disabled={holdingsUpdated}
+            >
               Stake
             </Button>
-            <Button color="dark" fullwidth onClick={toggleUnstake} disabled={holdingsUpdated}>
+            <Button
+              color="dark"
+              fullwidth
+              onClick={toggleUnstake}
+              disabled={holdingsUpdated}
+            >
               Unstake
             </Button>
           </Button.Group>
@@ -253,13 +317,15 @@ export default function Userstats({ detailed = false }) {
         >
           {claimRewards.canClaim ? (
             <Button.Group>
-            <Button
-              color="dark"
-              onClick={toggleClaim}
-              disabled={level == "novice" || level == "junior" || holdingsUpdated}
-            >
-              Claims
-            </Button>
+              <Button
+                color="dark"
+                onClick={toggleClaim}
+                disabled={
+                  level == "novice" || level == "junior" || holdingsUpdated
+                }
+              >
+                Claims
+              </Button>
             </Button.Group>
           ) : (
             <>
@@ -273,8 +339,6 @@ export default function Userstats({ detailed = false }) {
             </>
           )}
         </StatBox>
-        
-
       </Columns>
 
       {showClaim && (
@@ -284,13 +348,24 @@ export default function Userstats({ detailed = false }) {
           userId={identity.getPrincipal().toText()}
         />
       )}
-      
+
       {showDeposit && (
-        <Deposit toggle={toggleDeposit} userTokenBalance={tokenHoldings.userBalance} isProvider={false} receiver={CanisterId} subacc={subacc}/>
+        <Deposit
+          toggle={toggleDeposit}
+          userTokenBalance={tokenHoldings.userBalance}
+          isProvider={false}
+          receiver={CanisterId}
+          subacc={subacc}
+        />
       )}
 
       {showWithdraw && (
-        <Withdraw toggle={toggleWithdraw} userTokenBalance={tokenHoldings.wallet} subacc={subacc} to={identity.getPrincipal()} />
+        <Withdraw
+          toggle={toggleWithdraw}
+          userTokenBalance={tokenHoldings.wallet}
+          subacc={subacc}
+          to={identity.getPrincipal()}
+        />
       )}
       {showStake && (
         <Stake

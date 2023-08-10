@@ -2494,10 +2494,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     storageStateStable := StorageState.emptyStableState();
     retiredDataCanisterId := [];
 
-    pohStableStateV2 := PohStateV2.emptyStableState();
-    pohVoteStableStateV2 := VoteStateV2.emptyStableState();
-    emailStableState := EmailState.emptyStableState();
-    contentStableState := ContentState.emptyStableState();
+    pohEngine := POH.PohEngine(
+      pohStableStateV2,
+      pohCallbackDataByProvider,
+      provider2ProviderUserId2Ip,
+      provider2Ip2Wallet
+    );
+    voteManager := VoteManager.VoteManager(pohVoteStableStateV2);
+    emailManager := EmailManager.EmailManager(emailStableState);
+    contentState := ContentStateManager.ContentStateManager(contentStableState);
 
     storageSolution.setInitialModerators(ModeratorManager.getModerators(stateV2));
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);

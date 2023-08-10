@@ -1,24 +1,19 @@
-import * as React from 'react'
+import * as React from "react";
 import { Switch, Route } from "react-router-dom";
 import { useHistory, Link, useLocation } from "react-router-dom";
-import {
-  Modal,
-  Columns,
-  Card,
-  Heading,
-  Button,
-} from "react-bulma-components";
+import { Modal, Columns, Card, Heading, Button } from "react-bulma-components";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../utils/auth";
-import NotAuthenticatedModal from '../../app/modals/NotAuthenticated';
+import NotAuthenticatedModal from "../../app/modals/NotAuthenticated";
 import NewProfile from "../new_profile/NewProfile";
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
-import { retrieveChallengesForUser } from '../../../utils/api';
-import DrawingChallenge from './DrawingChallenge';
-import { PohError } from '../../../utils/types';
+import { retrieveChallengesForUser } from "../../../utils/api";
+import DrawingChallenge from "./DrawingChallenge";
+import { PohError } from "../../../utils/types";
+import { useProfile } from "../../../utils/profile";
 
 const Confirmation = ({ redirect_uri }) => {
   const { logOut } = useAuth();
@@ -36,7 +31,11 @@ const Confirmation = ({ redirect_uri }) => {
       <p>Your verification is in progress, please check back soon.</p>
 
       {redirect_uri ? (
-        <a href="#" onClick={handleRedirect} className="button is-large is-primary mt-5">
+        <a
+          href="#"
+          onClick={handleRedirect}
+          className="button is-large is-primary mt-5"
+        >
           Back to App
         </a>
       ) : (
@@ -45,18 +44,19 @@ const Confirmation = ({ redirect_uri }) => {
         </Link>
       )}
     </div>
-  )
+  );
 };
 
 export default function NewPohProfile({ match }) {
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const URLtoken = params.get("token");
-  const { isAuthenticated, isAuthReady, user, logOut } = useAuth();
+  const { isAuthenticated, logOut } = useAuth();
+  const { user } = useProfile();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
-  const [steps, setSteps] = useState(null)
-  const [currentStep, setCurrentStep] = useState<string>('')
+  const [steps, setSteps] = useState(null);
+  const [currentStep, setCurrentStep] = useState<string>("");
   // const [hasInitialCall, setHasInitialCall] = useState<boolean>(false);
   const [noToken, setNoToken] = useState<boolean>(false);
   const [invalidToken, setInvalidToken] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export default function NewPohProfile({ match }) {
       return;
     }
 
-    setRedirectUri(params.get("redirect_uri"))
+    setRedirectUri(params.get("redirect_uri"));
 
     const challenges = await retrieveChallengesForUser(token);
     setLoading(false);
@@ -78,21 +78,29 @@ export default function NewPohProfile({ match }) {
       setLoading(false);
       setSteps(challenges["ok"]);
 
-      const uncompleted = challenges["ok"].find(challenge => {
+      const uncompleted = challenges["ok"].find((challenge) => {
         const status = Object.keys(challenge.status)[0];
-        return status === "notSubmitted"
-      })
+        return status === "notSubmitted";
+      });
       console.log("uncompleted", uncompleted);
 
-      history.push(`${match.path}/${uncompleted ? uncompleted.challengeId + `?token=${URLtoken}` : "confirm"}`);
+      history.push(
+        `${match.path}/${
+          uncompleted
+            ? uncompleted.challengeId + `?token=${URLtoken}`
+            : "confirm"
+        }`
+      );
     } else {
       if (challenges.hasOwnProperty("err")) {
         let error: PohError = challenges["err"];
-        if (error.hasOwnProperty('attemptToAssociateMultipleModclubAccounts')) {
-          const originalPrincipal = error['attemptToAssociateMultipleModclubAccounts'];
+        if (error.hasOwnProperty("attemptToAssociateMultipleModclubAccounts")) {
+          const originalPrincipal =
+            error["attemptToAssociateMultipleModclubAccounts"];
           setInvalidToken(
             `Error - attempting to associate to multiple MODCLUB accounts is not allowed. Please continue your POH with the original principal ID: ${originalPrincipal}
-            `)
+            `
+          );
         } else {
           setInvalidToken("Error invalid token: " + Object.keys(error)[0]);
         }
@@ -100,114 +108,134 @@ export default function NewPohProfile({ match }) {
         setInvalidToken("Unknown error");
       }
     }
-  }
+  };
 
   useEffect(() => {
     isAuthenticated && user && initialCall(URLtoken);
   }, [isAuthenticated, user]);
 
   useEffect(() => {
-    return history.listen((location) => { 
+    return history.listen((location) => {
       const result = /[^/]*$/.exec(location.pathname)[0];
       setCurrentStep(result);
-    })
+    });
   }, [history]);
 
-  if (noToken) return (
-    <Modal show={true} showClose={false} className="userIncompleteModal">
-      <Modal.Card backgroundColor="circles">
-        <Modal.Card.Body>
-          Error no URL token
-        </Modal.Card.Body>
-      </Modal.Card>
-    </Modal>
-  );
+  if (noToken)
+    return (
+      <Modal show={true} showClose={false} className="userIncompleteModal">
+        <Modal.Card backgroundColor="circles">
+          <Modal.Card.Body>Error no URL token</Modal.Card.Body>
+        </Modal.Card>
+      </Modal>
+    );
 
-  if (invalidToken) return (
-    <Modal show={true} showClose={false} className="userIncompleteModal">
-      <Modal.Card backgroundColor="circles">
-        <Modal.Card.Body>
-         {invalidToken}
-        </Modal.Card.Body>
-      </Modal.Card>
-    </Modal>
-  );
+  if (invalidToken)
+    return (
+      <Modal show={true} showClose={false} className="userIncompleteModal">
+        <Modal.Card backgroundColor="circles">
+          <Modal.Card.Body>{invalidToken}</Modal.Card.Body>
+        </Modal.Card>
+      </Modal>
+    );
 
-  if (isAuthReady && !isAuthenticated) return (
-    <NotAuthenticatedModal />
-  );
+  if (!isAuthenticated) return <NotAuthenticatedModal />;
 
-  if (isAuthenticated && !user) return (
-    <NewProfile isPohFlow={true} />
-  );
-
+  if (isAuthenticated && !user) return <NewProfile isPohFlow={true} />;
 
   const goToNextStep = (currentStep) => {
-    if (!steps) return
+    if (!steps) return;
     console.log("goToNextStep steps", steps);
-    const index = steps.findIndex(step => step.challengeId === currentStep);
+    const index = steps.findIndex((step) => step.challengeId === currentStep);
     const nextStep = steps[index + 1];
-    history.push(`${match.path}/${ nextStep ? nextStep.challengeId + `?token=${URLtoken}` : "confirm" }`);
-  }
+    history.push(
+      `${match.path}/${
+        nextStep ? nextStep.challengeId + `?token=${URLtoken}` : "confirm"
+      }`
+    );
+  };
 
   const handleLogOut = async () => {
     await logOut();
   };
 
   return (
-  <>
-    {loading &&
-      <Modal show={true} showClose={false}>
-        <div className="loader is-loading p-5"></div>
-      </Modal>
-    }
+    <>
+      {loading && (
+        <Modal show={true} showClose={false}>
+          <div className="loader is-loading p-5"></div>
+        </Modal>
+      )}
 
-    <div className="is-flex is-justify-content-flex-end">
-      <Button className="is-danger m-5" onClick={handleLogOut}>
-        Logout
-      </Button>
-    </div>
+      <div className="is-flex is-justify-content-flex-end">
+        <Button className="is-danger m-5" onClick={handleLogOut}>
+          Logout
+        </Button>
+      </div>
 
-    <Columns centered vCentered multiline className="is-fullheight">
-      <Columns.Column size={6}>
-        <Card>
-          <Card.Content>
-            {steps &&
-              <>
-                <Steps activeStep={currentStep}>
-                  {steps.map((step, index) => (
-                    <Step key={step.challengeId} id={index + 1} details={step.challengeName} />
-                  ))}
-                  <Step key='confirm' id={steps.length + 1} details="Confirm" />
-                </Steps>
+      <Columns centered vCentered multiline className="is-fullheight">
+        <Columns.Column size={6}>
+          <Card>
+            <Card.Content>
+              {steps && (
+                <>
+                  <Steps activeStep={currentStep}>
+                    {steps.map((step, index) => (
+                      <Step
+                        key={step.challengeId}
+                        id={index + 1}
+                        details={step.challengeName}
+                      />
+                    ))}
+                    <Step
+                      key="confirm"
+                      id={steps.length + 1}
+                      details="Confirm"
+                    />
+                  </Steps>
 
-                <Card backgroundColor="dark" className="mt-6">
-                  <Card.Content>
-                    <Switch>
-                      <Route path={`${match.path}/:challenge-profile-pic`}>
-                        <ProfilePic goToNextStep={goToNextStep} />
-                      </Route>
-                      <Route path={`${match.path}/:challenge-user-video`}>
-                        <UserVideo step={steps.find(s => s.challengeId == "challenge-user-video")} goToNextStep={goToNextStep} />
-                      </Route>
-                      <Route path={`${match.path}/:challenge-user-audio`}>
-                        <UserPhrases step={steps.find(s => s.challengeId == "challenge-user-audio")} goToNextStep={goToNextStep} />
-                      </Route>
-                      <Route path={`${match.path}/:challenge-drawing`}>
-                        <DrawingChallenge step={steps.find(s => s.challengeId == "challenge-drawing")} goToNextStep={goToNextStep} />
-                      </Route>
-                      <Route path={`${match.path}/:confirm`}>
-                        <Confirmation redirect_uri={redirectUri} />
-                      </Route>
-                    </Switch>
-                  </Card.Content>
-                </Card>
-              </>
-            }
-          </Card.Content>
-        </Card>
-      </Columns.Column>
-    </Columns>
-  </>
+                  <Card backgroundColor="dark" className="mt-6">
+                    <Card.Content>
+                      <Switch>
+                        <Route path={`${match.path}/:challenge-profile-pic`}>
+                          <ProfilePic goToNextStep={goToNextStep} />
+                        </Route>
+                        <Route path={`${match.path}/:challenge-user-video`}>
+                          <UserVideo
+                            step={steps.find(
+                              (s) => s.challengeId == "challenge-user-video"
+                            )}
+                            goToNextStep={goToNextStep}
+                          />
+                        </Route>
+                        <Route path={`${match.path}/:challenge-user-audio`}>
+                          <UserPhrases
+                            step={steps.find(
+                              (s) => s.challengeId == "challenge-user-audio"
+                            )}
+                            goToNextStep={goToNextStep}
+                          />
+                        </Route>
+                        <Route path={`${match.path}/:challenge-drawing`}>
+                          <DrawingChallenge
+                            step={steps.find(
+                              (s) => s.challengeId == "challenge-drawing"
+                            )}
+                            goToNextStep={goToNextStep}
+                          />
+                        </Route>
+                        <Route path={`${match.path}/:confirm`}>
+                          <Confirmation redirect_uri={redirectUri} />
+                        </Route>
+                      </Switch>
+                    </Card.Content>
+                  </Card>
+                </>
+              )}
+            </Card.Content>
+          </Card>
+        </Columns.Column>
+      </Columns>
+    </>
   );
 }

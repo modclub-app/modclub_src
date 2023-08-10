@@ -32,7 +32,9 @@ function getHost() {
 }
 
 const host = getHost();
-const rootKey = async(agent)=>{await agent.fetchRootKey()};
+const rootKey = async (agent) => {
+  await agent.fetchRootKey();
+};
 
 function createActor(identity?: Identity, canisterId?: any) {
   const agent = new HttpAgent({ host, identity });
@@ -48,7 +50,7 @@ const createPlugOrISActor = async function (walletToUse, canisterId) {
   const actor = await window["ic"][walletToUse].createActor({
     canisterId: canisterId,
     interfaceFactory: getModIdlByEnv(),
-  });  
+  });
   return actor;
 };
 
@@ -96,7 +98,6 @@ class ActorController {
    * Get the actor instance to run commands on the canister.
    */
   get actor() {
-    // console.log("Fetching Actor");
     return this._actor;
   }
 
@@ -111,6 +112,7 @@ class ActorController {
   ) {
     this._actor = this.initBaseActor(identity, authenticatorToUse, canisterId);
     this._isAuthenticated = true;
+    return this._actor;
   }
 
   /*

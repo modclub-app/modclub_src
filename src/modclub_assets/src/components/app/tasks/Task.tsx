@@ -24,6 +24,7 @@ import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import { Image__1 } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
+import { useProfile } from "../../../utils/profile";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -61,8 +62,9 @@ function resizeIframe(iframe) {
 }
 
 export default function Task() {
-  const { user,identity } = useAuth();
-  const { taskId } = useParams<{taskId : string}>();
+  const { identity } = useAuth();
+  const { user } = useProfile();
+  const { taskId } = useParams<{ taskId: string }>();
   const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
   const [level, setLevel] = useState<string>("");
@@ -214,10 +216,10 @@ export default function Task() {
                 </Card.Header.Title>
                 {level != "novice" && (
                   <Progress
-                  value={Number(task.voteCount)}
-                  min={Number(task.voteParameters.requiredVotes)}
-                />)}
-
+                    value={Number(task.voteCount)}
+                    min={Number(task.voteParameters.requiredVotes)}
+                  />
+                )}
               </Card.Header>
               <Card.Content>
                 <Heading>{task.title}</Heading>
