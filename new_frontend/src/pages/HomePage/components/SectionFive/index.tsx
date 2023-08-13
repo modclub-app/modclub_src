@@ -69,7 +69,7 @@ export default function SectionFive() {
                             read our{" "}
                             <Link
                               target="_blank"
-                              href="https://docsend.com/view/ett88daeai2gfqxh"
+                              href="https://docsend.com/view/7sxwjz8be776m77q"
                               className={`${Styles.link} underline`}
                             >
                               Tokenomics paper
@@ -118,7 +118,7 @@ export default function SectionFive() {
                             Learn more about Modclub! Read our{" "}
                             <Link
                               target="_blank"
-                              href="https://docsend.com/view/cnyepz6x7jjwpgj3"
+                              href="https://docsend.com/view/kuxk6x5pghemyrje"
                               className={`${Styles.link} underline`}
                             >
                               Whitepaper
