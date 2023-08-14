@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { formatDate } from "../../../utils/util";
 import { getPohTaskData } from "../../../utils/api";
-import { ViolatedRules } from "../../../utils/types";
+import { modclub_types } from "../../../utils/types";
 import {
   Heading,
   Card,
@@ -89,7 +89,7 @@ export default function PohApplicant() {
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
-  const [formRules, setFormRules] = useState<ViolatedRules[]>([]);
+  const [formRules, setFormRules] = useState<modclub_types.ViolatedRules[]>([]);
 
   const getApplicant = async () => {
     setLoading(true);

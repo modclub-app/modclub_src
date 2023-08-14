@@ -6,6 +6,9 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+current_dir="$(dirname "$0")"
+source "${current_dir}/utils.sh"
+
 log() {
     printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}$1${NC}\n"
 }
@@ -30,12 +33,7 @@ OLD_MODCLUB_INSTANCE=""
   local TOKEN_NAME="Modclub_Token"
   local TOKEN_SYMBOL=MODT
 
-  # Determine the wallet canister name based on the environment
-  local wallet_canister_name="wallet_${env}"
-  
-  if [ "$env" == "prod" ]; then
-    wallet_canister_name="wallet"
-  fi
+  local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
 
   dfx deploy ${wallet_canister_name} --network=${DEPLOY_NETWORK}  --argument='(variant { Init = 
       record {
@@ -68,20 +66,11 @@ OLD_MODCLUB_INSTANCE=""
 function get_env_canisters() {
   local env=$1
 
-  # Handle "prod" environment separately
-  local modclub_canister_name="modclub_${env}"
-  local rs_canister_name="rs_${env}"
-  local wallet_canister_name="wallet_${env}"
-  local auth_canister_name="auth_${env}"
-  local vesting_canister_name="vesting_${env}"
-
-  if [ "$env" == "prod" ]; then
-    modclub_canister_name="modclub"
-    rs_canister_name="rs"
-    wallet_canister_name="wallet"
-    auth_canister_name="auth"
-    vesting_canister_name="vesting"
-  fi
+  local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
+  local rs_canister_name=$(get_canister_name_by_env $env "rs")
+  local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
+  local auth_canister_name=$(get_canister_name_by_env $env "auth")
+  local vesting_canister_name=$(get_canister_name_by_env $env "vesting")
 
   local wallet_canister_id=$(dfx canister id ${wallet_canister_name} --network=${DEPLOY_NETWORK})
 
@@ -98,11 +87,7 @@ function deploy_vesting_canister() {
   local env_vars=$(get_env_canisters $env)
   
   # Handle "prod" environment separately
-  local canister_name="vesting_${env}"
-
-  if [ "$env" == "prod" ]; then
-    canister_name="vesting"
-  fi
+  local canister_name=$(get_canister_name_by_env $env "vesting")
 
   dfx deploy ${canister_name} --network=${DEPLOY_NETWORK} --argument="(record { env = $env_vars } )"
   return 0;
@@ -113,22 +98,13 @@ function deploy_canisters() {
   export DEV_ENV=$env
   local local_env=$(get_env_canisters $env)
 
-  # Handle "prod" environment separately
-  local auth_canister_name="auth_${env}"
-  local rs_canister_name="rs_${env}"
-  local modclub_canister_name="modclub_${env}"
-  local wallet_canister_name="wallet_${env}"
-  local assets_canister_name="modclub_${env}_assets"
+  local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
+  local rs_canister_name=$(get_canister_name_by_env $env "rs")
+  local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
+  local auth_canister_name=$(get_canister_name_by_env $env "auth")
+  local assets_canister_name=$(get_canister_name_by_env $env "modclub_assets")
   # local ledger_principal=""
   # local minter_principal=""
-
-  if [ "$env" == "prod" ]; then
-    auth_canister_name="auth"
-    rs_canister_name="rs"
-    modclub_canister_name="modclub"
-    wallet_canister_name="wallet"
-    assets_canister_name="modclub_assets"
-  fi
 
   # if [ "$env" == "qa" ]; then
   #   ledger_principal=$qa_ledger_principal
@@ -144,9 +120,8 @@ function deploy_canisters() {
   dfx deploy ${rs_canister_name} --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
   dfx deploy ${modclub_canister_name} --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
   init_canisters $env &&
-  dfx generate ${rs_canister_name} -v &&
-  dfx generate ${modclub_canister_name} -v &&
-  dfx generate ${wallet_canister_name} -v &&
+  generate_declariations $env &&
+  node "$current_dir/build/gen_declarations_by_env.cjs" &&
   DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${DEPLOY_NETWORK} &&
   log "${env} Canisters DEPLOYED"
   return 0;
@@ -155,17 +130,12 @@ function deploy_canisters() {
 # Run init
 function init_canisters() {
   local env=$1
-  local canister_name="modclub_${env}"
-
-  # Handle "prod" environment separately
-  if [ "$env" == "prod" ]; then
-    canister_name="modclub"
-  fi
+  local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
 
   log "Init ${env} Canisters..."
-  dfx canister call ${canister_name} adminInit &&
-  dfx canister call ${canister_name} configurePohForProvider "(principal \"$(dfx canister id ${canister_name})\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)" &&
-  dfx canister call ${canister_name} populateChallenges
+  dfx canister call ${modclub_canister_name} adminInit &&
+  dfx canister call ${modclub_canister_name} configurePohForProvider "(principal \"$(dfx canister id ${modclub_canister_name})\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)" &&
+  dfx canister call ${modclub_canister_name} populateChallenges
   log "${env} Canisters INITIALIZED"
   return 0;
 }

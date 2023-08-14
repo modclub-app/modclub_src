@@ -6,6 +6,12 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+current_dir="$(dirname "$0")"
+source "${current_dir}/../utils.sh"
+
+read -p "Press any key to continue..."
+
+
 printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Modclub test infra START ...${NC}\n"
 
 # Prepare test infra
@@ -81,6 +87,9 @@ function deploy_vesting_canister() {
   return 0;
 }
 
+
+
+
 # Deploy AuthCanister
 function deploy_qa_canisters() {
   export DEV_ENV=qa
@@ -94,10 +103,8 @@ function deploy_qa_canisters() {
   dfx deploy internet_identity &&
   dfx deploy rs_qa  --argument="($local_env)" &&
 	dfx deploy modclub_qa  --argument="($local_env)" &&
-  dfx generate rs_qa -v &&
-  dfx generate modclub_qa -v &&
-  dfx generate wallet_qa -v &&
-  dfx generate vesting_qa -v &&
+  generate_declariations "$DEV_ENV" &&
+  node "$current_dir/../build/gen_declarations_by_env.cjs" &&
   DEV_ENV=qa dfx deploy modclub_qa_assets &&
   dfx ledger fabricate-cycles --canister $(dfx canister id modclub_qa) --amount 10 &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"

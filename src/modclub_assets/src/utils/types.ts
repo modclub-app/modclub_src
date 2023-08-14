@@ -1,14 +1,10 @@
-function getModTypesByEnv() {
-  if (process.env.DEV_ENV == "qa") {
-    export * from "../../../declarations/modclub_qa/modclub_qa.did.d";
-  } else if (process.env.DEV_ENV == "dev") {
-    export * from "../../../declarations/modclub_dev/modclub_dev.did.d";
-  } else {
-    export * from "../../../declarations/modclub/modclub.did.d";
-  }
-}
-
-getModTypesByEnv();
+import {
+  modclub_types,
+  rs_types,
+  vesting_types,
+  wallet_types,
+} from "../../src/declarations_by_env";
+export { modclub_types, rs_types, vesting_types, wallet_types };
 
 export interface ImageData {
   src: string;

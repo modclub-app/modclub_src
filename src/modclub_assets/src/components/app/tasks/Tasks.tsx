@@ -7,18 +7,12 @@ import {
   getTasks,
   queryRSAndLevelByPrincipal,
 } from "../../../utils/api";
-import {
-  Modal,
-  Columns,
-  Card,
-  Heading,
-  Button,
-} from "react-bulma-components";
+import { Modal, Columns, Card, Heading, Button } from "react-bulma-components";
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
-import { Image } from "../../../utils/types";
+import { modclub_types } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
 import { useProfile } from "../../../utils/profile";
 
@@ -29,7 +23,7 @@ const Task = ({ task, setVoted, level }) => {
   const [rules, setRules] = useState([]);
 
   const getImage = (data: any) => {
-    const image = unwrap<Image>(data);
+    const image = unwrap<modclub_types.Image>(data);
     return fileToImgSrc(image.data, image.imageType);
   };
 

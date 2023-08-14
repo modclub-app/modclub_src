@@ -15,12 +15,17 @@ import Progress from "../../common/progress/Progress";
 import { useAuth } from "../../../utils/auth";
 import { getPohTasks, queryRSAndLevelByPrincipal } from "../../../utils/api";
 import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
-import { PohTaskPlus } from "../../../utils/types";
+import { modclub_types } from "../../../utils/types";
 import placeholder from "../../../../assets/user_placeholder.png";
+import { useProfile } from "../../../utils/profile";
 
 const PAGE_SIZE = 9;
 
-const ApplicantSnippet = ({ applicant }: { applicant: PohTaskPlus }) => {
+const ApplicantSnippet = ({
+  applicant,
+}: {
+  applicant: modclub_types.PohTaskPlus;
+}) => {
   const { profileImageUrlSuffix, createdAt, reward } = applicant;
   const regEx = /canisterId=(.*)&contentId=(.*)/g;
   const match = profileImageUrlSuffix.length
@@ -115,9 +120,12 @@ const ApplicantSnippet = ({ applicant }: { applicant: PohTaskPlus }) => {
 };
 
 export default function PohApplicantList() {
-  const { user, identity } = useAuth();
+  const { identity } = useAuth();
+  const { user } = useProfile();
   const [loading, setLoading] = useState<boolean>(false);
-  const [applicants, setApplicants] = useState<Array<PohTaskPlus>>([]);
+  const [applicants, setApplicants] = useState<
+    Array<modclub_types.PohTaskPlus>
+  >([]);
   const [page, setPage] = useState({
     page: 1,
     startIndex: 0,

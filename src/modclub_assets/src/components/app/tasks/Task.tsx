@@ -22,7 +22,7 @@ import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
-import { Image__1 } from "../../../utils/types";
+import { modclub_types } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
 import { useProfile } from "../../../utils/profile";
 
@@ -75,7 +75,7 @@ export default function Task() {
   const [time, setTime] = useState("02:00");
 
   const getImage = (data: any) => {
-    const image = unwrap<Image__1>(data);
+    const image = unwrap<modclub_types.Image>(data);
     return fileToImgSrc(image.data, image.imageType);
   };
 

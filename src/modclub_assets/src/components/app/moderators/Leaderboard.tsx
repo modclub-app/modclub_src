@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 import { useEffect, useState } from "react";
 import {
   Columns,
@@ -11,15 +11,15 @@ import {
 import { getModeratorLeaderboard, getProfileById } from "../../../utils/api";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import placeholder from "../../../../assets/user_placeholder.png";
-import { Image__1, ModeratorLeaderboard, Profile } from "../../../utils/types";
+import { modclub_types } from "../../../utils/types";
 
 const PAGE_SIZE = 30;
 
 const ModeratorProfile = ({
   pic,
   name,
-} : {
-  pic: [] | [Image__1];
+}: {
+  pic: [] | [modclub_types.Image];
   name: string;
 }) => {
   const imgData = unwrap(pic);
@@ -34,7 +34,7 @@ const ModeratorProfile = ({
   };
 
   return (
-    <div className="is-flex is-align-items-center" style={{minWidth: 150}}>
+    <div className="is-flex is-align-items-center" style={{ minWidth: 150 }}>
       <Media
         style={{
           display: "flex",
@@ -44,7 +44,7 @@ const ModeratorProfile = ({
           borderRadius: "50%",
           marginBottom: 0,
           width: 36,
-          height: 36
+          height: 36,
         }}
       >
         <Image
@@ -63,8 +63,16 @@ const ModeratorProfile = ({
   );
 };
 
-const ModeratorItem = ({ rank, item }: { rank: number, item: ModeratorLeaderboard }) => {
-  const [profile, setProfile] = useState<Profile | null>(null);
+const ModeratorItem = ({
+  rank,
+  item,
+}: {
+  rank: number;
+  item: modclub_types.ModeratorLeaderboard;
+}) => {
+  const [profile, setProfile] = useState<modclub_types.ProfileStable | null>(
+    null
+  );
 
   useEffect(() => {
     const getProfile = async () => {
@@ -73,34 +81,32 @@ const ModeratorItem = ({ rank, item }: { rank: number, item: ModeratorLeaderboar
     };
 
     if (item.id.toString()) {
-      getProfile()
+      getProfile();
     }
   }, [item.id]);
 
   return (
     <tr>
-      <td style={{ fontWeight: 'bold' }}>{rank}</td>
+      <td style={{ fontWeight: "bold" }}>{rank}</td>
       <td>
-        <ModeratorProfile
-          pic={profile?.pic || []}
-          name={item.userName}
-        />
+        <ModeratorProfile pic={profile?.pic || []} name={item.userName} />
       </td>
       <td>{Number(item.completedVoteCount)}</td>
       <td>{Number(item.rewardsEarned)} MOD</td>
       <td>{(Number(item.performance) * 100).toFixed(0)}%</td>
       <td>
         {item.lastVoted?.[0]
-          ? new Date(Number(item.lastVoted[0]))
-            .toISOString()
-            .slice(0, 10)
+          ? new Date(Number(item.lastVoted[0])).toISOString().slice(0, 10)
           : "-"}
       </td>
-    </tr>)
-}
+    </tr>
+  );
+};
 
 export default function Leaderboard() {
-  const [content, setContent] = useState<ModeratorLeaderboard[]>([]);
+  const [content, setContent] = useState<modclub_types.ModeratorLeaderboard[]>(
+    []
+  );
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -140,10 +146,9 @@ export default function Leaderboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {content
-                    .map((item, index) => (
-                      <ModeratorItem key={index} rank={index + 1} item={item} />
-                    ))}
+                  {content.map((item, index) => (
+                    <ModeratorItem key={index} rank={index + 1} item={item} />
+                  ))}
                 </tbody>
               </table>
             </div>

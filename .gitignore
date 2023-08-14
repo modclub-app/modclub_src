@@ -31,3 +31,6 @@ downloads_archive/
 
 #Ignore candid forlder
 candid/
+
+#Ignore auto gen file
+src/modclub_assets/src/declarations_by_env.ts

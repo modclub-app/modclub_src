@@ -14,7 +14,7 @@ import {
 import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
-import { Activity } from "../../../utils/types";
+import { modclub_types } from "../../../utils/types";
 import { useProfile } from "../../../utils/profile";
 
 const Table = ({
@@ -24,7 +24,7 @@ const Table = ({
   currentFilter,
 }: {
   loading: Boolean;
-  filteredActivity: Activity[];
+  filteredActivity: modclub_types.Activity[];
   getLabel: (activity: string) => string;
   currentFilter: string;
 }) => {
@@ -99,7 +99,9 @@ export default function Activity() {
   const { identity } = useAuth();
   const { user } = useProfile();
   const [completedActivity, setCompletedActivity] = useState<Activity[]>([]);
-  const [inProgressActivity, setInProgressActivity] = useState<Activity[]>([]);
+  const [inProgressActivity, setInProgressActivity] = useState<
+    modclub_types.Activity[]
+  >([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
   const [principalID, setPrincipalID] = useState<string>("");

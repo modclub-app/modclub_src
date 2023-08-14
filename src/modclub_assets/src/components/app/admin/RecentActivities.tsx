@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../../utils/auth";
 import { fetchProviderContent } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
 import {
@@ -14,7 +13,8 @@ import {
 } from "react-bulma-components";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
-import { ContentPlus } from "../../../utils/types";
+import { modclub_types } from "../../../utils/types";
+import { useProfile } from "../../../utils/profile";
 const Table = ({
   loading,
   filteredActivity,
@@ -22,7 +22,7 @@ const Table = ({
   currentFilter,
 }: {
   loading: Boolean;
-  filteredActivity: ContentPlus[];
+  filteredActivity: modclub_types.ContentPlus[];
   getLabel: (activity: string) => string;
   currentFilter: string;
 }) => {
@@ -97,7 +97,7 @@ const Table = ({
 };
 
 export default function AdminActivity() {
-  const { selectedProvider } = useAuth();
+  const { selectedProvider } = useProfile();
   const [approvedActivity, setApprovedActivity] = useState([]);
   const [inProgressActivity, setInProgressActivity] = useState([]);
   const [rejectedActivity, setRejectedActivity] = useState([]);

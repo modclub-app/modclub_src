@@ -14,7 +14,7 @@ import {
   formatDate,
   getUrlForData,
 } from "../../../../utils/util";
-import { PohTaskPlusForAdmin } from "../../../../utils/types";
+import { modclub_types } from "../../../../utils/types";
 import placeholder from "../../../../../assets/user_placeholder.png";
 import { useProfile } from "../../../../utils/profile";
 
@@ -23,7 +23,7 @@ const PAGE_SIZE = 100;
 const ApplicantPOHDrawing = ({
   applicant,
 }: {
-  applicant: PohTaskPlusForAdmin;
+  applicant: modclub_types.PohTaskPlusForAdmin;
 }) => {
   const indexForDrawingChallenge = applicant.pohTaskData.findIndex(
     (data) => data.challengeId == "challenge-drawing"
@@ -31,7 +31,9 @@ const ApplicantPOHDrawing = ({
   const imageUrl =
     indexForDrawingChallenge > -1
       ? getUrlForData(
-          applicant.pohTaskData[indexForDrawingChallenge].dataCanisterId,
+          applicant.pohTaskData[
+            indexForDrawingChallenge
+          ].dataCanisterId.toString(),
           applicant.pohTaskData[indexForDrawingChallenge].contentId[0]
         )
       : null;

@@ -1,7 +1,7 @@
 // ProfileContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./auth";
-import { ProfileStable } from "./types";
+import { modclub_types } from "./types";
 import { getUserFromStorage, setUserToStorage } from "./util";
 import logger from "../utils/logger";
 
@@ -14,7 +14,7 @@ import {
 
 export interface IProfileContext {
   requiresSignUp: boolean;
-  user: ProfileStable;
+  user: modclub_types.ProfileStable;
   hasAccount: boolean;
   isAdminUser: boolean;
 
@@ -48,7 +48,7 @@ export function ProfileProvider({ children }) {
   const [isAdminUser, setAdminUser] = useState(false);
   const [providerIdText, setProviderIdText] = useState("");
   const [userAlertVal, setUserAlertVal] = useState(false);
-  const [user, setUser] = useState<ProfileStable | undefined>();
+  const [user, setUser] = useState<modclub_types.ProfileStable | undefined>();
   const [isProfileReady, setIsProfileReady] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<
     Object | undefined

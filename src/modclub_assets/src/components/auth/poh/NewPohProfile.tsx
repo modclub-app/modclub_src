@@ -12,7 +12,7 @@ import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
 import { retrieveChallengesForUser } from "../../../utils/api";
 import DrawingChallenge from "./DrawingChallenge";
-import { PohError } from "../../../utils/types";
+import { modclub_types } from "../../../utils/types";
 import { useProfile } from "../../../utils/profile";
 
 const Confirmation = ({ redirect_uri }) => {
@@ -93,7 +93,7 @@ export default function NewPohProfile({ match }) {
       );
     } else {
       if (challenges.hasOwnProperty("err")) {
-        let error: PohError = challenges["err"];
+        let error: modclub_types.PohError = challenges["err"];
         if (error.hasOwnProperty("attemptToAssociateMultipleModclubAccounts")) {
           const originalPrincipal =
             error["attemptToAssociateMultipleModclubAccounts"];
