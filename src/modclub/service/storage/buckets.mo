@@ -255,7 +255,8 @@ actor class Bucket() = this {
     };
   };
 
-  public query func getChunk(fileId : Text, chunkNum : Nat) : async ?Blob {
+  public shared ({ caller }) func getChunk(fileId : Text, chunkNum : Nat) : async ?Blob {
+    await onlyOwners(caller);
     state.chunks.get(chunkId(fileId, chunkNum));
   };
 
