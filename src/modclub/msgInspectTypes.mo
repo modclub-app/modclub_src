@@ -107,6 +107,8 @@ module {
     #votePohContent : () -> (Text, Types.Decision, [Types.PohRulesViolated]);
     #whoami : () -> ();
     #importAccounts : () -> Types.AccountsImportPayload;
+    #translateUserPoints : () -> ();
+    #getImportedUsersStats : () -> ();
     #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal);
     #validate : () -> Any;
   };

@@ -62,7 +62,7 @@ module {
     queryRSAndLevel : () -> async RSAndLevel;
     queryRSAndLevelByPrincipal : (Principal) -> async RSAndLevel;
     updateRSBulk : ([UserAndVote]) -> async [UserAndRS];
-    updateRS : (Principal, Bool) -> async UserAndRS;
+    updateRS : (Principal, Bool, Decision) -> async UserAndRS;
     setRS : (Principal, Int) -> async Result.Result<Bool, Text>;
     subscribe : (Text) -> async ();
   };

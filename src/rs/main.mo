@@ -253,7 +253,9 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     msg : Types.RSCanisterMessageInspection;
   }) : Bool {
     switch (msg) {
-      case (#setRS _) { authGuard.isAdmin(caller) };
+      case (#setRS _) {
+        authGuard.isModclubCanister(caller) or authGuard.isAdmin(caller);
+      };
       case (#updateRS _) {
         authGuard.isModclubCanister(caller) or authGuard.isAdmin(caller);
       };

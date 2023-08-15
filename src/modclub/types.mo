@@ -18,7 +18,7 @@ module {
 
   public type AccountsImportPayload = {
     providers : [ProviderInfo];
-    adminsByProvider : [ProviderAdmins];
+    adminsByProvider : [ProviderAdminsInfo];
     moderators : [OldModeratorLeaderboard];
     approvedPOHUsers : [(Principal, Principal)];
     userPoints : [(Principal, Int)];
@@ -27,6 +27,11 @@ module {
   public type ProviderAdmins = {
     pid : Principal;
     admins : [ProfileStable];
+  };
+
+  public type ProviderAdminsInfo = {
+    pid : Principal;
+    admins : [ProfileInfoStable];
   };
 
   public type CanClaimLockedResponse = {
@@ -212,6 +217,10 @@ module {
     subaccounts : SubAccountsList;
   };
 
+  public type SubAccountsStable = {
+    subaccounts : [(Text, Blob)];
+  };
+
   public type ProviderInfo = {
     id : Principal;
     name : Text;
@@ -227,7 +236,7 @@ module {
 
   public type Provider = ProviderInfo and SubAccounts and SettingsForProvider;
 
-  public type ProviderStable = {
+  public type ProviderInfoStable = {
     id : Principal;
     name : Text;
     description : Text;
@@ -235,8 +244,9 @@ module {
     updatedAt : Timestamp;
     settings : ProviderSettings;
     image : ?Image;
-    subaccounts : [(Text, Blob)];
   };
+
+  public type ProviderStable = ProviderInfoStable and SubAccountsStable;
 
   public type ProviderMeta = {
     name : Text;
@@ -272,15 +282,16 @@ module {
     updatedAt : Timestamp;
   };
 
-  public type ProfileStable = {
+  public type ProfileInfoStable = {
     id : UserId;
     userName : Text;
     email : Text;
     role : Role;
-    subaccounts : [(Text, Blob)];
     createdAt : Timestamp;
     updatedAt : Timestamp;
   };
+
+  public type ProfileStable = ProfileInfoStable and SubAccountsStable;
 
   public type ModeratorLeaderboard = {
     id : UserId;
