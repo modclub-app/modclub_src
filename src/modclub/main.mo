@@ -2494,7 +2494,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       signingKey,
       authGuard
     );
-
+    importedProfiles := Buffer.fromIter<(Principal, Nat)>(List.toIter<(Principal, Nat)>(importedProfilesStable));
+    importedProviders := Buffer.fromIter<Principal>(List.toIter<Principal>(importedProvidersStable));
     stateV2 := StateV2.toState(stateSharedV2);
     stateSharedV2 := StateV2.emptyShared();
 
@@ -2918,22 +2919,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func translateUserPoints() : async Result.Result<{ topSeniors : Nat; seniors : Nat; juniors : Nat; novice : Nat }, Text> {
-    var maxUpVal = 0;
-    for ((_, up) in importedProfiles.vals()) {
-      if (Nat.greater(up, maxUpVal)) {
-        maxUpVal := up;
-      };
-    };
     if (importedProfiles.size() == 0) {
       throw Error.reject("Error: No Imported Profiles Found.");
     };
-    if (maxUpVal == 0) {
-      throw Error.reject("Error: No Max UserPoints value.");
-    };
-    let onePercent = Nat.div(maxUpVal, 100);
-    let topSeniorUP = onePercent * Constants.TOP_SENIOR_TRANSLATE_THRESHOLD;
-    let seniorUP = onePercent * Constants.SENIOR_TRANSLATE_THRESHOLD;
-    let juniorUP = onePercent * Constants.JUNIOR_TRANSLATE_THRESHOLD;
+
+    let topSeniorUP = Constants.TOP_SENIOR_TRANSLATE_THRESHOLD;
+    let seniorUP = Constants.SENIOR_TRANSLATE_THRESHOLD;
+    let juniorUP = Constants.JUNIOR_TRANSLATE_THRESHOLD;
 
     var topSeniors : Nat = 0;
     var seniors : Nat = 0;
@@ -2982,32 +2974,20 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func getImportedUsersStats() : async Result.Result<{ topSeniors : Nat; seniors : Nat; juniors : Nat; novice : Nat }, Text> {
-    var maxUpVal = 0;
-    for ((_, up) in importedProfiles.vals()) {
-      if (Nat.greater(up, maxUpVal)) {
-        maxUpVal := up;
-      };
-    };
     if (importedProfiles.size() == 0) {
       throw Error.reject("Error: No Imported Profiles Found.");
     };
-    if (maxUpVal == 0) {
-      throw Error.reject("Error: No Max UserPoints value.");
-    };
-    let onePercent = Nat.div(maxUpVal, 100);
-    let topSeniorUP = onePercent * Constants.TOP_SENIOR_TRANSLATE_THRESHOLD;
-    let seniorUP = onePercent * Constants.SENIOR_TRANSLATE_THRESHOLD;
-    let juniorUP = onePercent * Constants.JUNIOR_TRANSLATE_THRESHOLD;
+
     var topSeniors : Nat = 0;
     var seniors : Nat = 0;
     var juniors : Nat = 0;
     var novice : Nat = 0;
     for ((uid, up) in importedProfiles.vals()) {
-      if (Nat.greater(up, topSeniorUP)) {
+      if (Nat.greater(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
         topSeniors += 1;
-      } else if (Nat.greater(up, seniorUP) and Nat.less(up, topSeniorUP)) {
+      } else if (Nat.greater(up, Constants.SENIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
         seniors += 1;
-      } else if (Nat.greater(up, juniorUP) and Nat.less(up, seniorUP)) {
+      } else if (Nat.greater(up, Constants.JUNIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.SENIOR_TRANSLATE_THRESHOLD)) {
         juniors += 1;
       } else {
         novice += 1;

@@ -24,8 +24,8 @@ module Constants {
   public let ICRC_STAKING_SA = "-------------------------STAKING" : Blob;
   public let ICRC_VESTING_SA = "-------------------------VESTING" : Blob;
 
-  public let TOP_SENIOR_TRANSLATE_THRESHOLD = 80;
-  public let SENIOR_TRANSLATE_THRESHOLD = 63;
-  public let JUNIOR_TRANSLATE_THRESHOLD = 33;
+  public let TOP_SENIOR_TRANSLATE_THRESHOLD = 40000;
+  public let SENIOR_TRANSLATE_THRESHOLD = 15000;
+  public let JUNIOR_TRANSLATE_THRESHOLD = 1000;
 
 };
