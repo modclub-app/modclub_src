@@ -9,7 +9,11 @@
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
-      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
       "type": "assets"
     },
     "modclub_dev": {
@@ -21,7 +25,11 @@
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
-      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
       "type": "assets"
     },
     "modclub_qa": {
@@ -34,7 +42,11 @@
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
-      "source": ["src/modclub_assets/assets", "dist/modclub_assets/"],
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
       "type": "assets"
     },
     "wallet": {
