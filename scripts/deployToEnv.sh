@@ -102,7 +102,8 @@ function deploy_canisters() {
   local rs_canister_name=$(get_canister_name_by_env $env "rs")
   local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
   local auth_canister_name=$(get_canister_name_by_env $env "auth")
-  local assets_canister_name=$(get_canister_name_by_env $env "modclub_assets")
+  local assets_canister_name="$(get_canister_name_by_env $env "modclub")_assets"
+
   # local ledger_principal=""
   # local minter_principal=""
 
