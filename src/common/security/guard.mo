@@ -128,13 +128,17 @@ module ModSecurity {
 
     public func getCanisterId(canisterType : CommonTypes.ModclubCanister) : Principal {
       switch (canisterType) {
-        case (#modclub) { env.modclub_canister_id; };
-        case (#modclub_old) { env.old_modclub_canister_id; };
-        case (#rs) { env.rs_canister_id; };
-        case (#wallet) { env.wallet_canister_id; };
-        case (#auth) { env.auth_canister_id; };
-        case (#vesting) {  env.vesting_canister_id;  };
+        case (#modclub) { env.modclub_canister_id };
+        case (#modclub_old) { env.old_modclub_canister_id };
+        case (#rs) { env.rs_canister_id };
+        case (#wallet) { env.wallet_canister_id };
+        case (#auth) { env.auth_canister_id };
+        case (#vesting) { env.vesting_canister_id };
       };
+    };
+
+    public func getEnvs() : CommonTypes.ENV {
+      env;
     };
   };
 };

@@ -8,6 +8,7 @@ import Debug "mo:base/Debug";
 import Prim "mo:prim";
 import Cycles "mo:base/ExperimentalCycles";
 import HashMap "mo:base/HashMap";
+import List "mo:base/List";
 import Trie "mo:base/Trie";
 import Text "mo:base/Text";
 import Error "mo:base/Error";
@@ -21,9 +22,13 @@ import Helpers "../../../common/helpers";
 import ModClubParam "../parameters/params";
 import Canistergeek "../../../common/canistergeek/canistergeek";
 import LoggerTypesModule "../../../common/canistergeek/logger/typesModule";
+import ModSecurity "../../../common/security/guard";
+import Utils "../../../common/utils";
 import Types "./types";
 
-actor class Bucket() = this {
+shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this {
+  let authGuard = ModSecurity.Guard(env, "BUCKET_CANISTER");
+  authGuard.subscribe("admins");
 
   stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
@@ -32,16 +37,20 @@ actor class Bucket() = this {
   private let canistergeekLogger = Canistergeek.Logger();
   // ids only accessible by admins
   stable var restrictedContentId : Trie.Trie<Text, Int> = Trie.empty();
-  /* public */ type DataCanisterState = {
+  type DataCanisterState = {
     contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
     chunks : HashMap.HashMap<Types.ChunkId, Types.ChunkData>;
     moderators : HashMap.HashMap<Principal, Principal>;
   };
 
-  /* public */ type DataCanisterSharedState = {
+  type DataCanisterSharedState = {
     contentInfo : [(Text, Types.ContentInfo)];
     chunks : [(Types.ChunkId, Types.ChunkData)];
     moderators : [(Principal, Principal)];
+  };
+
+  public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
+    authGuard.handleSubscription(payload);
   };
 
   private func emptyStateForDataCanister() : DataCanisterState {
@@ -255,48 +264,14 @@ actor class Bucket() = this {
     };
   };
 
-  public shared ({ caller }) func getChunk(fileId : Text, chunkNum : Nat) : async ?Blob {
-    await onlyOwners(caller);
+  public query ({ caller }) func getChunk(fileId : Text, chunkNum : Nat) : async ?Blob {
+    Utils.mod_assert(authGuard.isModclubCanister(caller) or authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
     state.chunks.get(chunkId(fileId, chunkNum));
   };
 
-  type StreamingCallbackToken = {
-    key : Text;
-    content_encoding : Text;
-    index : Nat;
-    sha256 : ?[Nat8];
-  };
-
-  type StreamingCallbackHttpResponse = {
-    token : ?StreamingCallbackToken;
-    body : Blob;
-  };
-
-  type StreamingCallback = shared () -> async ();
-
-  type StreamingStrategy = {
-    #Callback : {
-      token : StreamingCallbackToken;
-      callback : StreamingCallback;
-    };
-  };
-
-  type HttpRequest = {
-    method : Text;
-    url : Text;
-    headers : [(Text, Text)];
-    body : Blob;
-  };
-  type HttpResponse = {
-    status_code : Nat16;
-    headers : [(Text, Text)];
-    body : Blob;
-    streaming_strategy : ?StreamingStrategy;
-  };
-
   public shared query ({ caller }) func streamingCallback(
-    token : StreamingCallbackToken
-  ) : async StreamingCallbackHttpResponse {
+    token : Types.StreamingCallbackToken
+  ) : async Types.StreamingCallbackHttpResponse {
     let body : Blob = switch (state.chunks.get(chunkId(token.key, token.index))) {
       case (?b) b;
       case (null) {
@@ -310,7 +285,7 @@ actor class Bucket() = this {
         "404 Not Found";
       };
     };
-    let next_token : ?StreamingCallbackToken = switch (
+    let next_token : ?Types.StreamingCallbackToken = switch (
       state.chunks.get(chunkId(token.key, token.index +1))
     ) {
       case (?nextbody) ?{
@@ -349,7 +324,7 @@ actor class Bucket() = this {
     signingKey := signingKey1;
   };
 
-  public query ({ caller }) func http_request(req : HttpRequest) : async HttpResponse {
+  public query ({ caller }) func http_request(req : Types.HttpRequest) : async Types.HttpResponse {
     var _headers = [
       ("Content-Type", "text/html"),
       ("Content-Disposition", "inline")
@@ -362,7 +337,7 @@ actor class Bucket() = this {
 
     var _status_code : Nat16 = 404;
     var _body : Blob = "404 Not Found";
-    var _streaming_strategy : ?StreamingStrategy = null;
+    var _streaming_strategy : ?Types.StreamingStrategy = null;
     let _ = do ? {
       let storageParams : Text = Text.stripStart(req.url, #text("/storage?"))!;
       let fields : Iter.Iter<Text> = Text.split(storageParams, #text("&"));
@@ -459,6 +434,16 @@ actor class Bucket() = this {
   public shared ({ caller }) func runDeleteContentJob() : async () {
     await onlyOwners(caller);
     deleteContentAfterExpiry();
+  };
+
+  // For testing purposes
+  public query ({ caller }) func showAdmins() : async [Principal] {
+    Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
+    authGuard.getAdmins();
+  };
+
+  public shared ({ caller }) func subscribeOnAdmins() : async () {
+    authGuard.subscribe("admins");
   };
 
   private func isUserAllowed(jwt : Text, contentId : Text) : Bool {
@@ -626,6 +611,12 @@ actor class Bucket() = this {
   };
 
   system func postupgrade() {
+    authGuard.subscribe("admins");
+    ignore authGuard.setUpDefaultAdmins(
+      List.nil<Principal>(),
+      deployer,
+      Principal.fromActor(this)
+    );
     state := toDataCanisterState(stateShared);
     stateShared := emptyDataCanisterSharedState();
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
@@ -634,4 +625,16 @@ actor class Bucket() = this {
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
   };
+
+  system func inspect({
+    arg : Blob;
+    caller : Principal;
+    msg : Types.BucketCanisterMessageInspection;
+  }) : Bool {
+    switch (msg) {
+      case (#subscribeOnAdmins _) { authGuard.isAdmin(caller) };
+      case _ { not Principal.isAnonymous(caller) };
+    };
+  };
+
 };

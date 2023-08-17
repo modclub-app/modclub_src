@@ -2037,6 +2037,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     (allDataCanisterId, retired);
   };
 
+  public shared ({ caller }) func setModclubBuckets() : () {
+    let allBuckets = storageSolution.getAllDataCanisterIds();
+    await authGuard.getAuthActor().setModclubBuckets(allBuckets);
+  };
+
   // Return the principal identifier of this canister.
   public func whoami() : async Principal {
     Principal.fromActor(this);
@@ -2572,6 +2577,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#validate _) { authGuard.isAdmin(caller) };
       case (#translateUserPoints _) { authGuard.isAdmin(caller) };
       case (#getImportedUsersStats _) { authGuard.isAdmin(caller) };
+      case (#setModclubBuckets _) { authGuard.isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };

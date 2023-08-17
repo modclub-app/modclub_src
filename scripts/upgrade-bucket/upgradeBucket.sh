@@ -1,14 +1,65 @@
-env="l"
-network="local"
+RED='\033[0;31m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
 
+env=""
+network=""
 bucketIds=""
+canisterPostfix=""
 
-echo "Enter 'p' for production or 'd' for dev or 'l' for local"
+function get_local_canisters() {
+  echo "record { modclub_canister_id = principal \"$(dfx canister --network $network id modclub$canisterPostfix)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; rs_canister_id = principal \"$(dfx canister --network $network id rs$canisterPostfix)\"; wallet_canister_id = principal \"$(dfx canister --network $network id wallet$canisterPostfix)\"; auth_canister_id = principal \"$(dfx canister --network $network id auth$canisterPostfix)\"; vesting_canister_id = principal \"$(dfx canister --network $network id vesting$canisterPostfix)\"; }"
+}
+
+if [[ "$PWD" != *"scripts/upgrade-bucket"* ]]; then
+    printf "${RED}YOU MUST RUN THIS SCRIPT FROM ${CYAN}'scripts/upgrade-bucket'${RED} DIRECTORY!${NC}\n"
+    exit 1
+fi
+
+echo "Enter 'p' for production or 'd' for dev or 'qa' for QA or 'l' for local"
 read env
 
-# echo "Enter 'u' for upgrade (Default), 'i' for install, or 'r' for reinstall (WARNING: ALL DATA WILL BE LOST)"
-# read mode
-# echo ""
+case $env in 
+    "p" | "P")
+        echo "You have selected prod environment. Do you want to proceed?"
+        read confirmation
+        if [ "$confirmation" != "y" ] || [ "$confirmation" != "Y" ]
+        then
+            echo "Exiting the process"
+            exit
+        fi
+        echo "*** WARNING! PRODUCTION BUILD AND DEPLOYMENT ***"
+        network="ic"
+        rm -rf canister_ids.json
+    ;;
+    "d" | "D")
+        echo "*** DEV BUCKETS BUILD AND DEPLOYMENT ***"
+        network="ic"
+        canisterPostfix="_dev"
+        rm -rf canister_ids.json
+    ;;
+    "qa" | "QA")
+        echo "*** QA BUCKETS BUILD AND DEPLOYMENT ***"
+        network="ic"
+        canisterPostfix="_qa"
+        rm -rf canister_ids.json
+    ;;
+    "l" | "L")
+        echo "*** LOCAL BUILD AND DEPLOYMENT ***"
+        network="local"
+        canisterPostfix="_qa"
+        rm -rf .dfx/local/canister_ids.json
+    ;;
+
+    *) echo "unknown ENVIRONMENT" && exit 1;;
+esac
+
+cd ../../
+local_env=$(get_local_canisters)
+echo "PLEASE COPY AND PASTE CANISTER IDs, ONE BY ONE ::"
+canisterIDs=$(dfx canister call modclub${canisterPostfix} getAllDataCanisterIds '()' --network=$network) || exit 1
+echo "$canisterIDs"
+cd ./scripts/upgrade-bucket
 
 addAnotherPrincipal="y"
 while [ "$addAnotherPrincipal" = "y" ]
@@ -29,31 +80,10 @@ do
     echo ""
 done
 
-
-if [ "$env" = "p" ] || [ "$env" = "P" ] || [ "$env" = "d" ] || [ "$env" = "D" ] 
-then
-    if [ "$env" = "p" ] || [ "$env" = "P" ]
-    then
-        echo "You have selected prod environment. Do you want to proceed?"
-        read confirmation
-        if [ "$confirmation" != "y" ] || [ "$confirmation" != "Y" ]
-        then
-            echo "Exiting the process"
-            exit
-        fi
-    fi
-    network="ic"
-    rm -rf canister_ids.json
-    echo "*** PRODUCTION BUILD AND DEPLOYMENT ***"
-else
-    network="local"
-    rm -rf .dfx/local/canister_ids.json
-    echo "*** LOCAL BUILD AND DEPLOYMENT ***"
-fi
-
-echo $bucketIds
 rm -rf dfx.json
-echo "Generating dfx.json and canister_id.json"
-node generateConfig.cjs "$bucketIds" "$env"
-echo "deploying bucket"
-dfx deploy --network $network
+
+echo "Generating dfx.json and canister_ids.json"
+buckets=$(node generateConfig.cjs "$bucketIds" "$env")
+
+echo "deploying buckets ${buckets}"
+dfx deploy --network $network --argument="($local_env)" $buckets

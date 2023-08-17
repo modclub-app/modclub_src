@@ -21,7 +21,7 @@
       "type": "motoko",
       "args": "-v --max-stable-pages 786432"
     },
-    "modclub_dev_assets": {
+    "modclub_assets_dev": {
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
@@ -37,7 +37,7 @@
       "type": "motoko",
       "args": "-v --max-stable-pages 786432"
     },
-    "modclub_qa_assets": {
+    "modclub_assets_qa": {
       "dependencies": ["modclub_qa"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
@@ -117,6 +117,10 @@
         }
       },
       "frontend": {}
+    },
+    "bucket_qa": {
+      "main": "src/modclub/service/storage/buckets.mo",
+      "type": "motoko"
     }
   },
   "defaults": {
@@ -127,7 +131,7 @@
   "dfx": "0.14.3",
   "networks": {
     "local": {
-      "bind": "127.0.0.1:8000",
+      "bind": "127.0.0.1:8080",
       "stoicbind": "127.0.0.1:3000",
       "type": "ephemeral"
     }

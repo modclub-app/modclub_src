@@ -24,7 +24,7 @@ function create_qa_canisters() {
   dfx canister create rs_qa &&
   dfx canister create modclub_qa &&
   dfx canister create vesting_qa &&
-  dfx canister create modclub_qa_assets &&
+  dfx canister create modclub_assets_qa &&
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
 }
@@ -105,7 +105,7 @@ function deploy_qa_canisters() {
 	dfx deploy modclub_qa  --argument="($local_env)" &&
   generate_declariations "$DEV_ENV" &&
   node "$current_dir/../build/gen_declarations_by_env.cjs" &&
-  DEV_ENV=qa dfx deploy modclub_qa_assets &&
+  DEV_ENV=qa dfx deploy modclub_assets_qa &&
   dfx ledger fabricate-cycles --canister $(dfx canister id modclub_qa) --amount 10 &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
 	return 0;
@@ -121,4 +121,4 @@ function init_qa_canisters() {
   return 0;
 }
 
-create_qa_canisters && deploy_qa_canisters && init_qa_canisters
+create_qa_canisters && deploy_qa_canisters # && init_qa_canisters

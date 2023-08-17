@@ -35,6 +35,7 @@ module {
     isAdmin : (Principal) -> async Bool;
     registerAdmin : (Principal) -> async Result.Result<List.List<Principal>, Text>;
     unregisterAdmin : (Principal) -> async Result.Result<List.List<Principal>, Text>;
+    setModclubBuckets : ([Principal]) -> async ();
   };
 
   public type WalletActorType = actor {

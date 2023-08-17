@@ -111,6 +111,7 @@ module {
     #getImportedUsersStats : () -> ();
     #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal);
     #validate : () -> Any;
+    #setModclubBuckets : () -> ();
   };
 
 };

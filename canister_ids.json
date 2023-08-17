@@ -20,7 +20,7 @@
   "modclub_dev": {
     "ic": "d7isk-4aaaa-aaaah-qdbsa-cai"
   },
-  "modclub_dev_assets": {
+  "modclub_assets_dev": {
     "ic": "dyju6-ryaaa-aaaah-qdbsq-cai"
   },
   "modclub_old": {
@@ -34,7 +34,7 @@
   "modclub_qa": {
     "ic": "hvyqe-cyaaa-aaaah-qdbiq-cai"
   },
-  "modclub_qa_assets": {
+  "modclub_assets_qa": {
     "ic": "h433y-uqaaa-aaaah-qdbja-cai"
   },
   "modclub_staging": {

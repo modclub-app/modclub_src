@@ -244,10 +244,12 @@ module StorageModule {
 
     private func newEmptyBucket() : async Bucket.Bucket {
       Cycles.add(DATA_CANISTER_CYCLE_TOPUP);
-      let b = await Bucket.Bucket();
+      let b = await Bucket.Bucket(guard.getEnvs());
       let _ = await updateCanister(b);
       b.setParams(Iter.toArray(storageState.moderatorsId.keys()), signingKey);
       storageState.dataCanisters.put(Principal.fromActor(b), b);
+      let allBuckets = getAllDataCanisterIds();
+      await guard.getAuthActor().setModclubBuckets(allBuckets);
       return b;
     };
 

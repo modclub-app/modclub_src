@@ -19,6 +19,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
 
   stable var admins : AuthTypes.AdminsList = List.nil<Principal>();
   stable var subscriptions = List.nil<AuthTypes.Subscriber>();
+  stable var modclubBuckets = List.nil<Principal>();
 
   stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
@@ -44,7 +45,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared ({ caller }) func subscribe(_topic : Text) : async () {
-    Utils.mod_assert(guard.isModclubCanister(caller), NotPermitted);
+    Utils.mod_assert(guard.isModclubCanister(caller) or isModclubBucket(caller), NotPermitted);
 
     let exists = List.some<AuthTypes.Subscriber>(
       subscriptions,
@@ -147,6 +148,26 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     canistergeekLogger.getLog(request);
   };
 
+  public shared ({ caller }) func setModclubBuckets(buckets : [Principal]) : () {
+    for (bid in buckets.vals()) {
+      if (not isModclubBucket(bid)) {
+        modclubBuckets := List.push<Principal>(
+          bid,
+          modclubBuckets
+        );
+      };
+    };
+  };
+
+  private func isModclubBucket(bid : Principal) : Bool {
+    List.some<Principal>(
+      modclubBuckets,
+      func(ebid : Principal) {
+        Principal.equal(ebid, bid);
+      }
+    );
+  };
+
   //SNS generic validate function
   public shared ({ caller }) func validate(input : Any) : async CommonTypes.Validate {
     return #Ok("success");
@@ -161,6 +182,9 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
       case (#registerAdmin _) { _isAdmin(caller) };
       case (#unregisterAdmin _) { _isAdmin(caller) };
       case (#getSubscriptions _) { _isAdmin(caller) };
+      case (#setModclubBuckets _) {
+        guard.isModclubCanister(caller) or _isAdmin(caller);
+      };
       case (#validate _) { _isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };

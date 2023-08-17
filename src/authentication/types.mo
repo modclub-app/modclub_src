@@ -31,6 +31,7 @@ module {
     #collectCanisterMetrics : () -> ();
     #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
     #getCanisterLog : () -> ?LoggerTypesModule.CanisterLogRequest;
+    #setModclubBuckets : () -> ([Principal]);
     #validate : () -> Any;
   };
 };
