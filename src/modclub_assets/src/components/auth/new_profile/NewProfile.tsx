@@ -8,24 +8,30 @@ import {
   Button,
   Icon,
 } from "react-bulma-components";
-import { registerModerator } from "../../../utils/api";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
 import { useHistory } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useState, useEffect } from "react";
 import { validateEmail } from "../../../utils/util";
+import { useActors } from "../../../hooks/actors";
+import logger from "../../../utils/logger";
+import { setUserToStorage } from "../../../utils/util";
+import { KEY_LOCALSTORAGE_USER } from "../../../contexts/profile";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
   const { updateProfile, user } = useProfile();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
+  const modclub = useActors().modclub;
   const instructionText = isPohFlow
     ? "To begin POH create your MODCLUB profile"
     : "Create your profile";
 
-  if (user) {
-    history.push("/app");
-  }
+  useEffect(() => {
+    if (user) {
+      history.push("/app");
+    }
+  }, [user, history]);
 
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
@@ -37,10 +43,16 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
     }
 
     const regEx = /Reject text: (.*)/g;
+    logger.info("Submitting info: username, email", username, email);
     try {
       setSubmitting(true);
-      const user = await registerModerator(username, email);
-      await updateProfile(user);
+      const user = await modclub.registerModerator(
+        username,
+        email ? [email] : []
+      );
+
+      updateProfile(user);
+
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });
         setTimeout(() => {
@@ -49,7 +61,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
         }, 2000);
       }
     } catch (e) {
-      console.log("user ERRORR", e);
+      logger.error("onFormSubmit: ", e);
       let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr ? errAr[1] : e });
       setSubmitting(false);

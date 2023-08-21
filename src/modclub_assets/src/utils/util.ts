@@ -1,8 +1,6 @@
 import { Optional } from "./api";
 import { Profile } from "./types";
 import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
-import { submitChallengeData } from "./api";
-import { fetchWithJwt } from "./jwt";
 
 export function getFileExtension(type: string): any | null {
   switch (type) {
@@ -35,39 +33,6 @@ export function b64toBlob(b64Data: string, contentType = "", sliceSize = 512) {
   }
   const blob = new Blob(byteArrays, { type: contentType });
   return blob;
-}
-
-export async function processAndUploadChunk(
-  challengeId: string,
-  MAX_CHUNK_SIZE: number,
-  blob: Blob,
-  byteStart: number,
-  chunk: number,
-  fileSize: number,
-  fileExtension: string
-): Promise<any> {
-  const blobSlice = blob.slice(
-    byteStart,
-    Math.min(Number(fileSize), byteStart + MAX_CHUNK_SIZE),
-    blob.type
-  );
-
-  const bsf = await blobSlice.arrayBuffer();
-
-  const res = await submitChallengeData({
-    challengeId: challengeId,
-    challengeDataBlob: [encodeArrayBuffer(bsf)],
-    offset: BigInt(chunk),
-    numOfChunks: BigInt(Number(Math.ceil(fileSize / MAX_CHUNK_SIZE))),
-    mimeType: fileExtension,
-    dataSize: BigInt(fileSize),
-  });
-  console.log("res", res);
-
-  if (res && res.submissionStatus && !("ok" in res.submissionStatus)) {
-    return Object.keys(res.submissionStatus)[0];
-  }
-  return null;
 }
 
 export function getUserFromStorage(
@@ -172,12 +137,6 @@ export function getViolatedRules(values: { [key: string]: string }): string[] {
   return result;
 }
 
-export async function fetchObjectUrl(url: string): Promise<string> {
-  const res = await fetchWithJwt(url);
-  const imageBlob = await res.blob();
-  return URL.createObjectURL(imageBlob);
-}
-
 export function getUrlFromArray(imgData: any, imgType: any): string {
   const arrayBufferView = new Uint8Array(imgData);
   const blob = new Blob([arrayBufferView], { type: imgType });
@@ -206,9 +165,9 @@ export function convert_from_mod(amount: bigint, digit: bigint): number {
   return Number(amount) * Math.pow(10, Number(digit));
 }
 
-export function timestampToDate(timestamp:number): any {
-  const date = new Date(timestamp/1000000);
+export function timestampToDate(timestamp: number): any {
+  const date = new Date(timestamp / 1000000);
   const formattedDate = date.toDateString();
-  const formattedTime = date.toLocaleTimeString(); 
-  return `${formattedDate}/${formattedTime}`
+  const formattedTime = date.toLocaleTimeString();
+  return `${formattedDate}/${formattedTime}`;
 }

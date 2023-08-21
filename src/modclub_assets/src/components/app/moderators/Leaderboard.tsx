@@ -8,10 +8,11 @@ import {
   Media,
   Image,
 } from "react-bulma-components";
-import { getModeratorLeaderboard, getProfileById } from "../../../utils/api";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import placeholder from "../../../../assets/user_placeholder.png";
 import { modclub_types } from "../../../utils/types";
+import { useActors } from "../../../hooks/actors";
+import { getModeratorLeaderboard } from "../../../utils/api";
 
 const PAGE_SIZE = 30;
 
@@ -73,10 +74,10 @@ const ModeratorItem = ({
   const [profile, setProfile] = useState<modclub_types.ProfileStable | null>(
     null
   );
-
+  const { modclub } = useActors();
   useEffect(() => {
     const getProfile = async () => {
-      const result = await getProfileById(item.id);
+      const result = await modclub.getProfileById(item.id);
       setProfile(result);
     };
 
@@ -108,10 +109,15 @@ export default function Leaderboard() {
     []
   );
   const [page, setPage] = useState(1);
+  const { modclub } = useActors();
 
   useEffect(() => {
     const getData = async () => {
-      const newProfiles = await getModeratorLeaderboard(PAGE_SIZE, page);
+      const newProfiles = await getModeratorLeaderboard(
+        modclub,
+        PAGE_SIZE,
+        page
+      );
       setContent([...content, ...newProfiles]);
     };
 

@@ -1,13 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { useAuth } from "../../../utils/auth";
-import {
-  getContent,
-  canReserveContent,
-  reserveContent,
-  queryRSAndLevelByPrincipal,
-} from "../../../utils/api";
+import { Principal } from "@dfinity/principal";
 import {
   Columns,
   Modal,
@@ -24,7 +18,9 @@ import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
+import { useConnect } from "@connect2ic/react";
+import { useActors } from "../../../hooks/actors";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -62,7 +58,7 @@ function resizeIframe(iframe) {
 }
 
 export default function Task() {
-  const { identity } = useAuth();
+  const { principal } = useConnect();
   const { user } = useProfile();
   const { taskId } = useParams<{ taskId: string }>();
   const [task, setTask] = useState(null);
@@ -73,21 +69,21 @@ export default function Task() {
   const [full, setFull] = useState<boolean | null>(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [time, setTime] = useState("02:00");
-
+  const { modclub, rs } = useActors();
   const getImage = (data: any) => {
     const image = unwrap<modclub_types.Image>(data);
     return fileToImgSrc(image.data, image.imageType);
   };
 
   const fetchTask = async () => {
-    const content = await getContent(taskId);
+    const content = await modclub.getContent(taskId);
     setTask(content);
   };
 
   const fetchData = async () => {
     const [can_reserved, get_level] = await Promise.all([
-      await canReserveContent(taskId.toString()),
-      await queryRSAndLevelByPrincipal(identity.getPrincipal().toText()),
+      await modclub.canReserveContent(taskId.toString()),
+      await rs.queryRSAndLevelByPrincipal(Principal.fromText(principal)),
     ]);
     if (Object.keys(can_reserved)[0] == "ok") {
       setFull(!Object.values<boolean>(can_reserved)[0]);
@@ -152,9 +148,9 @@ export default function Task() {
     setShowReserveModal(!showReserveModal);
   };
   const makeReserved = async () => {
-    await reserveContent(taskId).then(() => {
-      setReserved(true);
-    });
+    modclub.reserveContent(taskId);
+    await modclub.reserveContent(taskId);
+    setReserved(true);
     setShowReserveModal(!showReserveModal);
   };
 

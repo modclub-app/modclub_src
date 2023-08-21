@@ -1,18 +1,22 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import FormModal from "../modals/FormModal";
-import { claimLockedReward, lockedFor } from "../../../utils/api";
+import { Principal } from "@dfinity/principal";
 import { useState } from "react";
 import { UpdateTable } from "../../common/updateTable/UpdateTable";
+import { useActors } from "../../../hooks/actors";
 
-export default function Claim({ toggle, tokenHoldings, userId }) {
-  const [amount, setAmount] = useState(tokenHoldings.pendingRewards);
+export default function Claim({ toggle, pendingRewards, userId }) {
+  const [amount, setAmount] = useState(pendingRewards);
   const [error, setError] = useState(null);
-
+  const { modclub, vesting } = useActors();
   const onFormSubmit = async () => {
     try {
-      const locked = await lockedFor(userId);
-      const res = await claimLockedReward(Number(locked));
+      const locked = await vesting.locked_for({
+        owner: Principal.fromText(userId),
+        subaccount: [],
+      });
+      const res = await modclub.claimLockedReward(BigInt(locked), []);
       return res.ok;
     } catch (err) {
       setError(err.message);
@@ -21,8 +25,8 @@ export default function Claim({ toggle, tokenHoldings, userId }) {
 
   const preventMax = (e) => {
     let inputValue = parseInt(e.target.value);
-    if (inputValue > tokenHoldings.pendingRewards) {
-      setAmount(tokenHoldings.pendingRewards);
+    if (inputValue > pendingRewards) {
+      setAmount(pendingRewards);
     } else {
       setAmount(inputValue);
     }
@@ -43,7 +47,7 @@ export default function Claim({ toggle, tokenHoldings, userId }) {
             component="input"
             type="hidden"
             className="input"
-            initialValue={tokenHoldings.pendingRewards}
+            initialValue={pendingRewards}
             onInput={preventMax}
           />
         </div>

@@ -1,24 +1,30 @@
 import * as React from "react";
 import { useState } from "react";
 import { useParams } from "react-router";
-import { registerUserToReceiveAlerts } from "../../../utils/api";
 import { Notification, Button } from "react-bulma-components";
 import { Link } from "react-router-dom";
-import { useProfile } from "../../../utils/profile";
-
+import { useProfile } from "../../../contexts/profile";
+import { useActors } from "../../../hooks/actors";
+import { Principal } from "@dfinity/principal";
 export default function AlertConfirmation() {
   let { userID } = useParams();
+  const { modclub } = useActors();
   const { userAlertVal, setUserAlertVal } = useProfile();
   const [displayNotification, setDisplayNotification] =
     useState<boolean>(false);
   const [loadSpinner, setLoadSpinner] = useState(false);
+
   const registerUser = async () => {
     setLoadSpinner(true);
     userID = userID
       ? userID
       : location.hash.split("#/app/confirm/poh/alerts/")[1];
 
-    const response = await registerUserToReceiveAlerts(userID, true);
+    const response = await modclub.registerUserToReceiveAlerts(
+      Principal.fromText(userID),
+      true
+    );
+
     setLoadSpinner(true);
     setDisplayNotification(response);
     setUserAlertVal(response);

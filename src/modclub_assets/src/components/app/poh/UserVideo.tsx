@@ -1,17 +1,20 @@
-import * as React from 'react'
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { Card, Columns, Button } from "react-bulma-components";
-import { getUrlForData, fetchObjectUrl } from "../../../utils/util";
-import { PohTaskData } from '../../../utils/types';
+import { getUrlForData } from "../../../utils/util";
+import { PohTaskData } from "../../../utils/types";
+import { fetchObjectUrl } from "../../../utils/jwt";
+import { useActors } from "../../../utils";
 
-export default function UserVideo({ data } : { data: PohTaskData }) {
+export default function UserVideo({ data }: { data: PohTaskData }) {
   const videoUrl = getUrlForData(data.dataCanisterId, data.contentId[0]);
-  const phrases = data.wordList[0]
+  const phrases = data.wordList[0];
   const [videoObject, setVideoObject] = useState(null);
+  const { modclub } = useActors();
 
   useEffect(() => {
     const fetchData = async () => {
-      const urlObject = await fetchObjectUrl(videoUrl);
+      const urlObject = await fetchObjectUrl(modclub, videoUrl);
       setVideoObject(urlObject);
     };
     fetchData();
@@ -26,13 +29,14 @@ export default function UserVideo({ data } : { data: PohTaskData }) {
         </video>
       ) : (
         <figure className="image is-16by9">
-          <div className="loader is-loading p-6"
-           style={{
-             position: "absolute",
-             top: 0,
-             left: 0,
-             right: 0,
-             bottom: 0
+          <div
+            className="loader is-loading p-6"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
             }}
           />
         </figure>
@@ -50,5 +54,5 @@ export default function UserVideo({ data } : { data: PohTaskData }) {
         </Card.Content>
       </Card>
     </Card.Content>
-  )
-};
+  );
+}

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
+import { Principal } from "@dfinity/principal";
 import {
   Columns,
   Card,
@@ -10,16 +11,11 @@ import {
   Notification,
 } from "react-bulma-components";
 import { Link } from "react-router-dom";
-import {
-  getEnvironmentSpecificValues,
-  icrc1Balance,
-  icrc1Decimal,
-  providerSaBalanceById,
-} from "../../../utils/api";
+import { getEnvironmentSpecificValues } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
-import { useAuth } from "../../../utils/auth";
+import { useConnect } from "@connect2ic/react";
 import EditProviderLogo from "./EditProviderLogo";
 import EditRulesModal from "./EditRulesModal";
 import EditModeratorSettingsModal from "./EditModeratorSettingsModal";
@@ -31,6 +27,7 @@ import {
   getUrlFromArray,
 } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
+import { useActors } from "../../../hooks/actors";
 const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 export default function Admin({
@@ -39,7 +36,8 @@ export default function Admin({
   setSelectedProvider,
   providers,
 }) {
-  const { identity } = useAuth();
+  const { principal } = useConnect();
+  const { wallet } = useActors();
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
   const [providerTokenBalance, setProviderTokenBalance] = useState<bigint>(0);
@@ -75,6 +73,8 @@ export default function Admin({
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [loader, setLoader] = useState(false);
+  const { modclub } = useActors();
+
   const toggleDeposit = () => {
     setIsDepositOpen(!isDepositOpen);
     get_token();
@@ -92,9 +92,12 @@ export default function Admin({
   };
   let get_token = async () => {
     let [token, amount, digits] = await Promise.all([
-      providerSaBalanceById(selectedProvider.id),
-      icrc1Balance(identity.getPrincipal().toText()),
-      icrc1Decimal(),
+      modclub.providerSaBalance("RESERVE", [selectedProvider.id]),
+      wallet.icrc1_balance_of({
+        owner: Principal.fromText(principal),
+        subaccount: [],
+      }),
+      wallet.icrc1_decimals(),
     ]);
     setDigit(digits);
     setProviderTokenBalance(token);
@@ -124,7 +127,7 @@ export default function Admin({
   const toggle = () => setShowModal(false);
   return (
     <>
-      {selectedProvider == null && providers != [] ? (
+      {selectedProvider == null && providers.length != 0 ? (
         <Modal show={showModal} onClose={toggle} showClose={true}>
           <Modal.Card backgroundColor="circles">
             <Modal.Card.Body>
@@ -448,13 +451,13 @@ export default function Admin({
           updateProvider={updateProvider}
         />
       )}
-      {isDepositOpen && selectedProvider &&(
-        <Deposit 
-        toggle={toggleDeposit}
-        userTokenBalance={userTokenBalance}
-        provider={selectedProvider.id.toString()}
-        receiver={CanisterId}
-        isProvider={true}
+      {isDepositOpen && selectedProvider && (
+        <Deposit
+          toggle={toggleDeposit}
+          userTokenBalance={userTokenBalance}
+          provider={selectedProvider.id.toString()}
+          receiver={CanisterId}
+          isProvider={true}
         />
       )}
     </>

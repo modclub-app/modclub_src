@@ -1,18 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  canClaimLockedReward,
-  claimStakeFor,
-  getEnvironmentSpecificValues,
-  getProfileById,
-  icrc1Balance,
-  icrc1Decimal,
-  lockedFor,
-  pendingStake,
-  queryRSAndLevelByPrincipal,
-  stakeFor,
-  unLockedFor,
-} from "../../../utils/api";
-import { useAuth } from "../../../utils/auth";
+import { getEnvironmentSpecificValues } from "../../../utils/api";
 import { Columns, Button } from "react-bulma-components";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
@@ -25,8 +12,9 @@ import { StatBox } from "../../common/statbox/StatBox";
 import * as Constant from "../../../utils/constant";
 import { convert_to_mod } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
-import { useProfile } from "../../../utils/profile";
-import { async } from "q";
+import { useConnect } from "@connect2ic/react";
+import { useActors } from "../../../hooks/actors";
+import { Principal } from "@dfinity/principal";
 
 const levelMessages = {
   novice: {
@@ -54,8 +42,7 @@ const levelMessages = {
 const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 export default function Userstats({ detailed = false }) {
-  const { identity } = useAuth();
-  const { user } = useProfile();
+  const { principal } = useConnect();
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards: 0,
@@ -65,6 +52,7 @@ export default function Userstats({ detailed = false }) {
     unLockedFor: 0,
     claimStakedFor: 0,
   });
+
   const [claimRewards, setClaimRewards] = useState({
     canClaim: false,
     claimAmount: 0,
@@ -74,7 +62,7 @@ export default function Userstats({ detailed = false }) {
   const [lockBlock, setLockBlock] = useState([]);
   const [performance, setPerformance] = useState<number>(0);
   const [digits, setDigits] = useState<number>(0);
-  const [unlockFor, setUnlockFor] = useState<number>(0);
+  const [pendingRewards, setPendingRewards] = useState(0);
   const [level, setLevel] = useState<string>("");
   const [subacc, setSubacc] = useState<any>([]);
 
@@ -93,129 +81,203 @@ export default function Userstats({ detailed = false }) {
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);
 
-  const fetchTokenHoldings = async (identity) => {
-    if (identity != undefined) {
-      try {
-        const principalId = identity.getPrincipal().toText();
-        let perf,
-          digit,
-          stake,
-          locked,
-          bal,
-          userBal,
-          unlocked,
-          pending,
-          claimStaked;
+  const { rs, wallet, modclub, vesting } = useActors();
 
-        try {
-          [perf, digit] = await Promise.all([
-            queryRSAndLevelByPrincipal(principalId),
-            icrc1Decimal(),
-          ]);
-          setDigits(digit);
-        } catch (error) {
-          console.error("Error fetching performance and digit:", error);
-        }
-        try {
-          [stake, locked, unlocked, claimStaked] = await Promise.all([
-            stakeFor(principalId)
-              .then((stake) => convert_to_mod(stake, digit))
-              .catch((error) => console.error("Error fetching stake:", error)),
-            lockedFor(principalId)
-              .then((locked) => {
-                fetchCanClaim(Number(locked));
-                return convert_to_mod(locked, digit);
-              })
-              .catch((error) => console.error("Error fetching locked:", error)),
-            unLockedFor(principalId)
-              .then((unlock) => unlock)
-              .catch((error) =>
-                console.error("Error fetching unlocked:", error)
-              ),
-            claimStakeFor(principalId)
-              .then((claim) => claim)
-              .catch((error) =>
-                console.error("Error fetching claimStaked:", error)
-              ),
-          ]);
-        } catch (error) {
-          console.error("Error fetching stake and locked:", error);
-        }
+  type ResolvedType<T> = T extends Promise<infer R> ? R : T;
 
-        try {
-          let subacc: any = Object.values(
-            (await getProfileById(identity.getPrincipal())).subaccounts
-          );
+  useEffect(() => {
+    let isMounted = true;
+    const _action = async () => {
+      let _subacc = subacc.length > 0 ? subacc[1] : subacc;
+      let bal = await wallet.icrc1_balance_of({
+        owner: Principal.fromText(CanisterId),
+        subaccount: _subacc && _subacc.length > 0 ? [_subacc] : [],
+      });
+
+      let userBal = await wallet.icrc1_balance_of({
+        owner: Principal.fromText(principal),
+        subaccount: [],
+      });
+
+      let wallet_digits = convert_to_mod(bal, BigInt(digits));
+      let userBalance = convert_to_mod(userBal, BigInt(digits));
+      if (isMounted) {
+        setTokenHoldings((prevState) => ({
+          ...prevState,
+          wallet: wallet_digits,
+          userBalance: userBalance,
+        }));
+      }
+    };
+    _action();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [subacc, digits, principal]);
+
+  useEffect(() => {
+    let isMounted = true;
+    vesting
+      .staked_for({
+        owner: Principal.fromText(principal),
+        subaccount: [],
+      })
+      .then((stakeForNum) => {
+        const stake = convert_to_mod(stakeForNum, digits);
+        if (isMounted) {
+          setTokenHoldings((prevState) => ({
+            ...prevState,
+            stake: stake,
+          }));
+        }
+      })
+      .catch((error) => {
+        if (isMounted) console.error("Error stakeFor", error);
+      });
+
+    vesting
+      .locked_for({
+        owner: Principal.fromText(principal),
+        subaccount: [],
+      })
+      .then((lockedNum) => {
+        modclub
+          .canClaimLockedReward([BigInt(Number(lockedNum))])
+          .then((claimCheck) => {
+            if (Object.keys(claimCheck)[0] === "ok") {
+              setClaimRewards({
+                canClaim: claimCheck.ok?.canClaim,
+                claimAmount: claimCheck.ok?.claimAmount,
+                claimPrice: claimCheck.ok?.claimPrice,
+              });
+            } else {
+              setClaimRewards({
+                canClaim: false,
+                claimAmount: 0,
+                claimPrice: 0,
+              });
+            }
+          })
+          .catch(() => {
+            return "";
+          });
+
+        const locked = convert_to_mod(lockedNum, digits);
+        if (isMounted) {
+          setPendingRewards(locked);
+          setTokenHoldings((prevState) => ({
+            ...prevState,
+            pendingRewards: pendingRewards,
+          }));
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [digits, principal]);
+
+  const fetchTokenHoldings = async (principal: string, isMounted: boolean) => {
+    try {
+      const prom1 = rs
+        .queryRSAndLevelByPrincipal(Principal.fromText(principal))
+        .then((perf) => {
+          if (isMounted) {
+            setPerformance(Number(perf.score));
+            setLevel(Object.keys(perf.level)[0]);
+          }
+        });
+
+      const prom2 = wallet
+        .icrc1_decimals()
+        .then((digit) => {
+          if (isMounted) {
+            setDigits(digit);
+          }
+        })
+        .catch((error) => {
+          if (isMounted)
+            console.error("Error fetching performance and digit:", error);
+        });
+
+      const prom3 = vesting
+        .unlocked_stakes_for({
+          owner: Principal.fromText(principal),
+          subaccount: [],
+        })
+        .then((unlocked) => {
+          if (isMounted) {
+            setTokenHoldings((prevState) => ({
+              ...prevState,
+              unlocked: unlocked,
+            }));
+          }
+        })
+        .catch((error) => {
+          if (isMounted) console.error("Error unLockedFor:", error);
+        });
+
+      const prom4 = vesting
+        .claimed_stakes_for({
+          owner: Principal.fromText(principal),
+          subaccount: [],
+        })
+        .then((claimStaked) => {
+          if (isMounted) {
+            setTokenHoldings((prevState) => ({
+              ...prevState,
+              claimStakedFor: claimStaked,
+            }));
+          }
+        });
+
+      const prom5 = modclub
+        .getProfileById(Principal.fromText(principal))
+        .then((profile) => {
+          let subacc: any = Object.values(profile.subaccounts);
           if (subacc.length > 0) {
             subacc = subacc.find((item) => item[0] === "ACCOUNT_PAYABLE");
           } else {
             subacc = [];
           }
-          setSubacc(subacc.length > 0 ? subacc[1] : subacc);
-          bal = await icrc1Balance(
-            CanisterId,
-            subacc.length > 0 ? subacc[1] : subacc
-          );
-          userBal = await icrc1Balance(identity.getPrincipal().toText());
-        } catch (error) {
-          console.error("USER PROFILE:", error);
-        }
-        try {
-          [pending] = await Promise.all([
-            pendingStake(identity.getPrincipal().toText()),
-          ]);
-        } catch (error) {
-          console.error("Error fetching pending stake:", error);
-        }
-        if (pending[0] != undefined) {
-          setLockBlock(pending);
-        }
-        setTokenHoldings({
-          pendingRewards: locked,
-          stake: stake,
-          wallet: convert_to_mod(bal, BigInt(digit)),
-          userBalance: convert_to_mod(userBal, BigInt(digit)),
-          unLockedFor: unlocked,
-          claimStakedFor: claimStaked,
+          if (isMounted) {
+            setSubacc(subacc.length > 0 ? subacc[1] : subacc);
+          }
         });
-        setPerformance(Number(perf.score));
-        setLevel(Object.keys(perf.level)[0]);
-        setHoldingsUpdated(false);
-      } catch (error) {
-        console.error("Failed to fetch token holdings:", error);
-      }
-    }
-  };
-  const fetchCanClaim = async (value: number) => {
-    const claimCheck = await canClaimLockedReward(value)
-      .then((res) => {
-        return res;
-      })
-      .catch(() => {
-        return "";
+
+      const prom6 = vesting
+        .pending_stakes_for({
+          owner: Principal.fromText(principal),
+          subaccount: [],
+        })
+        .then((pending) => {
+          if (pending != undefined) {
+            if (isMounted) {
+              setLockBlock([pending]);
+            }
+          }
+        })
+        .catch((error) => {
+          if (isMounted) console.error("Error fetching pending stake:", error);
+        });
+
+      Promise.all([prom1, prom2, prom3, prom4, prom5, prom6]).then(() => {
+        if (isMounted) {
+          setHoldingsUpdated(false);
+        }
       });
-    if (Object.keys(claimCheck)[0] === "ok") {
-      setClaimRewards({
-        canClaim: claimCheck.ok?.canClaim,
-        claimAmount: claimCheck.ok?.claimAmount,
-        claimPrice: claimCheck.ok?.claimPrice,
-      });
-    } else {
-      setClaimRewards({
-        canClaim: false,
-        claimAmount: 0,
-        claimPrice: 0,
-      });
+    } catch (error) {
+      if (isMounted) console.error("Failed to fetch token holdings:", error);
     }
   };
 
   useEffect(() => {
-    identity && fetchTokenHoldings(identity);
-  }, [identity, tokenHoldings]);
-
-  useEffect(() => {
-    user && holdingsUpdated;
-  }, [user, holdingsUpdated]);
+    let isMounted = true;
+    principal && fetchTokenHoldings(principal, isMounted);
+    return () => {
+      isMounted = false;
+    };
+  }, [principal]);
 
   const getRSMessageByLevel = useCallback((level: string) => {
     return levelMessages[level]?.rs || Constant.DEFAULT_MESSAGE;
@@ -309,7 +371,7 @@ export default function Userstats({ detailed = false }) {
           loading={holdingsUpdated}
           image={performanceImg}
           title="Pending Rewards"
-          amount={tokenHoldings.pendingRewards}
+          amount={pendingRewards}
           usd={17}
           detailed={detailed}
           message={claimMessage}
@@ -344,8 +406,8 @@ export default function Userstats({ detailed = false }) {
       {showClaim && (
         <Claim
           toggle={toggleClaim}
-          tokenHoldings={tokenHoldings}
-          userId={identity.getPrincipal().toText()}
+          pendingRewards={pendingRewards}
+          userId={principal}
         />
       )}
 
@@ -364,7 +426,7 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleWithdraw}
           userTokenBalance={tokenHoldings.wallet}
           subacc={subacc}
-          to={identity.getPrincipal()}
+          to={principal}
         />
       )}
       {showStake && (
@@ -379,7 +441,7 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleUnstake}
           tokenHoldings={tokenHoldings}
           onUpdate={() => setHoldingsUpdated(true)}
-          userId={identity.getPrincipal().toText()}
+          userId={principal}
           lockBlock={lockBlock.length > 0 ? lockBlock : []}
           digit={digits}
         />

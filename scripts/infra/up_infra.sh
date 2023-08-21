@@ -21,6 +21,7 @@ function create_qa_canisters() {
   dfx canister create internet_identity &&
   dfx canister create auth_qa &&
   dfx canister create wallet_qa &&
+  dfx canister create wallet_dev &&
   dfx canister create rs_qa &&
   dfx canister create modclub_qa &&
   dfx canister create vesting_qa &&
@@ -73,6 +74,33 @@ function deploy_wallet_canister() {
         }
   }})'
 
+  dfx deploy wallet_dev --argument '(variant { Init = 
+      record {
+        token_name = "'${TOKEN_NAME}'";
+        token_symbol = "'${TOKEN_SYMBOL}'";
+        minting_account = record { owner = principal "'${qa_minter_principal}'";};
+        initial_balances = vec {
+          record { record { owner = principal "'${qa_ledger_principal}'"; }; 100_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "-------------------------RESERVE"}; 367_500_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "-------------------------AIRDROP"}; 10_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "-----------------------MARKETING"}; 50_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "------------------------ADVISORS"}; 50_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "-------------------------PRESEED"}; 62_500_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "----------------------PUBLICSALE"}; 100_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "----------------------------SEED"}; 100_000_000_000_000; };
+          record { record { owner = principal "'${qa_ledger_principal}'"; subaccount = opt blob "----------------------------TEAM"}; 160_000_000_000_000; };
+        };
+        metadata = vec {};
+        transfer_fee = 10;
+        archive_options = record {
+          trigger_threshold = 2000;
+          num_blocks_to_archive = 1000;
+          controller_id = principal "'${ARCHIVE_CONTROLLER}'";
+        }
+  }})'
+
+  
+
   return 0;
 }
 
@@ -121,4 +149,6 @@ function init_qa_canisters() {
   return 0;
 }
 
-create_qa_canisters && deploy_qa_canisters # && init_qa_canisters
+create_qa_canisters && deploy_qa_canisters && init_qa_canisters
+# node scripts/infra/overwrite_modclub.js 
+

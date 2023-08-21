@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
-import { icrc1Decimal, stakeTokens } from "../../../utils/api";
 import PopupModal from "./PopupModal";
 import { useState } from "react";
+import { useActors } from "../../../hooks/actors";
 
 const UpdateTable = ({ wallet, stake, amount = 0 }) => {
   return (
@@ -30,29 +30,28 @@ const UpdateTable = ({ wallet, stake, amount = 0 }) => {
 
 export default function Stake({ toggle, tokenHoldings, onUpdate }) {
   const [inputValue, setInputValue] = useState(tokenHoldings.wallet);
-
+  const { wallet, modclub } = useActors();
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
-      const digit = await icrc1Decimal();
-      const amounts : number = Number(amount)*Math.pow(10, Number(digit))
-      const res = await stakeTokens(amounts);
-      return {reserved: Number(amount), transfer: res};
+      const digit = await wallet.icrc1_decimals();
+      const amounts: number = Number(amount) * Math.pow(10, Number(digit));
+      const res = await modclub.stakeTokens(BigInt(amounts));
+      return { reserved: Number(amount), transfer: res };
     } catch (error) {
       console.error("Stake Failed:", error);
     }
-
   };
 
   const preventMax = (e) => {
     const newValue = parseInt(e.target.value);
     if (newValue > tokenHoldings.wallet) {
-        setInputValue(tokenHoldings.wallet);
-        e.target.value = tokenHoldings.wallet;
+      setInputValue(tokenHoldings.wallet);
+      e.target.value = tokenHoldings.wallet;
     } else {
-        setInputValue(newValue);
+      setInputValue(newValue);
     }
-};
+  };
 
   return (
     <PopupModal

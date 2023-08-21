@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 import styled from "styled-components";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -8,13 +8,12 @@ import {
   Button,
   Icon,
   Card,
-  Columns
+  Columns,
 } from "react-bulma-components";
 import MicRecorder from "mic-recorder-to-mp3";
-import { processAndUploadChunk } from "../../../utils/util";
 import { format } from "date-fns";
-import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
-
+import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
+import { processAndUploadChunk, useActors } from "../../../utils";
 
 const RecordButton = styled.div`
   cursor: pointer;
@@ -22,7 +21,7 @@ const RecordButton = styled.div`
   min-width: 46px;
   height: 46px;
   box-sizing: border-box;
-  transition: all .2s;
+  transition: all 0.2s;
   // position: absolute;
   // left: 0;
   // right: 0;
@@ -35,9 +34,9 @@ const RecordButton = styled.div`
     padding: 0;
     background-color: #f03;
     box-sizing: border-box;
-    transition: all .2s;
+    transition: all 0.2s;
     transform-origin: center center;
-    transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
     position: absolute;
     top: 50%;
     left: 50%;
@@ -53,7 +52,7 @@ const RecordButton = styled.div`
 `;
 
 const Timer = styled.div`
-  position:absolute;
+  position: absolute;
   right: 0;
   left: 0;
   // bottom: 0;
@@ -65,7 +64,7 @@ const Timer = styled.div`
   justify-content: center;
   align-items: center;
   font-size: 23px;
-  background-color: rgba(46,49,54,.9);
+  background-color: rgba(46, 49, 54, 0.9);
   border-radius: 35px;
   padding: 12px 60px;
   line-height: 1;
@@ -86,8 +85,9 @@ export default function UserPhrases({ step, goToNextStep }) {
 
   const [blobURL, setBlobUrl] = useState(null);
   const [play, setPlay] = useState(false);
-  
+
   const [hasAudioPermission, setHasAudioPermission] = useState<boolean>(true);
+  const { modclub } = useActors();
 
   useEffect(() => {
     const fetch = async () => {
@@ -98,7 +98,7 @@ export default function UserPhrases({ step, goToNextStep }) {
       } catch (err) {
         setHasAudioPermission(false);
       }
-    }
+    };
     fetch();
   }, []);
 
@@ -106,14 +106,21 @@ export default function UserPhrases({ step, goToNextStep }) {
     setSubmitting(true);
     const blob = audioData;
     if (blob.size <= MIN_FILE_SIZE) {
-      alert("File upload could not be completed. File size is too small. Please try again"); 
+      alert(
+        "File upload could not be completed. File size is too small. Please try again"
+      );
       setSubmitting(false);
       return;
     }
-    
+
     let chunk = 1;
-    for (let byteStart = 0; byteStart < blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
+    for (
+      let byteStart = 0;
+      byteStart < blob.size;
+      byteStart += MAX_CHUNK_SIZE, chunk++
+    ) {
       let res = await processAndUploadChunk(
+        modclub,
         "challenge-user-audio",
         MAX_CHUNK_SIZE,
         blob,
@@ -123,7 +130,11 @@ export default function UserPhrases({ step, goToNextStep }) {
         blob.type
       );
       if (res != null) {
-        alert("Error: " + res + " File upload could not be completed. Please try again");
+        alert(
+          "Error: " +
+            res +
+            " File upload could not be completed. Please try again"
+        );
         setSubmitting(false);
         return;
       }
@@ -131,13 +142,13 @@ export default function UserPhrases({ step, goToNextStep }) {
 
     setSubmitting(false);
     goToNextStep("challenge-user-audio");
-  }
+  };
 
   useEffect(() => {
     let interval = null;
     if (capturing) {
       interval = setInterval(() => {
-        setSeconds(seconds => seconds + 1);
+        setSeconds((seconds) => seconds + 1);
       }, 1000);
     } else if (!capturing && seconds !== 0) {
       clearInterval(interval);
@@ -174,20 +185,30 @@ export default function UserPhrases({ step, goToNextStep }) {
   const formattedTime = (val) => {
     const time = new Date(0, 0, 0);
     time.setSeconds(val);
-    return format(time, 'mm:ss');
-  }
+    return format(time, "mm:ss");
+  };
 
   return (
     <>
-      {submitting &&
+      {submitting && (
         <Modal show={true} showClose={false}>
           <div className="loader is-loading p-5"></div>
         </Modal>
-      }
+      )}
 
-      
-      <div className="is-relative has-text-centered" style={{ margin: "auto", boxSizing: "border-box", maxWidth: 640, maxHeight: 480 }}>
-        <div className="is-flex is-flex-direction-column is-justify-content-flex-end" style={{ height: audioData || capturing ? 110 : 100 }}>
+      <div
+        className="is-relative has-text-centered"
+        style={{
+          margin: "auto",
+          boxSizing: "border-box",
+          maxWidth: 640,
+          maxHeight: 480,
+        }}
+      >
+        <div
+          className="is-flex is-flex-direction-column is-justify-content-flex-end"
+          style={{ height: audioData || capturing ? 110 : 100 }}
+        >
           {audioData ? (
             <>
               <audio
@@ -208,42 +229,58 @@ export default function UserPhrases({ step, goToNextStep }) {
                   width: "3rem",
                   height: "3rem",
                   background: "rgba(46, 49, 54, 0.6)",
-                  border: 0
+                  border: 0,
                 }}
                 onClick={resetAudio}
               >
                 <Icon color="white">
-                  <span className="material-icons">
-                    delete
-                  </span>
+                  <span className="material-icons">delete</span>
                 </Icon>
               </Button>
             </>
           ) : (
             <>
-              {
-                  !hasAudioPermission &&
-                  <div className="notification is-danger">
-                      Microphone permission not enabled
-                  </div>
-              }
-              {capturing &&
-                <Timer>
-                  {formattedTime(seconds)}
-                </Timer>
-              }
+              {!hasAudioPermission && (
+                <div className="notification is-danger">
+                  Microphone permission not enabled
+                </div>
+              )}
+              {capturing && <Timer>{formattedTime(seconds)}</Timer>}
               <RecordButton
                 capturing={capturing}
-                onClick={capturing ? handleStopCaptureClick : handleStartCaptureClick}
+                onClick={
+                  capturing ? handleStopCaptureClick : handleStartCaptureClick
+                }
               >
                 <svg width="46" height="46" className="btn-record-timer">
-                  <defs> <mask id="cirleMask"> <rect height="46" width="46" fill="white"></rect> <circle r="18" cx="23" cy="23" fill="black"></circle> </mask> </defs> <circle r="23" cx="23" cy="23" fill="#64686B" mask="url(#cirleMask)"></circle> <path id="timerArc" fill="#ffffff" strokeWidth="0" mask="url(#cirleMask)" d="M 23 23 L 22.999999999999996 0 A 23 23 0 0 0 22.999999999999996 0 L 23 23"></path>
+                  <defs>
+                    {" "}
+                    <mask id="cirleMask">
+                      {" "}
+                      <rect height="46" width="46" fill="white"></rect>{" "}
+                      <circle r="18" cx="23" cy="23" fill="black"></circle>{" "}
+                    </mask>{" "}
+                  </defs>{" "}
+                  <circle
+                    r="23"
+                    cx="23"
+                    cy="23"
+                    fill="#64686B"
+                    mask="url(#cirleMask)"
+                  ></circle>{" "}
+                  <path
+                    id="timerArc"
+                    fill="#ffffff"
+                    strokeWidth="0"
+                    mask="url(#cirleMask)"
+                    d="M 23 23 L 22.999999999999996 0 A 23 23 0 0 0 22.999999999999996 0 L 23 23"
+                  ></path>
                 </svg>
                 <i />
               </RecordButton>
-              {!capturing &&
+              {!capturing && (
                 <p className="mt-5 mb-3">Click to start recording</p>
-              }
+              )}
             </>
           )}
         </div>
@@ -251,8 +288,14 @@ export default function UserPhrases({ step, goToNextStep }) {
 
       <Card className="my-5">
         <Card.Content className="columns is-multiline">
-          <Heading subtitle className="mb-3" textAlign="center" style={{ width: "100%" }}>
-            Record yourself saying the following<br /> words in order:
+          <Heading
+            subtitle
+            className="mb-3"
+            textAlign="center"
+            style={{ width: "100%" }}
+          >
+            Record yourself saying the following
+            <br /> words in order:
           </Heading>
           {phrases.map((phrase, index) => (
             <Columns.Column key={phrase} size={4}>
@@ -271,10 +314,14 @@ export default function UserPhrases({ step, goToNextStep }) {
         <Link to="/app/" className="button is-black">
           Cancel
         </Link>
-        <Button color="primary" disabled={!audioData || capturing} onClick={submit}>
+        <Button
+          color="primary"
+          disabled={!audioData || capturing}
+          onClick={submit}
+        >
           Next
         </Button>
       </Button.Group>
     </>
   );
-};
+}

@@ -1,16 +1,10 @@
 // ProfileContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useAuth } from "./auth";
-import { modclub_types } from "./types";
-import { getUserFromStorage, setUserToStorage } from "./util";
+import { modclub_types } from "../utils/types";
+import { getUserFromStorage, setUserToStorage } from "../utils/util";
 import logger from "../utils/logger";
-
-import {
-  getUserFromCanister,
-  checkUserRole,
-  getAdminProviderIDs,
-  getProvider,
-} from "./api";
+import { useActors } from "../hooks/actors";
+import { useConnect } from "@connect2ic/react";
 
 export interface IProfileContext {
   requiresSignUp: boolean;
@@ -26,7 +20,7 @@ export interface IProfileContext {
   userAlertVal: boolean;
   setUserAlertVal: (alerts: boolean) => void;
 
-  updateProfile: (user: ProfileStable) => void;
+  updateProfile: (user: modclub_types.ProfileStable) => void;
 
   isProfileReady: boolean;
 }
@@ -42,7 +36,8 @@ export function useProfile() {
 }
 
 export function ProfileProvider({ children }) {
-  const { isAuthenticated, isActorReady } = useAuth();
+  const { isConnected, principal } = useConnect();
+  const { modclub } = useActors();
   const [shouldSignup, setShouldSignup] = useState(false);
   const [providers, setProviders] = useState([]);
   const [isAdminUser, setAdminUser] = useState(false);
@@ -57,15 +52,21 @@ export function ProfileProvider({ children }) {
   const updateProfile = async (user) => {
     logger.log("Updating profile provider..", user);
     setUser(user);
-    const checkAdmin = await checkUserRole(user.id);
-    setAdminUser(checkAdmin);
-
     setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
+
+    try {
+      let admins = await modclub.showAdmins();
+      const checkAdmin = admins.includes(user.id);
+      setAdminUser(checkAdmin);
+    } catch (error) {
+      setAdminUser(false);
+    }
   };
 
   // Function to fetch the user profile based on the authentication state
   const fetchUserProfile = async () => {
-    if (isAuthenticated) {
+    logger.info("User's principal: ", principal);
+    if (isConnected) {
       try {
         const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
         if (lsUser && !user) {
@@ -76,40 +77,53 @@ export function ProfileProvider({ children }) {
             lsUser
           );
         } else {
-          const icUser = await getUserFromCanister(); // getRemoteUser
-          logger.log(
-            "Succesfully fetched user profile from MC canister",
-            icUser
-          );
-
-          if (icUser) {
-            await updateProfile(icUser);
-          } else {
-            // todo: I think we should move this setShouldSignup out of this function
-            setShouldSignup(true);
+          try {
+            const icUser: modclub_types.ProfileStable =
+              await modclub.getProfile();
+            if (icUser) {
+              logger.log(
+                "Succesfully fetched user profile from MC canister",
+                icUser
+              );
+              updateProfile(icUser);
+            } else {
+              // todo: I think we should move this setShouldSignup out of this function
+              setShouldSignup(true);
+              logger.warn("fetchUserProfile: return empty");
+            }
+          } catch (error) {
+            if (error.result.reject_message === "profile not found") {
+              logger.warn("fetchUserProfile:", error);
+              setShouldSignup(true);
+            } else {
+              logger.error("unknow error from fetchUserProfile:", error);
+              throw error;
+            }
           }
         }
       } catch (error) {
         logger.error("Error fetching user profile:", error);
+      } finally {
+        setIsProfileReady(true);
       }
-      setIsProfileReady(true);
     }
   };
 
   // Call fetchUserProfile when the component mounts or when the isSignedIn state changes
   useEffect(() => {
-    if (isAuthenticated && isActorReady) {
+    if (isConnected) {
       fetchUserProfile();
     } else {
       // if log out
       setUser(undefined);
       setAdminUser(false);
+      localStorage.removeItem(KEY_LOCALSTORAGE_USER);
       setProviders([]);
       fetchedProviders = false;
       setUserAlertVal(false);
       setSelectedProvider(undefined);
     }
-  }, [isAuthenticated, isActorReady]);
+  }, [isConnected, modclub]);
 
   // For testing environments only, this bypasses the authentication with an
   // identity provider for testing purposes.
@@ -123,10 +137,10 @@ export function ProfileProvider({ children }) {
     if (user && !fetchedProviders) {
       let adminInitProperties = async () => {
         fetchedProviders = true;
-        let adminProviders = await getAdminProviderIDs();
+        let adminProviders = await modclub.getAdminProviderIDs();
         let providerListPromise = [];
         for (let provider of adminProviders) {
-          providerListPromise.push(await getProvider(provider));
+          providerListPromise.push(modclub.getProvider(provider));
         }
         let providerListPrm = await Promise.all(providerListPromise);
         let providerList = providerListPrm.filter((provider) => provider);

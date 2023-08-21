@@ -1,12 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "../../../utils/auth";
-import {
-  getProviderRules,
-  getTasks,
-  queryRSAndLevelByPrincipal,
-} from "../../../utils/api";
 import { Modal, Columns, Card, Heading, Button } from "react-bulma-components";
 import RulesList from "../tasks/RulesList";
 import Progress from "../../common/progress/Progress";
@@ -14,12 +8,16 @@ import Userstats from "../profile/Userstats";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
+import { useConnect } from "@connect2ic/react";
+import { useActors } from "../../../hooks/actors";
+import { Principal } from "@dfinity/principal";
 
 const PAGE_SIZE = 20;
 const FILTER_VOTES = false;
 
 const Task = ({ task, setVoted, level }) => {
+  const { modclub } = useActors();
   const [rules, setRules] = useState([]);
 
   const getImage = (data: any) => {
@@ -28,7 +26,7 @@ const Task = ({ task, setVoted, level }) => {
   };
 
   const fetchRules = async () => {
-    const rules = await getProviderRules(task.providerId);
+    const rules = await modclub.getRules(task.providerId);
     setRules(rules);
   };
 
@@ -114,7 +112,7 @@ const Task = ({ task, setVoted, level }) => {
 };
 
 export default function Tasks() {
-  const { identity } = useAuth();
+  const { principal } = useConnect();
   const { user } = useProfile();
   const [tasks, setTasks] = useState([]);
   const [voted, setVoted] = useState<boolean>(false);
@@ -127,20 +125,19 @@ export default function Tasks() {
   });
   const [firstLoad, setFirstLoad] = useState(true);
   const [level, setLevel] = useState<string>("");
+  const { modclub, rs } = useActors();
 
-  const fetchTokenHoldings = useCallback(async (identity) => {
-    let perf = await queryRSAndLevelByPrincipal(
-      identity.getPrincipal().toText()!
-    );
+  const fetchTokenHoldings = useCallback(async (principal: Principal) => {
+    let perf = await rs.queryRSAndLevelByPrincipal(principal);
     setLevel(Object.keys(perf.level)[0]);
   }, []);
 
   useEffect(() => {
     if (user && firstLoad && !loading && fetchTasks()) {
       setFirstLoad(false);
-      fetchTokenHoldings(identity);
+      fetchTokenHoldings(Principal.fromText(principal));
     }
-  }, [user]);
+  }, [user, principal]);
 
   useEffect(() => {
     // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI.
@@ -165,15 +162,20 @@ export default function Tasks() {
 
   const refetchAll = async () => {
     setLoading(true);
-    setTasks(await getTasks(0, page.endIndex, FILTER_VOTES));
+    const tasks = await modclub.getTasks(
+      0 as unknown as bigint,
+      page.endIndex as unknown as bigint,
+      FILTER_VOTES
+    );
+    setTasks(tasks);
     setLoading(false);
   };
 
   const fetchTasks = async () => {
     setLoading(true);
-    const newTasks = await getTasks(
-      page.startIndex,
-      page.endIndex,
+    const newTasks = await modclub.getTasks(
+      page.startIndex as unknown as bigint,
+      page.endIndex as unknown as bigint,
       FILTER_VOTES
     );
     if (newTasks.length < PAGE_SIZE) setHasReachedEnd(true);

@@ -1,40 +1,37 @@
-import * as React from 'react'
+import * as React from "react";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Modal,
-  Heading,
-  Button,
-  Icon
-} from "react-bulma-components";
-import { WebcamWrapper } from "./Webcam"
-import { b64toBlob, processAndUploadChunk } from "../../../utils/util";
-import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from '../../../utils/config';
+import { Modal, Heading, Button, Icon } from "react-bulma-components";
+import { WebcamWrapper } from "./Webcam";
+import { b64toBlob } from "../../../utils/util";
+import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
+import { processAndUploadChunk, useActors } from "../../../utils";
 
 export default function ProfilePic({ goToNextStep }) {
   const inputFile = useRef(null);
   const [file, setFile] = useState({
-    type: '',
+    type: "",
     size: 0,
     blob: new Blob(),
-    data: null
+    data: null,
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [newCrop, setNewCrop] = useState<boolean>(false);
+  const { modclub } = useActors();
 
-  const handleFileChange = (event: React.FormEvent<HTMLInputElement>) => {    
+  const handleFileChange = (event: React.FormEvent<HTMLInputElement>) => {
     // @ts-ignore
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onloadend = () => {
       if (reader.result === null) {
-        throw new Error('file empty...');
+        throw new Error("file empty...");
       }
       const data = typeof reader.result == "string" ? reader.result : null;
-      let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
-      if ((encoded.length % 4) > 0) {
-        encoded += '='.repeat(4 - (encoded.length % 4));
+      let encoded = reader.result.toString().replace(/^data:(.*,)?/, "");
+      if (encoded.length % 4 > 0) {
+        encoded += "=".repeat(4 - (encoded.length % 4));
       }
       const blob = b64toBlob(encoded, file.type);
       const fileInfo = {
@@ -42,24 +39,31 @@ export default function ProfilePic({ goToNextStep }) {
         size: file.size,
         blob: blob,
         data: data,
-        uploaded: true
+        uploaded: true,
       };
       console.log("fileInfo", fileInfo);
       setFile(fileInfo);
-    }
-  }
+    };
+  };
 
   const submit = async () => {
     setSubmitting(true);
     if (file.blob.size <= MIN_FILE_SIZE) {
-      alert("File upload could not be completed. File size is too small. Please try again"); 
+      alert(
+        "File upload could not be completed. File size is too small. Please try again"
+      );
       setSubmitting(false);
       return;
-    };
+    }
 
     let chunk = 1;
-    for (let byteStart = 0; byteStart < file.blob.size; byteStart += MAX_CHUNK_SIZE, chunk++ ) {
-     let res = await processAndUploadChunk(
+    for (
+      let byteStart = 0;
+      byteStart < file.blob.size;
+      byteStart += MAX_CHUNK_SIZE, chunk++
+    ) {
+      let res = await processAndUploadChunk(
+        modclub,
         "challenge-profile-pic",
         MAX_CHUNK_SIZE,
         file.blob,
@@ -67,24 +71,28 @@ export default function ProfilePic({ goToNextStep }) {
         chunk,
         file.size,
         file.type
-     )
-     if (res != null) {
-      alert("Error: " + res + " File upload could not be completed. Please try again");
-      setSubmitting(false);
-      return;
-    }
+      );
+      if (res != null) {
+        alert(
+          "Error: " +
+            res +
+            " File upload could not be completed. Please try again"
+        );
+        setSubmitting(false);
+        return;
+      }
     }
     setSubmitting(false);
     goToNextStep("challenge-profile-pic");
-  }
+  };
 
   return (
     <>
-      {submitting &&
+      {submitting && (
         <Modal show={true} showClose={false}>
           <div className="loader is-loading p-5"></div>
         </Modal>
-      }
+      )}
       <Heading subtitle textAlign="center">
         Submit a photo of yourself. It should be well lit and head on.
       </Heading>
@@ -96,35 +104,39 @@ export default function ProfilePic({ goToNextStep }) {
         setNewCrop={setNewCrop}
       />
 
-      {!file.data &&
-      <>
-        <div className="is-divider" data-content="OR"></div>
-        <Button.Group align="center">
-          <Button color="black" onClick={() => inputFile.current.click()}>
-            <Icon size="small" className="has-text-white">
-              <span className="material-icons">file_upload</span>
-            </Icon>
-            <span>Upload Photo</span>
-          </Button>
-        </Button.Group>
-        <input
-          style={{ display: "none" }}
-          ref={inputFile}
-          onChange={handleFileChange}
-          accept="image/*"
-          type="file"
-        />
-      </>
-      }
+      {!file.data && (
+        <>
+          <div className="is-divider" data-content="OR"></div>
+          <Button.Group align="center">
+            <Button color="black" onClick={() => inputFile.current.click()}>
+              <Icon size="small" className="has-text-white">
+                <span className="material-icons">file_upload</span>
+              </Icon>
+              <span>Upload Photo</span>
+            </Button>
+          </Button.Group>
+          <input
+            style={{ display: "none" }}
+            ref={inputFile}
+            onChange={handleFileChange}
+            accept="image/*"
+            type="file"
+          />
+        </>
+      )}
 
       <Button.Group align="right" className="mt-4">
         <Link to="/app/" className="button is-black" disabled={!file.data}>
           Cancel
         </Link>
-        <Button color="primary" disabled={!file.data || newCrop} onClick={submit}>
+        <Button
+          color="primary"
+          disabled={!file.data || newCrop}
+          onClick={submit}
+        >
           Next
         </Button>
       </Button.Group>
     </>
-  )
+  );
 }

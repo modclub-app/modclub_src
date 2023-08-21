@@ -12,10 +12,12 @@ import Toggle from "../../common/toggle/Toggle";
 import Confirm from "../../common/confirm/Confirm";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
-import { vote, getProviderRules } from "../../../utils/api";
 import { modclub_types } from "../../../utils/types";
 import { getViolatedRules } from "../../../utils/util";
 import * as Constant from "../../../utils/constant";
+import { modclub } from "../../../../../declarations/modclub";
+import { use } from "chai";
+import { useActors } from "../../../hooks/actors";
 
 const ConfirmationModal = ({
   title,
@@ -38,6 +40,8 @@ const ConfirmationModal = ({
   );
   const [rules, setRules] = useState([]);
   const [message, setMessage] = useState(null);
+
+  const { modclub } = useActors();
 
   const isDisabled = (values: any) => {
     if (
@@ -75,12 +79,12 @@ const ConfirmationModal = ({
 
     try {
       setSubmitting(true);
-      const result = await vote(
+      const result = await modclub.vote(
         task.id,
         title === "Approve Confirmation"
           ? { approved: null }
           : { rejected: null },
-        checked
+        [checked]
       );
       console.log("result", result);
       setSubmitting(false);
@@ -105,7 +109,7 @@ const ConfirmationModal = ({
   useEffect(() => {
     const fetchRules = async () => {
       setSubmitting(true);
-      const rules = await getProviderRules(task.providerId);
+      const rules = await modclub.getRules(task.providerId);
       console.log({ rules });
       setRules(rules);
       setSubmitting(false);

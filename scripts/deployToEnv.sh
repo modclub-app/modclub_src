@@ -90,6 +90,7 @@ function deploy_vesting_canister() {
   local canister_name=$(get_canister_name_by_env $env "vesting")
 
   dfx deploy ${canister_name} --network=${DEPLOY_NETWORK} --argument="(record { env = $env_vars } )"
+  dfx generate ${canister_name} -v
   return 0;
 }
 

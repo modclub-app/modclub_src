@@ -7,17 +7,13 @@ import "../adminsubmittedcontent/common/react-datetime.css";
 import DatePicker from "react-datepicker";
 import Userstats from "../../profile/Userstats";
 import FilterBar from "./common/AdminFilterBar";
-import { useAuth } from "../../../../utils/auth";
-import { getAllPohTasksForAdminUsers } from "../../../../utils/api";
-import {
-  fetchObjectUrl,
-  formatDate,
-  getUrlForData,
-} from "../../../../utils/util";
-import { modclub_types } from "../../../../utils/types";
+import { formatDate, getUrlForData } from "../../../../utils/util";
+import { modclub_types } from "../../../../../src/declarations_by_env";
 import placeholder from "../../../../../assets/user_placeholder.png";
-import { useProfile } from "../../../../utils/profile";
-
+import { useProfile } from "../../../../contexts/profile";
+import { fetchObjectUrl } from "../../../../utils/jwt";
+import { getAllPohTasksForAdminUsers } from "../../../../utils/api";
+import { useActors } from "../../../../utils";
 const PAGE_SIZE = 100;
 
 const ApplicantPOHDrawing = ({
@@ -28,12 +24,13 @@ const ApplicantPOHDrawing = ({
   const indexForDrawingChallenge = applicant.pohTaskData.findIndex(
     (data) => data.challengeId == "challenge-drawing"
   );
+  const { modclub } = useActors();
   const imageUrl =
     indexForDrawingChallenge > -1
       ? getUrlForData(
           applicant.pohTaskData[
             indexForDrawingChallenge
-          ].dataCanisterId.toString(),
+          ].dataCanisterId[0].toString(),
           applicant.pohTaskData[indexForDrawingChallenge].contentId[0]
         )
       : null;
@@ -42,7 +39,7 @@ const ApplicantPOHDrawing = ({
   useEffect(() => {
     const fetchData = async () => {
       console.log(`Applicant imageUrl: ${imageUrl}`);
-      const urlObject = await fetchObjectUrl(imageUrl);
+      const urlObject = await fetchObjectUrl(modclub, imageUrl);
       setUrlObject(urlObject);
     };
     fetchData();
@@ -67,16 +64,19 @@ const ApplicantPOHDrawing = ({
 
 export default function PohApplicantList() {
   const { user, isAdminUser } = useProfile();
+  const { modclub } = useActors();
   //Need to change
   // const { user } = useAuth();
   // const isAdminUser = true;
   const [loading, setLoading] = useState<boolean>(false);
-  const [applicants, setApplicants] = useState<Array<PohTaskPlusForAdmin>>([]);
+  const [applicants, setApplicants] = useState<
+    Array<modclub_types.PohTaskPlusForAdmin>
+  >([]);
   const [rejectedApplicants, setRejectedApplicants] = useState<
-    Array<PohTaskPlusForAdmin>
+    Array<modclub_types.PohTaskPlusForAdmin>
   >([]);
   const [searchedApplicants, setSearchedApplicants] = useState<
-    Array<PohTaskPlusForAdmin>
+    Array<modclub_types.PohTaskPlusForAdmin>
   >([]);
   const [isUsingSearch, setIsUsingSearch] = useState<boolean>(false);
   const [page, setPage] = useState({
@@ -131,6 +131,7 @@ export default function PohApplicantList() {
     const enDate = searchType == "dates" ? new Date(endDate).getTime() : 0;
     const status = { approved: null };
     const newSearchedApplicants = await getAllPohTasksForAdminUsers(
+      modclub,
       status,
       page.startIndex,
       page.endIndex,
@@ -149,6 +150,7 @@ export default function PohApplicantList() {
     if (crrFilter == "Approved") {
       const status = { approved: null };
       const newApplicants = await getAllPohTasksForAdminUsers(
+        modclub,
         status,
         page.startIndex,
         page.endIndex,
@@ -160,6 +162,7 @@ export default function PohApplicantList() {
     } else {
       const status = { rejected: null };
       const newRejectedApplicants = await getAllPohTasksForAdminUsers(
+        modclub,
         status,
         rejPage.startIndex,
         rejPage.endIndex,

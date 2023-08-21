@@ -1,15 +1,15 @@
-import { issueJwt } from "./api";
+import { modclub_types } from "./types";
 
-export async function getJwt() {
+async function getJwt(modclub: modclub_types.ModClub) {
   let jwt = window.localStorage.getItem("jwt");
   if (!jwt) {
-    jwt = await refreshJwt();
+    jwt = await refreshJwt(modclub);
   }
   return jwt;
 }
 
-export async function fetchWithJwt(url: string) {
-  let jwt = await getJwt();
+async function fetchWithJwt(modclub: modclub_types.ModClub, url: string) {
+  let jwt = await getJwt(modclub);
   const options = {
     method: "GET",
   };
@@ -18,14 +18,25 @@ export async function fetchWithJwt(url: string) {
     result = await fetch(url + `&token=${jwt}`, options);
   } catch (e) {
     // Try again with a new JWT
-    jwt = await refreshJwt();
+    jwt = await refreshJwt(modclub);
     result = await fetch(url + `&token=${jwt}`, options);
   }
   return result;
 }
 
-export async function refreshJwt(): Promise<string> {
-  const jwt = await issueJwt();
+export async function refreshJwt(
+  modclub: modclub_types.ModClub
+): Promise<string> {
+  const jwt = await modclub.issueJwt();
   window.localStorage.setItem("jwt", jwt);
   return jwt;
+}
+
+export async function fetchObjectUrl(
+  modclub: modclub_types.ModClub,
+  url: string
+): Promise<string> {
+  const res = await fetchWithJwt(modclub, url);
+  const imageBlob = await res.blob();
+  return URL.createObjectURL(imageBlob);
 }

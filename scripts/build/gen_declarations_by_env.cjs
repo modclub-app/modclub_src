@@ -23,7 +23,7 @@ const content = `// This file is auto generated from scripts/build/gen_declarati
 // Current DEV_ENV=${DEV_ENV}
 
 import * as modclub_types from "../../declarations/modclub${postfix}/modclub${postfix}.did";
-import * as rs_types from "../../declarations/rs${postfix}/rs${postfix}.did"
+import * as rs_types from "../../declarations/rs${postfix}/rs${postfix}.did";
 import * as vesting_types from "../../declarations/vesting${postfix}/vesting${postfix}.did";
 import * as wallet_types from "../../declarations/wallet${postfix}/wallet${postfix}.did";
 

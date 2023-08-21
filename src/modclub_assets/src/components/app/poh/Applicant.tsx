@@ -2,7 +2,6 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { formatDate } from "../../../utils/util";
-import { getPohTaskData } from "../../../utils/api";
 import { modclub_types } from "../../../utils/types";
 import {
   Heading,
@@ -21,7 +20,8 @@ import UserVideo from "./UserVideo";
 import UserAudio from "./UserAudio";
 import DrawingChallenge from "./DrawingChallenge";
 import POHConfirmationModal from "./POHConfirmationModal";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
+import { useActors } from "../../../hooks/actors";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -90,10 +90,11 @@ export default function PohApplicant() {
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
   const [formRules, setFormRules] = useState<modclub_types.ViolatedRules[]>([]);
+  const { modclub } = useActors();
 
   const getApplicant = async () => {
     setLoading(true);
-    const res = await getPohTaskData(packageId);
+    const res = await modclub.getPohTaskData(packageId);
     console.log({ pohPackage: res.ok });
     setContent(res.ok);
     setLoading(false);

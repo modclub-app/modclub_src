@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Principal } from "@dfinity/principal";
 import { useEffect, useState } from "react";
-import { getProvider } from "../../../utils/api";
 import { Columns, Card, Level, Heading, Icon } from "react-bulma-components";
+import { useActors } from "../../../hooks/actors";
 
 const GradientBox = ({ children, title, showToken = true }) => {
   return (
@@ -38,10 +38,10 @@ const GradientBox = ({ children, title, showToken = true }) => {
 export default function Platform({ providerId }: { providerId: Principal }) {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const { modclub } = useActors();
   useEffect(() => {
     const fetchContent = async () => {
-      const content = await getProvider(providerId);
+      const content = await modclub.getProvider(providerId);
       console.log("content", content);
       setContent(content);
       setLoading(false);

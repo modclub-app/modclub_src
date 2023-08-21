@@ -2,7 +2,6 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { formatDate } from "../../../../utils/util";
-import { getPohTaskDataForAdminUsers } from "../../../../utils/api";
 import { Heading, Card, Modal, Notification } from "react-bulma-components";
 import Userstats from "../../profile/Userstats";
 import ProfileDetails from "../ProfileDetails";
@@ -11,7 +10,8 @@ import UserVideo from "../UserVideo";
 import UserAudio from "../UserAudio";
 import DrawingChallenge from "../DrawingChallenge";
 import { useHistory } from "react-router-dom";
-import { useProfile } from "../../../../utils/profile";
+import { useProfile } from "../../../../contexts/profile";
+import { useActors } from "../../../../hooks/actors";
 
 export default function PohSubmittedApplicant() {
   const { user, isAdminUser } = useProfile();
@@ -20,12 +20,13 @@ export default function PohSubmittedApplicant() {
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
   const history = useHistory();
+  const { modclub } = useActors();
 
   const getApplicant = async () => {
     if (!isAdminUser) history.push(`/app/poh`);
 
     setLoading(true);
-    const res = await getPohTaskDataForAdminUsers(packageId);
+    const res = await modclub.getPohTaskDataForAdminUsers(packageId);
     console.log({ pohPackage: res.ok });
     setContent(res.ok);
     setLoading(false);

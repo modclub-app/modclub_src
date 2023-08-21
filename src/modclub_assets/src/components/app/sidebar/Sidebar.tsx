@@ -13,20 +13,15 @@ import {
 } from "react-bulma-components";
 import LogoImg from "../../../../assets/logo.png";
 import SidebarUser from "./SidebarUser";
-import { useAuth } from "../../../utils/auth";
-import {
-  addUserToQueueAndSendVerificationEmail,
-  getUserAlertOptInVal,
-  queryRSAndLevel,
-  queryRSAndLevelByPrincipal,
-  registerUserToReceiveAlerts,
-} from "../../../utils/api";
-import { useProfile } from "../../../utils/profile";
+import { useConnect } from "@connect2ic/react";
+import { Principal } from "@dfinity/principal";
+import { useProfile } from "../../../contexts/profile";
 import { SignIn } from "../../auth/SignIn";
 import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
 import logger from "../../../utils/logger";
+import { useActors } from "../../../hooks/actors";
 
 const InviteModerator = ({ toggle }) => {
   const link = "Coming Soon"; //`${window.location.origin}/referral=${Date.now()}`
@@ -92,7 +87,7 @@ const DropdownLabel = ({ toggle }) => {
 
 export default function Sidebar() {
   const history = useHistory();
-  const { isAuthenticated, userPrincipalText, identity } = useAuth();
+  const { isConnected, activeProvider, principal } = useConnect();
 
   const {
     user,
@@ -105,7 +100,7 @@ export default function Sidebar() {
     setSelectedProvider,
     isProfileReady,
   } = useProfile();
-
+  const { rs, modclub } = useActors();
   const [showModal, setShowModal] = useState(false);
   const [notificationMsg, setNotificationMsg] = useState(null);
   const toggleModal = () => setShowModal(!showModal);
@@ -117,7 +112,10 @@ export default function Sidebar() {
   const subscribeToAlert = async () => {
     setLoadSpinner(true);
     if (userAlertVal) {
-      await registerUserToReceiveAlerts(userPrincipalText, false);
+      await modclub.registerUserToReceiveAlerts(
+        Principal.fromText(principal),
+        false
+      );
       setUserAlertVal(false);
       setLoadSpinner(false);
       return;
@@ -140,8 +138,7 @@ export default function Sidebar() {
           ? process.env.DEV_ENV
           : "dev";
 
-      logger.log("env to use", envToUse);
-      await addUserToQueueAndSendVerificationEmail(envToUse);
+      await modclub.sendVerificationEmail(envToUse);
     } catch (error) {
       logger.error("Error occurred while sending email", error);
       msgToDisplay.success = false;
@@ -157,34 +154,38 @@ export default function Sidebar() {
 
   const fetchUserAlertOptinVal = async () => {
     setLoadSpinner(true);
-    const result = await getUserAlertOptInVal();
+    try {
+      const result = await modclub.checkIfUserOptToReciveAlerts();
+      setUserAlertVal(result);
+    } catch (error) {
+      logger.error("fetchUserAlertOptinVal", error);
+      setUserAlertVal(false);
+    }
+
     setLoadSpinner(false);
-    setUserAlertVal(result);
   };
 
   useEffect(() => {
     let isMounted = true;
-    if (isAuthenticated && isProfileReady) {
-      if (requiresSignUp) {
-        history.push("/signup");
-      }
+    if (isConnected && isProfileReady && !user && requiresSignUp) {
+      history.push("/signup");
     }
-    if (isAuthenticated && user) {
+    if (isConnected && user) {
       fetchUserAlertOptinVal();
     }
     const getUserLv = async () => {
-      const res = await queryRSAndLevelByPrincipal(
-        identity.getPrincipal().toText()
+      const res = await rs.queryRSAndLevelByPrincipal(
+        Principal.fromText(principal)
       );
       if (res && res.level && Object.keys(res.level).length > 0 && isMounted) {
         setLevel(Object.keys(res.level)[0]);
       }
     };
-    identity && getUserLv();
+    principal && getUserLv();
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, user, isProfileReady, requiresSignUp]);
+  }, [isConnected, user, requiresSignUp]);
 
   return (
     <Columns.Column
@@ -205,7 +206,7 @@ export default function Sidebar() {
 
         <hr />
 
-        {isAuthenticated && user ? <SidebarUser /> : <SignIn />}
+        {isConnected && user ? <SidebarUser /> : <SignIn />}
 
         <Menu.List>
           <Link to="/app">

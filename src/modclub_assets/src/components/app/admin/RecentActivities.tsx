@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { fetchProviderContent } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
 import {
   Columns,
@@ -14,7 +13,9 @@ import {
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
 import { modclub_types } from "../../../utils/types";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
+import { useActors } from "../../../hooks/actors";
+
 const Table = ({
   loading,
   filteredActivity,
@@ -98,6 +99,7 @@ const Table = ({
 
 export default function AdminActivity() {
   const { selectedProvider } = useProfile();
+  const { modclub } = useActors();
   const [approvedActivity, setApprovedActivity] = useState([]);
   const [inProgressActivity, setInProgressActivity] = useState([]);
   const [rejectedActivity, setRejectedActivity] = useState([]);
@@ -152,11 +154,11 @@ export default function AdminActivity() {
       page[selectedFilter].hasDataFetched &&
       doNotFetchExisting
         ? []
-        : await fetchProviderContent(
+        : await modclub.getProviderContent(
             selectedProvider.id,
             status,
-            startIndex,
-            endIndex
+            BigInt(startIndex),
+            BigInt(endIndex)
           );
     page[selectedFilter].hasDataFetched = true;
     setPage({ ...page, ...page });

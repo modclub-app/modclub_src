@@ -1,8 +1,9 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
-import { ProvideAuth } from "./utils/auth";
-import { ProfileProvider } from "./utils/profile";
+import { AuthProvider } from "./contexts/auth";
+import { ProfileProvider } from "./contexts/profile";
+import { Connect2ICProvider } from "@connect2ic/react";
 
 import "./index.scss";
 
@@ -13,11 +14,11 @@ window.global = window;
 
 ReactDOM.render(
   <React.StrictMode>
-    <ProvideAuth>
+    <AuthProvider>
       <ProfileProvider>
         <App />
       </ProfileProvider>
-    </ProvideAuth>
+    </AuthProvider>
   </React.StrictMode>,
   document.getElementById("app")
 );

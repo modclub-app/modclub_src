@@ -12,12 +12,14 @@ import {
 import Userstats from "../profile/Userstats";
 import FilterBar from "../../common/filterbar/FilterBar";
 import Progress from "../../common/progress/Progress";
-import { useAuth } from "../../../utils/auth";
-import { getPohTasks, queryRSAndLevelByPrincipal } from "../../../utils/api";
-import { fetchObjectUrl, formatDate, getUrlForData } from "../../../utils/util";
+import { formatDate, getUrlForData } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import placeholder from "../../../../assets/user_placeholder.png";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
+import { useActors } from "../../../utils";
+import { useConnect } from "@connect2ic/react";
+import { Principal } from "@dfinity/principal";
+import { fetchObjectUrl } from "../../../utils/jwt";
 
 const PAGE_SIZE = 9;
 
@@ -33,7 +35,7 @@ const ApplicantSnippet = ({
     : null;
   const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
   const [urlObject, setUrlObject] = useState(null);
-
+  const { modclub } = useActors();
   useEffect(() => {
     const fetchData = async () => {
       console.log(
@@ -44,7 +46,7 @@ const ApplicantSnippet = ({
           " imageUrl: " +
           imageUrl
       );
-      const urlObject = await fetchObjectUrl(imageUrl);
+      const urlObject = await fetchObjectUrl(modclub, imageUrl);
       setUrlObject(urlObject);
     };
     fetchData();
@@ -120,8 +122,9 @@ const ApplicantSnippet = ({
 };
 
 export default function PohApplicantList() {
-  const { identity } = useAuth();
+  const { principal } = useConnect();
   const { user } = useProfile();
+  const { rs, modclub } = useActors();
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<
     Array<modclub_types.PohTaskPlus>
@@ -150,10 +153,10 @@ export default function PohApplicantList() {
   const getApplicants = async () => {
     setLoading(true);
     const status = { new: null };
-    const newApplicants = await getPohTasks(
+    const newApplicants = await modclub.getPohTasks(
       status,
-      page.startIndex,
-      page.endIndex
+      page.startIndex as unknown as bigint,
+      page.endIndex as unknown as bigint
     );
     console.log("newApplicants", newApplicants);
     if (newApplicants.length < PAGE_SIZE) setHasReachedEnd(true);
@@ -161,10 +164,10 @@ export default function PohApplicantList() {
     setLoading(false);
   };
   const getUserLv = async () => {
-    if (identity) {
+    if (principal) {
       try {
-        const res = await queryRSAndLevelByPrincipal(
-          identity.getPrincipal().toText()
+        const res = await rs.queryRSAndLevelByPrincipal(
+          Principal.fromText(principal)
         );
         if (typeof res.level === "object") {
           setLevel(Object.keys(res.level)[0]);

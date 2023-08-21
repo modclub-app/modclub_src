@@ -18,29 +18,33 @@ import AlertConfirmation from "./poh/AlertConfirmation";
 import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 import AdminActivity from "./admin/RecentActivities";
-import { useAuth } from "../../utils/auth";
-import { verifyUserHumanity } from "../../utils/api";
+import { useConnect } from "@connect2ic/react";
+import { useProfile } from "../../contexts/profile";
 import { refreshJwt } from "../../utils/jwt";
-import { useProfile } from "../../utils/profile";
+import logger from "../../utils/logger";
+import { useActors } from "../../hooks/actors";
 
 export default function ModclubApp() {
   const history = useHistory();
-  const { isAuthenticated } = useAuth();
+
+  const { isConnected } = useConnect();
   const {
     user,
     providerIdText,
     providers,
     selectedProvider,
     setSelectedProvider,
+    isProfileReady,
+    requiresSignUp,
   } = useProfile();
   const [status, setStatus] = useState(null);
   const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([]);
   const [token, setToken] = useState(null);
   const [isJwtSet, setJwt] = useState(false);
+  const { modclub } = useActors();
 
   const initialCall = async () => {
-    const result = await verifyUserHumanity();
-
+    const result = await modclub.verifyUserHumanityForModclub();
     if (result.rejectionReasons && result.rejectionReasons.length) {
       setRejectionReasons(result.rejectionReasons);
     }
@@ -50,7 +54,7 @@ export default function ModclubApp() {
     const token = result?.token;
     setToken(token);
 
-    if (status == "verified" && (await refreshJwt())) {
+    if (status == "verified" && refreshJwt(modclub)) {
       setJwt(true);
     }
   };
@@ -60,16 +64,23 @@ export default function ModclubApp() {
       if (user?.role?.hasOwnProperty("admin")) {
         history.push("/app/admin");
       } else {
-        isAuthenticated && user && initialCall();
+        isConnected && user && initialCall();
       }
     }
-  }, [user, isAuthenticated]);
+  }, [user, isConnected]);
+
+  useEffect(() => {
+    if (isConnected && isProfileReady && !user && requiresSignUp) {
+      history.push("/signup");
+    }
+  }, [isConnected, user, requiresSignUp, isProfileReady]);
+
   const location = useLocation();
   const displayVerificationEmail = location.pathname.startsWith(
     "/app/confirm/poh/alerts/"
   );
 
-  if (!isAuthenticated)
+  if (!isConnected)
     return displayVerificationEmail ? (
       <AlertConfirmation />
     ) : (

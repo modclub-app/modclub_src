@@ -2,10 +2,9 @@ import * as React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Dropdown, Heading, Media, Image, Icon } from "react-bulma-components";
-import { useAuth } from "../../../utils/auth";
-import { fileToImgSrc, unwrap } from "../../../utils/util";
 import placeholder from "../../../../assets/user_placeholder.png";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
+import { useConnect } from "@connect2ic/react";
 
 const DropdownLabel = ({ pic, user, toggle }) => {
   const snippet = (string, truncate) => {
@@ -43,7 +42,7 @@ const DropdownLabel = ({ pic, user, toggle }) => {
 };
 
 export default function SidebarUser() {
-  const { logOut } = useAuth();
+  const { disconnect } = useConnect();
   const { user } = useProfile();
   const pic = placeholder;
 
@@ -53,7 +52,7 @@ export default function SidebarUser() {
   };
 
   const handleLogOut = async () => {
-    await logOut();
+    await disconnect();
   };
 
   return (

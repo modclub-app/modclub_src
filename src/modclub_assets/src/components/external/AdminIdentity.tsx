@@ -1,11 +1,11 @@
 import * as React from "react";
-import { useAuth } from "../../utils/auth";
 import { useState } from "react";
 import { SignIn } from "../auth/SignIn";
 import "./landing/Landing.scss";
+import { useConnect } from "@connect2ic/react";
 
 export default function AdminIdentity() {
-  const { isAuthenticated, identity, isAuthReady } = useAuth();
+  const { isConnected, principal } = useConnect();
   const [message, setMessage] = useState(null);
 
   const spinner = (
@@ -18,8 +18,9 @@ export default function AdminIdentity() {
     <>
       {message && (
         <div
-          className={`notification has-text-centered ${message.success ? "is-success" : "is-danger"
-            }`}
+          className={`notification has-text-centered ${
+            message.success ? "is-success" : "is-danger"
+          }`}
         >
           {message.value}
         </div>
@@ -31,20 +32,25 @@ export default function AdminIdentity() {
         <section className="hero is-black is-medium">
           <div className="hero-body container has-text-centered">
             <h1 className="title is-size-1">MODCLUB Admin Principal ID</h1>
-            <p className="has-text-silver is-size-4 has-text-centered mb-6">Login to retrieve your principal ID, then provide this to your admin so they can add you as a trusted identity</p>
+            <p className="has-text-silver is-size-4 has-text-centered mb-6">
+              Login to retrieve your principal ID, then provide this to your
+              admin so they can add you as a trusted identity
+            </p>
             <div className="is-flex is-justify-content-center	">
-              {!isAuthReady ? (
+              {!isConnected ? (
                 spinner
               ) : (
                 <>
-                  {isAuthenticated && identity ? (
+                  {principal ? (
                     <div className="card has-gradient">
                       <div className="card-content">
                         <label className="label">Principal ID</label>
-                        <p>{identity.getPrincipal().toText()}</p>
+                        <p>{principal}</p>
                       </div>
                     </div>
-                  ) : <SignIn />}
+                  ) : (
+                    <SignIn />
+                  )}
                 </>
               )}
             </div>

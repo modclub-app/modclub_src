@@ -1,14 +1,13 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
-import { useAuth } from "../../utils/auth";
+import { useConnect } from "@connect2ic/react";
 
 const Logout = () => {
   const history = useHistory();
-  const { logOut, isActorReady } = useAuth();
 
+  const { disconnect } = useConnect();
   const handleLogout = () => {
-    logOut();
-
+    disconnect();
     // Redirect to the home page after logout
     history.push("/");
   };

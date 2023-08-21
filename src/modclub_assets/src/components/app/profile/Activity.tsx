@@ -1,8 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../../utils/auth";
-import { getActivity } from "../../../utils/api";
 import { formatDate } from "../../../utils/util";
+import { useConnect } from "@connect2ic/react";
 import {
   Columns,
   Card,
@@ -15,7 +14,8 @@ import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
 import Progress from "../../common/progress/Progress";
 import { modclub_types } from "../../../utils/types";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
+import { useActors } from "../../../hooks/actors";
 
 const Table = ({
   loading,
@@ -96,15 +96,15 @@ const Table = ({
 };
 
 export default function Activity() {
-  const { identity } = useAuth();
+  const { principal } = useConnect();
   const { user } = useProfile();
+  const { modclub } = useActors();
   const [completedActivity, setCompletedActivity] = useState<Activity[]>([]);
   const [inProgressActivity, setInProgressActivity] = useState<
     modclub_types.Activity[]
   >([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
-  const [principalID, setPrincipalID] = useState<string>("");
 
   const filters = ["completed", "new"];
 
@@ -116,21 +116,12 @@ export default function Activity() {
   const fetchActivity = async (filter) => {
     setLoading(true);
     if (filter === "new") {
-      setInProgressActivity(await getActivity(false));
+      setInProgressActivity(await modclub.getActivity(false));
     } else {
-      setCompletedActivity(await getActivity(true));
+      setCompletedActivity(await modclub.getActivity(true));
     }
     setLoading(false);
   };
-
-  const getUserData = (identity) => {
-    const principalId = identity.getPrincipal().toText();
-    setPrincipalID(principalId);
-  };
-
-  useEffect(() => {
-    identity && getUserData(identity);
-  }, [identity]);
 
   useEffect(() => {
     user && fetchActivity(currentFilter);
@@ -149,12 +140,12 @@ export default function Activity() {
             <Card.Content textAlign="center">
               <label className="label">My Principal ID</label>
               <p className="is-flex is-justify-content-center has-text-white">
-                {principalID}
+                {principal}
                 <Icon
                   color="white"
                   className="ml-3 is-clickable"
                   onClick={() => {
-                    navigator.clipboard.writeText(principalID);
+                    navigator.clipboard.writeText(principal);
                   }}
                 >
                   <span className="material-icons">file_copy</span>

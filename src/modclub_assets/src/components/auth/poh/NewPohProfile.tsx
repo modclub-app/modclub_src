@@ -3,23 +3,23 @@ import { Switch, Route } from "react-router-dom";
 import { useHistory, Link, useLocation } from "react-router-dom";
 import { Modal, Columns, Card, Heading, Button } from "react-bulma-components";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../../utils/auth";
 import NotAuthenticatedModal from "../../app/modals/NotAuthenticated";
 import NewProfile from "../new_profile/NewProfile";
 import { Steps, Step } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
-import { retrieveChallengesForUser } from "../../../utils/api";
 import DrawingChallenge from "./DrawingChallenge";
 import { modclub_types } from "../../../utils/types";
-import { useProfile } from "../../../utils/profile";
+import { useProfile } from "../../../contexts/profile";
+import { useActors } from "../../../hooks/actors";
+import { useConnect } from "@connect2ic/react";
 
 const Confirmation = ({ redirect_uri }) => {
-  const { logOut } = useAuth();
+  const { disconnect } = useConnect();
   const handleRedirect = (e) => {
     e.preventDefault();
-    logOut();
+    disconnect();
     window.location.href = redirect_uri;
   };
 
@@ -51,7 +51,7 @@ export default function NewPohProfile({ match }) {
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const URLtoken = params.get("token");
-  const { isAuthenticated, logOut } = useAuth();
+  const { isConnected, disconnect } = useConnect();
   const { user } = useProfile();
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
@@ -61,6 +61,7 @@ export default function NewPohProfile({ match }) {
   const [noToken, setNoToken] = useState<boolean>(false);
   const [invalidToken, setInvalidToken] = useState<string | null>(null);
   const [redirectUri, setRedirectUri] = useState<string | null>(null);
+  const { modclub } = useActors();
 
   const initialCall = async (token) => {
     if (!token) {
@@ -70,7 +71,7 @@ export default function NewPohProfile({ match }) {
 
     setRedirectUri(params.get("redirect_uri"));
 
-    const challenges = await retrieveChallengesForUser(token);
+    const challenges = await modclub.retrieveChallengesForUser(token);
     setLoading(false);
     if (challenges.hasOwnProperty("ok")) {
       setSteps(challenges["ok"]);
@@ -111,8 +112,8 @@ export default function NewPohProfile({ match }) {
   };
 
   useEffect(() => {
-    isAuthenticated && user && initialCall(URLtoken);
-  }, [isAuthenticated, user]);
+    isConnected && user && initialCall(URLtoken);
+  }, [isConnected, user]);
 
   useEffect(() => {
     return history.listen((location) => {
@@ -139,9 +140,9 @@ export default function NewPohProfile({ match }) {
       </Modal>
     );
 
-  if (!isAuthenticated) return <NotAuthenticatedModal />;
+  if (!isConnected) return <NotAuthenticatedModal />;
 
-  if (isAuthenticated && !user) return <NewProfile isPohFlow={true} />;
+  if (isConnected && !user) return <NewProfile isPohFlow={true} />;
 
   const goToNextStep = (currentStep) => {
     if (!steps) return;
@@ -156,7 +157,7 @@ export default function NewPohProfile({ match }) {
   };
 
   const handleLogOut = async () => {
-    await logOut();
+    disconnect();
   };
 
   return (
