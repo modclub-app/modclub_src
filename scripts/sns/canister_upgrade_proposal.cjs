@@ -103,7 +103,7 @@ function execShellCommand(cmd) {
   const authCanisterId = getCanisterId("auth");
   const vestingCanisterId = getCanisterId("vesting");
 
-  const upgradeArg = `record { modclub_canister_id = principal \\"${modclubCanisterId}\\"; old_modclub_canister_id = principal \\"t6rzw-2iaaa-aaaaa-aaama-cai\\"; rs_canister_id = principal \\"${rsCanisterId}\\"; wallet_canister_id = principal \\"${walletCanisterId}\\"; auth_canister_id = principal \\"${authCanisterId}\\"; vesting_canister_id = principal \\"${vestingCanisterId}\\"; }`;
+  const upgradeArg = `record { modclub_canister_id = principal \\"${modclubCanisterId}\\"; old_modclub_canister_id = principal \\"la3yy-gaaaa-aaaah-qaiuq-cai\\"; rs_canister_id = principal \\"${rsCanisterId}\\"; wallet_canister_id = principal \\"${walletCanisterId}\\"; auth_canister_id = principal \\"${authCanisterId}\\"; vesting_canister_id = principal \\"${vestingCanisterId}\\"; }`;
 
   try {
     console.log("🚀 Preparing upgrade proposal...");
@@ -111,9 +111,8 @@ function execShellCommand(cmd) {
     await execShellCommand(makeProposalCommand);
 
     console.log("✅ Preparing proposal...");
-    const sendCommand = `quill send upgrade.json ${
-      network == "ic" ? "" : "--insecure-local-dev-mode"
-    } -y | grep -v "^ *new_canister_wasm"`;
+    const sendCommand = `quill send upgrade.json ${network == "ic" ? "" : "--insecure-local-dev-mode"
+      } -y | grep -v "^ *new_canister_wasm"`;
     //await execShellCommand(sendCommand);
 
     console.log("✅ Proposal ready to be sent.");
