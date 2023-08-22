@@ -80,16 +80,21 @@ function execShellCommand(cmd) {
 
   const execSync = require("child_process").execSync;
   const environment = await prompt(
-    "🌐 Enter the environment (qa, dev, or none): "
+    "🌐 Enter the environment (qa, dev, or prod): "
   );
 
   function getCanisterId(canisterName) {
     // Append the environment to the canister name, unless the environment is 'none'
     const fullCanisterName =
-      environment === "none" ? canisterName : `${canisterName}_${environment}`;
-    return execSync(`dfx canister id ${fullCanisterName}`, {
-      encoding: "utf8",
-    }).trim();
+      environment === "prod" ? canisterName : `${canisterName}_${environment}`;
+    return execSync(
+      environment === "prod"
+        ? `dfx canister id ${fullCanisterName} --network=ic`
+        : `dfx canister id ${fullCanisterName}`,
+      {
+        encoding: "utf8",
+      }
+    ).trim();
   }
 
   const modclubCanisterId = getCanisterId("modclub");

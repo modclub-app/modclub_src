@@ -30,7 +30,7 @@ Steps:
    - send proposal with the resulting send command
 2. run `dfx canister call sns_root list_sns_canisters '(record {})'` you will see canister ids listed under dapps if done correctly
 
-Canister upgrade proposal:
+# Canister upgrade proposal:
 
 1. Make a change to a canister, then run `dfx build <canister name>`
 2. run `sudo node scripts/sns/canister_upgrade_proposal.cjs` to create a proposal to upgrade a canister
