@@ -25,8 +25,8 @@ export default function Landing() {
       <section className="hero is-black is-medium">
         <div className="hero-body container has-text-centered">
           <h1 className="title is-size-1">
-            useConnect2IC: Decentralized content moderation on the Internet
-            Computer <img className="DfinityLogo" src={DfinityLogo} />
+            Decentralized content moderation on the Internet Computer
+            <img className="DfinityLogo" src={DfinityLogo} />
           </h1>
           <p className="has-text-silver is-size-4 has-text-centered mb-6">
             MODCLUB is a decentralized content moderation platform, it
