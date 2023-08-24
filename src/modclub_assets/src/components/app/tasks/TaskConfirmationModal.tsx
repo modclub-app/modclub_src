@@ -86,7 +86,6 @@ const ConfirmationModal = ({
           : { rejected: null },
         [checked]
       );
-      console.log("result", result);
       setSubmitting(false);
       setMessage({
         success: result === "Vote successful" ? true : false,
