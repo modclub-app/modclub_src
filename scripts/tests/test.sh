@@ -14,10 +14,10 @@ function run_tests() {
 	clear
 	printf "${GREEN}[TEST] ${YELLOW}Modclub Tests started ...${NC}\n"
 
-	source ./scripts/tests/security-test.sh
-	source ./scripts/tests/ledger-tests.sh
-	source ./scripts/tests/vesting-canister-tests.sh
-	source ./scripts/tests/e2e-test.sh
+	source ./scripts/tests/security_test.sh
+	source ./scripts/tests/ledger_tests.sh
+	source ./scripts/tests/vesting_canister_tests.sh
+	source ./scripts/tests/e2e_test.sh
 }
 
 run_tests
