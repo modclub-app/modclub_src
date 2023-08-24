@@ -21,7 +21,7 @@
       "type": "motoko",
       "args": "-v --max-stable-pages 786432"
     },
-    "modclub_assets_dev": {
+    "modclub_dev_assets": {
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
@@ -37,7 +37,7 @@
       "type": "motoko",
       "args": "-v --max-stable-pages 786432"
     },
-    "modclub_assets_qa": {
+    "modclub_qa_assets": {
       "dependencies": ["modclub_qa"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"

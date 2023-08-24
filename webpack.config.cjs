@@ -128,6 +128,7 @@ module.exports = {
     }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
+      MODCLUB_ASSET_OLD_CANISTER_ID: "ljyte-qiaaa-aaaah-qaiva-cai",
       MODCLUB_CANISTER_ID: canisters["modclub"] || "aaaaa-aa",
       MODCLUB_DEV_CANISTER_ID: canisters["modclub_dev"] || "aaaaa-aa",
       MODCLUB_QA_CANISTER_ID: canisters["modclub_qa"] || "aaaaa-aa",

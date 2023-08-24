@@ -129,6 +129,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var importedProvidersStable : List.List<Principal> = List.nil<Principal>();
   private var importedProviders = Buffer.Buffer<Principal>(100);
 
+  stable var accountsAssociationsStable : List.List<(Principal, Principal)> = List.nil<(Principal, Principal)>();
+  private var accountsAssocHashes = HashMap.HashMap<Text, Principal>(1, Text.equal, Text.hash);
+  private var assocVerificationHashes = HashMap.HashMap<Text, (Principal, Text)>(1, Text.equal, Text.hash);
+
   var storageSolution = StorageSolution.StorageSolution(
     storageStateStable,
     retiredDataCanisterId,
@@ -2573,6 +2577,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
       case (#importAccounts _) { authGuard.isOldModclubInstance(caller) };
+      case (#associateAccount _) {
+        authGuard.isOldModclubInstance(caller) or authGuard.isAdmin(caller);
+      };
       case (#addToApprovedUser _) { authGuard.isAdmin(caller) };
       case (#validate _) { authGuard.isAdmin(caller) };
       case (#translateUserPoints _) { authGuard.isAdmin(caller) };
@@ -3001,6 +3008,104 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     #ok({ topSeniors; seniors; juniors; novice });
+  };
+
+  public shared ({ caller }) func generateAssocMetadata() : async {
+    hash : Text;
+    targetCanister : Principal;
+  } {
+    let assocHash = await Helpers.generateUUID();
+    accountsAssocHashes.put(assocHash, caller);
+    return { hash = assocHash; targetCanister = Principal.fromActor(this) };
+  };
+
+  public shared ({ caller }) func validateAssocHash(assocAcc : Principal, assocHash : Text, verificationHash : Text) : async Bool {
+    // Utils.mod_assert(authGuard.isOldModclubCanister(caller), ModSecurity.AccessMode.NotPermitted);
+    switch (accountsAssocHashes.get(assocHash)) {
+      case (?associator) {
+        assocVerificationHashes.put(assocHash, (assocAcc, verificationHash));
+        return true;
+      };
+      case (_) {
+        throw Error.reject("Impossible to validateAssocHash. " # assocHash);
+      };
+    };
+  };
+
+  public shared ({ caller }) func associateAccount(assocHash : Text, profileData : Types.ImportProfile, points : Int) : async Text {
+    let (associator, assocAccount, avh) = switch (accountsAssocHashes.get(assocHash)) {
+      case (?assoc) {
+        switch (assocVerificationHashes.get(assocHash)) {
+          case (?(assocAcc, vh)) {
+            (assoc, assocAcc, vh);
+          };
+          case (_) {
+            throw Error.reject("No association record found in assocVerificationHashes for " # assocHash);
+          };
+        };
+      };
+      case (_) {
+        throw Error.reject("No association record found in accountsAssocHashes for " # assocHash);
+      };
+    };
+
+    try {
+      let subAccs = HashMap.fromIter<Text, Blob>(
+        (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
+        Array.size(Helpers.moderatorSubaccountTypes),
+        Text.equal,
+        Text.hash
+      );
+
+      let profile = await ModeratorManager.registerModerator(
+        associator,
+        profileData.userName,
+        null,
+        stateV2,
+        subAccs
+      );
+
+      await storageSolution.registerModerators([associator]);
+      contentQueueManager.assignUserIds2QueueId([associator]);
+      pohContentQueueManager.assignUserIds2QueueId([associator]);
+
+      let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
+      if (Nat.greater(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
+        ignore await rs.setRS(associator, 75); // #TopSenior as one of most efficient users
+        ignore await rs.updateRS(associator, true, #approved);
+      } else if (Nat.greater(up, Constants.SENIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
+        ignore await rs.setRS(associator, 50); // #Senior
+        ignore await rs.updateRS(associator, true, #approved);
+      } else if (Nat.greater(up, Constants.JUNIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.SENIOR_TRANSLATE_THRESHOLD)) {
+        ignore await rs.setRS(associator, 20); // #Junior
+        ignore await rs.updateRS(associator, true, #approved);
+      } else {
+        ignore await rs.setRS(associator, 10); // #Novice for all others as motivational user-friendly approach
+        ignore await rs.updateRS(associator, true, #approved);
+      };
+
+      Helpers.logMessage(
+        canistergeekLogger,
+        "NEW Moderator Account has been Associated :: " # Principal.toText(associator),
+        #info
+      );
+    } catch (e) {
+      Helpers.logMessage(
+        canistergeekLogger,
+        "AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e),
+        #error
+      );
+      throw Error.reject("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
+    };
+
+    accountsAssociationsStable := List.filter<(Principal, Principal)>(
+      accountsAssociationsStable,
+      func((assoc, assocAcc)) {
+        not (Principal.equal(assoc, associator) and Principal.equal(assocAcc, assocAccount));
+      }
+    );
+    accountsAssociationsStable := List.push<(Principal, Principal)>((associator, assocAccount), accountsAssociationsStable);
+    return avh;
   };
 
 };

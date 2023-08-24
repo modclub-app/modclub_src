@@ -25,7 +25,7 @@ function create_qa_canisters() {
   dfx canister create rs_qa &&
   dfx canister create modclub_qa &&
   dfx canister create vesting_qa &&
-  dfx canister create modclub_assets_qa &&
+  dfx canister create modclub_qa_assets &&
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
 }
@@ -105,7 +105,7 @@ function deploy_wallet_canister() {
 }
 
 function get_local_canisters() {
-  echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }"
+  echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"bkyz2-fmaaa-aaaaa-qaaaq-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }"
 }
 
 function deploy_vesting_canister() {
@@ -129,11 +129,11 @@ function deploy_qa_canisters() {
 	deploy_wallet_canister &&
   deploy_vesting_canister &&
   dfx deploy internet_identity &&
-  dfx deploy rs_qa  --argument="($local_env)" &&
-	dfx deploy modclub_qa  --argument="($local_env)" &&
+  dfx deploy rs_qa --argument="($local_env)" &&
+	dfx deploy modclub_qa --argument="($local_env)" &&
   generate_declariations "$DEV_ENV" &&
   node "$current_dir/../build/gen_declarations_by_env.cjs" &&
-  DEV_ENV=qa dfx deploy modclub_assets_qa &&
+  DEV_ENV=qa dfx deploy modclub_qa_assets &&
   dfx ledger fabricate-cycles --canister $(dfx canister id modclub_qa) --amount 10 &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
 	return 0;
@@ -150,5 +150,4 @@ function init_qa_canisters() {
 }
 
 create_qa_canisters && deploy_qa_canisters && init_qa_canisters
-# node scripts/infra/overwrite_modclub.js 
 

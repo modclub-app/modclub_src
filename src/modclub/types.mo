@@ -293,6 +293,10 @@ module {
 
   public type ProfileStable = ProfileInfoStable and SubAccountsStable;
 
+  public type ImportProfile = ProfileInfoStable and {
+    pic : ?Image;
+  };
+
   public type ModeratorLeaderboard = {
     id : UserId;
     userName : Text;

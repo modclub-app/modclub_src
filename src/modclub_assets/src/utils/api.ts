@@ -107,6 +107,18 @@ async function trace_error(_trace: any) {
   }
 }
 
+export async function getAccAssocMetadata(
+  modclub: modclub_types.ModClub
+): Promise<String> {
+  try {
+    const data = await modclub.generateAssocMetadata();
+    return data;
+  } catch (e) {
+    console.log("ERROR in generateAssocMetadata", e);
+    return Promise.reject(e);
+  }
+}
+
 export async function addProviderAdmin(
   modclub: modclub_types.ModClub,
   userId,

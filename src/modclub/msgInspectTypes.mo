@@ -112,6 +112,9 @@ module {
     #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal);
     #validate : () -> Any;
     #setModclubBuckets : () -> ();
+    #associateAccount : () -> (Text, Types.ImportProfile, Int);
+    #generateAssocMetadata : () -> ();
+    #validateAssocHash : () -> (Principal, Text, Text);
   };
 
 };
