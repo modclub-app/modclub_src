@@ -115,21 +115,23 @@ export default function Activity() {
 
   const fetchActivity = async (filter) => {
     setLoading(true);
-    if (filter === "new") {
-      setInProgressActivity(await modclub.getActivity(false));
-    } else {
-      setCompletedActivity(await modclub.getActivity(true));
+    if (modclub) {
+      if (filter === "new") {
+        setInProgressActivity(await modclub.getActivity(false));
+      } else {
+        setCompletedActivity(await modclub.getActivity(true));
+      }
     }
     setLoading(false);
   };
 
   useEffect(() => {
     user && fetchActivity(currentFilter);
-  }, [user]);
+  }, [user, modclub]);
 
   useEffect(() => {
     fetchActivity(currentFilter);
-  }, [currentFilter]);
+  }, [currentFilter, modclub]);
 
   return (
     <>

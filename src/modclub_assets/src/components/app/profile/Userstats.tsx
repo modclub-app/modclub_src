@@ -43,6 +43,8 @@ const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
+  const { rs, wallet, modclub, vesting } = useActors();
+
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards: 0,
@@ -80,8 +82,6 @@ export default function Userstats({ detailed = false }) {
 
   const [showUnstake, setShowUnstake] = useState(false);
   const toggleUnstake = () => setShowUnstake(!showUnstake);
-
-  const { rs, wallet, modclub, vesting } = useActors();
 
   type ResolvedType<T> = T extends Promise<infer R> ? R : T;
 
@@ -231,19 +231,21 @@ export default function Userstats({ detailed = false }) {
           }
         });
 
-      const prom5 = modclub
-        .getProfileById(Principal.fromText(principal))
-        .then((profile) => {
-          let subacc: any = Object.values(profile.subaccounts);
-          if (subacc.length > 0) {
-            subacc = subacc.find((item) => item[0] === "ACCOUNT_PAYABLE");
-          } else {
-            subacc = [];
-          }
-          if (isMounted) {
-            setSubacc(subacc.length > 0 ? subacc[1] : subacc);
-          }
-        });
+      const prom5 =
+        modclub &&
+        modclub
+          .getProfileById(Principal.fromText(principal))
+          .then((profile) => {
+            let subacc: any = Object.values(profile.subaccounts);
+            if (subacc.length > 0) {
+              subacc = subacc.find((item) => item[0] === "ACCOUNT_PAYABLE");
+            } else {
+              subacc = [];
+            }
+            if (isMounted) {
+              setSubacc(subacc.length > 0 ? subacc[1] : subacc);
+            }
+          });
 
       const prom6 = vesting
         .pending_stakes_for({
@@ -277,7 +279,7 @@ export default function Userstats({ detailed = false }) {
     return () => {
       isMounted = false;
     };
-  }, [principal]);
+  }, [principal, modclub]);
 
   const getRSMessageByLevel = useCallback((level: string) => {
     return levelMessages[level]?.rs || Constant.DEFAULT_MESSAGE;

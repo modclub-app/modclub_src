@@ -4,7 +4,6 @@ import { Usergeek } from "usergeek-ic-js";
 import "./bulma.css";
 import "./App.scss";
 import "./Responsive.scss";
-import ConnectIC from "./ConnectIC";
 
 import {
   HashRouter as Router,
@@ -12,8 +11,6 @@ import {
   Route,
   useHistory,
 } from "react-router-dom";
-
-import Connect2IC from "./ConnectIC";
 
 import External from "./components/external/External";
 import ModclubApp from "./components/app/ModclubApp";
@@ -37,7 +34,6 @@ export default function App() {
       {/* A <Switch> looks through its children <Route>s and
           renders the first one that matches the current URL. */}
       <Switch>
-        {/* <Route path="/newapp" component={ConnectIC} /> */}
         <Route path="/app" component={ModclubApp} />
         <Route path="/" component={External} />
       </Switch>

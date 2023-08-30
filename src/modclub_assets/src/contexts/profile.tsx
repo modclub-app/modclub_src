@@ -66,7 +66,7 @@ export function ProfileProvider({ children }) {
   // Function to fetch the user profile based on the authentication state
   const fetchUserProfile = async () => {
     logger.info("User's principal: ", principal);
-    if (isConnected) {
+    if (isConnected && modclub) {
       try {
         const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
         if (lsUser && !user) {
@@ -111,7 +111,8 @@ export function ProfileProvider({ children }) {
 
   // Call fetchUserProfile when the component mounts or when the isSignedIn state changes
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && modclub) {
+      // make sure it is already signed in before fetching profile
       fetchUserProfile();
     } else {
       // if log out
