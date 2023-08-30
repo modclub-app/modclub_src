@@ -88,10 +88,10 @@ export default function Userstats({ detailed = false }) {
   useEffect(() => {
     let isMounted = true;
     const _action = async () => {
-      let _subacc = subacc.length > 0 ? subacc[1] : subacc;
+      let _subacc = subacc.length > 0 ? subacc : [];
       let bal = await wallet.icrc1_balance_of({
         owner: Principal.fromText(CanisterId),
-        subaccount: _subacc && _subacc.length > 0 ? [_subacc] : [],
+        subaccount: [_subacc],
       });
 
       let userBal = await wallet.icrc1_balance_of({
@@ -280,6 +280,14 @@ export default function Userstats({ detailed = false }) {
       isMounted = false;
     };
   }, [principal, modclub]);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchTokenHoldings(principal, isMounted);
+    return () => {
+      isMounted = false;
+    };
+  }, [showClaim, showDeposit, showStake, showUnstake, showWithdraw]);
 
   const getRSMessageByLevel = useCallback((level: string) => {
     return levelMessages[level]?.rs || Constant.DEFAULT_MESSAGE;

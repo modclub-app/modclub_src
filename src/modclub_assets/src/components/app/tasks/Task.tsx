@@ -77,7 +77,7 @@ export default function Task() {
 
   const fetchTask = async () => {
     const content = await modclub.getContent(taskId);
-    setTask(content);
+    setTask(content[0]);
   };
 
   const fetchData = async () => {
