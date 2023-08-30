@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import { AuthProvider } from "./contexts/auth";
 import { ProfileProvider } from "./contexts/profile";
-import { Connect2ICProvider } from "@connect2ic/react";
+import { Connect2ICProvider } from "@connect2icmodclub/react";
 
 import "./index.scss";
 

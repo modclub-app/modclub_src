@@ -4,7 +4,7 @@ import { modclub_types } from "../utils/types";
 import { getUserFromStorage, setUserToStorage } from "../utils/util";
 import logger from "../utils/logger";
 import { useActors } from "../hooks/actors";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 
 export interface IProfileContext {
   requiresSignUp: boolean;

@@ -4,7 +4,7 @@ import dfinitylogo from "../../../assets/dfinity.svg";
 import infinityswap from "../../../assets/infinityswap.png";
 import pluglogo from "../../../assets/plug.png";
 import stoiclogo from "../../../assets/stoic.png";
-import { useProviders, useConnect } from "@connect2ic/react";
+import { useProviders, useConnect } from "@connect2icmodclub/react";
 
 /*
  * The sign-in process for when a user has not yet authenticated with the

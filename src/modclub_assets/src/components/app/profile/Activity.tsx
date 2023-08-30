@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { formatDate } from "../../../utils/util";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 import {
   Columns,
   Card,

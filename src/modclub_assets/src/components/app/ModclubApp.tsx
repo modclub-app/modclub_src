@@ -18,7 +18,7 @@ import AlertConfirmation from "./poh/AlertConfirmation";
 import Activity from "./profile/Activity";
 import Admin from "./admin/Admin";
 import AdminActivity from "./admin/RecentActivities";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 import { useProfile } from "../../contexts/profile";
 import { refreshJwt } from "../../utils/jwt";
 import logger from "../../utils/logger";

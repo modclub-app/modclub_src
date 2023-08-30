@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import { SignIn } from "../auth/SignIn";
 import "./landing/Landing.scss";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 
 export default function AdminIdentity() {
   const { isConnected, principal } = useConnect();

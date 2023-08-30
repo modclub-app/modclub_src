@@ -5,6 +5,7 @@ import {
   vesting_types,
   wallet_types,
 } from "../declarations_by_env";
+
 import { useCanister } from "./useCanister";
 
 export interface IActors {

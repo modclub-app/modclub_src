@@ -1,6 +1,6 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 
 const Logout = () => {
   const history = useHistory();

@@ -12,7 +12,7 @@ import { StatBox } from "../../common/statbox/StatBox";
 import * as Constant from "../../../utils/constant";
 import { convert_to_mod } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
 

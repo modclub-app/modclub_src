@@ -6,7 +6,7 @@ import { Principal } from "@dfinity/principal";
 import PopupModal from "./PopupModal";
 import { format_token } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 
 interface DepositProps {
   toggle: () => void;

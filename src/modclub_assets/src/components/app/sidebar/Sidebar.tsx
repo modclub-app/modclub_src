@@ -13,7 +13,7 @@ import {
 } from "react-bulma-components";
 import LogoImg from "../../../../assets/logo.png";
 import SidebarUser from "./SidebarUser";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 import { Principal } from "@dfinity/principal";
 import { useProfile } from "../../../contexts/profile";
 import { SignIn } from "../../auth/SignIn";

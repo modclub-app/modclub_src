@@ -1,4 +1,4 @@
-import { InternetIdentity, StoicWallet } from "@connect2ic/core/providers";
+import { InternetIdentity, StoicWallet } from "@connect2icmodclub/core/providers";
 import { encodeArrayBuffer } from "./util";
 import { Principal } from "@dfinity/principal";
 import { canisterId as ModCanisterId } from "../../../declarations/modclub/index";

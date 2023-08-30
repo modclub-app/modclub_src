@@ -17,7 +17,7 @@ import { modclub_types } from "../../../utils/types";
 import placeholder from "../../../../assets/user_placeholder.png";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../utils";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 import { Principal } from "@dfinity/principal";
 import { fetchObjectUrl } from "../../../utils/jwt";
 

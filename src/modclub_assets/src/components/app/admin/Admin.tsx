@@ -15,7 +15,7 @@ import { getEnvironmentSpecificValues } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 import EditProviderLogo from "./EditProviderLogo";
 import EditRulesModal from "./EditRulesModal";
 import EditModeratorSettingsModal from "./EditModeratorSettingsModal";

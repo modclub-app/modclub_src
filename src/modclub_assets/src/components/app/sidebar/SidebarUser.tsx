@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Dropdown, Heading, Media, Image, Icon } from "react-bulma-components";
 import placeholder from "../../../../assets/user_placeholder.png";
 import { useProfile } from "../../../contexts/profile";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 
 const DropdownLabel = ({ pic, user, toggle }) => {
   const snippet = (string, truncate) => {

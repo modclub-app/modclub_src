@@ -9,13 +9,13 @@ import * as wallet from "../../../declarations/wallet_qa";
 /*
  * Connect2ic provides essential utilities for IC app development
  */
-import { createClient } from "@connect2ic/core";
+import { createClient } from "@connect2icmodclub/core";
 import {
   InternetIdentity,
   PlugWallet,
   StoicWallet,
-} from "@connect2ic/core/providers";
-import { Connect2ICProvider } from "@connect2ic/react";
+} from "@connect2icmodclub/core/providers";
+import { Connect2ICProvider } from "@connect2icmodclub/react";
 
 function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -40,6 +40,14 @@ export function AuthProvider({ children }) {
       wallet,
     },
     providers: providers_cb,
+    globalProviderConfig: {
+      host: "https://icp-api.io",
+      //dev: true,
+      appName: "ModClub",
+      customDomain: "https://modclub.dev",
+      derivationOrigin: "https://h433y-uqaaa-aaaah-qdbja-cai.icp0.io",
+    },
   });
   return <Connect2ICProvider client={client}>{children}</Connect2ICProvider>;
 }
+

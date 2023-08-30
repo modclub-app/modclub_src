@@ -19,7 +19,7 @@ import { fileToImgSrc, unwrap } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html-react";
 import { useProfile } from "../../../contexts/profile";
-import { useConnect } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
 
 const InfoItem = ({ icon, title, info }) => {
