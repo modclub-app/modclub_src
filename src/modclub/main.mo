@@ -792,6 +792,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     await storageSolution.registerModerators([caller]);
     contentQueueManager.assignUserIds2QueueId([caller]);
     pohContentQueueManager.assignUserIds2QueueId([caller]);
+    ignore await rs.setRS(caller, 10);
     return profile;
   };
 
