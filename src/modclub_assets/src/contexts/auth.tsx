@@ -17,6 +17,8 @@ import {
 } from "@connect2icmodclub/core/providers";
 import { Connect2ICProvider } from "@connect2icmodclub/react";
 
+let env = process.env.DFX_NETWORK || "local";
+
 function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -41,11 +43,11 @@ export function AuthProvider({ children }) {
     },
     providers: providers_cb,
     globalProviderConfig: {
-      host: "https://icp-api.io",
+      host: env == "local" ? undefined : "https://icp-api.io",
       //dev: true,
       appName: "ModClub",
       customDomain: "https://modclub.dev",
-      derivationOrigin: "https://h433y-uqaaa-aaaah-qdbja-cai.icp0.io",
+      derivationOrigin: env == "local" ? undefined : "https://h433y-uqaaa-aaaah-qdbja-cai.icp0.io",
     },
   });
   return <Connect2ICProvider client={client}>{children}</Connect2ICProvider>;
