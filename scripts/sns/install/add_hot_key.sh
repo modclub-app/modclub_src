@@ -15,7 +15,7 @@ for neuron in "${dev_neurons[@]}"; do
   neuron-permission \
   --principal "upgqi-bms4w-gza6f-xgl4l-b7plh-xyyjx-ahmcn-ocnv6-cfio4-53j6g-4ae" \
   --permissions vote,submit-proposal,manage-voting-permission,unspecified,configure-dissolve-state,manage-principals,disburse,split,merge-maturity,disburse-maturity,stake-maturity \
-  remove \
+  add \
   "$neuron" \
     > msg.json
   quill send --yes msg.json
