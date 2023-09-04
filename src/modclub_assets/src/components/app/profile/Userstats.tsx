@@ -454,7 +454,7 @@ export default function Userstats({ detailed = false }) {
           tokenHoldings={tokenHoldings}
           onUpdate={() => setHoldingsUpdated(true)}
           userId={principal}
-          lockBlock={lockBlock.length > 0 ? lockBlock : []}
+          lockBlock={Array.isArray(lockBlock) ? lockBlock : []}
           digit={digits}
         />
       )}
