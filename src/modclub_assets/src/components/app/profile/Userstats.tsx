@@ -15,6 +15,7 @@ import Deposit from "../modals/Deposit";
 import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
+import { wallet_types } from "../../../utils/types";
 
 const levelMessages = {
   novice: {
@@ -66,7 +67,7 @@ export default function Userstats({ detailed = false }) {
   const [digits, setDigits] = useState<number>(0);
   const [pendingRewards, setPendingRewards] = useState(0);
   const [level, setLevel] = useState<string>("");
-  const [subacc, setSubacc] = useState<any>([]);
+  const [subacc, setSubacc] = useState<wallet_types.Account["subaccount"]>([]);
 
   const [showClaim, setShowClaim] = useState(false);
   const toggleClaim = () => setShowClaim(!showClaim);
@@ -91,7 +92,7 @@ export default function Userstats({ detailed = false }) {
       let _subacc = subacc.length > 0 ? subacc : [];
       let bal = await wallet.icrc1_balance_of({
         owner: Principal.fromText(CanisterId),
-        subaccount: [_subacc],
+        subaccount: _subacc,
       });
 
       let userBal = await wallet.icrc1_balance_of({
