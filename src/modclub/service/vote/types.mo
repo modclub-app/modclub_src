@@ -17,7 +17,11 @@ module {
   };
 
   public type UserLevel = {
-    #novice; #junior; #senior1; #senior2; #senior3;
+    #novice;
+    #junior;
+    #senior1;
+    #senior2;
+    #senior3;
   };
 
   public type VoteV2 = {
@@ -25,8 +29,8 @@ module {
     contentId : Text;
     userId : Principal;
     decision : Decision;
-    rsBeforeVoting: Float;
-    level: UserLevel;
+    rsBeforeVoting : Float;
+    level : UserLevel;
     violatedRules : [Types.PohRulesViolated];
     createdAt : Int;
   };
@@ -50,4 +54,17 @@ module {
     #contentAlreadyReviewed;
   };
 
+  public type POHReservationError = {
+    #userAlreadyReserved;
+    #mustMakeReservation;
+    #reservationExpire;
+  };
+
+  public type POHVoteError = VoteError or POHReservationError or {
+    #userNotPermitted;
+    #notCompletedUser;
+    #pohNotConfigudredForProvider;
+    #voteAlreadyFinalized;
+    #invalidRules;
+  };
 };

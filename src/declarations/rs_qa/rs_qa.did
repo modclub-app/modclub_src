@@ -1,146 +1,173 @@
-type Validate = variant {
-  Err : text;
-  Ok : text;
-};
-type UserLevel = variant {
-  junior;
-  novice;
-  senior1;
-  senior2;
-  senior3;
-};
-type UserAndVote = record {
-  decision : Decision;
-  userId : principal;
-  votedCorrect : bool;
-};
-type UserAndRS = record {
-  score : int;
-  userId : principal;
-};
+type Validate = 
+ variant {
+   Err: text;
+   Ok: text;
+ };
+type UserLevel = 
+ variant {
+   junior;
+   novice;
+   senior1;
+   senior2;
+   senior3;
+ };
+type UserAndVote = 
+ record {
+   decision: Decision;
+   userId: principal;
+   votedCorrect: bool;
+ };
+type UserAndRS = 
+ record {
+   score: int;
+   userId: principal;
+ };
 type UpdateCallsAggregatedData = vec nat64;
-type Result = variant {
-  err : text;
-  ok : bool;
-};
-type RSManager = service {
-  collectCanisterMetrics : () -> ();
-  getCanisterLog : (opt CanisterLogRequest) -> (opt CanisterLogResponse) query;
-  getCanisterMetrics : (GetMetricsParameters) -> (opt CanisterMetrics) query;
-  handleSubscription : (ConsumerPayload) -> ();
-  queryRSAndLevel : () -> (RSAndLevel) query;
-  queryRSAndLevelByPrincipal : (principal) -> (RSAndLevel) query;
-  setRS : (principal, int) -> (Result);
-  showAdmins : () -> (vec principal) query;
-  subscribe : (text) -> ();
-  topUsers : (nat, nat) -> (vec UserAndRS) query;
-  updateRS : (principal, bool, Decision) -> (UserAndRS);
-  updateRSBulk : (vec UserAndVote) -> (vec UserAndRS);
-  validate : (reserved) -> (Validate);
-};
-type RSAndLevel = record {
-  level : UserLevel;
-  score : int;
-};
-type NumericEntity = record {
-  avg : nat64;
-  first : nat64;
-  last : nat64;
-  max : nat64;
-  min : nat64;
-};
+type Result = 
+ variant {
+   err: text;
+   ok: bool;
+ };
+type RSManager = 
+ service {
+   collectCanisterMetrics: () -> ();
+   getCanisterLog: (opt CanisterLogRequest) ->
+    (opt CanisterLogResponse) query;
+   getCanisterMetrics: (GetMetricsParameters) -> (opt CanisterMetrics) query;
+   handleSubscription: (ConsumerPayload) -> ();
+   queryRSAndLevel: () -> (RSAndLevel) query;
+   queryRSAndLevelByPrincipal: (principal) -> (RSAndLevel) query;
+   setRS: (principal, int) -> (Result);
+   showAdmins: () -> (vec principal) query;
+   subscribe: (text) -> ();
+   topUsers: (nat, nat) -> (vec UserAndRS) query;
+   updateRS: (principal, bool, Decision) -> (UserAndRS);
+   updateRSBulk: (vec UserAndVote) -> (vec UserAndRS);
+   validate: (reserved) -> (Validate);
+ };
+type RSAndLevel = 
+ record {
+   level: UserLevel;
+   score: int;
+ };
+type NumericEntity = 
+ record {
+   avg: nat64;
+   first: nat64;
+   last: nat64;
+   max: nat64;
+   min: nat64;
+ };
 type Nanos = nat64;
-type MetricsGranularity = variant {
-  daily;
-  hourly;
-};
-type LogMessagesData = record {
-  message : text;
-  timeNanos : Nanos;
-};
-type HourlyMetricsData = record {
-  canisterCycles : CanisterCyclesAggregatedData;
-  canisterHeapMemorySize : CanisterHeapMemoryAggregatedData;
-  canisterMemorySize : CanisterMemoryAggregatedData;
-  timeMillis : int;
-  updateCalls : UpdateCallsAggregatedData;
-};
-type GetMetricsParameters = record {
-  dateFromMillis : nat;
-  dateToMillis : nat;
-  granularity : MetricsGranularity;
-};
-type GetLogMessagesParameters = record {
-  count : nat32;
-  filter : opt GetLogMessagesFilter;
-  fromTimeNanos : opt Nanos;
-};
-type GetLogMessagesFilter = record {
-  analyzeCount : nat32;
-  messageContains : opt text;
-  messageRegex : opt text;
-};
-type GetLatestLogMessagesParameters = record {
-  count : nat32;
-  filter : opt GetLogMessagesFilter;
-  upToTimeNanos : opt Nanos;
-};
-type Event = record {
-  payload : principal;
-  topic : text;
-};
-type ENV = record {
-  auth_canister_id : principal;
-  modclub_canister_id : principal;
-  old_modclub_canister_id : principal;
-  rs_canister_id : principal;
-  vesting_canister_id : principal;
-  wallet_canister_id : principal;
-};
-type Decision = variant {
-  approved;
-  rejected;
-};
-type DailyMetricsData = record {
-  canisterCycles : NumericEntity;
-  canisterHeapMemorySize : NumericEntity;
-  canisterMemorySize : NumericEntity;
-  timeMillis : int;
-  updateCalls : nat64;
-};
-type ConsumerPayload = variant {
-  admins : vec principal;
-  events : vec Event;
-};
-type CanisterMetricsData = variant {
-  daily : vec DailyMetricsData;
-  hourly : vec HourlyMetricsData;
-};
-type CanisterMetrics = record { data : CanisterMetricsData };
+type MetricsGranularity = 
+ variant {
+   daily;
+   hourly;
+ };
+type LogMessagesData = 
+ record {
+   message: text;
+   timeNanos: Nanos;
+ };
+type HourlyMetricsData = 
+ record {
+   canisterCycles: CanisterCyclesAggregatedData;
+   canisterHeapMemorySize: CanisterHeapMemoryAggregatedData;
+   canisterMemorySize: CanisterMemoryAggregatedData;
+   timeMillis: int;
+   updateCalls: UpdateCallsAggregatedData;
+ };
+type GetMetricsParameters = 
+ record {
+   dateFromMillis: nat;
+   dateToMillis: nat;
+   granularity: MetricsGranularity;
+ };
+type GetLogMessagesParameters = 
+ record {
+   count: nat32;
+   filter: opt GetLogMessagesFilter;
+   fromTimeNanos: opt Nanos;
+ };
+type GetLogMessagesFilter = 
+ record {
+   analyzeCount: nat32;
+   messageContains: opt text;
+   messageRegex: opt text;
+ };
+type GetLatestLogMessagesParameters = 
+ record {
+   count: nat32;
+   filter: opt GetLogMessagesFilter;
+   upToTimeNanos: opt Nanos;
+ };
+type Event = 
+ record {
+   payload: principal;
+   topic: text;
+ };
+type ENV = 
+ record {
+   auth_canister_id: principal;
+   modclub_canister_id: principal;
+   old_modclub_canister_id: principal;
+   rs_canister_id: principal;
+   vesting_canister_id: principal;
+   wallet_canister_id: principal;
+ };
+type Decision = 
+ variant {
+   approved;
+   rejected;
+ };
+type DailyMetricsData = 
+ record {
+   canisterCycles: NumericEntity;
+   canisterHeapMemorySize: NumericEntity;
+   canisterMemorySize: NumericEntity;
+   timeMillis: int;
+   updateCalls: nat64;
+ };
+type ConsumerPayload = 
+ variant {
+   admins: vec principal;
+   events: vec Event;
+ };
+type CanisterMetricsData = 
+ variant {
+   daily: vec DailyMetricsData;
+   hourly: vec HourlyMetricsData;
+ };
+type CanisterMetrics = record {data: CanisterMetricsData;};
 type CanisterMemoryAggregatedData = vec nat64;
-type CanisterLogResponse = variant {
-  messages : CanisterLogMessages;
-  messagesInfo : CanisterLogMessagesInfo;
-};
-type CanisterLogRequest = variant {
-  getLatestMessages : GetLatestLogMessagesParameters;
-  getMessages : GetLogMessagesParameters;
-  getMessagesInfo;
-};
-type CanisterLogMessagesInfo = record {
-  count : nat32;
-  features : vec opt CanisterLogFeature;
-  firstTimeNanos : opt Nanos;
-  lastTimeNanos : opt Nanos;
-};
-type CanisterLogMessages = record {
-  data : vec LogMessagesData;
-  lastAnalyzedMessageTimeNanos : opt Nanos;
-};
-type CanisterLogFeature = variant {
-  filterMessageByContains;
-  filterMessageByRegex;
-};
+type CanisterLogResponse = 
+ variant {
+   messages: CanisterLogMessages;
+   messagesInfo: CanisterLogMessagesInfo;
+ };
+type CanisterLogRequest = 
+ variant {
+   getLatestMessages: GetLatestLogMessagesParameters;
+   getMessages: GetLogMessagesParameters;
+   getMessagesInfo;
+ };
+type CanisterLogMessagesInfo = 
+ record {
+   count: nat32;
+   features: vec opt CanisterLogFeature;
+   firstTimeNanos: opt Nanos;
+   lastTimeNanos: opt Nanos;
+ };
+type CanisterLogMessages = 
+ record {
+   data: vec LogMessagesData;
+   lastAnalyzedMessageTimeNanos: opt Nanos;
+ };
+type CanisterLogFeature = 
+ variant {
+   filterMessageByContains;
+   filterMessageByRegex;
+ };
 type CanisterHeapMemoryAggregatedData = vec nat64;
 type CanisterCyclesAggregatedData = vec nat64;
-service : (ENV) -> RSManager;
+service : (ENV) -> RSManager

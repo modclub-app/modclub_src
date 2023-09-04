@@ -111,8 +111,9 @@ function execShellCommand(cmd) {
     await execShellCommand(makeProposalCommand);
 
     console.log("✅ Preparing proposal...");
-    const sendCommand = `quill send upgrade.json ${network == "ic" ? "" : "--insecure-local-dev-mode"
-      } -y | grep -v "^ *new_canister_wasm"`;
+    const sendCommand = `quill send upgrade.json ${
+      network == "ic" ? "" : "--insecure-local-dev-mode"
+    } -y | grep -v "^ *new_canister_wasm"`;
     //await execShellCommand(sendCommand);
 
     console.log("✅ Proposal ready to be sent.");

@@ -28,6 +28,7 @@ module {
     #claimStakedTokens : () -> ICRCTypes.Tokens;
     #collectCanisterMetrics : () -> ();
     #configurePohForProvider : () -> (Principal, [Text], Nat, Bool);
+    #createPohVoteReservation : () -> (Text);
     #deregisterProvider : () -> ();
     #downloadSupport : () -> (Text, Text, Nat, Nat);
     #editProviderAdmin : () -> (Principal, Principal, Text);

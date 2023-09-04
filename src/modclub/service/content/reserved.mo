@@ -8,7 +8,7 @@ import Nat "mo:base/Nat";
 import Debug "mo:base/Debug";
 import Canistergeek "../../../common/canistergeek/canistergeek";
 import ContentTypes "types";
-import Constant "constant";
+import Constants "../../../common/constants";
 import Error "mo:base/Error";
 import Result "mo:base/Result";
 
@@ -29,7 +29,7 @@ module Reserved {
     public func takeReservation(
       caller : Principal,
       globalState : GlobalState.State,
-      expireTime : Types.Timestamp
+      expireTime : Types.Timestamp,
     ) : async Types.Reserved {
       let now = Helpers.timeNow();
       let rid = Helpers.generateId(caller, "Reservations", globalState);

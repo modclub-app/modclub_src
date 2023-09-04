@@ -127,7 +127,7 @@ export function getViolatedRules(values: { [key: string]: string }): string[] {
     const value = values[key];
     if (
       value &&
-      value != "voteIncorrectlyConfirmation" &&      
+      value != "voteIncorrectlyConfirmation" &&
       value != "voteRulesConfirmation" &&
       value != "scoreAwarenessConfirmation" &&
       value != "confirm"

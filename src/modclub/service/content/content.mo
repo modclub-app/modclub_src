@@ -17,7 +17,6 @@ import Types "../../types";
 import ContentState "./state";
 import Utils "../../../common/utils";
 import Constants "../../../common/constants";
-import Constant "constant";
 import ContentTypes "types";
 import Reserved "reserved";
 import Error "mo:base/Error";
@@ -291,7 +290,7 @@ module ContentModule {
                 contentState = arg.contentState;
                 storageSolution = arg.storageSolution;
               },
-              Constant.EXPIRE_TIME
+              Constants.EXPIRE_TIME
             );
             let newReserved = Array.append<Types.Reserved>(oldReserved, [reservation]);
             let chunkedContent = await arg.storageSolution.getChunkedContent(content.id);

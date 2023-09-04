@@ -47,9 +47,11 @@ export function AuthProvider({ children }) {
       //dev: true,
       appName: "ModClub",
       customDomain: "https://modclub.dev",
-      derivationOrigin: env == "local" ? undefined : "https://h433y-uqaaa-aaaah-qdbja-cai.icp0.io",
+      derivationOrigin:
+        env == "local"
+          ? undefined
+          : "https://h433y-uqaaa-aaaah-qdbja-cai.icp0.io",
     },
   });
   return <Connect2ICProvider client={client}>{children}</Connect2ICProvider>;
 }
-

@@ -17,7 +17,9 @@ import QueueManager "../queue/queue";
 import GlobalState "../../statev2";
 import RSTypes "../../../rs/types";
 import CommonTypes "../../../common/types";
+import Utils "../../../common/utils";
 import ModSecurity "../../../common/security/guard";
+import Constants "../../../common/constants";
 
 module VoteModule {
 
@@ -78,6 +80,20 @@ module VoteModule {
       return Buffer.toArray<Types.PohRulesViolated>(buffer);
     };
 
+    public func createPohVoteReservation(
+      env : CommonTypes.ENV,
+      packageId : Text,
+      userId : Principal
+    ) : async Result.Result<Types.Reserved, VoteTypes.POHReservationError> {
+      let id = getVoteId(userId, packageId);
+      if (Utils.isReserved(Principal.toText(userId), Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
+        return #err(#userAlreadyReserved);
+      };
+
+      let reservation = await takePohReservation(userId, id, Constants.EXPIRE_VOTE_TIME);
+      return #ok(reservation);
+    };
+
     public func votePohContent(
       userId : Principal,
       env : CommonTypes.ENV,
@@ -85,7 +101,7 @@ module VoteModule {
       decision : Types.Decision,
       violatedRules : [Types.PohRulesViolated],
       pohContentQueueManager : QueueManager.QueueManager
-    ) : async Result.Result<Bool, VoteTypes.VoteError> {
+    ) : async Result.Result<Bool, VoteTypes.POHVoteError> {
       if (checkPohUserHasVoted(userId, packageId)) {
         return #err(#userAlreadyVoted);
       };
@@ -94,10 +110,17 @@ module VoteModule {
         return #err(#contentAlreadyReviewed);
       };
 
+      let id = getVoteId(userId, packageId);
+      if (not Utils.isReserved(Principal.toText(userId), Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
+        return #err(#mustMakeReservation);
+      };
+
       var voteCount = getVoteCountForPoh(userId, packageId);
       let guard = ModSecurity.Guard(env, "VOTE_SERVICE");
       let userRSAndLevel = await guard.getRSActor().queryRSAndLevelByPrincipal(userId);
-
+      if (userRSAndLevel.level == #novice) {
+        return #err(#userNotPermitted);
+      };
       var voteApproved = voteCount.approvedCount;
       var voteRejected = voteCount.rejectedCount;
 
@@ -112,14 +135,12 @@ module VoteModule {
         createdAt = Time.now();
       };
 
-      if (userRSAndLevel.level != #novice) {
-        switch (decision) {
-          case (#approved) {
-            voteApproved += 1;
-          };
-          case (#rejected) {
-            voteRejected += 1;
-          };
+      switch (decision) {
+        case (#approved) {
+          voteApproved += 1;
+        };
+        case (#rejected) {
+          voteRejected += 1;
         };
       };
 
@@ -240,6 +261,24 @@ module VoteModule {
       return Buffer.toArray<VoteTypes.VotePlusUser>(buffer);
     };
 
+    private func takePohReservation(
+      caller : Principal,
+      id : Text,
+      expireTime : Types.Timestamp
+    ) : async Types.Reserved {
+      let now = Helpers.timeNow();
+      let reserved : Types.Reserved = {
+        id = id;
+        profileId = Principal.toText(caller);
+        createdAt = now;
+        updatedAt = now;
+        reservedExpiryTime = now + expireTime;
+      };
+      state.reservedPohPackages.add(reservation);
+
+      return reserved;
+    };
+
     public func getStableState() : VoteStateV2.PohVoteStableState {
       return VoteStateV2.getStableState(state);
     };
@@ -275,8 +314,8 @@ module VoteModule {
         pohContent2votes = pohVoteStableState.pohContent2votes;
         mods2Pohvotes = pohVoteStableState.mods2Pohvotes;
         autoApprovePOHUserIds = pohVoteStableState.autoApprovePOHUserIds;
+        reservedPohPackages = pohVoteStableState.reservedPohPackages;
       };
     };
-
   };
 };

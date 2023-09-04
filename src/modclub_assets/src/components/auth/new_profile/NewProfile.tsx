@@ -21,7 +21,6 @@ import logger from "../../../utils/logger";
 import { setUserToStorage } from "../../../utils/util";
 import { KEY_LOCALSTORAGE_USER } from "../../../contexts/profile";
 
-
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
   const { updateProfile, user } = useProfile();

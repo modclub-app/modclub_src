@@ -10,6 +10,7 @@ module Constants {
   public let SENIOR_STAKING_EXPONENT = 2;
   public let CONTENT_CHUNK_LIMIT = 2097152; // 2Mb = 2 * 1024 * 1024
   public let DATA_TYPE_PLAIN_TEXT = "text/plain";
+  public let EXPIRE_TIME = 100000;
 
   public let ICRC_RESERVE_SA = "-------------------------RESERVE" : Blob;
   public let ICRC_ACCOUNT_PAYABLE_SA = "-----------------ACCOUNT_PAYABLE" : Blob;

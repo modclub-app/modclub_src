@@ -60,7 +60,6 @@ import Constants "../common/constants";
 import ModSecurity "../common/security/guard";
 import Timer "mo:base/Timer";
 import Nat64 "mo:base/Nat64";
-import Constant "service/content/constant";
 import CommonTimer "../common/timer/timer";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
@@ -1808,16 +1807,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     packageId : Text,
     decision : Types.Decision,
     violatedRules : [Types.PohRulesViolated]
-  ) : async () {
+  ) : async Result.Result<Bool, VoteTypes.POHVoteError> {
     switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) {
-        throw Error.reject("Unauthorized");
+        return #err(#userNotPermitted);
       };
       case (_)();
     };
     let stats = await ModeratorManager.getStats(caller, env);
     if (ModeratorManager.isNovice(stats.score)) {
-      return throw Error.reject("Novice Moderators are not permitted to vote on POH content.");
+      return #err(#userNotPermitted);
     };
     switch (
       pohVerificationRequestHelper(
@@ -1827,24 +1826,24 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     ) {
       case (#ok(verificationResponse)) {
         if (verificationResponse.status != #verified) {
-          throw Error.reject("Proof of Humanity not completed user.");
+          return #err(#notCompletedUser);
         };
       };
       case (#err(#pohNotConfiguredForProvider)) {
-        throw Error.reject("Poh Not configured for provider.");
+        return #err(#pohNotConfiguredForProvider);
       };
       case (_)();
     };
 
     if (voteManager.checkPohUserHasVoted(caller, packageId)) {
-      throw Error.reject("You have already voted");
+      return #err(#userAlreadyVoted);
     };
     if (pohContentQueueManager.getContentStatus(packageId) != #new) {
-      throw Error.reject("Vote has been finalized.");
+      return #err(#voteAlreadyFinalized);
     };
 
     if (pohEngine.validateRules(violatedRules) == false) {
-      throw Error.reject("Valid rules not provided.");
+      return #err(#invalidRules);
     };
 
     let finishedVoting = await voteManager.votePohContent(
@@ -1973,6 +1972,23 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         };
       };
     };
+    return finishedVoting;
+  };
+
+  public shared ({ caller }) func createPohVoteReservation(
+    packageId : Text
+  ) : async Result.Result<Types.Reserved, VoteTypes.POHVoteError> {
+    switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
+      case (#err(e)) {
+        return #err(#userNotPermitted);
+      };
+      case (_)();
+    };
+    let stats = await ModeratorManager.getStats(caller, env);
+    if (ModeratorManager.isNovice(stats.score)) {
+      return #err(#userNotPermitted);
+    };
+    return await voteManager.createPohVoteReservation(env, packageId, caller);
   };
 
   public shared ({ caller }) func issueJwt() : async Text {

@@ -1,6 +1,7 @@
 import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
+import Option "mo:base/Option";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
 import Types "../../types";
@@ -23,6 +24,7 @@ module State {
     mods2Pohvotes : RelObj.RelObj<Principal, Text>;
     // allowlisted userIds
     autoApprovePOHUserIds : HashMap.HashMap<Principal, Principal>;
+    reservedPohPackages : Buffer.Buffer<Types.Reserved>;
   };
 
   public type PohVoteStableState = {
@@ -34,6 +36,7 @@ module State {
     pohContent2votes : Rel.RelShared<Types.ContentId, Types.VoteId>;
     mods2Pohvotes : Rel.RelShared<Types.UserId, Types.VoteId>;
     autoApprovePOHUserIds : [(Principal, Principal)];
+    reservedPohPackages : ?[Types.Reserved];
   };
 
   public func emptyState() : PohVoteState {
@@ -61,7 +64,7 @@ module State {
         Principal.equal,
         Principal.hash
       );
-
+      reservedPohPackages = Buffer.Buffer<Types.Reserved>(1);
     };
   };
 
@@ -75,6 +78,7 @@ module State {
       pohContent2votes = Rel.emptyShared<Text, Text>();
       mods2Pohvotes = Rel.emptyShared<Principal, Text>();
       autoApprovePOHUserIds = [];
+      reservedPohPackages = ?[];
     };
   };
 
@@ -118,6 +122,10 @@ module State {
       state.autoApprovePOHUserIds.put(id, pid);
     };
 
+    for (package in Option.get(stableState.reservedPohPackages, []).vals()) {
+      state.reservedPohPackages.add(package);
+    };
+
     return state;
   };
 
@@ -130,10 +138,8 @@ module State {
       pohVotes = Iter.toArray(state.pohVotes.entries());
       pohContent2votes = Rel.share<Text, Text>(state.pohContent2votes.getRel());
       mods2Pohvotes = Rel.share<Principal, Text>(state.mods2Pohvotes.getRel());
-      autoApprovePOHUserIds = Iter.toArray(
-        state.autoApprovePOHUserIds.entries()
-      );
-
+      autoApprovePOHUserIds = Iter.toArray(state.autoApprovePOHUserIds.entries());
+      reservedPohPackages = ?Buffer.toArray<Types.Reserved>(state.reservedPohPackages);
     };
     return stableState;
   };

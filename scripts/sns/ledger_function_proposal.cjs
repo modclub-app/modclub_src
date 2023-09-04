@@ -64,16 +64,16 @@ const snsCanisterIdsFile = "./sns_canister_ids.json";
 
   try {
     console.log("🚀 Preparing function registration proposal...");
-    const proposalStr = `(record { title="Register icrc1_transfer function."; url="https://modclub.ai/"; summary="This proposal registers icrc1_transfer function."; action=opt variant {AddGenericNervousSystemFunction = record {id=${functionId}:nat64; name="icrc1_transfer"; description=null; function_type=opt variant {GenericNervousSystemFunction=record{validator_canister_id=opt principal"gwuzc-waaaa-aaaah-qdboa-cai"; target_canister_id=opt principal"xsi2v-cyaaa-aaaaq-aabfq-cai"; validator_method_name=opt"${"validate"
-      }"; target_method_name=opt"icrc1_transfer"}}}}})`;
+    const proposalStr = `(record { title="Register icrc1_transfer function."; url="https://modclub.ai/"; summary="This proposal registers icrc1_transfer function."; action=opt variant {AddGenericNervousSystemFunction = record {id=${functionId}:nat64; name="icrc1_transfer"; description=null; function_type=opt variant {GenericNervousSystemFunction=record{validator_canister_id=opt principal"gwuzc-waaaa-aaaah-qdboa-cai"; target_canister_id=opt principal"xsi2v-cyaaa-aaaaq-aabfq-cai"; validator_method_name=opt"${"validate"}"; target_method_name=opt"icrc1_transfer"}}}}})`;
     const escapedProposalStr = JSON.stringify(proposalStr);
     const registerCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-proposal --proposal ${escapedProposalStr} ${developerNeuronId} > register-${functionName}.json`;
     await execShellCommand(registerCommand);
     console.log(
       "✅ Registration proposal prepared, Please send with the following command: "
     );
-    const sendRegisterCommand = `quill send -y register-${functionName}.json ${network == "ic" ? "" : "--insecure-local-dev-mode"
-      }`;
+    const sendRegisterCommand = `quill send -y register-${functionName}.json ${
+      network == "ic" ? "" : "--insecure-local-dev-mode"
+    }`;
     console.log("\x1b[36m%s\x1b[0m", sendRegisterCommand);
   } catch (err) {
     console.error("❌ Error:", err);
