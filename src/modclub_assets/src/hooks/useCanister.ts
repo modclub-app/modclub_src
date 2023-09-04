@@ -2,8 +2,8 @@
 
 import { useContext, useState } from "react";
 import { useSelector } from "@xstate/react";
-import { useConnect } from "@connect2ic/react";
-import { Connect2ICContext } from "@connect2ic/react";
+import { useConnect } from "@connect2icmodclub/react";
+import { Connect2ICContext } from "@connect2icmodclub/react";
 import type { ActorSubclass, Actor } from "@dfinity/agent";
 import { IDL } from "@dfinity/candid";
 

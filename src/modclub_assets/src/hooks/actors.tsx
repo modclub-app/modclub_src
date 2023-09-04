@@ -6,7 +6,7 @@ import {
   wallet_types,
 } from "../declarations_by_env";
 
-import { useCanister } from "@connect2icmodclub/react";
+import { useCanister } from "./useCanister";
 
 export interface IActors {
   modclub: modclub_types.ModClub;
