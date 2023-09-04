@@ -267,7 +267,7 @@ module VoteModule {
       expireTime : Types.Timestamp
     ) : async Types.Reserved {
       let now = Helpers.timeNow();
-      let reserved : Types.Reserved = {
+      let reservation : Types.Reserved = {
         id = id;
         profileId = Principal.toText(caller);
         createdAt = now;
@@ -276,7 +276,7 @@ module VoteModule {
       };
       state.reservedPohPackages.add(reservation);
 
-      return reserved;
+      return reservation;
     };
 
     public func getStableState() : VoteStateV2.PohVoteStableState {

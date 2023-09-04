@@ -63,7 +63,7 @@ module {
   public type POHVoteError = VoteError or POHReservationError or {
     #userNotPermitted;
     #notCompletedUser;
-    #pohNotConfigudredForProvider;
+    #pohNotConfiguredForProvider;
     #voteAlreadyFinalized;
     #invalidRules;
   };
