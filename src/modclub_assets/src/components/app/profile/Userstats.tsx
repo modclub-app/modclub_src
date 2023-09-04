@@ -89,25 +89,26 @@ export default function Userstats({ detailed = false }) {
   useEffect(() => {
     let isMounted = true;
     const _action = async () => {
-      let _subacc = subacc.length > 0 ? subacc : [];
-      let bal = await wallet.icrc1_balance_of({
-        owner: Principal.fromText(CanisterId),
-        subaccount: _subacc,
-      });
+      if (subacc.length && digits) {
+        let system_bal = await wallet.icrc1_balance_of({
+          owner: Principal.fromText(CanisterId),
+          subaccount: [subacc],
+        });
 
-      let userBal = await wallet.icrc1_balance_of({
-        owner: Principal.fromText(principal),
-        subaccount: [],
-      });
+        let user_bal = await wallet.icrc1_balance_of({
+          owner: Principal.fromText(principal),
+          subaccount: [],
+        });
 
-      let wallet_digits = convert_to_mod(bal, BigInt(digits));
-      let userBalance = convert_to_mod(userBal, BigInt(digits));
-      if (isMounted) {
-        setTokenHoldings((prevState) => ({
-          ...prevState,
-          wallet: wallet_digits,
-          userBalance: userBalance,
-        }));
+        let wallet_digits = convert_to_mod(system_bal, BigInt(digits));
+        let userBalance = convert_to_mod(user_bal, BigInt(digits));
+        if (isMounted) {
+          setTokenHoldings((prevState) => ({
+            ...prevState,
+            wallet: wallet_digits,
+            userBalance: userBalance,
+          }));
+        }
       }
     };
     _action();
