@@ -2214,12 +2214,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     for (vid in stateV2.content2votes.get0(contentId).vals()) {
       switch (stateV2.votes.get(vid)) {
         case (?v) {
-          if (v.decision == #approved) {
-            voteApproved += 1;
-          } else {
-            voteRejected += 1;
+          if (v.level != #novice) {
+            if (v.decision == #approved) {
+              voteApproved += 1;
+            } else {
+              voteRejected += 1;
+            };
           };
-
           // if caller is null, consider it as modclub calling it so that operation evaluates to false
           // simplifies switch braches
           if (not hasVoted) {
