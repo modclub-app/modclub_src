@@ -37,6 +37,11 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   private let canistergeekLogger = Canistergeek.Logger();
   // ids only accessible by admins
   stable var restrictedContentId : Trie.Trie<Text, Int> = Trie.empty();
+
+  type TimerId = Nat;
+  var canistergeekTimer : ?TimerId = null;
+  var deleteContentTimer : ?TimerId = null;
+
   type DataCanisterState = {
     contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
     chunks : HashMap.HashMap<Types.ChunkId, Types.ChunkData>;
@@ -590,11 +595,19 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
     #seconds 0,
     func() : async () {
       canistergeekMonitor.collectMetrics();
-      ignore Timer.recurringTimer(
-        #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
+      switch (canistergeekTimer) {
+        case (?tid) { Timer.cancelTimer(tid) };
+        case (null) {};
+      };
+      switch (canistergeekTimer) {
+        case (?tid) { Timer.cancelTimer(tid) };
+        case (null) {};
+      };
+      canistergeekTimer := ?Timer.recurringTimer(
+        #nanoseconds(Constants.ONE_HOUR_NANO_SECS),
         func() : async () { canistergeekMonitor.collectMetrics() }
       );
-      ignore Timer.recurringTimer(
+      deleteContentTimer := ?Timer.recurringTimer(
         #nanoseconds(Constants.TWENTY_FOUR_HOUR_NANO_SECS),
         func() : async () {
           Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
@@ -624,6 +637,32 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
+
+    ignore Timer.setTimer(
+      #seconds 0,
+      func() : async () {
+        canistergeekMonitor.collectMetrics();
+        switch (canistergeekTimer) {
+          case (?tid) { Timer.cancelTimer(tid) };
+          case (null) {};
+        };
+        switch (canistergeekTimer) {
+          case (?tid) { Timer.cancelTimer(tid) };
+          case (null) {};
+        };
+        canistergeekTimer := ?Timer.recurringTimer(
+          #nanoseconds(Constants.ONE_HOUR_NANO_SECS),
+          func() : async () { canistergeekMonitor.collectMetrics() }
+        );
+        deleteContentTimer := ?Timer.recurringTimer(
+          #nanoseconds(Constants.TWENTY_FOUR_HOUR_NANO_SECS),
+          func() : async () {
+            Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
+            deleteContentAfterExpiry();
+          }
+        );
+      }
+    );
   };
 
   system func inspect({
