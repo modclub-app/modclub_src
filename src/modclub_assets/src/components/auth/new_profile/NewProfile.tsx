@@ -62,7 +62,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       "/" +
       data.targetCanister +
       "/" +
-      window.location.hostname.replace(".icp0.io", "");
+      window.location.hostname;
     setAssocSourseLink(
       process.env.DFX_NETWORK == "local"
         ? localAssociationRedirect
