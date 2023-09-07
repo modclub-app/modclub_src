@@ -1,0 +1,57 @@
+name: auto-deploy dev branch
+
+on:
+  push:
+    branches: ["dev"]
+
+jobs:
+  dev-deploy:
+    runs-on: ubuntu-latest
+    name: A job to deploy "dev" canisters to the IC
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: yarn install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      # Install dfx.
+      - name: Install dfx
+        run: |
+          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          dfx --version
+
+      - name: Set up dfx identity
+        run: |
+          mkdir -p ~/.config/dfx/identity/default/
+          echo "$IC_IDENTITY_FILE" > ~/.config/dfx/identity/default/identity.pem
+          dfx identity get-principal
+          cat ~/.config/dfx/identity/default/identity.pem
+        env:
+          IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_DEV }}
+
+      - name: Install vessel
+        run: |
+          wget https://github.com/dfinity/vessel/releases/download/v0.6.4/vessel-linux64
+          mv vessel-linux64 vessel
+          chmod +x vessel
+          mv vessel /usr/local/bin/.
+          vessel --version
+
+      - name: create-wallet_dev
+        run: |
+          dfx start --background
+          dfx canister create wallet_dev
+          dfx build wallet_dev
+
+      # Deploy using dfx. Ensure you handle any configuration or environment specifics.
+      - name: Run deployment script
+        run: ./scripts/deploy_to_env.sh -e dev -n ic -old la3yy-gaaaa-aaaah-qaiuq-cai
+
+      - name: Show success message
+        run: echo success!

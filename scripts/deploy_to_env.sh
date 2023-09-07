@@ -105,18 +105,10 @@ function deploy_canisters() {
   local auth_canister_name=$(get_canister_name_by_env $env "auth")
   local assets_canister_name="$(get_canister_name_by_env $env "modclub")_assets"
 
-  # local ledger_principal=""
-  # local minter_principal=""
-
-  # if [ "$env" == "qa" ]; then
-  #   ledger_principal=$qa_ledger_principal
-  #   minter_principal=$qa_minter_principal
-  # fi
-
   log "Deploy ${env} Canisters..."
 
   dfx deploy ${auth_canister_name} --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
-  deploy_wallet_canister $env &&
+  # deploy_wallet_canister $env &&
   deploy_vesting_canister $env &&
 
   dfx deploy ${rs_canister_name} --network=${DEPLOY_NETWORK} --argument="($local_env)" &&
@@ -166,12 +158,12 @@ extract_argument() {
 }
 
 check_required_opts() {
-	if [[ "$minter_principal" == "" ]]; then 
-		error "ERROR: minter_principal MUST be set before deploy."
-	fi
-	if [[ "$ledger_acc_principal" == "" ]]; then 
-		error "ERROR: ledger_acc_principal MUST be set before deploy."
-	fi
+	# if [[ "$minter_principal" == "" ]]; then 
+	# 	error "ERROR: minter_principal MUST be set before deploy."
+	# fi
+	# if [[ "$ledger_acc_principal" == "" ]]; then 
+	# 	error "ERROR: ledger_acc_principal MUST be set before deploy."
+	# fi
 	if [[ "$OLD_MODCLUB_INSTANCE" == "" ]]; then 
 		error "ERROR: OLD_MODCLUB_INSTANCE MUST be set before deploy."
 	fi
@@ -268,7 +260,7 @@ if [[ "$ENVIRONMENT" == *"qa"* ]]; then
     ledger_acc_principal=$(dfx identity get-principal)
     dfx identity use $currentPrincipal
 
-    check_required_opts && deploy_canisters qa $ledger_acc_principal $minter_principal
+    check_required_opts && deploy_canisters qa # $ledger_acc_principal $minter_principal
 elif [[ "$ENVIRONMENT" == *"dev"* ]]; then
     log "DEPLOY DEV CANISTERS STARTED..."
     check_required_opts && deploy_canisters dev

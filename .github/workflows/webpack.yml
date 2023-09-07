@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment:
-      NODE_ENV: production
+      name: ${{ github.ref_name }}
 
     strategy:
       matrix:
@@ -26,5 +26,5 @@ jobs:
 
       - name: Build
         run: |
-          npm install
-          npx webpack
+          NODE_ENV=production npm install
+          NODE_ENV=production npx webpack
