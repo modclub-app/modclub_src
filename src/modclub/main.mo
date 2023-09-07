@@ -57,6 +57,7 @@ import ContentState "./service/content/state";
 import CommonTypes "../common/types";
 import Reserved "service/content/reserved";
 import Constants "../common/constants";
+import RSConstants "../rs/constants";
 import ModSecurity "../common/security/guard";
 import Timer "mo:base/Timer";
 import Nat64 "mo:base/Nat64";
@@ -791,7 +792,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     await storageSolution.registerModerators([caller]);
     contentQueueManager.assignUserIds2QueueId([caller]);
     pohContentQueueManager.assignUserIds2QueueId([caller]);
-    ignore await rs.setRS(caller, 10);
+    ignore await rs.setRS(caller, 10 * RSConstants.RS_FACTOR);
     return profile;
   };
 
@@ -2965,7 +2966,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     try {
       for ((uid, up) in importedProfiles.vals()) {
         if (Nat.greater(up, topSeniorUP)) {
-          ignore await rs.setRS(uid, 75); // #TopSenior as one of most efficient users
+          ignore await rs.setRS(uid, 75 * RSConstants.RS_FACTOR); // #TopSenior as one of most efficient users
           ignore await rs.updateRS(uid, true, #approved);
           topSeniors += 1;
           Helpers.logMessage(
@@ -2974,7 +2975,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             #info
           );
         } else if (Nat.greater(up, seniorUP) and Nat.less(up, topSeniorUP)) {
-          ignore await rs.setRS(uid, 50); // #Senior
+          ignore await rs.setRS(uid, 50 * RSConstants.RS_FACTOR); // #Senior
           ignore await rs.updateRS(uid, true, #approved);
           seniors += 1;
           Helpers.logMessage(
@@ -2983,11 +2984,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             #info
           );
         } else if (Nat.greater(up, juniorUP) and Nat.less(up, seniorUP)) {
-          ignore await rs.setRS(uid, 20); // #Junior
+          ignore await rs.setRS(uid, 20 * RSConstants.RS_FACTOR); // #Junior
           ignore await rs.updateRS(uid, true, #approved);
           juniors += 1;
         } else {
-          ignore await rs.setRS(uid, 10); // #Novice for all others as motivational user-friendly approach
+          ignore await rs.setRS(uid, 10 * RSConstants.RS_FACTOR); // #Novice for all others as motivational user-friendly approach
           ignore await rs.updateRS(uid, true, #approved);
           novice += 1;
         };
@@ -3088,16 +3089,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
       let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
       if (Nat.greater(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-        ignore await rs.setRS(associator, 75); // #TopSenior as one of most efficient users
+        ignore await rs.setRS(associator, 75 * RSConstants.RS_FACTOR); // #TopSenior as one of most efficient users
         ignore await rs.updateRS(associator, true, #approved);
       } else if (Nat.greater(up, Constants.SENIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-        ignore await rs.setRS(associator, 50); // #Senior
+        ignore await rs.setRS(associator, 50 * RSConstants.RS_FACTOR); // #Senior
         ignore await rs.updateRS(associator, true, #approved);
       } else if (Nat.greater(up, Constants.JUNIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.SENIOR_TRANSLATE_THRESHOLD)) {
-        ignore await rs.setRS(associator, 20); // #Junior
+        ignore await rs.setRS(associator, 20 * RSConstants.RS_FACTOR); // #Junior
         ignore await rs.updateRS(associator, true, #approved);
       } else {
-        ignore await rs.setRS(associator, 10); // #Novice for all others as motivational user-friendly approach
+        ignore await rs.setRS(associator, 10 * RSConstants.RS_FACTOR); // #Novice for all others as motivational user-friendly approach
         ignore await rs.updateRS(associator, true, #approved);
       };
 
