@@ -24,7 +24,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: yarn install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
       - name: Build
         run: |
-          NODE_ENV=production npm install
           NODE_ENV=production npx webpack
