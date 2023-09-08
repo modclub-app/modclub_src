@@ -257,7 +257,7 @@ export default function Userstats({ detailed = false }) {
         .then((pending) => {
           if (pending != undefined) {
             if (isMounted) {
-              setLockBlock([pending]);
+              setLockBlock(pending);
             }
           }
         })

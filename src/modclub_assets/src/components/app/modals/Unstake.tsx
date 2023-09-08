@@ -55,7 +55,7 @@ const UpdateTable = ({
           {Math.max(0, stake - amount)}
         </span>
       </Level>
-      {hasLockBlock && (
+      {hasLockBlock &&(
         <Level
           className="has-text-silver px-5"
           style={{
@@ -103,7 +103,7 @@ const UpdateTable = ({
               </span>
               <span className="has-text-weight-bold">
                 {timestampToDate(
-                  Number(block.created_at_time) + Number(block.dissolveDelay)
+                  Number(block.created_at_time) + Number(block.dissolveDelay) 
                 )}
               </span>
             </Level>

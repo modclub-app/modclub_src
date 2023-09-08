@@ -11,7 +11,6 @@ import {
   Icon,
   Button,
 } from "react-bulma-components";
-import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import TaskConfirmationModal from "./TaskConfirmationModal";
@@ -210,12 +209,6 @@ export default function Task() {
                   {task.providerName}
                   <span>Submitted by {task.sourceId}</span>
                 </Card.Header.Title>
-                {level != "novice" && (
-                  <Progress
-                    value={Number(task.voteCount)}
-                    min={Number(task.voteParameters.requiredVotes)}
-                  />
-                )}
               </Card.Header>
               <Card.Content>
                 <Heading>{task.title}</Heading>

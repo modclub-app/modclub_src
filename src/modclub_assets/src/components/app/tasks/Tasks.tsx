@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { Modal, Columns, Card, Heading, Button } from "react-bulma-components";
 import RulesList from "../tasks/RulesList";
-import Progress from "../../common/progress/Progress";
 import Userstats from "../profile/Userstats";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
@@ -60,12 +59,6 @@ const Task = ({ task, setVoted, level }) => {
               Submitted by {task.sourceId} {formatDate(task.createdAt)}
             </span>
           </Card.Header.Title>
-          {level != "novice" && (
-            <Progress
-              value={Number(task.voteCount)}
-              min={Number(task.voteParameters.requiredVotes)}
-            />
-          )}
         </Card.Header>
         <Card.Content>
           <Heading subtitle>{task.title}</Heading>

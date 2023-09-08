@@ -11,7 +11,6 @@ import {
 } from "react-bulma-components";
 import Userstats from "../profile/Userstats";
 import FilterBar from "../../common/filterbar/FilterBar";
-import Progress from "../../common/progress/Progress";
 import { formatDate, getUrlForData } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import placeholder from "../../../../assets/user_placeholder.png";
@@ -72,7 +71,6 @@ const ApplicantSnippet = ({
         justifyContent="start"
         style={{ marginBottom: "auto", boxShadow: "none" }}
       >
-        <Progress value={applicant.voteCount} min={applicant.requiredVotes} />
       </Card.Header>
 
       <Card.Content style={{ paddingTop: "65%" }}>

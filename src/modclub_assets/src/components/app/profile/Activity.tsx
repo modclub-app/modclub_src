@@ -12,7 +12,6 @@ import {
 } from "react-bulma-components";
 import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
-import Progress from "../../common/progress/Progress";
 import { modclub_types } from "../../../utils/types";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
@@ -41,7 +40,6 @@ const Table = ({
               <th>Final Vote</th>
               <th>App</th>
               <th>Title</th>
-              <th>Votes</th>
               <th>Voted on</th>
               <th>Reward</th>
               <th>Reward Release</th>
@@ -64,16 +62,6 @@ const Table = ({
                   <td>{item.providerName}</td>
                   <td>
                     <Snippet string={item.title[0]} truncate={15} />
-                  </td>
-                  <td>
-                    <Progress
-                      value={Number(item.voteCount)}
-                      min={Number(
-                        "new" in item.status
-                          ? item.requiredVotes
-                          : item.voteCount
-                      )}
-                    />
                   </td>
                   <td>{formatDate(item.createdAt)}</td>
                   <td>{"new" in item.status ? "-" : Number(item.reward)}</td>

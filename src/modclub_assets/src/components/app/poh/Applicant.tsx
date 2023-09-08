@@ -13,7 +13,6 @@ import {
 } from "react-bulma-components";
 import { Form, Field } from "react-final-form";
 import Userstats from "../profile/Userstats";
-import Progress from "../../common/progress/Progress";
 import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
@@ -182,7 +181,6 @@ export default function PohApplicant() {
                     Submitted {formatDate(content.updatedAt)}
                   </span>
                 </Card.Header.Title>
-                <Progress value={content.votes} min={content.requiredVotes} />
               </Card.Header>
 
               {content.pohTaskData.map((task) => (
