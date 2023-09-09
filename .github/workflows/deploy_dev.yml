@@ -1,22 +1,17 @@
-name: Deploy dev branch
+name: Deploy dev environment
 
 on:
   workflow_dispatch:
-    inputs:
-      branchName:
-        description: "Branch to checkout and deploy"
-        required: true
-        default: "dev"
 
 jobs:
   dev-deploy:
     runs-on: ubuntu-latest
     name: A job to deploy "dev" canisters to the IC
     steps:
-      - name: checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.branchName }}
+      - uses: actions/checkout@v3
+
+      - name: Print branch name
+        run: echo "Current branch is ${GITHUB_REF#refs/heads/}"
 
       - name: Set Node.js 18.x
         uses: actions/setup-node@v3
