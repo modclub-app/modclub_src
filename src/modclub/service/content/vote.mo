@@ -222,7 +222,7 @@ module ContentVotingModule {
     };
 
     var requiredVotes = Int.abs(arg.content.voteParameters.requiredVotes);
-    let majorityVotes = Int.abs(requiredVotes / 2);
+    let majorityVotes = requiredVotes - Int.abs(requiredVotes / 2);
 
     if (arg.aCount >= majorityVotes) {
       // Approved
