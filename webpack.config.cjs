@@ -144,6 +144,7 @@ module.exports = {
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
       DEV_ENV: process.env.DEV_ENV || "production",
+      DEPLOYMENT_TAG: process.env.DEPLOYMENT_TAG,
     }),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],

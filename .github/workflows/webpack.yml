@@ -31,4 +31,4 @@ jobs:
 
       - name: Build
         run: |
-          NODE_ENV=production npx webpack
+          NODE_ENV=production DEPLOYMENT_TAG=test npx webpack

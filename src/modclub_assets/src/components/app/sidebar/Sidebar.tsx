@@ -203,7 +203,13 @@ export default function Sidebar() {
             MODCLUB
           </Heading>
           {process.env.DEV_ENV !== "production" &&
-            process.env.DEV_ENV !== "prod" && <p>{process.env.DEV_ENV}</p>}
+            process.env.DEV_ENV !== "prod" && (
+              <p>
+                {process.env.DEPLOYMENT_TAG
+                  ? process.env.DEPLOYMENT_TAG
+                  : process.env.DEV_ENV}
+              </p>
+            )}
         </div>
 
         <hr />

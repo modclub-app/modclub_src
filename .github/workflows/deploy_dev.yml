@@ -13,6 +13,17 @@ jobs:
       - name: Print branch name
         run: echo "Current branch is ${GITHUB_REF#refs/heads/}"
 
+      - name: Generate DEPLOYMENT_TAG
+        id: generate-tag
+        run: |
+          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')  # Extract branch name from GITHUB_REF
+          CURRENT_DATE=$(date +'%Y-%m-%d-%H.%M')
+          DEPLOYMENT_TAG="DEV-$BRANCH_NAME-$CURRENT_DATE"
+          echo "DEPLOYMENT_TAG=${DEPLOYMENT_TAG}" >> "$GITHUB_ENV"
+
+          echo "DEPLOYMENT_TAG=${DEPLOYMENT_TAG}" >> .env
+          cat .env
+
       - name: Set Node.js 18.x
         uses: actions/setup-node@v3
         with:
@@ -58,13 +69,10 @@ jobs:
 
       - name: Add tag after successful deployment
         run: |
-          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')  # Extract branch name from GITHUB_REF
-          CURRENT_DATE=$(date +'%Y%m%d%H%M')
-          TAG_NAME="DEV-$BRANCH_NAME-$CURRENT_DATE"
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
+          git tag $DEPLOYMENT_TAG
+          git push origin $DEPLOYMENT_TAG
 
       - name: Show success message
         run: echo success!
