@@ -223,14 +223,15 @@ module ContentVotingModule {
 
     var requiredVotes = Int.abs(arg.content.voteParameters.requiredVotes);
     let majorityVotes = requiredVotes - Int.abs(requiredVotes / 2);
+    let factVotes = arg.aCount + arg.rCount;
 
-    if (arg.aCount >= majorityVotes) {
+    if (factVotes == requiredVotes and arg.aCount >= majorityVotes) {
       // Approved
       finishedVote := true;
       status := #approved;
       decision := #approved;
       arg.contentQueueManager.changeContentStatus(arg.content.id, #approved);
-    } else if (arg.rCount >= majorityVotes) {
+    } else if (factVotes == requiredVotes and arg.rCount >= majorityVotes) {
       // Rejected
       status := #rejected;
       decision := #rejected;
