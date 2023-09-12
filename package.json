@@ -38,7 +38,6 @@
     "file-loader": "^6.1.1",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^8.0.3",
-    "ic-stoic-identity": "^2.0.0",
     "prettier": "^2.8.7",
     "prettier-plugin-motoko": "^0.4.1",
     "pretty-quick": "^3.1.3",
