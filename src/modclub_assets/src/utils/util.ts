@@ -1,5 +1,6 @@
 import { Optional } from "./api";
 import { Profile } from "./types";
+import * as Constants from "./constant";
 import { isValid, formatDistanceStrict, isSameDay, format } from "date-fns";
 
 export function getFileExtension(type: string): any | null {
@@ -98,11 +99,13 @@ export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
 
 export function formatDate(integer: bigint, dateformate?: string) {
   const date = new Date(Number(integer));
+  const current_date = new Date();
   if (!isValid(date)) return "invalid date";
-  const same = isSameDay(new Date(), date);
+  const same = isSameDay(current_date, date);
+  
   return same
-    ? formatDistanceStrict(new Date(), date) + " ago"
-    : format(date, dateformate ? dateformate : "PP");
+    ? formatDistanceStrict(current_date, date) + " ago"
+    : format(date, dateformate ? dateformate : Constants.DEFAULT_DATE_FORMAT);
 }
 
 export function validateEmail(email: string) {

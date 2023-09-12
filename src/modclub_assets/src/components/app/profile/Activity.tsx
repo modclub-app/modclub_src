@@ -42,7 +42,7 @@ const Table = ({
               <th>Title</th>
               <th>Voted on</th>
               <th>Reward</th>
-              <th>Reward Release</th>
+              <th>Locked Rewards</th>
             </tr>
           </thead>
           <tbody>

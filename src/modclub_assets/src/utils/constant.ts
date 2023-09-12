@@ -15,3 +15,4 @@ export const JUNIOR_MSG_CONFIRM_VOTE =
 export const SENIOR_MSG_CONFIRM_VOTE = "";
 export const CLAIM_LIMIT_MSG = (value: number) =>
   `Stake ${value} MOD to unlock reward`;
+export const DEFAULT_DATE_FORMAT = "dd MMM yyyy";
