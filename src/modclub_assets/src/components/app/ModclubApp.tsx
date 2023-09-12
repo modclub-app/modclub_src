@@ -23,9 +23,12 @@ import { useProfile } from "../../contexts/profile";
 import { refreshJwt } from "../../utils/jwt";
 import logger from "../../utils/logger";
 import { useActors } from "../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "./state_mgmt/context/state";
 
 export default function ModclubApp() {
   const history = useHistory();
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
 
   const { isConnected } = useConnect();
   const {
@@ -41,7 +44,8 @@ export default function ModclubApp() {
   const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([]);
   const [token, setToken] = useState(null);
   const [isJwtSet, setJwt] = useState(false);
-  const { modclub } = useActors();
+  const actors = useActors();
+  const { modclub, wallet, vesting } = actors;
 
   const initialCall = async () => {
     const result = await modclub.verifyUserHumanityForModclub();
@@ -58,6 +62,34 @@ export default function ModclubApp() {
       setJwt(true);
     }
   };
+
+  useEffect(() => {
+    if (isConnected && modclub) {
+      dispatch({ type: "fetchUserProfile" });
+    }
+  }, [isConnected, modclub]);
+
+  useEffect(() => {
+    if (isConnected && wallet) {
+      if (appState.userProfile) {
+        dispatch({ type: "fetchDecimals" });
+        dispatch({ type: "fetchUserSystemBalance" });
+        dispatch({ type: "fetchUserLockedBalance" });
+        dispatch({ type: "fetchUserPersonalBalance" });
+      }
+    }
+  }, [isConnected, wallet, appState.userProfile]);
+
+  useEffect(() => {
+    if (isConnected && vesting) {
+      if (appState.userProfile) {
+        dispatch({
+          type: "fetchUserLockedBalance",
+          payload: { principal: appState.userProfile.id },
+        });
+      }
+    }
+  }, [isConnected, vesting, appState.userProfile]);
 
   useEffect(() => {
     if (!isJwtSet) {
@@ -160,7 +192,6 @@ export default function ModclubApp() {
           </Switch>
         </Columns.Column>
       </Columns>
-
       <Footer />
     </>
   );

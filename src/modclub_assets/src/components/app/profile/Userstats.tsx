@@ -16,6 +16,8 @@ import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
 import { wallet_types } from "../../../utils/types";
+import { useProfile } from "../../../contexts/profile";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const levelMessages = {
   novice: {
@@ -44,14 +46,20 @@ const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
+  const { user } = useProfile();
+  const appState = useAppState();
+  console.log("_APPLICATION_STATE::", appState);
   const { rs, wallet, modclub, vesting } = useActors();
 
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards: 0,
     stake: 0,
-    wallet: 0,
-    userBalance: 0,
+    wallet: convert_to_mod(appState.systemBalance, BigInt(appState.decimals)),
+    userBalance: convert_to_mod(
+      appState.personalBalance,
+      BigInt(appState.decimals)
+    ),
     unLockedFor: 0,
     claimStakedFor: 0,
   });
@@ -64,7 +72,6 @@ export default function Userstats({ detailed = false }) {
 
   const [lockBlock, setLockBlock] = useState([]);
   const [performance, setPerformance] = useState<number>(0);
-  const [digits, setDigits] = useState<number>(0);
   const [pendingRewards, setPendingRewards] = useState(0);
   const [level, setLevel] = useState<string>("");
   const [subacc, setSubacc] = useState<wallet_types.Account["subaccount"]>([]);
@@ -87,36 +94,13 @@ export default function Userstats({ detailed = false }) {
   type ResolvedType<T> = T extends Promise<infer R> ? R : T;
 
   useEffect(() => {
-    let isMounted = true;
-    const _action = async () => {
-      if (subacc.length && digits) {
-        let system_bal = await wallet.icrc1_balance_of({
-          owner: Principal.fromText(CanisterId),
-          subaccount: [subacc],
-        });
-
-        let user_bal = await wallet.icrc1_balance_of({
-          owner: Principal.fromText(principal),
-          subaccount: [],
-        });
-
-        let wallet_digits = convert_to_mod(system_bal, BigInt(digits));
-        let userBalance = convert_to_mod(user_bal, BigInt(digits));
-        if (isMounted) {
-          setTokenHoldings((prevState) => ({
-            ...prevState,
-            wallet: wallet_digits,
-            userBalance: userBalance,
-          }));
-        }
-      }
-    };
-    _action();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [subacc, digits, principal]);
+    if (user) {
+      const ap_sub_acc_rec = user.subaccounts.find(
+        (item) => item[0] === "ACCOUNT_PAYABLE"
+      );
+      setSubacc(ap_sub_acc_rec[1]);
+    }
+  }, [user]);
 
   useEffect(() => {
     let isMounted = true;
@@ -126,7 +110,7 @@ export default function Userstats({ detailed = false }) {
         subaccount: [],
       })
       .then((stakeForNum) => {
-        const stake = convert_to_mod(stakeForNum, digits);
+        const stake = convert_to_mod(stakeForNum, appState.decimals);
         if (isMounted) {
           setTokenHoldings((prevState) => ({
             ...prevState,
@@ -138,46 +122,40 @@ export default function Userstats({ detailed = false }) {
         if (isMounted) console.error("Error stakeFor", error);
       });
 
-    vesting
-      .locked_for({
-        owner: Principal.fromText(principal),
-        subaccount: [],
-      })
-      .then((lockedNum) => {
-        modclub
-          .canClaimLockedReward([BigInt(Number(lockedNum))])
-          .then((claimCheck) => {
-            if (Object.keys(claimCheck)[0] === "ok") {
-              setClaimRewards({
-                canClaim: claimCheck.ok?.canClaim,
-                claimAmount: claimCheck.ok?.claimAmount,
-                claimPrice: claimCheck.ok?.claimPrice,
-              });
-            } else {
-              setClaimRewards({
-                canClaim: false,
-                claimAmount: 0,
-                claimPrice: 0,
-              });
-            }
-          })
-          .catch(() => {
-            return "";
-          });
+    modclub &&
+      modclub
+        .canClaimLockedReward([BigInt(Number(appState.lockedBalance))])
+        .then((claimCheck) => {
+          if (Object.keys(claimCheck)[0] === "ok") {
+            setClaimRewards({
+              canClaim: claimCheck.ok?.canClaim,
+              claimAmount: claimCheck.ok?.claimAmount,
+              claimPrice: claimCheck.ok?.claimPrice,
+            });
+          } else {
+            setClaimRewards({
+              canClaim: false,
+              claimAmount: 0,
+              claimPrice: 0,
+            });
+          }
+        })
+        .catch(() => {
+          return "";
+        });
 
-        const locked = convert_to_mod(lockedNum, digits);
-        if (isMounted) {
-          setPendingRewards(locked);
-          setTokenHoldings((prevState) => ({
-            ...prevState,
-            pendingRewards: pendingRewards,
-          }));
-        }
-      });
+    const locked = convert_to_mod(appState.lockedBalance, appState.decimals);
+    if (isMounted) {
+      setPendingRewards(locked);
+      setTokenHoldings((prevState) => ({
+        ...prevState,
+        pendingRewards: pendingRewards,
+      }));
+    }
     return () => {
       isMounted = false;
     };
-  }, [digits, principal]);
+  }, [appState.decimals, principal, modclub]);
 
   const fetchTokenHoldings = async (principal: string, isMounted: boolean) => {
     try {
@@ -188,18 +166,6 @@ export default function Userstats({ detailed = false }) {
             setPerformance(Number(perf.score));
             setLevel(Object.keys(perf.level)[0]);
           }
-        });
-
-      const prom2 = wallet
-        .icrc1_decimals()
-        .then((digit) => {
-          if (isMounted) {
-            setDigits(digit);
-          }
-        })
-        .catch((error) => {
-          if (isMounted)
-            console.error("Error fetching performance and digit:", error);
         });
 
       const prom3 = vesting
@@ -233,22 +199,6 @@ export default function Userstats({ detailed = false }) {
           }
         });
 
-      const prom5 =
-        modclub &&
-        modclub
-          .getProfileById(Principal.fromText(principal))
-          .then((profile) => {
-            let subacc: any = Object.values(profile.subaccounts);
-            if (subacc.length > 0) {
-              subacc = subacc.find((item) => item[0] === "ACCOUNT_PAYABLE");
-            } else {
-              subacc = [];
-            }
-            if (isMounted) {
-              setSubacc(subacc.length > 0 ? subacc[1] : subacc);
-            }
-          });
-
       const prom6 = vesting
         .pending_stakes_for({
           owner: Principal.fromText(principal),
@@ -265,7 +215,7 @@ export default function Userstats({ detailed = false }) {
           if (isMounted) console.error("Error fetching pending stake:", error);
         });
 
-      Promise.all([prom1, prom2, prom3, prom4, prom5, prom6]).then(() => {
+      Promise.all([prom1, prom3, prom4, prom6]).then(() => {
         if (isMounted) {
           setHoldingsUpdated(false);
         }
@@ -306,10 +256,13 @@ export default function Userstats({ detailed = false }) {
       <Columns>
         {detailed && (
           <StatBox
-            loading={holdingsUpdated}
+            loading={false}
             image={walletImg}
             title="Wallet"
-            amount={tokenHoldings.wallet}
+            amount={convert_to_mod(
+              appState.systemBalance,
+              BigInt(appState.decimals)
+            )}
             usd={170}
             detailed={detailed}
             message="Wallet"
@@ -380,7 +333,7 @@ export default function Userstats({ detailed = false }) {
           </Button.Group>
         </StatBox>
         <StatBox
-          loading={holdingsUpdated}
+          loading={false}
           image={performanceImg}
           title="Pending Rewards"
           amount={pendingRewards}
@@ -407,7 +360,7 @@ export default function Userstats({ detailed = false }) {
                 Constant.CLAIM_LIMIT_MSG(
                   convert_to_mod(
                     BigInt(claimRewards.claimPrice),
-                    BigInt(digits)
+                    BigInt(appState.decimals)
                   )
                 )}
             </>
@@ -426,7 +379,10 @@ export default function Userstats({ detailed = false }) {
       {showDeposit && (
         <Deposit
           toggle={toggleDeposit}
-          userTokenBalance={tokenHoldings.userBalance}
+          userTokenBalance={convert_to_mod(
+            appState.personalBalance,
+            BigInt(appState.decimals)
+          )}
           isProvider={false}
           receiver={CanisterId}
           subacc={subacc}
@@ -436,7 +392,10 @@ export default function Userstats({ detailed = false }) {
       {showWithdraw && (
         <Withdraw
           toggle={toggleWithdraw}
-          userTokenBalance={tokenHoldings.wallet}
+          userTokenBalance={convert_to_mod(
+            appState.systemBalance,
+            BigInt(appState.decimals)
+          )}
           subacc={subacc}
           to={principal}
         />
@@ -455,7 +414,7 @@ export default function Userstats({ detailed = false }) {
           onUpdate={() => setHoldingsUpdated(true)}
           userId={principal}
           lockBlock={Array.isArray(lockBlock) ? lockBlock : []}
-          digit={digits}
+          digit={appState.decimals}
         />
       )}
     </>

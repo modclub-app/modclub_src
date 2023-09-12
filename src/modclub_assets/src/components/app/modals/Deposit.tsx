@@ -7,6 +7,7 @@ import PopupModal from "./PopupModal";
 import { format_token } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 interface DepositProps {
   toggle: () => void;
@@ -24,6 +25,8 @@ export default function Deposit({
   isProvider,
   subacc,
 }: DepositProps) {
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const [error, setError] = useState(null);
   const [inputValue, setInputValue] = useState(userTokenBalance);
   const { modclub, wallet } = useActors();
@@ -33,8 +36,8 @@ export default function Deposit({
     setError(null);
     const { reserved } = value;
     try {
-      const digit = await wallet.icrc1_decimals();
-      const amount: number = Number(reserved) * Math.pow(10, Number(digit));
+      const amount: number =
+        Number(reserved) * Math.pow(10, Number(appState.decimals));
       const transfer = await icrc1Transfer(
         wallet,
         activeProvider.meta.id,
@@ -42,6 +45,8 @@ export default function Deposit({
         Principal.fromText(receiver),
         subacc
       );
+      dispatch({ type: "fetchUserSystemBalance" });
+      dispatch({ type: "fetchUserPersonalBalance" });
       return { reserved: Number(reserved), transfer: transfer };
     } catch (err) {
       setError(err.message);
@@ -52,8 +57,8 @@ export default function Deposit({
     setError(null);
     const { reserved } = value;
     try {
-      const digit = await wallet.icrc1_decimals();
-      const amount: number = Number(reserved) * Math.pow(10, Number(digit));
+      const amount: number =
+        Number(reserved) * Math.pow(10, Number(appState.decimals));
       let subacc = await modclub.getProviderSa("RESERVE", [
         Principal.fromText(provider),
       ]);
@@ -67,6 +72,8 @@ export default function Deposit({
         Principal.fromText(receiver),
         subacc
       );
+      // dispatch({ type: "fetchUserSystemBalance" });
+      dispatch({ type: "fetchUserPersonalBalance" });
       return { reserved: Number(reserved), transfer: transfer };
     } catch (err) {
       setError(err.message);

@@ -27,7 +27,6 @@ const Table = ({
   getLabel: (activity: string) => string;
   currentFilter: string;
 }) => {
-  console.log("<=[DEBUG]=> [filteredActivity]::", filteredActivity);
   if (loading) {
     return <div className="loader is-loading"></div>;
   } else {

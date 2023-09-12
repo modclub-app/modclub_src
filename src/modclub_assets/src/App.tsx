@@ -12,6 +12,7 @@ import {
   useHistory,
 } from "react-router-dom";
 
+import { StateProvider } from "./components/app/state_mgmt/provider";
 import External from "./components/external/External";
 import ModclubApp from "./components/app/ModclubApp";
 
@@ -29,12 +30,18 @@ export default function App() {
     }
   }, []);
 
+  function StatefullModclubApp(props) {
+    return (
+      <StateProvider>
+        <ModclubApp />
+      </StateProvider>
+    );
+  }
+
   return (
     <Router history={history}>
-      {/* A <Switch> looks through its children <Route>s and
-          renders the first one that matches the current URL. */}
       <Switch>
-        <Route path="/app" component={ModclubApp} />
+        <Route path="/app" component={StatefullModclubApp} />
         <Route path="/" component={External} />
       </Switch>
     </Router>
