@@ -34,6 +34,17 @@ function initCanisterIds() {
 }
 initCanisterIds();
 
+function getCurrentTimestamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0"); // months are 0-indexed in JS
+  const day = String(now.getDate()).padStart(2, "0");
+  const hour = String(now.getHours()).padStart(2, "0");
+  const minute = String(now.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}-${hour}.${minute}`;
+}
+
 let LOCAL_II_CANISTER = "";
 try {
   // Replace this value with the ID of your local Internet Identity canister
@@ -144,7 +155,9 @@ module.exports = {
       LOCAL_II_CANISTER,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
       DEV_ENV: process.env.DEV_ENV || "production",
-      DEPLOYMENT_TAG: process.env.DEPLOYMENT_TAG,
+      DEPLOYMENT_TAG:
+        process.env.DEPLOYMENT_TAG ||
+        `${process.env.DEV_ENV}-${getCurrentTimestamp()}`,
     }),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],
