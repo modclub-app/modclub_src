@@ -10,6 +10,7 @@ import {
 } from "../../../utils/util";
 import { useState } from "react";
 import { useActors } from "../../../utils";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const UpdateTable = ({
   stake,
@@ -176,11 +177,14 @@ export default function Unstake({
   onUpdate,
 }) {
   const { modclub } = useActors();
+  const dispatch = useAppStateDispatch();
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
       const amounts: number = Number(amount) * Math.pow(10, Number(digit));
       const res = await claimStake(modclub, BigInt(amounts));
+      dispatch({ type: "fetchUserStakedBalance" });
+      dispatch({ type: "fetchUserSystemBalance" });
       return { reserved: Number(amount), transfer: res };
     } catch (error) {
       console.error("unStake Failed:", error);

@@ -54,7 +54,7 @@ export default function Userstats({ detailed = false }) {
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards: 0,
-    stake: 0,
+    stake: convert_to_mod(appState.stakeBalance, BigInt(appState.decimals)),
     wallet: convert_to_mod(appState.systemBalance, BigInt(appState.decimals)),
     userBalance: convert_to_mod(
       appState.personalBalance,
@@ -104,24 +104,6 @@ export default function Userstats({ detailed = false }) {
 
   useEffect(() => {
     let isMounted = true;
-    vesting
-      .staked_for({
-        owner: Principal.fromText(principal),
-        subaccount: [],
-      })
-      .then((stakeForNum) => {
-        const stake = convert_to_mod(stakeForNum, appState.decimals);
-        if (isMounted) {
-          setTokenHoldings((prevState) => ({
-            ...prevState,
-            stake: stake,
-          }));
-        }
-      })
-      .catch((error) => {
-        if (isMounted) console.error("Error stakeFor", error);
-      });
-
     modclub &&
       modclub
         .canClaimLockedReward([BigInt(Number(appState.lockedBalance))])
@@ -290,7 +272,7 @@ export default function Userstats({ detailed = false }) {
         )}
         {!detailed && (
           <StatBox
-            loading={holdingsUpdated}
+            loading={false}
             image={performanceImg}
             title="Reputation Score"
             amount={performance}
@@ -304,10 +286,13 @@ export default function Userstats({ detailed = false }) {
         )}
 
         <StatBox
-          loading={holdingsUpdated}
+          loading={false}
           image={stakedImg}
           title="Staked"
-          amount={tokenHoldings.stake}
+          amount={convert_to_mod(
+            appState.stakeBalance,
+            BigInt(appState.decimals)
+          )}
           usd={170}
           detailed={detailed}
           message="Staked"

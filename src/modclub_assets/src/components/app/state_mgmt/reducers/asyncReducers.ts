@@ -83,6 +83,22 @@ export async function asyncReducers(asyncState, action) {
 
       return { ...state, personalBalance };
     }
+    case "fetchUserStakedBalance": {
+      let stakeBalance = state.stakeBalance;
+      try {
+        if (context.actors.vesting && state.userProfile) {
+          const actor = context.actors.vesting.value;
+          stakeBalance = await actor.staked_for({
+            owner: state.userProfile.id,
+            subaccount: [],
+          });
+        }
+      } catch (e) {
+        console.error("Error fetching UserStakeBalance::", e);
+      }
+
+      return { ...state, stakeBalance };
+    }
     default: {
       throw Error("Unknown action: " + action.type);
     }

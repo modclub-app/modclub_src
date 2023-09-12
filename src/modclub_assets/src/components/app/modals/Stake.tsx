@@ -4,6 +4,7 @@ import { Level, Icon } from "react-bulma-components";
 import PopupModal from "./PopupModal";
 import { useState } from "react";
 import { useActors } from "../../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const UpdateTable = ({ wallet, stake, amount = 0 }) => {
   return (
@@ -30,13 +31,16 @@ const UpdateTable = ({ wallet, stake, amount = 0 }) => {
 
 export default function Stake({ toggle, tokenHoldings, onUpdate }) {
   const [inputValue, setInputValue] = useState(tokenHoldings.wallet);
-  const { wallet, modclub } = useActors();
+  const { modclub } = useActors();
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
-      const digit = await wallet.icrc1_decimals();
-      const amounts: number = Number(amount) * Math.pow(10, Number(digit));
+      const amounts: number = Number(amount) * Math.pow(10, Number(appState.decimals));
       const res = await modclub.stakeTokens(BigInt(amounts));
+      dispatch({ type: "fetchUserStakedBalance" });
+      dispatch({ type: "fetchUserSystemBalance" });
       return { reserved: Number(amount), transfer: res };
     } catch (error) {
       console.error("Stake Failed:", error);

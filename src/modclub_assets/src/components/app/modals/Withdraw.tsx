@@ -8,6 +8,7 @@ import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
 import { useState } from "react";
 import PopupModal from "./PopupModal";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const UpdateTable = ({ wallet, amount = 0 }) => {
   return (
@@ -26,6 +27,8 @@ const UpdateTable = ({ wallet, amount = 0 }) => {
 
 export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
   const [inputValue, setInputValue] = useState(userTokenBalance);
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const { wallet, modclub } = useActors();
   const onFormSubmit = async (values: any) => {
     const { amount, address } = values;
@@ -37,6 +40,8 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
         BigInt(amounts),
         address
       );
+      dispatch({ type: "fetchUserSystemBalance" });
+      dispatch({ type: "fetchUserPersonalBalance" });
       return { reserved: Number(amount), transfer: transfer };
     } catch (err) {
       console.error("Withdraw Failed:", err);

@@ -7,4 +7,5 @@ export const initialState = {
   canClaimRewards: false,
   claimRewardAmount: 0,
   claimRewardPrice: 0,
+  stakeBalance:0,
 };

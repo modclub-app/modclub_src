@@ -74,7 +74,6 @@ export default function ModclubApp() {
       if (appState.userProfile) {
         dispatch({ type: "fetchDecimals" });
         dispatch({ type: "fetchUserSystemBalance" });
-        dispatch({ type: "fetchUserLockedBalance" });
         dispatch({ type: "fetchUserPersonalBalance" });
       }
     }
@@ -83,10 +82,8 @@ export default function ModclubApp() {
   useEffect(() => {
     if (isConnected && vesting) {
       if (appState.userProfile) {
-        dispatch({
-          type: "fetchUserLockedBalance",
-          payload: { principal: appState.userProfile.id },
-        });
+        dispatch({ type: "fetchUserLockedBalance" });
+        dispatch({ type: "fetchUserStakedBalance" });
       }
     }
   }, [isConnected, vesting, appState.userProfile]);
