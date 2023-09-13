@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
 import logger from "../../../utils/logger";
 import { useActors } from "../../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const InviteModerator = ({ toggle }) => {
   const link = "Coming Soon"; //`${window.location.origin}/referral=${Date.now()}`
@@ -88,17 +89,14 @@ const DropdownLabel = ({ toggle }) => {
 export default function Sidebar() {
   const history = useHistory();
   const { isConnected, activeProvider, principal } = useConnect();
+  const appState = useAppState();
 
   const {
-    user,
-    requiresSignUp,
     providers,
-    isAdminUser,
     userAlertVal,
     setUserAlertVal,
     selectedProvider,
     setSelectedProvider,
-    isProfileReady,
   } = useProfile();
   const { rs, modclub } = useActors();
   const [showModal, setShowModal] = useState(false);
@@ -120,7 +118,7 @@ export default function Sidebar() {
       setLoadSpinner(false);
       return;
     }
-    const email = user.email;
+    const email = appState.userProfile.email;
     if (!email)
       setNotificationMsg({
         success: false,
@@ -167,10 +165,10 @@ export default function Sidebar() {
 
   useEffect(() => {
     let isMounted = true;
-    if (isConnected && isProfileReady && !user && requiresSignUp) {
+    if (isConnected && !appState.userProfile && appState.requiresSignUp) {
       history.push("/signup");
     }
-    if (isConnected && user) {
+    if (isConnected && appState.userProfile) {
       fetchUserAlertOptinVal();
     }
     const getUserLv = async () => {
@@ -185,7 +183,7 @@ export default function Sidebar() {
     return () => {
       isMounted = false;
     };
-  }, [isConnected, user, requiresSignUp]);
+  }, [isConnected, appState.userProfile, appState.requiresSignUp]);
 
   return (
     <Columns.Column
@@ -214,7 +212,7 @@ export default function Sidebar() {
 
         <hr />
 
-        {isConnected && user ? <SidebarUser /> : <SignIn />}
+        {isConnected && appState.userProfile ? <SidebarUser /> : <SignIn />}
 
         <Menu.List>
           <Link to="/app">
@@ -232,7 +230,7 @@ export default function Sidebar() {
             </Link>
           )}
           {/* ADMIN POH CONTENT APPROVED AND REJECTED */}
-          {user && isAdminUser && (
+          {appState.userProfile && appState.isAdminUser && (
             <Link to="/app/admin/poh">
               <Icon>
                 <span className="material-icons">check_circle_outline</span>
@@ -308,7 +306,7 @@ export default function Sidebar() {
             ""
           )}
         </Menu.List>
-        {user && user.email && (
+        {appState.userProfile && appState.userProfile.email && (
           <div>
             <strong
               style={{

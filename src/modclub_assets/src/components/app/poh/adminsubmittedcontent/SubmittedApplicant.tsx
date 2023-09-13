@@ -12,9 +12,13 @@ import DrawingChallenge from "../DrawingChallenge";
 import { useHistory } from "react-router-dom";
 import { useProfile } from "../../../../contexts/profile";
 import { useActors } from "../../../../hooks/actors";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../state_mgmt/context/state";
 
 export default function PohSubmittedApplicant() {
-  const { user, isAdminUser } = useProfile();
+  const appState = useAppState();
 
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,7 +27,7 @@ export default function PohSubmittedApplicant() {
   const { modclub } = useActors();
 
   const getApplicant = async () => {
-    if (!isAdminUser) history.push(`/app/poh`);
+    if (!appState.isAdminUser) history.push(`/app/poh`);
 
     setLoading(true);
     const res = await modclub.getPohTaskDataForAdminUsers(packageId);
@@ -33,8 +37,8 @@ export default function PohSubmittedApplicant() {
   };
 
   useEffect(() => {
-    user && isAdminUser && !loading && getApplicant();
-  }, [isAdminUser]);
+    appState.userProfile && appState.isAdminUser && !loading && getApplicant();
+  }, [appState.isAdminUser, appState.userProfile]);
 
   const formatTitle = (challengeId) => {
     switch (challengeId) {

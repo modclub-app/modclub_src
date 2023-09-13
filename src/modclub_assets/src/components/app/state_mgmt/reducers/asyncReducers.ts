@@ -8,15 +8,32 @@ export async function asyncReducers(asyncState, action) {
   switch (action.type) {
     case "fetchUserProfile": {
       let userProfile = state.userProfile;
+      let requiresSignUp = state.requiresSignUp;
       try {
         if (context.actors.modclub) {
           const actor = context.actors.modclub.value;
           userProfile = await actor.getProfile();
+          requiresSignUp = false;
         }
       } catch (e) {
         console.error("Error fetching UserProfile::", e);
+        requiresSignUp = true;
       }
-      return { ...state, userProfile };
+      return { ...state, userProfile, requiresSignUp };
+    }
+    case "fetchIsUserAdmin": {
+      let isAdminUser = state.isAdminUser;
+      try {
+        if (context.actors.modclub) {
+          const actor = context.actors.modclub.value;
+          await actor.showAdmins();
+          isAdminUser = true;
+        }
+      } catch (e) {
+        console.error("Error fetching UserProfile::", e);
+        isAdminUser = false;
+      }
+      return { ...state, isAdminUser };
     }
     case "fetchDecimals": {
       let decimals = state.decimals;

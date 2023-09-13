@@ -11,6 +11,7 @@ import { useProfile } from "../../../contexts/profile";
 import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const PAGE_SIZE = 20;
 const FILTER_VOTES = false;
@@ -106,7 +107,7 @@ const Task = ({ task, setVoted, level }) => {
 
 export default function Tasks() {
   const { principal } = useConnect();
-  const { user } = useProfile();
+  const appState = useAppState();
   const [tasks, setTasks] = useState([]);
   const [voted, setVoted] = useState<boolean>(false);
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
@@ -126,21 +127,21 @@ export default function Tasks() {
   }, []);
 
   useEffect(() => {
-    if (user && firstLoad && !loading && fetchTasks()) {
+    if (appState.userProfile && firstLoad && !loading && fetchTasks()) {
       setFirstLoad(false);
       fetchTokenHoldings(Principal.fromText(principal));
     }
-  }, [user, principal]);
+  }, [appState.userProfile, principal]);
 
   useEffect(() => {
     // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI.
     // TODO: We should use Redux to manage this.
-    user && voted && !loading && refetchAll();
+    appState.userProfile && voted && !loading && refetchAll();
     setVoted(false);
   }, [voted]);
 
   useEffect(() => {
-    user && !loading && fetchTasks();
+    appState.userProfile && !loading && fetchTasks();
   }, [page]);
 
   const nextPage = () => {

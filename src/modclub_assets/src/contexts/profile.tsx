@@ -7,11 +7,7 @@ import { useActors } from "../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";
 
 export interface IProfileContext {
-  requiresSignUp: boolean;
-  user: modclub_types.ProfileStable;
   hasAccount: boolean;
-  isAdminUser: boolean;
-
   providers: Array<Object>;
   providerIdText: string;
   setSelectedProvider: (provider: Object) => void;
@@ -21,8 +17,6 @@ export interface IProfileContext {
   setUserAlertVal: (alerts: boolean) => void;
 
   updateProfile: (user: modclub_types.ProfileStable) => void;
-
-  isProfileReady: boolean;
 }
 
 const ProfileContext = createContext<IProfileContext>(null!);
@@ -40,27 +34,17 @@ export function ProfileProvider({ children }) {
   const { modclub } = useActors();
   const [shouldSignup, setShouldSignup] = useState(false);
   const [providers, setProviders] = useState([]);
-  const [isAdminUser, setAdminUser] = useState(false);
   const [providerIdText, setProviderIdText] = useState("");
   const [userAlertVal, setUserAlertVal] = useState(false);
   const [user, setUser] = useState<modclub_types.ProfileStable | undefined>();
-  const [isProfileReady, setIsProfileReady] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<
     Object | undefined
   >();
 
   const updateProfile = async (user) => {
     logger.log("Updating profile provider..", user);
-    setUser(user);
+    // setUser(user);
     setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
-
-    try {
-      let admins = await modclub.showAdmins();
-      const checkAdmin = admins.includes(user.id);
-      setAdminUser(checkAdmin);
-    } catch (error) {
-      setAdminUser(false);
-    }
   };
 
   // Function to fetch the user profile based on the authentication state
@@ -103,8 +87,6 @@ export function ProfileProvider({ children }) {
         }
       } catch (error) {
         logger.error("Error fetching user profile:", error);
-      } finally {
-        setIsProfileReady(true);
       }
     }
   };
@@ -117,7 +99,6 @@ export function ProfileProvider({ children }) {
     } else {
       // if log out
       setUser(undefined);
-      setAdminUser(false);
       localStorage.removeItem(KEY_LOCALSTORAGE_USER);
       setProviders([]);
       fetchedProviders = false;
@@ -157,10 +138,7 @@ export function ProfileProvider({ children }) {
   return (
     <ProfileContext.Provider
       value={{
-        requiresSignUp: shouldSignup,
-        user,
         hasAccount: user !== undefined,
-        isAdminUser,
         updateProfile,
         providers,
         providerIdText,
@@ -168,7 +146,6 @@ export function ProfileProvider({ children }) {
         userAlertVal,
         setSelectedProvider,
         selectedProvider,
-        isProfileReady,
       }}
     >
       {children}

@@ -20,6 +20,7 @@ import sanitizeHtml from "sanitize-html-react";
 import { useProfile } from "../../../contexts/profile";
 import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -58,7 +59,7 @@ function resizeIframe(iframe) {
 
 export default function Task() {
   const { principal } = useConnect();
-  const { user } = useProfile();
+  const appState = useAppState();
   const { taskId } = useParams<{ taskId: string }>();
   const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
@@ -91,11 +92,11 @@ export default function Task() {
   };
 
   useEffect(() => {
-    user && !task && fetchTask() && fetchData();
-  }, [user]);
+    appState.userProfile && !task && fetchTask() && fetchData();
+  }, [appState.userProfile]);
 
   useEffect(() => {
-    user && voted && fetchTask();
+    appState.userProfile && voted && fetchTask();
     setVoted(false);
   }, [voted]);
 

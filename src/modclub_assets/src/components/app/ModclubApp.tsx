@@ -31,15 +31,8 @@ export default function ModclubApp() {
   const dispatch = useAppStateDispatch();
 
   const { isConnected } = useConnect();
-  const {
-    user,
-    providerIdText,
-    providers,
-    selectedProvider,
-    setSelectedProvider,
-    isProfileReady,
-    requiresSignUp,
-  } = useProfile();
+  const { providerIdText, providers, selectedProvider, setSelectedProvider } =
+    useProfile();
   const [status, setStatus] = useState(null);
   const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([]);
   const [token, setToken] = useState(null);
@@ -66,14 +59,15 @@ export default function ModclubApp() {
   useEffect(() => {
     if (isConnected && modclub) {
       dispatch({ type: "fetchUserProfile" });
+      dispatch({ type: "fetchIsUserAdmin" });
     }
   }, [isConnected, modclub]);
 
   useEffect(() => {
-    if (isConnected && rs) 
-    if (appState.userProfile) {
-      dispatch({ type: "fetchUserRS" });
-    }
+    if (isConnected && rs)
+      if (appState.userProfile) {
+        dispatch({ type: "fetchUserRS" });
+      }
   }, [isConnected, rs, appState.userProfile]);
 
   useEffect(() => {
@@ -97,19 +91,19 @@ export default function ModclubApp() {
 
   useEffect(() => {
     if (!isJwtSet) {
-      if (user?.role?.hasOwnProperty("admin")) {
+      if (appState.userProfile?.role?.hasOwnProperty("admin")) {
         history.push("/app/admin");
       } else {
-        isConnected && user && initialCall();
+        isConnected && appState.userProfile && initialCall();
       }
     }
-  }, [user, isConnected]);
+  }, [appState.userProfile, isConnected]);
 
   useEffect(() => {
-    if (isConnected && isProfileReady && !user && requiresSignUp) {
+    if (isConnected && !appState.userProfile && appState.requiresSignUp) {
       history.push("/signup");
     }
-  }, [isConnected, user, requiresSignUp, isProfileReady]);
+  }, [isConnected, appState.userProfile, appState.requiresSignUp]);
 
   const location = useLocation();
   const displayVerificationEmail = location.pathname.startsWith(
@@ -125,13 +119,17 @@ export default function ModclubApp() {
 
   return (
     <>
-      {user && status && status != "verified" && !selectedProvider && token && (
-        <UserIncompleteModal
-          status={status}
-          rejectionReasons={rejectionReasons}
-          token={token}
-        />
-      )}
+      {appState.userProfile &&
+        status &&
+        status != "verified" &&
+        !selectedProvider &&
+        token && (
+          <UserIncompleteModal
+            status={status}
+            rejectionReasons={rejectionReasons}
+            token={token}
+          />
+        )}
       <Columns
         className="container"
         marginless
@@ -175,7 +173,7 @@ export default function ModclubApp() {
             <Route exact path="/app/confirm/poh/alerts/:userID+">
               <AlertConfirmation />
             </Route>
-            {user ? (
+            {appState.userProfile ? (
               <Route exact path="/app/admin">
                 {selectedProvider ? (
                   <Admin

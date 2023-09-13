@@ -46,7 +46,6 @@ const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
-  const { user } = useProfile();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
   console.log("_APPLICATION_STATE::", appState);
@@ -72,7 +71,10 @@ export default function Userstats({ detailed = false }) {
   });
 
   const [lockBlock, setLockBlock] = useState([]);
-  const pendingRewards = convert_to_mod(appState.lockedBalance, appState.decimals);
+  const pendingRewards = convert_to_mod(
+    appState.lockedBalance,
+    appState.decimals
+  );
   const level = Object.keys(appState.rs.level)[0];
   const [subacc, setSubacc] = useState<wallet_types.Account["subaccount"]>([]);
 
@@ -94,13 +96,13 @@ export default function Userstats({ detailed = false }) {
   type ResolvedType<T> = T extends Promise<infer R> ? R : T;
 
   useEffect(() => {
-    if (user) {
-      const ap_sub_acc_rec = user.subaccounts.find(
+    if (appState.userProfile) {
+      const ap_sub_acc_rec = appState.userProfile.subaccounts.find(
         (item) => item[0] === "ACCOUNT_PAYABLE"
       );
       setSubacc(ap_sub_acc_rec[1]);
     }
-  }, [user]);
+  }, [appState.userProfile]);
 
   useEffect(() => {
     let isMounted = true;
@@ -192,7 +194,7 @@ export default function Userstats({ detailed = false }) {
 
   useEffect(() => {
     let isMounted = true;
-    dispatch({type: "fetchUserRS"})
+    dispatch({ type: "fetchUserRS" });
     principal && fetchTokenHoldings(principal, isMounted);
     return () => {
       isMounted = false;

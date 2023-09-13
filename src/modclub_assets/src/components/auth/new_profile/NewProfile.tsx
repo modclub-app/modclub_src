@@ -20,10 +20,15 @@ import { useActors } from "../../../hooks/actors";
 import logger from "../../../utils/logger";
 import { setUserToStorage } from "../../../utils/util";
 import { KEY_LOCALSTORAGE_USER } from "../../../contexts/profile";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../app/state_mgmt/context/state";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
-  const { updateProfile, user } = useProfile();
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
 
@@ -36,10 +41,10 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
     : "Create your profile";
 
   useEffect(() => {
-    if (user) {
+    if (appState.userProfile) {
       history.push("/app");
     }
-  }, [user, history]);
+  }, [appState.userProfile, history]);
 
   const associateAccount = async () => {
     setAccAssociation(true);
@@ -89,7 +94,8 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
         email ? [email] : []
       );
 
-      updateProfile(user);
+      setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
+      dispatch({ type: "fetchUserProfile" });
 
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });

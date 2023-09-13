@@ -19,6 +19,7 @@ import { useActors } from "../../../utils";
 import { useConnect } from "@connect2icmodclub/react";
 import { Principal } from "@dfinity/principal";
 import { fetchObjectUrl } from "../../../utils/jwt";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const PAGE_SIZE = 9;
 
@@ -70,8 +71,7 @@ const ApplicantSnippet = ({
       <Card.Header
         justifyContent="start"
         style={{ marginBottom: "auto", boxShadow: "none" }}
-      >
-      </Card.Header>
+      ></Card.Header>
 
       <Card.Content style={{ paddingTop: "65%" }}>
         {/*<Heading subtitle marginless>
@@ -121,7 +121,7 @@ const ApplicantSnippet = ({
 
 export default function PohApplicantList() {
   const { principal } = useConnect();
-  const { user } = useProfile();
+  const appState = useAppState();
   const { rs, modclub } = useActors();
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<
@@ -181,7 +181,7 @@ export default function PohApplicantList() {
     const applicantsResult = getApplicants();
     const userLevelResult = getUserLv();
     if (
-      user &&
+      appState.userProfile &&
       firstLoad &&
       !loading &&
       !applicants.length &&
@@ -190,10 +190,10 @@ export default function PohApplicantList() {
     ) {
       setFirstLoad(false);
     }
-  }, [user]);
+  }, [appState.userProfile]);
 
   useEffect(() => {
-    user && !loading && getApplicants();
+    appState.userProfile && !loading && getApplicants();
   }, [page]);
 
   const nextPage = () => {
@@ -213,7 +213,7 @@ export default function PohApplicantList() {
       </Modal>
     );
   }
-  if (user && applicants.length === 0) {
+  if (appState.userProfile && applicants.length === 0) {
     return (
       <section className="hero is-black is-medium">
         <div className="hero-body container has-text-centered">

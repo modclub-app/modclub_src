@@ -21,6 +21,7 @@ import DrawingChallenge from "./DrawingChallenge";
 import POHConfirmationModal from "./POHConfirmationModal";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -84,7 +85,7 @@ const CheckBox = ({ id, label, values }) => {
 };
 
 export default function PohApplicant() {
-  const { user } = useProfile();
+  const appState = useAppState();
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
@@ -100,8 +101,8 @@ export default function PohApplicant() {
   };
 
   useEffect(() => {
-    user && !loading && getApplicant();
-  }, [user]);
+    appState.userProfile && !loading && getApplicant();
+  }, [appState.userProfile]);
 
   useEffect(() => {
     !formRules.length &&

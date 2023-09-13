@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Dropdown, Heading, Media, Image, Icon } from "react-bulma-components";
 import placeholder from "../../../../assets/user_placeholder.png";
-import { useProfile } from "../../../contexts/profile";
 import { useConnect } from "@connect2icmodclub/react";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const DropdownLabel = ({ pic, user, toggle }) => {
   const snippet = (string, truncate) => {
@@ -43,7 +43,7 @@ const DropdownLabel = ({ pic, user, toggle }) => {
 
 export default function SidebarUser() {
   const { disconnect } = useConnect();
-  const { user } = useProfile();
+  const appState = useAppState();
   const pic = placeholder;
 
   const [showDropdown, setShowDropdown] = useState(false);
@@ -64,7 +64,9 @@ export default function SidebarUser() {
           <span className="material-icons">expand_more</span>
         </Icon>
       }
-      label={<DropdownLabel pic={pic} user={user} toggle={toggle} />}
+      label={
+        <DropdownLabel pic={pic} user={appState.userProfile} toggle={toggle} />
+      }
     >
       <Link to="/app/activity" className="dropdown-item">
         <Icon size="small" className="mr-2">

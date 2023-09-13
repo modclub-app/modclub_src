@@ -15,6 +15,7 @@ import Snippet from "../../common/snippet/Snippet";
 import { modclub_types } from "../../../utils/types";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const Table = ({
   loading,
@@ -85,7 +86,7 @@ const Table = ({
 
 export default function Activity() {
   const { principal } = useConnect();
-  const { user } = useProfile();
+  const appState = useAppState();
   const { modclub } = useActors();
   const [completedActivity, setCompletedActivity] = useState<Activity[]>([]);
   const [inProgressActivity, setInProgressActivity] = useState<
@@ -114,8 +115,8 @@ export default function Activity() {
   };
 
   useEffect(() => {
-    user && fetchActivity(currentFilter);
-  }, [user, modclub]);
+    appState.userProfile && fetchActivity(currentFilter);
+  }, [appState.userProfile, modclub]);
 
   useEffect(() => {
     fetchActivity(currentFilter);

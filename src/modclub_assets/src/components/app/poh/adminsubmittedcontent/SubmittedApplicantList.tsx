@@ -14,6 +14,11 @@ import { useProfile } from "../../../../contexts/profile";
 import { fetchObjectUrl } from "../../../../utils/jwt";
 import { getAllPohTasksForAdminUsers } from "../../../../utils/api";
 import { useActors } from "../../../../utils";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../state_mgmt/context/state";
+
 const PAGE_SIZE = 100;
 
 const ApplicantPOHDrawing = ({
@@ -63,11 +68,8 @@ const ApplicantPOHDrawing = ({
 };
 
 export default function PohApplicantList() {
-  const { user, isAdminUser } = useProfile();
+  const appState = useAppState();
   const { modclub } = useActors();
-  //Need to change
-  // const { user } = useAuth();
-  // const isAdminUser = true;
   const [loading, setLoading] = useState<boolean>(false);
   const [applicants, setApplicants] = useState<
     Array<modclub_types.PohTaskPlusForAdmin>
@@ -145,7 +147,7 @@ export default function PohApplicantList() {
     setSubmitting(false);
   };
   const getApplicants = async (crrFilter) => {
-    if (!isAdminUser) history.push(`/app/poh`);
+    if (!appState.isAdminUser) history.push(`/app/poh`);
     setLoading(true);
     if (crrFilter == "Approved") {
       const status = { approved: null };
@@ -177,23 +179,23 @@ export default function PohApplicantList() {
 
   useEffect(() => {
     if (
-      user &&
+      appState.userProfile &&
       firstLoad &&
-      isAdminUser &&
+      appState.isAdminUser &&
       !loading &&
       !applicants.length &&
       getApplicants("Approved")
     ) {
       setFirstLoad(false);
     }
-  }, [isAdminUser]);
+  }, [appState.isAdminUser, appState.userProfile]);
 
   useEffect(() => {
-    user && !loading && getApplicants("Approved");
+    appState.userProfile && !loading && getApplicants("Approved");
   }, [page]);
 
   useEffect(() => {
-    user && !loading && getApplicants("Rejected");
+    appState.userProfile && !loading && getApplicants("Rejected");
   }, [rejPage]);
 
   const nextPage = () => {
@@ -301,7 +303,7 @@ export default function PohApplicantList() {
         </Columns.Column>
         <Columns.Column size={12}>
           <FilterBar
-            isAdminUser={isAdminUser}
+            isAdminUser={appState.isAdminUser}
             filters={filters}
             currentFilter={currentFilter}
             onFilterChange={handleFilterChange}

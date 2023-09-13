@@ -14,6 +14,10 @@ import { modclub_types } from "../../../utils/types";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../app/state_mgmt/context/state";
 
 const Confirmation = ({ redirect_uri }) => {
   const { disconnect } = useConnect();
@@ -52,7 +56,9 @@ export default function NewPohProfile({ match }) {
   const params = new URLSearchParams(search);
   const URLtoken = params.get("token");
   const { isConnected, disconnect } = useConnect();
-  const { user } = useProfile();
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
+
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(true);
   const [steps, setSteps] = useState(null);
@@ -112,8 +118,8 @@ export default function NewPohProfile({ match }) {
   };
 
   useEffect(() => {
-    isConnected && user && initialCall(URLtoken);
-  }, [isConnected, user]);
+    isConnected && appState.userProfile && initialCall(URLtoken);
+  }, [isConnected, appState.userProfile]);
 
   useEffect(() => {
     return history.listen((location) => {
@@ -142,7 +148,8 @@ export default function NewPohProfile({ match }) {
 
   if (!isConnected) return <NotAuthenticatedModal />;
 
-  if (isConnected && !user) return <NewProfile isPohFlow={true} />;
+  if (isConnected && !appState.userProfile)
+    return <NewProfile isPohFlow={true} />;
 
   const goToNextStep = (currentStep) => {
     if (!steps) return;
