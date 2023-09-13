@@ -45,7 +45,7 @@
       "source": [
         "src/modclub_assets/assets",
         "dist/modclub_assets/",
-        "src/well-known/"
+        "src/qa_custom_domain/well-known/"
       ],
       "type": "assets"
     },

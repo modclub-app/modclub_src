@@ -5,6 +5,8 @@ import * as modclub from "../../../declarations/modclub_qa";
 import * as rs from "../../../declarations/rs_qa";
 import * as vesting from "../../../declarations/vesting_qa";
 import * as wallet from "../../../declarations/wallet_qa";
+import canisterIds from '../../../../canister_ids.json';
+
 
 /*
  * Connect2ic provides essential utilities for IC app development
@@ -17,7 +19,21 @@ import {
 } from "@connect2icmodclub/core/providers";
 import { Connect2ICProvider } from "@connect2icmodclub/react";
 
-let env = process.env.DFX_NETWORK || "local";
+const env = process.env.DFX_NETWORK || "local";
+const qaAssetsCanisterId = canisterIds.modclub_qa_assets.ic;
+const prodAssetsCanisterId = canisterIds.modclub_assets.ic;
+
+const derivationOrigins = {
+  dev: undefined,
+  qa: `https://${qaAssetsCanisterId}.icp0.io`,
+  production: `https://${prodAssetsCanisterId}.icp0.io`,
+};
+
+const customDomains = {
+  dev: undefined,
+  qa: "https://modclub.dev",
+  production: "https://modclub.app",
+};
 
 function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -46,11 +62,10 @@ export function AuthProvider({ children }) {
       host: env == "local" ? undefined : "https://icp-api.io",
       //dev: true,
       appName: "ModClub",
-      customDomain: "https://modclub.dev",
+      customDomain:
+        env !== "local" ? customDomains[process.env.DEV_ENV] : undefined,
       derivationOrigin:
-        env == "local"
-          ? undefined
-          : "https://h433y-uqaaa-aaaah-qdbja-cai.icp0.io",
+        env !== "local" ? derivationOrigins[process.env.DEV_ENV] : undefined,
     },
   });
   return <Connect2ICProvider client={client}>{children}</Connect2ICProvider>;
