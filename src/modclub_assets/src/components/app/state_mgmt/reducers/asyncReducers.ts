@@ -99,6 +99,18 @@ export async function asyncReducers(asyncState, action) {
 
       return { ...state, stakeBalance };
     }
+    case "fetchUserRS": {
+      let rs = state.rs;
+      try {
+        if (context.actors.rs && state.userProfile) {
+          const actor = context.actors.rs.value;
+          rs = await actor.queryRSAndLevelByPrincipal(state.userProfile.id);
+        }
+      } catch (e) {
+        console.error("Error fetching RS::", e);
+      }
+      return { ...state, rs };
+    }
     default: {
       throw Error("Unknown action: " + action.type);
     }

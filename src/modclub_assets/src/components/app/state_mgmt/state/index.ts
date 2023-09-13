@@ -8,4 +8,5 @@ export const initialState = {
   claimRewardAmount: 0,
   claimRewardPrice: 0,
   stakeBalance:0,
+  rs: {level: "", score: 0}
 };

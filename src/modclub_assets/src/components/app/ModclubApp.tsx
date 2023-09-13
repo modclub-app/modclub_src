@@ -45,7 +45,7 @@ export default function ModclubApp() {
   const [token, setToken] = useState(null);
   const [isJwtSet, setJwt] = useState(false);
   const actors = useActors();
-  const { modclub, wallet, vesting } = actors;
+  const { modclub, wallet, vesting, rs } = actors;
 
   const initialCall = async () => {
     const result = await modclub.verifyUserHumanityForModclub();
@@ -68,6 +68,13 @@ export default function ModclubApp() {
       dispatch({ type: "fetchUserProfile" });
     }
   }, [isConnected, modclub]);
+
+  useEffect(() => {
+    if (isConnected && rs) 
+    if (appState.userProfile) {
+      dispatch({ type: "fetchUserRS" });
+    }
+  }, [isConnected, rs, appState.userProfile]);
 
   useEffect(() => {
     if (isConnected && wallet) {

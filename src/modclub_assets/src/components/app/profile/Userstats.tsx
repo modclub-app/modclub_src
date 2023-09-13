@@ -48,13 +48,14 @@ export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
   const { user } = useProfile();
   const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   console.log("_APPLICATION_STATE::", appState);
   const { rs, wallet, modclub, vesting } = useActors();
 
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
-    pendingRewards: 0,
-    stake: convert_to_mod(appState.stakeBalance, BigInt(appState.decimals)),
+    pendingRewards: convert_to_mod(appState.lockedBalance, appState.decimals),
+    stake: 0,
     wallet: convert_to_mod(appState.systemBalance, BigInt(appState.decimals)),
     userBalance: convert_to_mod(
       appState.personalBalance,
@@ -71,9 +72,8 @@ export default function Userstats({ detailed = false }) {
   });
 
   const [lockBlock, setLockBlock] = useState([]);
-  const [performance, setPerformance] = useState<number>(0);
-  const [pendingRewards, setPendingRewards] = useState(0);
-  const [level, setLevel] = useState<string>("");
+  const pendingRewards = convert_to_mod(appState.lockedBalance, appState.decimals);
+  const level = Object.keys(appState.rs.level)[0];
   const [subacc, setSubacc] = useState<wallet_types.Account["subaccount"]>([]);
 
   const [showClaim, setShowClaim] = useState(false);
@@ -126,14 +126,6 @@ export default function Userstats({ detailed = false }) {
           return "";
         });
 
-    const locked = convert_to_mod(appState.lockedBalance, appState.decimals);
-    if (isMounted) {
-      setPendingRewards(locked);
-      setTokenHoldings((prevState) => ({
-        ...prevState,
-        pendingRewards: pendingRewards,
-      }));
-    }
     return () => {
       isMounted = false;
     };
@@ -141,15 +133,6 @@ export default function Userstats({ detailed = false }) {
 
   const fetchTokenHoldings = async (principal: string, isMounted: boolean) => {
     try {
-      const prom1 = rs
-        .queryRSAndLevelByPrincipal(Principal.fromText(principal))
-        .then((perf) => {
-          if (isMounted) {
-            setPerformance(Number(perf.score));
-            setLevel(Object.keys(perf.level)[0]);
-          }
-        });
-
       const prom3 = vesting
         .unlocked_stakes_for({
           owner: Principal.fromText(principal),
@@ -197,7 +180,7 @@ export default function Userstats({ detailed = false }) {
           if (isMounted) console.error("Error fetching pending stake:", error);
         });
 
-      Promise.all([prom1, prom3, prom4, prom6]).then(() => {
+      Promise.all([prom3, prom4, prom6]).then(() => {
         if (isMounted) {
           setHoldingsUpdated(false);
         }
@@ -209,6 +192,7 @@ export default function Userstats({ detailed = false }) {
 
   useEffect(() => {
     let isMounted = true;
+    dispatch({type: "fetchUserRS"})
     principal && fetchTokenHoldings(principal, isMounted);
     return () => {
       isMounted = false;
@@ -275,7 +259,7 @@ export default function Userstats({ detailed = false }) {
             loading={false}
             image={performanceImg}
             title="Reputation Score"
-            amount={performance}
+            amount={Number(appState.rs.score)}
             usd={12}
             detailed={detailed}
             message={rsMessage}
