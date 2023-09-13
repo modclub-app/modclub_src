@@ -279,7 +279,8 @@ module ContentModule {
               throw Error.reject("Already create");
             };
             let now = Helpers.timeNow();
-            let checkExpire = hasAvailableSpot(oldReserved, now, provider.voteParameters.requiredVotes);
+            let spot = provider.voteParameters.requiredVotes - (voteCount.approvedCount + voteCount.rejectedCount);
+            let checkExpire = hasAvailableSpot(oldReserved, now, spot);
             if (checkExpire == false) {
               throw Error.reject("No spot left");
             };
