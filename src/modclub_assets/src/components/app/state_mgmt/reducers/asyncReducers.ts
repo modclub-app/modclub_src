@@ -52,6 +52,12 @@ export async function asyncReducers(asyncState, action) {
       const ap_sub_acc_rec = state.userProfile.subaccounts.find(
         (item) => item[0] === "ACCOUNT_PAYABLE"
       );
+      if (!ap_sub_acc_rec) {
+        console.error(
+          "Error: No ACCOUNT_PAYABLE subaccount found to fetch UserSystemBalance."
+        );
+        return { ...state, systemBalance };
+      }
 
       try {
         if (context.actors.wallet) {

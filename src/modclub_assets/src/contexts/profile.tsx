@@ -43,7 +43,7 @@ export function ProfileProvider({ children }) {
 
   const updateProfile = async (user) => {
     logger.log("Updating profile provider..", user);
-    // setUser(user);
+    setUser(user);
     setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
   };
 
@@ -93,7 +93,7 @@ export function ProfileProvider({ children }) {
 
   // Call fetchUserProfile when the component mounts or when the isSignedIn state changes
   useEffect(() => {
-    if (isConnected && modclub) {
+    if (isConnected && modclub && !user) {
       // make sure it is already signed in before fetching profile
       fetchUserProfile();
     } else {

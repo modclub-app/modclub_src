@@ -100,7 +100,7 @@ export default function Userstats({ detailed = false }) {
       const ap_sub_acc_rec = appState.userProfile.subaccounts.find(
         (item) => item[0] === "ACCOUNT_PAYABLE"
       );
-      setSubacc(ap_sub_acc_rec[1]);
+      ap_sub_acc_rec && setSubacc(ap_sub_acc_rec[1]);
     }
   }, [appState.userProfile]);
 
