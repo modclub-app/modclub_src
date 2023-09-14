@@ -13,10 +13,9 @@ import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
-const PAGE_SIZE = 20;
 const FILTER_VOTES = false;
 
-const Task = ({ task, setVoted, level }) => {
+const Task = ({ task }) => {
   const { modclub } = useActors();
   const [rules, setRules] = useState([]);
 
@@ -108,113 +107,96 @@ const Task = ({ task, setVoted, level }) => {
 export default function Tasks() {
   const { principal } = useConnect();
   const appState = useAppState();
-  const [tasks, setTasks] = useState([]);
+  const dispatch = useAppStateDispatch();
   const [voted, setVoted] = useState<boolean>(false);
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [page, setPage] = useState({
-    page: 1,
-    startIndex: 0,
-    endIndex: PAGE_SIZE,
-  });
-  const [firstLoad, setFirstLoad] = useState(true);
-  const [level, setLevel] = useState<string>("");
   const { modclub, rs } = useActors();
 
-  const fetchTokenHoldings = useCallback(async (principal: Principal) => {
-    let perf = await rs.queryRSAndLevelByPrincipal(principal);
-    setLevel(Object.keys(perf.level)[0]);
-  }, []);
-
   useEffect(() => {
-    if (appState.userProfile && firstLoad && !loading && fetchTasks()) {
-      setFirstLoad(false);
-      fetchTokenHoldings(Principal.fromText(principal));
+    if (
+      modclub &&
+      appState.userProfile &&
+      voted &&
+      !appState.moderationTasksLoading
+    ) {
+      dispatch({
+        type: "setModerationTasksLoading",
+        payload: { status: true },
+      });
+      dispatch({
+        type: "refetchContentModerationTasks",
+        payload: FILTER_VOTES,
+      });
     }
-  }, [appState.userProfile, principal]);
-
-  useEffect(() => {
-    // Fetch everything again if the user votes. This is to ensure that the user's vote is reflected in the UI.
-    // TODO: We should use Redux to manage this.
-    appState.userProfile && voted && !loading && refetchAll();
     setVoted(false);
   }, [voted]);
 
   useEffect(() => {
-    appState.userProfile && !loading && fetchTasks();
-  }, [page]);
+    if (
+      modclub &&
+      appState.userProfile &&
+      appState.moderationTasksPageStartIndex > 0
+    ) {
+      dispatch({
+        type: "refetchContentModerationTasks",
+        payload: FILTER_VOTES,
+      });
+    }
+  }, [appState.moderationTasksPage]);
+
+  useEffect(() => {
+    setHasReachedEnd(
+      appState.contentModerationTasks.length < appState.moderationTasksPageSize
+    );
+  }, [appState.contentModerationTasks]);
 
   const nextPage = () => {
-    let nextPageNum = page.page + 1;
-    let start = (nextPageNum - 1) * PAGE_SIZE;
-    setPage({
-      page: nextPageNum,
-      startIndex: start,
-      endIndex: start + PAGE_SIZE,
+    let nextPageNum = appState.moderationTasksPage + 1;
+    let start = (nextPageNum - 1) * appState.moderationTasksPageSize;
+    dispatch({
+      type: "setModerationTasksPage",
+      payload: {
+        page: nextPageNum,
+        startIndex: start,
+        endIndex: start + appState.moderationTasksPageSize,
+      },
     });
   };
-
-  const refetchAll = async () => {
-    setLoading(true);
-    const tasks = await modclub.getTasks(
-      0 as unknown as bigint,
-      page.endIndex as unknown as bigint,
-      FILTER_VOTES
-    );
-    setTasks(tasks);
-    setLoading(false);
-  };
-
-  const fetchTasks = async () => {
-    setLoading(true);
-    const newTasks = await modclub.getTasks(
-      page.startIndex as unknown as bigint,
-      page.endIndex as unknown as bigint,
-      FILTER_VOTES
-    );
-    if (newTasks.length < PAGE_SIZE) setHasReachedEnd(true);
-    setTasks([...tasks, ...newTasks]);
-    setLoading(false);
-  };
-
-  if (loading) {
-    return (
-      <Modal show={true} showClose={false}>
-        <div className="loader is-loading p-5"></div>
-      </Modal>
-    );
-  }
 
   return (
     <>
       <Userstats />
-
-      <Columns>
-        {!tasks ? (
-          <div className="loader is-loading p-4 mt-6" />
-        ) : (
-          tasks.map((task) => (
-            <Task key={task.id} task={task} setVoted={setVoted} level={level} />
-          ))
-        )}
-        {tasks != null && (
-          <Columns.Column size={12}>
-            <Card>
-              <Card.Footer alignItems="center">
-                <div>Showing 1 to {tasks.length} feeds</div>
-                <Button
-                  color="primary"
-                  onClick={() => nextPage()}
-                  className="ml-4 px-7 py-3"
-                  disabled={hasReachedEnd}
-                >
-                  See more
-                </Button>
-              </Card.Footer>
-            </Card>
-          </Columns.Column>
-        )}
-      </Columns>
+      {appState.moderationTasksLoading ||
+      !appState.contentModerationTasks.length ? (
+        <div className="loader is-loading p-5"></div>
+      ) : (
+        <Columns>
+          {appState.contentModerationTasks.length &&
+            appState.contentModerationTasks.map((task) => (
+              <Task key={task.id} task={task} />
+            ))}
+          {appState.contentModerationTasks.length && (
+            <Columns.Column size={12}>
+              <Card>
+                <Card.Footer alignItems="center">
+                  <div>
+                    Showing {appState.contentModerationTasks.length ? 1 : 0} to{" "}
+                    {appState.contentModerationTasks.length} feeds
+                  </div>
+                  <Button
+                    color="primary"
+                    onClick={() => nextPage()}
+                    className="ml-4 px-7 py-3"
+                    disabled={hasReachedEnd}
+                  >
+                    See more
+                  </Button>
+                </Card.Footer>
+              </Card>
+            </Columns.Column>
+          )}
+        </Columns>
+      )}
     </>
   );
 }

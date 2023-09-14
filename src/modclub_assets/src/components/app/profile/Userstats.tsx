@@ -48,7 +48,6 @@ export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
-  console.log("_APPLICATION_STATE::", appState);
   const { rs, wallet, modclub, vesting } = useActors();
 
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);

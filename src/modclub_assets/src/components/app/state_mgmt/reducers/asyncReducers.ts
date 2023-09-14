@@ -1,5 +1,4 @@
 import { Principal } from "@dfinity/principal";
-import { getEnvironmentSpecificValues } from "../../../../utils/api";
 
 export async function asyncReducers(asyncState, action) {
   const state = await Promise.resolve(asyncState);
@@ -30,7 +29,7 @@ export async function asyncReducers(asyncState, action) {
           isAdminUser = true;
         }
       } catch (e) {
-        console.error("Error fetching UserProfile::", e);
+        console.error("Error fetching showAdmins::", e);
         isAdminUser = false;
       }
       return { ...state, isAdminUser };
@@ -133,6 +132,63 @@ export async function asyncReducers(asyncState, action) {
         console.error("Error fetching RS::", e);
       }
       return { ...state, rs };
+    }
+    case "fetchContentModerationTasks": {
+      let newTasks = [];
+      try {
+        if (context.actors.modclub) {
+          const actor = context.actors.modclub.value;
+          newTasks = await actor.getTasks(
+            state.moderationTasksPageStartIndex as unknown as bigint,
+            state.moderationTasksPageEndIndex as unknown as bigint,
+            action.payload // FILTER_VOTES
+          );
+          newTasks = newTasks.filter(
+            (newTask) =>
+              state.contentModerationTasks.find((t) => t.id == newTask.id) ==
+              undefined
+          );
+        }
+      } catch (e) {
+        console.error("Error fetching ContentModerationTasks::", e);
+      }
+      return {
+        ...state,
+        moderationTasksLoading: false,
+        contentModerationTasks: [...newTasks],
+      };
+    }
+    case "refetchContentModerationTasks": {
+      let contentModerationTasks = state.contentModerationTasks;
+      try {
+        if (context.actors.modclub) {
+          const actor = context.actors.modclub.value;
+          contentModerationTasks = await actor.getTasks(
+            state.moderationTasksPageStartIndex as unknown as bigint,
+            state.moderationTasksPageEndIndex as unknown as bigint,
+            action.payload // FILTER_VOTES
+          );
+        }
+      } catch (e) {
+        console.error("Error fetching ContentModerationTasks::", e);
+      }
+      return {
+        ...state,
+        moderationTasksLoading: false,
+        contentModerationTasks,
+      };
+    }
+    case "setModerationTasksLoading": {
+      return { ...state, moderationTasksLoading: action.payload.status };
+    }
+    case "setModerationTasksPage": {
+      return {
+        ...state,
+        moderationTasksLoading: true,
+        moderationTasksPage: action.payload.page,
+        moderationTasksPageStartIndex: action.payload.startIndex,
+        moderationTasksPageEndIndex: action.payload.endIndex,
+      };
     }
     default: {
       throw Error("Unknown action: " + action.type);

@@ -22,13 +22,13 @@ import { setUserToStorage } from "../../../utils/util";
 import { KEY_LOCALSTORAGE_USER } from "../../../contexts/profile";
 import {
   useAppState,
-  useAppStateDispatch,
+  // useAppStateDispatch,
 } from "../../app/state_mgmt/context/state";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
   const appState = useAppState();
-  const dispatch = useAppStateDispatch();
+  // const dispatch = useAppStateDispatch();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
 
@@ -95,7 +95,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       );
 
       setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
-      dispatch({ type: "fetchUserProfile" });
+      // dispatch({ type: "fetchUserProfile" });
 
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });

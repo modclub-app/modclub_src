@@ -10,5 +10,11 @@ export const initialState = {
   claimRewardAmount: 0,
   claimRewardPrice: 0,
   stakeBalance: 0,
-  rs: { level: "", score: 0 },
+  rs: { level: {}, score: 0 },
+  contentModerationTasks: [],
+  moderationTasksLoading: false,
+  moderationTasksPage: 1,
+  moderationTasksPageStartIndex: 0,
+  moderationTasksPageEndIndex: 2,
+  moderationTasksPageSize: 20,
 };
