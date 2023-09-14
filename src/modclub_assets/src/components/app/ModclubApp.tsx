@@ -22,6 +22,7 @@ import { useConnect } from "@connect2icmodclub/react";
 import { useProfile } from "../../contexts/profile";
 import { refreshJwt } from "../../utils/jwt";
 import logger from "../../utils/logger";
+import * as Constants from "../../utils/constant";
 import { useActors } from "../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "./state_mgmt/context/state";
 
@@ -60,6 +61,7 @@ export default function ModclubApp() {
     if (isConnected && modclub) {
       dispatch({ type: "fetchUserProfile" });
       dispatch({ type: "fetchIsUserAdmin" });
+      dispatch({ type: "fetchLeaderBoard", payload: {page: 1}});
       dispatch({ type: "refetchContentModerationTasks", payload: false });
     }
   }, [isConnected, modclub]);
