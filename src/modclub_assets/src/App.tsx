@@ -30,20 +30,14 @@ export default function App() {
     }
   }, []);
 
-  function StatefullModclubApp(props) {
-    return (
-      <StateProvider>
-        <ModclubApp />
-      </StateProvider>
-    );
-  }
-
   return (
-    <Router history={history}>
-      <Switch>
-        <Route path="/app" component={StatefullModclubApp} />
-        <Route path="/" component={External} />
-      </Switch>
-    </Router>
+    <StateProvider>
+      <Router history={history}>
+        <Switch>
+          <Route path="/app" component={ModclubApp} />
+          <Route path="/" component={External} />
+        </Switch>
+      </Router>
+    </StateProvider>
   );
 }
