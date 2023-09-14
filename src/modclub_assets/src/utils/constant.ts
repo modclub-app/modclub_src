@@ -16,3 +16,4 @@ export const SENIOR_MSG_CONFIRM_VOTE = "";
 export const CLAIM_LIMIT_MSG = (value: number) =>
   `Stake ${value} MOD to unlock reward`;
 export const DEFAULT_DATE_FORMAT = "dd MMM yyyy";
+export const LB_PAGE_SIZE = 30;

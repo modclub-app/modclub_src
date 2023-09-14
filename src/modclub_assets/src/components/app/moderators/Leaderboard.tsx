@@ -13,8 +13,9 @@ import placeholder from "../../../../assets/user_placeholder.png";
 import { modclub_types } from "../../../utils/types";
 import { useActors } from "../../../hooks/actors";
 import { getModeratorLeaderboard } from "../../../utils/api";
-
-const PAGE_SIZE = 30;
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import * as Constants from "../../../utils/constant";
+const PAGE_SIZE = Constants.LB_PAGE_SIZE;
 
 const ModeratorProfile = ({
   pic,
@@ -105,23 +106,16 @@ const ModeratorItem = ({
 };
 
 export default function Leaderboard() {
-  const [content, setContent] = useState<modclub_types.ModeratorLeaderboard[]>(
-    []
-  );
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
+  const content = appState.leaderboardContent;
   const [page, setPage] = useState(1);
   const { modclub } = useActors();
 
   useEffect(() => {
-    const getData = async () => {
-      const newProfiles = await getModeratorLeaderboard(
-        modclub,
-        PAGE_SIZE,
-        page
-      );
-      setContent([...content, ...newProfiles]);
-    };
-
-    getData();
+    if(page != 1){
+      dispatch({ type: "fetchLeaderBoard", payload: {page: page}});
+    }
   }, [page]);
 
   return (
