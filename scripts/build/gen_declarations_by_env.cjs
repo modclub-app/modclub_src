@@ -1,13 +1,14 @@
 const fs = require("fs");
 const path = require("path");
 
-const DEV_ENV = process.env.DEV_ENV;
+let DEV_ENV = process.env.DEV_ENV;
 
-console.log(`Current DEV_ENV=${DEV_ENV}`);
 if (!DEV_ENV) {
-  throw new Error("please set DEV_ENV. ( qa | dev | production )");
+  DEV_ENV = "qa";
+  console.warn("DEV_ENV is not set. Default the value to 'qa' ");
 }
 
+console.log(`Current DEV_ENV=${DEV_ENV}`);
 let postfix;
 if (DEV_ENV === "production" || DEV_ENV === "prod") {
   postfix = "";

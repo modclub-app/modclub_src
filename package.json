@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "build": "node scripts/build/gen_declarations_by_env.cjs && webpack",
-    "start": "./scripts/infra/pre_yarn_start.sh && node scripts/build/gen_declarations_by_env.cjs && webpack serve --mode development --config webpack.config.cjs",
+    "start": "export DEV_ENV=${DEV_ENV:-qa} &&  node scripts/build/gen_declarations_by_env.cjs && webpack serve --mode development --config webpack.config.cjs",
     "add_tags": "git tag -a $(date \"+%Y-%m-%d-%H.%M\") -m \"Deployed by ${GITHUB_ACTOR:-$(whoami)}\" && git push --tags",
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
     "deploy_dev": "npm run deploy_gzip_dev",
