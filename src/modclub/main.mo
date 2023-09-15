@@ -1926,18 +1926,48 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       let CT : Float = ModClubParam.CS * Float.fromInt(ModClubParam.MIN_VOTE_POH);
       // moderator dist
       for (userVote in rewardingVotes.vals()) {
-        let modReward = Utils.floatToTokens(
-          (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS
-        );
+        let moderator = switch (stateV2.profiles.get(userVote.userId)) {
+          case (?p) p;
+          case (_)(throw Error.reject("Moderator does not exist"));
+        };
+        let moderatorAcc = { owner = moderator.id; subaccount = null };
+        let moderatorSystemAcc = {
+          owner = Principal.fromActor(this);
+          subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+        };
+        let fullReward = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
+        let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
         let _ = await ledger.icrc1_transfer({
           from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
-          to = { owner = userVote.userId; subaccount = null };
-          amount = modReward;
+          to = moderatorSystemAcc;
+          amount = modDistTokens;
           fee = null;
           memo = null;
           created_at_time = null;
         });
+
+        // Dist of locked part of rewarded tokens
+        let lockedReward = Utils.floatToTokens(fullReward - (fullReward * Constants.REWARD_DEVIATION));
+        let lockRes = await authGuard.getVestingActor().stage_vesting_block(moderatorAcc, lockedReward);
+        switch (lockRes) {
+          case (#ok(lockLen)) {
+            let _ = await ledger.icrc1_transfer({
+              from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+              to = {
+                owner = Principal.fromActor(this);
+                subaccount = ?Constants.ICRC_VESTING_SA;
+              };
+              amount = lockedReward;
+              fee = null;
+              memo = null;
+              created_at_time = null;
+            });
+          };
+          case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedReward)));
+        };
+
       };
+
       let _ = await authGuard.getRSActor().updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
       // treasury dist
       let tokensAmount = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
