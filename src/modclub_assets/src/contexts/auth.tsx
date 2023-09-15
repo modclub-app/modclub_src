@@ -1,12 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Identity } from "@dfinity/agent";
 import type { IDL } from "@dfinity/candid";
-import * as modclub from "../../../declarations/modclub_qa";
-import * as rs from "../../../declarations/rs_qa";
-import * as vesting from "../../../declarations/vesting_qa";
-import * as wallet from "../../../declarations/wallet_qa";
-import canisterIds from '../../../../canister_ids.json';
-
+import { modclub, rs, vesting, wallet } from "../actors_by_env";
+import canisterIds from "../../../../canister_ids.json";
 
 /*
  * Connect2ic provides essential utilities for IC app development

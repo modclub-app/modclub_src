@@ -1,4 +1,4 @@
-// This file is auto generated from scripts/build/gen_declarations_by_env.cjs
+// This file is auto generated from scripts/build/gen_files_by_env.cjs
 // Current DEV_ENV=qa
 
 import * as modclub_types from "../../declarations/modclub_qa/modclub_qa.did";

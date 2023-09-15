@@ -20,7 +20,7 @@ if (DEV_ENV === "production" || DEV_ENV === "prod") {
   throw new Error("Unknown DEV_ENV value.");
 }
 
-const content = `// This file is auto generated from scripts/build/gen_declarations_by_env.cjs
+const content = `// This file is auto generated from scripts/build/gen_files_by_env.cjs
 // Current DEV_ENV=${DEV_ENV}
 
 import * as modclub_types from "../../declarations/modclub${postfix}/modclub${postfix}.did";
@@ -37,5 +37,24 @@ const dest = path.join(
   "../../src/modclub_assets/src/declarations_by_env.ts"
 );
 fs.writeFileSync(dest, content);
-
 console.log(`${dest} has been generated. `);
+
+// === generate actors_by_env.ts
+const actors_by_env_content = `// This file is auto generated from scripts/build/gen_files_by_env.cjs
+// Current DEV_ENV=${DEV_ENV}
+
+import * as modclub from "../../declarations/modclub${postfix}";
+import * as rs from "../../declarations/rs${postfix}";
+import * as vesting from "../../declarations/vesting${postfix}";
+import * as wallet from "../../declarations/wallet${postfix}";
+
+export { modclub, rs, vesting, wallet };
+`;
+
+// Write to the desired file
+const actors_by_env_dest = path.join(
+  __dirname,
+  "../../src/modclub_assets/src/actors_by_env.ts"
+);
+fs.writeFileSync(actors_by_env_dest, actors_by_env_content);
+console.log(`${actors_by_env_dest} has been generated. `);
