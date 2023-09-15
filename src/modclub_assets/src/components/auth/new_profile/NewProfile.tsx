@@ -156,7 +156,11 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
                     <Heading marginless subtitle>
                       Have an existing Modclub account ?
                     </Heading>
-                    <Button color="primary" onClick={associateAccount}>
+                    <Button
+                      color="primary"
+                      onClick={associateAccount}
+                      disabled={!modclub}
+                    >
                       Migrate Account
                     </Button>
                   </Card.Content>
