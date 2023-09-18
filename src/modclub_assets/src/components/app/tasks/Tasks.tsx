@@ -166,16 +166,15 @@ export default function Tasks() {
   return (
     <>
       <Userstats />
-      {appState.moderationTasksLoading ||
-      !appState.contentModerationTasks.length ? (
+      {appState.moderationTasksLoading ? (
         <div className="loader is-loading p-5"></div>
       ) : (
         <Columns>
-          {appState.contentModerationTasks.length &&
+          {appState.contentModerationTasks.length > 0 &&
             appState.contentModerationTasks.map((task) => (
               <Task key={task.id} task={task} />
             ))}
-          {appState.contentModerationTasks.length && (
+          {appState.contentModerationTasks.length > 0 && (
             <Columns.Column size={12}>
               <Card>
                 <Card.Footer alignItems="center">
