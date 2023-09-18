@@ -21,9 +21,9 @@ read env
 
 case $env in 
     "p" | "P")
-        echo "You have selected prod environment. Do you want to proceed?"
+        echo "You have selected prod environment. Do you want to proceed? ('y' or 'n'))"
         read confirmation
-        if [ "$confirmation" != "y" ] || [ "$confirmation" != "Y" ]
+        if [ "$confirmation" != "y" ] && [ "$confirmation" != "Y" ]
         then
             echo "Exiting the process"
             exit

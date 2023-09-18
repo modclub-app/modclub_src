@@ -35,3 +35,8 @@ candid/
 #Ignore auto gen file
 src/modclub_assets/src/declarations_by_env.ts
 src/modclub_assets/src/actors_by_env.ts
+
+#Ignore auto gen files for upgrade bucket script
+scripts/upgrade-bucket/.upgrade_bucket.sh.swp
+scripts/upgrade-bucket/canister_ids.json
+scripts/upgrade-bucket/dfx.json
