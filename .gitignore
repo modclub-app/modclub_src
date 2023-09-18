@@ -34,3 +34,4 @@ candid/
 
 #Ignore auto gen file
 src/modclub_assets/src/declarations_by_env.ts
+src/modclub_assets/src/actors_by_env.ts

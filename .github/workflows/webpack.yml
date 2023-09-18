@@ -31,4 +31,5 @@ jobs:
 
       - name: Build
         run: |
+          NODE_ENV=production node scripts/build/gen_files_by_env.cjs
           NODE_ENV=production DEPLOYMENT_TAG=test npx webpack
