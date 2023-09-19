@@ -103,8 +103,10 @@ const ConfirmationModal = ({
   useEffect(() => {
     const checkPoh = async ()=>{
       try {
-        modclub && await modclub.isReservedPOHContent(packageId);
-        setReserved(true);
+        if(modclub){
+          const res =await modclub.isReservedPOHContent(packageId);
+          setReserved(res);
+        }
       } catch (error) {
         setReserved(false);
       }

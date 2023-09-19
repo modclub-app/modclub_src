@@ -41,6 +41,7 @@ const ApplicantSnippet = ({
   const [message, setMessage] = useState(null);
   const [reserved, setReserved] = useState(false);
   const { modclub } = useActors();
+
   useEffect(() => {
     const fetchData = async () => {
       console.log(
@@ -56,8 +57,10 @@ const ApplicantSnippet = ({
     };
     const checkPoh = async ()=>{
       try {
-        modclub && await modclub.isReservedPOHContent(applicant.packageId);
-        setReserved(true);
+        if(modclub){
+          const res =await modclub.isReservedPOHContent(applicant.packageId);
+          setReserved(res);
+        }
       } catch (error) {
         setReserved(false);
       }
