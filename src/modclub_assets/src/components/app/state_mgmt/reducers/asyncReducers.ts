@@ -1,5 +1,8 @@
 import { Principal } from "@dfinity/principal";
-import { getEnvironmentSpecificValues, getModeratorLeaderboard } from "../../../../utils/api";
+import {
+  getEnvironmentSpecificValues,
+  getModeratorLeaderboard,
+} from "../../../../utils/api";
 import * as Constants from "../../../../utils/constant";
 
 export async function asyncReducers(asyncState, action) {
@@ -145,7 +148,7 @@ export async function asyncReducers(asyncState, action) {
             Constants.LB_PAGE_SIZE,
             action.payload.page
           );
-          leaderboardContent = [...leaderboardContent, ...newProfile]
+          leaderboardContent = [...leaderboardContent, ...newProfile];
         }
       } catch (e) {
         console.error("Error fetching RS::", e);
@@ -159,7 +162,8 @@ export async function asyncReducers(asyncState, action) {
           const actor = context.actors.modclub.value;
           newTasks = await actor.getTasks(
             state.moderationTasksPageStartIndex as unknown as bigint,
-            state.moderationTasksPageEndIndex as unknown as bigint,
+            (state.moderationTasksPageStartIndex +
+              state.moderationTasksPageSize) as unknown as bigint,
             action.payload // FILTER_VOTES
           );
           newTasks = newTasks.filter(
@@ -184,7 +188,8 @@ export async function asyncReducers(asyncState, action) {
           const actor = context.actors.modclub.value;
           contentModerationTasks = await actor.getTasks(
             state.moderationTasksPageStartIndex as unknown as bigint,
-            state.moderationTasksPageEndIndex as unknown as bigint,
+            (state.moderationTasksPageStartIndex +
+              state.moderationTasksPageSize) as unknown as bigint,
             action.payload // FILTER_VOTES
           );
         }
@@ -206,7 +211,6 @@ export async function asyncReducers(asyncState, action) {
         moderationTasksLoading: true,
         moderationTasksPage: action.payload.page,
         moderationTasksPageStartIndex: action.payload.startIndex,
-        moderationTasksPageEndIndex: action.payload.endIndex,
       };
     }
     default: {

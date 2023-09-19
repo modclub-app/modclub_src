@@ -16,6 +16,5 @@ export const initialState = {
   moderationTasksLoading: false,
   moderationTasksPage: 1,
   moderationTasksPageStartIndex: 0,
-  moderationTasksPageEndIndex: 2,
   moderationTasksPageSize: 20,
 };

@@ -148,7 +148,7 @@ export default function Tasks() {
     setHasReachedEnd(
       appState.contentModerationTasks.length < appState.moderationTasksPageSize
     );
-  }, [appState.contentModerationTasks]);
+  }, [appState.contentModerationTasks.length]);
 
   const nextPage = () => {
     let nextPageNum = appState.moderationTasksPage + 1;
@@ -158,7 +158,6 @@ export default function Tasks() {
       payload: {
         page: nextPageNum,
         startIndex: start,
-        endIndex: start + appState.moderationTasksPageSize,
       },
     });
   };

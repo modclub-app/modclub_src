@@ -212,7 +212,7 @@ export default function Sidebar() {
 
         <hr />
 
-        {isConnected && appState.userProfile ? <SidebarUser /> : <SignIn />}
+        {isConnected && appState.userProfile && <SidebarUser />}
 
         <Menu.List>
           <Link to="/app">
