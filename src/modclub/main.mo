@@ -2027,7 +2027,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Bool {
     return voteManager.isReservedPOHContent(packageId, caller);
   };
-  
+
   public shared ({ caller }) func issueJwt() : async Text {
     Helpers.logMessage(
       canistergeekLogger,
