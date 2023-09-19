@@ -1,6 +1,7 @@
 import Buffer "mo:base/Buffer";
 import Float "mo:base/Float";
 import Debug "mo:base/Debug";
+import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import ModClubParam "../parameters/params";
@@ -94,6 +95,17 @@ module VoteModule {
       return #ok(reservation);
     };
 
+    public func isReservedPOHContent(
+      packageId : Text,
+      userId : Principal
+    ) : Bool {
+      let id = getVoteId(userId, packageId);
+      if (Utils.isReserved(Principal.toText(userId), Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
+        return true
+      };
+      return false;
+    };
+
     public func votePohContent(
       userId : Principal,
       env : CommonTypes.ENV,
@@ -102,16 +114,12 @@ module VoteModule {
       violatedRules : [Types.PohRulesViolated],
       pohContentQueueManager : QueueManager.QueueManager
     ) : async Result.Result<Bool, VoteTypes.POHVoteError> {
-      if (checkPohUserHasVoted(userId, packageId)) {
-        return #err(#userAlreadyVoted);
-      };
-
       if (pohContentQueueManager.getContentStatus(packageId) != #new) {
         return #err(#contentAlreadyReviewed);
       };
 
       let id = getVoteId(userId, packageId);
-      if (not Utils.isReserved(Principal.toText(userId), Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
+      if (not isReservedPOHContent(packageId, userId)) {
         return #err(#mustMakeReservation);
       };
 
@@ -267,6 +275,13 @@ module VoteModule {
       expireTime : Types.Timestamp
     ) : async Types.Reserved {
       let now = Helpers.timeNow();
+      let count = getVoteCountForPoh(caller, id);
+      if(count.hasVoted == true){
+        throw Error.reject("Reservation failed");
+      };
+      if(isReservedPOHContent(id, caller)){
+        throw Error.reject("Already take reservation");
+      };
       let reservation : Types.Reserved = {
         id = id;
         profileId = Principal.toText(caller);
@@ -275,7 +290,6 @@ module VoteModule {
         reservedExpiryTime = now + expireTime;
       };
       state.reservedPohPackages.add(reservation);
-
       return reservation;
     };
 

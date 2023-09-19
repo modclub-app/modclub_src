@@ -8,6 +8,7 @@ import {
   Card,
   Button,
   Icon,
+  Notification,
 } from "react-bulma-components";
 import Userstats from "../profile/Userstats";
 import FilterBar from "../../common/filterbar/FilterBar";
@@ -20,6 +21,8 @@ import { useConnect } from "@connect2icmodclub/react";
 import { Principal } from "@dfinity/principal";
 import { fetchObjectUrl } from "../../../utils/jwt";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import { Reserved } from "@dfinity/candid/lib/cjs/idl";
+import { ReservedPohButton } from "./ReservedPohButton";
 
 const PAGE_SIZE = 9;
 
@@ -35,6 +38,8 @@ const ApplicantSnippet = ({
     : null;
   const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
   const [urlObject, setUrlObject] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [reserved, setReserved] = useState(false);
   const { modclub } = useActors();
   useEffect(() => {
     const fetchData = async () => {
@@ -49,73 +54,70 @@ const ApplicantSnippet = ({
       const urlObject = await fetchObjectUrl(modclub, imageUrl);
       setUrlObject(urlObject);
     };
+    const checkPoh = async ()=>{
+      try {
+        modclub && await modclub.isReservedPOHContent(applicant.packageId);
+        setReserved(true);
+      } catch (error) {
+        setReserved(false);
+      }
+    }
     fetchData();
+    checkPoh();
     return () => {
       setUrlObject(null);
     };
   }, [imageUrl]);
 
+  const onReservedPoh = async ()=>{
+    try {
+      await modclub.createPohVoteReservation(applicant.packageId);
+      setReserved(true);
+      setMessage({success: true, value: "Reserved POH successful"});
+    } catch (error) {
+      setReserved(false);
+      setMessage({success: false, value: "Reserved POH unsuccessful"});
+    }
+  }
+
   return (
-    <Link
-      to={`/app/poh/${applicant.packageId}`}
-      className="card is-flex is-flex-direction-column is-justify-content-flex-end"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 70%), url(${
-          imageUrl ? urlObject : placeholder
-        })`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-      }}
+    <div>
+    {message && (
+      <Notification
+        color={message.success ? "success" : "danger"}
+        textAlign="center"
+      >
+        {message.value}
+      </Notification>
+    )}
+      <ReservedPohButton 
+    packageId={applicant.packageId}
+    Text={"View"}
+    imageUrl={imageUrl}
+    urlObject={urlObject}
+    createdAt={applicant.createdAt}
+    isEnable={reserved}
+    />
+    {!reserved && (
+      <Button.Group
+      className="is-flex-wrap-nowrap mt-5"
+      style={{ paddingBottom: 10 }}
     >
-      <Card.Header
-        justifyContent="start"
-        style={{ marginBottom: "auto", boxShadow: "none" }}
-      ></Card.Header>
-
-      <Card.Content style={{ paddingTop: "65%" }}>
-        {/*<Heading subtitle marginless>
-          {userName[0]}
-        </Heading>
-        <p className="is-size-7 mt-2">
-          {aboutUser}
-        </p> */}
-      </Card.Content>
-
-      <Card.Footer className="is-block">
-        <Card.Header.Title>
-          <span style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}>
-            Submitted {formatDate(createdAt)}
-          </span>
-        </Card.Header.Title>
-
-        <Button.Group
-          className="is-flex-wrap-nowrap mt-5"
-          style={{ paddingBottom: 10 }}
-        >
-          <Button
-            fullwidth
-            className="is-outlined"
-            style={{ paddingLeft: 0, paddingRight: 0 }}
-          >
-            <Icon align="left" size="small" className="has-text-white">
-              <span className="material-icons">local_atm</span>
-            </Icon>
-            <span>{"Rq Stake: " + applicant.minStake}</span>
-          </Button>
-          <Button
-            fullwidth
-            className="is-outlined"
-            style={{ paddingLeft: 0, paddingRight: 0 }}
-          >
-            <Icon align="left" size="small" className="has-text-white">
-              <span className="material-icons">stars</span>
-            </Icon>
-            <span>{"Reward: " + reward}</span>
-          </Button>
-        </Button.Group>
-      </Card.Footer>
-    </Link>
+  
+      <Button
+        fullwidth
+        className="is-outlined"
+        style={{ paddingLeft: 0, paddingRight: 0 }}
+        onClick={onReservedPoh}
+      >
+        <Icon align="left" size="small" className="has-text-white">
+          Reserve
+        </Icon>
+      </Button>
+    </Button.Group>
+    )}
+    
+    </div>
   );
 };
 

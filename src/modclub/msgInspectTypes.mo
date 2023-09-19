@@ -29,6 +29,7 @@ module {
     #collectCanisterMetrics : () -> ();
     #configurePohForProvider : () -> (Principal, [Text], Nat, Bool);
     #createPohVoteReservation : () -> (Text);
+    #isReservedPOHContent : () -> (Text);
     #deregisterProvider : () -> ();
     #downloadSupport : () -> (Text, Text, Nat, Nat);
     #editProviderAdmin : () -> (Principal, Principal, Text);

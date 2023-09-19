@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useParams } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useFormState } from "react-final-form";
 import { getViolatedRules } from "../../../utils/util";
@@ -29,6 +29,7 @@ const ConfirmationModal = ({
   const { packageId } = useParams();
   const { values } = useFormState();
   const [submitting, setSubmitting] = useState(null);
+  const [reserved, setReserved] = useState(false);
   const [message, setMessage] = useState(null);
   const history = useHistory();
   const { modclub } = useActors();
@@ -88,6 +89,29 @@ const ConfirmationModal = ({
     }
   };
 
+  const onReservedPoh = async ()=>{
+    try {
+      await modclub.createPohVoteReservation(packageId);
+      setReserved(true);
+      setMessage({success: true, value: "Reserved POH successful"});
+    } catch (error) {
+      setReserved(false);
+      setMessage({success: false, value: "Reserved POH unsuccessful"});
+    }
+  }
+
+  useEffect(() => {
+    const checkPoh = async ()=>{
+      try {
+        modclub && await modclub.isReservedPOHContent(packageId);
+        setReserved(true);
+      } catch (error) {
+        setReserved(false);
+      }
+    }
+    checkPoh();
+  }, []);
+
   return (
     <>
       <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
@@ -103,7 +127,8 @@ const ConfirmationModal = ({
 
             {children}
           </Modal.Card.Body>
-          <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
+          {reserved ? (
+            <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
             <Button.Group>
               <Button color="dark" onClick={toggle}>
                 Cancel
@@ -118,6 +143,22 @@ const ConfirmationModal = ({
               </Button>
             </Button.Group>
           </Modal.Card.Footer>
+          ):(
+            <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
+            <Button.Group>
+             
+              <Button
+                color="primary"
+                disabled={isDisabled()}
+                className={submitting && "is-loading"}
+                onClick={onReservedPoh}
+              >
+                Reserve
+              </Button>
+            </Button.Group>
+          </Modal.Card.Footer>
+          )}
+          
         </Modal.Card>
 
         {message && (

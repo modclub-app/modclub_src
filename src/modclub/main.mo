@@ -2022,6 +2022,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return await voteManager.createPohVoteReservation(env, packageId, caller);
   };
 
+  public query ({ caller }) func isReservedPOHContent(
+    packageId : Text
+  ) : async Bool {
+    return voteManager.isReservedPOHContent(packageId, caller);
+  };
+  
   public shared ({ caller }) func issueJwt() : async Text {
     Helpers.logMessage(
       canistergeekLogger,
