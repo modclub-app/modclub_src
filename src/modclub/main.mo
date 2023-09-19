@@ -2027,7 +2027,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Bool {
     return voteManager.isReservedPOHContent(packageId, caller);
   };
-  
+
   public shared ({ caller }) func issueJwt() : async Text {
     Helpers.logMessage(
       canistergeekLogger,
@@ -2594,6 +2594,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func validate(input : Any) : async CommonTypes.Validate {
     return #Ok("success");
   };
+
+  // Canister Geek timer collection of metrics
+  ignore Timer.setTimer(
+    #seconds 0,
+    func() : async () {
+      canistergeekMonitor.collectMetrics();
+      ignore Timer.recurringTimer(
+        #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
+        func() : async () { canistergeekMonitor.collectMetrics() }
+      );
+    }
+  );
 
   system func inspect({
     arg : Blob;
