@@ -198,6 +198,9 @@ module Helpers {
         "vd5zo-22yle-so7c7-cnleg-vjzme-vjh2v-2sc7q-76zcs-ul27t-axccm-aqe"
       ),
       Principal.fromText(
+        "rticr-ll5pl-u37cr-zipyn-tun6r-gux4r-6j2pd-yfhu3-5mpzf-xmk6c-lqe"
+      ),
+      Principal.fromText(
         "dowzh-nyaaa-aaaai-qnowq-cai"
       )
     ];
