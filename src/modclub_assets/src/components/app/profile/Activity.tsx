@@ -63,7 +63,7 @@ const Table = ({
                   <td>
                     <Snippet string={item.title[0]} truncate={15} />
                   </td>
-                  <td>{formatDate(item.createdAt)}</td>
+                  <td>{formatDate(item.vote.createdAt)}</td>
                   <td>{"new" in item.status ? "-" : Number(item.reward)}</td>
                   <td>
                     {"new" in item.status
