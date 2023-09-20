@@ -707,7 +707,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
   };
 
-  public shared ({ caller }) func getTasks(
+  public query ({ caller }) func getTasks(
     start : Nat,
     end : Nat,
     filterVoted : Bool
@@ -740,7 +740,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      await ContentManager.getTasks({
+      ContentManager.getTasks({
         caller;
         getVoteCount;
         globalState = stateV2;
@@ -2027,7 +2027,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Bool {
     return voteManager.isReservedPOHContent(packageId, caller);
   };
-  
+
   public shared ({ caller }) func issueJwt() : async Text {
     Helpers.logMessage(
       canistergeekLogger,
