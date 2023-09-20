@@ -148,10 +148,9 @@ export default function Task() {
     setShowReserveModal(!showReserveModal);
   };
   const makeReserved = async () => {
-    modclub.reserveContent(taskId);
     await modclub.reserveContent(taskId);
     setReserved(true);
-    setShowReserveModal(!showReserveModal);
+    toggleReserveModal();
   };
 
   useEffect(() => {
@@ -362,9 +361,7 @@ export default function Task() {
                       <Button
                         color="primary"
                         fullwidth={true}
-                        onClick={() => {
-                          toggleReserveModal();
-                        }}
+                        onClick={toggleReserveModal}
                         disabled={!!reserved || !!full || !!task.hasVoted[0]}
                       >
                         Reserve

@@ -28,10 +28,71 @@ module ContentModule {
     userId : Principal,
     contentId : Text,
     voteCount : Types.VoteCount,
-    state : GlobalState.State,
+    globalState : GlobalState.State,
     storage : StorageSolution.StorageSolution
   ) : async ?Types.ContentPlus {
-    return await getContentPlus(contentId, ?userId, voteCount, state, storage);
+    switch (globalState.content.get(contentId)) {
+      case (?content) {
+        switch (globalState.providers.get(content.providerId)) {
+          case (?provider) {
+            let chunkedContent = await storage.getChunkedContent(content.id);
+            let result : Types.ContentPlus = {
+              id = content.id;
+              providerName = provider.name;
+              minStake = provider.settings.minStaked;
+              requiredVotes = provider.settings.requiredVotes;
+              voteCount = Nat.max(
+                voteCount.approvedCount,
+                voteCount.rejectedCount
+              );
+              hasVoted = ?voteCount.hasVoted;
+              providerId = content.providerId;
+              contentType = content.contentType;
+              status = content.status;
+              sourceId = content.sourceId;
+              title = content.title;
+              createdAt = content.createdAt;
+              updatedAt = content.updatedAt;
+              text = do ? {
+                switch (globalState.textContent.get(content.id)) {
+                  case (?entry) {
+                    var textContent = "";
+                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
+                      textContent #= Option.get(Text.decodeUtf8(blobChunk), "");
+                    };
+                    textContent;
+                  };
+                  case (_) "";
+                };
+              };
+              image = do ? {
+                switch (globalState.imageContent.get(content.id)) {
+                  case (?entry) {
+                    let imageContent = Buffer.Buffer<Nat8>(1);
+                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
+                      imageContent.append(Buffer.fromArray(Blob.toArray(blobChunk)));
+                    };
+                    {
+                      data = Buffer.toArray(imageContent);
+                      imageType = entry.image.imageType;
+                    };
+                  };
+                  case (null) {
+                    { data = []; imageType = "" };
+                  };
+                };
+              };
+              voteParameters = content.voteParameters;
+              reservedList = content.reservedList;
+              receipt = content.receipt;
+            };
+            return ?result;
+          };
+          case (_) null;
+        };
+      };
+      case (_) null;
+    };
   };
 
   public func submitTextOrHtmlContent(
@@ -135,7 +196,7 @@ module ContentModule {
           case (null)();
           case (?result) {
             let voteCount = arg.getVoteCount(cid, ?arg.providerId);
-            switch (await getContentPlus(cid, ?arg.providerId, voteCount, arg.globalState, arg.storageSolution)) {
+            switch (getContentPlus(cid, ?arg.providerId, voteCount, arg.globalState)) {
               case (?result) {
                 if (result.status == arg.status) {
                   buf.add(result);
@@ -173,7 +234,7 @@ module ContentModule {
     for (cid in contentQueue.keys()) {
       if (count < 11) {
         let voteCount = getVoteCount(cid, ?caller);
-        let cp = await getContentPlus(cid, ?caller, voteCount, globalState, storage);
+        let cp = getContentPlus(cid, ?caller, voteCount, globalState);
         switch (cp) {
           case (?result) {
             buf.add(result);
@@ -270,7 +331,7 @@ module ContentModule {
   ) : async () {
     switch (arg.globalState.content.get(contentId)) {
       case (?content) {
-        let contentPlus : ?Types.ContentPlus = await getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState, arg.storageSolution);
+        let contentPlus : ?Types.ContentPlus = getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState);
         switch (contentPlus) {
           case (?provider) {
             let oldReserved : [Types.Reserved] = provider.reservedList;
@@ -382,14 +443,12 @@ module ContentModule {
     contentId : Types.ContentId,
     caller : ?Principal,
     voteCount : Types.VoteCount,
-    globalState : GlobalState.State,
-    storage : StorageSolution.StorageSolution
-  ) : async ?Types.ContentPlus {
+    globalState : GlobalState.State
+  ) : ?Types.ContentPlus {
     switch (globalState.content.get(contentId)) {
       case (?content) {
         switch (globalState.providers.get(content.providerId)) {
           case (?provider) {
-            let chunkedContent = await storage.getChunkedContent(content.id);
             let result : Types.ContentPlus = {
               id = content.id;
               providerName = provider.name;
@@ -407,35 +466,8 @@ module ContentModule {
               title = content.title;
               createdAt = content.createdAt;
               updatedAt = content.updatedAt;
-              text = do ? {
-                switch (globalState.textContent.get(content.id)) {
-                  case (?entry) {
-                    var textContent = "";
-                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
-                      textContent #= Option.get(Text.decodeUtf8(blobChunk), "");
-                    };
-                    textContent;
-                  };
-                  case (_) "";
-                };
-              };
-              image = do ? {
-                switch (globalState.imageContent.get(content.id)) {
-                  case (?entry) {
-                    let imageContent = Buffer.Buffer<Nat8>(1);
-                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
-                      imageContent.append(Buffer.fromArray(Blob.toArray(blobChunk)));
-                    };
-                    {
-                      data = Buffer.toArray(imageContent);
-                      imageType = entry.image.imageType;
-                    };
-                  };
-                  case (null) {
-                    { data = []; imageType = "" };
-                  };
-                };
-              };
+              text = ?"";
+              image = ?{ data = []; imageType = "" };
               voteParameters = content.voteParameters;
               reservedList = content.reservedList;
               receipt = content.receipt;
@@ -452,7 +484,7 @@ module ContentModule {
   // Retrieves only new content that needs to be approved ( i.e tasks )
   public func getTasks(
     arg : ContentTypes.TasksArg
-  ) : async Result.Result<[Types.ContentPlus], Text> {
+  ) : Result.Result<[Types.ContentPlus], Text> {
     if (arg.start < 0 or arg.end < 0 or arg.start > arg.end) {
       return #err("Invalid range");
     };
@@ -486,7 +518,7 @@ module ContentModule {
     for (content in Array.sort(Buffer.toArray<Types.Content>(items), sortAsc).vals()) {
       if (index >= arg.start and index <= arg.end and count < maxReturn) {
         let voteCount = arg.getVoteCount(content.id, ?arg.caller);
-        switch (await getContentPlus(content.id, ?arg.caller, voteCount, arg.globalState, arg.storageSolution)) {
+        switch (getContentPlus(content.id, ?arg.caller, voteCount, arg.globalState)) {
           case (?content) {
             result.add(content);
             count := count + 1;
