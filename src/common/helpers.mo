@@ -195,6 +195,9 @@ module Helpers {
         "ov3ez-uxdlq-nu3dd-tpoic-653wi-seo7t-uwqwz-fcoou-homaw-sku6s-nae"
       ),
       Principal.fromText(
+        "vd5zo-22yle-so7c7-cnleg-vjzme-vjh2v-2sc7q-76zcs-ul27t-axccm-aqe"
+      ),
+      Principal.fromText(
         "dowzh-nyaaa-aaaai-qnowq-cai"
       )
     ];
