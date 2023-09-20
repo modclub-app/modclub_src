@@ -1909,6 +1909,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             } else {
               votedCorrect := false;
             };
+            Helpers.logMessage(
+              canistergeekLogger,
+              "User:"# Principal.toText(v.userId) #":Voting for packageId: " # packageId #":Decision:"#debug_show(v.decision)#":VoteCorrect:"# Bool.toText(votedCorrect),
+              #info
+            );
             usersToRewardRS.add({
               userId = v.userId;
               votedCorrect = votedCorrect;
@@ -1923,6 +1928,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         sumRS := sumRS + userVote.rsBeforeVoting;
       };
 
+
       let CT : Float = ModClubParam.CS * Float.fromInt(ModClubParam.MIN_VOTE_POH);
       // moderator dist
       for (userVote in rewardingVotes.vals()) {
@@ -1936,6 +1942,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
         };
         let fullReward = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
+        Helpers.logMessage(
+          canistergeekLogger,
+          "UserID:"#Principal.toText(userVote.userId)#"RS Before Vote POH:"# Float.toText(userVote.rsBeforeVoting)#"Full rewards"# Float.toText(fullReward),
+          #info
+        );
         let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
         let _ = await ledger.icrc1_transfer({
           from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
