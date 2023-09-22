@@ -1214,7 +1214,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public query ({ caller }) func verifyUserHumanityForModclub() : async PohTypes.VerifyHumanityResponse {
+  public shared ({ caller }) func verifyUserHumanityForModclub() : async PohTypes.VerifyHumanityResponse {
     // if Modclub hasn't subscribed for POHcallback, subscribe it
     switch (pohEngine.getPohCallback(Principal.fromActor(this))) {
       case (#err(er)) {

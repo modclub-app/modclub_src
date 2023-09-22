@@ -422,19 +422,16 @@ module PohModule {
         "token:" # providerUserId # Principal.toText(providerId) #
         Int.toText(Helpers.timeNow())
       );
-      switch (state.token2ProviderAndUserData.get(token)) {
-        case (null) {
-          // recording the time when the first time token was generated
-          let providerUser : PohTypes.PohProviderAndUserData = {
-            token = token;
-            providerUserId = providerUserId;
-            providerId = providerId;
-            generatedAt = Helpers.timeNow();
-          };
-          state.token2ProviderAndUserData.put(token, providerUser);
-        };
-        case (_)();
+
+      // recording the time when the first time token was generated
+      let providerUser : PohTypes.PohProviderAndUserData = {
+        token = token;
+        providerUserId = providerUserId;
+        providerId = providerId;
+        generatedAt = Helpers.timeNow();
       };
+      state.token2ProviderAndUserData.put(token, providerUser);
+
       return token;
     };
 
