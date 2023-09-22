@@ -1214,7 +1214,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public shared ({ caller }) func verifyUserHumanityForModclub() : async PohTypes.VerifyHumanityResponse {
+  public query ({ caller }) func verifyUserHumanityForModclub() : async PohTypes.VerifyHumanityResponse {
     // if Modclub hasn't subscribed for POHcallback, subscribe it
     switch (pohEngine.getPohCallback(Principal.fromActor(this))) {
       case (#err(er)) {
@@ -1230,11 +1230,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       Principal.toText(caller),
       caller
     );
-    let response = await verifyHumanity(Principal.toText(caller));
-    return {
-      status = response.status;
-      token = response.token;
-      rejectionReasons = response.rejectionReasons;
+
+    switch (pohVerificationRequestHelper(Principal.toText(caller), Principal.fromActor(this))) {
+      case (#ok(verificationResponse)) {
+        return verificationResponse;
+      };
+      case (_) {
+        throw Error.reject(
+          "Either Poh is not configured or POH Callback is not registered for provider."
+        );
+      };
     };
   };
 
@@ -1911,7 +1916,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             };
             Helpers.logMessage(
               canistergeekLogger,
-              "User:"# Principal.toText(v.userId) #":Voting for packageId: " # packageId #":Decision:"#debug_show(v.decision)#":VoteCorrect:"# Bool.toText(votedCorrect),
+              "User:" # Principal.toText(v.userId) # ":Voting for packageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(votedCorrect),
               #info
             );
             usersToRewardRS.add({
@@ -1928,7 +1933,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         sumRS := sumRS + userVote.rsBeforeVoting;
       };
 
-
       let CT : Float = ModClubParam.CS * Float.fromInt(ModClubParam.MIN_VOTE_POH);
       // moderator dist
       for (userVote in rewardingVotes.vals()) {
@@ -1944,7 +1948,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         let fullReward = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
         Helpers.logMessage(
           canistergeekLogger,
-          "UserID:"#Principal.toText(userVote.userId)#"RS Before Vote POH:"# Float.toText(userVote.rsBeforeVoting)#"Full rewards"# Float.toText(fullReward),
+          "UserID:" #Principal.toText(userVote.userId) # "RS Before Vote POH:" # Float.toText(userVote.rsBeforeVoting) # "Full rewards" # Float.toText(fullReward),
           #info
         );
         let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
