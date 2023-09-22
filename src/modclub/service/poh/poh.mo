@@ -307,7 +307,7 @@ module PohModule {
           };
           var token : ?Text = null;
           if (
-            overAllStatus == #startPoh or overAllStatus == #notSubmitted or overAllStatus == #expired
+            overAllStatus == #startPoh or overAllStatus == #notSubmitted or overAllStatus == #expired or overAllStatus == #rejected
           ) {
             token := ?pohGenerateUniqueToken(providerUserId, providerId);
           };

@@ -379,7 +379,7 @@ module {
   };
 
   public type Activity = {
-    vote : Vote;
+    vote : VoteV2;
     providerId : ProviderId;
     providerName : Text;
     contentType : ContentType;

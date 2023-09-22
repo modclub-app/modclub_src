@@ -263,7 +263,7 @@ module ModeratorModule {
                             case (true) Float.fromInt(
                               provider.settings.minStaked
                             );
-                            case (false) -1 * Float.fromInt(
+                            case (false) 0 * Float.fromInt(
                               provider.settings.minStaked
                             );
                           };
