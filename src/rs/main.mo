@@ -190,6 +190,11 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     if ((not isSeniorBefore) and clampedRS > Constants.JUNIOR_THRESHOLD) {
       await publish("moderator_became_senior", userId);
     };
+    
+    Helpers.logMessage(
+      canistergeekLogger,"Update RS UserId: " # Principal.toText(userId) # " currentRS:" # Int.toText(currentRS) # " UpdateRS:" # Int.toText(updateRS),
+      #info
+    );
 
     return {
       userId = userId;
