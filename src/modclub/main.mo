@@ -297,19 +297,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     ProviderManager.deregisterProvider(caller, stateV2, canistergeekLogger);
   };
 
-  public shared ({ caller }) func updateSettings(
-    providerId : Principal,
-    updatedSettings : Types.ProviderSettings
-  ) : async Types.ProviderSettingResult {
-    await ProviderManager.updateProviderSettings(
-      providerId,
-      updatedSettings,
-      caller,
-      stateV2,
-      canistergeekLogger
-    );
-  };
-
   public shared ({ caller }) func getProvider(providerId : Principal) : async Types.ProviderPlus {
     await ProviderManager.getProvider(providerId, stateV2);
   };
@@ -360,9 +347,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   private func getVoteParamIdByLevel(
-    level : Types.Level
+    level : ?Types.Level
   ) : Text {
-    return contentState.getVoteParamIdByLevel(level, stateV2);
+    let voteParamId = switch (level) {
+      case(?lv){
+        return contentState.getVoteParamIdByLevel(lv, stateV2);
+      };
+      case(null){
+        return contentState.getVoteParamIdByLevel(#simple, stateV2);
+      };
+    };
+    
+    return voteParamId;
   };
 
   private func getVoteParamsIdByContentId(contentId : Types.ContentId) : ?Types.VoteParamsId {
@@ -514,7 +510,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func submitText(
     sourceId : Text,
     text : Text,
-    title : ?Text
+    title : ?Text,
+    complexity: ?Types.Level
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -534,7 +531,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
     return await ContentManager.submitTextOrHtmlContent(
@@ -558,7 +555,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func submitHtmlContent(
     sourceId : Text,
     htmlContent : Text,
-    title : ?Text
+    title : ?Text,
+    complexity : ?Types.Level
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -577,7 +575,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
     var contentID = await ContentManager.submitTextOrHtmlContent(
@@ -603,7 +601,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     sourceId : Text,
     image : [Nat8],
     imageType : Text,
-    title : ?Text
+    title : ?Text,
+    complexity : ?Types.Level
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -623,7 +622,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
     return await ContentManager.submitImage(

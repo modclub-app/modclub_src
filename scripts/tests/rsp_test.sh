@@ -102,7 +102,7 @@ dfx canister call modclub_qa topUpProviderReserve '( record { amount = 10_000'$T
 declare P_BAL_BEFORE_SUBMIT=$(dfx canister call modclub_qa providerSaBalance '("RESERVE",null)')
 echo "Provider RESERVE balance: $P_BAL_BEFORE_SUBMIT"
 for i in {1..15}; do
-    dfx canister call modclub_qa submitText "(\""$i"\",\"Text"$i"\", opt \"TitleText"$i"\")"
+    dfx canister call modclub_qa submitText "(\""$i"\",\"Text"$i"\", opt \"TitleText"$i"\", opt variant {simple})"
 done
 dfx identity use mod_novice
 declare PREV_LV=$(dfx canister call rs_qa queryRSAndLevel | cut -d '(' -f 2 | cut -d " " -f 11)

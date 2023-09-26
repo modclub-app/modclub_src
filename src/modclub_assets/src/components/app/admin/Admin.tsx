@@ -53,11 +53,6 @@ export default function Admin({
     setShowRemoveRule(!showRemoveRule);
     setRuleToRemove(ruleToRemove);
   };
-
-  const [showModeratorSettings, setShowModeratorSettings] = useState(false);
-  const toggleModeratorSettings = () =>
-    setShowModeratorSettings(!showModeratorSettings);
-
   const [rules, setRules] = useState([]);
 
   const imgMetaData = selectedProvider.image[0];
@@ -68,8 +63,6 @@ export default function Admin({
     );
   }
   const [showModal, setShowModal] = useState(true);
-  const [requiredVotes, setrequiredVotes] = useState(0);
-  const [minTokens, setMinTokens] = useState(0);
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [loader, setLoader] = useState(false);
@@ -108,16 +101,6 @@ export default function Admin({
     get_token();
     let adminInit = () => {
       if (selectedProvider) {
-        setrequiredVotes(
-          selectedProvider.settings.requiredVotes
-            ? parseInt(selectedProvider.settings.requiredVotes)
-            : 0
-        );
-        setMinTokens(
-          selectedProvider.settings.minStaked
-            ? parseInt(selectedProvider.settings.minStaked)
-            : 0
-        );
         setRules(selectedProvider.rules);
       }
     };
@@ -139,16 +122,6 @@ export default function Admin({
                   key={provider.id}
                   onClick={() => {
                     setSelectedProvider(provider);
-                    setrequiredVotes(
-                      provider.settings.requiredVotes
-                        ? parseInt(provider.settings.requiredVotes)
-                        : 0
-                    );
-                    setMinTokens(
-                      provider.settings.minStaked
-                        ? parseInt(provider.settings.minStaked)
-                        : 0
-                    );
                     setShowModal(false);
                     setRules(provider.rules);
                   }}
@@ -370,37 +343,6 @@ export default function Admin({
               </Card.Content>
             </Card>
           </Columns.Column>
-
-          <Columns.Column tablet={{ size: 12 }} desktop={{ size: 6 }}>
-            <Card className="is-fullheight">
-              <Card.Header>
-                <Card.Header.Title textSize={5}>
-                  Moderator Settings
-                </Card.Header.Title>
-                <Button color="dark" onClick={toggleModeratorSettings}>
-                  Edit Settings
-                </Button>
-              </Card.Header>
-              <Card.Content>
-                <table className="table is-striped has-text-left">
-                  <tbody>
-                    <tr>
-                      <td>Number of votes required to finalize decision:</td>
-                      <td className="has-text-white is-size-5 has-text-weight-bold">
-                        {requiredVotes.toString()}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Required number of staked MOD tokens to vote:</td>
-                      <td className="has-text-white is-size-5 has-text-weight-bold">
-                        {minTokens.toString()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </Card.Content>
-            </Card>
-          </Columns.Column>
         </Columns>
       )}
 
@@ -425,18 +367,6 @@ export default function Admin({
           principalID={providerIdText}
           updateState={setRules}
           selectedProvider={selectedProvider}
-          updateProvider={updateProvider}
-        />
-      )}
-      {showModeratorSettings && (
-        <EditModeratorSettingsModal
-          toggle={toggleModeratorSettings}
-          principalID={providerIdText}
-          selectedProvider={selectedProvider}
-          requiredVotes={requiredVotes}
-          minTokens={minTokens}
-          setrequiredVotes={setrequiredVotes}
-          setMinTokens={setMinTokens}
           updateProvider={updateProvider}
         />
       )}
