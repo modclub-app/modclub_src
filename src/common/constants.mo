@@ -15,6 +15,7 @@ module Constants {
 
   public let ICRC_RESERVE_SA = "-------------------------RESERVE" : Blob;
   public let ICRC_ACCOUNT_PAYABLE_SA = "-----------------ACCOUNT_PAYABLE" : Blob;
+  public let ICRC_POH_REWARDS_SA = "---------------------POH_REWARDS" : Blob;
   public let ICRC_AIRDROP_SA = "-------------------------AIRDROP" : Blob;
   public let ICRC_MARKETING_SA = "-----------------------MARKETING" : Blob;
   public let ICRC_ADVISORS_SA = "------------------------ADVISORS" : Blob;
