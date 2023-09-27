@@ -3,6 +3,7 @@ import List "mo:base/List";
 import Bool "mo:base/Bool";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
+import Nat8 "mo:base/Nat8";
 import Float "mo:base/Float";
 import ICRCTypes "./ICRCTypes";
 
@@ -45,6 +46,7 @@ module {
     burn : (?ICRCTypes.Subaccount, ICRCTypes.Tokens) -> async ();
     icrc1_balance_of : (ICRCTypes.Account) -> async ICRCTypes.Tokens;
     icrc1_fee : () -> async Nat;
+    icrc1_decimals : () -> async Nat8;
     icrc1_minting_account : () -> async ?ICRCTypes.Account;
     icrc1_transfer : ({
       from_subaccount : ?ICRCTypes.Subaccount;

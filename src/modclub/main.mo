@@ -60,6 +60,7 @@ import Constants "../common/constants";
 import RSConstants "../rs/constants";
 import ModSecurity "../common/security/guard";
 import Timer "mo:base/Timer";
+import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import CommonTimer "../common/timer/timer";
 
@@ -297,19 +298,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     ProviderManager.deregisterProvider(caller, stateV2, canistergeekLogger);
   };
 
-  public shared ({ caller }) func updateSettings(
-    providerId : Principal,
-    updatedSettings : Types.ProviderSettings
-  ) : async Types.ProviderSettingResult {
-    await ProviderManager.updateProviderSettings(
-      providerId,
-      updatedSettings,
-      caller,
-      stateV2,
-      canistergeekLogger
-    );
-  };
-
   public shared ({ caller }) func getProvider(providerId : Principal) : async Types.ProviderPlus {
     await ProviderManager.getProvider(providerId, stateV2);
   };
@@ -360,9 +348,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   private func getVoteParamIdByLevel(
-    level : Types.Level
+    level : ?Types.Level
   ) : Text {
-    return contentState.getVoteParamIdByLevel(level, stateV2);
+    let voteParamId = switch (level) {
+      case (?lv) {
+        return contentState.getVoteParamIdByLevel(lv, stateV2);
+      };
+      case (null) {
+        return contentState.getVoteParamIdByLevel(#simple, stateV2);
+      };
+    };
+
+    return voteParamId;
   };
 
   private func getVoteParamsIdByContentId(contentId : Types.ContentId) : ?Types.VoteParamsId {
@@ -514,7 +511,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func submitText(
     sourceId : Text,
     text : Text,
-    title : ?Text
+    title : ?Text,
+    complexity : ?Types.Level
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -534,7 +532,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
     return await ContentManager.submitTextOrHtmlContent(
@@ -558,7 +556,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func submitHtmlContent(
     sourceId : Text,
     htmlContent : Text,
-    title : ?Text
+    title : ?Text,
+    complexity : ?Types.Level
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -577,7 +576,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
     var contentID = await ContentManager.submitTextOrHtmlContent(
@@ -603,7 +602,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     sourceId : Text,
     image : [Nat8],
     imageType : Text,
-    title : ?Text
+    title : ?Text,
+    complexity : ?Types.Level
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -623,7 +623,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(#simple);
+    let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
     return await ContentManager.submitImage(
@@ -774,26 +774,50 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     userName : Text,
     email : ?Text
   ) : async Types.ProfileStable {
-    let subAccs = HashMap.fromIter<Text, Blob>(
-      (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
-      Array.size(Helpers.moderatorSubaccountTypes),
-      Text.equal,
-      Text.hash
-    );
+    switch (await ledger.icrc1_balance_of({ owner = Principal.fromActor(this); subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA })) {
+      case (tokensAvailable) {
+        let decimals = await ledger.icrc1_decimals();
+        let amount = (ModClubParam.REQUIRED_POH_REVIEWS * ModClubParam.REWARD_PER_POH_REVIEW) * Nat.pow(10, Nat8.toNat(decimals));
+        if (tokensAvailable <= amount) {
+          throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
+        };
+        let subAccs = HashMap.fromIter<Text, Blob>(
+          (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
+          Array.size(Helpers.moderatorSubaccountTypes),
+          Text.equal,
+          Text.hash
+        );
 
-    let profile = await ModeratorManager.registerModerator(
-      caller,
-      userName,
-      email,
-      stateV2,
-      subAccs
-    );
+        let profile = await ModeratorManager.registerModerator(
+          caller,
+          userName,
+          email,
+          stateV2,
+          subAccs
+        );
 
-    await storageSolution.registerModerators([caller]);
-    contentQueueManager.assignUserIds2QueueId([caller]);
-    pohContentQueueManager.assignUserIds2QueueId([caller]);
-    ignore await rs.setRS(caller, 10 * RSConstants.RS_FACTOR);
-    return profile;
+        await storageSolution.registerModerators([caller]);
+        contentQueueManager.assignUserIds2QueueId([caller]);
+        pohContentQueueManager.assignUserIds2QueueId([caller]);
+        ignore await rs.setRS(caller, 10 * RSConstants.RS_FACTOR);
+
+        let _ = await ledger.icrc1_transfer({
+          from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+          to = {
+            owner = Principal.fromActor(this);
+            subaccount = ?Constants.ICRC_POH_REWARDS_SA;
+          };
+          amount;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        });
+        return profile;
+      };
+      case (_) {
+        throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
+      };
+    };
   };
 
   public query ({ caller }) func getProfile() : async Types.ProfileStable {
@@ -1214,7 +1238,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public query ({ caller }) func verifyUserHumanityForModclub() : async PohTypes.VerifyHumanityResponse {
+  public shared ({ caller }) func verifyUserHumanityForModclub() : async PohTypes.VerifyHumanityResponse {
     // if Modclub hasn't subscribed for POHcallback, subscribe it
     switch (pohEngine.getPohCallback(Principal.fromActor(this))) {
       case (#err(er)) {
@@ -1884,6 +1908,28 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           packageId,
           #rejected
         );
+
+        // REFUND POH_SA for next attempt
+        switch (await ledger.icrc1_balance_of({ owner = Principal.fromActor(this); subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA })) {
+          case (tokensAvailable) {
+            let decimals = await ledger.icrc1_decimals();
+            let amount = (ModClubParam.REQUIRED_POH_REVIEWS * ModClubParam.REWARD_PER_POH_REVIEW) * Nat.pow(10, Nat8.toNat(decimals));
+            if (tokensAvailable > amount) {
+              let _ = await ledger.icrc1_transfer({
+                from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+                to = {
+                  owner = Principal.fromActor(this);
+                  subaccount = ?Constants.ICRC_POH_REWARDS_SA;
+                };
+                amount;
+                fee = null;
+                memo = null;
+                created_at_time = null;
+              });
+            };
+          };
+          case (_) {};
+        };
         Helpers.logMessage(
           canistergeekLogger,
           "Voting completed for packageId: " # packageId # " Final decision: rejected",
@@ -1953,7 +1999,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
         let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
         let _ = await ledger.icrc1_transfer({
-          from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+          from_subaccount = ?Constants.ICRC_POH_REWARDS_SA;
           to = moderatorSystemAcc;
           amount = modDistTokens;
           fee = null;
@@ -1967,7 +2013,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         switch (lockRes) {
           case (#ok(lockLen)) {
             let _ = await ledger.icrc1_transfer({
-              from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+              from_subaccount = ?Constants.ICRC_POH_REWARDS_SA;
               to = {
                 owner = Principal.fromActor(this);
                 subaccount = ?Constants.ICRC_VESTING_SA;
@@ -1987,7 +2033,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       // treasury dist
       let tokensAmount = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
       let _ = await ledger.icrc1_transfer({
-        from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+        from_subaccount = ?Constants.ICRC_POH_REWARDS_SA;
         to = {
           owner = Principal.fromActor(this);
           subaccount = ?Constants.ICRC_TREASURY_SA;
@@ -3131,45 +3177,57 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     try {
-      let subAccs = HashMap.fromIter<Text, Blob>(
-        (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
-        Array.size(Helpers.moderatorSubaccountTypes),
-        Text.equal,
-        Text.hash
-      );
+      switch (await ledger.icrc1_balance_of({ owner = Principal.fromActor(this); subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA })) {
+        case (tokensAvailable) {
+          let decimals = await ledger.icrc1_decimals();
+          let amount = (ModClubParam.REQUIRED_POH_REVIEWS * ModClubParam.REWARD_PER_POH_REVIEW) * Nat.pow(10, Nat8.toNat(decimals));
+          if (tokensAvailable <= amount) {
+            throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
+          };
+          let subAccs = HashMap.fromIter<Text, Blob>(
+            (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
+            Array.size(Helpers.moderatorSubaccountTypes),
+            Text.equal,
+            Text.hash
+          );
 
-      let profile = await ModeratorManager.registerModerator(
-        associator,
-        profileData.userName,
-        null,
-        stateV2,
-        subAccs
-      );
+          let profile = await ModeratorManager.registerModerator(
+            associator,
+            profileData.userName,
+            null,
+            stateV2,
+            subAccs
+          );
 
-      await storageSolution.registerModerators([associator]);
-      contentQueueManager.assignUserIds2QueueId([associator]);
-      pohContentQueueManager.assignUserIds2QueueId([associator]);
+          await storageSolution.registerModerators([associator]);
+          contentQueueManager.assignUserIds2QueueId([associator]);
+          pohContentQueueManager.assignUserIds2QueueId([associator]);
 
-      let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
-      if (Nat.greater(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-        ignore await rs.setRS(associator, 75 * RSConstants.RS_FACTOR); // #TopSenior as one of most efficient users
-        ignore await rs.updateRS(associator, true, #approved);
-      } else if (Nat.greater(up, Constants.SENIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-        ignore await rs.setRS(associator, 50 * RSConstants.RS_FACTOR); // #Senior
-        ignore await rs.updateRS(associator, true, #approved);
-      } else if (Nat.greater(up, Constants.JUNIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.SENIOR_TRANSLATE_THRESHOLD)) {
-        ignore await rs.setRS(associator, 20 * RSConstants.RS_FACTOR); // #Junior
-        ignore await rs.updateRS(associator, true, #approved);
-      } else {
-        ignore await rs.setRS(associator, 10 * RSConstants.RS_FACTOR); // #Novice for all others as motivational user-friendly approach
-        ignore await rs.updateRS(associator, true, #approved);
+          let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
+          if (Nat.greater(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
+            ignore await rs.setRS(associator, 75 * RSConstants.RS_FACTOR); // #TopSenior as one of most efficient users
+            ignore await rs.updateRS(associator, true, #approved);
+          } else if (Nat.greater(up, Constants.SENIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
+            ignore await rs.setRS(associator, 50 * RSConstants.RS_FACTOR); // #Senior
+            ignore await rs.updateRS(associator, true, #approved);
+          } else if (Nat.greater(up, Constants.JUNIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.SENIOR_TRANSLATE_THRESHOLD)) {
+            ignore await rs.setRS(associator, 20 * RSConstants.RS_FACTOR); // #Junior
+            ignore await rs.updateRS(associator, true, #approved);
+          } else {
+            ignore await rs.setRS(associator, 10 * RSConstants.RS_FACTOR); // #Novice for all others as motivational user-friendly approach
+            ignore await rs.updateRS(associator, true, #approved);
+          };
+
+          Helpers.logMessage(
+            canistergeekLogger,
+            "NEW Moderator Account has been Associated :: " # Principal.toText(associator),
+            #info
+          );
+        };
+        case (_) {
+          throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
+        };
       };
-
-      Helpers.logMessage(
-        canistergeekLogger,
-        "NEW Moderator Account has been Associated :: " # Principal.toText(associator),
-        #info
-      );
     } catch (e) {
       Helpers.logMessage(
         canistergeekLogger,

@@ -4,6 +4,7 @@ import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
+import Int "mo:base/Int";
 import ModClubParam "../parameters/params";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
@@ -101,7 +102,7 @@ module VoteModule {
     ) : Bool {
       let id = getVoteId(userId, packageId);
       if (Utils.isReserved(Principal.toText(userId), Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
-        return true
+        return true;
       };
       return false;
     };
@@ -216,12 +217,15 @@ module VoteModule {
       pohContentQueueManager : QueueManager.QueueManager
     ) : Bool {
       var finishedVote = false;
+      var requiredVotes = ModClubParam.MIN_VOTE_POH;
+      let majorityVotes = requiredVotes - Int.abs(requiredVotes / 2);
+      let factVotes = aCount + rCount;
 
-      if (aCount >= ModClubParam.MIN_VOTE_POH) {
+      if (factVotes == requiredVotes and aCount >= majorityVotes) {
         // Approved
         finishedVote := true;
         pohContentQueueManager.changeContentStatus(packageId, #approved);
-      } else if (rCount >= ModClubParam.MIN_VOTE_POH) {
+      } else if (factVotes == requiredVotes and rCount >= majorityVotes) {
         // Rejected
         finishedVote := true;
         pohContentQueueManager.changeContentStatus(packageId, #rejected);
@@ -276,10 +280,10 @@ module VoteModule {
     ) : async Types.Reserved {
       let now = Helpers.timeNow();
       let count = getVoteCountForPoh(caller, id);
-      if(count.hasVoted == true){
+      if (count.hasVoted == true) {
         throw Error.reject("Reservation failed");
       };
-      if(isReservedPOHContent(id, caller)){
+      if (isReservedPOHContent(id, caller)) {
         throw Error.reject("Already take reservation");
       };
       let reservation : Types.Reserved = {

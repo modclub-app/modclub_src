@@ -141,8 +141,8 @@ check_success "setVoteParams"
 sleep 2
 dfx canister call rs_qa setRS "(principal $MOD_PRINCIPAL, 6900)"
 dfx identity use mod_provider
-declare SUBMIT_01=$(dfx canister call modclub_qa submitText "(\""001"\",\"Text001\", opt \"TitleText001\")"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
-declare SUBMIT_02=$(dfx canister call modclub_qa submitText "(\""002"\",\"Text002\", opt \"TitleText002\")"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
+declare SUBMIT_01=$(dfx canister call modclub_qa submitText "(\""001"\",\"Text001\", opt \"TitleText001\", opt variant {simple})"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
+declare SUBMIT_02=$(dfx canister call modclub_qa submitText "(\""002"\",\"Text002\", opt \"TitleText002\", opt variant {simple})"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
 echo $SUBMIT_01 
 
 dfx identity use mod_test

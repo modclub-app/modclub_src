@@ -91,9 +91,9 @@ module {
     #shufflePohContent : () -> ();
     #stakeTokens : () -> Nat;
     #submitChallengeData : () -> PohTypes.PohChallengeSubmissionRequest;
-    #submitHtmlContent : () -> (Text, Text, ?Text);
-    #submitImage : () -> (Text, [Nat8], Text, ?Text);
-    #submitText : () -> (Text, Text, ?Text);
+    #submitHtmlContent : () -> (Text, Text, ?Text, ?Types.Level);
+    #submitImage : () -> (Text, [Nat8], Text, ?Text, ?Types.Level);
+    #submitText : () -> (Text, Text, ?Text, ?Types.Level);
     #subscribe : () -> Types.SubscribeMessage;
     #subscribePohCallback : () -> PohTypes.SubscribePohMessage;
     #toggleAllowSubmission : () -> Bool;
@@ -102,7 +102,6 @@ module {
     #updateProvider : () -> (Principal, Types.ProviderMeta);
     #updateProviderLogo : () -> (Principal, [Nat8], Text);
     #updateRules : () -> ([Types.Rule], ?Principal);
-    #updateSettings : () -> (Principal, Types.ProviderSettings);
     #verifyHumanity : () -> Text;
     #verifyUserHumanityForModclub : () -> ();
     #vote : () -> (Types.ContentId, Types.Decision, ?[Types.RuleId]);

@@ -191,6 +191,12 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
       await publish("moderator_became_senior", userId);
     };
 
+    Helpers.logMessage(
+      canistergeekLogger,
+      "Update RS UserId: " # Principal.toText(userId) # " currentRS:" # Int.toText(currentRS) # " UpdateRS:" # Int.toText(updateRS),
+      #info
+    );
+
     return {
       userId = userId;
       score = currentRS;

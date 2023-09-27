@@ -1,8 +1,5 @@
 import { Principal } from "@dfinity/principal";
-import {
-  getEnvironmentSpecificValues,
-  getModeratorLeaderboard,
-} from "../../../../utils/api";
+import { getModeratorLeaderboard } from "../../../../utils/api";
 import * as Constants from "../../../../utils/constant";
 
 export async function asyncReducers(asyncState, action) {

@@ -196,69 +196,6 @@ module ProviderModule {
     };
   };
 
-  public func updateProviderSettings(
-    providerId : Principal,
-    updatedSettings : Types.ProviderSettings,
-    callerPrincipalId : Principal,
-    state : GlobalState.State,
-    logger : Canistergeek.Logger
-  ) : async Types.ProviderSettingResult {
-    var authorized = false;
-    switch (
-      PermissionsModule.checkProviderAdminPermission(
-        providerId,
-        callerPrincipalId,
-        state
-      )
-    ) {
-      case (#err(error)) {
-        Helpers.logMessage(
-          logger,
-          "updateProviderSettings - Provider " # Principal.toText(providerId) # " permission check failed ",
-          #info
-        );
-        return #err(error);
-      };
-      case (#ok()) authorized := true;
-    };
-    if (authorized == false) {
-      Helpers.logMessage(
-        logger,
-        "updateProviderSettings - Provider " # Principal.toText(providerId) # " unauthorized ",
-        #info
-      );
-      return #err(#Unauthorized);
-    };
-
-    var provider = state.providers.get(providerId);
-    switch (provider) {
-      case (?result) {
-        let now = Helpers.timeNow();
-        // Update the providers settings
-        state.providers.put(
-          providerId,
-          {
-            id = providerId;
-            name = result.name;
-            description = result.description;
-            image = result.image;
-            createdAt = result.createdAt;
-            updatedAt = now;
-            settings = updatedSettings;
-            subaccounts = result.subaccounts;
-          }
-        );
-        Helpers.logMessage(
-          logger,
-          "updateProviderSettings - Provider " # Principal.toText(providerId) # " updated successfully ",
-          #info
-        );
-        return #ok(updatedSettings);
-      };
-      case (null) return #err(#NotFound);
-    };
-  };
-
   public func getProvider(providerId : Principal, state : GlobalState.State) : async Types.ProviderPlus {
     switch (state.providers.get(providerId)) {
       case (?provider) {
