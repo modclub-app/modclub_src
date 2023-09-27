@@ -11,7 +11,6 @@ import {
   Notification,
 } from "react-bulma-components";
 import { Link } from "react-router-dom";
-import { getEnvironmentSpecificValues } from "../../../utils/api";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
@@ -28,7 +27,6 @@ import {
 } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
 import { useActors } from "../../../hooks/actors";
-const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
 
 export default function Admin({
   selectedProvider,
@@ -386,7 +384,6 @@ export default function Admin({
           toggle={toggleDeposit}
           userTokenBalance={userTokenBalance}
           provider={selectedProvider.id.toString()}
-          receiver={CanisterId}
           isProvider={true}
         />
       )}

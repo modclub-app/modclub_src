@@ -1,6 +1,6 @@
 import { Field } from "react-final-form";
 import { Icon, Notification } from "react-bulma-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { icrc1Transfer } from "../../../utils/api";
 import { Principal } from "@dfinity/principal";
 import PopupModal from "./PopupModal";
@@ -8,6 +8,9 @@ import { format_token } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+
+import { useContext } from "react";
+import { Connect2ICContext } from "@connect2icmodclub/react";
 
 interface DepositProps {
   toggle: () => void;
@@ -20,7 +23,6 @@ interface DepositProps {
 export default function Deposit({
   toggle,
   userTokenBalance,
-  receiver,
   provider,
   isProvider,
   subacc,
@@ -31,6 +33,17 @@ export default function Deposit({
   const [inputValue, setInputValue] = useState(userTokenBalance);
   const { modclub, wallet } = useActors();
   const { activeProvider } = useConnect();
+
+  const [receiver, setReceiver] = useState(String);
+  const { client } = useContext(Connect2ICContext);
+
+  useEffect(() => {
+    if (client._service && client._service._state.context) {
+      const context = client._service._state.context;
+      const modclubDef = context.canisters.modclub;
+      setReceiver(modclubDef.canisterId);
+    }
+  }, [client]);
 
   const handleDeposit = async (value: any) => {
     setError(null);
@@ -134,7 +147,7 @@ export default function Deposit({
           <>
             <label className="label">Deposit to this principal ID:</label>
             <p className="is-flex is-justify-content-center has-text-white">
-              {isProvider ? provider : receiver}
+              {provider}
             </p>
           </>
         )}

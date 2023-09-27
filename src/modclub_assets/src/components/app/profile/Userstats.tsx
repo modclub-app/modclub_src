@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { getEnvironmentSpecificValues } from "../../../utils/api";
 import { Columns, Button } from "react-bulma-components";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
@@ -42,13 +41,11 @@ const levelMessages = {
   },
 };
 
-const { CanisterId } = getEnvironmentSpecificValues(process.env.DEV_ENV);
-
 export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
-  const { rs, wallet, modclub, vesting } = useActors();
+  const { modclub, vesting } = useActors();
 
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
@@ -354,7 +351,6 @@ export default function Userstats({ detailed = false }) {
             BigInt(appState.decimals)
           )}
           isProvider={false}
-          receiver={CanisterId}
           subacc={subacc}
         />
       )}
