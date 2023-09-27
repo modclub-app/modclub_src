@@ -41,8 +41,8 @@ const Table = ({
               <th>App</th>
               <th>Title</th>
               <th>Voted on</th>
-              <th>Reward</th>
-              <th>Locked Rewards</th>
+              <th>Total Reward</th>
+              <th>Locked Reward</th>
             </tr>
           </thead>
           <tbody>
@@ -64,11 +64,15 @@ const Table = ({
                     <Snippet string={item.title[0]} truncate={15} />
                   </td>
                   <td>{formatDate(item.vote.createdAt)}</td>
-                  <td>{"new" in item.status ? "-" : Number(item.reward)}</td>
                   <td>
-                    {"new" in item.status
+                    {item.vote.totalReward.length === 0
                       ? "-"
-                      : formatDate(item.rewardRelease)}
+                      : Number(item.vote.totalReward).toFixed(2)}
+                  </td>
+                  <td>
+                    {item.vote.lockedReward.length === 0
+                      ? "-"
+                      : Number(item.vote.lockedReward).toFixed(2)}
                   </td>
                 </tr>
               ))

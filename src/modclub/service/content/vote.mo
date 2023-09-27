@@ -142,6 +142,8 @@ module ContentVotingModule {
       rsBeforeVoting = userRSAndLevel.score;
       level = userRSAndLevel.level;
       createdAt = Helpers.timeNow();
+      totalReward = null;
+      lockedReward = null;
     };
 
     if (userRSAndLevel.level != #novice) {
@@ -207,6 +209,21 @@ module ContentVotingModule {
       };
     };
     return true;
+  };
+
+  private func _updateRewardsOnVote(vote : Types.VoteV2, newTotalReward : ?Float, newLockedReward : ?Float) : Types.VoteV2 {
+    {
+      id = vote.id;
+      contentId = vote.contentId;
+      userId = vote.userId;
+      decision = vote.decision;
+      rsBeforeVoting = vote.rsBeforeVoting;
+      level = vote.level;
+      violatedRules = vote.violatedRules;
+      createdAt = vote.createdAt;
+      totalReward = newTotalReward;
+      lockedReward = newLockedReward;
+    };
   };
 
   private func evaluateVotes(
@@ -373,8 +390,9 @@ module ContentVotingModule {
       });
 
       // Dist of locked part of rewarded tokens
-      let lockedReward = Utils.floatToTokens(fullReward - (fullReward * Constants.REWARD_DEVIATION));
-      let lockRes = await vesting.stage_vesting_block(moderatorAcc, lockedReward);
+      let lockedReward = fullReward - (fullReward * Constants.REWARD_DEVIATION);
+      let lockedRewardToken = Utils.floatToTokens(lockedReward);
+      let lockRes = await vesting.stage_vesting_block(moderatorAcc, lockedRewardToken);
       switch (lockRes) {
         case (#ok(lockLen)) {
           let _ = await ledger.icrc1_transfer({
@@ -383,15 +401,16 @@ module ContentVotingModule {
               owner = arg.modclubCanisterId;
               subaccount = ?Constants.ICRC_VESTING_SA;
             };
-            amount = lockedReward;
+            amount = lockedRewardToken;
             fee = null;
             memo = null;
             created_at_time = null;
           });
         };
-        case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedReward)));
+        case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedRewardToken)));
       };
 
+      state.votes.put(userVote.id, _updateRewardsOnVote(userVote, ?fullReward, ?lockedReward));
     };
 
     let _ = await rs.updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));

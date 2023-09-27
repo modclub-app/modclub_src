@@ -347,6 +347,8 @@ module {
     level : UserLevel;
     violatedRules : ?[RuleId];
     createdAt : Timestamp;
+    totalReward : ?Float; // Once voting concludes, the rewards should be issued.
+    lockedReward : ?Float;
   };
 
   public type ViolatedRules = {
