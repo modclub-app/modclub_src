@@ -4,6 +4,7 @@ import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
+import Int "mo:base/Int";
 import ModClubParam "../parameters/params";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
