@@ -5,6 +5,8 @@ export const initialState = {
   isAdminUser: false,
   systemBalance: 0,
   personalBalance: 0,
+  systemBalanceLoading: true,
+  personalBalanceLoading: true,
   lockedBalance: 0,
   canClaimRewards: false,
   claimRewardAmount: 0,

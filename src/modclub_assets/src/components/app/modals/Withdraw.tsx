@@ -40,8 +40,10 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
         BigInt(amounts),
         address
       );
-      dispatch({ type: "fetchUserSystemBalance" });
-      dispatch({ type: "fetchUserPersonalBalance" });
+      !appState.personalBalanceLoading &&
+        dispatch({ type: "personalBalanceLoading", payload: true });
+      !appState.systemBalanceLoading &&
+        dispatch({ type: "systemBalanceLoading", payload: true });
       return { reserved: Number(amount), transfer: transfer };
     } catch (err) {
       console.error("Withdraw Failed:", err);

@@ -56,7 +56,7 @@ const UpdateTable = ({
           {Math.max(0, stake - amount)}
         </span>
       </Level>
-      {hasLockBlock &&(
+      {hasLockBlock && (
         <Level
           className="has-text-silver px-5"
           style={{
@@ -104,7 +104,7 @@ const UpdateTable = ({
               </span>
               <span className="has-text-weight-bold">
                 {timestampToDate(
-                  Number(block.created_at_time) + Number(block.dissolveDelay) 
+                  Number(block.created_at_time) + Number(block.dissolveDelay)
                 )}
               </span>
             </Level>
@@ -184,6 +184,7 @@ export default function Unstake({
       const amounts: number = Number(amount) * Math.pow(10, Number(digit));
       const res = await claimStake(modclub, BigInt(amounts));
       dispatch({ type: "fetchUserStakedBalance" });
+      dispatch({ type: "systemBalanceLoading", payload: true });
       dispatch({ type: "fetchUserSystemBalance" });
       return { reserved: Number(amount), transfer: res };
     } catch (error) {

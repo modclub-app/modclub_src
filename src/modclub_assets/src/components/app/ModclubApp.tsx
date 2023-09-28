@@ -61,7 +61,7 @@ export default function ModclubApp() {
     if (isConnected && modclub) {
       dispatch({ type: "fetchUserProfile" });
       dispatch({ type: "fetchIsUserAdmin" });
-      dispatch({ type: "fetchLeaderBoard", payload: {page: 1}});
+      dispatch({ type: "fetchLeaderBoard", payload: { page: 1 } });
       dispatch({ type: "refetchContentModerationTasks", payload: false });
     }
   }, [isConnected, modclub]);
@@ -74,14 +74,20 @@ export default function ModclubApp() {
   }, [isConnected, rs, appState.userProfile]);
 
   useEffect(() => {
-    if (isConnected && wallet) {
-      if (appState.userProfile) {
-        dispatch({ type: "fetchDecimals" });
-        dispatch({ type: "fetchUserSystemBalance" });
+    if (isConnected && wallet) dispatch({ type: "fetchDecimals" });
+  }, [isConnected, wallet]);
+
+  useEffect(() => {
+    if (isConnected && appState.userProfile)
+      appState.personalBalanceLoading &&
         dispatch({ type: "fetchUserPersonalBalance" });
-      }
-    }
-  }, [isConnected, wallet, appState.userProfile]);
+  }, [isConnected, appState.userProfile, appState.personalBalanceLoading]);
+
+  useEffect(() => {
+    if (isConnected && appState.userProfile)
+      appState.systemBalanceLoading &&
+        dispatch({ type: "fetchUserSystemBalance" });
+  }, [isConnected, appState.userProfile, appState.systemBalanceLoading]);
 
   useEffect(() => {
     if (isConnected && vesting) {

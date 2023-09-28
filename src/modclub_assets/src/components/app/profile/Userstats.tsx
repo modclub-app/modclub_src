@@ -214,7 +214,6 @@ export default function Userstats({ detailed = false }) {
 
   const claimMessage = getClaimMessageByLevel(level);
   const rsMessage = getRSMessageByLevel(level);
-
   return (
     <>
       <Columns>
@@ -237,7 +236,8 @@ export default function Userstats({ detailed = false }) {
                 color="dark"
                 fullwidth
                 onClick={toggleDeposit}
-                disabled={holdingsUpdated}
+                disabled={appState.personalBalanceLoading}
+                className={appState.personalBalanceLoading && "is-loading"}
               >
                 Deposit
               </Button>
@@ -245,7 +245,8 @@ export default function Userstats({ detailed = false }) {
                 color="dark"
                 fullwidth
                 onClick={toggleWithdraw}
-                disabled={holdingsUpdated}
+                disabled={appState.systemBalanceLoading}
+                className={appState.systemBalanceLoading && "is-loading"}
               >
                 Withdraw
               </Button>

@@ -58,8 +58,10 @@ export default function Deposit({
         Principal.fromText(receiver),
         subacc
       );
-      dispatch({ type: "fetchUserSystemBalance" });
-      dispatch({ type: "fetchUserPersonalBalance" });
+      !appState.systemBalanceLoading &&
+        dispatch({ type: "systemBalanceLoading", payload: true });
+      !appState.personalBalanceLoading &&
+        dispatch({ type: "personalBalanceLoading", payload: true });
       return { reserved: Number(reserved), transfer: transfer };
     } catch (err) {
       setError(err.message);
@@ -85,8 +87,8 @@ export default function Deposit({
         Principal.fromText(receiver),
         subacc
       );
-      // dispatch({ type: "fetchUserSystemBalance" });
-      dispatch({ type: "fetchUserPersonalBalance" });
+      !appState.personalBalanceLoading &&
+        dispatch({ type: "personalBalanceLoading", payload: true });
       return { reserved: Number(reserved), transfer: transfer };
     } catch (err) {
       setError(err.message);

@@ -37,9 +37,11 @@ export default function Stake({ toggle, tokenHoldings, onUpdate }) {
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
-      const amounts: number = Number(amount) * Math.pow(10, Number(appState.decimals));
+      const amounts: number =
+        Number(amount) * Math.pow(10, Number(appState.decimals));
       const res = await modclub.stakeTokens(BigInt(amounts));
       dispatch({ type: "fetchUserStakedBalance" });
+      dispatch({ type: "systemBalanceLoading", payload: true });
       dispatch({ type: "fetchUserSystemBalance" });
       return { reserved: Number(amount), transfer: res };
     } catch (error) {
