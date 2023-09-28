@@ -79,7 +79,7 @@ const Table = ({
                   <td>
                     {item.vote.lockedReward.length === 0
                       ? "-"
-                      : (Number(item.vote.rsReceived)/Constant.RS_FACTOR)}
+                      : Number(item.vote.rsReceived) / Constant.RS_FACTOR}
                   </td>
                 </tr>
               ))

@@ -132,7 +132,7 @@ module ContentVotingModule {
         case (_) throw Error.reject("Must provide rules that were violated");
       };
     };
-    
+
     let vote : Types.VoteV2 = {
       id = voteId;
       contentId = arg.contentId;
@@ -212,7 +212,7 @@ module ContentVotingModule {
     return true;
   };
 
-  private func _updateRewardsOnVote(vote : Types.VoteV2, newTotalReward : ?Float, newLockedReward : ?Float, newRS: Int) : Types.VoteV2 {
+  private func _updateRewardsOnVote(vote : Types.VoteV2, newTotalReward : ?Float, newLockedReward : ?Float, newRS : Int) : Types.VoteV2 {
     {
       id = vote.id;
       contentId = vote.contentId;
@@ -418,7 +418,6 @@ module ContentVotingModule {
       state.votes.put(userVote.id, _updateRewardsOnVote(userVote, ?fullReward, ?lockedReward, newRS));
     };
 
-    
     let treasuryDistTokens = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
 
     // treasury dist
