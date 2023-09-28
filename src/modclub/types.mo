@@ -349,6 +349,7 @@ module {
     createdAt : Timestamp;
     totalReward : ?Float; // Once voting concludes, the rewards should be issued.
     lockedReward : ?Float;
+    rsReceived: ?Int;
   };
 
   public type ViolatedRules = {

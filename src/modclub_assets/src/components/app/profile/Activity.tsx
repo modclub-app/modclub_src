@@ -12,6 +12,7 @@ import {
 } from "react-bulma-components";
 import Userstats from "./Userstats";
 import Snippet from "../../common/snippet/Snippet";
+import * as Constant from "../../../utils/constant";
 import { modclub_types } from "../../../utils/types";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
@@ -43,6 +44,7 @@ const Table = ({
               <th>Voted on</th>
               <th>Total Reward</th>
               <th>Locked Reward</th>
+              <th>Reputation Score</th>
             </tr>
           </thead>
           <tbody>
@@ -73,6 +75,11 @@ const Table = ({
                     {item.vote.lockedReward.length === 0
                       ? "-"
                       : Number(item.vote.lockedReward).toFixed(2)}
+                  </td>
+                  <td>
+                    {item.vote.lockedReward.length === 0
+                      ? "-"
+                      : (Number(item.vote.rsReceived)/Constant.RS_FACTOR)}
                   </td>
                 </tr>
               ))

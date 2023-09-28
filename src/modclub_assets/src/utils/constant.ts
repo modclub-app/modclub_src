@@ -17,3 +17,4 @@ export const CLAIM_LIMIT_MSG = (value: number) =>
   `Stake ${value} MOD to unlock reward`;
 export const DEFAULT_DATE_FORMAT = "dd MMM yyyy";
 export const LB_PAGE_SIZE = 30;
+export const RS_FACTOR=100;
