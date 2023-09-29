@@ -48,6 +48,18 @@ export async function asyncReducers(asyncState, action) {
       }
       return { ...state, decimals };
     }
+    case "fetchTransactionFee": {
+      let transactionFee = state.transactionFee;
+      try {
+        if (context.actors.wallet) {
+          const actor = context.actors.wallet.value;
+          transactionFee = await actor.icrc1_fee();
+        }
+      } catch (e) {
+        console.error("Error fetching TransactionFee::", e);
+      }
+      return { ...state, transactionFee: transactionFee };
+    }
     case "systemBalanceLoading": {
       return { ...state, systemBalanceLoading: action.payload };
     }

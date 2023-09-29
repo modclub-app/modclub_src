@@ -74,7 +74,10 @@ export default function ModclubApp() {
   }, [isConnected, rs, appState.userProfile]);
 
   useEffect(() => {
-    if (isConnected && wallet) dispatch({ type: "fetchDecimals" });
+    if (isConnected && wallet) {
+      dispatch({ type: "fetchDecimals" });
+      dispatch({ type: "fetchTransactionFee" });
+    }
   }, [isConnected, wallet]);
 
   useEffect(() => {
