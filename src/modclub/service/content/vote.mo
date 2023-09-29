@@ -144,6 +144,7 @@ module ContentVotingModule {
       createdAt = Helpers.timeNow();
       totalReward = null;
       lockedReward = null;
+      rsReceived = null;
     };
 
     if (userRSAndLevel.level != #novice) {
@@ -211,7 +212,7 @@ module ContentVotingModule {
     return true;
   };
 
-  private func _updateRewardsOnVote(vote : Types.VoteV2, newTotalReward : ?Float, newLockedReward : ?Float) : Types.VoteV2 {
+  private func _updateRewardsOnVote(vote : Types.VoteV2, newTotalReward : ?Float, newLockedReward : ?Float, newRS : Int) : Types.VoteV2 {
     {
       id = vote.id;
       contentId = vote.contentId;
@@ -223,6 +224,7 @@ module ContentVotingModule {
       createdAt = vote.createdAt;
       totalReward = newTotalReward;
       lockedReward = newLockedReward;
+      rsReceived = ?(newRS - vote.rsBeforeVoting);
     };
   };
 
@@ -360,6 +362,8 @@ module ContentVotingModule {
       sumRS := sumRS + userVote.rsBeforeVoting;
     };
 
+    let _ = await rs.updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
+
     //TODO: Needs to be updated to handle junior case where they only receive half the rewards and the remaining is locked. until they become senior
     let CT : Float = ModClubParam.CS * Float.fromInt(arg.requiredVotes);
     // moderator dist
@@ -410,10 +414,9 @@ module ContentVotingModule {
         case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedRewardToken)));
       };
 
-      state.votes.put(userVote.id, _updateRewardsOnVote(userVote, ?fullReward, ?lockedReward));
+      let newRS = (await rs.queryRSAndLevelByPrincipal(userVote.userId)).score;
+      state.votes.put(userVote.id, _updateRewardsOnVote(userVote, ?fullReward, ?lockedReward, newRS));
     };
-
-    let _ = await rs.updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
 
     let treasuryDistTokens = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);
 

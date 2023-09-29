@@ -73,7 +73,7 @@ const Table = ({
                       value={Number(item.voteCount)}
                       min={Number(
                         "new" in item.status
-                          ? item.requiredVotes
+                          ? item.voteParameters.requiredVotes
                           : item.voteCount
                       )}
                       gradient={true}

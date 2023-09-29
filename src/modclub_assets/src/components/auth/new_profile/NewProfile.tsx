@@ -95,7 +95,6 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       );
 
       setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
-      // dispatch({ type: "fetchUserProfile" });
 
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });

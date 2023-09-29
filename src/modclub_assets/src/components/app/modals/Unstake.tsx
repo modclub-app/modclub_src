@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
-import { releaseStake, claimStake } from "../../../utils/api";
+import { releaseStake } from "../../../utils/api";
 import PopupModal from "./PopupModal";
 import {
   convert_to_mod,
@@ -56,7 +56,7 @@ const UpdateTable = ({
           {Math.max(0, stake - amount)}
         </span>
       </Level>
-      {hasLockBlock &&(
+      {hasLockBlock && (
         <Level
           className="has-text-silver px-5"
           style={{
@@ -104,7 +104,7 @@ const UpdateTable = ({
               </span>
               <span className="has-text-weight-bold">
                 {timestampToDate(
-                  Number(block.created_at_time) + Number(block.dissolveDelay) 
+                  Number(block.created_at_time) + Number(block.dissolveDelay)
                 )}
               </span>
             </Level>
@@ -177,22 +177,22 @@ export default function Unstake({
   onUpdate,
 }) {
   const { modclub } = useActors();
+  const appState = useAppState();
   const dispatch = useAppStateDispatch();
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
       const amounts: number = Number(amount) * Math.pow(10, Number(digit));
-      const res = await claimStake(modclub, BigInt(amounts));
-      dispatch({ type: "fetchUserStakedBalance" });
-      dispatch({ type: "fetchUserSystemBalance" });
+      const res = await modclub.claimStakedTokens(BigInt(amounts));
+      !appState.systemBalanceLoading &&
+        dispatch({ type: "systemBalanceLoading", payload: true });
+      !appState.personalBalanceLoading &&
+        dispatch({ type: "personalBalanceLoading", payload: true });
+      !appState.stakeBalanceLoading &&
+        dispatch({ type: "stakeBalanceLoading", payload: true });
       return { reserved: Number(amount), transfer: res };
     } catch (error) {
       console.error("unStake Failed:", error);
-    }
-  };
-  const preventMax = (e) => {
-    if (parseInt(e.target.value) > tokenHoldings.stake) {
-      e.target.value = tokenHoldings.stake;
     }
   };
 
@@ -205,7 +205,10 @@ export default function Unstake({
       button1="Release Stake"
       updateTable={
         <UpdateTable
-          stake={tokenHoldings.stake}
+          stake={convert_to_mod(
+            appState.stakeBalance,
+            BigInt(appState.decimals)
+          )}
           tokenHoldings={tokenHoldings}
           lockBlock={lockBlock}
           digit={digit}
@@ -220,8 +223,7 @@ export default function Unstake({
             component="input"
             type="number"
             className="input"
-            initialValue={tokenHoldings.stake}
-            onInput={preventMax}
+            initialValue="0"
           />
           <Icon align="right" color="white" className="mr-4">
             AMT
