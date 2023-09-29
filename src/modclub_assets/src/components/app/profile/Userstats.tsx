@@ -50,7 +50,7 @@ export default function Userstats({ detailed = false }) {
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
     pendingRewards: convert_to_mod(appState.lockedBalance, appState.decimals),
-    stake: 0,
+    stake:convert_to_mod(appState.stakeBalance, BigInt(appState.decimals)),
     wallet: convert_to_mod(appState.systemBalance, BigInt(appState.decimals)),
     userBalance: convert_to_mod(
       appState.personalBalance,
@@ -286,7 +286,8 @@ export default function Userstats({ detailed = false }) {
               color="dark"
               fullwidth
               onClick={toggleStake}
-              disabled={holdingsUpdated}
+              disabled={appState.stakeBalanceLoading}
+              className={appState.stakeBalanceLoading && "is-loading"}
             >
               Stake
             </Button>
@@ -294,7 +295,8 @@ export default function Userstats({ detailed = false }) {
               color="dark"
               fullwidth
               onClick={toggleUnstake}
-              disabled={holdingsUpdated}
+              disabled={appState.stakeBalanceLoading}
+              className={appState.stakeBalanceLoading && "is-loading"}    
             >
               Unstake
             </Button>
@@ -370,7 +372,14 @@ export default function Userstats({ detailed = false }) {
       {showStake && (
         <Stake
           toggle={toggleStake}
-          tokenHoldings={tokenHoldings}
+          wallet={convert_to_mod(
+            appState.systemBalance,
+            BigInt(appState.decimals)
+          )}
+          stake={convert_to_mod(
+            appState.stakeBalance,
+            BigInt(appState.decimals)
+          )}
           onUpdate={() => setHoldingsUpdated(true)}
         />
       )}

@@ -7,6 +7,7 @@ export const initialState = {
   personalBalance: 0,
   systemBalanceLoading: true,
   personalBalanceLoading: true,
+  stakeBalanceLoading: true,
   lockedBalance: 0,
   canClaimRewards: false,
   claimRewardAmount: 0,

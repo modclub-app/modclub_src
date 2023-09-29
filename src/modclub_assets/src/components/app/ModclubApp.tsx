@@ -90,10 +90,15 @@ export default function ModclubApp() {
   }, [isConnected, appState.userProfile, appState.systemBalanceLoading]);
 
   useEffect(() => {
+    if (isConnected && appState.userProfile)
+      appState.stakeBalanceLoading &&
+        dispatch({ type: "fetchUserStakedBalance" });
+  }, [isConnected, appState.userProfile, appState.stakeBalanceLoading]);
+
+  useEffect(() => {
     if (isConnected && vesting) {
       if (appState.userProfile) {
         dispatch({ type: "fetchUserLockedBalance" });
-        dispatch({ type: "fetchUserStakedBalance" });
       }
     }
   }, [isConnected, vesting, appState.userProfile]);

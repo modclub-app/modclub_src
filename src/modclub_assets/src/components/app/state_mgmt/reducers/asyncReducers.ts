@@ -80,7 +80,6 @@ export async function asyncReducers(asyncState, action) {
     }
     case "fetchUserLockedBalance": {
       let lockedBalance = state.lockedBalance;
-
       try {
         if (context.actors.vesting && state.userProfile) {
           const actor = context.actors.vesting.value;
@@ -114,8 +113,12 @@ export async function asyncReducers(asyncState, action) {
       let personalBalanceLoading = !state.personalBalanceLoading;
       return { ...state, personalBalance, personalBalanceLoading };
     }
+    case "stakeBalanceLoading": {
+      return { ...state, stakeBalanceLoading: action.payload };
+    }
     case "fetchUserStakedBalance": {
       let stakeBalance = state.stakeBalance;
+      let stakeBalanceLoading = !state.stakeBalanceLoading;
       try {
         if (context.actors.vesting && state.userProfile) {
           const actor = context.actors.vesting.value;
@@ -127,8 +130,7 @@ export async function asyncReducers(asyncState, action) {
       } catch (e) {
         console.error("Error fetching UserStakeBalance::", e);
       }
-
-      return { ...state, stakeBalance };
+      return { ...state, stakeBalance, stakeBalanceLoading };
     }
     case "fetchUserRS": {
       let rs = state.rs;
