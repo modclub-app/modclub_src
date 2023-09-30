@@ -3177,6 +3177,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     try {
+      let associated = List.find<(Principal, Principal)>(
+        accountsAssociationsStable,
+        func((_, assocAcc)) { Principal.equal(assocAcc, assocAccount) }
+      );
+      switch (associated) {
+        case (?elem) {
+          throw Error.reject("Account " # Principal.toText(assocAccount) # " has been already associated.");
+        };
+        case (_) {};
+      };
       switch (await ledger.icrc1_balance_of({ owner = Principal.fromActor(this); subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA })) {
         case (tokensAvailable) {
           let decimals = await ledger.icrc1_decimals();
@@ -3228,6 +3238,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
         };
       };
+
+      accountsAssociationsStable := List.filter<(Principal, Principal)>(
+        accountsAssociationsStable,
+        func((assoc, assocAcc)) {
+          not (Principal.equal(assoc, associator) and Principal.equal(assocAcc, assocAccount));
+        }
+      );
+      accountsAssociationsStable := List.push<(Principal, Principal)>((associator, assocAccount), accountsAssociationsStable);
+
+      return avh;
     } catch (e) {
       Helpers.logMessage(
         canistergeekLogger,
@@ -3236,15 +3256,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       );
       throw Error.reject("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
     };
-
-    accountsAssociationsStable := List.filter<(Principal, Principal)>(
-      accountsAssociationsStable,
-      func((assoc, assocAcc)) {
-        not (Principal.equal(assoc, associator) and Principal.equal(assocAcc, assocAccount));
-      }
-    );
-    accountsAssociationsStable := List.push<(Principal, Principal)>((associator, assocAccount), accountsAssociationsStable);
-    return avh;
   };
 
 };
