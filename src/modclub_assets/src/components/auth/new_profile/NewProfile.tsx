@@ -53,7 +53,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
     const localAssociationRedirect =
       "http://localhost:8080/?canisterId=" +
       process.env.MODCLUB_ASSET_OLD_CANISTER_ID +
-      "#/app/associate/" +
+      "#/account-associate/" +
       data.hash +
       "/" +
       data.targetCanister +
@@ -62,7 +62,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
     const icAssociationRedirect =
       "https://" +
       process.env.MODCLUB_ASSET_OLD_CANISTER_ID +
-      ".icp0.io/#/app/associate/" +
+      ".icp0.io/#/account-associate/" +
       data.hash +
       "/" +
       data.targetCanister +
