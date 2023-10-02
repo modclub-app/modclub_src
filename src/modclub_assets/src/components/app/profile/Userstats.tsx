@@ -56,8 +56,14 @@ export default function Userstats({ detailed = false }) {
       appState.personalBalance,
       BigInt(appState.decimals)
     ),
-    unLockedFor: 0,
-    claimStakedFor: 0,
+    unLockedFor: convert_to_mod(
+      appState.unlockStakeBalance,
+      BigInt(appState.decimals)
+    ),
+    claimStakedFor: convert_to_mod(
+      appState.claimedStakeBalance,
+      BigInt(appState.decimals)
+    ),
   });
 
   const [claimRewards, setClaimRewards] = useState({
@@ -129,81 +135,13 @@ export default function Userstats({ detailed = false }) {
     };
   }, [appState.decimals, principal, modclub]);
 
-  const fetchTokenHoldings = async (principal: string, isMounted: boolean) => {
-    try {
-      const prom3 = vesting
-        .unlocked_stakes_for({
-          owner: Principal.fromText(principal),
-          subaccount: [],
-        })
-        .then((unlocked) => {
-          if (isMounted) {
-            setTokenHoldings((prevState) => ({
-              ...prevState,
-              unlocked: unlocked,
-            }));
-          }
-        })
-        .catch((error) => {
-          if (isMounted) console.error("Error unLockedFor:", error);
-        });
-
-      const prom4 = vesting
-        .claimed_stakes_for({
-          owner: Principal.fromText(principal),
-          subaccount: [],
-        })
-        .then((claimStaked) => {
-          if (isMounted) {
-            setTokenHoldings((prevState) => ({
-              ...prevState,
-              claimStakedFor: claimStaked,
-            }));
-          }
-        });
-
-      const prom6 = vesting
-        .pending_stakes_for({
-          owner: Principal.fromText(principal),
-          subaccount: [],
-        })
-        .then((pending) => {
-          if (pending != undefined) {
-            if (isMounted) {
-              setLockBlock(pending);
-            }
-          }
-        })
-        .catch((error) => {
-          if (isMounted) console.error("Error fetching pending stake:", error);
-        });
-
-      Promise.all([prom3, prom4, prom6]).then(() => {
-        if (isMounted) {
-          setHoldingsUpdated(false);
-        }
-      });
-    } catch (error) {
-      if (isMounted) console.error("Failed to fetch token holdings:", error);
-    }
-  };
-
   useEffect(() => {
     let isMounted = true;
     dispatch({ type: "fetchUserRS" });
-    principal && fetchTokenHoldings(principal, isMounted);
     return () => {
       isMounted = false;
     };
   }, [principal, modclub]);
-
-  useEffect(() => {
-    let isMounted = true;
-    fetchTokenHoldings(principal, isMounted);
-    return () => {
-      isMounted = false;
-    };
-  }, [showClaim, showDeposit, showStake, showUnstake, showWithdraw]);
 
   const getRSMessageByLevel = useCallback((level: string) => {
     return levelMessages[level]?.rs || Constant.DEFAULT_MESSAGE;

@@ -93,6 +93,9 @@ function failed() {
 	verify_balance "" $MAIN_BALANCE
 	verify_balance "----------------------------SEED" $SEED_BALANCE
 	verify_balance "----------------------------TEAM" $TEAM_BALANCE
+	#Modclub POH Payment
+	dfx identity use qa_ledger_minter
+	dfx canister call wallet_qa icrc1_transfer '(record { to = record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "-----------------ACCOUNT_PAYABLE" }; amount = 10_000_000_000:nat })'
 
 	# create provider
 	echo "+++++++++++++++++++ Step 1: create Provider"

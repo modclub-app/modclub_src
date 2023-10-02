@@ -75,7 +75,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
             initialValue="0"
           />
           <Icon align="right" color="white" className="mr-4">
-            AMT
+            MOD
           </Icon>
         </div>
       </div>

@@ -90,8 +90,12 @@ export async function asyncReducers(asyncState, action) {
 
       return { ...state, systemBalance, systemBalanceLoading };
     }
+    case "lockedBalanceLoading": {
+      return { ...state, lockedBalanceLoading: action.payload };
+    }
     case "fetchUserLockedBalance": {
       let lockedBalance = state.lockedBalance;
+      let lockedBalanceLoading = !state.lockedBalanceLoading;
       try {
         if (context.actors.vesting && state.userProfile) {
           const actor = context.actors.vesting.value;
@@ -104,7 +108,7 @@ export async function asyncReducers(asyncState, action) {
         console.error("Error fetching UserLockedBalance::", e);
       }
 
-      return { ...state, lockedBalance };
+      return { ...state, lockedBalance, lockedBalanceLoading };
     }
     case "personalBalanceLoading": {
       return { ...state, personalBalanceLoading: action.payload };
@@ -144,6 +148,45 @@ export async function asyncReducers(asyncState, action) {
       }
       return { ...state, stakeBalance, stakeBalanceLoading };
     }
+    case "unlockStakeLoading": {
+      return { ...state, unlockStakeLoading: action.payload };
+    }
+    case "fetchUserUnlockedStakedBalance": {
+      let unlockStakeBalance = state.unlockStakeBalance;
+      let unlockStakeLoading = !state.unlockStakeLoading;
+      try {
+        if (context.actors.vesting && state.userProfile) {
+          const actor = context.actors.vesting.value;
+          unlockStakeBalance = await actor.unlocked_stakes_for({
+            owner: state.userProfile.id,
+            subaccount: [],
+          });
+        }
+      } catch (e) {
+        console.error("Error fetching UserStakeBalance::", e);
+      }
+      return { ...state, unlockStakeBalance, unlockStakeLoading };
+    }
+    case "claimedStakeLoading": {
+      return { ...state, claimedStakeLoading: action.payload };
+    }
+    case "fetchUserClaimedStakedBalance": {
+      let claimedStakeBalance = state.claimedStakeBalance;
+      let claimedStakeLoading = !state.claimedStakeLoading;
+      try {
+        if (context.actors.vesting && state.userProfile) {
+          const actor = context.actors.vesting.value;
+          claimedStakeBalance = await actor.unlocked_stakes_for({
+            owner: state.userProfile.id,
+            subaccount: [],
+          });
+        }
+      } catch (e) {
+        console.error("Error fetching UserStakeBalance::", e);
+      }
+      return { ...state, claimedStakeBalance, claimedStakeLoading };
+    }
+    
     case "fetchUserRS": {
       let rs = state.rs;
       try {

@@ -160,7 +160,7 @@ const UpdateTable = ({
             <span className="has-text-weight-bold">
               {format_token(unlockPrice)}
             </span>
-            <span className="has-text-silver px-5">AMT</span>
+            <span className="has-text-silver px-5">MOD</span>
           </Level>
         </PopupModal>
       )}
@@ -226,7 +226,7 @@ export default function Unstake({
             initialValue="0"
           />
           <Icon align="right" color="white" className="mr-4">
-            AMT
+            MOD
           </Icon>
         </div>
       </div>

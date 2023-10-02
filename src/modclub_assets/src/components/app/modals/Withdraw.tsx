@@ -127,7 +127,7 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
             }}
           />
           <Icon align="right" color="white" className="mr-4">
-            AMT
+            MOD
           </Icon>
         </div>
       </div>
