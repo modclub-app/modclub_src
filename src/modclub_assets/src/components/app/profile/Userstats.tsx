@@ -13,9 +13,7 @@ import { convert_to_mod } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
 import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
-import { Principal } from "@dfinity/principal";
 import { wallet_types } from "../../../utils/types";
-import { useProfile } from "../../../contexts/profile";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const levelMessages = {
@@ -45,7 +43,7 @@ export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
-  const { modclub, vesting } = useActors();
+  const { modclub } = useActors();
 
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
@@ -75,7 +73,8 @@ export default function Userstats({ detailed = false }) {
   const [lockBlock, setLockBlock] = useState([]);
   const pendingRewards = convert_to_mod(
     appState.lockedBalance,
-    appState.decimals
+    appState.decimals,
+    2
   );
   const level = Object.keys(appState.rs.level)[0];
   const [subacc, setSubacc] = useState<wallet_types.Account["subaccount"]>([]);
@@ -162,7 +161,8 @@ export default function Userstats({ detailed = false }) {
             title="Wallet"
             amount={convert_to_mod(
               appState.systemBalance,
-              BigInt(appState.decimals)
+              BigInt(appState.decimals),
+              2
             )}
             usd={170}
             detailed={detailed}
@@ -212,7 +212,8 @@ export default function Userstats({ detailed = false }) {
           title="Staked"
           amount={convert_to_mod(
             appState.stakeBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           usd={170}
           detailed={detailed}
@@ -268,7 +269,8 @@ export default function Userstats({ detailed = false }) {
                 Constant.CLAIM_LIMIT_MSG(
                   convert_to_mod(
                     BigInt(claimRewards.claimPrice),
-                    BigInt(appState.decimals)
+                    BigInt(appState.decimals),
+                    2
                   )
                 )}
             </>
@@ -289,7 +291,8 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleDeposit}
           userTokenBalance={convert_to_mod(
             appState.personalBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           isProvider={false}
           subacc={subacc}
@@ -301,7 +304,8 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleWithdraw}
           userTokenBalance={convert_to_mod(
             appState.systemBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           subacc={subacc}
           to={principal}
@@ -312,11 +316,13 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleStake}
           wallet={convert_to_mod(
             appState.systemBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           stake={convert_to_mod(
             appState.stakeBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           onUpdate={() => setHoldingsUpdated(true)}
         />
