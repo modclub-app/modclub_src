@@ -14,7 +14,7 @@ const template = {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*[${DEV_ENV} env] Deployment starts.* \n\n Commit: ${COMMIT_SHA}\n<https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|Check workflow>\n<https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}|View PR>`,
+        text: `*[${DEV_ENV} env] Deployment starts.* \n\n Commit: ${COMMIT_SHA}\n<https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|Check workflow>\n<https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}|View PR #${PR_NUMBER}>`,
       },
     },
   ],
