@@ -140,7 +140,7 @@ export default function Deposit({
                 className="mr-4 justify-content-center"
                 style={{ marginLeft: "1.5rem" }}
               >
-                AMT
+                MOD
               </Icon>
             </div>
           </div>

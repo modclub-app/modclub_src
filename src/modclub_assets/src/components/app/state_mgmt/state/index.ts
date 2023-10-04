@@ -1,5 +1,6 @@
 export const initialState = {
-  decimals: 0,
+  decimals: 1, // impossible to divide by zero
+  transactionFee: 0,
   userProfile: null,
   requiresSignUp: false,
   isAdminUser: false,
@@ -9,6 +10,7 @@ export const initialState = {
   personalBalanceLoading: true,
   stakeBalanceLoading: true,
   lockedBalance: 0,
+  lockedBalanceLoading: true,
   canClaimRewards: false,
   claimRewardAmount: 0,
   claimRewardPrice: 0,
@@ -20,4 +22,11 @@ export const initialState = {
   moderationTasksPage: 1,
   moderationTasksPageStartIndex: 0,
   moderationTasksPageSize: 20,
+  unlockStakeBalance:0,
+  unlockStakeLoading: true,
+  claimedStakeBalance:0,
+  claimedStakeLoading: true,
+  pendingStakeBalance:0,
+  pendingStakeLoading: true,
+
 };

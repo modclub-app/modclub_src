@@ -161,8 +161,10 @@ export function format_token(amount: number): string {
   }
 }
 
-export function convert_to_mod(amount: bigint, digit: bigint): number {
-  return Number(amount) / Math.pow(10, Number(digit));
+export function convert_to_mod(amount: bigint, digit: bigint, preceision=4): number {
+  const tokens = Number(amount) / Math.pow(10, Number(digit));
+  const preceisionFactor = Math.pow(10, preceision);
+  return Math.floor(tokens * preceisionFactor) / preceisionFactor;
 }
 
 export function convert_from_mod(amount: bigint, digit: bigint): number {

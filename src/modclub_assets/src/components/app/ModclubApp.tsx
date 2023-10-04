@@ -74,34 +74,45 @@ export default function ModclubApp() {
   }, [isConnected, rs, appState.userProfile]);
 
   useEffect(() => {
-    if (isConnected && wallet) dispatch({ type: "fetchDecimals" });
+    if (isConnected && wallet) {
+      dispatch({ type: "fetchDecimals" });
+      dispatch({ type: "fetchTransactionFee" });
+    }
   }, [isConnected, wallet]);
 
   useEffect(() => {
     if (isConnected && appState.userProfile)
       appState.personalBalanceLoading &&
-        dispatch({ type: "fetchUserPersonalBalance" });
+      dispatch({ type: "fetchUserPersonalBalance" });
   }, [isConnected, appState.userProfile, appState.personalBalanceLoading]);
 
   useEffect(() => {
     if (isConnected && appState.userProfile)
       appState.systemBalanceLoading &&
-        dispatch({ type: "fetchUserSystemBalance" });
+      dispatch({ type: "fetchUserSystemBalance" });
   }, [isConnected, appState.userProfile, appState.systemBalanceLoading]);
 
   useEffect(() => {
     if (isConnected && appState.userProfile)
       appState.stakeBalanceLoading &&
-        dispatch({ type: "fetchUserStakedBalance" });
+      dispatch({ type: "fetchUserStakedBalance" });
   }, [isConnected, appState.userProfile, appState.stakeBalanceLoading]);
+  useEffect(() => {
+    if (isConnected && appState.userProfile)
+      appState.unlockStakeLoading &&
+      dispatch({ type: "fetchUserUnlockedStakedBalance" });
+  }, [isConnected, appState.userProfile, appState.unlockStakeLoading]);
+  useEffect(() => {
+    if (isConnected && appState.userProfile)
+      appState.claimedStakeLoading &&
+      dispatch({ type: "fetchUserClaimedStakedBalance" });
+  }, [isConnected, appState.userProfile, appState.claimedStakeLoading]);
 
   useEffect(() => {
-    if (isConnected && vesting) {
-      if (appState.userProfile) {
-        dispatch({ type: "fetchUserLockedBalance" });
-      }
-    }
-  }, [isConnected, vesting, appState.userProfile]);
+    if (isConnected && appState.userProfile)
+      appState.lockedBalanceLoading &&
+      dispatch({ type: "fetchUserLockedBalance" });
+  }, [isConnected, vesting, appState.userProfile, appState.lockedBalanceLoading]);
 
   useEffect(() => {
     if (!isJwtSet) {

@@ -13,9 +13,7 @@ import { convert_to_mod } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
 import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
-import { Principal } from "@dfinity/principal";
 import { wallet_types } from "../../../utils/types";
-import { useProfile } from "../../../contexts/profile";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const levelMessages = {
@@ -45,7 +43,7 @@ export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
-  const { modclub, vesting } = useActors();
+  const { modclub } = useActors();
 
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
@@ -56,8 +54,14 @@ export default function Userstats({ detailed = false }) {
       appState.personalBalance,
       BigInt(appState.decimals)
     ),
-    unLockedFor: 0,
-    claimStakedFor: 0,
+    unLockedFor: convert_to_mod(
+      appState.unlockStakeBalance,
+      BigInt(appState.decimals)
+    ),
+    claimStakedFor: convert_to_mod(
+      appState.claimedStakeBalance,
+      BigInt(appState.decimals)
+    ),
   });
 
   const [claimRewards, setClaimRewards] = useState({
@@ -69,7 +73,8 @@ export default function Userstats({ detailed = false }) {
   const [lockBlock, setLockBlock] = useState([]);
   const pendingRewards = convert_to_mod(
     appState.lockedBalance,
-    appState.decimals
+    appState.decimals,
+    2
   );
   const level = Object.keys(appState.rs.level)[0];
   const [subacc, setSubacc] = useState<wallet_types.Account["subaccount"]>([]);
@@ -129,81 +134,13 @@ export default function Userstats({ detailed = false }) {
     };
   }, [appState.decimals, principal, modclub]);
 
-  const fetchTokenHoldings = async (principal: string, isMounted: boolean) => {
-    try {
-      const prom3 = vesting
-        .unlocked_stakes_for({
-          owner: Principal.fromText(principal),
-          subaccount: [],
-        })
-        .then((unlocked) => {
-          if (isMounted) {
-            setTokenHoldings((prevState) => ({
-              ...prevState,
-              unlocked: unlocked,
-            }));
-          }
-        })
-        .catch((error) => {
-          if (isMounted) console.error("Error unLockedFor:", error);
-        });
-
-      const prom4 = vesting
-        .claimed_stakes_for({
-          owner: Principal.fromText(principal),
-          subaccount: [],
-        })
-        .then((claimStaked) => {
-          if (isMounted) {
-            setTokenHoldings((prevState) => ({
-              ...prevState,
-              claimStakedFor: claimStaked,
-            }));
-          }
-        });
-
-      const prom6 = vesting
-        .pending_stakes_for({
-          owner: Principal.fromText(principal),
-          subaccount: [],
-        })
-        .then((pending) => {
-          if (pending != undefined) {
-            if (isMounted) {
-              setLockBlock(pending);
-            }
-          }
-        })
-        .catch((error) => {
-          if (isMounted) console.error("Error fetching pending stake:", error);
-        });
-
-      Promise.all([prom3, prom4, prom6]).then(() => {
-        if (isMounted) {
-          setHoldingsUpdated(false);
-        }
-      });
-    } catch (error) {
-      if (isMounted) console.error("Failed to fetch token holdings:", error);
-    }
-  };
-
   useEffect(() => {
     let isMounted = true;
     dispatch({ type: "fetchUserRS" });
-    principal && fetchTokenHoldings(principal, isMounted);
     return () => {
       isMounted = false;
     };
   }, [principal, modclub]);
-
-  useEffect(() => {
-    let isMounted = true;
-    fetchTokenHoldings(principal, isMounted);
-    return () => {
-      isMounted = false;
-    };
-  }, [showClaim, showDeposit, showStake, showUnstake, showWithdraw]);
 
   const getRSMessageByLevel = useCallback((level: string) => {
     return levelMessages[level]?.rs || Constant.DEFAULT_MESSAGE;
@@ -224,7 +161,8 @@ export default function Userstats({ detailed = false }) {
             title="Wallet"
             amount={convert_to_mod(
               appState.systemBalance,
-              BigInt(appState.decimals)
+              BigInt(appState.decimals),
+              2
             )}
             usd={170}
             detailed={detailed}
@@ -274,7 +212,8 @@ export default function Userstats({ detailed = false }) {
           title="Staked"
           amount={convert_to_mod(
             appState.stakeBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           usd={170}
           detailed={detailed}
@@ -330,7 +269,8 @@ export default function Userstats({ detailed = false }) {
                 Constant.CLAIM_LIMIT_MSG(
                   convert_to_mod(
                     BigInt(claimRewards.claimPrice),
-                    BigInt(appState.decimals)
+                    BigInt(appState.decimals),
+                    2
                   )
                 )}
             </>
@@ -351,7 +291,8 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleDeposit}
           userTokenBalance={convert_to_mod(
             appState.personalBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           isProvider={false}
           subacc={subacc}
@@ -363,7 +304,8 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleWithdraw}
           userTokenBalance={convert_to_mod(
             appState.systemBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           subacc={subacc}
           to={principal}
@@ -374,11 +316,13 @@ export default function Userstats({ detailed = false }) {
           toggle={toggleStake}
           wallet={convert_to_mod(
             appState.systemBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           stake={convert_to_mod(
             appState.stakeBalance,
-            BigInt(appState.decimals)
+            BigInt(appState.decimals),
+            2
           )}
           onUpdate={() => setHoldingsUpdated(true)}
         />

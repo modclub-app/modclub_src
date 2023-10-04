@@ -3,6 +3,7 @@ import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
 import FormModal from "../modals/FormModal";
 import { withdrawModeratorReward } from "../../../utils/api";
+import { convert_to_mod } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 
 import { Principal } from "@dfinity/principal";
@@ -10,34 +11,58 @@ import { useState } from "react";
 import PopupModal from "./PopupModal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
-const UpdateTable = ({ wallet, amount = 0 }) => {
+const UpdateTable = ({ amount }) => {
+  const appState = useAppState();
+  const feeTokens = convert_to_mod(
+    appState.transactionFee,
+    BigInt(appState.decimals)
+  );
+  const systemBalance = convert_to_mod(
+    appState.systemBalance,
+    BigInt(appState.decimals)
+  );
+  const availableAfter = parseFloat(systemBalance - amount - feeTokens).toFixed(
+    4
+  );
   return (
     <>
       <Level className="has-text-silver px-5">
         <span>Available:</span>
-        <span className="has-text-weight-bold">{wallet}</span>
+        <span className="has-text-weight-bold">{systemBalance}</span>
+      </Level>
+      <Level className="has-text-silver px-5">
+        <span>Transaction fee:</span>
+        <span className="has-text-weight-bold">{feeTokens}</span>
       </Level>
       <Level className="has-text-silver px-5">
         <span>Available after:</span>
-        <span className="has-text-weight-bold">{wallet - amount}</span>
+        <span className="has-text-weight-bold">{availableAfter}</span>
       </Level>
     </>
   );
 };
 
 export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
-  const [inputValue, setInputValue] = useState(userTokenBalance);
   const appState = useAppState();
+  const [inputValue, setInputValue] = useState(0);
   const dispatch = useAppStateDispatch();
   const { wallet, modclub } = useActors();
+  const feeTokens = convert_to_mod(
+    appState.transactionFee,
+    BigInt(appState.decimals)
+  );
+  const systemBalance = convert_to_mod(
+    appState.systemBalance,
+    BigInt(appState.decimals)
+  );
   const onFormSubmit = async (values: any) => {
     const { amount, address } = values;
     try {
-      const digit = await wallet.icrc1_decimals();
-      const amounts: number = Number(amount) * Math.pow(10, Number(digit));
+      const amountTokens: number =
+        Number(amount) * Math.pow(10, Number(appState.decimals));
       const transfer = await withdrawModeratorReward(
         modclub,
-        BigInt(amounts),
+        BigInt(amountTokens),
         address
       );
       !appState.personalBalanceLoading &&
@@ -52,9 +77,9 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
 
   const preventMax = (e) => {
     const newValue = parseInt(e.target.value);
-    if (newValue > userTokenBalance) {
-      setInputValue(userTokenBalance);
-      e.target.value = userTokenBalance;
+    if (newValue > systemBalance - feeTokens) {
+      setInputValue(systemBalance - feeTokens);
+      e.target.value = systemBalance - feeTokens;
     } else {
       setInputValue(newValue);
     }
@@ -66,7 +91,7 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
       title="Withdraw"
       handleSubmit={onFormSubmit}
       subtitle="Congratulation!"
-      updateTable={<UpdateTable wallet={userTokenBalance} />}
+      updateTable={<UpdateTable amount={inputValue || 0} />}
     >
       <label className="label">Enter your wallet address: </label>
       <div className="field">
@@ -90,19 +115,19 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
             component="input"
             type="number"
             className="input"
-            initialValue={userTokenBalance}
+            initialValue={inputValue}
             onInput={preventMax}
             validate={(value) => {
               if (isNaN(value) || Number(value) <= 0) {
                 return "Please enter a positive number";
               }
-              if (Number(value) > userTokenBalance) {
+              if (Number(value) > systemBalance - feeTokens) {
                 return "Insufficient balance";
               }
             }}
           />
           <Icon align="right" color="white" className="mr-4">
-            AMT
+            MOD
           </Icon>
         </div>
       </div>

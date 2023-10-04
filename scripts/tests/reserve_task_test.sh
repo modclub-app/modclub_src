@@ -70,6 +70,9 @@ declare TOKEN_DECIMALS="_000_000"
 echo "++++++++++++++++++++Setup Authentication has started++++++++++++++++++++"
 regist_auth_canister_admins
 dfx canister call modclub_qa setRandomization '(false)'
+#Modclub POH Payment
+dfx identity use qa_ledger_minter
+dfx canister call wallet_qa icrc1_transfer '(record { to = record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "-----------------ACCOUNT_PAYABLE" }; amount = 10_000_000_000:nat })'
 # create provider
 echo "+++++++++++++++++++ Step 1: Create Provider"
 if ! dfx identity use mod_provider >/dev/null 2>&1; then

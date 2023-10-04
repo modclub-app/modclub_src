@@ -5,18 +5,21 @@ import { Principal } from "@dfinity/principal";
 import { useState } from "react";
 import { UpdateTable } from "../../common/updateTable/UpdateTable";
 import { useActors } from "../../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 export default function Claim({ toggle, pendingRewards, userId }) {
   const [amount, setAmount] = useState(pendingRewards);
   const [error, setError] = useState(null);
   const { modclub, vesting } = useActors();
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
+  
   const onFormSubmit = async () => {
     try {
-      const locked = await vesting.locked_for({
-        owner: Principal.fromText(userId),
-        subaccount: [],
-      });
+      const locked = amount;
       const res = await modclub.claimLockedReward(BigInt(locked), []);
+      !appState.lockedBalanceLoading &&
+        dispatch({ type: "fetchUserLockedBalance", payload: true });
       return res.ok;
     } catch (err) {
       setError(err.message);
