@@ -23,12 +23,12 @@ function deploy_canisters() {
 
   log "Deploy ${env} Canisters..."
 
-  dfx_deploy ${auth_canister_name} --network=${network} --argument="($env_vars)" &&
+  dfx_deploy ${auth_canister_name} --network=${network} --argument="'(${env_vars})'" &&
   # deploy_wallet_canister $env $network &&
   deploy_vesting_canister $env $network $old_modclub_inst &&
 
-  dfx_deploy ${rs_canister_name} --network=${network} --argument="($env_vars)" &&
-  dfx_deploy ${modclub_canister_name} --network=${network} --argument="($env_vars)" &&
+  dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
+  dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
   init_canisters $env &&
   generate_declariations $env &&
   node "$current_dir/../build/gen_files_by_env.cjs" &&
