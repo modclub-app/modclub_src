@@ -4,6 +4,15 @@ on:
   push:
     branches: ["main"]
 
+  workflow_dispatch:
+    inputs:
+      BYPASS_PROMPT_YES:
+        description: "Bypass Prompt?"
+        required: false
+        default: "no"
+        type: "choice"
+        options: ["yes", "no"]
+
   # pull_request:
   #   branches: ["main"]
 
@@ -15,10 +24,22 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Exit if the branch is not main
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "Branch is not main, exiting."
+            exit 1
+          fi
+
       - name: Set Node.js 18.x
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+
+      - name: Set BYPASS_PROMPT_YES env variable
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "BYPASS_PROMPT_YES=${{ github.event.inputs.BYPASS_PROMPT_YES }}" >> $GITHUB_ENV
 
       - name: Generate DEPLOYMENT_TAG
         id: generate-tag

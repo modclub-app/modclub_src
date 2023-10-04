@@ -2,6 +2,13 @@ name: Deploy DEV environment
 
 on:
   workflow_dispatch:
+    inputs:
+      BYPASS_PROMPT_YES:
+        description: "Bypass Prompt?"
+        required: false
+        default: "no"
+        type: "choice"
+        options: ["yes", "no"]
 
 jobs:
   dev-deploy:
@@ -13,6 +20,10 @@ jobs:
           fetch-depth: 0
       - name: Print branch name
         run: echo "Current branch is ${GITHUB_REF#refs/heads/}"
+
+      - name: Set BYPASS_PROMPT_YES env variable
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "BYPASS_PROMPT_YES=${{ github.event.inputs.BYPASS_PROMPT_YES }}" >> $GITHUB_ENV
 
       - name: Generate DEPLOYMENT_TAG
         id: generate-tag

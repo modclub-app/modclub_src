@@ -1,3 +1,12 @@
+
+dfx_deploy() {
+    local cmd="dfx deploy $@"
+    if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
+        cmd+=" --yes"
+    fi
+    eval $cmd
+}
+
 function deploy_canisters() {
   local env=$1
   local network=$2
@@ -14,16 +23,16 @@ function deploy_canisters() {
 
   log "Deploy ${env} Canisters..."
 
-  dfx deploy ${auth_canister_name} --network=${network} --argument="($env_vars)" &&
+  dfx_deploy ${auth_canister_name} --network=${network} --argument="($env_vars)" &&
   # deploy_wallet_canister $env $network &&
   deploy_vesting_canister $env $network $old_modclub_inst &&
 
-  dfx deploy ${rs_canister_name} --network=${network} --argument="($env_vars)" &&
-  dfx deploy ${modclub_canister_name} --network=${network} --argument="($env_vars)" &&
+  dfx_deploy ${rs_canister_name} --network=${network} --argument="($env_vars)" &&
+  dfx_deploy ${modclub_canister_name} --network=${network} --argument="($env_vars)" &&
   init_canisters $env &&
   generate_declariations $env &&
   node "$current_dir/../build/gen_files_by_env.cjs" &&
-  DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
+  DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
   log "${env} Canisters DEPLOYED"
   return 0;
 }
@@ -52,7 +61,7 @@ function deploy_wallet_canister() {
 
   local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
 
-  dfx deploy ${wallet_canister_name} --network=${network}  --argument='(variant { Init = 
+  dfx_deploy ${wallet_canister_name} --network=${network}  --argument='(variant { Init = 
       record {
         token_name = "'${TOKEN_NAME}'";
         token_symbol = "'${TOKEN_SYMBOL}'";
@@ -111,7 +120,7 @@ function deploy_vesting_canister() {
   # Handle "prod" environment separately
   local canister_name=$(get_canister_name_by_env $env "vesting")
 
-  dfx deploy ${canister_name} --network=${network} --argument="(record { env = $env_vars } )"
+  dfx_deploy ${canister_name} --network=${network} --argument="(record { env = $env_vars } )"
   dfx generate ${canister_name} -v
   return 0;
 }
