@@ -16,11 +16,7 @@ module {
     amount : ICRCTypes.Tokens;
   };
 
-  public type AccountsImportPayload = {
-    providers : [ProviderInfo];
-    adminsByProvider : [ProviderAdminsInfo];
-    moderators : [OldModeratorLeaderboard];
-    approvedPOHUsers : [(Principal, Principal)];
+  public type AirdropMetadataImportPayload = {
     userPoints : [(Principal, Int)];
   };
 

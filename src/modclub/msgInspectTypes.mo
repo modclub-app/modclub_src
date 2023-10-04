@@ -5,6 +5,7 @@ import PohTypes "./service/poh/types";
 import ICRCTypes "../common/ICRCTypes";
 import Types "./types";
 import Principal "mo:base/Principal";
+import RSTypes "../rs/types";
 
 module {
 
@@ -107,9 +108,10 @@ module {
     #vote : () -> (Types.ContentId, Types.Decision, ?[Types.RuleId]);
     #votePohContent : () -> (Text, Types.Decision, [Types.PohRulesViolated]);
     #whoami : () -> ();
-    #importAccounts : () -> Types.AccountsImportPayload;
+    #importAirdropMetadata : () -> Types.AirdropMetadataImportPayload;
     #translateUserPoints : () -> ();
     #getImportedUsersStats : () -> ();
+    #getImportedUsersStatsByLevel : () -> RSTypes.UserLevel;
     #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal);
     #validate : () -> Any;
     #setModclubBuckets : () -> ();

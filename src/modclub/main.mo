@@ -2706,7 +2706,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         ProviderManager.isProviderAdmin(caller, stateV2);
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
-      case (#importAccounts _) { authGuard.isOldModclubInstance(caller) };
+      case (#importAirdropMetadata _) { authGuard.isOldModclubInstance(caller) };
       case (#associateAccount _) {
         authGuard.isOldModclubInstance(caller) or authGuard.isAdmin(caller);
       };
@@ -2909,136 +2909,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public shared ({ caller }) func importAccounts(payload : Types.AccountsImportPayload) : async {
+  public shared ({ caller }) func importAirdropMetadata(payload : Types.AirdropMetadataImportPayload) : async {
     status : Bool;
   } {
     Helpers.logMessage(
       canistergeekLogger,
-      "MODCLUB Instanse has importAccounts call:: ",
+      "MODCLUB Instanse has importAirdropMetadata call:: ",
       #info
     );
-    importedProvidersStable := List.nil<Principal>();
-    importedProviders.clear();
     importedProfilesStable := List.nil<(Principal, Nat)>();
     importedProfiles.clear();
-
-    for (provider in payload.providers.vals()) {
-      importedProvidersStable := List.push<Principal>(provider.id, importedProvidersStable);
-      importedProviders.add(provider.id);
-
-      switch (stateV2.providers.get(provider.id)) {
-        case (?p) {};
-        case (null) {
-          await ProviderManager.addToAllowList(provider.id, stateV2, canistergeekLogger);
-          let subAccs = HashMap.fromIter<Text, Blob>(
-            (await Helpers.generateSubAccounts(Helpers.providerSubaccountTypes)).vals(),
-            Array.size(Helpers.providerSubaccountTypes),
-            Text.equal,
-            Text.hash
-          );
-
-          ignore ProviderManager.registerProvider({
-            providerId = provider.id;
-            name = provider.name;
-            description = provider.description;
-            image = provider.image;
-            subaccounts = subAccs;
-            state = stateV2;
-            logger = canistergeekLogger;
-          });
-          Helpers.logMessage(
-            canistergeekLogger,
-            "Imported ProviderAccount For: " # provider.name,
-            #info
-          );
-        };
-      };
-    };
-    for (providerAdmins in payload.adminsByProvider.vals()) {
-      switch (stateV2.providers.get(providerAdmins.pid)) {
-        case (?p) {
-          for (admin in providerAdmins.admins.vals()) {
-            let result = await ProviderManager.addProviderAdmin({
-              userId = admin.id;
-              username = admin.userName;
-              caller = providerAdmins.pid;
-              providerId = ?providerAdmins.pid;
-              state = stateV2;
-              isModclubAdmin = authGuard.isAdmin(caller);
-              logger = canistergeekLogger;
-            });
-            switch (result) {
-              case (#ok(_)) {
-                Helpers.logMessage(
-                  canistergeekLogger,
-                  "IMPORTED ProviderAdmin: " # admin.userName # " For: " # p.name,
-                  #info
-                );
-              };
-              case (#err(e)) {
-                Helpers.logMessage(
-                  canistergeekLogger,
-                  "ERROR ON ProviderAdmin: " # admin.userName # " For: " # p.name,
-                  #error
-                );
-              };
-            };
-          };
-        };
-        case (_) {};
-      };
-    };
-
-    for (moderator in payload.moderators.vals()) {
-      try {
-        let subAccs = HashMap.fromIter<Text, Blob>(
-          (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
-          Array.size(Helpers.moderatorSubaccountTypes),
-          Text.equal,
-          Text.hash
-        );
-
-        let profile = await ModeratorManager.registerModerator(
-          moderator.id,
-          moderator.userName,
-          null,
-          stateV2,
-          subAccs
-        );
-
-        await storageSolution.registerModerators([moderator.id]);
-        contentQueueManager.assignUserIds2QueueId([moderator.id]);
-        pohContentQueueManager.assignUserIds2QueueId([moderator.id]);
-        Helpers.logMessage(
-          canistergeekLogger,
-          "NEW Moderator Account has been Imported :: " # debug_show profile,
-          #info
-        );
-      } catch (e) {
-        Helpers.logMessage(
-          canistergeekLogger,
-          "AN ERROR OCCURS DURING ModeratorAccount import :: " # Error.message(e),
-          #error
-        );
-      };
-    };
-
-    for ((uid, _) in payload.approvedPOHUsers.vals()) {
-      try {
-        voteManager.addToAutoApprovedPOHUser(uid);
-        Helpers.logMessage(
-          canistergeekLogger,
-          "NEW UserId has been addToAutoApprovedPOHUser SUCCESSFULLY :: " # debug_show uid,
-          #info
-        );
-      } catch (e) {
-        Helpers.logMessage(
-          canistergeekLogger,
-          "AN ERROR OCCURS DURING approvedPOHUsers import :: " # Error.message(e),
-          #error
-        );
-      };
-    };
 
     for ((uid, points) in payload.userPoints.vals()) {
       try {
@@ -3055,54 +2935,30 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     Helpers.logMessage(
       canistergeekLogger,
-      "Accounts import DONE :: Profiles - " # debug_show importedProfiles.size() # " :: Providers - " # debug_show importedProviders.size(),
+      "AirdropMetadata import DONE :: Profiles - " # debug_show importedProfiles.size(),
       #info
     );
     { status = true };
   };
 
-  public shared ({ caller }) func translateUserPoints() : async Result.Result<{ topSeniors : Nat; seniors : Nat; juniors : Nat; novice : Nat }, Text> {
+  public query ({ caller }) func getImportedUsersStats() : async Result.Result<{ topSeniors : Nat; seniors : Nat; juniors : Nat; novice : Nat }, Text> {
     if (importedProfiles.size() == 0) {
       throw Error.reject("Error: No Imported Profiles Found.");
     };
-
-    let topSeniorUP = Constants.TOP_SENIOR_TRANSLATE_THRESHOLD;
-    let seniorUP = Constants.SENIOR_TRANSLATE_THRESHOLD;
-    let juniorUP = Constants.JUNIOR_TRANSLATE_THRESHOLD;
 
     var topSeniors : Nat = 0;
     var seniors : Nat = 0;
     var juniors : Nat = 0;
     var novice : Nat = 0;
-
     try {
       for ((uid, up) in importedProfiles.vals()) {
-        if (Nat.greater(up, topSeniorUP)) {
-          ignore await rs.setRS(uid, 75 * RSConstants.RS_FACTOR); // #TopSenior as one of most efficient users
-          ignore await rs.updateRS(uid, true, #approved);
-          topSeniors += 1;
-          Helpers.logMessage(
-            canistergeekLogger,
-            "Imported Profile UserPoints translated to TopSenior RS SUCCESSFULLY :: " # debug_show uid,
-            #info
-          );
-        } else if (Nat.greater(up, seniorUP) and Nat.less(up, topSeniorUP)) {
-          ignore await rs.setRS(uid, 50 * RSConstants.RS_FACTOR); // #Senior
-          ignore await rs.updateRS(uid, true, #approved);
-          seniors += 1;
-          Helpers.logMessage(
-            canistergeekLogger,
-            "Imported Profile UserPoints translated to #Senior RS SUCCESSFULLY :: " # debug_show uid,
-            #info
-          );
-        } else if (Nat.greater(up, juniorUP) and Nat.less(up, seniorUP)) {
-          ignore await rs.setRS(uid, 20 * RSConstants.RS_FACTOR); // #Junior
-          ignore await rs.updateRS(uid, true, #approved);
-          juniors += 1;
-        } else {
-          ignore await rs.setRS(uid, 10 * RSConstants.RS_FACTOR); // #Novice for all others as motivational user-friendly approach
-          ignore await rs.updateRS(uid, true, #approved);
-          novice += 1;
+        let (newScores : Int, level : RSTypes.UserLevel) = Helpers.translateUpToRs(up);
+        switch (level) {
+          case (#novice) { novice += 1 };
+          case (#junior) { juniors += 1 };
+          case (#senior1) { seniors += 1 };
+          case (#senior3) { topSeniors += 1 };
+          case (_) {};
         };
       };
     } catch (e) {
@@ -3116,28 +2972,49 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     #ok({ topSeniors; seniors; juniors; novice });
   };
 
-  public query ({ caller }) func getImportedUsersStats() : async Result.Result<{ topSeniors : Nat; seniors : Nat; juniors : Nat; novice : Nat }, Text> {
+  public query ({ caller }) func getImportedUsersStatsByLevel(levelFlag : RSTypes.UserLevel) : async Text {
     if (importedProfiles.size() == 0) {
       throw Error.reject("Error: No Imported Profiles Found.");
     };
 
-    var topSeniors : Nat = 0;
-    var seniors : Nat = 0;
-    var juniors : Nat = 0;
-    var novice : Nat = 0;
-    for ((uid, up) in importedProfiles.vals()) {
-      if (Nat.greater(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-        topSeniors += 1;
-      } else if (Nat.greater(up, Constants.SENIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-        seniors += 1;
-      } else if (Nat.greater(up, Constants.JUNIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.SENIOR_TRANSLATE_THRESHOLD)) {
-        juniors += 1;
-      } else {
-        novice += 1;
+    var usersAndStatsCsv : Text = "user_principal_id;reputation_scores;old_user_points\n";
+
+    try {
+      for ((uid, up) in importedProfiles.vals()) {
+        let (newScores : Int, level : RSTypes.UserLevel) = Helpers.translateUpToRs(up);
+        switch (level) {
+          case (#novice) {
+            if (levelFlag == #novice) {
+              usersAndStatsCsv := Helpers.appendCsvRow(uid, newScores, up, usersAndStatsCsv);
+            };
+          };
+          case (#junior) {
+            if (levelFlag == #junior) {
+              usersAndStatsCsv := Helpers.appendCsvRow(uid, newScores, up, usersAndStatsCsv);
+            };
+          };
+          case (#senior1) {
+            if (levelFlag == #senior1) {
+              usersAndStatsCsv := Helpers.appendCsvRow(uid, newScores, up, usersAndStatsCsv);
+            };
+          };
+          case (#senior3) {
+            if (levelFlag == #senior3) {
+              usersAndStatsCsv := Helpers.appendCsvRow(uid, newScores, up, usersAndStatsCsv);
+            };
+          };
+          case (_) {};
+        };
       };
+    } catch (e) {
+      Helpers.logMessage(
+        canistergeekLogger,
+        "AN ERROR OCCURS DURING userPoints translate :: " # Error.message(e),
+        #error
+      );
     };
 
-    #ok({ topSeniors; seniors; juniors; novice });
+    return usersAndStatsCsv;
   };
 
   public shared ({ caller }) func generateAssocMetadata() : async {
@@ -3237,20 +3114,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           pohContentQueueManager.assignUserIds2QueueId([associator]);
 
           let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
-          var rsValue = 0 : Int;
-          if (Nat.greater(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-            rsValue := 75 * RSConstants.RS_FACTOR;
-            ignore await rs.setRS(associator, rsValue); // #TopSenior
-          } else if (Nat.greater(up, Constants.SENIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-            rsValue := 50 * RSConstants.RS_FACTOR;
-            ignore await rs.setRS(associator, rsValue); // #Senior
-          } else if (Nat.greater(up, Constants.JUNIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.SENIOR_TRANSLATE_THRESHOLD)) {
-            rsValue := 20 * RSConstants.RS_FACTOR;
-            ignore await rs.setRS(associator, rsValue); // #Junior
-          } else {
-            rsValue := 10 * RSConstants.RS_FACTOR;
-            ignore await rs.setRS(associator, rsValue); // #Novice
-          };
+          let (rsValue : Int, level : RSTypes.UserLevel) = Helpers.translateUpToRs(up);
+
+          ignore await rs.setRS(associator, rsValue);
 
           Helpers.logMessage(
             canistergeekLogger,

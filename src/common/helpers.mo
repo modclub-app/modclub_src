@@ -27,6 +27,8 @@ import Types "../modclub/types";
 import UUID "mo:uuid/UUID";
 import Constants "constants";
 import Bool "mo:base/Bool";
+import RSTypes "../rs/types";
+import RSConstants "../rs/constants";
 
 module Helpers {
 
@@ -298,5 +300,25 @@ module Helpers {
 
   public func joinArr(arr : [Text]) : Text {
     return Text.join(",", arr.vals());
+  };
+
+  public func translateUpToRs(up : Nat) : (Int, RSTypes.UserLevel) {
+    let topSeniorUP = Constants.TOP_SENIOR_TRANSLATE_THRESHOLD;
+    let seniorUP = Constants.SENIOR_TRANSLATE_THRESHOLD;
+    let juniorUP = Constants.JUNIOR_TRANSLATE_THRESHOLD;
+
+    if (Nat.greater(up, topSeniorUP)) {
+      return (75 * RSConstants.RS_FACTOR, #senior3); // #TopSenior as one of most efficient users
+    } else if (Nat.greater(up, seniorUP) and Nat.less(up, topSeniorUP)) {
+      return (50 * RSConstants.RS_FACTOR, #senior1); // #Senior
+    } else if (Nat.greater(up, juniorUP) and Nat.less(up, seniorUP)) {
+      return (20 * RSConstants.RS_FACTOR, #junior); // #Junior
+    } else {
+      return (10 * RSConstants.RS_FACTOR, #novice); // #Novice for all others as motivational user-friendly approach
+    };
+  };
+
+  public func appendCsvRow(uid : Principal, scores : Int, up : Int, csv : Text) : Text {
+    return csv # Principal.toText(uid) # ";" # Int.toText(scores) # ";" # Int.toText(up) # ";\n";
   };
 };
