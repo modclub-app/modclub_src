@@ -133,7 +133,10 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   public shared ({ caller }) func setRS(userId : Principal, rs : Int) : async Result.Result<Bool, Text> {
+    let statBefore = (await queryRSAndLevelByPrincipal(userId));
     rsByUserId.put(userId, rs);
+    // publish the changes in case the user was promoted to senior
+    await publishChangesForUser(userId, statBefore.score, rs);
     #ok(true);
   };
 
@@ -168,7 +171,6 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     var pointMultiplier : Int = 1;
     let statBefore = (await queryRSAndLevelByPrincipal(userId));
     let isNovice = statBefore.level == #novice;
-    let isSeniorBefore = statBefore.score > Constants.JUNIOR_THRESHOLD;
 
     if (isNovice) {
       pointMultiplier := 10;
@@ -187,13 +189,11 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
     let clampedRS = Int.min(Int.max(updateRS, 0), Constants.MAX_RS);
     rsByUserId.put(userId, clampedRS);
-    if ((not isSeniorBefore) and clampedRS > Constants.JUNIOR_THRESHOLD) {
-      await publish("moderator_became_senior", userId);
-    };
+    await publishChangesForUser(userId, statBefore.score, clampedRS);
 
     Helpers.logMessage(
       canistergeekLogger,
-      "Update RS UserId: " # Principal.toText(userId) # " currentRS:" # Int.toText(currentRS) # " UpdateRS:" # Int.toText(updateRS),
+      "Update RS UserId: " # Principal.toText(userId) # " currentRS:" # Int.toText(currentRS) # " UpdateRS:" # Int.toText(clampedRS),
       #info
     );
 
@@ -202,6 +202,14 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
       score = currentRS;
     };
   };
+
+  private func publishChangesForUser(userId : Principal, rsBefore : Int, rsAfter : Int) : async () {
+    let isSeniorBefore = rsBefore > Constants.JUNIOR_THRESHOLD;
+    if ((not isSeniorBefore) and rsAfter > Constants.JUNIOR_THRESHOLD) {
+      await publish(GlobalConstants.TOPIC_MODERATOR_PROMOTED_TO_SENIOR, userId);
+    };
+  };
+
   private func sortTopUser(user1 : (Principal, Int), user2 : (Principal, Int)) : Order.Order {
     Int.compare(user2.1, user1.1);
   };

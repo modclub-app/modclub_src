@@ -142,7 +142,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     authGuard
   );
 
-  ModeratorManager.subscribeOnEvents(env, "moderator_became_senior");
+  ModeratorManager.subscribeOnEvents(env, Constants.TOPIC_MODERATOR_PROMOTED_TO_SENIOR);
 
   let vestingActor = authGuard.getVestingActor();
   let ledger = authGuard.getWalletActor();
@@ -158,9 +158,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#events(events)) {
         // TODO: Refactor this and put logic to new refactored ModeratorManager.
         // TODO: Notify Moderator by email.
+
+        // Had to set this variable here before using it in the switch statement due to build error
+        let seniorPromotionTopic = Constants.TOPIC_MODERATOR_PROMOTED_TO_SENIOR;
         for (event in Array.vals<CommonTypes.Event>(events)) {
           switch (event.topic) {
-            case ("moderator_became_senior") {
+            case (seniorPromotionTopic) {
               if (not ModeratorManager.canClaimReward(event.payload, claimRewardsWhitelistBuf)) {
                 claimRewardsWhitelistBuf.add(event.payload);
               };
@@ -3160,6 +3163,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func associateAccount(assocHash : Text, profileData : Types.ImportProfile, points : Int) : async Text {
+    Helpers.logMessage(
+      canistergeekLogger,
+      "associateAccount() called with parameters: assocHash = " # assocHash # ", profileData.userId = " # Principal.toText(profileData.id) # ", points = " # Int.toText(points),
+      #info
+    );
     let (associator, assocAccount, avh) = switch (accountsAssocHashes.get(assocHash)) {
       case (?assoc) {
         switch (assocVerificationHashes.get(assocHash)) {
@@ -3167,11 +3175,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             (assoc, assocAcc, vh);
           };
           case (_) {
+            Helpers.logMessage(
+              canistergeekLogger,
+              "No association record found in assocVerificationHashes for " # assocHash,
+              #error
+            );
             throw Error.reject("No association record found in assocVerificationHashes for " # assocHash);
           };
         };
       };
       case (_) {
+        Helpers.logMessage(
+          canistergeekLogger,
+          "No association record found in assocVerificationHashes for " # assocHash,
+          #error
+        );
         throw Error.reject("No association record found in accountsAssocHashes for " # assocHash);
       };
     };
@@ -3192,6 +3210,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           let decimals = await ledger.icrc1_decimals();
           let amount = (ModClubParam.REQUIRED_POH_REVIEWS * ModClubParam.REWARD_PER_POH_REVIEW) * Nat.pow(10, Nat8.toNat(decimals));
           if (tokensAvailable <= amount) {
+            Helpers.logMessage(
+              canistergeekLogger,
+              "Insufficient funds to pay for POH. tokensAvailable: " # Nat.toText(tokensAvailable) # " amount required: " # Nat.toText(amount) # " Account failed to associate " # assocHash,
+              #error
+            );
             throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
           };
           let subAccs = HashMap.fromIter<Text, Blob>(
@@ -3214,23 +3237,24 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           pohContentQueueManager.assignUserIds2QueueId([associator]);
 
           let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
+          var rsValue = 0 : Int;
           if (Nat.greater(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-            ignore await rs.setRS(associator, 75 * RSConstants.RS_FACTOR); // #TopSenior as one of most efficient users
-            ignore await rs.updateRS(associator, true, #approved);
+            rsValue := 75 * RSConstants.RS_FACTOR;
+            ignore await rs.setRS(associator, rsValue); // #TopSenior
           } else if (Nat.greater(up, Constants.SENIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.TOP_SENIOR_TRANSLATE_THRESHOLD)) {
-            ignore await rs.setRS(associator, 50 * RSConstants.RS_FACTOR); // #Senior
-            ignore await rs.updateRS(associator, true, #approved);
+            rsValue := 50 * RSConstants.RS_FACTOR;
+            ignore await rs.setRS(associator, rsValue); // #Senior
           } else if (Nat.greater(up, Constants.JUNIOR_TRANSLATE_THRESHOLD) and Nat.less(up, Constants.SENIOR_TRANSLATE_THRESHOLD)) {
-            ignore await rs.setRS(associator, 20 * RSConstants.RS_FACTOR); // #Junior
-            ignore await rs.updateRS(associator, true, #approved);
+            rsValue := 20 * RSConstants.RS_FACTOR;
+            ignore await rs.setRS(associator, rsValue); // #Junior
           } else {
-            ignore await rs.setRS(associator, 10 * RSConstants.RS_FACTOR); // #Novice for all others as motivational user-friendly approach
-            ignore await rs.updateRS(associator, true, #approved);
+            rsValue := 10 * RSConstants.RS_FACTOR;
+            ignore await rs.setRS(associator, rsValue); // #Novice
           };
 
           Helpers.logMessage(
             canistergeekLogger,
-            "NEW Moderator Account has been Associated :: " # Principal.toText(associator),
+            "NEW Moderator Account has been Associated. RS Value set for associator " # Principal.toText(associator) # " = " # Int.toText(rsValue),
             #info
           );
         };

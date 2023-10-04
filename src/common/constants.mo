@@ -31,4 +31,7 @@ module Constants {
   public let SENIOR_TRANSLATE_THRESHOLD = 15000;
   public let JUNIOR_TRANSLATE_THRESHOLD = 1000;
 
+  // Event bus topics
+  // --- Moderator seniority transitions ---
+  public let TOPIC_MODERATOR_PROMOTED_TO_SENIOR = "moderator_became_senior" : Text;
 };
