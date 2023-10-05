@@ -20,12 +20,14 @@ function deploy_canisters() {
   local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
   local auth_canister_name=$(get_canister_name_by_env $env "auth")
   local assets_canister_name="$(get_canister_name_by_env $env "modclub")_assets"
+  local airdrop_canister_name=$(get_canister_name_by_env $env "airdrop")
 
   log "Deploy ${env} Canisters..."
 
-  dfx_deploy ${auth_canister_name} --network=${network} --argument="'(${env_vars})'" &&
-  # deploy_wallet_canister $env $network &&
+  dfx deploy ${auth_canister_name} --network=${network} --argument="($env_vars)" &&
+  deploy_wallet_canister $env $network &&
   deploy_vesting_canister $env $network $old_modclub_inst &&
+  dfx deploy ${airdrop_canister_name} --network=${network} --argument="($env_vars)" &&  
 
   dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
   dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
@@ -56,6 +58,10 @@ function deploy_wallet_canister() {
   local network=$2
 
   local ARCHIVE_CONTROLLER=$(dfx identity get-principal)
+  local minter_principal=$(dfx identity get-principal)
+  local ledger_acc_principal=$(dfx identity get-principal)
+  local airdrop_canister_name=$(get_canister_name_by_env $env "airdrop")
+  local airdrop_canister_id=$(dfx canister id ${airdrop_canister_name} --network=${network})
   local TOKEN_NAME="Modclub_Token"
   local TOKEN_SYMBOL=MODT
 
@@ -69,7 +75,7 @@ function deploy_wallet_canister() {
         initial_balances = vec {
           record { record { owner = principal "'${ledger_acc_principal}'"; }; 100_000_000_000_000; };
           record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "-------------------------RESERVE"}; 367_500_000_000_000; };
-          record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "-------------------------AIRDROP"}; 10_000_000_000_000; };
+          record { record { owner = principal "'${airdrop_canister_id}'"; subaccount = null}; 10_000_000_000_000; };
           record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "-----------------------MARKETING"}; 50_000_000_000_000; };
           record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "------------------------ADVISORS"}; 50_000_000_000_000; };
           record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "-------------------------PRESEED"}; 62_500_000_000_000; };
@@ -78,7 +84,7 @@ function deploy_wallet_canister() {
           record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "----------------------------TEAM"}; 160_000_000_000_000; };
         };
         metadata = vec {};
-        transfer_fee = 10;
+        transfer_fee = .0001;
         archive_options = record {
           trigger_threshold = 2000;
           num_blocks_to_archive = 1000;

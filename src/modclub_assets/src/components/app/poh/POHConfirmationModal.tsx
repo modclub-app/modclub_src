@@ -89,28 +89,28 @@ const ConfirmationModal = ({
     }
   };
 
-  const onReservedPoh = async ()=>{
+  const onReservedPoh = async () => {
     try {
       await modclub.createPohVoteReservation(packageId);
       setReserved(true);
-      setMessage({success: true, value: "Reserved POH successful"});
+      setMessage({ success: true, value: "Reserved POH successful" });
     } catch (error) {
       setReserved(false);
-      setMessage({success: false, value: "Reserved POH unsuccessful"});
+      setMessage({ success: false, value: "Reserved POH unsuccessful" });
     }
-  }
+  };
 
   useEffect(() => {
-    const checkPoh = async ()=>{
+    const checkPoh = async () => {
       try {
-        if(modclub){
-          const res =await modclub.isReservedPOHContent(packageId);
+        if (modclub) {
+          const res = await modclub.isReservedPOHContent(packageId);
           setReserved(res);
         }
       } catch (error) {
         setReserved(false);
       }
-    }
+    };
     checkPoh();
   }, []);
 
@@ -131,36 +131,34 @@ const ConfirmationModal = ({
           </Modal.Card.Body>
           {reserved ? (
             <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
-            <Button.Group>
-              <Button color="dark" onClick={toggle}>
-                Cancel
-              </Button>
-              <Button
-                color="primary"
-                disabled={isDisabled()}
-                className={submitting && "is-loading"}
-                onClick={onFormSubmit}
-              >
-                Submit
-              </Button>
-            </Button.Group>
-          </Modal.Card.Footer>
-          ):(
+              <Button.Group>
+                <Button color="dark" onClick={toggle}>
+                  Cancel
+                </Button>
+                <Button
+                  color="primary"
+                  disabled={isDisabled()}
+                  className={submitting && "is-loading"}
+                  onClick={onFormSubmit}
+                >
+                  Submit
+                </Button>
+              </Button.Group>
+            </Modal.Card.Footer>
+          ) : (
             <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
-            <Button.Group>
-             
-              <Button
-                color="primary"
-                disabled={isDisabled()}
-                className={submitting && "is-loading"}
-                onClick={onReservedPoh}
-              >
-                Reserve
-              </Button>
-            </Button.Group>
-          </Modal.Card.Footer>
+              <Button.Group>
+                <Button
+                  color="primary"
+                  disabled={isDisabled()}
+                  className={submitting && "is-loading"}
+                  onClick={onReservedPoh}
+                >
+                  Reserve
+                </Button>
+              </Button.Group>
+            </Modal.Card.Footer>
           )}
-          
         </Modal.Card>
 
         {message && (

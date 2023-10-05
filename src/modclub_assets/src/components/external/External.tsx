@@ -9,6 +9,7 @@ import Privacy from "./Privacy";
 import Terms from "./Terms";
 import HowTo from "./HowTo";
 import Logout from "../auth/Logout";
+import Airdrop from "./Airdrop/Airdrop";
 
 export default function External() {
   return (
@@ -23,6 +24,7 @@ export default function External() {
         <Route path="/privacy" component={Privacy} />
         <Route path="/terms" component={Terms} />
         <Route path="/how-to" component={HowTo} />
+        <Route path="/airdrop" component={Airdrop} />
       </Switch>
     </>
   );

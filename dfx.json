@@ -38,7 +38,9 @@
       "args": "-v --max-stable-pages 786432"
     },
     "modclub_qa_assets": {
-      "dependencies": ["modclub_qa"],
+      "dependencies": [
+        "modclub_qa"
+      ],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
@@ -120,6 +122,18 @@
     },
     "bucket_qa": {
       "main": "src/modclub/service/storage/buckets.mo",
+      "type": "motoko"
+    },
+    "airdrop": {
+      "main": "src/airdrop/main.mo",
+      "type": "motoko"
+    },
+    "airdrop_dev": {
+      "main": "src/airdrop/main.mo",
+      "type": "motoko"
+    },
+    "airdrop_qa": {
+      "main": "src/airdrop/main.mo",
       "type": "motoko"
     }
   },

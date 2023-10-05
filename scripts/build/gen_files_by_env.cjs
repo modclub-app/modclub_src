@@ -27,8 +27,9 @@ import * as modclub_types from "../../declarations/modclub${postfix}/modclub${po
 import * as rs_types from "../../declarations/rs${postfix}/rs${postfix}.did";
 import * as vesting_types from "../../declarations/vesting${postfix}/vesting${postfix}.did";
 import * as wallet_types from "../../declarations/wallet${postfix}/wallet${postfix}.did";
+import * as airdrop_types from "../../declarations/airdrop${postfix}/airdrop${postfix}.did";
 
-export { modclub_types, rs_types, vesting_types, wallet_types };
+export { modclub_types, rs_types, vesting_types, wallet_types, airdrop_types };
 `;
 
 // Write to the desired file
@@ -47,8 +48,9 @@ import * as modclub from "../../declarations/modclub${postfix}";
 import * as rs from "../../declarations/rs${postfix}";
 import * as vesting from "../../declarations/vesting${postfix}";
 import * as wallet from "../../declarations/wallet${postfix}";
+import * as airdrop from "../../declarations/airdrop${postfix}";
 
-export { modclub, rs, vesting, wallet };
+export { modclub, rs, vesting, wallet, airdrop };
 `;
 
 // Write to the desired file

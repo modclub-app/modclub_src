@@ -36,7 +36,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
-      if(amount < wallet){
+      if (amount < wallet) {
         const amounts: number =
           Number(amount) * Math.pow(10, Number(appState.decimals));
         const res = await modclub.stakeTokens(BigInt(amounts));
@@ -46,7 +46,8 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
           dispatch({ type: "personalBalanceLoading", payload: true });
         !appState.stakeBalanceLoading &&
           dispatch({ type: "stakeBalanceLoading", payload: true });
-      return { reserved: Number(amount), transfer: res };}
+        return { reserved: Number(amount), transfer: res };
+      }
     } catch (error) {
       console.error("Stake Failed:", error);
     }
@@ -58,12 +59,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
       subtitle="Congratulation!"
       toggle={toggle}
       handleSubmit={onFormSubmit}
-      updateTable={
-        <UpdateTable
-          wallet={wallet}
-          stake={stake}
-        />
-      }
+      updateTable={<UpdateTable wallet={wallet} stake={stake} />}
     >
       <div className="field">
         <div className="control has-icons-right">

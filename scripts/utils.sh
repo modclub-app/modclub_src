@@ -22,11 +22,13 @@ function generate_declariations() {
   local w=$(get_canister_name_by_env "$1" "wallet")
   local v=$(get_canister_name_by_env "$1" "vesting")
   local r=$(get_canister_name_by_env "$1" "rs")
+  local a=$(get_canister_name_by_env "$1" "airdrop")
   
   dfx generate "$m" -v &&
   dfx generate "$w" -v &&
   dfx generate "$v" -v &&
-  dfx generate "$r" -v
+  dfx generate "$r" -v &&
+  dfx generate "$a" -v
 }
 
 

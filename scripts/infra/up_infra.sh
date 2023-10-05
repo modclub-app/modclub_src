@@ -26,6 +26,7 @@ function create_qa_canisters() {
   dfx canister create modclub_qa &&
   dfx canister create vesting_qa &&
   dfx canister create modclub_qa_assets &&
+  dfx canister create airdrop_qa &&
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
 }
@@ -126,6 +127,7 @@ function deploy_qa_canisters() {
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Deploy QA Canisters...${NC}\n"
 
 	dfx deploy auth_qa --argument="($local_env)" &&
+  dfx deploy airdrop_qa --argument="($local_env)" &&
 	deploy_wallet_canister &&
   deploy_vesting_canister &&
   dfx deploy internet_identity &&

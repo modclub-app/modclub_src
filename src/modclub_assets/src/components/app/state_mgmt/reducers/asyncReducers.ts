@@ -186,7 +186,7 @@ export async function asyncReducers(asyncState, action) {
       }
       return { ...state, claimedStakeBalance, claimedStakeLoading };
     }
-    
+
     case "fetchUserRS": {
       let rs = state.rs;
       try {

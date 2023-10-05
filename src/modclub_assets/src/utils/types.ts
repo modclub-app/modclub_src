@@ -3,8 +3,9 @@ import {
   rs_types,
   vesting_types,
   wallet_types,
+  airdrop_types,
 } from "../../src/declarations_by_env";
-export { modclub_types, rs_types, vesting_types, wallet_types };
+export { modclub_types, rs_types, vesting_types, wallet_types, airdrop_types };
 
 export interface ImageData {
   src: string;

@@ -55,16 +55,16 @@ const ApplicantSnippet = ({
       const urlObject = await fetchObjectUrl(modclub, imageUrl);
       setUrlObject(urlObject);
     };
-    const checkPoh = async ()=>{
+    const checkPoh = async () => {
       try {
-        if(modclub){
-          const res =await modclub.isReservedPOHContent(applicant.packageId);
+        if (modclub) {
+          const res = await modclub.isReservedPOHContent(applicant.packageId);
           setReserved(res);
         }
       } catch (error) {
         setReserved(false);
       }
-    }
+    };
     fetchData();
     checkPoh();
     return () => {
@@ -72,54 +72,52 @@ const ApplicantSnippet = ({
     };
   }, [imageUrl]);
 
-  const onReservedPoh = async ()=>{
+  const onReservedPoh = async () => {
     try {
       await modclub.createPohVoteReservation(applicant.packageId);
       setReserved(true);
-      setMessage({success: true, value: "Reserved POH successful"});
+      setMessage({ success: true, value: "Reserved POH successful" });
     } catch (error) {
       setReserved(false);
-      setMessage({success: false, value: "Reserved POH unsuccessful"});
+      setMessage({ success: false, value: "Reserved POH unsuccessful" });
     }
-  }
+  };
 
   return (
     <div>
-    {message && (
-      <Notification
-        color={message.success ? "success" : "danger"}
-        textAlign="center"
-      >
-        {message.value}
-      </Notification>
-    )}
-      <ReservedPohButton 
-    packageId={applicant.packageId}
-    Text={"View"}
-    imageUrl={imageUrl}
-    urlObject={urlObject}
-    createdAt={applicant.createdAt}
-    isEnable={reserved}
-    />
-    {!reserved && (
-      <Button.Group
-      className="is-flex-wrap-nowrap mt-5"
-      style={{ paddingBottom: 10 }}
-    >
-  
-      <Button
-        fullwidth
-        className="is-outlined"
-        style={{ paddingLeft: 0, paddingRight: 0 }}
-        onClick={onReservedPoh}
-      >
-        <Icon align="left" size="small" className="has-text-white">
-          Reserve
-        </Icon>
-      </Button>
-    </Button.Group>
-    )}
-    
+      {message && (
+        <Notification
+          color={message.success ? "success" : "danger"}
+          textAlign="center"
+        >
+          {message.value}
+        </Notification>
+      )}
+      <ReservedPohButton
+        packageId={applicant.packageId}
+        Text={"View"}
+        imageUrl={imageUrl}
+        urlObject={urlObject}
+        createdAt={applicant.createdAt}
+        isEnable={reserved}
+      />
+      {!reserved && (
+        <Button.Group
+          className="is-flex-wrap-nowrap mt-5"
+          style={{ paddingBottom: 10 }}
+        >
+          <Button
+            fullwidth
+            className="is-outlined"
+            style={{ paddingLeft: 0, paddingRight: 0 }}
+            onClick={onReservedPoh}
+          >
+            <Icon align="left" size="small" className="has-text-white">
+              Reserve
+            </Icon>
+          </Button>
+        </Button.Group>
+      )}
     </div>
   );
 };

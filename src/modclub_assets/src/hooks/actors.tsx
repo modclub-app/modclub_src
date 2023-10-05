@@ -4,6 +4,7 @@ import {
   rs_types,
   vesting_types,
   wallet_types,
+  airdrop_types,
 } from "../declarations_by_env";
 
 import { useCanister } from "./useCanister";
@@ -13,6 +14,7 @@ export interface IActors {
   rs: rs_types.RSManager;
   vesting: vesting_types.Vesting;
   wallet: wallet_types._SERVICE;
+  airdrop: airdrop_types._SERVICE;
 }
 
 export function useActors(): IActors {
@@ -23,6 +25,7 @@ export function useActors(): IActors {
   const [rs] = useCanister("rs") as [RSManager];
   const [vesting] = useCanister("vesting") as [Vesting];
   const [wallet] = useCanister("wallet") as [Wallet];
+  const [airdrop] = useCanister("airdrop", {mode: "connected"}) as [Airdrop, {signedIn: boolean}];
 
-  return { modclub, rs, vesting, wallet };
+  return { modclub, rs, vesting, wallet, airdrop };
 }

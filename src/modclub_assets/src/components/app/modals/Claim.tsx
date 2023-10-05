@@ -13,7 +13,7 @@ export default function Claim({ toggle, pendingRewards, userId }) {
   const { modclub, vesting } = useActors();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
-  
+
   const onFormSubmit = async () => {
     try {
       const locked = amount;

@@ -102,7 +102,7 @@ export function formatDate(integer: bigint, dateformate?: string) {
   const current_date = new Date();
   if (!isValid(date)) return "invalid date";
   const same = isSameDay(current_date, date);
-  
+
   return same
     ? formatDistanceStrict(current_date, date) + " ago"
     : format(date, dateformate ? dateformate : Constants.DEFAULT_DATE_FORMAT);
@@ -161,7 +161,11 @@ export function format_token(amount: number): string {
   }
 }
 
-export function convert_to_mod(amount: bigint, digit: bigint, preceision=4): number {
+export function convert_to_mod(
+  amount: bigint,
+  digit: bigint,
+  preceision = 4
+): number {
   const tokens = Number(amount) / Math.pow(10, Number(digit));
   const preceisionFactor = Math.pow(10, preceision);
   return Math.floor(tokens * preceisionFactor) / preceisionFactor;

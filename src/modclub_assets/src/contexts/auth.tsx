@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Identity } from "@dfinity/agent";
 import type { IDL } from "@dfinity/candid";
-import { modclub, rs, vesting, wallet } from "../actors_by_env";
+import { modclub, rs, vesting, wallet, airdrop } from "../actors_by_env";
 import canisterIds from "../../../../canister_ids.json";
 
 /*
@@ -52,6 +52,7 @@ export function AuthProvider({ children }) {
       rs,
       vesting,
       wallet,
+      airdrop,
     },
     providers: providers_cb,
     globalProviderConfig: {

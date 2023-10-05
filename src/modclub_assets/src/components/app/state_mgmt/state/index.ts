@@ -22,11 +22,10 @@ export const initialState = {
   moderationTasksPage: 1,
   moderationTasksPageStartIndex: 0,
   moderationTasksPageSize: 20,
-  unlockStakeBalance:0,
+  unlockStakeBalance: 0,
   unlockStakeLoading: true,
-  claimedStakeBalance:0,
+  claimedStakeBalance: 0,
   claimedStakeLoading: true,
-  pendingStakeBalance:0,
+  pendingStakeBalance: 0,
   pendingStakeLoading: true,
-
 };
