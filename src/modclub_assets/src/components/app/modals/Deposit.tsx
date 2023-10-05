@@ -6,7 +6,7 @@ import { Principal } from "@dfinity/principal";
 import PopupModal from "./PopupModal";
 import { format_token } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
-import { useConnect } from "@connect2icmodclub/react";
+import { useConnect, useProviders } from "@connect2icmodclub/react";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 import { useContext } from "react";
@@ -32,8 +32,7 @@ export default function Deposit({
   const [error, setError] = useState(null);
   const [inputValue, setInputValue] = useState(userTokenBalance);
   const { modclub, wallet } = useActors();
-  const { activeProvider } = useConnect();
-
+  const { activeProvider, principal } = useConnect();
   const [receiver, setReceiver] = useState(String);
   const { client } = useContext(Connect2ICContext);
 
@@ -104,7 +103,29 @@ export default function Deposit({
       setInputValue(newValue);
     }
   };
-
+  const depositManual = (principal, userTokenBalance) =>{
+    return (
+    <>
+    <h1 className="is-capitalized has-text-weight-bold is-size-6">Step 1:</h1>
+    <label className="label is-size-6">Manually deposit into your account:</label>
+    <p className="is-flex is-justify-content-center has-text-white">
+      {principal}
+      <Icon
+        color="white"
+        className="ml-3 is-clickable"
+        onClick={() => {navigator.clipboard.writeText(principal);}}
+      >
+        <span className="material-icons">file_copy</span>
+      </Icon>
+    </p>
+    <br/>
+    <p>Your current account balance: {format_token(userTokenBalance)} MOD</p>
+    <div className="has-text-weight-light is-italic ">{"*only applicable to users that are logged in with internet identity."}</div>
+    <br/>
+    <h1 className="is-capitalized has-text-weight-bold is-size-6">Step 2:</h1>
+    </>
+    )
+  }
   return (
     <>
       {error != null && (
@@ -118,11 +139,9 @@ export default function Deposit({
         subtitle="Congratulation!"
         handleSubmit={isProvider ? handleDepositProvider : handleDeposit}
       >
-        <label className="label">Enter the amount you want to deposit</label>
+        {principal && activeProvider.meta.id != "plug"  && depositManual(principal, userTokenBalance)}
+        <label className="label is-size-6">Add to your Modclub active balance: </label>
         <br />
-        <label className="label">
-          Your current balance {format_token(userTokenBalance)}
-        </label>
         <div className="field">
           <div className="control">
             <div className="is-flex is-align-items-center">
@@ -144,15 +163,7 @@ export default function Deposit({
               </Icon>
             </div>
           </div>
-        </div>
-        {isProvider && (
-          <>
-            <label className="label">Deposit to this principal ID:</label>
-            <p className="is-flex is-justify-content-center has-text-white">
-              {provider}
-            </p>
-          </>
-        )}
+        </div>    
       </PopupModal>
     </>
   );

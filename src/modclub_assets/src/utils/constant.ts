@@ -18,3 +18,4 @@ export const CLAIM_LIMIT_MSG = (value: number) =>
 export const DEFAULT_DATE_FORMAT = "dd MMM yyyy";
 export const LB_PAGE_SIZE = 30;
 export const RS_FACTOR = 100;
+export const ACTIVE_BALANCE_MSG = "You can use your active balance to stake in order to receive your rewards";

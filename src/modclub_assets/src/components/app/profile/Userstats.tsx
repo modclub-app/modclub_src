@@ -44,6 +44,7 @@ export default function Userstats({ detailed = false }) {
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
   const { modclub } = useActors();
+  const activeBalanceMsg = Constant.ACTIVE_BALANCE;
 
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
@@ -158,7 +159,7 @@ export default function Userstats({ detailed = false }) {
           <StatBox
             loading={false}
             image={walletImg}
-            title="Wallet"
+            title="Active Balance"
             amount={convert_to_mod(
               appState.systemBalance,
               BigInt(appState.decimals),
@@ -166,7 +167,7 @@ export default function Userstats({ detailed = false }) {
             )}
             usd={170}
             detailed={detailed}
-            message="Wallet"
+            message={activeBalanceMsg}
             isBar={false}
           >
             <Button.Group>
@@ -205,7 +206,6 @@ export default function Userstats({ detailed = false }) {
             level={level}
           />
         )}
-
         <StatBox
           loading={false}
           image={stakedImg}
