@@ -2,6 +2,9 @@
   "airdrop_dev": {
     "ic": "wyblr-7qaaa-aaaam-qbcdq-cai"
   },
+  "airdrop_qa": {
+    "ic": "xvpp7-qyaaa-aaaam-qbcea-cai"
+  },
   "auth": {
     "ic": "gdtip-xiaaa-aaaah-qdbnq-cai"
   },
