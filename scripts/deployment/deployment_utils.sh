@@ -24,10 +24,10 @@ function deploy_canisters() {
 
   log "Deploy ${env} Canisters..."
 
-  dfx deploy ${auth_canister_name} --network=${network} --argument="($env_vars)" &&
+  dfx_deploy ${auth_canister_name} --network=${network} --argument="'(${env_vars})'" &&
   deploy_wallet_canister $env $network &&
   deploy_vesting_canister $env $network $old_modclub_inst &&
-  dfx deploy ${airdrop_canister_name} --network=${network} --argument="($env_vars)" &&  
+  dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'" &&  
 
   dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
   dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
@@ -67,7 +67,7 @@ function deploy_wallet_canister() {
 
   local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
 
-  dfx_deploy ${wallet_canister_name} --network=${network}  --argument='(variant { Init = 
+  dfx_deploy ${wallet_canister_name} --network=${network}  --argument="'(variant { Init = 
       record {
         token_name = "'${TOKEN_NAME}'";
         token_symbol = "'${TOKEN_SYMBOL}'";
@@ -90,7 +90,7 @@ function deploy_wallet_canister() {
           num_blocks_to_archive = 1000;
           controller_id = principal "'${ARCHIVE_CONTROLLER}'";
         }
-  }})'
+  }})'"
 
   return 0;
 }
@@ -126,7 +126,7 @@ function deploy_vesting_canister() {
   # Handle "prod" environment separately
   local canister_name=$(get_canister_name_by_env $env "vesting")
 
-  dfx_deploy ${canister_name} --network=${network} --argument="(record { env = $env_vars } )"
+  dfx_deploy ${canister_name} --network=${network} --argument="'(record { env = $env_vars } )'"
   dfx generate ${canister_name} -v
   return 0;
 }
