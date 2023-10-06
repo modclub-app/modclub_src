@@ -47,6 +47,8 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
   const [inputValue, setInputValue] = useState(0);
   const dispatch = useAppStateDispatch();
   const { wallet, modclub } = useActors();
+  const [load, setLoader] = useState(false);
+  const [warning, setWarning] = useState(null);
   const feeTokens = convert_to_mod(
     appState.transactionFee,
     BigInt(appState.decimals)
@@ -75,22 +77,13 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
     }
   };
 
-  const preventMax = (e) => {
-    const newValue = parseInt(e.target.value);
-    if (newValue > systemBalance - feeTokens) {
-      setInputValue(systemBalance - feeTokens);
-      e.target.value = systemBalance - feeTokens;
-    } else {
-      setInputValue(newValue);
-    }
-  };
-
   return (
     <PopupModal
       toggle={toggle}
       title="Withdraw"
       handleSubmit={onFormSubmit}
       subtitle="Congratulation!"
+      loader={load}
       updateTable={<UpdateTable amount={inputValue || 0} />}
     >
       <label className="label">Enter your wallet address: </label>
@@ -106,23 +99,33 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
           />
         </div>
       </div>
-
       <label className="label">Enter your withdraw amount:</label>
+      <br/>
+      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
       <div className="field">
         <div className="control has-icons-right">
           <Field
             name="amount"
             component="input"
             type="number"
-            className="input"
+            className={(!load) ? "input": "input is-danger"}
             initialValue={inputValue}
-            onInput={preventMax}
             validate={(value) => {
-              if (isNaN(value) || Number(value) <= 0) {
-                return "Please enter a positive number";
+              if (isNaN(value) || Number(value) < 0) {
+                setWarning("Incorrect amount");
+                return setLoader(true);
+              }
+              if (isNaN(value) || Number(value) == 0) {
+                setWarning(null);
+                return setLoader(true);
               }
               if (Number(value) > systemBalance - feeTokens) {
-                return "Insufficient balance";
+                setWarning("Out of balance");
+                return setLoader(true);
+              }
+              else{ 
+                setWarning(null);
+                setLoader(false);
               }
             }}
           />

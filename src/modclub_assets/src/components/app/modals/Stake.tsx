@@ -33,6 +33,9 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
   const { modclub } = useActors();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
+  const [inputValue, setInputValue] = useState(0);
+  const [load, setLoader] = useState(false);
+  const [warning, setWarning] = useState(null);
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
@@ -58,17 +61,38 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
       title="Stake"
       subtitle="Congratulation!"
       toggle={toggle}
+      loader={load}
       handleSubmit={onFormSubmit}
       updateTable={<UpdateTable wallet={wallet} stake={stake} />}
     >
+      <br/>
+      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
       <div className="field">
         <div className="control has-icons-right">
           <Field
             name="amount"
             component="input"
             type="number"
-            className="input"
-            initialValue="0"
+            className={(!load) ? "input": "input is-danger"}
+            initialValue={inputValue}
+            validate={(value) => {
+              if (isNaN(value) || Number(value) < 0) {
+                setWarning("Incorrect amount");
+                return setLoader(true);
+              }
+              if (isNaN(value) || Number(value) == 0) {
+                setWarning(null);
+                return setLoader(true);
+              }
+              if (Number(value) > wallet) {
+                setWarning("Out of balance");
+                return setLoader(true);
+              }
+              else{ 
+                setWarning(null);
+                setLoader(false);
+              }
+            }}
           />
           <Icon align="right" color="white" className="mr-4">
             MOD

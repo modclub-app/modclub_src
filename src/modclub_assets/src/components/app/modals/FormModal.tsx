@@ -77,7 +77,6 @@ export default function FormModal({
                   <Button
                     color="primary"
                     disabled={message || submitting || loader}
-                    className={(submitting || loader) && "is-loading"}
                   >
                     Submit
                   </Button>

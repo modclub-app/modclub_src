@@ -44,7 +44,7 @@ export default function Userstats({ detailed = false }) {
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
   const { modclub } = useActors();
-  const activeBalanceMsg = Constant.ACTIVE_BALANCE;
+  const activeBalanceMsg = Constant.ACTIVE_BALANCE_MSG;
 
   const [holdingsUpdated, setHoldingsUpdated] = useState<boolean>(true);
   const [tokenHoldings, setTokenHoldings] = useState({
@@ -289,11 +289,6 @@ export default function Userstats({ detailed = false }) {
       {showDeposit && (
         <Deposit
           toggle={toggleDeposit}
-          userTokenBalance={convert_to_mod(
-            appState.personalBalance,
-            BigInt(appState.decimals),
-            2
-          )}
           isProvider={false}
           subacc={subacc}
         />

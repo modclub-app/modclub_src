@@ -179,6 +179,13 @@ export default function Unstake({
   const { modclub } = useActors();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
+  const [inputValue, setInputValue] = useState(0);
+  const [load, setLoader] = useState(false);
+  const [warning, setWarning] = useState(null);
+  const stakeBalance = convert_to_mod(
+    appState.stakeBalance,
+    BigInt(appState.decimals)
+  )
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
@@ -203,12 +210,10 @@ export default function Unstake({
       toggle={toggle}
       handleSubmit={onFormSubmit}
       button1="Release Stake"
+      loader={load}
       updateTable={
         <UpdateTable
-          stake={convert_to_mod(
-            appState.stakeBalance,
-            BigInt(appState.decimals)
-          )}
+          stake={stakeBalance}
           tokenHoldings={tokenHoldings}
           lockBlock={lockBlock}
           digit={digit}
@@ -216,14 +221,34 @@ export default function Unstake({
         />
       }
     >
+      <br/>
+      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
       <div className="field">
         <div className="control has-icons-right">
           <Field
             name="amount"
             component="input"
             type="number"
-            className="input"
-            initialValue="0"
+            className={(!load) ? "input": "input is-danger"}
+            initialValue={inputValue}
+            validate={(value) => {
+              if (isNaN(value) || Number(value) < 0) {
+                setWarning("Incorrect amount");
+                return setLoader(true);
+              }
+              if (isNaN(value) || Number(value) == 0) {
+                setWarning(null);
+                return setLoader(true);
+              }
+              if (Number(value) > stakeBalance) {
+                setWarning("Out of balance");
+                return setLoader(true);
+              }
+              else{ 
+                setWarning(null);
+                setLoader(false);
+              }
+            }}
           />
           <Icon align="right" color="white" className="mr-4">
             MOD

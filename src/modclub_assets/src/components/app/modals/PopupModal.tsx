@@ -90,7 +90,6 @@ export default function PopupModal({
                 <Button
                   color="primary"
                   disabled={message || submitting || loader}
-                  className={ (submitting || loader) && "is-loading"}
                 >
                   {button1}
                 </Button>

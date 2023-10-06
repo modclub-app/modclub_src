@@ -10,6 +10,9 @@ import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 export default function Claim({ toggle, pendingRewards, userId }) {
   const [amount, setAmount] = useState(pendingRewards);
   const [error, setError] = useState(null);
+  const [inputValue, setInputValue] = useState(0);
+  const [load, setLoader] = useState(false);
+  const [warning, setWarning] = useState(null);
   const { modclub, vesting } = useActors();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
@@ -26,32 +29,42 @@ export default function Claim({ toggle, pendingRewards, userId }) {
     }
   };
 
-  const preventMax = (e) => {
-    let inputValue = parseInt(e.target.value);
-    if (inputValue > pendingRewards) {
-      setAmount(pendingRewards);
-    } else {
-      setAmount(inputValue);
-    }
-  };
-
   return (
     <FormModal
       title="Claim"
       toggle={toggle}
       handleSubmit={onFormSubmit}
+      loader={load}
       updateTable={<UpdateTable amount={amount} text={"Available:"} />}
     >
       {error && <div className="error">{error}</div>}
+      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
       <div className="field">
         <div className="control">
           <Field
             name="amount"
             component="input"
             type="hidden"
-            className="input"
-            initialValue={pendingRewards}
-            onInput={preventMax}
+            className={(!load) ? "input": "input is-danger"}
+            initialValue={inputValue}
+            validate={(value) => {
+              if (isNaN(value) || Number(value) < 0) {
+                setWarning("Incorrect amount");
+                return setLoader(true);
+              }
+              if (isNaN(value) || Number(value) == 0) {
+                setWarning(null);
+                return setLoader(true);
+              }
+              if (Number(value) > pendingRewards) {
+                setWarning("Out of balance");
+                return setLoader(true);
+              }
+              else{ 
+                setWarning(null);
+                setLoader(false);
+              }
+            }}
           />
         </div>
       </div>

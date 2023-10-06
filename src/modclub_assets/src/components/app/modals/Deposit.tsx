@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { icrc1Transfer } from "../../../utils/api";
 import { Principal } from "@dfinity/principal";
 import PopupModal from "./PopupModal";
-import { format_token } from "../../../utils/util";
+import { convert_to_mod, format_token } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import { useConnect, useProviders } from "@connect2icmodclub/react";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
@@ -14,7 +14,6 @@ import { Connect2ICContext } from "@connect2icmodclub/react";
 
 interface DepositProps {
   toggle: () => void;
-  userTokenBalance: number;
   receiver: string;
   provider?: string;
   subacc?: Uint8Array;
@@ -22,19 +21,28 @@ interface DepositProps {
 }
 export default function Deposit({
   toggle,
-  userTokenBalance,
   provider,
   isProvider,
   subacc,
 }: DepositProps) {
   const appState = useAppState();
+  const [inputValue, setInputValue] = useState(0);
   const dispatch = useAppStateDispatch();
   const [error, setError] = useState(null);
-  const [inputValue, setInputValue] = useState(userTokenBalance);
   const { modclub, wallet } = useActors();
   const { activeProvider, principal } = useConnect();
   const [receiver, setReceiver] = useState(String);
+  const [load, setLoader] = useState(false);
+  const [warning, setWarning] = useState(null);
   const { client } = useContext(Connect2ICContext);
+  const feeTokens = convert_to_mod(
+    appState.transactionFee,
+    BigInt(appState.decimals)
+  );
+  const personalBalance = convert_to_mod(
+    appState.personalBalance,
+    BigInt(appState.decimals)
+  );
 
   useEffect(() => {
     if (client._service && client._service._state.context) {
@@ -94,15 +102,6 @@ export default function Deposit({
     }
   };
 
-  const preventMax = (e) => {
-    const newValue = parseInt(e.target.value);
-    if (newValue > userTokenBalance) {
-      setInputValue(userTokenBalance);
-      e.target.value = userTokenBalance;
-    } else {
-      setInputValue(newValue);
-    }
-  };
   const depositManual = (principal, userTokenBalance) =>{
     return (
     <>
@@ -119,7 +118,7 @@ export default function Deposit({
       </Icon>
     </p>
     <br/>
-    <p>Your current account balance: {format_token(userTokenBalance)} MOD</p>
+    <p>Your current account balance: {format_token(personalBalance)} MOD</p>
     <div className="has-text-weight-light is-italic ">{"*only applicable to users that are logged in with internet identity."}</div>
     <br/>
     <h1 className="is-capitalized has-text-weight-bold is-size-6">Step 2:</h1>
@@ -137,11 +136,13 @@ export default function Deposit({
         toggle={toggle}
         title="Deposit"
         subtitle="Congratulation!"
+        loader={load}
         handleSubmit={isProvider ? handleDepositProvider : handleDeposit}
       >
-        {principal && activeProvider.meta.id != "plug"  && depositManual(principal, userTokenBalance)}
+        {principal && activeProvider.meta.id != "plug"  && depositManual(principal, personalBalance)}
         <label className="label is-size-6">Add to your Modclub active balance: </label>
         <br />
+        {warning && <p  className="mr-5 justify-content-center has-text-danger">{warning}</p>}
         <div className="field">
           <div className="control">
             <div className="is-flex is-align-items-center">
@@ -149,14 +150,31 @@ export default function Deposit({
                 name="reserved"
                 component="input"
                 type="number"
-                className="input"
-                initialValue={0}
-                onInput={preventMax}
+                className={(!load) ? "input": "input is-danger"}
+                initialValue={inputValue}
+                validate={(value) => {
+                  if (isNaN(value) || Number(value) < 0) {
+                    setWarning("Incorrect amount");
+                    return setLoader(true);
+                  }
+                  if (isNaN(value) || Number(value) == 0) {
+                    setWarning(null);
+                    return setLoader(true);
+                  }
+                  if (Number(value) > personalBalance - feeTokens) {
+                    setWarning("Out of balance");
+                    return setLoader(true);
+                  }
+                  else{ 
+                    setWarning(null);
+                    setLoader(false);
+                  }
+                }}
               />
               <Icon
                 align="right"
                 color="white"
-                className="mr-4 justify-content-center"
+                className="mr-5 justify-content-center"
                 style={{ marginLeft: "1.5rem" }}
               >
                 MOD
