@@ -72,11 +72,9 @@ export default function ModclubApp() {
   }, [isConnected, modclub]);
 
   useEffect(() => {
-    if (isConnected && rs)
-      if (appState.userProfile) {
-        dispatch({ type: "fetchUserRS" });
-      }
-  }, [isConnected, rs, appState.userProfile]);
+    if (isConnected && rs && appState.loginPrincipalId)
+      dispatch({ type: "fetchUserRS" });
+  }, [isConnected, rs, appState.loginPrincipalId]);
 
   useEffect(() => {
     if (isConnected && wallet) {
@@ -86,10 +84,10 @@ export default function ModclubApp() {
   }, [isConnected, wallet]);
 
   useEffect(() => {
-    if (isConnected && appState.userProfile)
+    if (isConnected && appState.loginPrincipalId)
       appState.personalBalanceLoading &&
         dispatch({ type: "fetchUserPersonalBalance" });
-  }, [isConnected, appState.userProfile, appState.personalBalanceLoading]);
+  }, [isConnected, appState.loginPrincipalId, appState.personalBalanceLoading]);
 
   useEffect(() => {
     if (isConnected && appState.userProfile)
@@ -98,20 +96,20 @@ export default function ModclubApp() {
   }, [isConnected, appState.userProfile, appState.systemBalanceLoading]);
 
   useEffect(() => {
-    if (isConnected && appState.userProfile)
+    if (isConnected && appState.loginPrincipalId)
       appState.stakeBalanceLoading &&
         dispatch({ type: "fetchUserStakedBalance" });
-  }, [isConnected, appState.userProfile, appState.stakeBalanceLoading]);
+  }, [isConnected, appState.loginPrincipalId, appState.stakeBalanceLoading]);
   useEffect(() => {
-    if (isConnected && appState.userProfile)
+    if (isConnected && appState.loginPrincipalId)
       appState.unlockStakeLoading &&
         dispatch({ type: "fetchUserUnlockedStakedBalance" });
-  }, [isConnected, appState.userProfile, appState.unlockStakeLoading]);
+  }, [isConnected, appState.loginPrincipalId, appState.unlockStakeLoading]);
   useEffect(() => {
-    if (isConnected && appState.userProfile)
+    if (isConnected && appState.loginPrincipalId)
       appState.claimedStakeLoading &&
         dispatch({ type: "fetchUserClaimedStakedBalance" });
-  }, [isConnected, appState.userProfile, appState.claimedStakeLoading]);
+  }, [isConnected, appState.loginPrincipalId, appState.claimedStakeLoading]);
 
   useEffect(() => {
     if (isConnected && appState.loginPrincipalId && vesting) {

@@ -135,14 +135,6 @@ export default function Userstats({ detailed = false }) {
     };
   }, [appState.decimals, principal, modclub]);
 
-  useEffect(() => {
-    let isMounted = true;
-    dispatch({ type: "fetchUserRS" });
-    return () => {
-      isMounted = false;
-    };
-  }, [principal, modclub]);
-
   const getRSMessageByLevel = useCallback((level: string) => {
     return levelMessages[level]?.rs || Constant.DEFAULT_MESSAGE;
   }, []);
@@ -287,11 +279,7 @@ export default function Userstats({ detailed = false }) {
       )}
 
       {showDeposit && (
-        <Deposit
-          toggle={toggleDeposit}
-          isProvider={false}
-          subacc={subacc}
-        />
+        <Deposit toggle={toggleDeposit} isProvider={false} subacc={subacc} />
       )}
 
       {showWithdraw && (

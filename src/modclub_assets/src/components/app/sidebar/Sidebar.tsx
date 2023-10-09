@@ -172,18 +172,25 @@ export default function Sidebar() {
       fetchUserAlertOptinVal();
     }
     const getUserLv = async () => {
-      const res = await rs.queryRSAndLevelByPrincipal(
-        Principal.fromText(principal)
-      );
-      if (res && res.level && Object.keys(res.level).length > 0 && isMounted) {
-        setLevel(Object.keys(res.level)[0]);
+      if (rs) {
+        const res = await rs.queryRSAndLevelByPrincipal(
+          Principal.fromText(principal)
+        );
+        if (
+          res &&
+          res.level &&
+          Object.keys(res.level).length > 0 &&
+          isMounted
+        ) {
+          setLevel(Object.keys(res.level)[0]);
+        }
       }
     };
     principal && getUserLv();
     return () => {
       isMounted = false;
     };
-  }, [isConnected, appState.userProfile, appState.requiresSignUp]);
+  }, [isConnected, appState.userProfile, appState.requiresSignUp, rs]);
 
   return (
     <Columns.Column

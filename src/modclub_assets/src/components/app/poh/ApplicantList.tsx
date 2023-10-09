@@ -165,7 +165,7 @@ export default function PohApplicantList() {
     setLoading(false);
   };
   const getUserLv = async () => {
-    if (principal) {
+    if (principal && rs) {
       try {
         const res = await rs.queryRSAndLevelByPrincipal(
           Principal.fromText(principal)

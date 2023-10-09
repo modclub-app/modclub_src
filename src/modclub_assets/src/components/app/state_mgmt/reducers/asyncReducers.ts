@@ -101,7 +101,6 @@ export async function asyncReducers(asyncState, action) {
       let lockedBalanceLoading = !state.lockedBalanceLoading;
       try {
         if (context.actors.vesting && state.loginPrincipalId) {
-          console.log("fetchUserLockedBalance::STARTED");
           const actor = context.actors.vesting.value;
           lockedBalance = await actor.locked_for({
             owner: Principal.from(state.loginPrincipalId),
@@ -121,10 +120,10 @@ export async function asyncReducers(asyncState, action) {
     case "fetchUserPersonalBalance": {
       let personalBalance = state.personalBalance;
       try {
-        if (context.actors.wallet && state.userProfile) {
+        if (context.actors.wallet && state.loginPrincipalId) {
           const actor = context.actors.wallet.value;
           personalBalance = await actor.icrc1_balance_of({
-            owner: state.userProfile.id,
+            owner: Principal.from(state.loginPrincipalId),
             subaccount: [],
           });
         }
@@ -141,10 +140,10 @@ export async function asyncReducers(asyncState, action) {
       let stakeBalance = state.stakeBalance;
       let stakeBalanceLoading = !state.stakeBalanceLoading;
       try {
-        if (context.actors.vesting && state.userProfile) {
+        if (context.actors.vesting && state.loginPrincipalId) {
           const actor = context.actors.vesting.value;
           stakeBalance = await actor.staked_for({
-            owner: state.userProfile.id,
+            owner: Principal.from(state.loginPrincipalId),
             subaccount: [],
           });
         }
@@ -160,10 +159,10 @@ export async function asyncReducers(asyncState, action) {
       let unlockStakeBalance = state.unlockStakeBalance;
       let unlockStakeLoading = !state.unlockStakeLoading;
       try {
-        if (context.actors.vesting && state.userProfile) {
+        if (context.actors.vesting && state.loginPrincipalId) {
           const actor = context.actors.vesting.value;
           unlockStakeBalance = await actor.unlocked_stakes_for({
-            owner: state.userProfile.id,
+            owner: Principal.from(state.loginPrincipalId),
             subaccount: [],
           });
         }
@@ -179,10 +178,10 @@ export async function asyncReducers(asyncState, action) {
       let claimedStakeBalance = state.claimedStakeBalance;
       let claimedStakeLoading = !state.claimedStakeLoading;
       try {
-        if (context.actors.vesting && state.userProfile) {
+        if (context.actors.vesting && state.loginPrincipalId) {
           const actor = context.actors.vesting.value;
           claimedStakeBalance = await actor.unlocked_stakes_for({
-            owner: state.userProfile.id,
+            owner: Principal.from(state.loginPrincipalId),
             subaccount: [],
           });
         }
@@ -195,9 +194,11 @@ export async function asyncReducers(asyncState, action) {
     case "fetchUserRS": {
       let rs = state.rs;
       try {
-        if (context.actors.rs && state.userProfile) {
+        if (context.actors.rs && state.loginPrincipalId) {
           const actor = context.actors.rs.value;
-          rs = await actor.queryRSAndLevelByPrincipal(state.userProfile.id);
+          rs = await actor.queryRSAndLevelByPrincipal(
+            Principal.from(state.loginPrincipalId)
+          );
         }
       } catch (e) {
         console.error("Error fetching RS::", e);
