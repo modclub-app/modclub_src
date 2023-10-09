@@ -1,6 +1,7 @@
 export const initialState = {
   decimals: 1, // impossible to divide by zero
   transactionFee: 0,
+  loginPrincipalId: null,
   userProfile: null,
   requiresSignUp: false,
   isAdminUser: false,

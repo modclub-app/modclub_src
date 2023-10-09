@@ -31,7 +31,7 @@ export default function ModclubApp() {
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
 
-  const { isConnected } = useConnect();
+  const { isConnected, principal } = useConnect();
   const { providerIdText, providers, selectedProvider, setSelectedProvider } =
     useProfile();
   const [status, setStatus] = useState(null);
@@ -56,6 +56,11 @@ export default function ModclubApp() {
       setJwt(true);
     }
   };
+
+  useEffect(() => {
+    if (isConnected && principal)
+      dispatch({ type: "setLoginPrincipalId", payload: principal });
+  }, [isConnected, principal]);
 
   useEffect(() => {
     if (isConnected && modclub) {
@@ -109,13 +114,14 @@ export default function ModclubApp() {
   }, [isConnected, appState.userProfile, appState.claimedStakeLoading]);
 
   useEffect(() => {
-    if (isConnected && appState.userProfile)
+    if (isConnected && appState.loginPrincipalId && vesting) {
       appState.lockedBalanceLoading &&
         dispatch({ type: "fetchUserLockedBalance" });
+    }
   }, [
     isConnected,
     vesting,
-    appState.userProfile,
+    appState.loginPrincipalId,
     appState.lockedBalanceLoading,
   ]);
 

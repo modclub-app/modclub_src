@@ -7,6 +7,9 @@ export async function asyncReducers(asyncState, action) {
   const context = action.context;
 
   switch (action.type) {
+    case "setLoginPrincipalId": {
+      return { ...state, loginPrincipalId: action.payload };
+    }
     case "fetchUserProfile": {
       let userProfile = state.userProfile;
       let requiresSignUp = state.requiresSignUp;
@@ -97,12 +100,14 @@ export async function asyncReducers(asyncState, action) {
       let lockedBalance = state.lockedBalance;
       let lockedBalanceLoading = !state.lockedBalanceLoading;
       try {
-        if (context.actors.vesting && state.userProfile) {
+        if (context.actors.vesting && state.loginPrincipalId) {
+          console.log("fetchUserLockedBalance::STARTED");
           const actor = context.actors.vesting.value;
           lockedBalance = await actor.locked_for({
-            owner: state.userProfile.id,
+            owner: Principal.from(state.loginPrincipalId),
             subaccount: [],
           });
+          console.log("FETCHED_BALLANCE_RESPONSE::", lockedBalance);
         }
       } catch (e) {
         console.error("Error fetching UserLockedBalance::", e);

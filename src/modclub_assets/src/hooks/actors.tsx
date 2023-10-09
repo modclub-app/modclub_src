@@ -22,10 +22,22 @@ export function useActors(): IActors {
     ModClub,
     { signedIn: boolean }
   ];
-  const [rs] = useCanister("rs") as [RSManager];
-  const [vesting] = useCanister("vesting") as [Vesting];
-  const [wallet] = useCanister("wallet") as [Wallet];
-  const [airdrop] = useCanister("airdrop", {mode: "connected"}) as [Airdrop, {signedIn: boolean}];
+  const [rs] = useCanister("rs", { mode: "connected" }) as [
+    RSManager,
+    { signedIn: boolean }
+  ];
+  const [vesting] = useCanister("vesting", { mode: "connected" }) as [
+    Vesting,
+    { signedIn: boolean }
+  ];
+  const [wallet] = useCanister("wallet", { mode: "connected" }) as [
+    Wallet,
+    { signedIn: boolean }
+  ];
+  const [airdrop] = useCanister("airdrop", { mode: "connected" }) as [
+    Airdrop,
+    { signedIn: boolean }
+  ];
 
   return { modclub, rs, vesting, wallet, airdrop };
 }
