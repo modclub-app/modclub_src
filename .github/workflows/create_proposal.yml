@@ -36,7 +36,8 @@ jobs:
 
       - name: Notify Slack - Starting Proposal Process
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"Starting proposal creation process.\nTitle: $TITLE\nSummary: $SUMMARY\nCanister: $CANISTER\nEnvironment: $ENVIRONMENT"}' $PROPOSAL_NOTIFICATION_SLACK_HOOK
+          PAYLOAD="{\"text\":\"Starting proposal creation process.\\nTitle: $TITLE\\nSummary: $SUMMARY\\nCanister: $CANISTER\\nEnvironment: $ENVIRONMENT\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
         env:
           PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
           TITLE: ${{ github.event.inputs.TITLE }}

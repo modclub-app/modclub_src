@@ -6,14 +6,45 @@ const {
   pemFilePath,
   canisterCommands,
 } = require("./sns_config.cjs");
-const canisterIds = require(path.join(
-  process.cwd(),
-  ".dfx/local/canister_ids.json"
-));
-const canisterIdsProd = require(path.join(
-  process.cwd(),
-  "./canister_ids.json"
-));
+
+const https = require("https");
+
+// Function to send a message to Slack via webhook
+function sendToSlack(message) {
+  const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);
+  const postData = JSON.stringify({
+    text: message,
+  });
+
+  const options = {
+    hostname: webhookUrl.hostname,
+    port: 443,
+    path: webhookUrl.pathname,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": postData.length,
+    },
+  };
+
+  const req = https.request(options, (res) => {
+    res.on("data", (d) => {
+      process.stdout.write(d);
+    });
+  });
+
+  req.on("error", (e) => {
+    console.error(`Error sending to Slack: ${e.message}`);
+  });
+
+  req.write(postData);
+  req.end();
+}
+
+// Function to get input either from arguments, environment variables, or prompt
+function getInput(index, envVar, question) {
+  return process.argv[index] || process.env[envVar] || prompt(question);
+}
 
 const https = require("https");
 
@@ -123,10 +154,17 @@ function execShellCommand(cmd) {
   );
 
   const snsCanisterIdsFile = "./sns_canister_ids.json";
+  const canisterIdsPath =
+    network === "local"
+      ? path.join(process.cwd(), ".dfx/local/canister_ids.json")
+      : path.join(process.cwd(), "./canister_ids.json");
+
+  const canisterIds = require(canisterIdsPath);
+
   const canisterId =
     network === "local"
       ? canisterIds[canisterName].local
-      : canisterIdsProd[canisterName].ic;
+      : canisterIds[canisterName].ic;
 
   var wasmPath = path.join(
     process.cwd(),
