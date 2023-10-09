@@ -46,8 +46,6 @@ function getInput(index, envVar, question) {
   return process.argv[index] || process.env[envVar] || prompt(question);
 }
 
-const https = require("https");
-
 // Function to send a message to Slack via webhook
 function sendToSlack(message) {
   const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);

@@ -7,9 +7,14 @@ on:
         description: "Proposal Title"
         required: true
       ENVIRONMENT:
-        description: "Environment (qa, dev, prod)"
+        description: "Environment"
         required: true
-        default: "dev"
+        default: "prod"
+        type: "choice"
+        options:
+          - "qa"
+          - "dev"
+          - "prod"
       SUMMARY:
         description: "Proposal Summary"
         required: true
@@ -17,6 +22,10 @@ on:
         description: "Canister for Proposal"
         required: true
         default: "modclub"
+      URL:
+        description: "Proposal URL"
+        required: false
+        default: "https://modclub.ai"
 
 jobs:
   execute-proposal:
