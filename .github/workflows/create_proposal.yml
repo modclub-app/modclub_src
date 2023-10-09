@@ -22,6 +22,14 @@ on:
         description: "Canister for Proposal"
         required: true
         default: "modclub"
+      NETWORK:
+        description: "Choose which network to deploy to"
+        required: true
+        default: "ic"
+        type: "choice"
+        options:
+          - "ic"
+          - "local"
       URL:
         description: "Proposal URL"
         required: false
