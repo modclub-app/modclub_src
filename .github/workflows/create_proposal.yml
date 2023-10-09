@@ -1,0 +1,75 @@
+name: Execute Canister Upgrade Proposal
+
+on:
+  workflow_dispatch:
+    inputs:
+      TITLE:
+        description: "Proposal Title"
+        required: true
+      ENVIRONMENT:
+        description: "Environment (qa, dev, prod)"
+        required: true
+        default: "dev"
+      SUMMARY:
+        description: "Proposal Summary"
+        required: true
+      CANISTER:
+        description: "Canister for Proposal"
+        required: true
+        default: "modclub"
+
+jobs:
+  execute-proposal:
+    runs-on: ubuntu-latest
+    name: Execute the canister upgrade proposal
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set inputs as env variables
+        run: |
+          echo "TITLE=${{ github.event.inputs.TITLE }}" >> $GITHUB_ENV
+          echo "ENVIRONMENT=${{ github.event.inputs.ENVIRONMENT }}" >> $GITHUB_ENV
+          echo "SUMMARY=${{ github.event.inputs.SUMMARY }}" >> $GITHUB_ENV
+          echo "CANISTER=${{ github.event.inputs.CANISTER }}" >> $GITHUB_ENV
+
+      - name: Notify Slack - Starting Proposal Process
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Starting proposal creation process.\nTitle: $TITLE\nSummary: $SUMMARY\nCanister: $CANISTER\nEnvironment: $ENVIRONMENT"}' $PROPOSAL_NOTIFICATION_SLACK_HOOK
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+          TITLE: ${{ github.event.inputs.TITLE }}
+          SUMMARY: ${{ github.event.inputs.SUMMARY }}
+          CANISTER: ${{ github.event.inputs.CANISTER }}
+          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: yarn install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      # Install dfx.
+      - name: Install dfx
+        run: |
+          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          dfx --version
+
+      - name: Set up dfx identity
+        run: |
+          mkdir -p ~/.config/dfx/identity/default/
+          echo "$IC_IDENTITY_FILE_PROD" > ~/.config/dfx/identity/default/identity.pem
+          dfx identity get-principal
+        env:
+          IC_IDENTITY_FILE_PROD: ${{ secrets.IC_IDENTITY_FILE_PROD }}
+
+      - name: Execute canister upgrade proposal script
+        run: node scripts/sns/canister_upgrade_proposal.cjs
+
+      - name: Show success message
+        run: echo success!

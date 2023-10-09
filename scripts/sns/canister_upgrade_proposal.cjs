@@ -15,6 +15,45 @@ const canisterIdsProd = require(path.join(
   "./canister_ids.json"
 ));
 
+const https = require("https");
+
+// Function to send a message to Slack via webhook
+function sendToSlack(message) {
+  const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);
+  const postData = JSON.stringify({
+    text: message,
+  });
+
+  const options = {
+    hostname: webhookUrl.hostname,
+    port: 443,
+    path: webhookUrl.pathname,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": postData.length,
+    },
+  };
+
+  const req = https.request(options, (res) => {
+    res.on("data", (d) => {
+      process.stdout.write(d);
+    });
+  });
+
+  req.on("error", (e) => {
+    console.error(`Error sending to Slack: ${e.message}`);
+  });
+
+  req.write(postData);
+  req.end();
+}
+
+// Function to get input either from arguments, environment variables, or prompt
+function getInput(index, envVar, question) {
+  return process.argv[index] || process.env[envVar] || prompt(question);
+}
+
 async function prompt(question) {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -36,14 +75,26 @@ async function prompt(question) {
 
 function execShellCommand(cmd) {
   return new Promise((resolve, reject) => {
-    const command = spawn(cmd, { shell: true, stdio: "inherit" });
+    let output = "";
+    const command = spawn(cmd, {
+      shell: true,
+      stdio: ["inherit", "pipe", "pipe"],
+    });
+
+    command.stdout.on("data", (data) => {
+      output += data.toString();
+    });
+
+    command.stderr.on("data", (data) => {
+      output += data.toString();
+    });
 
     command.on("error", (error) => reject(error));
     command.on("close", (code) => {
       if (code !== 0) {
-        reject(new Error(`Command exited with code ${code}`));
+        reject(new Error(`Command exited with code ${code}: ${output}`));
       } else {
-        resolve();
+        resolve(output);
       }
     });
   });
@@ -52,22 +103,30 @@ function execShellCommand(cmd) {
 (async () => {
   console.log("🚀 Canister Upgrade Script...");
 
-  const canisterName = await prompt(
+  const canisterName = await getInput(
+    2,
+    "CANISTER",
     "🔖 Enter the canister Name (ex. auth_qa): "
   );
-  const network = await prompt(
+  const network = await getInput(
+    3,
+    "NETWORK",
     '🌐 Do you want to deploy to the local or ic? (Enter "local" or "ic"): '
   );
+  const title = await getInput(4, "TITLE", "🔖 Enter proposal title: ");
+  const url = await getInput(5, "URL", "🔖 Enter the url: ");
+  const summary = await getInput(6, "SUMMARY", "🔖 Enter proposal summary: ");
+  const environment = await getInput(
+    7,
+    "ENVIRONMENT",
+    "🌐 Enter the environment (qa, dev, or prod): "
+  );
+
   const snsCanisterIdsFile = "./sns_canister_ids.json";
   const canisterId =
     network === "local"
       ? canisterIds[canisterName].local
       : canisterIdsProd[canisterName].ic;
-
-  //proposal
-  const title = await prompt("🔖 Enter proposal title: ");
-  const url = await prompt("🔖 Enter the url: ");
-  const summary = await prompt("🔖 Enter proposal summary: ");
 
   var wasmPath = path.join(
     process.cwd(),
@@ -78,13 +137,7 @@ function execShellCommand(cmd) {
     `${canisterName}.wasm`
   );
 
-  const execSync = require("child_process").execSync;
-  const environment = await prompt(
-    "🌐 Enter the environment (qa, dev, or prod): "
-  );
-
   function getCanisterId(canisterName) {
-    // Append the environment to the canister name, unless the environment is 'none'
     const fullCanisterName =
       environment === "prod" ? canisterName : `${canisterName}_${environment}`;
     return execSync(
@@ -114,16 +167,15 @@ function execShellCommand(cmd) {
     const sendCommand = `quill send upgrade.json ${
       network == "ic" ? "" : "--insecure-local-dev-mode"
     } -y | grep -v "^ *new_canister_wasm"`;
-    //await execShellCommand(sendCommand);
 
-    console.log("✅ Proposal ready to be sent.");
-    console.log("\n");
-    console.log("Run the following command to send the proposal: \n");
-    console.log("\x1b[36m%s\x1b[0m", sendCommand);
-    console.log("\n");
+    console.log("🚀 Sending proposal...");
+    const commandOutput = await execShellCommand(sendCommand);
+
+    sendToSlack(`✅ Proposal Command Output: ${commandOutput}`);
   } catch (err) {
     console.log(" upgradeArg: " + upgradeArg);
     console.error("❌ Error:", err);
     console.log("debugging proposal: " + makeProposalCommand);
+    sendToSlack(`❌ Error while sending proposal: ${err.message}`);
   }
 })();
