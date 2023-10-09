@@ -1,6 +1,6 @@
 // sns_config.js
 exports.developerNeuronId =
-  "fd052a2a6648357c984cd8a04edcb9e34a48967a46f44db9264f5156d7e96c61";
+  "194d3f742383afcee2f3fb4a1075aa6f9652f0299bc65cb3da353265206814b0";
 exports.pemFilePath = `~/.config/dfx/identity/$(dfx identity whoami)/identity.pem`;
 exports.canisterCommands = [
   "dfx canister id auth",

@@ -79,6 +79,19 @@ export const idlFactory = ({ IDL }) => {
     email: IDL.Text,
     updatedAt: Timestamp__1,
   });
+  const Image = IDL.Record({
+    imageType: IDL.Text,
+    data: IDL.Vec(IDL.Nat8),
+  });
+  const ImportProfile = IDL.Record({
+    id: UserId,
+    pic: IDL.Opt(Image),
+    userName: IDL.Text,
+    createdAt: Timestamp__1,
+    role: Role,
+    email: IDL.Text,
+    updatedAt: Timestamp__1,
+  });
   const Subaccount = IDL.Vec(IDL.Nat8);
   const Tokens = IDL.Nat;
   const CanClaimLockedResponse = IDL.Record({
@@ -86,12 +99,33 @@ export const idlFactory = ({ IDL }) => {
     claimAmount: Tokens,
     canClaim: IDL.Bool,
   });
-  const Result_7 = IDL.Variant({
+  const Result_10 = IDL.Variant({
     ok: CanClaimLockedResponse,
     err: IDL.Text,
   });
-  const Result_6 = IDL.Variant({ ok: IDL.Bool, err: IDL.Text });
-  const Result_5 = IDL.Variant({ ok: IDL.Nat, err: IDL.Text });
+  const Result_9 = IDL.Variant({ ok: IDL.Bool, err: IDL.Text });
+  const Result_8 = IDL.Variant({ ok: IDL.Nat, err: IDL.Text });
+  const ReservedId = IDL.Text;
+  const Reserved = IDL.Record({
+    id: ReservedId,
+    createdAt: Timestamp__1,
+    profileId: IDL.Text,
+    reservedExpiryTime: Timestamp__1,
+    updatedAt: Timestamp__1,
+  });
+  const POHVoteError = IDL.Variant({
+    reservationExpire: IDL.Null,
+    userNotPermitted: IDL.Null,
+    contentAlreadyReviewed: IDL.Null,
+    pohNotConfiguredForProvider: IDL.Null,
+    voteAlreadyFinalized: IDL.Null,
+    invalidRules: IDL.Null,
+    mustMakeReservation: IDL.Null,
+    userAlreadyReserved: IDL.Null,
+    notCompletedUser: IDL.Null,
+    userAlreadyVoted: IDL.Null,
+  });
+  const Result_7 = IDL.Variant({ ok: Reserved, err: POHVoteError });
   const ContentStatus = IDL.Variant({
     new: IDL.Null,
     approved: IDL.Null,
@@ -109,13 +143,25 @@ export const idlFactory = ({ IDL }) => {
     approved: IDL.Null,
     rejected: IDL.Null,
   });
+  const UserLevel__1 = IDL.Variant({
+    junior: IDL.Null,
+    novice: IDL.Null,
+    senior1: IDL.Null,
+    senior2: IDL.Null,
+    senior3: IDL.Null,
+  });
   const RuleId = IDL.Text;
-  const Vote = IDL.Record({
+  const VoteV2 = IDL.Record({
     id: VoteId,
     contentId: IDL.Text,
     decision: Decision,
+    rsReceived: IDL.Opt(IDL.Int),
+    lockedReward: IDL.Opt(IDL.Float64),
     userId: UserId,
     createdAt: Timestamp__1,
+    rsBeforeVoting: IDL.Int,
+    level: UserLevel__1,
+    totalReward: IDL.Opt(IDL.Float64),
     violatedRules: IDL.Opt(IDL.Vec(RuleId)),
   });
   const ProviderId = IDL.Principal;
@@ -127,7 +173,7 @@ export const idlFactory = ({ IDL }) => {
     contentType: ContentType,
     rewardRelease: Timestamp__1,
     createdAt: Timestamp__1,
-    vote: Vote,
+    vote: VoteV2,
     minStake: IDL.Nat,
     updatedAt: Timestamp__1,
     providerName: IDL.Text,
@@ -140,18 +186,6 @@ export const idlFactory = ({ IDL }) => {
     id: ReceiptId,
     cost: IDL.Int,
     createdAt: Timestamp__1,
-  });
-  const ReservedId = IDL.Text;
-  const Reserved = IDL.Record({
-    id: ReservedId,
-    createdAt: Timestamp__1,
-    profileId: IDL.Text,
-    reservedExpiryTime: Timestamp__1,
-    updatedAt: Timestamp__1,
-  });
-  const Image = IDL.Record({
-    imageType: IDL.Text,
-    data: IDL.Vec(IDL.Nat8),
   });
   const VoteParamsId = IDL.Text;
   const Level = IDL.Variant({
@@ -323,6 +357,22 @@ export const idlFactory = ({ IDL }) => {
     violatedRules: IDL.Vec(ViolatedRules),
     rejectedCount: IDL.Nat,
   });
+  const Result_6 = IDL.Variant({
+    ok: IDL.Record({
+      topSeniors: IDL.Nat,
+      novice: IDL.Nat,
+      juniors: IDL.Nat,
+      seniors: IDL.Nat,
+    }),
+    err: IDL.Text,
+  });
+  const UserLevel = IDL.Variant({
+    junior: IDL.Null,
+    novice: IDL.Null,
+    senior1: IDL.Null,
+    senior2: IDL.Null,
+    senior3: IDL.Null,
+  });
   const ModeratorLeaderboard = IDL.Record({
     id: UserId,
     rs: IDL.Float64,
@@ -473,7 +523,7 @@ export const idlFactory = ({ IDL }) => {
     attemptToCreateMultipleWalletsWithSameIp: IDL.Null,
     attemptToAssociateMultipleModclubAccounts: IDL.Principal,
   });
-  const Result_4 = IDL.Variant({
+  const Result_5 = IDL.Variant({
     ok: PohTaskDataWrapperPlus,
     err: PohError,
   });
@@ -498,7 +548,7 @@ export const idlFactory = ({ IDL }) => {
     requiredVotes: IDL.Int,
     voteUserDetails: IDL.Vec(VotePlusUser),
   });
-  const Result_3 = IDL.Variant({
+  const Result_4 = IDL.Variant({
     ok: PohTaskDataAndVotesWrapperPlus,
     err: PohError,
   });
@@ -534,7 +584,7 @@ export const idlFactory = ({ IDL }) => {
     image: IDL.Opt(Image),
     rules: IDL.Vec(Rule),
   });
-  const Result_2 = IDL.Variant({ ok: Reserved, err: IDL.Text });
+  const Result_3 = IDL.Variant({ ok: Reserved, err: IDL.Text });
   const Event = IDL.Record({ topic: IDL.Text, payload: IDL.Principal });
   const ConsumerPayload = IDL.Variant({
     events: IDL.Vec(Event),
@@ -565,31 +615,7 @@ export const idlFactory = ({ IDL }) => {
     streaming_strategy: IDL.Opt(StreamingStrategy),
     status_code: IDL.Nat16,
   });
-  const ProviderAdmins = IDL.Record({
-    pid: IDL.Principal,
-    admins: IDL.Vec(ProfileStable),
-  });
-  const ProviderInfo = IDL.Record({
-    id: IDL.Principal,
-    name: IDL.Text,
-    createdAt: Timestamp__1,
-    description: IDL.Text,
-    updatedAt: Timestamp__1,
-    image: IDL.Opt(Image),
-  });
-  const OldModeratorLeaderboard = IDL.Record({
-    id: UserId,
-    completedVoteCount: IDL.Int,
-    userName: IDL.Text,
-    rewardsEarned: IDL.Int,
-    lastVoted: IDL.Opt(Timestamp__1),
-    performance: IDL.Float64,
-  });
-  const AccountsImportPayload = IDL.Record({
-    adminsByProvider: IDL.Vec(ProviderAdmins),
-    providers: IDL.Vec(ProviderInfo),
-    approvedPOHUsers: IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Principal)),
-    moderators: IDL.Vec(OldModeratorLeaderboard),
+  const AirdropMetadataImportPayload = IDL.Record({
     userPoints: IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Int)),
   });
   const TxIndex = IDL.Nat;
@@ -622,7 +648,7 @@ export const idlFactory = ({ IDL }) => {
     challengeType: PohChallengeType,
     wordList: IDL.Opt(IDL.Vec(IDL.Text)),
   });
-  const Result_1 = IDL.Variant({
+  const Result_2 = IDL.Variant({
     ok: IDL.Vec(PohChallengesAttempt),
     err: PohError,
   });
@@ -669,10 +695,6 @@ export const idlFactory = ({ IDL }) => {
     ok: ProviderMeta,
     err: ProviderError,
   });
-  const ProviderSettingResult = IDL.Variant({
-    ok: ProviderSettings,
-    err: ProviderError,
-  });
   const Validate = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
   const VerifyHumanityResponse = IDL.Record({
     status: PohVerificationStatus,
@@ -683,6 +705,7 @@ export const idlFactory = ({ IDL }) => {
     ruleId: IDL.Text,
     challengeId: IDL.Text,
   });
+  const Result_1 = IDL.Variant({ ok: IDL.Bool, err: POHVoteError });
   const Result = IDL.Variant({ ok: TxIndex, err: IDL.Text });
   const ModClub = IDL.Service({
     AdminCheckPohVerificationResp: IDL.Func(
@@ -700,26 +723,37 @@ export const idlFactory = ({ IDL }) => {
     addToApprovedUser: IDL.Func([IDL.Principal], [], []),
     adminInit: IDL.Func([], [], []),
     adminUpdateEmail: IDL.Func([IDL.Principal, IDL.Text], [ProfileStable], []),
+    associateAccount: IDL.Func(
+      [IDL.Text, ImportProfile, IDL.Int],
+      [IDL.Text],
+      []
+    ),
     burn: IDL.Func([IDL.Opt(Subaccount), IDL.Nat], [], []),
-    canClaimLockedReward: IDL.Func([IDL.Opt(Tokens)], [Result_7], []),
-    canReserveContent: IDL.Func([IDL.Text], [Result_6], []),
+    canClaimLockedReward: IDL.Func([IDL.Opt(Tokens)], [Result_10], []),
+    canReserveContent: IDL.Func([IDL.Text], [Result_9], []),
     checkIfUserOptToReciveAlerts: IDL.Func([], [IDL.Bool], ["query"]),
     claimLockedReward: IDL.Func(
       [Tokens, IDL.Opt(IDL.Principal)],
-      [Result_6],
+      [Result_9],
       []
     ),
-    claimStakedTokens: IDL.Func([Tokens], [Result_5], []),
+    claimStakedTokens: IDL.Func([Tokens], [Result_8], []),
     collectCanisterMetrics: IDL.Func([], [], []),
     configurePohForProvider: IDL.Func(
       [IDL.Principal, IDL.Vec(IDL.Text), IDL.Nat, IDL.Bool],
       [],
       []
     ),
+    createPohVoteReservation: IDL.Func([IDL.Text], [Result_7], []),
     deregisterProvider: IDL.Func([], [IDL.Text], []),
     editProviderAdmin: IDL.Func(
       [IDL.Principal, IDL.Principal, IDL.Text],
       [ProviderResult],
+      []
+    ),
+    generateAssocMetadata: IDL.Func(
+      [],
+      [IDL.Record({ hash: IDL.Text, targetCanister: IDL.Principal })],
       []
     ),
     generateSigningKey: IDL.Func([], [], []),
@@ -755,6 +789,8 @@ export const idlFactory = ({ IDL }) => {
     getContent: IDL.Func([IDL.Text], [IDL.Opt(ContentPlus)], []),
     getContentResult: IDL.Func([IDL.Text], [ContentResult], []),
     getDeployer: IDL.Func([], [IDL.Principal], ["query"]),
+    getImportedUsersStats: IDL.Func([], [Result_6], ["query"]),
+    getImportedUsersStatsByLevel: IDL.Func([UserLevel], [IDL.Text], ["query"]),
     getModeratorEmailsForPOHAndSendEmail: IDL.Func([IDL.Text], [], []),
     getModeratorLeaderboard: IDL.Func(
       [IDL.Nat, IDL.Nat],
@@ -762,8 +798,8 @@ export const idlFactory = ({ IDL }) => {
       []
     ),
     getPohAttempts: IDL.Func([], [PohStableState], []),
-    getPohTaskData: IDL.Func([IDL.Text], [Result_4], ["query"]),
-    getPohTaskDataForAdminUsers: IDL.Func([IDL.Text], [Result_3], ["query"]),
+    getPohTaskData: IDL.Func([IDL.Text], [Result_5], ["query"]),
+    getPohTaskDataForAdminUsers: IDL.Func([IDL.Text], [Result_4], ["query"]),
     getPohTasks: IDL.Func(
       [ContentStatus, IDL.Nat, IDL.Nat],
       [IDL.Vec(PohTaskPlus)],
@@ -784,23 +820,24 @@ export const idlFactory = ({ IDL }) => {
       [IDL.Vec(IDL.Nat8)],
       []
     ),
-    getReservedByContentId: IDL.Func([IDL.Text], [Result_2], []),
+    getReservedByContentId: IDL.Func([IDL.Text], [Result_3], []),
     getRules: IDL.Func([IDL.Principal], [IDL.Vec(Rule)], ["query"]),
     getTaskStats: IDL.Func([IDL.Int], [IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat], []),
     getTasks: IDL.Func(
       [IDL.Nat, IDL.Nat, IDL.Bool],
       [IDL.Vec(ContentPlus)],
-      []
+      ["query"]
     ),
     getVotePerformance: IDL.Func([], [IDL.Float64], ["query"]),
     handleSubscription: IDL.Func([ConsumerPayload], [], []),
     http_request: IDL.Func([HttpRequest], [HttpResponse], ["query"]),
     http_request_update: IDL.Func([HttpRequest], [HttpResponse], []),
-    importAccounts: IDL.Func(
-      [AccountsImportPayload],
+    importAirdropMetadata: IDL.Func(
+      [AirdropMetadataImportPayload],
       [IDL.Record({ status: IDL.Bool })],
       []
     ),
+    isReservedPOHContent: IDL.Func([IDL.Text], [IDL.Bool], ["query"]),
     issueJwt: IDL.Func([], [IDL.Text], []),
     pohCallbackForModclub: IDL.Func(
       [PohVerificationResponsePlus],
@@ -836,11 +873,12 @@ export const idlFactory = ({ IDL }) => {
     ),
     removeRules: IDL.Func([IDL.Vec(RuleId), IDL.Opt(IDL.Principal)], [], []),
     reserveContent: IDL.Func([IDL.Text], [], []),
-    resetUserChallengeAttempt: IDL.Func([IDL.Text], [Result_1], []),
+    resetUserChallengeAttempt: IDL.Func([IDL.Text], [Result_2], []),
     retiredDataCanisterIdForWriting: IDL.Func([IDL.Text], [], ["oneway"]),
-    retrieveChallengesForUser: IDL.Func([IDL.Text], [Result_1], []),
+    retrieveChallengesForUser: IDL.Func([IDL.Text], [Result_2], []),
     sendVerificationEmail: IDL.Func([IDL.Text], [IDL.Bool], []),
     setLambdaToken: IDL.Func([IDL.Text], [], []),
+    setModclubBuckets: IDL.Func([], [], ["oneway"]),
     setRandomization: IDL.Func([IDL.Bool], [], []),
     setVoteParamsForLevel: IDL.Func([IDL.Int, Level], [], []),
     showAdmins: IDL.Func([], [IDL.Vec(IDL.Principal)], ["query"]),
@@ -853,17 +891,23 @@ export const idlFactory = ({ IDL }) => {
       []
     ),
     submitHtmlContent: IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(Level)],
       [IDL.Text],
       []
     ),
     submitImage: IDL.Func(
-      [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Opt(IDL.Text)],
+      [
+        IDL.Text,
+        IDL.Vec(IDL.Nat8),
+        IDL.Text,
+        IDL.Opt(IDL.Text),
+        IDL.Opt(Level),
+      ],
       [IDL.Text],
       []
     ),
     submitText: IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(Level)],
       [IDL.Text],
       []
     ),
@@ -886,12 +930,12 @@ export const idlFactory = ({ IDL }) => {
       []
     ),
     updateRules: IDL.Func([IDL.Vec(Rule), IDL.Opt(IDL.Principal)], [], []),
-    updateSettings: IDL.Func(
-      [IDL.Principal, ProviderSettings],
-      [ProviderSettingResult],
+    validate: IDL.Func([IDL.Reserved], [Validate], []),
+    validateAssocHash: IDL.Func(
+      [IDL.Principal, IDL.Text, IDL.Text],
+      [IDL.Bool],
       []
     ),
-    validate: IDL.Func([IDL.Reserved], [Validate], []),
     verifyHumanity: IDL.Func([IDL.Text], [PohVerificationResponsePlus], []),
     verifyUserHumanityForModclub: IDL.Func([], [VerifyHumanityResponse], []),
     vote: IDL.Func(
@@ -901,7 +945,7 @@ export const idlFactory = ({ IDL }) => {
     ),
     votePohContent: IDL.Func(
       [IDL.Text, Decision, IDL.Vec(PohRulesViolated)],
-      [],
+      [Result_1],
       []
     ),
     whoami: IDL.Func([], [IDL.Principal], []),

@@ -1,13 +1,6 @@
 import type { Principal } from "@dfinity/principal";
 import type { ActorMethod } from "@dfinity/agent";
 
-export interface AccountsImportPayload {
-  adminsByProvider: Array<ProviderAdmins>;
-  providers: Array<ProviderInfo>;
-  approvedPOHUsers: Array<[Principal, Principal]>;
-  moderators: Array<OldModeratorLeaderboard>;
-  userPoints: Array<[Principal, bigint]>;
-}
 export interface Activity {
   status: ContentStatus;
   reward: number;
@@ -16,12 +9,15 @@ export interface Activity {
   contentType: ContentType;
   rewardRelease: Timestamp__1;
   createdAt: Timestamp__1;
-  vote: Vote;
+  vote: VoteV2;
   minStake: bigint;
   updatedAt: Timestamp__1;
   providerName: string;
   providerId: ProviderId;
   requiredVotes: bigint;
+}
+export interface AirdropMetadataImportPayload {
+  userPoints: Array<[Principal, bigint]>;
 }
 export type AssocList = [] | [[[Key, Trie_1], List_1]];
 export type AssocList_1 = [] | [[[Key_1, null], List]];
@@ -209,6 +205,15 @@ export interface Image {
   imageType: string;
   data: Uint8Array | number[];
 }
+export interface ImportProfile {
+  id: UserId;
+  pic: [] | [Image];
+  userName: string;
+  createdAt: Timestamp__1;
+  role: Role;
+  email: string;
+  updatedAt: Timestamp__1;
+}
 export interface Key {
   key: string;
   hash: Hash;
@@ -261,21 +266,27 @@ export interface ModClub {
   addToApprovedUser: ActorMethod<[Principal], undefined>;
   adminInit: ActorMethod<[], undefined>;
   adminUpdateEmail: ActorMethod<[Principal, string], ProfileStable>;
+  associateAccount: ActorMethod<[string, ImportProfile, bigint], string>;
   burn: ActorMethod<[[] | [Subaccount], bigint], undefined>;
-  canClaimLockedReward: ActorMethod<[[] | [Tokens]], Result_7>;
-  canReserveContent: ActorMethod<[string], Result_6>;
+  canClaimLockedReward: ActorMethod<[[] | [Tokens]], Result_10>;
+  canReserveContent: ActorMethod<[string], Result_9>;
   checkIfUserOptToReciveAlerts: ActorMethod<[], boolean>;
-  claimLockedReward: ActorMethod<[Tokens, [] | [Principal]], Result_6>;
-  claimStakedTokens: ActorMethod<[Tokens], Result_5>;
+  claimLockedReward: ActorMethod<[Tokens, [] | [Principal]], Result_9>;
+  claimStakedTokens: ActorMethod<[Tokens], Result_8>;
   collectCanisterMetrics: ActorMethod<[], undefined>;
   configurePohForProvider: ActorMethod<
     [Principal, Array<string>, bigint, boolean],
     undefined
   >;
+  createPohVoteReservation: ActorMethod<[string], Result_7>;
   deregisterProvider: ActorMethod<[], string>;
   editProviderAdmin: ActorMethod<
     [Principal, Principal, string],
     ProviderResult
+  >;
+  generateAssocMetadata: ActorMethod<
+    [],
+    { hash: string; targetCanister: Principal }
   >;
   generateSigningKey: ActorMethod<[], undefined>;
   getActivity: ActorMethod<[boolean], Array<Activity>>;
@@ -299,14 +310,16 @@ export interface ModClub {
   getContent: ActorMethod<[string], [] | [ContentPlus]>;
   getContentResult: ActorMethod<[string], ContentResult>;
   getDeployer: ActorMethod<[], Principal>;
+  getImportedUsersStats: ActorMethod<[], Result_6>;
+  getImportedUsersStatsByLevel: ActorMethod<[UserLevel], string>;
   getModeratorEmailsForPOHAndSendEmail: ActorMethod<[string], undefined>;
   getModeratorLeaderboard: ActorMethod<
     [bigint, bigint],
     Array<ModeratorLeaderboard>
   >;
   getPohAttempts: ActorMethod<[], PohStableState>;
-  getPohTaskData: ActorMethod<[string], Result_4>;
-  getPohTaskDataForAdminUsers: ActorMethod<[string], Result_3>;
+  getPohTaskData: ActorMethod<[string], Result_5>;
+  getPohTaskDataForAdminUsers: ActorMethod<[string], Result_4>;
   getPohTasks: ActorMethod<[ContentStatus, bigint, bigint], Array<PohTaskPlus>>;
   getProfile: ActorMethod<[], ProfileStable>;
   getProfileById: ActorMethod<[Principal], ProfileStable>;
@@ -318,7 +331,7 @@ export interface ModClub {
   >;
   getProviderRules: ActorMethod<[], Array<Rule>>;
   getProviderSa: ActorMethod<[string, [] | [Principal]], Uint8Array | number[]>;
-  getReservedByContentId: ActorMethod<[string], Result_2>;
+  getReservedByContentId: ActorMethod<[string], Result_3>;
   getRules: ActorMethod<[Principal], Array<Rule>>;
   getTaskStats: ActorMethod<[bigint], [bigint, bigint, bigint, bigint]>;
   getTasks: ActorMethod<[bigint, bigint, boolean], Array<ContentPlus>>;
@@ -326,7 +339,11 @@ export interface ModClub {
   handleSubscription: ActorMethod<[ConsumerPayload], undefined>;
   http_request: ActorMethod<[HttpRequest], HttpResponse>;
   http_request_update: ActorMethod<[HttpRequest], HttpResponse>;
-  importAccounts: ActorMethod<[AccountsImportPayload], { status: boolean }>;
+  importAirdropMetadata: ActorMethod<
+    [AirdropMetadataImportPayload],
+    { status: boolean }
+  >;
+  isReservedPOHContent: ActorMethod<[string], boolean>;
   issueJwt: ActorMethod<[], string>;
   pohCallbackForModclub: ActorMethod<[PohVerificationResponsePlus], undefined>;
   populateChallenges: ActorMethod<[], undefined>;
@@ -338,11 +355,12 @@ export interface ModClub {
   removeProviderAdmin: ActorMethod<[Principal, Principal], ProviderResult>;
   removeRules: ActorMethod<[Array<RuleId>, [] | [Principal]], undefined>;
   reserveContent: ActorMethod<[string], undefined>;
-  resetUserChallengeAttempt: ActorMethod<[string], Result_1>;
+  resetUserChallengeAttempt: ActorMethod<[string], Result_2>;
   retiredDataCanisterIdForWriting: ActorMethod<[string], undefined>;
-  retrieveChallengesForUser: ActorMethod<[string], Result_1>;
+  retrieveChallengesForUser: ActorMethod<[string], Result_2>;
   sendVerificationEmail: ActorMethod<[string], boolean>;
   setLambdaToken: ActorMethod<[string], undefined>;
+  setModclubBuckets: ActorMethod<[], undefined>;
   setRandomization: ActorMethod<[boolean], undefined>;
   setVoteParamsForLevel: ActorMethod<[bigint, Level], undefined>;
   showAdmins: ActorMethod<[], Array<Principal>>;
@@ -353,12 +371,18 @@ export interface ModClub {
     [PohChallengeSubmissionRequest],
     PohChallengeSubmissionResponse
   >;
-  submitHtmlContent: ActorMethod<[string, string, [] | [string]], string>;
-  submitImage: ActorMethod<
-    [string, Uint8Array | number[], string, [] | [string]],
+  submitHtmlContent: ActorMethod<
+    [string, string, [] | [string], [] | [Level]],
     string
   >;
-  submitText: ActorMethod<[string, string, [] | [string]], string>;
+  submitImage: ActorMethod<
+    [string, Uint8Array | number[], string, [] | [string], [] | [Level]],
+    string
+  >;
+  submitText: ActorMethod<
+    [string, string, [] | [string], [] | [Level]],
+    string
+  >;
   subscribe: ActorMethod<[SubscribeMessage], undefined>;
   subscribePohCallback: ActorMethod<[SubscribePohMessage], undefined>;
   toggleAllowSubmission: ActorMethod<[boolean], undefined>;
@@ -369,17 +393,14 @@ export interface ModClub {
     string
   >;
   updateRules: ActorMethod<[Array<Rule>, [] | [Principal]], undefined>;
-  updateSettings: ActorMethod<
-    [Principal, ProviderSettings],
-    ProviderSettingResult
-  >;
   validate: ActorMethod<[any], Validate>;
+  validateAssocHash: ActorMethod<[Principal, string, string], boolean>;
   verifyHumanity: ActorMethod<[string], PohVerificationResponsePlus>;
   verifyUserHumanityForModclub: ActorMethod<[], VerifyHumanityResponse>;
   vote: ActorMethod<[ContentId, Decision, [] | [Array<RuleId>]], string>;
   votePohContent: ActorMethod<
     [string, Decision, Array<PohRulesViolated>],
-    undefined
+    Result_1
   >;
   whoami: ActorMethod<[], Principal>;
   withdrawModeratorReward: ActorMethod<[Tokens, [] | [Principal]], Result>;
@@ -401,14 +422,17 @@ export interface NumericEntity {
   first: bigint;
   last: bigint;
 }
-export interface OldModeratorLeaderboard {
-  id: UserId;
-  completedVoteCount: bigint;
-  userName: string;
-  rewardsEarned: bigint;
-  lastVoted: [] | [Timestamp__1];
-  performance: number;
-}
+export type POHVoteError =
+  | { reservationExpire: null }
+  | { userNotPermitted: null }
+  | { contentAlreadyReviewed: null }
+  | { pohNotConfiguredForProvider: null }
+  | { voteAlreadyFinalized: null }
+  | { invalidRules: null }
+  | { mustMakeReservation: null }
+  | { userAlreadyReserved: null }
+  | { notCompletedUser: null }
+  | { userAlreadyVoted: null };
 export interface PohChallengePackage {
   id: string;
   title: [] | [string];
@@ -615,10 +639,6 @@ export interface ProfileStable {
   email: string;
   updatedAt: Timestamp__1;
 }
-export interface ProviderAdmins {
-  pid: Principal;
-  admins: Array<ProfileStable>;
-}
 export type ProviderError =
   | { ProviderAdminIsAlreadyRegistered: null }
   | { InvalidContentType: null }
@@ -629,14 +649,6 @@ export type ProviderError =
   | { InvalidProvider: null }
   | { ProviderIsRegistered: null };
 export type ProviderId = Principal;
-export interface ProviderInfo {
-  id: Principal;
-  name: string;
-  createdAt: Timestamp__1;
-  description: string;
-  updatedAt: Timestamp__1;
-  image: [] | [Image];
-}
 export interface ProviderMeta {
   name: string;
   description: string;
@@ -657,9 +669,6 @@ export interface ProviderPlus {
   rules: Array<Rule>;
 }
 export type ProviderResult = { ok: null } | { err: ProviderError };
-export type ProviderSettingResult =
-  | { ok: ProviderSettings }
-  | { err: ProviderError };
 export interface ProviderSettings {
   minStaked: bigint;
   requiredVotes: bigint;
@@ -685,15 +694,27 @@ export interface Reserved {
 }
 export type ReservedId = string;
 export type Result = { ok: TxIndex } | { err: string };
-export type Result_1 = { ok: Array<PohChallengesAttempt> } | { err: PohError };
-export type Result_2 = { ok: Reserved } | { err: string };
-export type Result_3 =
+export type Result_1 = { ok: boolean } | { err: POHVoteError };
+export type Result_10 = { ok: CanClaimLockedResponse } | { err: string };
+export type Result_2 = { ok: Array<PohChallengesAttempt> } | { err: PohError };
+export type Result_3 = { ok: Reserved } | { err: string };
+export type Result_4 =
   | { ok: PohTaskDataAndVotesWrapperPlus }
   | { err: PohError };
-export type Result_4 = { ok: PohTaskDataWrapperPlus } | { err: PohError };
-export type Result_5 = { ok: bigint } | { err: string };
-export type Result_6 = { ok: boolean } | { err: string };
-export type Result_7 = { ok: CanClaimLockedResponse } | { err: string };
+export type Result_5 = { ok: PohTaskDataWrapperPlus } | { err: PohError };
+export type Result_6 =
+  | {
+      ok: {
+        topSeniors: bigint;
+        novice: bigint;
+        juniors: bigint;
+        seniors: bigint;
+      };
+    }
+  | { err: string };
+export type Result_7 = { ok: Reserved } | { err: POHVoteError };
+export type Result_8 = { ok: bigint } | { err: string };
+export type Result_9 = { ok: boolean } | { err: string };
 export type Result__1 = { Ok: TxIndex } | { Err: TransferError };
 export type Role = { admin: null } | { moderator: null } | { owner: null };
 export interface Rule {
@@ -746,6 +767,18 @@ export type Trie_3 = { branch: Branch_3 } | { leaf: Leaf_3 } | { empty: null };
 export type TxIndex = bigint;
 export type UpdateCallsAggregatedData = BigUint64Array | bigint[];
 export type UserId = Principal;
+export type UserLevel =
+  | { junior: null }
+  | { novice: null }
+  | { senior1: null }
+  | { senior2: null }
+  | { senior3: null };
+export type UserLevel__1 =
+  | { junior: null }
+  | { novice: null }
+  | { senior1: null }
+  | { senior2: null }
+  | { senior3: null };
 export type Validate = { Ok: string } | { Err: string };
 export interface VerifyHumanityResponse {
   status: PohVerificationStatus;
@@ -759,14 +792,6 @@ export interface ViolatedRules {
 export interface ViolatedRules__1 {
   ruleId: string;
   ruleDesc: string;
-}
-export interface Vote {
-  id: VoteId;
-  contentId: string;
-  decision: Decision;
-  userId: UserId;
-  createdAt: Timestamp__1;
-  violatedRules: [] | [Array<RuleId>];
 }
 export type VoteId = string;
 export interface VoteParameters {
@@ -783,5 +808,18 @@ export interface VotePlusUser {
   userModClubId: Principal;
   userEmailId: string;
   userVoteCreatedAt: bigint;
+}
+export interface VoteV2 {
+  id: VoteId;
+  contentId: string;
+  decision: Decision;
+  rsReceived: [] | [bigint];
+  lockedReward: [] | [number];
+  userId: UserId;
+  createdAt: Timestamp__1;
+  rsBeforeVoting: bigint;
+  level: UserLevel__1;
+  totalReward: [] | [number];
+  violatedRules: [] | [Array<RuleId>];
 }
 export interface _SERVICE extends ModClub {}

@@ -1,3 +1,16 @@
+type VoteV2 = record {
+  contentId : text;
+  createdAt : Timestamp__1;
+  decision : Decision;
+  id : VoteId;
+  level : UserLevel__1;
+  lockedReward : opt float64;
+  rsBeforeVoting : int;
+  rsReceived : opt int;
+  totalReward : opt float64;
+  userId : UserId;
+  violatedRules : opt vec RuleId;
+};
 type VotePlusUser = record {
   userEmailId : text;
   userModClubId : principal;
@@ -14,14 +27,6 @@ type VoteParameters = record {
   updatedAt : Timestamp__1;
 };
 type VoteId = text;
-type Vote = record {
-  contentId : text;
-  createdAt : Timestamp__1;
-  decision : Decision;
-  id : VoteId;
-  userId : UserId;
-  violatedRules : opt vec RuleId;
-};
 type ViolatedRules__1 = record {
   ruleDesc : text;
   ruleId : text;
@@ -38,6 +43,20 @@ type VerifyHumanityResponse = record {
 type Validate = variant {
   Err : text;
   Ok : text;
+};
+type UserLevel__1 = variant {
+  junior;
+  novice;
+  senior1;
+  senior2;
+  senior3;
+};
+type UserLevel = variant {
+  junior;
+  novice;
+  senior1;
+  senior2;
+  senior3;
 };
 type UserId = principal;
 type UpdateCallsAggregatedData = vec nat64;
@@ -122,33 +141,50 @@ type Result__1 = variant {
   Err : TransferError;
   Ok : TxIndex;
 };
-type Result_7 = variant {
-  err : text;
-  ok : CanClaimLockedResponse;
-};
-type Result_6 = variant {
+type Result_9 = variant {
   err : text;
   ok : bool;
 };
-type Result_5 = variant {
+type Result_8 = variant {
   err : text;
   ok : nat;
 };
-type Result_4 = variant {
+type Result_7 = variant {
+  err : POHVoteError;
+  ok : Reserved;
+};
+type Result_6 = variant {
+  err : text;
+  ok : record {
+    juniors : nat;
+    novice : nat;
+    seniors : nat;
+    topSeniors : nat;
+  };
+};
+type Result_5 = variant {
   err : PohError;
   ok : PohTaskDataWrapperPlus;
 };
-type Result_3 = variant {
+type Result_4 = variant {
   err : PohError;
   ok : PohTaskDataAndVotesWrapperPlus;
 };
-type Result_2 = variant {
+type Result_3 = variant {
   err : text;
   ok : Reserved;
 };
-type Result_1 = variant {
+type Result_2 = variant {
   err : PohError;
   ok : vec PohChallengesAttempt;
+};
+type Result_10 = variant {
+  err : text;
+  ok : CanClaimLockedResponse;
+};
+type Result_1 = variant {
+  err : POHVoteError;
+  ok : bool;
 };
 type Result = variant {
   err : text;
@@ -173,10 +209,6 @@ type Receipt = record {
 type ProviderSettings = record {
   minStaked : nat;
   requiredVotes : nat;
-};
-type ProviderSettingResult = variant {
-  err : ProviderError;
-  ok : ProviderSettings;
 };
 type ProviderResult = variant {
   err : ProviderError;
@@ -207,14 +239,6 @@ type ProviderMeta = record {
   description : text;
   name : text;
 };
-type ProviderInfo = record {
-  createdAt : Timestamp__1;
-  description : text;
-  id : principal;
-  image : opt Image;
-  name : text;
-  updatedAt : Timestamp__1;
-};
 type ProviderId = principal;
 type ProviderError = variant {
   InvalidContentStatus;
@@ -225,10 +249,6 @@ type ProviderError = variant {
   ProviderIsRegistered;
   RequiresWhitelisting;
   Unauthorized;
-};
-type ProviderAdmins = record {
-  admins : vec ProfileStable;
-  pid : principal;
 };
 type ProfileStable = record {
   createdAt : Timestamp__1;
@@ -470,13 +490,17 @@ type PohChallengePackage = record {
   updatedAt : int;
   userId : principal;
 };
-type OldModeratorLeaderboard = record {
-  completedVoteCount : int;
-  id : UserId;
-  lastVoted : opt Timestamp__1;
-  performance : float64;
-  rewardsEarned : int;
-  userName : text;
+type POHVoteError = variant {
+  contentAlreadyReviewed;
+  invalidRules;
+  mustMakeReservation;
+  notCompletedUser;
+  pohNotConfiguredForProvider;
+  reservationExpire;
+  userAlreadyReserved;
+  userAlreadyVoted;
+  userNotPermitted;
+  voteAlreadyFinalized;
 };
 type NumericEntity = record {
   avg : nat64;
@@ -503,16 +527,24 @@ type ModClub = service {
   addToApprovedUser : (principal) -> ();
   adminInit : () -> ();
   adminUpdateEmail : (principal, text) -> (ProfileStable);
+  associateAccount : (text, ImportProfile, int) -> (text);
   burn : (opt Subaccount, nat) -> ();
-  canClaimLockedReward : (opt Tokens) -> (Result_7);
-  canReserveContent : (text) -> (Result_6);
+  canClaimLockedReward : (opt Tokens) -> (Result_10);
+  canReserveContent : (text) -> (Result_9);
   checkIfUserOptToReciveAlerts : () -> (bool) query;
-  claimLockedReward : (Tokens, opt principal) -> (Result_6);
-  claimStakedTokens : (Tokens) -> (Result_5);
+  claimLockedReward : (Tokens, opt principal) -> (Result_9);
+  claimStakedTokens : (Tokens) -> (Result_8);
   collectCanisterMetrics : () -> ();
   configurePohForProvider : (principal, vec text, nat, bool) -> ();
+  createPohVoteReservation : (text) -> (Result_7);
   deregisterProvider : () -> (text);
   editProviderAdmin : (principal, principal, text) -> (ProviderResult);
+  generateAssocMetadata : () -> (
+    record {
+      hash : text;
+      targetCanister : principal;
+    }
+  );
   generateSigningKey : () -> ();
   getActivity : (bool) -> (vec Activity) query;
   getAdminProviderIDs : () -> (vec principal) query;
@@ -533,11 +565,13 @@ type ModClub = service {
   getContent : (text) -> (opt ContentPlus);
   getContentResult : (text) -> (ContentResult);
   getDeployer : () -> (principal) query;
+  getImportedUsersStats : () -> (Result_6) query;
+  getImportedUsersStatsByLevel : (UserLevel) -> (text) query;
   getModeratorEmailsForPOHAndSendEmail : (text) -> ();
   getModeratorLeaderboard : (nat, nat) -> (vec ModeratorLeaderboard);
   getPohAttempts : () -> (PohStableState);
-  getPohTaskData : (text) -> (Result_4) query;
-  getPohTaskDataForAdminUsers : (text) -> (Result_3) query;
+  getPohTaskData : (text) -> (Result_5) query;
+  getPohTaskDataForAdminUsers : (text) -> (Result_4) query;
   getPohTasks : (ContentStatus, nat, nat) -> (vec PohTaskPlus) query;
   getProfile : () -> (ProfileStable) query;
   getProfileById : (principal) -> (ProfileStable) query;
@@ -546,15 +580,16 @@ type ModClub = service {
   getProviderContent : (principal, ContentStatus, nat, nat) -> (vec ContentPlus);
   getProviderRules : () -> (vec Rule) query;
   getProviderSa : (text, opt principal) -> (blob);
-  getReservedByContentId : (text) -> (Result_2);
+  getReservedByContentId : (text) -> (Result_3);
   getRules : (principal) -> (vec Rule) query;
   getTaskStats : (int) -> (nat, nat, nat, nat);
-  getTasks : (nat, nat, bool) -> (vec ContentPlus);
+  getTasks : (nat, nat, bool) -> (vec ContentPlus) query;
   getVotePerformance : () -> (float64) query;
   handleSubscription : (ConsumerPayload) -> ();
   http_request : (HttpRequest) -> (HttpResponse) query;
   http_request_update : (HttpRequest) -> (HttpResponse);
-  importAccounts : (AccountsImportPayload) -> (record { status : bool });
+  importAirdropMetadata : (AirdropMetadataImportPayload) -> (record { status : bool });
+  isReservedPOHContent : (text) -> (bool) query;
   issueJwt : () -> (text);
   pohCallbackForModclub : (PohVerificationResponsePlus) -> () oneway;
   populateChallenges : () -> ();
@@ -566,11 +601,12 @@ type ModClub = service {
   removeProviderAdmin : (principal, principal) -> (ProviderResult);
   removeRules : (vec RuleId, opt principal) -> ();
   reserveContent : (text) -> ();
-  resetUserChallengeAttempt : (text) -> (Result_1);
+  resetUserChallengeAttempt : (text) -> (Result_2);
   retiredDataCanisterIdForWriting : (text) -> () oneway;
-  retrieveChallengesForUser : (text) -> (Result_1);
+  retrieveChallengesForUser : (text) -> (Result_2);
   sendVerificationEmail : (text) -> (bool);
   setLambdaToken : (text) -> ();
+  setModclubBuckets : () -> () oneway;
   setRandomization : (bool) -> ();
   setVoteParamsForLevel : (int, Level) -> ();
   showAdmins : () -> (vec principal) query;
@@ -578,9 +614,9 @@ type ModClub = service {
   shufflePohContent : () -> ();
   stakeTokens : (nat) -> (Result__1);
   submitChallengeData : (PohChallengeSubmissionRequest) -> (PohChallengeSubmissionResponse);
-  submitHtmlContent : (text, text, opt text) -> (text);
-  submitImage : (text, vec nat8, text, opt text) -> (text);
-  submitText : (text, text, opt text) -> (text);
+  submitHtmlContent : (text, text, opt text, opt Level) -> (text);
+  submitImage : (text, vec nat8, text, opt text, opt Level) -> (text);
+  submitText : (text, text, opt text, opt Level) -> (text);
   subscribe : (SubscribeMessage) -> ();
   subscribePohCallback : (SubscribePohMessage) -> ();
   toggleAllowSubmission : (bool) -> ();
@@ -588,12 +624,12 @@ type ModClub = service {
   updateProvider : (principal, ProviderMeta) -> (ProviderMetaResult);
   updateProviderLogo : (principal, vec nat8, text) -> (text);
   updateRules : (vec Rule, opt principal) -> ();
-  updateSettings : (principal, ProviderSettings) -> (ProviderSettingResult);
   validate : (reserved) -> (Validate);
+  validateAssocHash : (principal, text, text) -> (bool);
   verifyHumanity : (text) -> (PohVerificationResponsePlus);
   verifyUserHumanityForModclub : () -> (VerifyHumanityResponse);
   vote : (ContentId, Decision, opt vec RuleId) -> (text);
-  votePohContent : (text, Decision, vec PohRulesViolated) -> ();
+  votePohContent : (text, Decision, vec PohRulesViolated) -> (Result_1);
   whoami : () -> (principal);
   withdrawModeratorReward : (Tokens, opt principal) -> (Result);
 };
@@ -662,6 +698,15 @@ type Key_1 = record {
 type Key = record {
   hash : Hash;
   key : text;
+};
+type ImportProfile = record {
+  createdAt : Timestamp__1;
+  email : text;
+  id : UserId;
+  pic : opt Image;
+  role : Role;
+  updatedAt : Timestamp__1;
+  userName : text;
 };
 type Image = record {
   data : vec nat8;
@@ -887,6 +932,12 @@ type AssocList = opt record {
   };
   List_1;
 };
+type AirdropMetadataImportPayload = record {
+  userPoints : vec record {
+    principal;
+    int;
+  };
+};
 type Activity = record {
   contentType : ContentType;
   createdAt : Timestamp__1;
@@ -899,20 +950,7 @@ type Activity = record {
   status : ContentStatus;
   title : opt text;
   updatedAt : Timestamp__1;
-  vote : Vote;
+  vote : VoteV2;
   voteCount : nat;
-};
-type AccountsImportPayload = record {
-  adminsByProvider : vec ProviderAdmins;
-  approvedPOHUsers : vec record {
-    principal;
-    principal;
-  };
-  moderators : vec OldModeratorLeaderboard;
-  providers : vec ProviderInfo;
-  userPoints : vec record {
-    principal;
-    int;
-  };
 };
 service : (ENV) -> ModClub;
