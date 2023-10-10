@@ -50,6 +50,8 @@ jobs:
           echo "ENVIRONMENT=${{ github.event.inputs.ENVIRONMENT }}" >> $GITHUB_ENV
           echo "SUMMARY=${{ github.event.inputs.SUMMARY }}" >> $GITHUB_ENV
           echo "CANISTER=${{ github.event.inputs.CANISTER }}" >> $GITHUB_ENV
+          echo "NETWORK=${{ github.event.inputs.NETWORK }}" >> $GITHUB_ENV
+          echo "URL=${{ github.event.inputs.URL }}" >> $GITHUB_ENV
 
       - name: Notify Slack - Starting Proposal Process
         run: |
