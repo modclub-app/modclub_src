@@ -69,9 +69,6 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Install Dependencies
-        run: npm install node-fetch
-
       - name: Install Quill
         run: |
           OS=$(uname -s)
