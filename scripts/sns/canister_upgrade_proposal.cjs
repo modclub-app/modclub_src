@@ -180,7 +180,7 @@ function execShellCommand(cmd) {
 
     console.log("🚀 Sending proposal...");
     // const commandOutput = await execShellCommand(sendCommand);
-    console.log(commandOutput);
+    // console.log(commandOutput);
     sendToSlack(`✅ Proposal submitted successfully!`);
     sendToSlack(`✅ Proposal Command Output: ${commandOutput}`);
   } catch (err) {
