@@ -74,6 +74,22 @@ jobs:
         with:
           cmd: install
 
+      - name: Install Quill
+        run: |
+          OS=$(uname -s)
+          if [[ "$OS" == "Linux" ]]; then
+            QUILL="linux"
+          elif [[ "$OS" == "Darwin" ]]; then
+            QUILL="macos"
+          else
+            echo "Unknown OS!"
+            exit 1
+          fi
+
+          curl -L "https://github.com/dfinity/quill/releases/download/v0.4.2/quill-${QUILL}-x86_64" -o quill
+          chmod +x quill
+          sudo mv quill /usr/local/bin/
+
       # Install dfx.
       - name: Install dfx
         run: |
