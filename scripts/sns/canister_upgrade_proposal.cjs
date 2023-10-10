@@ -8,38 +8,7 @@ const {
 } = require("./sns_config.cjs");
 
 const https = require("https");
-
-// Function to send a message to Slack via webhook
-function sendToSlack(message) {
-  const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);
-  const postData = JSON.stringify({
-    text: message,
-  });
-
-  const options = {
-    hostname: webhookUrl.hostname,
-    port: 443,
-    path: webhookUrl.pathname,
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Content-Length": postData.length,
-    },
-  };
-
-  const req = https.request(options, (res) => {
-    res.on("data", (d) => {
-      process.stdout.write(d);
-    });
-  });
-
-  req.on("error", (e) => {
-    console.error(`Error sending to Slack: ${e.message}`);
-  });
-
-  req.write(postData);
-  req.end();
-}
+const fetch = require("node-fetch");
 
 // Function to get input either from arguments, environment variables, or prompt
 function getInput(index, envVar, question) {
@@ -49,33 +18,23 @@ function getInput(index, envVar, question) {
 // Function to send a message to Slack via webhook
 function sendToSlack(message) {
   const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);
-  const postData = JSON.stringify({
+  const payload = {
     text: message,
-  });
+  };
 
-  const options = {
-    hostname: webhookUrl.hostname,
-    port: 443,
-    path: webhookUrl.pathname,
+  return fetch(webhookUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Content-Length": postData.length,
     },
-  };
-
-  const req = https.request(options, (res) => {
-    res.on("data", (d) => {
-      process.stdout.write(d);
-    });
+    body: JSON.stringify(payload),
+  }).then((response) => {
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error("Failed to send message to Slack");
+    }
   });
-
-  req.on("error", (e) => {
-    console.error(`Error sending to Slack: ${e.message}`);
-  });
-
-  req.write(postData);
-  req.end();
 }
 
 // Function to get input either from arguments, environment variables, or prompt
@@ -197,15 +156,15 @@ function execShellCommand(cmd) {
   try {
     console.log("🚀 Preparing upgrade proposal...");
     const makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg "(${upgradeArg})" ${developerNeuronId} > upgrade.json`;
-    await execShellCommand(makeProposalCommand);
+    // await execShellCommand(makeProposalCommand);
 
     console.log("✅ Preparing proposal...");
-    const sendCommand = `quill send upgrade.json ${
-      network == "ic" ? "" : "--insecure-local-dev-mode"
-    } -y | grep -v "^ *new_canister_wasm"`;
+    // const sendCommand = `quill send upgrade.json ${
+    //   network == "ic" ? "" : "--insecure-local-dev-mode"
+    // } -y | grep -v "^ *new_canister_wasm"`;
 
     console.log("🚀 Sending proposal...");
-    const commandOutput = await execShellCommand(sendCommand);
+    // const commandOutput = await execShellCommand(sendCommand);
     console.log(commandOutput);
     sendToSlack(`✅ Proposal submitted successfully!`);
     sendToSlack(`✅ Proposal Command Output: ${commandOutput}`);
