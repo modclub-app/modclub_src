@@ -104,6 +104,10 @@ jobs:
         env:
           IC_IDENTITY_FILE_PROD: ${{ secrets.IC_IDENTITY_FILE_PROD }}
 
+      - name: Build WASM for the Canister
+        run: |
+          dfx build --network ${{ github.event.inputs.NETWORK }} ${{ github.event.inputs.CANISTER }}
+
       - name: Execute canister upgrade proposal script
         run: node scripts/sns/canister_upgrade_proposal.cjs
 
