@@ -21,7 +21,7 @@ function sendToSlack(message) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Content-Length": payload.length,
+        "Content-Length": Buffer.from(payload).length,
       },
     };
 
