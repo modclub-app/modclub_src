@@ -69,11 +69,6 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: yarn install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install
-
       - name: Install Quill
         run: |
           OS=$(uname -s)
