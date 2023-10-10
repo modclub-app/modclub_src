@@ -111,6 +111,10 @@ jobs:
         run: |
           dfx build --network ${{ github.event.inputs.NETWORK }} ${{ github.event.inputs.CANISTER }}
 
+      - name: Execute canister upgrade proposal script
+        run: node scripts/sns/canister_upgrade_proposal.cjs
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
         # Set git user configuration
       - name: Set git user
         run: |
