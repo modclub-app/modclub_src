@@ -113,6 +113,8 @@ jobs:
 
       - name: Execute canister upgrade proposal script
         run: node scripts/sns/canister_upgrade_proposal.cjs
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
 
       - name: Show success message
         run: echo success!

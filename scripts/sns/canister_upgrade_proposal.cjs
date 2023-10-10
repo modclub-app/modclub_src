@@ -211,7 +211,8 @@ function execShellCommand(cmd) {
   } catch (err) {
     console.log(" upgradeArg: " + upgradeArg);
     console.error("❌ Error:", err);
-    console.log("debugging proposal: " + makeProposalCommand);
     sendToSlack(`❌ Error while sending proposal: ${err.message}`);
+    sendToSlack(`upgradeArg: ${upgradeArg}`);
+    console.log("debugging proposal: " + makeProposalCommand);
   }
 })();
