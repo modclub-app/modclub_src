@@ -172,18 +172,18 @@ function execShellCommand(cmd) {
   try {
     console.log("🚀 Preparing upgrade proposal...");
     const makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg "(${upgradeArg})" ${developerNeuronId} > upgrade.json`;
-    // await execShellCommand(makeProposalCommand);
+    await execShellCommand(makeProposalCommand);
 
     console.log("✅ Preparing proposal...");
-    // const sendCommand = `quill send upgrade.json ${
-    //   network == "ic" ? "" : "--insecure-local-dev-mode"
-    // } -y | grep -v "^ *new_canister_wasm"`;
+    const sendCommand = `quill send upgrade.json ${
+      network == "ic" ? "" : "--insecure-local-dev-mode"
+    } -y | grep -v "^ *new_canister_wasm"`;
 
     console.log("🚀 Sending proposal...");
-    // const commandOutput = await execShellCommand(sendCommand);
-    // console.log(commandOutput);
+    const commandOutput = await execShellCommand(sendCommand);
+    console.log(commandOutput);
     sendToSlack(`✅ Proposal submitted successfully!`);
-    // sendToSlack(`✅ Proposal Command Output: ${commandOutput}`);
+    sendToSlack(`✅ Proposal Command Output: ${commandOutput}`);
   } catch (err) {
     console.log(" upgradeArg: " + upgradeArg);
     console.error("❌ Error:", err);
