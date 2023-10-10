@@ -6,7 +6,7 @@ const {
   pemFilePath,
   canisterCommands,
 } = require("./sns_config.cjs");
-const http = require("http");
+const https = require("https");
 const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);
 
 function sendToSlack(message) {
@@ -17,7 +17,7 @@ function sendToSlack(message) {
 
     const options = {
       hostname: webhookUrl.hostname,
-      path: webhookUrl.path,
+      path: webhookUrl.pathname,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -25,7 +25,7 @@ function sendToSlack(message) {
       },
     };
 
-    const req = http.request(options, (res) => {
+    const req = https.request(options, (res) => {
       let data = "";
       res.on("data", (chunk) => {
         data += chunk;
@@ -182,7 +182,7 @@ function execShellCommand(cmd) {
     // const commandOutput = await execShellCommand(sendCommand);
     // console.log(commandOutput);
     sendToSlack(`✅ Proposal submitted successfully!`);
-    sendToSlack(`✅ Proposal Command Output: ${commandOutput}`);
+    // sendToSlack(`✅ Proposal Command Output: ${commandOutput}`);
   } catch (err) {
     console.log(" upgradeArg: " + upgradeArg);
     console.error("❌ Error:", err);
