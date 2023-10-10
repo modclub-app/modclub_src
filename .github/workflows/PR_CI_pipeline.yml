@@ -1,0 +1,89 @@
+name: PR CI pipeline
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-canister:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name }}
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: yarn install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Install dfx
+        run: |
+          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          dfx --version
+
+      - name: Set up dfx identity
+        run: |
+          mkdir -p ~/.config/dfx/identity/default/
+          echo "$IC_IDENTITY_FILE" > ~/.config/dfx/identity/default/identity.pem
+          dfx identity get-principal
+          cat ~/.config/dfx/identity/default/identity.pem
+        env:
+          IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_QA }}
+
+      - name: Install vessel
+        run: |
+          wget https://github.com/dfinity/vessel/releases/download/v0.6.4/vessel-linux64
+          mv vessel-linux64 vessel
+          chmod +x vessel
+          mv vessel /usr/local/bin/.
+          vessel --version
+
+      - name: dfx start
+        run: |
+          dfx start --background
+
+      - name: Build
+        run: |
+          DEV_ENV=qa scripts/deployment/gh_build_only.sh
+
+      - name: Check result
+        run: |
+          tree .dfx -P '*.wasm'
+
+  build-webpack:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name }}
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: yarn install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Build
+        run: |
+          NODE_ENV=production node scripts/build/gen_files_by_env.cjs
+          NODE_ENV=production DEPLOYMENT_TAG=test npx webpack
