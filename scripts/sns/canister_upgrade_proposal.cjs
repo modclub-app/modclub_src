@@ -34,6 +34,7 @@ function sendToSlack(message) {
         if (res.statusCode === 200) {
           resolve(data);
         } else {
+          console.error("Slack response:", data);
           reject(
             new Error(
               `Failed to send message to Slack. Status Code: ${res.statusCode}`
