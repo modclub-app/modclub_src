@@ -138,7 +138,7 @@ function execShellCommand(cmd) {
       ? canisterIds[canisterName].local
       : canisterIds[canisterName].ic;
 
-  var wasmPath = path.join(
+  let wasmPath = path.join(
     process.cwd(),
     ".dfx",
     network,
