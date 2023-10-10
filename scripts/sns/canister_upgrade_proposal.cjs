@@ -6,34 +6,49 @@ const {
   pemFilePath,
   canisterCommands,
 } = require("./sns_config.cjs");
+const http = require("http");
+const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);
 
-const https = require("https");
-const fetch = require("node-fetch");
-
-// Function to get input either from arguments, environment variables, or prompt
-function getInput(index, envVar, question) {
-  return process.argv[index] || process.env[envVar] || prompt(question);
-}
-
-// Function to send a message to Slack via webhook
 function sendToSlack(message) {
-  const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);
-  const payload = {
-    text: message,
-  };
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      text: message,
+    });
 
-  return fetch(webhookUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  }).then((response) => {
-    if (response.ok) {
-      return response.json();
-    } else {
-      throw new Error("Failed to send message to Slack");
-    }
+    const options = {
+      hostname: webhookUrl.hostname,
+      path: webhookUrl.path,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": payload.length,
+      },
+    };
+
+    const req = http.request(options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+      res.on("end", () => {
+        if (res.statusCode === 200) {
+          resolve(data);
+        } else {
+          reject(
+            new Error(
+              `Failed to send message to Slack. Status Code: ${res.statusCode}`
+            )
+          );
+        }
+      });
+    });
+
+    req.on("error", (error) => {
+      reject(error);
+    });
+
+    req.write(payload);
+    req.end();
   });
 }
 
