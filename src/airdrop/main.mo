@@ -40,7 +40,7 @@ shared ({ caller = deployer }) actor class Airdrop(env : CommonTypes.ENV) = this
   type NFT = Types.NFT;
   type Listing = Types.Listing;
 
-  stable var modTokenFee : Float = 0.0001;
+  stable var modTokenFee : Nat = 10000; // 0.0001 * 10^8
 
   //issbt-caaaa-aaaap-aayeq-cai is the funded canister
   stable var nftActorPrincipal : Text = "issbt-caaaa-aaaap-aayeq-cai";
@@ -72,13 +72,13 @@ shared ({ caller = deployer }) actor class Airdrop(env : CommonTypes.ENV) = this
   func getRewardAmount(tier : Tier, months : Nat) : Nat {
     let monthlyReward = switch (tier) {
       case (#bronze) {
-        18333 / 12;
+        152_775_000_000; // 18333 * 10 ^8 / 12;
       };
       case (#silver) {
-        91667 / 12;
+        763_891_666_667; // 91667 * 10^8 / 12;
       };
       case (#gold) {
-        366667 / 12;
+        3_055_558_333_333; // 366667 * 10^8 / 12;
       };
       case (#none) {
         0;
@@ -385,7 +385,7 @@ shared ({ caller = deployer }) actor class Airdrop(env : CommonTypes.ENV) = this
         totalMonthsToClaim := Int.abs(currentMonth - lastClaimedMonth);
         nftValue := getRewardAmount(nft.tier, totalMonthsToClaim);
         assert (totalMonthsToClaim > 0);
-        assert (modclubAirdropWalletBalance >= Int.abs(nftValue) + Float.toInt(modTokenFee));
+        assert (modclubAirdropWalletBalance >= Int.abs(nftValue) + modTokenFee);
 
         assert (nft.claimCount < 12);
         registerNFTs([{
@@ -401,7 +401,7 @@ shared ({ caller = deployer }) actor class Airdrop(env : CommonTypes.ENV) = this
       };
       case (null) {
         nftValue := getRewardAmount(_getTier(index), Int.abs(_getElapsedMonths()));
-        assert (modclubAirdropWalletBalance >= Int.abs(nftValue) + Float.toInt(modTokenFee));
+        assert (modclubAirdropWalletBalance >= Int.abs(nftValue) + modTokenFee);
 
         registerNFTs([{
           tokenIndex = index;
