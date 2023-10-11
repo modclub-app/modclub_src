@@ -1847,10 +1847,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (_)();
     };
+
+    if (not voteManager.isReservedPOHContent(packageId, caller)) {
+      return #err(#mustMakeReservation);
+    };
+
     let stats = await ModeratorManager.getStats(caller, env);
     if (ModeratorManager.isNovice(stats.score)) {
       return #err(#userNotPermitted);
     };
+    // validates that user can do POH voting/review
     switch (
       pohVerificationRequestHelper(
         Principal.toText(caller),
@@ -1868,7 +1874,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
 
-    if (voteManager.checkPohUserHasVoted(caller, packageId)) {
+    if (voteManager.isVotedByUser(caller, packageId)) {
       return #err(#userAlreadyVoted);
     };
     if (pohContentQueueManager.getContentStatus(packageId) != #new) {
@@ -1885,6 +1891,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       packageId,
       decision,
       violatedRules,
+      stats,
       pohContentQueueManager
     );
     if (finishedVoting == #ok(true)) {
@@ -1896,6 +1903,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       let finalDecision = pohContentQueueManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
       var contentIds : [Text] = [];
+
       if (finalDecision == #approved) {
         contentIds := pohEngine.changeChallengePackageStatus(
           packageId,
@@ -1939,6 +1947,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           #info
         );
       };
+
       // mark content not accessible
       for (cId in contentIds.vals()) {
         await storageSolution.markContentNotAccessible(cId);
@@ -1950,27 +1959,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         switch (voteManager.getPOHVote(id)) {
           case (null)();
           case (?v) {
-            var votedCorrect = false;
-            if (
-              (v.decision == #approved and finalDecision == #approved) or (
-                v.decision == #rejected and finalDecision == #rejected
-              )
-            ) {
+            var isVoteCorrect = false;
+            if (v.decision == finalDecision) {
               if (v.level != #novice) {
                 rewardingVotes.add(v);
               };
-              votedCorrect := true;
-            } else {
-              votedCorrect := false;
+              isVoteCorrect := true;
             };
             Helpers.logMessage(
               canistergeekLogger,
-              "User:" # Principal.toText(v.userId) # ":Voting for packageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(votedCorrect),
+              "User:" # Principal.toText(v.userId) # ":Voting for packageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(isVoteCorrect),
               #info
             );
             usersToRewardRS.add({
               userId = v.userId;
-              votedCorrect = votedCorrect;
+              votedCorrect = isVoteCorrect;
               decision = v.decision;
             });
           };

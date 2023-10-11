@@ -113,23 +113,11 @@ module VoteModule {
       packageId : Text,
       decision : Types.Decision,
       violatedRules : [Types.PohRulesViolated],
+      moderatorStats : RSTypes.RSAndLevel,
       pohContentQueueManager : QueueManager.QueueManager
     ) : async Result.Result<Bool, VoteTypes.POHVoteError> {
-      if (pohContentQueueManager.getContentStatus(packageId) != #new) {
-        return #err(#contentAlreadyReviewed);
-      };
-
       let id = getVoteId(userId, packageId);
-      if (not isReservedPOHContent(packageId, userId)) {
-        return #err(#mustMakeReservation);
-      };
-
       var voteCount = getVoteCountForPoh(userId, packageId);
-      let guard = ModSecurity.Guard(env, "VOTE_SERVICE");
-      let userRSAndLevel = await guard.getRSActor().queryRSAndLevelByPrincipal(userId);
-      if (userRSAndLevel.level == #novice) {
-        return #err(#userNotPermitted);
-      };
       var voteApproved = voteCount.approvedCount;
       var voteRejected = voteCount.rejectedCount;
 
@@ -139,8 +127,8 @@ module VoteModule {
         userId = userId;
         decision = decision;
         violatedRules = violatedRules;
-        rsBeforeVoting = Float.fromInt(userRSAndLevel.score);
-        level = userRSAndLevel.level;
+        rsBeforeVoting = Float.fromInt(moderatorStats.score);
+        level = moderatorStats.level;
         createdAt = Time.now();
       };
 
@@ -195,7 +183,7 @@ module VoteModule {
       };
     };
 
-    public func checkPohUserHasVoted(userId : Principal, packageId : Text) : Bool {
+    public func isVotedByUser(userId : Principal, packageId : Text) : Bool {
       let voteId = getVoteId(userId, packageId);
       switch (state.pohVotes.get(voteId)) {
         case (?v) {
@@ -279,8 +267,7 @@ module VoteModule {
       expireTime : Types.Timestamp
     ) : async Types.Reserved {
       let now = Helpers.timeNow();
-      let count = getVoteCountForPoh(caller, id);
-      if (count.hasVoted == true) {
+      if (isVotedByUser(caller, id)) {
         throw Error.reject("Reservation failed");
       };
       if (isReservedPOHContent(id, caller)) {
