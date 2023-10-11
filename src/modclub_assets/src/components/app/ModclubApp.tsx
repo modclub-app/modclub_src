@@ -70,15 +70,15 @@ export default function ModclubApp() {
       dispatch({ type: "refetchContentModerationTasks", payload: false });
     }
   }, [isConnected, modclub]);
-  
+
   useEffect(() => {
-    if (isConnected)
-      dispatch({ type: "fetchProviderBalance"})
+    if (isConnected && appState.providerBalanceLoading)
+      dispatch({ type: "fetchProviderBalance" });
   }, [isConnected, appState.providerBalanceLoading]);
 
   useEffect(() => {
-    if (isConnected && selectedProvider){
-      dispatch({ type: "setProviderId", payload: selectedProvider.id})
+    if (isConnected && selectedProvider) {
+      dispatch({ type: "setProviderId", payload: selectedProvider.id });
     }
   }, [isConnected, selectedProvider]);
 
