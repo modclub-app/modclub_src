@@ -12,9 +12,9 @@ export const NOVICE_MSG_CONFIRM_VOTE =
   "I understand I need 10 success votes to get to Junior level";
 export const JUNIOR_MSG_CONFIRM_VOTE =
   "I understand I need 100 success votes to get to Senior level";
-export const VOTE_INCORRECT_MSG = "I understand I will lose some MOD if I vote incorrectly";
+export const VOTE_INCORRECT_MSG = "I understand I will lose some of my reputation score If I vote incorrectly";
 export const VOTE_POH_RULE_CONFIRM_MSG = "I confirm that this is a real person"
-export const VOTE_RULE_CONFIRM_MSG = "I confirm that this is a real person"
+export const VOTE_RULE_CONFIRM_MSG = "I confirm that this content does not break any rules above"
 export const SENIOR_MSG_CONFIRM_VOTE = "";
 export const CLAIM_LIMIT_MSG = (value: number) =>
   `Stake ${value} MOD to unlock reward`;
