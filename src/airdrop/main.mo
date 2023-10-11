@@ -41,6 +41,7 @@ shared ({ caller = deployer }) actor class Airdrop(env : CommonTypes.ENV) = this
   type Listing = Types.Listing;
 
   stable var modTokenFee : Nat = 10000; // 0.0001 * 10^8
+  stable var valueE8s = 100000000; // 10^8
 
   //issbt-caaaa-aaaap-aayeq-cai is the funded canister
   stable var nftActorPrincipal : Text = "issbt-caaaa-aaaap-aayeq-cai";
@@ -418,7 +419,7 @@ shared ({ caller = deployer }) actor class Airdrop(env : CommonTypes.ENV) = this
 
     switch (await ModTokenActor.icrc1_transfer({ from_subaccount = ?getPaddedIndex(index); to = { owner = caller; subaccount = null }; amount = nftValue; fee = null; memo = null; created_at_time = null })) {
       case (#Ok(txIndex)) {
-        return #ok("We've airdropped " # Nat.toText(nftValue) # " tokens to your wallet!");
+        return #ok("We've airdropped " # Nat.toText(nftValue / valueE8s) # " tokens to your wallet!");
       };
 
       case (#Err(err)) {
