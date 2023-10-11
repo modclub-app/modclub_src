@@ -14,7 +14,6 @@ import { Connect2ICContext } from "@connect2icmodclub/react";
 
 interface DepositProps {
   toggle: () => void;
-  receiver: string;
   provider?: string;
   subacc?: Uint8Array;
   isProvider: boolean;
@@ -96,6 +95,8 @@ export default function Deposit({
       );
       !appState.personalBalanceLoading &&
         dispatch({ type: "personalBalanceLoading", payload: true });
+      !appState.providerBalanceLoading &&
+        dispatch({ type: "providerBalanceLoading", payload: true });
       return { reserved: Number(reserved), transfer: transfer };
     } catch (err) {
       setError(err.message);
@@ -106,8 +107,8 @@ export default function Deposit({
     return (
     <>
     <h1 className="is-capitalized has-text-weight-bold is-size-6">Step 1:</h1>
-    <label className="label is-size-6">Manually deposit into your account:</label>
-    <p className="is-flex is-justify-content-center has-text-white">
+    <h2>Manually deposit into your account:</h2>
+    <p className="is-flex is-justify-content-center has-text-white has-background-grey-darker">
       {principal}
       <Icon
         color="white"
@@ -118,8 +119,8 @@ export default function Deposit({
       </Icon>
     </p>
     <br/>
-    <p>Your current account balance: {format_token(personalBalance)} MOD</p>
-    <div className="has-text-weight-light is-italic ">{"*only applicable to users that are logged in with internet identity."}</div>
+    <p>Your current account balance: <b> {format_token(personalBalance)} MOD </b></p>
+    <p className="is-size-7">{"*only applicable to users that are logged in with internet identity."}</p>
     <br/>
     <h1 className="is-capitalized has-text-weight-bold is-size-6">Step 2:</h1>
     </>
@@ -140,9 +141,8 @@ export default function Deposit({
         handleSubmit={isProvider ? handleDepositProvider : handleDeposit}
       >
         {principal && activeProvider.meta.id != "plug"  && depositManual(principal, personalBalance)}
-        <label className="label is-size-6">Add to your Modclub active balance: </label>
+        <h2>Add to your Modclub active balance: </h2>
         <br />
-        {warning && <p  className="mr-5 justify-content-center has-text-danger">{warning}</p>}
         <div className="field">
           <div className="control">
             <div className="is-flex is-align-items-center">
@@ -181,7 +181,9 @@ export default function Deposit({
               </Icon>
             </div>
           </div>
-        </div>    
+        </div>
+        {warning && <p  className="mr-5 justify-content-center has-text-danger">{warning}</p>}
+        <br/>
       </PopupModal>
     </>
   );

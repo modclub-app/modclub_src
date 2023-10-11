@@ -29,4 +29,7 @@ export const initialState = {
   claimedStakeLoading: true,
   pendingStakeBalance: 0,
   pendingStakeLoading: true,
+  providerBalance: 0,
+  providerBalanceLoading: true,
+  providerId: null
 };

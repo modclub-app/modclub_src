@@ -1,12 +1,10 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
-import FormModal from "../modals/FormModal";
 import { withdrawModeratorReward } from "../../../utils/api";
 import { convert_to_mod } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 
-import { Principal } from "@dfinity/principal";
 import { useState } from "react";
 import PopupModal from "./PopupModal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
@@ -101,7 +99,6 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
       </div>
       <label className="label">Enter your withdraw amount:</label>
       <br/>
-      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
       <div className="field">
         <div className="control has-icons-right">
           <Field
@@ -134,6 +131,8 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
           </Icon>
         </div>
       </div>
+      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
+      <br/>
     </PopupModal>
   );
 }

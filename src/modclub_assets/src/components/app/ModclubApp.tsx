@@ -70,6 +70,17 @@ export default function ModclubApp() {
       dispatch({ type: "refetchContentModerationTasks", payload: false });
     }
   }, [isConnected, modclub]);
+  
+  useEffect(() => {
+    if (isConnected)
+      dispatch({ type: "fetchProviderBalance"})
+  }, [isConnected, appState.providerBalanceLoading]);
+
+  useEffect(() => {
+    if (isConnected && selectedProvider){
+      dispatch({ type: "setProviderId", payload: selectedProvider.id})
+    }
+  }, [isConnected, selectedProvider]);
 
   useEffect(() => {
     if (isConnected && rs && appState.loginPrincipalId)

@@ -40,15 +40,15 @@ export default function PopupModal({
       if (result.transfer) {
         if(result.transfer.Ok !== undefined || result.transfer.ok !== undefined){
           if(title.toLowerCase() == "deposit"){
-            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT into your Mod wallet. Time to start your moderator journey with Modclub.` });
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} MOD into your Mod wallet. Time to start your moderator journey with Modclub.` });
           }else if (title.toLowerCase() == "withdraw"){
-            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT back into your own wallet.` });
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} MOD back into your own wallet.` });
           }else if (title.toLowerCase() == "unstake"){
-            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT back into your locked wallet that you can release within 7days.` });
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} MOD back into your locked wallet that you can release within 7days.` });
           }else if (title.toLowerCase() == "claim"){
-            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT back into your locked wallet that you can release within 7days.` });
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} MOD back into your locked wallet that you can release within 7days.` });
           }else {
-            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} AMT.` })
+            setMessage({ success: true, value: `You have successfully ${title.toLowerCase()} ${format_token(result.reserved)} MOD.` })
           }
         }else{
           setMessage({ success: false, value: `${Object.keys(result.transfer.Err || result.transfer.err)}` });            
@@ -72,7 +72,7 @@ export default function PopupModal({
         <Form onSubmit={onFormSubmit} render={({ handleSubmit, values }) => (
           <form onSubmit={handleSubmit}>
             <Modal.Card.Body style={formStyle}>
-              <Heading subtitle>
+              <Heading subtitle className={"is-3"}>
                 {title}
               </Heading>
 

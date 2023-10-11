@@ -148,7 +148,7 @@ export async function asyncReducers(asyncState, action) {
           });
         }
       } catch (e) {
-        console.error("Error fetching UserStakeBalance::", e);
+        console.error("Error fetching User stakeBalance::", e);
       }
       return { ...state, stakeBalance, stakeBalanceLoading };
     }
@@ -167,7 +167,7 @@ export async function asyncReducers(asyncState, action) {
           });
         }
       } catch (e) {
-        console.error("Error fetching UserStakeBalance::", e);
+        console.error("Error fetching User unlockStakeBalance::", e);
       }
       return { ...state, unlockStakeBalance, unlockStakeLoading };
     }
@@ -186,11 +186,28 @@ export async function asyncReducers(asyncState, action) {
           });
         }
       } catch (e) {
-        console.error("Error fetching UserStakeBalance::", e);
+        console.error("Error fetching User claimedStakeBalance::", e);
       }
       return { ...state, claimedStakeBalance, claimedStakeLoading };
     }
-
+    case "providerBalanceLoading": {
+      return { ...state, providerBalanceLoading: action.payload };
+    }
+    case "fetchProviderBalance": {
+      let providerBalance = state.providerBalance;
+      let providerBalanceLoading = !state.providerBalanceLoading;
+      try {
+        if (context.actors.modclub && state.userProfile) {
+          const actor = context.actors.modclub.value;
+          providerBalance = await actor.providerSaBalance(
+            "RESERVE", 
+            [state.providerId])
+        }
+      } catch (e) {
+        console.error("Error fetching Provider Balance::", e);
+      }
+      return { ...state, providerBalance, providerBalanceLoading };
+    }
     case "fetchUserRS": {
       let rs = state.rs;
       try {
@@ -270,7 +287,7 @@ export async function asyncReducers(asyncState, action) {
       };
     }
     case "setModerationTasksLoading": {
-      return { ...state, moderationTasksLoading: action.payload.status };
+      return { ...state, moderationTasksLoading: action.payload.status};
     }
     case "setModerationTasksPage": {
       return {
@@ -279,6 +296,9 @@ export async function asyncReducers(asyncState, action) {
         moderationTasksPage: action.payload.page,
         moderationTasksPageStartIndex: action.payload.startIndex,
       };
+    }
+    case "setProviderId": {
+      return { ...state, providerId: action.payload, providerBalanceLoading: true };
     }
     default: {
       throw Error("Unknown action: " + action.type);

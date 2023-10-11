@@ -14,19 +14,16 @@ import { Link } from "react-router-dom";
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../assets/wallet.svg";
 import stakedImg from "../../../../assets/staked.svg";
-import { useConnect } from "@connect2icmodclub/react";
 import EditProviderLogo from "./EditProviderLogo";
 import EditRulesModal from "./EditRulesModal";
-import EditModeratorSettingsModal from "./EditModeratorSettingsModal";
 import RemoveRuleModal from "./RemoveRuleModal";
 import EditAppModal from "./EditAppModal";
 import {
   convert_to_mod,
-  format_token,
   getUrlFromArray,
 } from "../../../utils/util";
 import Deposit from "../modals/Deposit";
-import { useActors } from "../../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 export default function Admin({
   selectedProvider,
@@ -34,13 +31,9 @@ export default function Admin({
   setSelectedProvider,
   providers,
 }) {
-  const { principal } = useConnect();
-  const { wallet } = useActors();
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
-  const [providerTokenBalance, setProviderTokenBalance] = useState<bigint>(0);
-  const [userTokenBalance, setUserTokenBalance] = useState<number>(0);
-  const [digit, setDigit] = useState<bigint>(0);
+  const appState = useAppState();
 
   const [showEditRules, setShowEditRules] = useState(false);
   const toggleEditRules = () => setShowEditRules(!showEditRules);
@@ -64,11 +57,9 @@ export default function Admin({
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [loader, setLoader] = useState(false);
-  const { modclub } = useActors();
 
   const toggleDeposit = () => {
     setIsDepositOpen(!isDepositOpen);
-    get_token();
   };
 
   const updateProvider = () => {
@@ -81,22 +72,8 @@ export default function Admin({
       }
     });
   };
-  let get_token = async () => {
-    let [token, amount, digits] = await Promise.all([
-      modclub.providerSaBalance("RESERVE", [selectedProvider.id]),
-      wallet.icrc1_balance_of({
-        owner: Principal.fromText(principal),
-        subaccount: [],
-      }),
-      wallet.icrc1_decimals(),
-    ]);
-    setDigit(digits);
-    setProviderTokenBalance(token);
-    setUserTokenBalance(convert_to_mod(amount, digits));
-  };
 
   useEffect(() => {
-    get_token();
     let adminInit = () => {
       if (selectedProvider) {
         setRules(selectedProvider.rules);
@@ -238,15 +215,6 @@ export default function Admin({
 
           <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
             <Card backgroundColor="circles" className="is-fullheight">
-              <Card.Content>
-                <Heading className="mb-2">Token Reserve</Heading>
-                <p>The tokens used to found moderators.</p>
-              </Card.Content>
-            </Card>
-          </Columns.Column>
-
-          <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-            <Card backgroundColor="circles" className="is-fullheight">
               <Card.Content className="is-flex is-align-items-center pb-0">
                 <img src={walletImg} />
                 <div
@@ -255,8 +223,10 @@ export default function Admin({
                 >
                   <Heading size={1} className="level">
                     <span>
-                      {format_token(
-                        convert_to_mod(providerTokenBalance, digit)
+                      {convert_to_mod(
+                        appState.providerBalance,
+                        BigInt(appState.decimals),
+                        2
                       )}
                     </span>
                     <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
@@ -269,39 +239,10 @@ export default function Admin({
               </Card.Content>
               <Card.Footer style={{ border: 0 }}>
                 <Button.Group>
-                  <Button color="dark" fullwidth>
-                    Buy
-                  </Button>
                   <Button color="dark" fullwidth onClick={toggleDeposit}>
                     Deposit
                   </Button>
                 </Button.Group>
-              </Card.Footer>
-            </Card>
-          </Columns.Column>
-
-          <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
-            <Card backgroundColor="circles" className="is-fullheight">
-              <Card.Content className="is-flex is-align-items-center pb-0">
-                <img src={stakedImg} />
-                <div
-                  className="mt-3 ml-3"
-                  style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
-                >
-                  <Heading size={1} className="level">
-                    <span>5</span>
-                    <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
-                      DSCVR
-                      <br />
-                      tokens
-                    </span>
-                  </Heading>
-                </div>
-              </Card.Content>
-              <Card.Footer style={{ border: 0 }}>
-                <Button color="dark" style={{ width: "50%" }}>
-                  Deposit
-                </Button>
               </Card.Footer>
             </Card>
           </Columns.Column>
@@ -382,9 +323,8 @@ export default function Admin({
       {isDepositOpen && selectedProvider && (
         <Deposit
           toggle={toggleDeposit}
-          userTokenBalance={userTokenBalance}
           provider={selectedProvider.id.toString()}
-          isProvider={true}
+          isProvider={true} 
         />
       )}
     </>

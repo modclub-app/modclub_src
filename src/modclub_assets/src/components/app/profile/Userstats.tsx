@@ -42,7 +42,6 @@ const levelMessages = {
 export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
   const appState = useAppState();
-  const dispatch = useAppStateDispatch();
   const { modclub } = useActors();
   const activeBalanceMsg = Constant.ACTIVE_BALANCE_MSG;
 
@@ -138,12 +137,8 @@ export default function Userstats({ detailed = false }) {
   const getRSMessageByLevel = useCallback((level: string) => {
     return levelMessages[level]?.rs || Constant.DEFAULT_MESSAGE;
   }, []);
-  const getClaimMessageByLevel = useCallback((level: string) => {
-    return levelMessages[level]?.claim || Constant.DEFAULT_MESSAGE;
-  }, []);
-
-  const claimMessage = getClaimMessageByLevel(level);
   const rsMessage = getRSMessageByLevel(level);
+
   return (
     <>
       <Columns>
@@ -209,7 +204,7 @@ export default function Userstats({ detailed = false }) {
           )}
           usd={170}
           detailed={detailed}
-          message="Staked"
+          message={Constant.STAKE_BALANCE_MSG}
           isBar={false}
         >
           <Button.Group>
@@ -240,7 +235,7 @@ export default function Userstats({ detailed = false }) {
           amount={pendingRewards}
           usd={17}
           detailed={detailed}
-          message={claimMessage}
+          message={Constant.PENDING_REWARDS_MSG}
           isBar={false}
         >
           {claimRewards.canClaim ? (

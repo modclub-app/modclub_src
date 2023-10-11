@@ -39,6 +39,10 @@ export const StatBox: React.FC<StatBoxProps> = ({
   return (
     <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
       <Card backgroundColor="circles" className="is-fullheight">
+      <InfoButton
+            message={message}
+            style={{ position: "absolute", top: "1rem", right: "1rem", zIndex: 2 }}
+          />
         <Card.Content className="is-flex is-align-items-center">
           <img src={image} className="mr-4" />
           <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
@@ -76,15 +80,12 @@ export const StatBox: React.FC<StatBoxProps> = ({
               </Heading>
             )}
           </div>
-          <InfoButton
-            message={message}
-            style={{ position: "absolute", top: "1rem", right: "1rem" }}
-          />
+          
         </Card.Content>
         {detailed && (
           <Card.Footer
             paddingless
-            style={{ border: 0, marginBottom: "1.5rem" }}
+            style={{ border: 0, marginBottom: "1.5rem", zIndex: 1}}
           >
             {children}
           </Card.Footer>

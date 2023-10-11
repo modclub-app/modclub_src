@@ -66,7 +66,6 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
       updateTable={<UpdateTable wallet={wallet} stake={stake} />}
     >
       <br/>
-      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
       <div className="field">
         <div className="control has-icons-right">
           <Field
@@ -99,6 +98,8 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
           </Icon>
         </div>
       </div>
+      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
+      <br/>
     </PopupModal>
   );
 }

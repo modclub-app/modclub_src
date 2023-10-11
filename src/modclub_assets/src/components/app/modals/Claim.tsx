@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import FormModal from "../modals/FormModal";
-import { Principal } from "@dfinity/principal";
 import { useState } from "react";
 import { UpdateTable } from "../../common/updateTable/UpdateTable";
 import { useActors } from "../../../hooks/actors";
@@ -38,7 +37,6 @@ export default function Claim({ toggle, pendingRewards, userId }) {
       updateTable={<UpdateTable amount={amount} text={"Available:"} />}
     >
       {error && <div className="error">{error}</div>}
-      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
       <div className="field">
         <div className="control">
           <Field
@@ -68,6 +66,7 @@ export default function Claim({ toggle, pendingRewards, userId }) {
           />
         </div>
       </div>
+      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
     </FormModal>
   );
 }

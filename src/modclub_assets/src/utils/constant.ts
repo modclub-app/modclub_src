@@ -2,7 +2,7 @@ export const NOVICE_LEVEL_UPGRADE_MESSAGE =
   "Reach 20 scores to level up to Junior moderator";
 export const JUNIOR_LEVEL_UPGRADE_MESSAGE =
   "Reach 50 scores to level up to Senior moderator";
-export const SENIOR_MODERATOR_MESSAGE = "You are now senior";
+export const SENIOR_MODERATOR_MESSAGE = "Keep your senior moderator status with more than 50 scores";
 export const DEFAULT_MESSAGE = "...";
 export const NOVICE_CLAIM_LIMIT_MESSAGE =
   "Upgrade to Junior moderator to start claiming your rewards";
@@ -19,3 +19,5 @@ export const DEFAULT_DATE_FORMAT = "dd MMM yyyy";
 export const LB_PAGE_SIZE = 30;
 export const RS_FACTOR = 100;
 export const ACTIVE_BALANCE_MSG = "You can use your active balance to stake in order to receive your rewards";
+export const STAKE_BALANCE_MSG = "Stake function is available to unlock your pending rewards. Please be aware unstake will impact your levelling as a moderator"
+export const PENDING_REWARDS_MSG = "The amount of rewards you earned through unstaking"

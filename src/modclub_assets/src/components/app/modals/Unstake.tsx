@@ -222,7 +222,6 @@ export default function Unstake({
       }
     >
       <br/>
-      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
       <div className="field">
         <div className="control has-icons-right">
           <Field
@@ -255,6 +254,8 @@ export default function Unstake({
           </Icon>
         </div>
       </div>
+      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
+      <br/>
     </PopupModal>
   );
 }
