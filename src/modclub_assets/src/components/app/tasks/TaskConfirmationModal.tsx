@@ -144,7 +144,7 @@ const ConfirmationModal = ({
             <Confirm
               type="warning"
               id="voteRulesConfirmation"
-              label="I confirm that this content does not break any rules above"
+              label={Constant.VOTE_RULE_CONFIRM_MSG}
             />
           </>
         );
@@ -189,7 +189,7 @@ const ConfirmationModal = ({
                 <Confirm
                   type="danger"
                   id="voteIncorrectlyConfirmation"
-                  label={`I understand I will lose ${task.minStake} MOD if I vote incorrectly`}
+                  label={Constant.VOTE_INCORRECT_MSG}
                 />
                 {level !== "senior1" &&
                   level !== "senior2" &&

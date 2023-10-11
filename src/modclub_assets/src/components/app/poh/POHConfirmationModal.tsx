@@ -16,6 +16,7 @@ import { PohRulesViolated, ViolatedRules } from "../../../utils/types";
 import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { useActors } from "../../../hooks/actors";
+import * as Constant from "../../../utils/constant";
 
 const ConfirmationModal = ({
   type,
@@ -229,12 +230,12 @@ export default function ConfirmationModalToggle({
           <Confirm
             type="warning"
             id="voteRulesConfirmation"
-            label="I confirm that this is a real person"
+            label={Constant.VOTE_POH_RULE_CONFIRM_MSG}
           />
           <Confirm
             type="danger"
             id="voteIncorrectlyConfirmation"
-            label={`I understand I will lose ${reward} MOD if I vote incorrectly`}
+            label={Constant.VOTE_INCORRECT_MSG}
           />
         </ConfirmationModal>
       )}
@@ -262,7 +263,7 @@ export default function ConfirmationModalToggle({
           <Confirm
             type="danger"
             id="voteIncorrectlyConfirmation"
-            label={`I understand I will lose ${reward} MOD if I vote incorrectly`}
+            label={Constant.VOTE_INCORRECT_MSG}
           />
         </ConfirmationModal>
       )}
