@@ -88,7 +88,7 @@ module VoteModule {
       userId : Principal
     ) : async Result.Result<Types.Reserved, VoteTypes.POHReservationError> {
       let id = getVoteId(userId, packageId);
-      if (Utils.isReserved(Principal.toText(userId), Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
+      if (Utils.isReserved(id, Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
         return #err(#userAlreadyReserved);
       };
 
@@ -96,12 +96,22 @@ module VoteModule {
       return #ok(reservation);
     };
 
+    public func getPohVoteReservation(
+      packageId : Text,
+      userId : Principal
+    ) : ?Types.Reserved {
+      let id = getVoteId(userId, packageId);
+
+      let reservation = Utils.getReserved(id, Buffer.toArray<Types.Reserved>(state.reservedPohPackages));
+      return reservation;
+    };
+
     public func isReservedPOHContent(
       packageId : Text,
       userId : Principal
     ) : Bool {
       let id = getVoteId(userId, packageId);
-      if (Utils.isReserved(Principal.toText(userId), Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
+      if (Utils.isReserved(id, Buffer.toArray<Types.Reserved>(state.reservedPohPackages))) {
         return true;
       };
       return false;

@@ -1564,6 +1564,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         switch (pohPackage) {
           case (null)();
           case (?package) {
+            let rid = voteManager.getVoteId(caller, id);
             let taskPlus = {
               packageId = id;
               status = pohContentQueueManager.getContentStatus(id);
@@ -1576,6 +1577,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               minStake = 0;
               title = null;
               hasVoted = ?voteCount.hasVoted;
+              isReserved = voteManager.isReservedPOHContent(id, caller);
+              reservation = voteManager.getPohVoteReservation(id, caller);
               reward = 0.0;
               createdAt = package.createdAt;
               updatedAt = package.updatedAt;

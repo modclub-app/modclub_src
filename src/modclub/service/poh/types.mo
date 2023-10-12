@@ -268,6 +268,8 @@ module {
     minStake : Int;
     title : ?Text;
     hasVoted : ?Bool;
+    isReserved : Bool;
+    reservation : ?Types.Reserved;
     reward : Float;
     createdAt : Int;
     updatedAt : Int;

@@ -24,10 +24,16 @@ module {
     case (?x_) { x_ };
   };
 
-  public func isReserved(profileId : Text, reservedList : [Types.Reserved]) : Bool {
+  public func isReserved(rId : Text, reservedList : [Types.Reserved]) : Bool {
     let now = Helpers.timeNow();
-    let reservation = Array.filter<Types.Reserved>(reservedList, func x = x.profileId == profileId and x.reservedExpiryTime > now);
+    let reservation = Array.filter<Types.Reserved>(reservedList, func x = x.id == rId and x.reservedExpiryTime > now);
     return reservation.size() > 0;
+  };
+
+  public func getReserved(rId : Text, reservedList : [Types.Reserved]) : ?Types.Reserved {
+    let now = Helpers.timeNow();
+    let reservation = Array.find<Types.Reserved>(reservedList, func x = x.id == rId and x.reservedExpiryTime > now);
+    return reservation;
   };
 
   public func getNonExpiredList(reservedList : [Types.Reserved], now : Timestamp) : [Types.Reserved] {

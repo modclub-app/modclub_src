@@ -104,8 +104,8 @@ module ContentVotingModule {
         if (content.status != #new) throw Error.reject(
           "Content has already been reviewed"
         );
-
-        let isReserved = Utils.isReserved(Principal.toText(arg.userId), content.reservedList);
+        let rid = Helpers.generateId(arg.userId, "Reservations", arg.state);
+        let isReserved = Utils.isReserved(rid, content.reservedList);
         if (isReserved == false and userRSAndLevel.level != #novice) throw Error.reject(
           "Must take Reservations before voting"
         );

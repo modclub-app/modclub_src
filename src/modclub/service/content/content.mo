@@ -335,7 +335,8 @@ module ContentModule {
         switch (contentPlus) {
           case (?provider) {
             let oldReserved : [Types.Reserved] = provider.reservedList;
-            let reserved = Utils.isReserved(Principal.toText(arg.caller), oldReserved);
+            let rid = Helpers.generateId(arg.caller, "Reservations", arg.globalState);
+            let reserved = Utils.isReserved(rid, oldReserved);
             if (reserved == true) {
               throw Error.reject("Already create");
             };
@@ -537,7 +538,9 @@ module ContentModule {
       case (?content) {
         let requiredVote = content.voteParameters.requiredVotes;
         let activeReservations = Utils.getNonExpiredList(content.reservedList, Helpers.timeNow());
-        if (activeReservations.size() == requiredVote or Utils.isReserved(Principal.toText(caller), activeReservations)) {
+        let rid = Helpers.generateId(caller, "Reservations", globalState);
+        let isReserved = Utils.isReserved(rid, activeReservations);
+        if (activeReservations.size() == requiredVote or isReserved) {
           return #ok(false);
         };
         return #ok(true);
