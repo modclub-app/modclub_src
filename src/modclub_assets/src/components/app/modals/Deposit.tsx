@@ -103,29 +103,42 @@ export default function Deposit({
     }
   };
 
-  const depositManual = (principal, userTokenBalance) =>{
+  const depositManual = (principal, userTokenBalance) => {
     return (
-    <>
-    <h1 className="is-capitalized has-text-weight-bold is-size-6">Step 1:</h1>
-    <h2>Manually deposit into your account:</h2>
-    <p className="is-flex is-justify-content-center has-text-white has-background-grey-darker">
-      {principal}
-      <Icon
-        color="white"
-        className="ml-3 is-clickable"
-        onClick={() => {navigator.clipboard.writeText(principal);}}
-      >
-        <span className="material-icons">file_copy</span>
-      </Icon>
-    </p>
-    <br/>
-    <p>Your current account balance: <b> {format_token(personalBalance)} MOD </b></p>
-    <p className="is-size-7">{"*only applicable to users that are logged in with internet identity."}</p>
-    <br/>
-    <h1 className="is-capitalized has-text-weight-bold is-size-6">Step 2:</h1>
-    </>
-    )
-  }
+      <>
+        <h1 className="is-capitalized has-text-weight-bold is-size-6">
+          Step 1:
+        </h1>
+        <h2>Manually deposit into your account:</h2>
+        <p className="is-flex is-justify-content-center has-text-white has-background-grey-darker">
+          {principal}
+          <Icon
+            color="white"
+            className="ml-3 is-clickable"
+            onClick={() => {
+              navigator.clipboard.writeText(principal);
+            }}
+          >
+            <span className="material-icons">file_copy</span>
+          </Icon>
+        </p>
+        <br />
+        <p>
+          Your current account balance:{" "}
+          <b> {format_token(personalBalance)} MOD </b>
+        </p>
+        <p className="is-size-7">
+          {
+            "*only applicable to users that are logged in with internet identity."
+          }
+        </p>
+        <br />
+        <h1 className="is-capitalized has-text-weight-bold is-size-6">
+          Step 2:
+        </h1>
+      </>
+    );
+  };
   return (
     <>
       {error != null && (
@@ -140,7 +153,9 @@ export default function Deposit({
         loader={load}
         handleSubmit={isProvider ? handleDepositProvider : handleDeposit}
       >
-        {principal && activeProvider.meta.id != "plug"  && depositManual(principal, personalBalance)}
+        {principal &&
+          activeProvider.meta.id != "plug" &&
+          depositManual(principal, personalBalance)}
         <h2>Add to your Modclub active balance: </h2>
         <br />
         <div className="field">
@@ -150,7 +165,7 @@ export default function Deposit({
                 name="reserved"
                 component="input"
                 type="number"
-                className={(!load) ? "input": "input is-danger"}
+                className={!load ? "input" : "input is-danger"}
                 initialValue={inputValue}
                 validate={(value) => {
                   if (isNaN(value) || Number(value) < 0) {
@@ -161,11 +176,11 @@ export default function Deposit({
                     setWarning(null);
                     return setLoader(true);
                   }
-                  if (Number(value) > personalBalance - feeTokens) {
-                    setWarning("Out of balance");
-                    return setLoader(true);
-                  }
-                  else{ 
+                  // if (Number(value) > personalBalance - feeTokens) {
+                  //   setWarning("Out of balance");
+                  //   return setLoader(true);
+                  // }
+                  else {
                     setWarning(null);
                     setLoader(false);
                   }
@@ -182,8 +197,12 @@ export default function Deposit({
             </div>
           </div>
         </div>
-        {warning && <p  className="mr-5 justify-content-center has-text-danger">{warning}</p>}
-        <br/>
+        {warning && (
+          <p className="mr-5 justify-content-center has-text-danger">
+            {warning}
+          </p>
+        )}
+        <br />
       </PopupModal>
     </>
   );
