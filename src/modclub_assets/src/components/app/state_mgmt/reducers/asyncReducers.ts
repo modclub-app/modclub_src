@@ -199,9 +199,9 @@ export async function asyncReducers(asyncState, action) {
       try {
         if (context.actors.modclub && state.userProfile) {
           const actor = context.actors.modclub.value;
-          providerBalance = await actor.providerSaBalance(
-            "RESERVE", 
-            [state.providerId])
+          providerBalance = await actor.providerSaBalance("RESERVE", [
+            state.providerId,
+          ]);
         }
       } catch (e) {
         console.error("Error fetching Provider Balance::", e);
@@ -287,7 +287,7 @@ export async function asyncReducers(asyncState, action) {
       };
     }
     case "setModerationTasksLoading": {
-      return { ...state, moderationTasksLoading: action.payload.status};
+      return { ...state, moderationTasksLoading: action.payload.status };
     }
     case "setModerationTasksPage": {
       return {
@@ -298,8 +298,16 @@ export async function asyncReducers(asyncState, action) {
       };
     }
     case "setProviderId": {
-      return { ...state, providerId: action.payload, providerBalanceLoading: true };
+      return {
+        ...state,
+        providerId: action.payload,
+        providerBalanceLoading: true,
+      };
     }
+    case "setPohReservedContent": {
+      return { ...state, pohReservedContent: action.payload };
+    }
+
     default: {
       throw Error("Unknown action: " + action.type);
     }

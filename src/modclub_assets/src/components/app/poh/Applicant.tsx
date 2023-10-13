@@ -22,6 +22,7 @@ import POHConfirmationModal from "./POHConfirmationModal";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import * as Constant from "../../../utils/constant";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -86,16 +87,23 @@ const CheckBox = ({ id, label, values }) => {
 
 export default function PohApplicant() {
   const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const { packageId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [content, setContent] = useState(null);
   const [formRules, setFormRules] = useState<modclub_types.ViolatedRules[]>([]);
   const { modclub } = useActors();
+  const initTime = Constant.TIMER;
+  const [message, setMessage] = useState(null);
+  const [reserved, setReserved] = useState(!!appState.pohReservedContent);
+  const [time, setTime] = useState(initTime);
 
   const getApplicant = async () => {
     setLoading(true);
     const res = await modclub.getPohTaskData(packageId);
     console.log({ pohPackage: res.ok });
+    dispatch({ type: "setPohReservedContent", payload: res.ok.reservation });
+    setReserved(res.ok.isReserved);
     setContent(res.ok);
     setLoading(false);
   };
@@ -133,6 +141,18 @@ export default function PohApplicant() {
     }
   };
 
+  const onReservedPoh = async () => {
+    try {
+      const res = await modclub.createPohVoteReservation(content.packageId);
+      dispatch({ type: "setPohReservedContent", payload: res.ok.reservation });
+      setReserved(true);
+      setMessage({ success: true, value: "Reserved POH successful" });
+    } catch (error) {
+      setReserved(false);
+      setMessage({ success: false, value: "Reserved POH unsuccessful" });
+    }
+  };
+
   const isSafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
   const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
@@ -164,6 +184,14 @@ export default function PohApplicant() {
       {isSafari && iOS && (
         <Notification color="danger" className="has-text-centered">
           Proof of Humanity is not working on iOS Safari
+        </Notification>
+      )}
+      {message && (
+        <Notification
+          color={message.success ? "success" : "danger"}
+          textAlign="center"
+        >
+          {message.value}
         </Notification>
       )}
 
@@ -214,11 +242,34 @@ export default function PohApplicant() {
                   </Card.Footer>
                 </Card.Content>
               ))}
-
-              <POHConfirmationModal
-                formRules={formRules}
-                reward={content.reward}
-              />
+              {reserved ? (
+                <POHConfirmationModal
+                  formRules={formRules}
+                  reward={content.reward}
+                />
+              ) : (
+                <>
+                  <Button.Group
+                    className="is-flex-wrap-nowrap mt-5"
+                    style={{ paddingBottom: 10 }}
+                  >
+                    <Button
+                      fullwidth
+                      className="is-outlined"
+                      style={{ paddingLeft: 0, paddingRight: 0 }}
+                      onClick={onReservedPoh}
+                    >
+                      <Icon
+                        align="left"
+                        size="small"
+                        className="has-text-white"
+                      >
+                        Reserve
+                      </Icon>
+                    </Button>
+                  </Button.Group>
+                </>
+              )}
             </Card>
           </form>
         )}

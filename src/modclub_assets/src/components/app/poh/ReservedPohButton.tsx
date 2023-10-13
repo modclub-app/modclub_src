@@ -48,22 +48,6 @@ export const ReservedPohButton = ({
                 Submitted {formatDate(createdAt)}
               </span>
             </Card.Header.Title>
-            {Text && isEnable && (
-              <Button.Group
-                className="is-flex-wrap-nowrap mt-5"
-                style={{ paddingBottom: 10 }}
-              >
-                <Button
-                  fullwidth
-                  className="is-outlined"
-                  style={{ paddingLeft: 0, paddingRight: 0 }}
-                >
-                  <Icon align="left" size="small" className="has-text-white">
-                    {Text}
-                  </Icon>
-                </Button>
-              </Button.Group>
-            )}
           </Card.Footer>
         </Link>
       ) : (

@@ -31,5 +31,6 @@ export const initialState = {
   pendingStakeLoading: true,
   providerBalance: 0,
   providerBalanceLoading: true,
-  providerId: null
+  providerId: null,
+  pohReservedContent: null,
 };

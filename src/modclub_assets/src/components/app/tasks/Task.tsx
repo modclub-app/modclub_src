@@ -21,6 +21,7 @@ import { useProfile } from "../../../contexts/profile";
 import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import * as Constant from "../../../utils/constant";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -65,10 +66,10 @@ export default function Task() {
   const [voted, setVoted] = useState<boolean>(true);
   const [level, setLevel] = useState<string>("");
   const [reserved, setReserved] = useState(false);
-  const initTime = "02:00";
+  const initTime = Constant.TIMER;
   const [full, setFull] = useState<boolean | null>(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
-  const [time, setTime] = useState("02:00");
+  const [time, setTime] = useState(initTime);
   const { modclub, rs } = useActors();
   const getImage = (data: any) => {
     const image = unwrap<modclub_types.Image>(data);

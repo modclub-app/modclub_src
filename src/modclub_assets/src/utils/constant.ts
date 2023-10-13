@@ -24,3 +24,5 @@ export const RS_FACTOR = 100;
 export const ACTIVE_BALANCE_MSG = "You can use your active balance to stake in order to receive your rewards";
 export const STAKE_BALANCE_MSG = "Stake function is available to unlock your pending rewards. Please be aware unstake will impact your levelling as a moderator"
 export const PENDING_REWARDS_MSG = "The amount of rewards you earned through unstaking"
+export const TIMER = "05:00"
+export const TIMER_SECOND = 300

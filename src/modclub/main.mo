@@ -1564,7 +1564,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         switch (pohPackage) {
           case (null)();
           case (?package) {
-            let rid = voteManager.getVoteId(caller, id);
             let taskPlus = {
               packageId = id;
               status = pohContentQueueManager.getContentStatus(id);
@@ -1577,8 +1576,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               minStake = 0;
               title = null;
               hasVoted = ?voteCount.hasVoted;
-              isReserved = voteManager.isReservedPOHContent(rid, caller);
-              reservation = voteManager.getPohVoteReservation(rid, caller);
+              isReserved = voteManager.isReservedPOHContent(id, caller);
+              reservation = voteManager.getPohVoteReservation(id, caller);
               reward = 0.0;
               createdAt = package.createdAt;
               updatedAt = package.updatedAt;
@@ -1621,16 +1620,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       return #err(#invalidPackageId);
     };
     let voteCount = voteManager.getVoteCountForPoh(caller, packageId);
-    let rid = voteManager.getVoteId(caller, pohTasks[0].packageId);
+    let pid = pohTasks[0].packageId;
     #ok({
-      packageId = pohTasks[0].packageId;
+      packageId = pid;
       pohTaskData = pohTasks[0].pohTaskData;
       votes = Nat.max(voteCount.approvedCount, voteCount.rejectedCount);
       requiredVotes = ModClubParam.MIN_VOTE_POH;
       minStake = 0;
       reward = 0.0;
-      isReserved = voteManager.isReservedPOHContent(rid, caller);
-      reservation = voteManager.getPohVoteReservation(rid, caller);
+      isReserved = voteManager.isReservedPOHContent(pid, caller);
+      reservation = voteManager.getPohVoteReservation(pid, caller);
       createdAt = pohTasks[0].createdAt;
       updatedAt = pohTasks[0].updatedAt;
     });

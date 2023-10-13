@@ -21,106 +21,9 @@ import { useConnect } from "@connect2icmodclub/react";
 import { Principal } from "@dfinity/principal";
 import { fetchObjectUrl } from "../../../utils/jwt";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import { Reserved } from "@dfinity/candid/lib/cjs/idl";
-import { ReservedPohButton } from "./ReservedPohButton";
+import ApplicantSnippet from "./ApplicationSnippet";
 
 const PAGE_SIZE = 9;
-
-const ApplicantSnippet = ({
-  applicant,
-}: {
-  applicant: modclub_types.PohTaskPlus;
-}) => {
-  const { profileImageUrlSuffix, createdAt, reward } = applicant;
-  const regEx = /canisterId=(.*)&contentId=(.*)/g;
-  const match = profileImageUrlSuffix.length
-    ? regEx.exec(profileImageUrlSuffix[0])
-    : null;
-  const imageUrl = match ? getUrlForData(match[1], match[2]) : null;
-  const [urlObject, setUrlObject] = useState(null);
-  const [message, setMessage] = useState(null);
-  const [reserved, setReserved] = useState(false);
-  const { modclub } = useActors();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      console.log(
-        "Applicant: " +
-          applicant.packageId +
-          "suffixURL: " +
-          profileImageUrlSuffix +
-          " imageUrl: " +
-          imageUrl
-      );
-      const urlObject = await fetchObjectUrl(modclub, imageUrl);
-      setUrlObject(urlObject);
-    };
-    const checkPoh = async () => {
-      try {
-        if (modclub) {
-          const res = await modclub.isReservedPOHContent(applicant.packageId);
-          setReserved(res);
-        }
-      } catch (error) {
-        setReserved(false);
-      }
-    };
-    fetchData();
-    checkPoh();
-    return () => {
-      setUrlObject(null);
-    };
-  }, [imageUrl]);
-
-  const onReservedPoh = async () => {
-    try {
-      await modclub.createPohVoteReservation(applicant.packageId);
-      setReserved(true);
-      setMessage({ success: true, value: "Reserved POH successful" });
-    } catch (error) {
-      setReserved(false);
-      setMessage({ success: false, value: "Reserved POH unsuccessful" });
-    }
-  };
-
-  return (
-    <div>
-      {message && (
-        <Notification
-          color={message.success ? "success" : "danger"}
-          textAlign="center"
-        >
-          {message.value}
-        </Notification>
-      )}
-      <ReservedPohButton
-        packageId={applicant.packageId}
-        Text={"View"}
-        imageUrl={imageUrl}
-        urlObject={urlObject}
-        createdAt={applicant.createdAt}
-        isEnable={reserved}
-      />
-      {!reserved && (
-        <Button.Group
-          className="is-flex-wrap-nowrap mt-5"
-          style={{ paddingBottom: 10 }}
-        >
-          <Button
-            fullwidth
-            className="is-outlined"
-            style={{ paddingLeft: 0, paddingRight: 0 }}
-            onClick={onReservedPoh}
-          >
-            <Icon align="left" size="small" className="has-text-white">
-              Reserve
-            </Icon>
-          </Button>
-        </Button.Group>
-      )}
-    </div>
-  );
-};
 
 export default function PohApplicantList() {
   const { principal } = useConnect();
@@ -181,19 +84,21 @@ export default function PohApplicantList() {
   };
 
   useEffect(() => {
-    const applicantsResult = getApplicants();
-    const userLevelResult = getUserLv();
-    if (
-      appState.userProfile &&
-      firstLoad &&
-      !loading &&
-      !applicants.length &&
-      applicantsResult &&
-      userLevelResult
-    ) {
-      setFirstLoad(false);
+    if (modclub && !!appState.userProfile) {
+      const applicantsResult = getApplicants();
+      const userLevelResult = getUserLv();
+      if (
+        appState.userProfile &&
+        firstLoad &&
+        !loading &&
+        !applicants.length &&
+        applicantsResult &&
+        userLevelResult
+      ) {
+        setFirstLoad(false);
+      }
     }
-  }, [appState.userProfile]);
+  }, [appState.userProfile, modclub]);
 
   useEffect(() => {
     appState.userProfile && !loading && getApplicants();
