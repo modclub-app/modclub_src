@@ -255,6 +255,8 @@ module {
     requiredVotes : Int;
     minStake : Int;
     reward : Float;
+    isReserved : Bool;
+    reservation : ?Types.Reserved;
     createdAt : Int;
     updatedAt : Int;
   };

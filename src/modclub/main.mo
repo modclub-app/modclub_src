@@ -1577,8 +1577,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               minStake = 0;
               title = null;
               hasVoted = ?voteCount.hasVoted;
-              isReserved = voteManager.isReservedPOHContent(id, caller);
-              reservation = voteManager.getPohVoteReservation(id, caller);
+              isReserved = voteManager.isReservedPOHContent(rid, caller);
+              reservation = voteManager.getPohVoteReservation(rid, caller);
               reward = 0.0;
               createdAt = package.createdAt;
               updatedAt = package.updatedAt;
@@ -1621,6 +1621,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       return #err(#invalidPackageId);
     };
     let voteCount = voteManager.getVoteCountForPoh(caller, packageId);
+    let rid = voteManager.getVoteId(caller, pohTasks[0].packageId);
     #ok({
       packageId = pohTasks[0].packageId;
       pohTaskData = pohTasks[0].pohTaskData;
@@ -1628,6 +1629,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       requiredVotes = ModClubParam.MIN_VOTE_POH;
       minStake = 0;
       reward = 0.0;
+      isReserved = voteManager.isReservedPOHContent(rid, caller);
+      reservation = voteManager.getPohVoteReservation(rid, caller);
       createdAt = pohTasks[0].createdAt;
       updatedAt = pohTasks[0].updatedAt;
     });
