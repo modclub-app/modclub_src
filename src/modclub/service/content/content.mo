@@ -353,7 +353,7 @@ module ContentModule {
                 contentState = arg.contentState;
                 storageSolution = arg.storageSolution;
               },
-              Constants.EXPIRE_TIME
+              Constants.RESERVE_EXPIRE_TIME 
             );
             let newReserved = Array.append<Types.Reserved>(oldReserved, [reservation]);
             let chunkedContent = await arg.storageSolution.getChunkedContent(content.id);
