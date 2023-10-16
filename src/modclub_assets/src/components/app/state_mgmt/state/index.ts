@@ -33,4 +33,5 @@ export const initialState = {
   providerBalanceLoading: true,
   providerId: null,
   pohReservedContent: null,
+  contentReservedTime: 0,
 };

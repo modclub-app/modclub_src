@@ -92,7 +92,7 @@ module VoteModule {
         return #err(#userAlreadyReserved);
       };
 
-      let reservation = await takePohReservation(userId, id, Constants.EXPIRE_VOTE_TIME);
+      let reservation = await takePohReservation(userId, id, Constants.RESERVE_EXPIRE_TIME);
       return #ok(reservation);
     };
 

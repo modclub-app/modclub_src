@@ -308,6 +308,9 @@ export async function asyncReducers(asyncState, action) {
       return { ...state, pohReservedContent: action.payload };
     }
 
+    case "setContentReservedTime": {
+      return { ...state, contentReservedTime: action.payload };
+    }
     default: {
       throw Error("Unknown action: " + action.type);
     }

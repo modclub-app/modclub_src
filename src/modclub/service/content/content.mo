@@ -328,7 +328,7 @@ module ContentModule {
     contentId : Text,
     voteCount : Types.VoteCount,
     arg : ContentTypes.CommonArg
-  ) : async () {
+  ) : async Types.Reserved {
     switch (arg.globalState.content.get(contentId)) {
       case (?content) {
         let contentPlus : ?Types.ContentPlus = getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState);
@@ -405,6 +405,7 @@ module ContentModule {
               receipt = provider.receipt;
             };
             arg.globalState.content.put(content.id, result);
+            return reservation;
           };
           case (_) throw Error.reject("Provider incorrect");
         };

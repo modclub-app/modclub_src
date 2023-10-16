@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { formatDate } from "../../../utils/util";
+import { formatDate, timestampToSecond } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import {
   Heading,
@@ -23,6 +23,8 @@ import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
+import ReserveModal from "../../common/reservemodal/ReserveModal";
+import Timer from "../../common/timer/Timer";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -96,7 +98,10 @@ export default function PohApplicant() {
   const initTime = Constant.TIMER;
   const [message, setMessage] = useState(null);
   const [reserved, setReserved] = useState(!!appState.pohReservedContent);
-  const [time, setTime] = useState(initTime);
+  const [time, setTime] = useState(Constant.TIMER_SECOND / 60);
+  const [showReserveModal, setShowReserveModal] = useState(false);
+  const [loadingModal, setLoadingModal] = useState(false);
+  const [count, setCount] = useState(0);
 
   const getApplicant = async () => {
     setLoading(true);
@@ -106,6 +111,26 @@ export default function PohApplicant() {
     setReserved(res.ok.isReserved);
     setContent(res.ok);
     setLoading(false);
+    setTimer(res.ok.reservation);
+  };
+
+  const toggleReserveModal = () => {
+    setShowReserveModal(!showReserveModal);
+  };
+
+  const toggleRefresh = () => {
+    window.location.reload();
+  };
+
+  const setTimer = (reservation) => {
+    const now = new Date().getTime();
+    const expire = Object.values(
+      reservation.map((poh) => {
+        return poh.reservedExpiryTime;
+      })
+    );
+    const remind = (Number(expire[0]) - Number(now)) / 1000.0;
+    setCount(remind);
   };
 
   useEffect(() => {
@@ -142,15 +167,19 @@ export default function PohApplicant() {
   };
 
   const onReservedPoh = async () => {
+    setLoadingModal(true);
     try {
       const res = await modclub.createPohVoteReservation(content.packageId);
       dispatch({ type: "setPohReservedContent", payload: res.ok.reservation });
       setReserved(true);
+      setTimer(res.ok.reservation);
       setMessage({ success: true, value: "Reserved POH successful" });
+      setLoadingModal(false);
     } catch (error) {
       setReserved(false);
       setMessage({ success: false, value: "Reserved POH unsuccessful" });
     }
+    toggleReserveModal();
   };
 
   const isSafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
@@ -257,7 +286,7 @@ export default function PohApplicant() {
                       fullwidth
                       className="is-outlined"
                       style={{ paddingLeft: 0, paddingRight: 0 }}
-                      onClick={onReservedPoh}
+                      onClick={toggleReserveModal}
                     >
                       <Icon
                         align="left"
@@ -270,9 +299,46 @@ export default function PohApplicant() {
                   </Button.Group>
                 </>
               )}
+              {reserved && count != 0 && (
+                <Card className="mt-5">
+                  <Card.Content className="is-flex is-justify-content-center">
+                    <>
+                      <Heading subtitle className="is-flex">
+                        <span className="my-auto">
+                          Reservation expires: &nbsp;
+                        </span>
+                        <span className="has-background-grey p-1 box is-rounded my-auto">
+                          <Timer countdown={count} toggle={toggleRefresh} />
+                        </span>
+                      </Heading>
+                    </>
+                  </Card.Content>
+                </Card>
+              )}
             </Card>
           </form>
         )}
+      />
+      <ReserveModal
+        toggleReserveModal={toggleReserveModal}
+        content={
+          <>
+            <Heading>POH Application Reserved</Heading>
+            <Heading subtitle>
+              You have reserved the poh task. You can now cast your vote:
+            </Heading>
+            <Heading subtitle className="is-flex">
+              <span className="my-auto">Reservation expires: &nbsp;</span>
+              <span className="has-background-grey p-1 box is-rounded my-auto">
+                {time} Minutes
+              </span>
+            </Heading>
+          </>
+        }
+        showReserveModal={showReserveModal}
+        createReservation={onReservedPoh}
+        reserved={reserved}
+        loading={loadingModal}
       />
     </>
   );

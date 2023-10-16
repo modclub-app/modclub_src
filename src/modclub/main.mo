@@ -2289,7 +2289,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public shared ({ caller }) func reserveContent(contentId : Text) : async () {
+  public shared ({ caller }) func reserveContent(contentId : Text) : async  Result.Result<Types.Reserved, Text>{
     switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
@@ -2305,6 +2305,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution;
       }
     );
+    return #ok(reserved);
   };
 
   public shared ({ caller }) func canReserveContent(contentId : Text) : async Result.Result<Bool, Text> {

@@ -1,5 +1,5 @@
 module Constants {
-  public let EXPIRE_VOTE_TIME = 100000;
+  public let EXPIRE_VOTE_TIME = 300000;
   public let VESTING_DISSOLVE_DELAY_SECONDS = 604800;
   public let TOKENS_DECIMAL = 8.0;
   public let FIVE_MIN_NANO_SECS = 300000000000;

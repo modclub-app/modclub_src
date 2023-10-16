@@ -22,6 +22,8 @@ import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
+import ReserveModal from "../../common/reservemodal/ReserveModal";
+import Timer from "../../common/timer/Timer";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -61,6 +63,7 @@ function resizeIframe(iframe) {
 export default function Task() {
   const { principal } = useConnect();
   const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const { taskId } = useParams<{ taskId: string }>();
   const [task, setTask] = useState(null);
   const [voted, setVoted] = useState<boolean>(true);
@@ -70,15 +73,37 @@ export default function Task() {
   const [full, setFull] = useState<boolean | null>(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [time, setTime] = useState(initTime);
+  const [loading, setLoading] = useState(false);
+  const [count, setCount] = useState(appState.contentReservedTime);
   const { modclub, rs } = useActors();
+
   const getImage = (data: any) => {
     const image = unwrap<modclub_types.Image>(data);
     return fileToImgSrc(image.data, image.imageType);
+  };
+  const setTimer = (reservation) => {
+    const now = new Date().getTime();
+    const expiry =
+      reservation &&
+      reservation.filter(
+        (res) =>
+          res.profileId == principal &&
+          Number(res.reservedExpiryTime) > Number(now)
+      )[0];
+    const remind =
+      (Number(expiry ? expiry.reservedExpiryTime : 0) - Number(now)) / 1000.0;
+    setReserved(remind > 0 ? true : false);
+    setCount(remind > 0 ? Number(remind) : 0);
+    dispatch({
+      type: "setContentReservedTime",
+      payload: remind > 0 ? Number(remind) : 0,
+    });
   };
 
   const fetchTask = async () => {
     const content = await modclub.getContent(taskId);
     setTask(content[0]);
+    setTimer(content[0].reservedList);
   };
 
   const fetchData = async () => {
@@ -101,34 +126,6 @@ export default function Task() {
     setVoted(false);
   }, [voted]);
 
-  useEffect(() => {
-    let intervalId;
-    if (reserved) {
-      intervalId = setInterval(() => {
-        setTime((prevTime) => {
-          const [minutes, seconds] = prevTime.split(":").map(Number);
-
-          if ((minutes === 0 && seconds === 0) || task.hasVoted[0]) {
-            clearInterval(intervalId);
-            return "00:00";
-          }
-
-          if (seconds === 0) {
-            return `${minutes - 1}:${59}`;
-          }
-
-          return `${minutes}:${(seconds - 1).toString().padStart(2, "0")}`;
-        });
-      }, 1000);
-    } else {
-      setTime(initTime);
-    }
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [reserved]);
-
   const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
     "img",
     "iframe",
@@ -148,10 +145,29 @@ export default function Task() {
   const toggleReserveModal = () => {
     setShowReserveModal(!showReserveModal);
   };
-  const makeReserved = async () => {
-    await modclub.reserveContent(taskId);
-    setReserved(true);
-    toggleReserveModal();
+
+  const toggleRefresh = () => {
+    window.location.reload();
+  };
+
+  const createReservation = async () => {
+    setLoading(true);
+    try {
+      const res = await modclub.reserveContent(taskId);
+      const now = new Date().getTime();
+      const remind =(Number(res.ok ? res.ok.reservedExpiryTime : 0) - Number(now)) / 1000.0;
+      setReserved(remind > 0 ? true : false);
+      setCount(remind > 0 ? Number(remind) : 0);
+      dispatch({
+        type: "setContentReservedTime",
+        payload: remind > 0 ? Number(remind) : 0,
+      });
+      setReserved(true);
+      toggleReserveModal();
+    } catch (e) {
+      console.log("Error create Reservation:", e);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -171,29 +187,6 @@ export default function Task() {
       });
     });
   }, [sanitizedHtml]);
-
-  const ReserveModal = ({ toggleReserveModal, content }) => {
-    return (
-      <Modal
-        show={showReserveModal}
-        onClose={toggleReserveModal}
-        closeOnBlur={true}
-        showClose={false}
-        className="scrollable"
-      >
-        <Modal.Card backgroundColor="circles">
-          <Modal.Card.Body>
-            {content}
-            <Button.Group>
-              <Button color="danger" onClick={makeReserved} disabled={reserved}>
-                Okay
-              </Button>
-            </Button.Group>
-          </Modal.Card.Body>
-        </Modal.Card>
-      </Modal>
-    );
-  };
 
   return (
     <>
@@ -318,22 +311,13 @@ export default function Task() {
                   </>
                 )
               }
+              showReserveModal={showReserveModal}
+              createReservation={createReservation}
+              reserved={reserved}
+              loading={loading}
             />
 
-            {/* full ?
-              <Card className="mt-5">
-                <Card.Content>
-                  <>
-                    <Heading>Reservations Full</Heading>
-                    <Heading subtitle>
-                      There are no more slots available for this task.
-                    </Heading>
-                  </>
-                </Card.Content>
-              </Card>
-            */}
-
-            {reserved && !task.hasVoted[0] && (
+            {reserved && !task.hasVoted[0] && count > 0 && (
               <Card className="mt-5">
                 <Card.Content className="is-flex is-justify-content-center">
                   <>
@@ -342,7 +326,7 @@ export default function Task() {
                         Reservation expires: &nbsp;
                       </span>
                       <span className="has-background-grey p-1 box is-rounded my-auto">
-                        {time}
+                        <Timer countdown={count} toggle={toggleRefresh}/>
                       </span>
                     </Heading>
                   </>

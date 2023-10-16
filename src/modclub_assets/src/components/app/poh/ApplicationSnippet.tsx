@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Button, Icon, Notification } from "react-bulma-components";
+import { Button, Heading, Icon, Notification } from "react-bulma-components";
 import { getUrlForData } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import { useActors } from "../../../utils";
@@ -9,6 +9,8 @@ import { ReservedPohButton } from "./ReservedPohButton";
 import { fetchObjectUrl } from "../../../utils/jwt";
 import { Link } from "react-router-dom";
 import placeholder from "../../../../assets/user_placeholder.png";
+import ReserveModal from "../../common/reservemodal/ReserveModal";
+import * as Constant from "../../../utils/constant";
 
 const ApplicantSnippet = ({
   applicant,
@@ -27,6 +29,9 @@ const ApplicantSnippet = ({
   const [message, setMessage] = useState(null);
   const [reserved, setReserved] = useState(!!appState.pohReservedContent);
   const { modclub } = useActors();
+  const [time, setTime] = useState(Constant.TIMER_SECOND / 60);
+  const [showReserveModal, setShowReserveModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,7 +52,13 @@ const ApplicantSnippet = ({
     };
   }, [imageUrl]);
 
+  const toggleReserveModal = () => {
+    setShowReserveModal(!showReserveModal);
+  };
+
   const onReservedPoh = async () => {
+    setReserved(false);
+    setLoading(true);
     try {
       const res = await modclub.createPohVoteReservation(applicant.packageId);
       if (res) {
@@ -58,10 +69,12 @@ const ApplicantSnippet = ({
       }
       setReserved(true);
       setMessage({ success: true, value: "Reserved POH successful" });
+      setLoading(false);
     } catch (error) {
       setReserved(false);
       setMessage({ success: false, value: "Reserved POH unsuccessful" });
     }
+    toggleReserveModal();
   };
   useEffect(() => {
     if (!appState.pohReservedContent && applicant.isReserved) {
@@ -120,7 +133,7 @@ const ApplicantSnippet = ({
             fullwidth
             className="is-outlined"
             style={{ paddingLeft: 0, paddingRight: 0 }}
-            onClick={onReservedPoh}
+            onClick={toggleReserveModal}
           >
             <Icon align="left" size="small" className="has-text-white">
               Reserve
@@ -128,6 +141,28 @@ const ApplicantSnippet = ({
           </Button>
         </Button.Group>
       )}
+
+      <ReserveModal
+        toggleReserveModal={toggleReserveModal}
+        content={
+          <>
+            <Heading>POH Application Reserved</Heading>
+            <Heading subtitle>
+              You have reserved the poh task. You can now cast your vote:
+            </Heading>
+            <Heading subtitle className="is-flex">
+              <span className="my-auto">Reservation expires: &nbsp;</span>
+              <span className="has-background-grey p-1 box is-rounded my-auto">
+                {time} Minutes
+              </span>
+            </Heading>
+          </>
+        }
+        showReserveModal={showReserveModal}
+        createReservation={onReservedPoh}
+        reserved={reserved}
+        loading={loading}
+      />
     </div>
   );
 };
