@@ -42,6 +42,10 @@ log() {
     printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}$1${NC}\n"
 }
 
+log_step() {
+    printf "${GREEN}[STEP] ${CYAN}$1${NC}\n"
+}
+
 error() {
     printf "${RED}[ERROR] $1${NC}\n"
     exit 1

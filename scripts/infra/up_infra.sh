@@ -7,7 +7,16 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 current_dir="$(dirname "$0")"
-source "${current_dir}/../utils.sh"
+ROOT_DIR="$current_dir/../../"
+
+source "${ROOT_DIR}/scripts/utils.sh"
+source "${ROOT_DIR}/scripts/seeds/add_token.sh"
+source "${ROOT_DIR}/scripts/seeds/gen_content.sh"
+source "${ROOT_DIR}/scripts/seeds/gen_provider.sh"
+
+
+LEDGER_IDENTITY="qa_ledger_identity"
+PROVIDER_IDENTITY="qa_test_provider"
 
 read -p "Press any key to continue..."
 
@@ -39,9 +48,9 @@ function deploy_wallet_canister() {
 	fi
 
   local qa_minter_principal=$(dfx identity get-principal)
-	if ! dfx identity use qa_ledger_identity >/dev/null 2>&1; then
-		dfx identity new qa_ledger_identity --disable-encryption
-		dfx identity use qa_ledger_identity
+	if ! dfx identity use $LEDGER_IDENTITY >/dev/null 2>&1; then
+		dfx identity new $LEDGER_IDENTITY--disable-encryption
+		dfx identity use $LEDGER_IDENTITY
 	fi
   local qa_ledger_principal=$(dfx identity get-principal)
   dfx identity use default
@@ -134,7 +143,7 @@ function deploy_qa_canisters() {
   dfx deploy rs_qa --argument="($local_env)" &&
 	dfx deploy modclub_qa --argument="($local_env)" &&
   generate_declariations "$DEV_ENV" &&
-  node "$current_dir/../build/gen_files_by_env.cjs" &&
+  node "$ROOT_DIR/scripts/build/gen_files_by_env.cjs" &&
   DEV_ENV=qa dfx deploy modclub_qa_assets &&
   dfx ledger fabricate-cycles --canister $(dfx canister id modclub_qa) --amount 10 &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
@@ -151,5 +160,25 @@ function init_qa_canisters() {
   return 0;
 }
 
-create_qa_canisters && deploy_qa_canisters && init_qa_canisters
+function init_qa_content() {
+  log "Creating content..."
+  modclub=$(get_canister_name_by_env qa "modclub")
+  dfx ledger fabricate-cycles --canister $modclub
+  dfx ledger fabricate-cycles --canister $modclub
+  dfx ledger fabricate-cycles --canister $modclub
+  dfx ledger fabricate-cycles --canister $modclub
+  dfx ledger fabricate-cycles --canister $modclub
+  dfx ledger fabricate-cycles --canister $modclub
 
+  create_provider_identity $PROVIDER_IDENTITY
+  setup_provider qa $PROVIDER_IDENTITY
+  add_token_for_submitting_task qa $PROVIDER_IDENTITY $LEDGER_IDENTITY
+  create_seed_content qa $PROVIDER_IDENTITY
+
+  # Additional ACCOUNT_PAYABLE tokens are required because content creation used up tokens.
+  add_token_to_ACCOUNT_PAYABLE qa $LEDGER_IDENTITY
+  log "Content has been created successfully."
+}
+
+create_qa_canisters && deploy_qa_canisters && init_qa_canisters && init_qa_content
+dfx identity use default # make sure to set back to default identity
