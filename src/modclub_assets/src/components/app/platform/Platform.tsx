@@ -61,7 +61,6 @@ export default function Platform({ providerId }: { providerId: Principal }) {
                 content.name
               )}
             </Heading>
-            <a href="#">+ Follow</a>
           </Level>
 
           <table className="table is-striped has-text-left mb-6">
