@@ -179,7 +179,7 @@ export async function asyncReducers(asyncState, action) {
       try {
         if (context.actors.vesting && state.loginPrincipalId) {
           const actor = context.actors.vesting.value;
-          claimedStakeBalance = await actor.claimed_stakes_for({
+          claimedStakeBalance = await actor.pending_stakes_for({
             owner: Principal.from(state.loginPrincipalId),
             subaccount: [],
           });
