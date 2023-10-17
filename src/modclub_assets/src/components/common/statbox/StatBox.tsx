@@ -79,7 +79,7 @@ export const StatBox: React.FC<StatBoxProps> = ({
                   ) : (
                     amount
                   )
-                ) : (loading  &&
+                ) : (!loading  &&
                   <PowerBar
                     points={amount / 100}
                     gradient={false}

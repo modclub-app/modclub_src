@@ -84,8 +84,8 @@ export default function ModclubApp() {
 
   useEffect(() => {
     if (isConnected && rs && appState.loginPrincipalId)
-      dispatch({ type: "fetchUserRS" });
-  }, [isConnected, rs, appState.loginPrincipalId]);
+      appState.rsLoading && dispatch({ type: "fetchUserRS" });
+  }, [isConnected, rs, appState.loginPrincipalId, appState.rsLoading]);
 
   useEffect(() => {
     if (isConnected && wallet) {

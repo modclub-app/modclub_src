@@ -222,7 +222,7 @@ export async function asyncReducers(asyncState, action) {
       } catch (e) {
         console.error("Error fetching RS::", e);
       }
-      let rsLoading = !state.rsLoading
+      let rsLoading = !state.rsLoading;
       return { ...state, rs, rsLoading };
     }
     case "fetchLeaderBoard": {
