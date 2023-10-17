@@ -148,18 +148,20 @@ export default function Userstats({ detailed = false }) {
   }, []);
   const rsMessage = getRSMessageByLevel(level);
 
-  const toggleFetchPersonalBalance = ()=>{
+  const toggleFetchPersonalBalance = () => {
     !appState.personalBalanceLoading &&
       dispatch({ type: "personalBalanceLoading", payload: true });
-  }
-  const toggleFetchSystemBalance = ()=>{
+  };
+  const toggleFetchSystemBalance = () => {
     !appState.systemBalanceLoading &&
       dispatch({ type: "systemBalanceLoading", payload: true });
-  }
-  const toggleFetchStakeBalance = ()=>{
+  };
+  const toggleFetchStakeBalance = () => {
     !appState.stakeBalanceLoading &&
       dispatch({ type: "stakeBalanceLoading", payload: true });
-  }
+    !appState.claimedStakeLoading &&
+      dispatch({ type: "claimedStakeLoading", payload: true });
+  };
 
   return (
     <>
@@ -185,9 +187,13 @@ export default function Userstats({ detailed = false }) {
               <Button
                 color="dark"
                 fullwidth
-                onClick={toggleFetchPersonalBalance && toggleFetchSystemBalance && toggleDeposit}
+                onClick={
+                  toggleFetchPersonalBalance &&
+                  toggleFetchSystemBalance &&
+                  toggleDeposit
+                }
                 disabled={appState.personalBalanceLoading}
-                className={appState.personalBalanceLoading && "is-loading"}
+                // className={appState.personalBalanceLoading && "is-loading"}
               >
                 Deposit
               </Button>
@@ -196,7 +202,7 @@ export default function Userstats({ detailed = false }) {
                 fullwidth
                 onClick={toggleFetchSystemBalance && toggleWithdraw}
                 disabled={appState.systemBalanceLoading}
-                className={appState.systemBalanceLoading && "is-loading"}
+                // className={appState.systemBalanceLoading && "is-loading"}
               >
                 Withdraw
               </Button>
@@ -237,7 +243,7 @@ export default function Userstats({ detailed = false }) {
               fullwidth
               onClick={toggleFetchStakeBalance && toggleStake}
               disabled={appState.stakeBalanceLoading}
-              className={appState.stakeBalanceLoading && "is-loading"}
+              // className={appState.stakeBalanceLoading && "is-loading"}
             >
               Stake
             </Button>
@@ -246,7 +252,7 @@ export default function Userstats({ detailed = false }) {
               fullwidth
               onClick={toggleFetchStakeBalance && toggleUnstake}
               disabled={appState.stakeBalanceLoading}
-              className={appState.stakeBalanceLoading && "is-loading"}
+              // className={appState.stakeBalanceLoading && "is-loading"}
             >
               Unstake
             </Button>

@@ -22,10 +22,11 @@ const UpdateTable = ({
 }) => {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const { modclub } = useActors();
+  const appState = useAppState();
   const hasLockBlock = Array.isArray(lockBlock) && lockBlock.length > 0;
   const [releaseUnlocked, setReleaseUnlocked] = useState(false);
   const unlockPrice = convert_to_mod(tokenHoldings.unLockedFor, digit);
-  const claimPrice = convert_to_mod(tokenHoldings.claimStakedFor, digit);
+  const claimPrice = convert_to_mod(appState.claimedStakeBalance, digit);
 
   const onFormSubmit = async () => {
     try {
@@ -43,7 +44,7 @@ const UpdateTable = ({
         <span className="has-text-weight-bold">{stake}</span>
       </Level>
       <Level className="has-text-silver px-5">
-        <span>Claim Stake amount: </span>
+        <span>Claimed Stake amount: </span>
         <span className="has-text-weight-bold">{claimPrice}</span>
       </Level>
       <Level className="has-text-silver px-5">

@@ -179,10 +179,16 @@ export async function asyncReducers(asyncState, action) {
       try {
         if (context.actors.vesting && state.loginPrincipalId) {
           const actor = context.actors.vesting.value;
-          claimedStakeBalance = await actor.pending_stakes_for({
+          let claimedStake = await actor.pending_stakes_for({
             owner: Principal.from(state.loginPrincipalId),
             subaccount: [],
           });
+          if (claimedStake.length) {
+            claimedStakeBalance = 0;
+            claimedStake.forEach((cs) => {
+              claimedStakeBalance = claimedStakeBalance + parseInt(cs.amount);
+            });
+          }
         }
       } catch (e) {
         console.error("Error fetching User claimedStakeBalance::", e);

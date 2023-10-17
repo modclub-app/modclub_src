@@ -107,20 +107,36 @@ export default function ModclubApp() {
   }, [isConnected, appState.userProfile, appState.systemBalanceLoading]);
 
   useEffect(() => {
-    if (isConnected && appState.loginPrincipalId)
+    if (isConnected && appState.loginPrincipalId && vesting)
       appState.stakeBalanceLoading &&
         dispatch({ type: "fetchUserStakedBalance" });
-  }, [isConnected, appState.loginPrincipalId, appState.stakeBalanceLoading]);
+  }, [
+    isConnected,
+    vesting,
+    appState.loginPrincipalId,
+    appState.stakeBalanceLoading,
+  ]);
   useEffect(() => {
-    if (isConnected && appState.loginPrincipalId)
+    if (isConnected && appState.loginPrincipalId && vesting)
       appState.unlockStakeLoading &&
         dispatch({ type: "fetchUserUnlockedStakedBalance" });
-  }, [isConnected, appState.loginPrincipalId, appState.unlockStakeLoading]);
+  }, [
+    isConnected,
+    vesting,
+    appState.loginPrincipalId,
+    appState.unlockStakeLoading,
+  ]);
   useEffect(() => {
-    if (isConnected && appState.loginPrincipalId)
+    if (isConnected && appState.loginPrincipalId && vesting) {
       appState.claimedStakeLoading &&
         dispatch({ type: "fetchUserClaimedStakedBalance" });
-  }, [isConnected, appState.loginPrincipalId, appState.claimedStakeLoading]);
+    }
+  }, [
+    isConnected,
+    vesting,
+    appState.loginPrincipalId,
+    appState.claimedStakeLoading,
+  ]);
 
   useEffect(() => {
     if (isConnected && appState.loginPrincipalId && vesting) {
