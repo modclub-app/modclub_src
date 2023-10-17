@@ -49,7 +49,7 @@ function deploy_wallet_canister() {
 
   local qa_minter_principal=$(dfx identity get-principal)
 	if ! dfx identity use $LEDGER_IDENTITY >/dev/null 2>&1; then
-		dfx identity new $LEDGER_IDENTITY--disable-encryption
+		dfx identity new $LEDGER_IDENTITY --disable-encryption
 		dfx identity use $LEDGER_IDENTITY
 	fi
   local qa_ledger_principal=$(dfx identity get-principal)
