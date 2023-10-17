@@ -170,9 +170,11 @@ export default function PohApplicant() {
     setLoadingModal(true);
     try {
       const res = await modclub.createPohVoteReservation(content.packageId);
-      dispatch({ type: "setPohReservedContent", payload: res.ok.reservation });
+      dispatch({ type: "setPohReservedContent", payload: res.ok });
+      const now = new Date().getTime();
+      const remind = (Number(res.ok.reservedExpiryTime) - Number(now)) / 1000.0;
+      setCount(remind);
       setReserved(true);
-      setTimer(res.ok.reservation);
       setMessage({ success: true, value: "Reserved POH successful" });
       setLoadingModal(false);
     } catch (error) {
@@ -330,7 +332,7 @@ export default function PohApplicant() {
             <Heading subtitle className="is-flex">
               <span className="my-auto">Reservation expires: &nbsp;</span>
               <span className="has-background-grey p-1 box is-rounded my-auto">
-                {time} Minutes
+                {Constant.TIMER} 
               </span>
             </Heading>
           </>

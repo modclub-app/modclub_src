@@ -64,7 +64,7 @@ const ApplicantSnippet = ({
       if (res) {
         dispatch({
           type: "setPohReservedContent",
-          payload: res.ok.reservation,
+          payload: res.ok,
         });
       }
       setReserved(true);
