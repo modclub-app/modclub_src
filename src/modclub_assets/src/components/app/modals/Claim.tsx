@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import FormModal from "../modals/FormModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UpdateTable } from "../../common/updateTable/UpdateTable";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
@@ -17,17 +17,34 @@ export default function Claim({ toggle, pendingRewards, userId }) {
   const dispatch = useAppStateDispatch();
 
   const onFormSubmit = async () => {
+    setLoader(true);
     try {
       const locked = amount;
       const res = await modclub.claimLockedReward(BigInt(locked), []);
+      !appState.personalBalanceLoading &&
+        dispatch({ type: "personalBalanceLoading", payload: true });
+      !appState.systemBalanceLoading &&
+        dispatch({ type: "systemBalanceLoading", payload: true });
       !appState.lockedBalanceLoading &&
         dispatch({ type: "fetchUserLockedBalance", payload: true });
       return res.ok;
     } catch (err) {
       setError(err.message);
     }
+    setLoader(false);
   };
-
+  useEffect(() => {
+    let isMounted = true;
+    !appState.personalBalanceLoading &&
+      dispatch({ type: "personalBalanceLoading", payload: true });
+    !appState.systemBalanceLoading &&
+      dispatch({ type: "systemBalanceLoading", payload: true });
+    !appState.lockedBalanceLoading &&
+      dispatch({ type: "fetchUserLockedBalance", payload: true });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   return (
     <FormModal
       title="Claim"
@@ -43,7 +60,7 @@ export default function Claim({ toggle, pendingRewards, userId }) {
             name="amount"
             component="input"
             type="hidden"
-            className={(!load) ? "input": "input is-danger"}
+            className={!load ? "input" : "input is-danger"}
             initialValue={inputValue}
             validate={(value) => {
               if (isNaN(value) || Number(value) < 0) {
@@ -57,8 +74,7 @@ export default function Claim({ toggle, pendingRewards, userId }) {
               if (Number(value) > pendingRewards) {
                 setWarning("Out of balance");
                 return setLoader(true);
-              }
-              else{ 
+              } else {
                 setWarning(null);
                 setLoader(false);
               }
@@ -66,7 +82,9 @@ export default function Claim({ toggle, pendingRewards, userId }) {
           />
         </div>
       </div>
-      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
+      {warning && (
+        <p className="mr-5 justify-content-center has-text-danger">{warning}</p>
+      )}
     </FormModal>
   );
 }

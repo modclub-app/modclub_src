@@ -42,6 +42,7 @@ const levelMessages = {
 export default function Userstats({ detailed = false }) {
   const { principal } = useConnect();
   const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const { modclub } = useActors();
   const activeBalanceMsg = Constant.ACTIVE_BALANCE_MSG;
 
@@ -128,7 +129,15 @@ export default function Userstats({ detailed = false }) {
         .catch(() => {
           return "";
         });
-
+    !appState.personalBalanceLoading &&
+      dispatch({ type: "personalBalanceLoading", payload: true });
+    !appState.systemBalanceLoading &&
+      dispatch({ type: "systemBalanceLoading", payload: true });
+    !appState.stakeBalanceLoading &&
+      dispatch({ type: "stakeBalanceLoading", payload: true });
+    !appState.lockedBalanceLoading &&
+      dispatch({ type: "lockedBalanceLoading", payload: true });
+    !appState.rsLoading && dispatch({ type: "rsLoading", payload: true });
     return () => {
       isMounted = false;
     };
@@ -139,12 +148,27 @@ export default function Userstats({ detailed = false }) {
   }, []);
   const rsMessage = getRSMessageByLevel(level);
 
+  const toggleFetchPersonalBalance = ()=>{
+    !appState.personalBalanceLoading &&
+      dispatch({ type: "personalBalanceLoading", payload: true });
+  }
+  const toggleFetchSystemBalance = ()=>{
+    !appState.systemBalanceLoading &&
+      dispatch({ type: "systemBalanceLoading", payload: true });
+  }
+  const toggleFetchStakeBalance = ()=>{
+    !appState.stakeBalanceLoading &&
+      dispatch({ type: "stakeBalanceLoading", payload: true });
+  }
+
   return (
     <>
       <Columns>
         {detailed && (
           <StatBox
-            loading={false}
+            loading={
+              appState.personalBalanceLoading && appState.systemBalanceLoading
+            }
             image={walletImg}
             title="Active Balance"
             amount={convert_to_mod(
@@ -161,7 +185,7 @@ export default function Userstats({ detailed = false }) {
               <Button
                 color="dark"
                 fullwidth
-                onClick={toggleDeposit}
+                onClick={toggleFetchPersonalBalance && toggleFetchSystemBalance && toggleDeposit}
                 disabled={appState.personalBalanceLoading}
                 className={appState.personalBalanceLoading && "is-loading"}
               >
@@ -170,7 +194,7 @@ export default function Userstats({ detailed = false }) {
               <Button
                 color="dark"
                 fullwidth
-                onClick={toggleWithdraw}
+                onClick={toggleFetchSystemBalance && toggleWithdraw}
                 disabled={appState.systemBalanceLoading}
                 className={appState.systemBalanceLoading && "is-loading"}
               >
@@ -181,7 +205,7 @@ export default function Userstats({ detailed = false }) {
         )}
         {!detailed && (
           <StatBox
-            loading={false}
+            loading={appState.rsLoading}
             image={performanceImg}
             title="Reputation Score"
             amount={Number(appState.rs.score)}
@@ -194,7 +218,7 @@ export default function Userstats({ detailed = false }) {
           />
         )}
         <StatBox
-          loading={false}
+          loading={appState.stakeBalanceLoading}
           image={stakedImg}
           title="Staked"
           amount={convert_to_mod(
@@ -211,7 +235,7 @@ export default function Userstats({ detailed = false }) {
             <Button
               color="dark"
               fullwidth
-              onClick={toggleStake}
+              onClick={toggleFetchStakeBalance && toggleStake}
               disabled={appState.stakeBalanceLoading}
               className={appState.stakeBalanceLoading && "is-loading"}
             >
@@ -220,7 +244,7 @@ export default function Userstats({ detailed = false }) {
             <Button
               color="dark"
               fullwidth
-              onClick={toggleUnstake}
+              onClick={toggleFetchStakeBalance && toggleUnstake}
               disabled={appState.stakeBalanceLoading}
               className={appState.stakeBalanceLoading && "is-loading"}
             >
@@ -229,7 +253,7 @@ export default function Userstats({ detailed = false }) {
           </Button.Group>
         </StatBox>
         <StatBox
-          loading={false}
+          loading={appState.lockedBalanceLoading}
           image={performanceImg}
           title="Pending Rewards"
           amount={pendingRewards}

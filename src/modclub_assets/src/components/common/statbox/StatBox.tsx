@@ -1,6 +1,7 @@
 import PowerBar from "../../common/powerbar/PowerBar";
 import InfoButton from "../../common/infobutton/InfoButton";
 import { Columns, Heading, Card } from "react-bulma-components";
+import Spinner from "../spinner/Spinner";
 
 type StatBoxProps = {
   loading: boolean;
@@ -39,10 +40,15 @@ export const StatBox: React.FC<StatBoxProps> = ({
   return (
     <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
       <Card backgroundColor="circles" className="is-fullheight">
-      <InfoButton
-            message={message}
-            style={{ position: "absolute", top: "1rem", right: "1rem", zIndex: 2 }}
-          />
+        <InfoButton
+          message={message}
+          style={{
+            position: "absolute",
+            top: "1rem",
+            right: "1rem",
+            zIndex: 2,
+          }}
+        />
         <Card.Content className="is-flex is-align-items-center">
           <img src={image} className="mr-4" />
           <div style={{ lineHeight: 1, whiteSpace: "nowrap" }}>
@@ -67,8 +73,13 @@ export const StatBox: React.FC<StatBoxProps> = ({
                 {detailed && (
                   <span className="has-text-weight-normal is-size-4 ml-4"></span>
                 )}
-                {!isBar && amount !== undefined && amount}
-                {isBar && (
+                {!isBar ? (
+                  amount !== undefined && loading ? (
+                    <Spinner />
+                  ) : (
+                    amount
+                  )
+                ) : (loading  &&
                   <PowerBar
                     points={amount / 100}
                     gradient={false}
@@ -80,12 +91,11 @@ export const StatBox: React.FC<StatBoxProps> = ({
               </Heading>
             )}
           </div>
-          
         </Card.Content>
         {detailed && (
           <Card.Footer
             paddingless
-            style={{ border: 0, marginBottom: "1.5rem", zIndex: 1}}
+            style={{ border: 0, marginBottom: "1.5rem", zIndex: 1 }}
           >
             {children}
           </Card.Footer>

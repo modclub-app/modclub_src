@@ -8,7 +8,7 @@ import {
   format_token,
   timestampToDate,
 } from "../../../utils/util";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useActors } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
@@ -185,7 +185,7 @@ export default function Unstake({
   const stakeBalance = convert_to_mod(
     appState.stakeBalance,
     BigInt(appState.decimals)
-  )
+  );
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
@@ -221,14 +221,14 @@ export default function Unstake({
         />
       }
     >
-      <br/>
+      <br />
       <div className="field">
         <div className="control has-icons-right">
           <Field
             name="amount"
             component="input"
             type="number"
-            className={(!load) ? "input": "input is-danger"}
+            className={!load ? "input" : "input is-danger"}
             initialValue={inputValue}
             validate={(value) => {
               if (isNaN(value) || Number(value) < 0) {
@@ -242,8 +242,7 @@ export default function Unstake({
               if (Number(value) > stakeBalance) {
                 setWarning("Out of balance");
                 return setLoader(true);
-              }
-              else{ 
+              } else {
                 setWarning(null);
                 setLoader(false);
               }
@@ -254,8 +253,10 @@ export default function Unstake({
           </Icon>
         </div>
       </div>
-      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
-      <br/>
+      {warning && (
+        <p className="mr-5 justify-content-center has-text-danger">{warning}</p>
+      )}
+      <br />
     </PopupModal>
   );
 }

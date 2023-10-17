@@ -47,6 +47,8 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
   const { wallet, modclub } = useActors();
   const [load, setLoader] = useState(false);
   const [warning, setWarning] = useState(null);
+  const [address, setAddress] = useState(null);
+  const [amount, setAmount] = useState(null);
   const feeTokens = convert_to_mod(
     appState.transactionFee,
     BigInt(appState.decimals)
@@ -83,6 +85,7 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
       subtitle="Congratulation!"
       loader={load}
       updateTable={<UpdateTable amount={inputValue || 0} />}
+      isSubmitDisabled={!(address && amount)}
     >
       <label className="label">Enter your wallet address: </label>
       <div className="field">
@@ -91,38 +94,43 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
             name="address"
             component="input"
             type="text"
+            required
             className="input"
             placeholder="Wallet Address"
-            initialValue={to}
+            validate={(value) => {
+              if (value) {
+                return setAddress(value);
+              }
+            }}
           />
         </div>
-      </div>
-      <label className="label">Enter your withdraw amount:</label>
-      <br/>
-      <div className="field">
+        <label className="label">Enter your withdraw amount:</label>
+        <br />
         <div className="control has-icons-right">
           <Field
             name="amount"
             component="input"
             type="number"
-            className={(!load) ? "input": "input is-danger"}
+            className={!load ? "input" : "input is-danger"}
             initialValue={inputValue}
             validate={(value) => {
               if (isNaN(value) || Number(value) < 0) {
                 setWarning("Incorrect amount");
-                return setLoader(true);
+                setAmount(null);
+                return setLoader(false);
               }
               if (isNaN(value) || Number(value) == 0) {
                 setWarning(null);
-                return setLoader(true);
+                setAmount(null);
+                return setLoader(false);
               }
               if (Number(value) > systemBalance - feeTokens) {
                 setWarning("Out of balance");
-                return setLoader(true);
-              }
-              else{ 
+                setAmount(null);
+                return setLoader(false);
+              } else {
                 setWarning(null);
-                setLoader(false);
+                return setAmount(value);
               }
             }}
           />
@@ -131,8 +139,10 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
           </Icon>
         </div>
       </div>
-      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
-      <br/>
+      {warning && (
+        <p className="mr-5 justify-content-center has-text-danger">{warning}</p>
+      )}
+      <br />
     </PopupModal>
   );
 }

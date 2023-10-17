@@ -106,7 +106,6 @@ export async function asyncReducers(asyncState, action) {
             owner: Principal.from(state.loginPrincipalId),
             subaccount: [],
           });
-          console.log("FETCHED_BALLANCE_RESPONSE::", lockedBalance);
         }
       } catch (e) {
         console.error("Error fetching UserLockedBalance::", e);
@@ -208,6 +207,9 @@ export async function asyncReducers(asyncState, action) {
       }
       return { ...state, providerBalance, providerBalanceLoading };
     }
+    case "rsLoading": {
+      return { ...state, rsLoading: action.payload };
+    }
     case "fetchUserRS": {
       let rs = state.rs;
       try {
@@ -220,7 +222,8 @@ export async function asyncReducers(asyncState, action) {
       } catch (e) {
         console.error("Error fetching RS::", e);
       }
-      return { ...state, rs };
+      let rsLoading = !state.rsLoading
+      return { ...state, rs, rsLoading };
     }
     case "fetchLeaderBoard": {
       let leaderboardContent = state.leaderboardContent;

@@ -25,8 +25,8 @@ export default function Deposit({
   subacc,
 }: DepositProps) {
   const appState = useAppState();
-  const [inputValue, setInputValue] = useState(0);
   const dispatch = useAppStateDispatch();
+  const [inputValue, setInputValue] = useState(0);
   const [error, setError] = useState(null);
   const { modclub, wallet } = useActors();
   const { activeProvider, principal } = useConnect();
@@ -53,6 +53,7 @@ export default function Deposit({
 
   const handleDeposit = async (value: any) => {
     setError(null);
+    setLoader(true);
     const { reserved } = value;
     try {
       const amount: number =
@@ -72,10 +73,12 @@ export default function Deposit({
     } catch (err) {
       setError(err.message);
     }
+    setLoader(false);
   };
 
   const handleDepositProvider = async (value: any) => {
     setError(null);
+    setLoader(true);
     const { reserved } = value;
     try {
       const amount: number =
@@ -101,6 +104,7 @@ export default function Deposit({
     } catch (err) {
       setError(err.message);
     }
+    setLoader(false);
   };
 
   const depositManual = (principal, userTokenBalance) => {

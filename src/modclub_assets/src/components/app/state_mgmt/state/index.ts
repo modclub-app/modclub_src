@@ -17,6 +17,7 @@ export const initialState = {
   claimRewardPrice: 0,
   stakeBalance: 0,
   rs: { level: "", score: 0 },
+  rsLoading:false,
   leaderboardContent: [],
   contentModerationTasks: [],
   moderationTasksLoading: false,

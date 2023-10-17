@@ -71,11 +71,12 @@ export default function FormModal({
               </Modal.Card.Body>
               <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
                 <Button.Group>
-                  <Button color="dark" onClick={toggle}>
+                  <Button color="dark" disabled={!submitting} onClick={toggle}>
                     Cancel
                   </Button>
                   <Button
                     color="primary"
+                    className={submitting ? "is-loading":""}
                     disabled={message || submitting || loader}
                   >
                     Submit

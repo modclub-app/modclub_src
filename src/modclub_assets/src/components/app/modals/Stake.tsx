@@ -2,7 +2,7 @@ import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
 import PopupModal from "./PopupModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
@@ -65,14 +65,14 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
       handleSubmit={onFormSubmit}
       updateTable={<UpdateTable wallet={wallet} stake={stake} />}
     >
-      <br/>
+      <br />
       <div className="field">
         <div className="control has-icons-right">
           <Field
             name="amount"
             component="input"
             type="number"
-            className={(!load) ? "input": "input is-danger"}
+            className={!load ? "input" : "input is-danger"}
             initialValue={inputValue}
             validate={(value) => {
               if (isNaN(value) || Number(value) < 0) {
@@ -86,8 +86,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
               if (Number(value) > wallet) {
                 setWarning("Out of balance");
                 return setLoader(true);
-              }
-              else{ 
+              } else {
                 setWarning(null);
                 setLoader(false);
               }
@@ -98,8 +97,10 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
           </Icon>
         </div>
       </div>
-      {warning && <p className="mr-5 justify-content-center has-text-danger">{warning}</p>}
-      <br/>
+      {warning && (
+        <p className="mr-5 justify-content-center has-text-danger">{warning}</p>
+      )}
+      <br />
     </PopupModal>
   );
 }
