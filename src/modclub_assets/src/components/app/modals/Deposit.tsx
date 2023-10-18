@@ -107,39 +107,56 @@ export default function Deposit({
     setLoader(false);
   };
 
-  const depositManual = (principal, userTokenBalance) => {
+  const depositManual = (principal, activeProvider) => {
     return (
       <>
-        <h1 className="is-capitalized has-text-weight-bold is-size-6">
-          Step 1:
-        </h1>
-        <h2>Manually deposit into your account:</h2>
-        <p className="is-flex is-justify-content-center has-text-white has-background-grey-darker">
-          {principal}
-          <Icon
-            color="white"
-            className="ml-3 is-clickable"
-            onClick={() => {
-              navigator.clipboard.writeText(principal);
-            }}
-          >
-            <span className="material-icons">file_copy</span>
-          </Icon>
-        </p>
-        <br />
-        <p>
-          Your current account balance:{" "}
-          <b> {format_token(personalBalance)} MOD </b>
-        </p>
-        <p className="is-size-7">
-          {
-            "*only applicable to users that are logged in with internet identity."
-          }
-        </p>
-        <br />
-        <h1 className="is-capitalized has-text-weight-bold is-size-6">
-          Step 2:
-        </h1>
+        {activeProvider.meta.id === "ii" && (
+          <>
+            <h1 className="is-capitalized has-text-weight-bold is-size-6">
+              Step 1:
+            </h1>
+            <h2>Manually deposit into your account:</h2>
+            <p className="is-flex is-justify-content-center has-text-white has-background-grey-darker">
+              {principal}
+              <Icon
+                color="white"
+                className="ml-3 is-clickable"
+                onClick={() => {
+                  navigator.clipboard.writeText(principal);
+                }}
+              >
+                <span className="material-icons">file_copy</span>
+              </Icon>
+            </p>
+            <br />
+          </>
+        )}
+        {activeProvider.meta.id === "ii" && (
+          <>
+            <p>
+              Your current account balance:{" "}
+              <b> {format_token(personalBalance)} MOD </b>
+            </p>
+            <p className="is-size-7">
+              {
+                "*only applicable to users that are logged in with internet identity."
+              }
+            </p>
+            <br />
+            <h1 className="is-capitalized has-text-weight-bold is-size-6">
+              Step 2:
+            </h1>
+          </>
+        ) }{ activeProvider.meta.id === "stoic" &&
+          (
+          <>
+          <br/>
+            <p>
+              Your current Stoic Wallet balance:{" "}
+              <b> {format_token(personalBalance)} MOD </b>
+            </p>
+          </>
+        )}
       </>
     );
   };
@@ -159,7 +176,7 @@ export default function Deposit({
       >
         {principal &&
           activeProvider.meta.id != "plug" &&
-          depositManual(principal, personalBalance)}
+          depositManual(principal, activeProvider)}
         <h2>Add to your Modclub active balance: </h2>
         <br />
         <div className="field">
