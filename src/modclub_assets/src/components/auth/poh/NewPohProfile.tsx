@@ -148,8 +148,7 @@ export default function NewPohProfile({ match }) {
 
   if (!isConnected) return <NotAuthenticatedModal />;
 
-  if (isConnected && !appState.userProfile)
-    return <NewProfile isPohFlow={true} />;
+  if (isConnected && !appState.userProfile) history.push("/app");
 
   const goToNextStep = (currentStep) => {
     if (!steps) return;
