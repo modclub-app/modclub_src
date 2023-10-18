@@ -86,6 +86,10 @@ module Helpers {
     return Principal.toText(caller) # "-" # category # "-" # (Nat.toText(count));
   };
 
+  public func getContentReservationId(userId : Principal, packageId : Text) : Text {
+    return "content-reservation-" # Principal.toText(userId) # packageId;
+  };
+
   public func nonZeroNat(val : Nat) : async () {
     if (not Nat.greater(val, 0)) {
       throw Error.reject("Amount must be greater than zero");
@@ -320,5 +324,25 @@ module Helpers {
 
   public func appendCsvRow(uid : Principal, scores : Int, up : Int, csv : Text) : Text {
     return csv # Principal.toText(uid) # ";" # Int.toText(scores) # ";" # Int.toText(up) # ";\n";
+  };
+
+  public func getAirdropAmountByUsePoints(up : Nat) : Nat {
+    let level5 : Nat = 40000;
+    let level4 : Nat = 20000;
+    let level3 : Nat = 10000;
+    let level2 : Nat = 5000;
+    let level1 : Nat = 1000;
+
+    if (Nat.greater(up, level5)) {
+      return 50000;
+    } else if (Nat.greater(up, level4) and Nat.less(up, level5)) {
+      return 25000;
+    } else if (Nat.greater(up, level3) and Nat.less(up, level4)) {
+      return 10000;
+    } else if (Nat.greater(up, level2) and Nat.less(up, level3)) {
+      return 5000;
+    } else if (Nat.greater(up, level1) and Nat.less(up, level2)) {
+      return 1000;
+    } else { return 0 };
   };
 };

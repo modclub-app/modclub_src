@@ -10,6 +10,7 @@ import Terms from "./Terms";
 import HowTo from "./HowTo";
 import Logout from "../auth/Logout";
 import Airdrop from "./Airdrop/Airdrop";
+import MigratedUsersAirdrop from "./migrated_users_airdrop/index";
 
 export default function External() {
   return (
@@ -25,6 +26,10 @@ export default function External() {
         <Route path="/terms" component={Terms} />
         <Route path="/how-to" component={HowTo} />
         <Route path="/airdrop" component={Airdrop} />
+        <Route
+          path="/migrated-users-airdrop"
+          component={MigratedUsersAirdrop}
+        />
       </Switch>
     </>
   );

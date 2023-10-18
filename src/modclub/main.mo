@@ -134,6 +134,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private var accountsAssocHashes = HashMap.HashMap<Text, Principal>(1, Text.equal, Text.hash);
   private var assocVerificationHashes = HashMap.HashMap<Text, (Principal, Text)>(1, Text.equal, Text.hash);
 
+  stable var migrationAirdropWhitelistStable : List.List<(Principal, Bool)> = List.nil<(Principal, Bool)>();
+  private var migrationAirdropWhitelist = Buffer.Buffer<(Principal, Bool)>(100);
+
   var storageSolution = StorageSolution.StorageSolution(
     storageStateStable,
     retiredDataCanisterId,
@@ -2289,7 +2292,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public shared ({ caller }) func reserveContent(contentId : Text) : async  Result.Result<Types.Reserved, Text>{
+  public shared ({ caller }) func reserveContent(contentId : Text) : async Result.Result<Types.Reserved, Text> {
     switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
@@ -2605,6 +2608,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     claimRewardsWhitelist := List.fromArray<Principal>(Buffer.toArray<Principal>(claimRewardsWhitelistBuf));
 
+    migrationAirdropWhitelistStable := List.fromArray<(Principal, Bool)>(Buffer.toArray<(Principal, Bool)>(migrationAirdropWhitelist));
+
   };
 
   stable var migrationDone = false;
@@ -2623,6 +2628,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       Principal.fromActor(this)
     );
     claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
+
+    migrationAirdropWhitelist := Buffer.fromIter<(Principal, Bool)>(List.toIter<(Principal, Bool)>(migrationAirdropWhitelistStable));
+
     storageSolution := StorageSolution.StorageSolution(
       storageStateStable,
       retiredDataCanisterId,
@@ -2724,6 +2732,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#translateUserPoints _) { authGuard.isAdmin(caller) };
       case (#getImportedUsersStats _) { authGuard.isAdmin(caller) };
       case (#setModclubBuckets _) { authGuard.isAdmin(caller) };
+      case (#setMigrationAirdropWhitelist _) { authGuard.isAdmin(caller) };
+      case (#getAirdropBalance _) { authGuard.isAdmin(caller) };
+      case (#appendMigrationAirdropItem _) { authGuard.isAdmin(caller) };
+      case (#airdropMigratedUser _) { authGuard.isAdmin(caller) };
+      case (#airdropMigratedUsers _) { authGuard.isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };
@@ -3081,6 +3094,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     try {
+      let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
       let associated = List.find<(Principal, Principal)>(
         accountsAssociationsStable,
         func((_, assocAcc)) { Principal.equal(assocAcc, assocAccount) }
@@ -3091,9 +3105,20 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         };
         case (_) {};
       };
-      switch (await ledger.icrc1_balance_of({ owner = Principal.fromActor(this); subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA })) {
+      let subAccs = HashMap.fromIter<Text, Blob>(
+        (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
+        Array.size(Helpers.moderatorSubaccountTypes),
+        Text.equal,
+        Text.hash
+      );
+
+      let decimals = await ledger.icrc1_decimals();
+      let modclubAPBalance = await ledger.icrc1_balance_of({
+        owner = Principal.fromActor(this);
+        subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+      });
+      switch (modclubAPBalance) {
         case (tokensAvailable) {
-          let decimals = await ledger.icrc1_decimals();
           let amount = (ModClubParam.REQUIRED_POH_REVIEWS * ModClubParam.REWARD_PER_POH_REVIEW) * Nat.pow(10, Nat8.toNat(decimals));
           if (tokensAvailable <= amount) {
             Helpers.logMessage(
@@ -3103,12 +3128,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             );
             throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
           };
-          let subAccs = HashMap.fromIter<Text, Blob>(
-            (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
-            Array.size(Helpers.moderatorSubaccountTypes),
-            Text.equal,
-            Text.hash
-          );
+          let _ = await ledger.icrc1_transfer({
+            from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
+            to = {
+              owner = Principal.fromActor(this);
+              subaccount = ?Constants.ICRC_POH_REWARDS_SA;
+            };
+            amount;
+            fee = null;
+            memo = null;
+            created_at_time = null;
+          });
 
           let profile = await ModeratorManager.registerModerator(
             associator,
@@ -3122,9 +3152,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           contentQueueManager.assignUserIds2QueueId([associator]);
           pohContentQueueManager.assignUserIds2QueueId([associator]);
 
-          let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
           let (rsValue : Int, level : RSTypes.UserLevel) = Helpers.translateUpToRs(up);
-
           ignore await rs.setRS(associator, rsValue);
 
           Helpers.logMessage(
@@ -3155,6 +3183,228 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       );
       throw Error.reject("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
     };
+  };
+
+  // ------------------  AIRDROP LOGIC ------------------ \\
+  public shared func setMigrationAirdropWhitelist(whitelist : [Principal]) : async Result.Result<Bool, Text> {
+    for (elem in whitelist.vals()) {
+      let exists = Buffer.contains<(Principal, Bool)>(
+        migrationAirdropWhitelist,
+        (elem, false),
+        func((p, _), (sp, _)) { Principal.equal(p, sp) }
+      );
+      if (not exists) {
+        migrationAirdropWhitelist.add((elem, false));
+      };
+    };
+
+    #ok(true);
+  };
+
+  public query func getMigrationAirdropWhitelist() : async Result.Result<[(Principal, Bool, Nat, Nat, Text)], Text> {
+    var res = Buffer.Buffer<(Principal, Bool, Nat, Nat, Text)>(100);
+    let oldProfiles = HashMap.fromIter<Principal, Nat>(
+      importedProfiles.vals(),
+      importedProfiles.size(),
+      Principal.equal,
+      Principal.hash
+    );
+
+    for ((oldProf, isDone) in migrationAirdropWhitelist.vals()) {
+      let migrationPayload = List.find<(Principal, Principal)>(
+        accountsAssociationsStable,
+        func((np, op)) { Principal.equal(oldProf, op) }
+      );
+      let upOpt = oldProfiles.get(oldProf);
+      if (Option.isSome(upOpt)) {
+        switch (migrationPayload) {
+          case (?(newAccPr, oldAccPr)) {
+            let up = Option.get(upOpt, 0);
+            let airdropAmountMOD = Helpers.getAirdropAmountByUsePoints(up);
+            res.add((oldProf, isDone, airdropAmountMOD, up, "Migrated"));
+          };
+          case (_) {
+            res.add((oldProf, isDone, 0, 0, "Not Migrated yet"));
+          };
+        };
+      } else {
+        res.add((oldProf, isDone, 0, 0, "No UP found"));
+      };
+
+    };
+    #ok(Buffer.toArray(res));
+  };
+
+  public shared func getAirdropBalance() : async Nat {
+    let modclubAidropBalance = await ledger.icrc1_balance_of({
+      owner = Principal.fromActor(this);
+      subaccount = ?Constants.ICRC_AIRDROP_SA;
+    });
+    let decimals = await ledger.icrc1_decimals();
+    return Nat.div(modclubAidropBalance, Nat.pow(10, Nat8.toNat(decimals)));
+  };
+
+  public shared func appendMigrationAirdropItem(item : Principal) : async Result.Result<Bool, Text> {
+    let existed = Buffer.contains<(Principal, Bool)>(
+      migrationAirdropWhitelist,
+      (item, false),
+      func((p, _), (sp, _)) { Principal.equal(p, sp) }
+    );
+    switch (existed) {
+      case (true) { throw Error.reject("Item is already registered.") };
+      case (_) { migrationAirdropWhitelist.add((item, false)) };
+    };
+
+    #ok(true);
+  };
+
+  public shared func airdropMigratedUser(item : Principal) : async Result.Result<Bool, Text> {
+    let wlIndex = Buffer.indexOf<(Principal, Bool)>(
+      (item, false),
+      migrationAirdropWhitelist,
+      func((p, done), (sp, _)) { Principal.equal(p, sp) and not done }
+    );
+
+    switch (wlIndex) {
+      case (?i) {
+        let oldProfiles = HashMap.fromIter<Principal, Nat>(
+          importedProfiles.vals(),
+          importedProfiles.size(),
+          Principal.equal,
+          Principal.hash
+        );
+
+        let migrationPayload = List.find<(Principal, Principal)>(
+          accountsAssociationsStable,
+          func((np, op)) { Principal.equal(item, op) }
+        );
+        switch (migrationPayload) {
+          case (?(newAccPr, oldAccPr)) {
+            let up = Option.get(oldProfiles.get(item), 0);
+            let airdropAmountMOD = Helpers.getAirdropAmountByUsePoints(up);
+            let decimals = await ledger.icrc1_decimals();
+            let modclubAidropBalance = await ledger.icrc1_balance_of({
+              owner = Principal.fromActor(this);
+              subaccount = ?Constants.ICRC_AIRDROP_SA;
+            });
+            let airdropAmount = airdropAmountMOD * Nat.pow(10, Nat8.toNat(decimals));
+            if (airdropAmount > 0 and modclubAidropBalance > airdropAmount) {
+              let profile = switch (stateV2.profiles.get(newAccPr)) {
+                case (?p) { p };
+                case (_) {
+                  throw Error.reject("No subaccounts found for Moderator. Impossible to transfer MOD in scope of Airdrop.");
+                };
+              };
+              let airdropRes = await ledger.icrc1_transfer({
+                from_subaccount = ?Constants.ICRC_AIRDROP_SA;
+                to = {
+                  owner = Principal.fromActor(this);
+                  subaccount = profile.subaccounts.get("ACCOUNT_PAYABLE");
+                };
+                amount = airdropAmount;
+                fee = null;
+                memo = null;
+                created_at_time = null;
+              });
+              switch (airdropRes) {
+                case (#Ok(txId)) {
+                  migrationAirdropWhitelist.put(i, (oldAccPr, true));
+                };
+                case (#Err(e)) {
+                  Helpers.logMessage(
+                    canistergeekLogger,
+                    "[AIRDROP_ERROR] Error occurs on icrc1_transfer for Airdrop to user :: " # Principal.toText(profile.id) # " :: " # debug_show (e),
+                    #error
+                  );
+                };
+              };
+            };
+          };
+          case (_) { throw Error.reject("Error: Migration record not found.") };
+        };
+      };
+      case (_) {
+        throw Error.reject("Error on Airdrop for migrated user :: " # Principal.toText(item));
+      };
+    };
+
+    #ok(true);
+  };
+
+  public shared func airdropMigratedUsers() : async Result.Result<Bool, Text> {
+    let decimals = await ledger.icrc1_decimals();
+    let oldProfiles = HashMap.fromIter<Principal, Nat>(
+      importedProfiles.vals(),
+      importedProfiles.size(),
+      Principal.equal,
+      Principal.hash
+    );
+
+    for ((oldProf, done) in migrationAirdropWhitelist.vals()) {
+      if (not done) {
+        let up = Option.get(oldProfiles.get(oldProf), 0);
+        let migrationPayload = List.find<(Principal, Principal)>(
+          accountsAssociationsStable,
+          func((np, op)) { Principal.equal(oldProf, op) }
+        );
+        switch (migrationPayload) {
+          case (?(newAccPr, oldAccPr)) {
+            let airdropAmountMOD = Helpers.getAirdropAmountByUsePoints(up);
+            let modclubAidropBalance = await ledger.icrc1_balance_of({
+              owner = Principal.fromActor(this);
+              subaccount = ?Constants.ICRC_AIRDROP_SA;
+            });
+            let airdropAmount = airdropAmountMOD * Nat.pow(10, Nat8.toNat(decimals));
+            if (airdropAmount > 0 and modclubAidropBalance > airdropAmount) {
+              let profile = switch (stateV2.profiles.get(newAccPr)) {
+                case (?p) { p };
+                case (_) {
+                  throw Error.reject("No subaccounts found for Moderator. Impossible to transfer MOD in scope of Airdrop.");
+                };
+              };
+              let airdropRes = await ledger.icrc1_transfer({
+                from_subaccount = ?Constants.ICRC_AIRDROP_SA;
+                to = {
+                  owner = Principal.fromActor(this);
+                  subaccount = profile.subaccounts.get("ACCOUNT_PAYABLE");
+                };
+                amount = airdropAmount;
+                fee = null;
+                memo = null;
+                created_at_time = null;
+              });
+              switch (airdropRes) {
+                case (#Ok(txId)) {
+                  let wlIndex = Buffer.indexOf<(Principal, Bool)>(
+                    (oldAccPr, false),
+                    migrationAirdropWhitelist,
+                    func((p, done), (sp, _)) {
+                      Principal.equal(p, sp) and not done;
+                    }
+                  );
+
+                  switch (wlIndex) {
+                    case (?i) {
+                      migrationAirdropWhitelist.put(i, (oldAccPr, true));
+                    };
+                    case (_) {};
+                  };
+                };
+                case (#Err(e)) {
+                  Helpers.logMessage(
+                    canistergeekLogger,
+                    "[AIRDROP_ERROR] Error occurs on icrc1_transfer for Airdrop to user :: " # Principal.toText(profile.id) # " :: " # debug_show (e),
+                    #error
+                  );
+                };
+              };
+            };
+          };
+          case (_) {};
+        };
+      };
+    };
+    #ok(true);
   };
 
 };

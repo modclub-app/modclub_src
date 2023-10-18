@@ -118,6 +118,12 @@ module {
     #associateAccount : () -> (Text, Types.ImportProfile, Int);
     #generateAssocMetadata : () -> ();
     #validateAssocHash : () -> (Principal, Text, Text);
+    #setMigrationAirdropWhitelist : () -> [Principal];
+    #getMigrationAirdropWhitelist : () -> ();
+    #appendMigrationAirdropItem : () -> Principal;
+    #airdropMigratedUsers : () -> ();
+    #getAirdropBalance : () -> ();
+    #airdropMigratedUser : () -> Principal;
   };
 
 };

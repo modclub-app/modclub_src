@@ -335,7 +335,7 @@ module ContentModule {
         switch (contentPlus) {
           case (?provider) {
             let oldReserved : [Types.Reserved] = provider.reservedList;
-            let rid = Helpers.generateId(arg.caller, "Reservations", arg.globalState);
+            let rid = Helpers.getContentReservationId(arg.caller, contentId);
             let reserved = Utils.isReserved(rid, oldReserved);
             if (reserved == true) {
               throw Error.reject("Already create");
@@ -346,14 +346,14 @@ module ContentModule {
             if (checkExpire == false) {
               throw Error.reject("No spot left");
             };
-            let reservation = await takeReservation(
+            let reservation = takeReservation(
               {
                 caller = arg.caller;
                 globalState = arg.globalState;
                 contentState = arg.contentState;
                 storageSolution = arg.storageSolution;
               },
-              Constants.RESERVE_EXPIRE_TIME 
+              contentId
             );
             let newReserved = Array.append<Types.Reserved>(oldReserved, [reservation]);
             let chunkedContent = await arg.storageSolution.getChunkedContent(content.id);
@@ -417,10 +417,11 @@ module ContentModule {
 
   private func takeReservation(
     arg : ContentTypes.CommonArg,
-    expireTime : Types.Timestamp
-  ) : async Types.Reserved {
+    contentId : Text
+  ) : Types.Reserved {
     let state = Reserved.ContentStateManager(arg.contentState);
-    let reserved = await state.takeReservation(arg.caller, arg.globalState, expireTime);
+    let rid = Helpers.getContentReservationId(arg.caller, contentId);
+    let reserved = state.takeReservation(rid, arg.caller, Constants.RESERVE_EXPIRE_TIME);
     return reserved;
   };
 
@@ -539,7 +540,7 @@ module ContentModule {
       case (?content) {
         let requiredVote = content.voteParameters.requiredVotes;
         let activeReservations = Utils.getNonExpiredList(content.reservedList, Helpers.timeNow());
-        let rid = Helpers.generateId(caller, "Reservations", globalState);
+        let rid = Helpers.getContentReservationId(caller, contentId);
         let isReserved = Utils.isReserved(rid, activeReservations);
         if (activeReservations.size() == requiredVote or isReserved) {
           return #ok(false);

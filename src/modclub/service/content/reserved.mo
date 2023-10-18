@@ -27,12 +27,11 @@ module Reserved {
     };
 
     public func takeReservation(
+      rid : Text,
       caller : Principal,
-      globalState : GlobalState.State,
-      expireTime : Types.Timestamp,
-    ) : async Types.Reserved {
+      expireTime : Types.Timestamp
+    ) : Types.Reserved {
       let now = Helpers.timeNow();
-      let rid = Helpers.generateId(caller, "Reservations", globalState);
       let reserved : Types.Reserved = {
         id = rid;
         profileId = Principal.toText(caller);
