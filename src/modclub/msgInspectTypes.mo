@@ -124,6 +124,7 @@ module {
     #airdropMigratedUsers : () -> ();
     #getAirdropBalance : () -> ();
     #airdropMigratedUser : () -> Principal;
+    #subscribeOnRsEvets : () -> ();
   };
 
 };

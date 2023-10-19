@@ -17,17 +17,20 @@ export default function Claim({ toggle, userId }) {
   );
   const [load, setLoader] = useState(false);
   const [claimValue, setClaimValue] = useState(pendingRewards);
+  // const [remainValue, setRemainValue] = useState(pendingRewards);
+
   const [warning, setWarning] = useState(null);
   const { modclub, vesting } = useActors();
 
   const onFormSubmit = async () => {
     setLoader(true);
     try {
-      const res = await modclub.claimLockedReward(BigInt(claimValue), []);
-      console.log("claimLockedReward::", res);
+      const claimReq: number =
+        Number(claimValue) * Math.pow(10, Number(appState.decimals));
+      const res = await modclub.claimLockedReward(BigInt(claimReq), []);
       if (Object.keys(res)[0] === "ok") {
-        !appState.systemBalanceLoading &&
-          dispatch({ type: "systemBalanceLoading", payload: true });
+        !appState.personalBalanceLoading &&
+          dispatch({ type: "personalBalanceLoading", payload: true });
         !appState.lockedBalanceLoading &&
           dispatch({ type: "fetchUserLockedBalance", payload: true });
       }
@@ -46,7 +49,6 @@ export default function Claim({ toggle, userId }) {
       toggle={toggle}
       handleSubmit={onFormSubmit}
       loader={load}
-      updateTable={<UpdateTable amount={claimValue} text={"Available:"} />}
     >
       {error && <div className="error">{error}</div>}
       <div className="field">
@@ -58,6 +60,11 @@ export default function Claim({ toggle, userId }) {
             className={!load ? "input" : "input is-danger"}
             initialValue={claimValue}
             onChange={(e) => {
+              const rem =
+                Number(appState.lockedBalance) -
+                Number(e.target.value) *
+                  Math.pow(10, Number(appState.decimals));
+              // setRemainValue(rem);
               setClaimValue(e.target.value);
             }}
             validate={(value) => {

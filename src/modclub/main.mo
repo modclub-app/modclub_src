@@ -151,6 +151,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   let ledger = authGuard.getWalletActor();
   let rs = authGuard.getRSActor();
 
+  public shared func subscribeOnRsEvets() : async () {
+    try {
+      ModeratorManager.subscribeOnEvents(env, Constants.TOPIC_MODERATOR_PROMOTED_TO_SENIOR);
+    } catch e {
+
+    };
+  };
+
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     switch (payload) {
       case (#admins(list)) {
@@ -1003,8 +1011,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let reduceReputation = (lockedAmount - amount) < minStake;
     let claimRes = await vestingActor.claim_vesting(moderatorAcc, amount);
     switch (claimRes) {
-      case (#ok(_)) {
-        let _ = await ledger.icrc1_transfer({
+      case (#ok(blockIdx)) {
+        let rewardsWithdraw = await ledger.icrc1_transfer({
           from_subaccount = ?Constants.ICRC_VESTING_SA;
           to = switch (customReceiver) {
             case (?p) { { owner = p; subaccount = null } };
@@ -2732,6 +2740,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#translateUserPoints _) { authGuard.isAdmin(caller) };
       case (#getImportedUsersStats _) { authGuard.isAdmin(caller) };
       case (#setModclubBuckets _) { authGuard.isAdmin(caller) };
+      case (#subscribeOnRsEvets _) { authGuard.isAdmin(caller) };
       case (#setMigrationAirdropWhitelist _) { authGuard.isAdmin(caller) };
       case (#getAirdropBalance _) { authGuard.isAdmin(caller) };
       case (#appendMigrationAirdropItem _) { authGuard.isAdmin(caller) };
