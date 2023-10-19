@@ -83,15 +83,10 @@ export default function Task() {
   };
   const setTimer = (reservation) => {
     const now = new Date().getTime();
-    const expiry =
-      reservation &&
-      reservation.filter(
-        (res) =>
-          res.profileId == principal &&
-          Number(res.reservedExpiryTime) > Number(now)
-      )[0];
     const remind =
-      (Number(expiry ? expiry.reservedExpiryTime : 0) - Number(now)) / 1000.0;
+      (Number(reservation.ok ? reservation.ok.reservedExpiryTime : 0) -
+        Number(now)) /
+      1000.0;
     setReserved(remind > 0 ? true : false);
     setCount(remind > 0 ? Number(remind) : 0);
     dispatch({
@@ -102,8 +97,9 @@ export default function Task() {
 
   const fetchTask = async () => {
     const content = await modclub.getContent(taskId);
+    const reservation = await modclub.getReservedByContentId(taskId);
     setTask(content[0]);
-    setTimer(content[0].reservedList);
+    setTimer(reservation);
   };
 
   const fetchData = async () => {
@@ -154,20 +150,13 @@ export default function Task() {
     setLoading(true);
     try {
       const res = await modclub.reserveContent(taskId);
-      const now = new Date().getTime();
-      const remind =(Number(res.ok ? res.ok.reservedExpiryTime : 0) - Number(now)) / 1000.0;
-      setReserved(remind > 0 ? true : false);
-      setCount(remind > 0 ? Number(remind) : 0);
-      dispatch({
-        type: "setContentReservedTime",
-        payload: remind > 0 ? Number(remind) : 0,
-      });
-      setReserved(true);
+      setTimer(res);
       toggleReserveModal();
+      setLoading(false);
     } catch (e) {
+      setLoading(false);
       console.log("Error create Reservation:", e);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -326,7 +315,7 @@ export default function Task() {
                         Reservation expires: &nbsp;
                       </span>
                       <span className="has-background-grey p-1 box is-rounded my-auto">
-                        <Timer countdown={count} toggle={toggleRefresh}/>
+                        <Timer countdown={count} toggle={toggleRefresh} />
                       </span>
                     </Heading>
                   </>
