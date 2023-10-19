@@ -38,7 +38,7 @@ export default function Landing() {
               className="button is-large extra is-primary mt-6"
               onClick={() => history.push("/app")}
             >
-              Beta 1.0
+              Launch App
             </a>
           </div>
         </div>
@@ -136,7 +136,7 @@ export default function Landing() {
                 className="button is-large extra is-primary"
                 onClick={() => history.push("/app")}
               >
-                Beta 1.0
+                Launch App
               </a>
             </div>
           </div>
