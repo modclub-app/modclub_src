@@ -5,53 +5,48 @@ import { useEffect, useState } from "react";
 import { UpdateTable } from "../../common/updateTable/UpdateTable";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import { convert_to_mod } from "../../../utils/util";
 
-export default function Claim({ toggle, pendingRewards, userId }) {
-  const [amount, setAmount] = useState(pendingRewards);
-  const [error, setError] = useState(null);
-  const [inputValue, setInputValue] = useState(0);
-  const [load, setLoader] = useState(false);
-  const [warning, setWarning] = useState(null);
-  const { modclub, vesting } = useActors();
+export default function Claim({ toggle, userId }) {
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
+  const [error, setError] = useState(null);
+  const pendingRewards = convert_to_mod(
+    appState.lockedBalance,
+    appState.decimals
+  );
+  const [load, setLoader] = useState(false);
+  const [claimValue, setClaimValue] = useState(pendingRewards);
+  const [warning, setWarning] = useState(null);
+  const { modclub, vesting } = useActors();
 
   const onFormSubmit = async () => {
     setLoader(true);
     try {
-      const locked = amount;
-      const res = await modclub.claimLockedReward(BigInt(locked), []);
-      !appState.personalBalanceLoading &&
-        dispatch({ type: "personalBalanceLoading", payload: true });
-      !appState.systemBalanceLoading &&
-        dispatch({ type: "systemBalanceLoading", payload: true });
-      !appState.lockedBalanceLoading &&
-        dispatch({ type: "fetchUserLockedBalance", payload: true });
+      const res = await modclub.claimLockedReward(BigInt(claimValue), []);
+      console.log("claimLockedReward::", res);
+      if (Object.keys(res)[0] === "ok") {
+        !appState.systemBalanceLoading &&
+          dispatch({ type: "systemBalanceLoading", payload: true });
+        !appState.lockedBalanceLoading &&
+          dispatch({ type: "fetchUserLockedBalance", payload: true });
+      }
       return res.ok;
     } catch (err) {
+      console.error("claimLockedReward::ERROR::", err);
       setError(err.message);
+      return false;
     }
     setLoader(false);
   };
-  useEffect(() => {
-    let isMounted = true;
-    !appState.personalBalanceLoading &&
-      dispatch({ type: "personalBalanceLoading", payload: true });
-    !appState.systemBalanceLoading &&
-      dispatch({ type: "systemBalanceLoading", payload: true });
-    !appState.lockedBalanceLoading &&
-      dispatch({ type: "fetchUserLockedBalance", payload: true });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+
   return (
     <FormModal
       title="Claim"
       toggle={toggle}
       handleSubmit={onFormSubmit}
       loader={load}
-      updateTable={<UpdateTable amount={amount} text={"Available:"} />}
+      updateTable={<UpdateTable amount={claimValue} text={"Available:"} />}
     >
       {error && <div className="error">{error}</div>}
       <div className="field">
@@ -59,9 +54,12 @@ export default function Claim({ toggle, pendingRewards, userId }) {
           <Field
             name="amount"
             component="input"
-            type="hidden"
+            type="text"
             className={!load ? "input" : "input is-danger"}
-            initialValue={inputValue}
+            initialValue={claimValue}
+            onChange={(e) => {
+              setClaimValue(e.target.value);
+            }}
             validate={(value) => {
               if (isNaN(value) || Number(value) < 0) {
                 setWarning("Incorrect amount");

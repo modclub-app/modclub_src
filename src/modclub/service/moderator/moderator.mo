@@ -33,7 +33,7 @@ module ModeratorModule {
     ignore Timer.setTimer(
       #seconds(0),
       func() : async () {
-        await ModSecurity.Guard(env, "MODERATOT_SERVICE").getRSActor().subscribe(topic);
+        await ModSecurity.Guard(env, "MODERATOR_SERVICE").getRSActor().subscribe(topic);
       }
     );
   };

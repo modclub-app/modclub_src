@@ -126,7 +126,8 @@ export default function Userstats({ detailed = false }) {
             });
           }
         })
-        .catch(() => {
+        .catch((e) => {
+          console.error("CLAIM_CHECK::RESPONSE_ERROR_PAYLOAD::", e);
           return "";
         });
     !appState.personalBalanceLoading &&
@@ -274,7 +275,7 @@ export default function Userstats({ detailed = false }) {
                 color="dark"
                 onClick={toggleClaim}
                 disabled={
-                  level == "novice" || level == "junior" || holdingsUpdated
+                  appState.lockedBalanceLoading || !claimRewards.canClaim
                 }
               >
                 Claims
@@ -295,13 +296,7 @@ export default function Userstats({ detailed = false }) {
         </StatBox>
       </Columns>
 
-      {showClaim && (
-        <Claim
-          toggle={toggleClaim}
-          pendingRewards={pendingRewards}
-          userId={principal}
-        />
-      )}
+      {showClaim && <Claim toggle={toggleClaim} userId={principal} />}
 
       {showDeposit && (
         <Deposit toggle={toggleDeposit} isProvider={false} subacc={subacc} />
