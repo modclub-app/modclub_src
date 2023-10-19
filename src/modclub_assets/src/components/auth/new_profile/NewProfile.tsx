@@ -62,7 +62,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
     const icAssociationRedirect =
       "https://" +
       process.env.MODCLUB_ASSET_OLD_CANISTER_ID +
-      ".icp0.io/#/account-associate/" +
+      ".raw.ic0.app/#/account-associate/" +
       data.hash +
       "/" +
       data.targetCanister +
