@@ -29,8 +29,8 @@ export default function Claim({ toggle, userId }) {
         Number(claimValue) * Math.pow(10, Number(appState.decimals));
       const res = await modclub.claimLockedReward(BigInt(claimReq), []);
       if (Object.keys(res)[0] === "ok") {
-        !appState.personalBalanceLoading &&
-          dispatch({ type: "personalBalanceLoading", payload: true });
+        !appState.systemBalanceLoading &&
+          dispatch({ type: "systemBalanceLoading", payload: true });
         !appState.lockedBalanceLoading &&
           dispatch({ type: "fetchUserLockedBalance", payload: true });
       }

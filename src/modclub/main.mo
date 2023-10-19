@@ -1003,6 +1003,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)(throw Error.reject("Moderator does not exist"));
     };
     let moderatorAcc = {
+      owner = caller;
+      subaccount = null;
+    };
+    let moderatorSystemAcc = {
       owner = Principal.fromActor(this);
       subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
     };
@@ -1022,7 +1026,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           from_subaccount = ?Constants.ICRC_VESTING_SA;
           to = switch (customReceiver) {
             case (?p) { { owner = p; subaccount = null } };
-            case (null) { moderatorAcc };
+            case (null) { moderatorSystemAcc };
           };
           amount;
           fee = null;
