@@ -3166,6 +3166,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           await storageSolution.registerModerators([associator]);
           contentQueueManager.assignUserIds2QueueId([associator]);
           pohContentQueueManager.assignUserIds2QueueId([associator]);
+          ignore await rs.setRS(associator, 10 * RSConstants.RS_FACTOR);
 
           let (rsValue : Int, level : RSTypes.UserLevel) = Helpers.translateUpToRs(up);
           ignore await rs.setRS(associator, rsValue);
