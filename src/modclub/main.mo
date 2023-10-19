@@ -998,8 +998,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (not ModeratorManager.canClaimReward(caller, claimRewardsWhitelistBuf)) {
       return throw Error.reject("Moderator not permitted to claim locked Tokens.");
     };
-
-    let moderatorAcc = { owner = caller; subaccount = null };
+    let moderator = switch (ModeratorManager.getProfile(caller, stateV2)) {
+      case (#ok(p)) p;
+      case (_)(throw Error.reject("Moderator does not exist"));
+    };
+    let moderatorAcc = {
+      owner = Principal.fromActor(this);
+      subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+    };
     let stats = await ModeratorManager.getStats(caller, env);
     let lockedAmount = await vestingActor.locked_for(moderatorAcc);
     let stakedAmount = await vestingActor.staked_for(moderatorAcc);
