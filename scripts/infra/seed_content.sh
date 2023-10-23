@@ -22,8 +22,8 @@ PROVIDER_IDENTITY="qa_test_provider"
 create_provider_identity $PROVIDER_IDENTITY
 setup_provider qa $PROVIDER_IDENTITY
 add_token_for_submitting_task qa $PROVIDER_IDENTITY $LEDGER_IDENTITY
-create_seed_content qa $PROVIDER_IDENTITY
-
+create_text_content qa $PROVIDER_IDENTITY
+create_html_content qa $PROVIDER_IDENTITY
 # Additional ACCOUNT_PAYABLE tokens are required because content creation used up tokens.
 add_token_to_ACCOUNT_PAYABLE qa $LEDGER_IDENTITY
 

@@ -6,5 +6,11 @@ const jsonData = JSON.parse(content);
 
 // Output in a format that's easy for the shell script to read and print
 jsonData.forEach((item) => {
-  console.log(`${item.sourceId}|${item.title}|${item.text}`);
+  if (item.htmlContent) {
+    console.log(
+      `${item.sourceId}|${item.title}|${item.htmlContent}|${item.complexity}`
+    );
+  } else {
+    console.log(`${item.sourceId}|${item.title}|${item.text}`);
+  }
 });

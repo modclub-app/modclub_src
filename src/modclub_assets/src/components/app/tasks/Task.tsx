@@ -16,7 +16,7 @@ import Platform from "../platform/Platform";
 import TaskConfirmationModal from "./TaskConfirmationModal";
 import { fileToImgSrc, unwrap } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
-import sanitizeHtml from "sanitize-html-react";
+import sanitizeHtml from "sanitize-html";
 import { useProfile } from "../../../contexts/profile";
 import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
@@ -133,7 +133,7 @@ export default function Task() {
     iframe: iframeAttributes,
   };
 
-  const sanitizedHtml = sanitizeHtml((task && task.text) || "<div></div>", {
+  const sanitizedHtml = sanitizeHtml((task && task.text[0]) || "<div></div>", {
     allowedTags,
     allowedAttributes,
   });

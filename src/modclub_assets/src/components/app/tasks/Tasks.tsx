@@ -6,7 +6,7 @@ import RulesList from "../tasks/RulesList";
 import Userstats from "../profile/Userstats";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
-import sanitizeHtml from "sanitize-html-react";
+import sanitizeHtml from "sanitize-html";
 import { useProfile } from "../../../contexts/profile";
 import { useConnect } from "@connect2icmodclub/react";
 import { useActors } from "../../../hooks/actors";
@@ -44,7 +44,7 @@ const Task = ({ task }) => {
     iframe: iframeAttributes,
   };
 
-  const sanitizedHtml = sanitizeHtml(task.text, {
+  const sanitizedHtml = sanitizeHtml(task.text[0], {
     allowedTags,
     allowedAttributes,
   });

@@ -79,6 +79,7 @@
     "@dfinity/identity": "^0.19.1",
     "date-fns": "^2.25.0",
     "final-form": "^4.20.4",
+    "htmlparser2": "^9.0.0",
     "ic-stoic-identity": "^2.0.0",
     "mic-recorder-to-mp3": "^2.2.2",
     "react": "^17.0.2",
@@ -95,7 +96,7 @@
     "react-router-hash-link": "^2.4.3",
     "react-scripts": "^5.0.1",
     "react-webcam": "^6.0.0",
-    "sanitize-html-react": "^1.13.0",
+    "sanitize-html": "^2.11.0",
     "semantic-ui-css": "^2.4.1",
     "styled-components": "^5.3.1"
   },
