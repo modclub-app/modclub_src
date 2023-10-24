@@ -27,9 +27,9 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "@dfinity/agent": "^0.15.4",
-    "@dfinity/candid": "^0.15.4",
-    "@dfinity/principal": "^0.15.4",
+    "@dfinity/agent": "^0.19.3",
+    "@dfinity/candid": "^0.19.3",
+    "@dfinity/principal": "^0.19.3",
     "@types/react": "^17.0.27",
     "assert": "2.0.0",
     "buffer": "6.0.3",
@@ -52,7 +52,7 @@
     "terser-webpack-plugin": "^5.3.7",
     "ts-loader": "^9.4.2",
     "typescript": "^4.3.5",
-    "usergeek-ic-js": "github:usergeek/usergeek-ic-js",
+    "usergeek-ic-js": "1.0.5",
     "util": "0.12.3",
     "webpack": "^5.76.3",
     "webpack-cli": "^5.0.1",
