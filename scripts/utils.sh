@@ -8,15 +8,15 @@ get_canister_name_by_env() {
   local name="$2"
 
   if [ "$env" = "production" ] || [ "$env" = "prod" ]; then
-    echo "$env"
+    echo "$name"
   else
     echo "${name}_${env}"
   fi
 }
 
 # generate canister declariations
-# generate_declariations <env>
-function generate_declariations() {
+# generate_declarations <env>
+function generate_declarations() {
   local current_dir="$(dirname "$0")"
   local m=$(get_canister_name_by_env "$1" "modclub")
   local w=$(get_canister_name_by_env "$1" "wallet")

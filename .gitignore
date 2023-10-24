@@ -40,3 +40,8 @@ src/modclub_assets/src/actors_by_env.ts
 scripts/upgrade-bucket/.upgrade_bucket.sh.swp
 scripts/upgrade-bucket/canister_ids.json
 scripts/upgrade-bucket/dfx.json
+
+
+src/declarations/
+!src/declarations/wallet/
+!src/declarations/wallet/*

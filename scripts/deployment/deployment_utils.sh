@@ -32,7 +32,7 @@ function deploy_canisters() {
   dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
   dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
   init_canisters $env &&
-  generate_declariations $env &&
+  generate_declarations $env &&
   node "$current_dir/../build/gen_files_by_env.cjs" &&
   DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
   log "${env} Canisters DEPLOYED"

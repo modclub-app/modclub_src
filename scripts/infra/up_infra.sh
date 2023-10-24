@@ -142,7 +142,7 @@ function deploy_qa_canisters() {
   dfx deploy internet_identity &&
   dfx deploy rs_qa --argument="($local_env)" &&
 	dfx deploy modclub_qa --argument="($local_env)" &&
-  generate_declariations "$DEV_ENV" &&
+  generate_declarations "$DEV_ENV" &&
   node "$ROOT_DIR/scripts/build/gen_files_by_env.cjs" &&
   DEV_ENV=qa dfx deploy modclub_qa_assets &&
   dfx ledger fabricate-cycles --canister $(dfx canister id modclub_qa) --amount 10 &&
