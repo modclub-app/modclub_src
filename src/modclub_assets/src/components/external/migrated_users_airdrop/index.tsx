@@ -174,6 +174,15 @@ export default function MigratedUsersAirdrop() {
     );
   }
 
+  const distributed = airdropItems.reduce(
+    (sum, i) => (i[1] ? sum + Number(i[2]) : sum),
+    0
+  );
+  const waitList = airdropItems.reduce(
+    (sum, i) => (!i[1] && Number(i[2]) ? sum + Number(i[2]) : sum),
+    0
+  );
+
   return (
     <>
       <div className="info-icon-container">
@@ -223,9 +232,8 @@ export default function MigratedUsersAirdrop() {
                           "UploadAirdropPayload"
                         )}
                       </button>
-                      <br />
-                      <button onClick={airdropToAll}>AirdropToAll</button>
                     </div>
+                    <div class="column"></div>
                   </div>
                 </div>
                 <div class="box">
@@ -242,11 +250,20 @@ export default function MigratedUsersAirdrop() {
                     </div>
                     <div class="column">
                       <p>Distributed:</p>
-                      <span class="isCyan">10000 MOD</span>
+                      <span class="isCyan">{Number(distributed)} MOD</span>
                     </div>
                     <div class="column">
                       <p>NOT Distributed:</p>
-                      <span class="isCyan">1000000 MOD</span>
+                      <span class="isCyan">
+                        {balanceLoading || loading ? (
+                          <div className="loader is-loading"></div>
+                        ) : (
+                          waitList + " MOD"
+                        )}
+                      </span>
+                    </div>
+                    <div class="column">
+                      <button onClick={airdropToAll}>AirdropToAll</button>
                     </div>
                   </div>
                 </div>
