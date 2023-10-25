@@ -335,6 +335,7 @@ module ContentVotingModule {
 
     // Reward / Slash voters ;
     let rewardingVotes = Buffer.Buffer<Types.VoteV2>(1);
+    let incorrectVotes = Buffer.Buffer<Types.VoteV2>(1);
     let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
     for (voteId in state.content2votes.get0(arg.content.id).vals()) {
       switch (state.votes.get(voteId)) {
@@ -347,6 +348,7 @@ module ContentVotingModule {
             };
             votedCorrect := true;
           } else {
+            incorrectVotes.add(vote);
             votedCorrect := false;
           };
           usersToRewardRS.add({
@@ -362,7 +364,18 @@ module ContentVotingModule {
       sumRS := sumRS + userVote.rsBeforeVoting;
     };
 
-    let _ = await rs.updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
+    let updatedScores = await rs.updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
+
+    for (incorrectVote in incorrectVotes.vals()) {
+      let newRS = switch (Array.find<RSTypes.UserAndRS>(updatedScores, func us = Principal.equal(us.userId, incorrectVote.userId))) {
+        case (?us) { us.score };
+        case (_) {
+          throw Error.reject("No user found in UpdatedScores for incorrectVotes.");
+        };
+      };
+      let voteDecorated = _updateRewardsOnVote(incorrectVote, null, null, newRS);
+      state.votes.put(incorrectVote.id, voteDecorated);
+    };
 
     //TODO: Needs to be updated to handle junior case where they only receive half the rewards and the remaining is locked. until they become senior
     let CT : Float = ModClubParam.CS * Float.fromInt(arg.requiredVotes);
@@ -378,10 +391,6 @@ module ContentVotingModule {
         subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
       };
       let fullReward = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
-      let isSenior = switch (await rs.queryRSAndLevelByPrincipal(userVote.userId)) {
-        case (stat) { stat.score >= RSConstants.JUNIOR_THRESHOLD };
-        case (_) { false };
-      };
       let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
       // Dist of free part of rewarded tokens
       let _ = await ledger.icrc1_transfer({
@@ -414,8 +423,12 @@ module ContentVotingModule {
         case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedRewardToken)));
       };
 
-      let newRS = (await rs.queryRSAndLevelByPrincipal(userVote.userId)).score;
-      state.votes.put(userVote.id, _updateRewardsOnVote(userVote, ?fullReward, ?lockedReward, newRS));
+      let newRS = switch (Array.find<RSTypes.UserAndRS>(updatedScores, func us = Principal.equal(us.userId, userVote.userId))) {
+        case (?us) { us.score };
+        case (other) { throw Error.reject("No user found in UpdatedScores.") };
+      };
+      let voteDecorated = _updateRewardsOnVote(userVote, ?fullReward, ?lockedReward, newRS);
+      state.votes.put(userVote.id, voteDecorated);
     };
 
     let treasuryDistTokens = Utils.floatToTokens(ModClubParam.GAMMA_T * CT);

@@ -72,6 +72,11 @@ export default function ModclubApp() {
   }, [isConnected, modclub]);
 
   useEffect(() => {
+    if (isConnected && appState.moderationTasksLoading)
+      dispatch({ type: "refetchContentModerationTasks", payload: false });
+  }, [isConnected, appState.moderationTasksLoading]);
+
+  useEffect(() => {
     if (isConnected && appState.providerBalanceLoading)
       dispatch({ type: "fetchProviderBalance" });
   }, [isConnected, appState.providerBalanceLoading]);

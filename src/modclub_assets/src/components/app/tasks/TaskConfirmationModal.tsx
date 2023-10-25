@@ -18,6 +18,7 @@ import * as Constant from "../../../utils/constant";
 import { modclub } from "../../../../../declarations/modclub";
 import { use } from "chai";
 import { useActors } from "../../../hooks/actors";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 const ConfirmationModal = ({
   title,
@@ -40,6 +41,8 @@ const ConfirmationModal = ({
   );
   const [rules, setRules] = useState([]);
   const [message, setMessage] = useState(null);
+
+  const dispatch = useAppStateDispatch();
 
   const { modclub } = useActors();
 
@@ -86,6 +89,10 @@ const ConfirmationModal = ({
           : { rejected: null },
         [checked]
       );
+      dispatch({
+        type: "setModerationTasksLoading",
+        payload: { status: true },
+      });
       setSubmitting(false);
       setMessage({
         success: result === "Vote successful" ? true : false,

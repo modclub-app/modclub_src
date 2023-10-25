@@ -123,10 +123,6 @@ export default function Tasks() {
         type: "setModerationTasksLoading",
         payload: { status: true },
       });
-      dispatch({
-        type: "refetchContentModerationTasks",
-        payload: FILTER_VOTES,
-      });
     }
     setVoted(false);
   }, [voted]);

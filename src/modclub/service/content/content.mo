@@ -344,7 +344,7 @@ module ContentModule {
             let spot = provider.voteParameters.requiredVotes - (voteCount.approvedCount + voteCount.rejectedCount);
             let checkExpire = hasAvailableSpot(oldReserved, now, spot);
             if (checkExpire == false) {
-              throw Error.reject("No spot left");
+              throw Error.reject("No spot left::" # debug_show (oldReserved)); // Debug for future bug resolve
             };
             let reservation = takeReservation(
               {

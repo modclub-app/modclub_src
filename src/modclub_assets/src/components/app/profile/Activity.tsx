@@ -68,16 +68,16 @@ const Table = ({
                   <td>{formatDate(item.vote.createdAt)}</td>
                   <td>
                     {item.vote.totalReward.length === 0
-                      ? "-"
+                      ? "0"
                       : Number(item.vote.totalReward).toFixed(2)}
                   </td>
                   <td>
                     {item.vote.lockedReward.length === 0
-                      ? "-"
+                      ? "0"
                       : Number(item.vote.lockedReward).toFixed(2)}
                   </td>
                   <td>
-                    {item.vote.lockedReward.length === 0
+                    {item.vote.rsReceived.length === 0
                       ? "-"
                       : Number(item.vote.rsReceived) / Constant.RS_FACTOR}
                   </td>

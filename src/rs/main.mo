@@ -199,7 +199,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
 
     return {
       userId = userId;
-      score = currentRS;
+      score = clampedRS;
     };
   };
 
