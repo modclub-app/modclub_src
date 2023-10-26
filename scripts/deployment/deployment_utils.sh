@@ -67,7 +67,7 @@ function deploy_wallet_canister() {
 
   local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
 
-  dfx_deploy ${wallet_canister_name} --network=${network}  --argument="'(variant { Init = 
+  local wallet_arg='(variant { Init = 
       record {
         token_name = "'${TOKEN_NAME}'";
         token_symbol = "'${TOKEN_SYMBOL}'";
@@ -84,14 +84,18 @@ function deploy_wallet_canister() {
           record { record { owner = principal "'${ledger_acc_principal}'"; subaccount = opt blob "----------------------------TEAM"}; 160_000_000_000_000; };
         };
         metadata = vec {};
-        transfer_fee = .0001;
+        transfer_fee = 10;
         archive_options = record {
           trigger_threshold = 2000;
           num_blocks_to_archive = 1000;
           controller_id = principal "'${ARCHIVE_CONTROLLER}'";
         }
-  }})'"
+  }})'
+  wallet_arg="'$wallet_arg'"
 
+  echo $wallet_arg
+
+  dfx_deploy ${wallet_canister_name} --network=${network}  --argument=$wallet_arg
   return 0;
 }
 

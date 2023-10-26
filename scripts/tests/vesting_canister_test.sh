@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -21,7 +23,7 @@ dfx identity use default
 function check_stage_vesting_block() {
 	printf "${GREEN}[TEST] ${YELLOW}[CANISTER_METHOD_CHECK] ${GREEN} Vesting_QA stage_vesting_block...${NC}\n"
 	dfx identity use default
-	dfx identity new qa_test_moderator
+	dfx identity new qa_test_moderator --disable-encryption
 	dfx identity use qa_test_moderator
 	declare TEST_J_MODERATOR_PRINCIPAL=$(dfx identity get-principal)
 	dfx identity use default
@@ -45,7 +47,7 @@ function check_stage_vesting_block() {
 function check_stake() {
 	printf "${GREEN}[TEST] ${YELLOW}[CANISTER_METHOD_CHECK] ${GREEN} Vesting_QA stake...${NC}\n"
 	dfx identity use default
-	dfx identity new qa_test_moderator
+	dfx identity new qa_test_moderator --disable-encryption
 	dfx identity use qa_test_moderator
 	declare TEST_J_MODERATOR_PRINCIPAL=$(dfx identity get-principal)
 	dfx identity use default

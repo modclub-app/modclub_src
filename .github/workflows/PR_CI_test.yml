@@ -1,0 +1,95 @@
+name: "PR Test"
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  dev-deploy:
+    runs-on: ubuntu-latest
+    name: Deploy local QA env and Run Tests
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Set BYPASS_PROMPT_YES env variable
+        run: echo "BYPASS_PROMPT_YES=yes" >> $GITHUB_ENV
+
+      - name: Set env variables
+        run: |
+          echo "DEV_ENV=qa" >> $GITHUB_ENV
+          echo "COMMIT_SHA=${{ github.sha }}" >> $GITHUB_ENV
+          echo "TRIGGER_USER=${{ github.actor }}" >> $GITHUB_ENV
+
+          cat $GITHUB_ENV
+
+      - name: yarn install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      # Install dfx.
+      - name: Install dfx
+        run: |
+          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          dfx --version
+
+      - name: Set up dfx identity
+        run: |
+          mkdir -p ~/.config/dfx/identity/default/
+          echo "$IC_IDENTITY_FILE" > ~/.config/dfx/identity/default/identity.pem
+          dfx identity get-principal
+          cat ~/.config/dfx/identity/default/identity.pem
+        env:
+          IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_QA }}
+
+      - name: Install vessel
+        run: |
+          wget https://github.com/dfinity/vessel/releases/download/v0.6.4/vessel-linux64
+          mv vessel-linux64 vessel
+          chmod +x vessel
+          mv vessel /usr/local/bin/.
+          vessel --version
+
+      - name: dfx start
+        run: |
+          dfx start --background
+
+      - name: Build BE canisters
+        run: |
+          source scripts/deployment/build_utils.sh
+          source scripts/utils.sh
+          DEV_ENV=qa create_canisters qa && build_be_canisters qa
+
+      # Deploy using dfx. Ensure you handle any configuration or environment specifics.
+      - name: Run deployment script
+
+        run: ./scripts/deployment/gh_actions_deploy.sh
+          dfx canister call modclub_qa adminInit
+          dfx canister call modclub_qa configurePohForProvider "(principal \"$(dfx canister id modclub_qa)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)"
+          dfx canister call modclub_qa populateChallenges
+        env:
+          DEV_ENV: qa
+          NETWORK: local
+          OLD_MODCLUB_INSTANCE: la3yy-gaaaa-aaaah-qaiuq-cai
+
+      - name: Seeding
+        run: |
+          ./scripts/infra/seed_content.sh
+        env:
+          DEV_ENV: qa
+
+      - name: Run tests
+        run: |
+          ./scripts/deployment/gh_pr_pipeline_test_runner.sh
+        env:
+          DEV_ENV: qa
+
+      - name: Show success message
+        run: echo success!
