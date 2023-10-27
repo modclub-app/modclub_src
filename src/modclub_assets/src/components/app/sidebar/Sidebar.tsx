@@ -237,7 +237,7 @@ export default function Sidebar() {
             </Link>
           )}
           {/* ADMIN POH CONTENT APPROVED AND REJECTED */}
-          {appState.userProfile && appState.isAdminUser && (
+          {(appState?.userProfile && appState?.isAdminUser) && (
             <Link to="/app/admin/poh">
               <Icon>
                 <span className="material-icons">check_circle_outline</span>
@@ -246,12 +246,15 @@ export default function Sidebar() {
             </Link>
           )}
           {/* END ADMIN POH CONTENT APPROVED AND REJECTED */}
-          <Link to="/app/leaderboard">
-            <Icon>
-              <span className="material-icons">stars</span>
-            </Icon>
-            Leaderboard
-          </Link>
+          {(appState?.userProfile && appState?.isAdminUser) && (
+            <Link to="/app/leaderboard">
+              <Icon>
+                <span className="material-icons">stars</span>
+              </Icon>
+              Leaderboard
+            </Link>
+          )}
+
           <Link to="/how-to">
             <Icon>
               <span className="material-icons">help</span>

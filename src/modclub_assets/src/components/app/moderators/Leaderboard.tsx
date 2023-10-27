@@ -15,6 +15,8 @@ import { useActors } from "../../../hooks/actors";
 import { getModeratorLeaderboard } from "../../../utils/api";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constants from "../../../utils/constant";
+import { useHistory } from "react-router-dom";
+
 const PAGE_SIZE = Constants.LB_PAGE_SIZE;
 
 const ModeratorProfile = ({
@@ -110,65 +112,72 @@ export default function Leaderboard() {
   const dispatch = useAppStateDispatch();
   const content = appState.leaderboardContent;
   const [page, setPage] = useState(1);
-  const { modclub } = useActors();
 
   useEffect(() => {
-    if(page != 1){
-      dispatch({ type: "fetchLeaderBoard", payload: {page: page}});
+    if (page !== 1) {
+      dispatch({ type: "fetchLeaderBoard", payload: { page: page } });
     }
   }, [page]);
 
   return (
-    <Columns>
-      <Columns.Column size={12}>
-        <Card>
-          <Card.Content>
-            <Heading>Leaderboard</Heading>
-          </Card.Content>
-        </Card>
-      </Columns.Column>
+    <>
+      {appState?.userProfile && appState?.isAdminUser && (
+        <Columns>
+          <Columns.Column size={12}>
+            <Card>
+              <Card.Content>
+                <Heading>Leaderboard</Heading>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
 
-      <Columns.Column size={12}>
-        <Card>
-          <Card.Content>
-            <Heading size={6}>Moderators ranked by Rewards Earned</Heading>
+          <Columns.Column size={12}>
+            <Card>
+              <Card.Content>
+                <Heading size={6}>Moderators ranked by Rewards Earned</Heading>
 
-            <div className="table-container">
-              <table className="table is-striped">
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Moderator</th>
-                    <th>Voted Amt</th>
-                    <th>Rewards Earned</th>
-                    <th>Vote Performance</th>
-                    <th>Last voted</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {content.map((item, index) => (
-                    <ModeratorItem key={index} rank={index + 1} item={item} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card.Content>
-          <Card.Footer className="mt-6" alignItems="center">
-            <div>
-              Showing 1 to {Math.min(page * PAGE_SIZE, content.length)} of{" "}
-              {content.length} feeds
-            </div>
-            <Button
-              color="primary"
-              onClick={() => setPage(page + 1)}
-              className="ml-4 px-7 py-3"
-              disabled={page * PAGE_SIZE > content.length}
-            >
-              See more
-            </Button>
-          </Card.Footer>
-        </Card>
-      </Columns.Column>
-    </Columns>
+                <div className="table-container">
+                  <table className="table is-striped">
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Moderator</th>
+                        <th>Voted Amt</th>
+                        <th>Rewards Earned</th>
+                        <th>Vote Performance</th>
+                        <th>Last voted</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {content.map((item, index) => (
+                        <ModeratorItem
+                          key={index}
+                          rank={index + 1}
+                          item={item}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card.Content>
+              <Card.Footer className="mt-6" alignItems="center">
+                <div>
+                  Showing 1 to {Math.min(page * PAGE_SIZE, content.length)} of{" "}
+                  {content.length} feeds
+                </div>
+                <Button
+                  color="primary"
+                  onClick={() => setPage(page + 1)}
+                  className="ml-4 px-7 py-3"
+                  disabled={page * PAGE_SIZE > content.length}
+                >
+                  See more
+                </Button>
+              </Card.Footer>
+            </Card>
+          </Columns.Column>
+        </Columns>
+      )}
+    </>
   );
 }

@@ -908,7 +908,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared func getModeratorLeaderboard(start : Nat, end : Nat) : async [
     Types.ModeratorLeaderboard
   ] {
-
     let topUsers = await authGuard.getRSActor().topUsers(start, end);
 
     switch (
@@ -2801,6 +2800,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#appendMigrationAirdropItem _) { authGuard.isAdmin(caller) };
       case (#airdropMigratedUser _) { authGuard.isAdmin(caller) };
       case (#airdropMigratedUsers _) { authGuard.isAdmin(caller) };
+      case (#getModeratorLeaderboard _) { authGuard.isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };

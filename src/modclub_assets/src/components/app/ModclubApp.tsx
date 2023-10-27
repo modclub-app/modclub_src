@@ -25,6 +25,7 @@ import logger from "../../utils/logger";
 import * as Constants from "../../utils/constant";
 import { useActors } from "../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "./state_mgmt/context/state";
+import AdminRoute from "../common/AdminRoute/AdminRoute";
 
 export default function ModclubApp() {
   const history = useHistory();
@@ -230,12 +231,16 @@ export default function ModclubApp() {
             <Route exact path="/app/activity">
               <Activity />
             </Route>
-            <Route exact path="/app/admin/activity/">
-              <AdminActivity />
-            </Route>
-            <Route exact path="/app/leaderboard">
-              <Leaderboard />
-            </Route>
+            <AdminRoute
+              path="/app/admin/activity/"
+              component={AdminActivity}
+              appState={appState}
+            />
+            <AdminRoute
+              path="/app/leaderboard"
+              component={Leaderboard}
+              appState={appState}
+            />
             <Route exact path="/app/confirm/poh/alerts/:userID+">
               <AlertConfirmation />
             </Route>
