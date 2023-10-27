@@ -39,5 +39,6 @@ export function useActors(): IActors {
     { signedIn: boolean }
   ];
 
+  window["_actors"] = { modclub, rs, vesting, wallet, airdrop };
   return { modclub, rs, vesting, wallet, airdrop };
 }

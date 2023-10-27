@@ -48,6 +48,8 @@ import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
 import VoteState "./service/vote/statev2";
 import VoteStateV2 "./service/vote/statev2";
+import VoteStateV3 "./service/vote/pohVoteState";
+
 import RSTypes "../rs/types";
 import ICRCTypes "../common/ICRCTypes";
 import Utils "../common/utils";
@@ -91,9 +93,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     provider2Ip2Wallet
   );
 
+  // TODO: remove these after upgrade
   stable var pohVoteStableState = VoteState.emptyStableState();
   stable var pohVoteStableStateV2 = VoteStateV2.emptyStableState();
-  var voteManager = VoteManager.VoteManager(pohVoteStableState);
+
+  stable var pohVoteStableStateV3 = VoteStateV3.emptyStableState();
+  var voteManager = VoteManager.VoteManager(pohVoteStableStateV3);
 
   stable var contentStableState = ContentState.emptyStableState();
   var contentState = ContentStateManager.ContentStateManager(contentStableState);
@@ -961,6 +966,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#err(#voteNotFound)) throw Error.reject("Vote does not exist");
       case (_) throw Error.reject("Something went wrong");
     };
+  };
+
+  public query ({ caller }) func getPohActivity(isComplete : Bool) : async [
+    Text
+  ] {
+    // TODO: will add more content of this function in the next pr:
+    // See design doc: https://docs.google.com/document/d/1E0flySLltk2lTCaEHAjFHAqnKw1By2sWyPRsE7GXzaA/edit
+    // 1. Define a new return type: PohActivity
+    // 2. Implement the logic to construct PohActivity
+    voteManager.getPOHVotes(caller);
   };
 
   public shared ({ caller }) func canClaimLockedReward(amount : ?ICRCTypes.Tokens) : async Result.Result<Types.CanClaimLockedResponse, Text> {
@@ -1862,6 +1877,22 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     canistergeekLogger.getLog(request);
   };
 
+  private func _updateVote(vote : VoteTypes.PohVote, newTotalReward : Float, newLockedReward : Float, rsReceived : Float) : VoteTypes.PohVote {
+    {
+      id = vote.id;
+      contentId = vote.contentId;
+      userId = vote.userId;
+      decision = vote.decision;
+      rsBeforeVoting = vote.rsBeforeVoting;
+      level = vote.level;
+      violatedRules = vote.violatedRules;
+      createdAt = vote.createdAt;
+      totalReward = ?newTotalReward;
+      lockedReward = ?newLockedReward;
+      rsReceived = ?rsReceived;
+    };
+  };
+
   public shared ({ caller }) func votePohContent(
     packageId : Text,
     decision : Types.Decision,
@@ -1979,7 +2010,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         await storageSolution.markContentNotAccessible(cId);
       };
 
-      let rewardingVotes = Buffer.Buffer<VoteTypes.VoteV2>(1);
+      let rewardingVotes = Buffer.Buffer<VoteTypes.PohVote>(1);
       let usersToRewardRS = Buffer.Buffer<RSTypes.UserAndVote>(1);
       for (id in votesId.vals()) {
         switch (voteManager.getPOHVote(id)) {
@@ -2040,8 +2071,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         });
 
         // Dist of locked part of rewarded tokens
-        let lockedReward = Utils.floatToTokens(fullReward - (fullReward * Constants.REWARD_DEVIATION));
-        let lockRes = await authGuard.getVestingActor().stage_vesting_block(moderatorAcc, lockedReward);
+
+        let lockedReward = fullReward - (fullReward * Constants.REWARD_DEVIATION);
+        let lockedRewardToken = Utils.floatToTokens(lockedReward);
+        let lockRes = await authGuard.getVestingActor().stage_vesting_block(moderatorAcc, lockedRewardToken);
         switch (lockRes) {
           case (#ok(lockLen)) {
             let _ = await ledger.icrc1_transfer({
@@ -2050,15 +2083,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
                 owner = Principal.fromActor(this);
                 subaccount = ?Constants.ICRC_VESTING_SA;
               };
-              amount = lockedReward;
+              amount = lockedRewardToken;
               fee = null;
               memo = null;
               created_at_time = null;
             });
           };
-          case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedReward)));
+          case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedRewardToken)));
         };
 
+        let rsAfterVoting = (await rs.queryRSAndLevelByPrincipal(userVote.userId)).score;
+        let rsReceived : Float = Float.fromInt(rsAfterVoting) - userVote.rsBeforeVoting;
+        voteManager.setPOHVote(userVote.id, _updateVote(userVote, fullReward, lockedReward, rsReceived));
       };
 
       let _ = await authGuard.getRSActor().updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
@@ -2628,6 +2664,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     migrationAirdropWhitelistStable := List.fromArray<(Principal, Bool)>(Buffer.toArray<(Principal, Bool)>(migrationAirdropWhitelist));
 
+    // TODO: remove this after upgrade
+    pohVoteStableStateV2 := voteManager.getStableState();
+
   };
 
   stable var migrationDone = false;
@@ -2639,6 +2678,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       "MODCLUB POSTUPGRRADE",
       #info
     );
+
     authGuard.subscribe("admins");
     admins := authGuard.setUpDefaultAdmins(
       admins,
@@ -2670,7 +2710,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       provider2ProviderUserId2Ip,
       provider2Ip2Wallet
     );
-    voteManager := VoteManager.VoteManager(pohVoteStableStateV2);
+
     emailManager := EmailManager.EmailManager(emailStableState);
     contentState := ContentStateManager.ContentStateManager(contentStableState);
 
@@ -2687,6 +2727,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
     contentQueueStateStable := null;
     canistergeekLogger.setMaxMessagesCount(3000);
+
+    // TODO: remove this after upgrade
+    pohVoteStableStateV3 := voteManager.migrateV2ToV3(pohVoteStableStateV2);
+    voteManager := VoteManager.VoteManager(pohVoteStableStateV3);
+
   };
 
   //SNS generic validate function

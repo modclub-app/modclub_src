@@ -11,8 +11,12 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Types "../../types";
+
+// TODO remove this after upgrade
 import VoteState "./state";
 import VoteStateV2 "./statev2";
+
+import VoteStateV3 "./pohVoteState";
 import VoteTypes "./types";
 import Helpers "../../../common/helpers";
 import QueueManager "../queue/queue";
@@ -25,9 +29,9 @@ import Constants "../../../common/constants";
 
 module VoteModule {
 
-  public class VoteManager(stableState : VoteStateV2.PohVoteStableState) {
+  public class VoteManager(stableState : VoteStateV3.PohVoteStableState) {
 
-    var state : VoteStateV2.PohVoteState = VoteStateV2.getState(stableState);
+    var state : VoteStateV3.PohVoteState = VoteStateV3.getState(stableState);
 
     public func isAutoApprovedPOHUser(userId : Principal) : Bool {
       switch (state.autoApprovePOHUserIds.get(userId)) {
@@ -48,8 +52,20 @@ module VoteModule {
       return state.pohContent2votes.get0(packageId);
     };
 
-    public func getPOHVote(voteId : Text) : ?VoteTypes.VoteV2 {
+    public func getPOHVote(voteId : Text) : ?VoteTypes.PohVote {
       return state.pohVotes.get(voteId);
+    };
+
+    public func setPOHVote(voteId : Text, v : VoteTypes.PohVote) {
+      return state.pohVotes.put(voteId, v);
+    };
+
+    public func getPOHVotes(userId : Principal) : [Text] {
+      let buffer = Buffer.Buffer<Text>(1);
+      for (voteId in state.mods2Pohvotes.get0(userId).vals()) {
+        buffer.add(voteId);
+      };
+      return Buffer.toArray(buffer);
     };
 
     public func getAllUniqueViolatedRules(packageId : Text) : [
@@ -131,7 +147,7 @@ module VoteModule {
       var voteApproved = voteCount.approvedCount;
       var voteRejected = voteCount.rejectedCount;
 
-      let vote : VoteTypes.VoteV2 = {
+      let vote : VoteTypes.PohVote = {
         id = getVoteId(userId, packageId);
         contentId = packageId;
         userId = userId;
@@ -140,6 +156,9 @@ module VoteModule {
         rsBeforeVoting = Float.fromInt(moderatorStats.score);
         level = moderatorStats.level;
         createdAt = Time.now();
+        lockedReward = null;
+        totalReward = null;
+        rsReceived = null;
       };
 
       switch (decision) {
@@ -294,11 +313,11 @@ module VoteModule {
       return reservation;
     };
 
-    public func getStableState() : VoteStateV2.PohVoteStableState {
-      return VoteStateV2.getStableState(state);
+    public func getStableState() : VoteStateV3.PohVoteStableState {
+      return VoteStateV3.getStableState(state);
     };
 
-    public func getVoteState() : VoteStateV2.PohVoteState {
+    public func getVoteState() : VoteStateV3.PohVoteState {
       return state;
     };
 
@@ -316,6 +335,9 @@ module VoteModule {
             level = #novice;
             violatedRules = vote.violatedRules;
             createdAt = vote.createdAt;
+            lockedReward = null;
+            totalReward = null;
+            rsReceived = null;
           }
         ));
       };
@@ -330,6 +352,40 @@ module VoteModule {
         mods2Pohvotes = pohVoteStableState.mods2Pohvotes;
         autoApprovePOHUserIds = pohVoteStableState.autoApprovePOHUserIds;
         reservedPohPackages = pohVoteStableState.reservedPohPackages;
+      };
+    };
+
+    public func migrateV2ToV3(pohVoteStableState2 : VoteStateV2.PohVoteStableState) : VoteStateV3.PohVoteStableState {
+      let buff = Buffer.Buffer<(Text, VoteTypes.PohVote)>(pohVoteStableState2.pohVotes.size());
+      for ((voteId, vote) in pohVoteStableState2.pohVotes.vals()) {
+        buff.add((
+          voteId,
+          {
+            id = vote.id;
+            contentId = vote.contentId;
+            userId = vote.userId;
+            decision = vote.decision;
+            rsBeforeVoting = vote.rsBeforeVoting;
+            level = vote.level;
+            violatedRules = vote.violatedRules;
+            createdAt = vote.createdAt;
+            lockedReward = null;
+            totalReward = null;
+            rsReceived = null;
+          }
+        ));
+      };
+
+      return {
+        newPohPackages = pohVoteStableState2.newPohPackages;
+        approvedPohPackages = pohVoteStableState2.approvedPohPackages;
+        rejectedPohPackages = pohVoteStableState2.rejectedPohPackages;
+        package2Status = pohVoteStableState2.package2Status;
+        pohVotes = Buffer.toArray<(Text, VoteTypes.PohVote)>(buff);
+        pohContent2votes = pohVoteStableState2.pohContent2votes;
+        mods2Pohvotes = pohVoteStableState2.mods2Pohvotes;
+        autoApprovePOHUserIds = pohVoteStableState2.autoApprovePOHUserIds;
+        reservedPohPackages = pohVoteStableState2.reservedPohPackages;
       };
     };
   };

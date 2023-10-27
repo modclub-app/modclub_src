@@ -24,6 +24,7 @@ module {
     #senior3;
   };
 
+  // TODO: should remove this VoteV2 after upgrade to PohVote
   public type VoteV2 = {
     id : Text;
     contentId : Text;
@@ -33,6 +34,21 @@ module {
     level : UserLevel;
     violatedRules : [Types.PohRulesViolated];
     createdAt : Int;
+  };
+
+  // this is VoteV3
+  public type PohVote = {
+    id : Text;
+    contentId : Text;
+    userId : Principal;
+    decision : Decision;
+    rsBeforeVoting : Float;
+    level : UserLevel;
+    violatedRules : [Types.PohRulesViolated];
+    createdAt : Int;
+    totalReward : ?Float; // Once voting concludes, the rewards should be issued.
+    lockedReward : ?Float;
+    rsReceived : ?Float;
   };
 
   public type VotePlusUser = {
