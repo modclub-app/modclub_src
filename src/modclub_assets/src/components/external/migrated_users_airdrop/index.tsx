@@ -86,10 +86,13 @@ export default function MigratedUsersAirdrop() {
     }
   };
 
-  const airdropToUser = async (userPrincipal) => {
+  const airdropToUser = async (userPrincipal, amount) => {
     try {
       setLoading(true);
-      const airdropRes = await modclub.airdropMigratedUser(userPrincipal);
+      const airdropRes = await modclub.airdropMigratedUser(
+        userPrincipal,
+        !Number.isNaN(amount) && amount ? [amount] : null
+      );
       if (airdropRes.ok) {
         fetchAirdropStats();
         fetchAirdropBalance();
@@ -359,11 +362,23 @@ export default function MigratedUsersAirdrop() {
                         <td>
                           <button
                             onClick={() => {
-                              airdropToUser(item[0]);
+                              const cn = document.getElementById(
+                                "custom_amount_" + idx
+                              );
+                              airdropToUser(item[0], Number(cn.value));
+                              cn.value = "";
                             }}
                           >
                             send
                           </button>
+                        </td>
+                        <td>
+                          <input
+                            id={"custom_amount_" + idx}
+                            class="input is-small is-rounded"
+                            type="text"
+                            placeholder="Custom Amount"
+                          />
                         </td>
                       </tr>
                     ))}

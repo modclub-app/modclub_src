@@ -124,7 +124,7 @@ module {
     #appendMigrationAirdropItem : () -> Principal;
     #airdropMigratedUsers : () -> ();
     #getAirdropBalance : () -> ();
-    #airdropMigratedUser : () -> Principal;
+    #airdropMigratedUser : () -> (Principal, ?Nat);
     #subscribeOnRsEvets : () -> ();
   };
 

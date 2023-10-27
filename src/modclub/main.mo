@@ -3323,7 +3323,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     #ok(true);
   };
 
-  public shared func airdropMigratedUser(item : Principal) : async Result.Result<Bool, Text> {
+  public shared func airdropMigratedUser(item : Principal, amount : ?Nat) : async Result.Result<Bool, Text> {
     let wlIndex = Buffer.indexOf<(Principal, Bool)>(
       (item, false),
       migrationAirdropWhitelist,
@@ -3346,7 +3346,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         switch (migrationPayload) {
           case (?(newAccPr, oldAccPr)) {
             let up = Option.get(oldProfiles.get(item), 0);
-            let airdropAmountMOD = Helpers.getAirdropAmountByUsePoints(up);
+            let airdropAmountMOD = Option.get(amount, Helpers.getAirdropAmountByUsePoints(up));
             let decimals = await ledger.icrc1_decimals();
             let modclubAidropBalance = await ledger.icrc1_balance_of({
               owner = Principal.fromActor(this);
