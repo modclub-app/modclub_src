@@ -333,24 +333,18 @@ module Helpers {
     let level2 : Nat = 5000;
     let level1 : Nat = 1000;
 
-    if (Nat.greater(up, level5) or Nat.equal(up, level5)) {
+    if (Nat.greaterOrEqual(up, level5)) {
       return 50000;
-    } else if (
-      (Nat.greater(up, level4) or Nat.equal(up, level4)) and Nat.less(up, level5)
-    ) {
+    } else if (Nat.greaterOrEqual(up, level4) and Nat.less(up, level5)) {
       return 25000;
-    } else if (
-      (Nat.greater(up, level3) or Nat.equal(up, level3)) and Nat.less(up, level4)
-    ) {
+    } else if (Nat.greaterOrEqual(up, level3) and Nat.less(up, level4)) {
       return 10000;
-    } else if (
-      (Nat.greater(up, level2) or Nat.equal(up, level2)) and Nat.less(up, level3)
-    ) {
+    } else if (Nat.greaterOrEqual(up, level2) and Nat.less(up, level3)) {
       return 5000;
-    } else if (
-      (Nat.greater(up, level1) or Nat.equal(up, level1)) and Nat.less(up, level2)
-    ) {
+    } else if (Nat.greaterOrEqual(up, level1) and Nat.less(up, level2)) {
       return 1000;
-    } else { return 0 };
+    } else {
+      return 0;
+    };
   };
 };
