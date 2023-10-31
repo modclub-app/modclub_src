@@ -253,23 +253,6 @@ export async function asyncReducers(asyncState, action) {
       let rsLoading = !state.rsLoading;
       return { ...state, rs, rsLoading };
     }
-    case "fetchLeaderBoard": {
-      let leaderboardContent = state.leaderboardContent;
-      try {
-        if (context.actors.modclub && state.userProfile) {
-          const actor = context.actors.modclub.value;
-          const newProfile = await getModeratorLeaderboard(
-            actor,
-            Constants.LB_PAGE_SIZE,
-            action.payload.page
-          );
-          leaderboardContent = [...leaderboardContent, ...newProfile];
-        }
-      } catch (e) {
-        console.error("Error fetching RS::", e);
-      }
-      return { ...state, leaderboardContent };
-    }
     case "fetchContentModerationTasks": {
       let newTasks = [];
       try {

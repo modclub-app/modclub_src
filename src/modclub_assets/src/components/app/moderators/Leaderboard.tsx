@@ -113,12 +113,6 @@ export default function Leaderboard() {
   const content = appState.leaderboardContent;
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    if (page !== 1) {
-      dispatch({ type: "fetchLeaderBoard", payload: { page: page } });
-    }
-  }, [page]);
-
   return (
     <>
       {appState?.userProfile && appState?.isAdminUser && (
