@@ -2,6 +2,24 @@ import { Principal } from "@dfinity/principal";
 import { getModeratorLeaderboard } from "../../../../utils/api";
 import * as Constants from "../../../../utils/constant";
 
+function timeout(ms, promise) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error("Request timed out"));
+    }, ms);
+
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((reason) => {
+        clearTimeout(timer);
+        reject(reason);
+      });
+  });
+}
+
 export async function asyncReducers(asyncState, action) {
   const state = await Promise.resolve(asyncState);
   const context = action.context;
@@ -221,8 +239,12 @@ export async function asyncReducers(asyncState, action) {
       try {
         if (context.actors.rs && state.loginPrincipalId) {
           const actor = context.actors.rs.value;
-          rs = await actor.queryRSAndLevelByPrincipal(
-            Principal.from(state.loginPrincipalId)
+          console.log("Fetching RS::", state.loginPrincipalId);
+          rs = await timeout(
+            5000,
+            actor.queryRSAndLevelByPrincipal(
+              Principal.from(state.loginPrincipalId)
+            )
           );
         }
       } catch (e) {
