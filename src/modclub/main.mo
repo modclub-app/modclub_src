@@ -2157,22 +2157,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func issueJwt() : async Text {
-    Helpers.logMessage(
-      canistergeekLogger,
-      "Issue JWT called by " # Principal.toText(caller),
-      #info
-    );
     switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
       };
       case (_)();
     };
-    Helpers.logMessage(
-      canistergeekLogger,
-      "Issue JWT Check user humanity " # Principal.toText(caller),
-      #info
-    );
     switch (
       pohVerificationRequestHelper(
         Principal.toText(caller),
