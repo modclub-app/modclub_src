@@ -13,15 +13,38 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check for .mo file changes
+        id: check-mo-file-change
+        run: |
+          # Get the base and head branches for the pull request
+          base_branch="${{ github.event.pull_request.base.ref }}"
+          head_branch="${{ github.event.pull_request.head.ref }}"
+
+          # List the changed files between the base and head branches
+          changed_files=$(git diff --name-only origin/"$base_branch" origin/"$head_branch")
+
+          echo $changed_files
+          # Check if any of the changed files are .mo files
+          if [[ $changed_files =~ .*\.mo ]]; then
+            echo "The PR contains changes to .mo files. Proceeding with the workflow."
+          else
+            echo "No changes to .mo files found in the PR. Skipping the workflow."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0  # Exit with status code 0 to indicate successful completion (skipping)
+          fi
+
       - name: Set Node.js 18.x
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
 
       - name: Set BYPASS_PROMPT_YES env variable
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: echo "BYPASS_PROMPT_YES=yes" >> $GITHUB_ENV
 
       - name: Set env variables
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           echo "DEV_ENV=qa" >> $GITHUB_ENV
           echo "COMMIT_SHA=${{ github.sha }}" >> $GITHUB_ENV
@@ -30,17 +53,20 @@ jobs:
           cat $GITHUB_ENV
 
       - name: yarn install
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         uses: borales/actions-yarn@v4
         with:
           cmd: install
 
       # Install dfx.
       - name: Install dfx
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
           dfx --version
 
       - name: Set up dfx identity
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           mkdir -p ~/.config/dfx/identity/default/
           echo "$IC_IDENTITY_FILE" > ~/.config/dfx/identity/default/identity.pem
@@ -50,6 +76,7 @@ jobs:
           IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_QA }}
 
       - name: Install vessel
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           wget https://github.com/dfinity/vessel/releases/download/v0.6.4/vessel-linux64
           mv vessel-linux64 vessel
@@ -58,10 +85,12 @@ jobs:
           vessel --version
 
       - name: dfx start
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           dfx start --background
 
       - name: Build BE canisters
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           source scripts/deployment/build_utils.sh
           source scripts/utils.sh
@@ -69,7 +98,7 @@ jobs:
 
       # Deploy using dfx. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
-
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: ./scripts/deployment/gh_actions_deploy.sh
           dfx canister call modclub_qa adminInit
           dfx canister call modclub_qa configurePohForProvider "(principal \"$(dfx canister id modclub_qa)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)"
@@ -80,12 +109,14 @@ jobs:
           OLD_MODCLUB_INSTANCE: la3yy-gaaaa-aaaah-qaiuq-cai
 
       - name: Seeding
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           ./scripts/infra/seed_content.sh
         env:
           DEV_ENV: qa
 
       - name: Run tests
+        if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           ./scripts/deployment/gh_pr_pipeline_test_runner.sh
         env:

@@ -15,6 +15,10 @@ function deploy_canisters() {
   export DEV_ENV=$env
   local env_vars=$(get_env_canisters_vars $env $network $old_modclub_inst)
 
+  # hardcode the ledger identities for now.
+  local ledger_minter_identity=qa_ledger_minter
+  local ledger_account_identity=qa_ledger_identity
+
   local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
   local rs_canister_name=$(get_canister_name_by_env $env "rs")
   local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
@@ -25,7 +29,7 @@ function deploy_canisters() {
   log "Deploy ${env} Canisters..."
 
   dfx_deploy ${auth_canister_name} --network=${network} --argument="'(${env_vars})'" &&
-  deploy_wallet_canister $env $network &&
+  deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
   deploy_vesting_canister $env $network $old_modclub_inst &&
   dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'" &&  
 
@@ -57,11 +61,28 @@ function deploy_wallet_canister() {
   local env=$1
   local network=$2
 
-  local ARCHIVE_CONTROLLER=$(dfx identity get-principal)
+  local ledger_minter_identity=$3
+  local ledger_account_identity=$4
+
+
+  if ! dfx identity use $ledger_minter_identity >/dev/null 2>&1; then
+		dfx identity new $ledger_minter_identity --disable-encryption
+	fi
+  dfx identity use $ledger_minter_identity
   local minter_principal=$(dfx identity get-principal)
+
+	if ! dfx identity use $ledger_account_identity >/dev/null 2>&1; then
+		dfx identity new $ledger_account_identity --disable-encryption
+	fi
+  dfx identity use $ledger_account_identity
   local ledger_acc_principal=$(dfx identity get-principal)
+
+  dfx identity use default 
+
+  local ARCHIVE_CONTROLLER=$(dfx identity get-principal)
   local airdrop_canister_name=$(get_canister_name_by_env $env "airdrop")
   local airdrop_canister_id=$(dfx canister id ${airdrop_canister_name} --network=${network})
+  
   local TOKEN_NAME="Modclub_Token"
   local TOKEN_SYMBOL=MODT
 

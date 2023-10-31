@@ -17,14 +17,15 @@ dfx ledger fabricate-cycles --canister $modclub
 dfx ledger fabricate-cycles --canister $modclub
 dfx ledger fabricate-cycles --canister $modclub
 
-LEDGER_IDENTITY="qa_ledger_identity"
+LEDGER_ACC_IDENTITY="qa_ledger_identity"
+LEDGER_MINTER_IDENTITY="qa_ledger_minter"
 PROVIDER_IDENTITY="qa_test_provider"
 create_provider_identity $PROVIDER_IDENTITY
 setup_provider qa $PROVIDER_IDENTITY
-add_token_for_submitting_task qa $PROVIDER_IDENTITY $LEDGER_IDENTITY
+add_token_for_submitting_task qa $PROVIDER_IDENTITY $LEDGER_ACC_IDENTITY
 create_text_content qa $PROVIDER_IDENTITY
 create_html_content qa $PROVIDER_IDENTITY
 # Additional ACCOUNT_PAYABLE tokens are required because content creation used up tokens.
-add_token_to_ACCOUNT_PAYABLE qa $LEDGER_IDENTITY
+add_token_to_ACCOUNT_PAYABLE qa $LEDGER_MINTER_IDENTITY
 
 dfx identity use default

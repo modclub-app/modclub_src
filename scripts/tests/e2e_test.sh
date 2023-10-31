@@ -1,13 +1,19 @@
 #!/bin/bash
-
+set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-printf "${GREEN}[TEST] ${YELLOW}NEW E2E Test module...${NC}\n"
 
+current_dir="$(dirname "$0")"
+ROOT_DIR="$current_dir/../../"
+
+source "${current_dir}/../utils.sh"
+source "${current_dir}/../seeds/add_token.sh"
+
+printf "${GREEN}[TEST] ${YELLOW}NEW E2E Test module...${NC}\n"
 dfx identity use default
 
 declare TOKEN_DECIMALS="_000_000"
@@ -24,7 +30,12 @@ declare SEED_BALANCE="100_000_000$TOKEN_DECIMALS"
 declare TEAM_BALANCE="160_000_000$TOKEN_DECIMALS"
 declare -i TEMP_BALANCE=0
 
-dfx identity use qa_ledger_identity
+
+LEDGER_ACCOUNT_IDENTITY=qa_ledger_identity
+LEDGER_MINTER_IDENTITY=qa_ledger_minter
+
+dfx identity use $LEDGER_ACCOUNT_IDENTITY # please make sure to use the same ledger account when deploy wallet canister
+
 declare LEDGER_ACCOUNT=$(dfx identity get-principal)
 declare MODCLUB_CANISTER_ID=$(dfx canister id modclub_qa)
 dfx identity use default
@@ -93,8 +104,9 @@ function failed() {
 	verify_balance "" $MAIN_BALANCE
 	verify_balance "----------------------------SEED" $SEED_BALANCE
 	verify_balance "----------------------------TEAM" $TEAM_BALANCE
+
 	#Modclub POH Payment
-	dfx identity use qa_ledger_minter
+	dfx identity use $LEDGER_MINTER_IDENTITY
 	dfx canister call wallet_qa icrc1_transfer '(record { to = record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "-----------------ACCOUNT_PAYABLE" }; amount = 10_000_000_000:nat })'
 
 	# create provider
@@ -108,14 +120,13 @@ function failed() {
 
 	dfx identity use default
 	dfx canister call auth_qa registerAdmin '(principal "'$DEPLOYER_ACCOUNT'")'
-	dfx canister call modclub_qa addToAllowList '(principal "'$TEST_PROVIDER_PRINCIPAL'" )'
+	dfx canister call modclub_qa addToAllowList '(principal "'$TEST_PROVIDER_PRINCIPAL'" )' || true
 
 	dfx identity use qa_test_provider
 	dfx canister call modclub_qa registerProvider '("TEMP_PROVIDER_NAME","TEMP_PROVIDER_DESCRIPTION", null)'
 	dfx canister call modclub_qa addProviderAdmin '(principal "'$TEST_PROVIDER_PRINCIPAL'" , "TEMP_PROVIDER_NAME", null)'
-	dfx canister call modclub_qa updateSettings '(principal "'$TEST_PROVIDER_PRINCIPAL'", record {requiredVotes=1; minStaked=0})'
 
-	dfx identity use qa_ledger_identity
+	dfx identity use $LEDGER_ACCOUNT_IDENTITY
 	echo "Transfering Tokens to QA_Provider main account..."
 	# For imitation that Provider has some amount of Tokens
 	declare provider_topUp_result=$(dfx canister call wallet_qa icrc1_transfer '( record { from_subaccount = opt blob "-------------------------RESERVE"; to = record { owner = principal "'$TEST_PROVIDER_PRINCIPAL'" }; amount = 10_000'$TOKEN_DECIMALS' } )')
@@ -135,6 +146,10 @@ function failed() {
 	dfx canister call wallet_qa icrc1_balance_of '( record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt blob "'$pSaReserve'" } )'
 	dfx identity use default
 	dfx canister call modclub_qa setRandomization '(false)'
+
+	add_token_to_ACCOUNT_PAYABLE qa $LEDGER_MINTER_IDENTITY
+	add_token_for_submitting_task qa qa_test_provider $LEDGER_ACCOUNT_IDENTITY
+	
 
 	# Submit a task and verify
 	echo "+++++++++++++++++++ Step 3: Call submitText and check amount of tokens  +++++++++++++++++++"
@@ -259,7 +274,7 @@ function failed() {
 	declare INIT_MOD_BALANCE=$(dfx canister call wallet_qa icrc1_balance_of '( record { owner = principal '"$MOD_PRINCIPAL"'; subaccount = opt '"$SUB_MOD"'} )'| cut -d '(' -f2 | cut -d':' -f1)
 
 	echo  $INIT_MOD_BALANCE
-	dfx identity use qa_ledger_identity
+	dfx identity use $LEDGER_ACCOUNT_IDENTITY
 	dfx canister call wallet_qa icrc1_transfer '( record { to = record { owner = principal '"$MOD_PRINCIPAL"'}; amount = 100_000'$TOKEN_DECIMALS' } )'
 	dfx identity use mod_test
 	dfx canister call wallet_qa icrc1_transfer '( record { to = record { owner = principal "'$MODCLUB_CANISTER_ID'"; subaccount = opt '"$SUB_MOD"'}; amount = 10_000'$TOKEN_DECIMALS' } )'
@@ -301,8 +316,12 @@ function failed() {
 	if [[ "$CAN_CLAIM" != "false" ]]; then
 		printf "${RED}[Incorrect] Should not able to Claim ${NC}\n"
 	fi
+
 	echo "############# MUST FAILED ##########"
+	set +e
 	dfx canister call modclub_qa claimLockedReward '('"$CLAIMS_MOD2_VAL"', null)'
 	failed
+	set -e
+
 	declare AFTER_CLAIMS2_VAL=$(dfx canister call vesting_qa locked_for '(record { owner = principal '"$MOD_PRINCIPAL2"' })'| cut -d '(' -f2 | cut -d':' -f1)
 	check_equal $AFTER_CLAIMS2_VAL $CLAIMS_MOD2_VAL

@@ -224,7 +224,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
     };
   };
 
-  //SNS generic validate function
+  // SNS generic validate function
   public shared ({ caller }) func validate(input : Any) : async CommonTypes.Validate {
     return #Ok("success");
   };

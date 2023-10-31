@@ -16,6 +16,7 @@ source "${ROOT_DIR}/scripts/seeds/gen_provider.sh"
 
 
 LEDGER_IDENTITY="qa_ledger_identity"
+LEDGER_MINTER_IDENTITY="qa_ledger_minter"
 PROVIDER_IDENTITY="qa_test_provider"
 
 read -p "Press any key to continue..."
@@ -177,7 +178,7 @@ function init_qa_content() {
   create_html_content qa $PROVIDER_IDENTITY
 
   # Additional ACCOUNT_PAYABLE tokens are required because content creation used up tokens.
-  add_token_to_ACCOUNT_PAYABLE qa $LEDGER_IDENTITY
+  add_token_to_ACCOUNT_PAYABLE qa $LEDGER_MINTER_IDENTITY
   log "Content has been created successfully."
 }
 
