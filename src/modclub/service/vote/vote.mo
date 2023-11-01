@@ -60,10 +60,16 @@ module VoteModule {
       return state.pohVotes.put(voteId, v);
     };
 
-    public func getPOHVotes(userId : Principal) : [Text] {
-      let buffer = Buffer.Buffer<Text>(1);
+    public func getPOHVotes(userId : Principal) : [VoteTypes.PohVote] {
+      let buffer = Buffer.Buffer<VoteTypes.PohVote>(1);
       for (voteId in state.mods2Pohvotes.get0(userId).vals()) {
-        buffer.add(voteId);
+        var v = getPOHVote(voteId);
+        switch (v) {
+          case (?vote) {
+            buffer.add(vote);
+          };
+          case null {};
+        };
       };
       return Buffer.toArray(buffer);
     };
@@ -155,7 +161,7 @@ module VoteModule {
         violatedRules = violatedRules;
         rsBeforeVoting = Float.fromInt(moderatorStats.score);
         level = moderatorStats.level;
-        createdAt = Time.now();
+        createdAt = Time.now(); // [TODO] should use Helpers.timeNow()
         lockedReward = null;
         totalReward = null;
         rsReceived = null;

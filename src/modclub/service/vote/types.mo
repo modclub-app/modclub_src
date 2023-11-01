@@ -1,5 +1,3 @@
-import Types "../../types";
-
 module {
 
   public type Decision = {
@@ -12,7 +10,7 @@ module {
     contentId : Text;
     userId : Principal;
     decision : Decision;
-    violatedRules : [Types.PohRulesViolated];
+    violatedRules : [PohRulesViolated];
     createdAt : Int;
   };
 
@@ -32,8 +30,13 @@ module {
     decision : Decision;
     rsBeforeVoting : Float;
     level : UserLevel;
-    violatedRules : [Types.PohRulesViolated];
+    violatedRules : [PohRulesViolated];
     createdAt : Int;
+  };
+
+  public type PohRulesViolated = {
+    challengeId : Text;
+    ruleId : Text;
   };
 
   // this is VoteV3
@@ -44,7 +47,7 @@ module {
     decision : Decision;
     rsBeforeVoting : Float;
     level : UserLevel;
-    violatedRules : [Types.PohRulesViolated];
+    violatedRules : [PohRulesViolated];
     createdAt : Int;
     totalReward : ?Float; // Once voting concludes, the rewards should be issued.
     lockedReward : ?Float;

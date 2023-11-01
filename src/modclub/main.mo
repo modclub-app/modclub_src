@@ -955,7 +955,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      ModeratorManager.getActivity(caller, isComplete, getVoteCount, stateV2)
+      ModeratorManager.getActivity(caller, isComplete, getVoteCount, stateV2, voteManager, pohContentQueueManager)
     ) {
       case (#ok(activity)) return activity;
       case (#err(#providerNotFound)) throw Error.reject(
@@ -965,16 +965,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#err(#voteNotFound)) throw Error.reject("Vote does not exist");
       case (_) throw Error.reject("Something went wrong");
     };
-  };
-
-  public query ({ caller }) func getPohActivity(isComplete : Bool) : async [
-    Text
-  ] {
-    // TODO: will add more content of this function in the next pr:
-    // See design doc: https://docs.google.com/document/d/1E0flySLltk2lTCaEHAjFHAqnKw1By2sWyPRsE7GXzaA/edit
-    // 1. Define a new return type: PohActivity
-    // 2. Implement the logic to construct PohActivity
-    voteManager.getPOHVotes(caller);
   };
 
   public shared ({ caller }) func canClaimLockedReward(amount : ?ICRCTypes.Tokens) : async Result.Result<Types.CanClaimLockedResponse, Text> {

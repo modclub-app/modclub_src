@@ -8,6 +8,7 @@ import HashMap "mo:base/HashMap";
 import Blob "mo:base/Blob";
 import JSON "mo:json/JSON";
 import ICRCTypes "../common/ICRCTypes";
+import PohTypes "service/vote/types"
 
 module {
   public type TransferToProviderArgs = {
@@ -81,6 +82,8 @@ module {
     // Image Data
     #imageBlob;
     #htmlContent;
+
+    #media;
   };
 
   public type Role = {
@@ -378,14 +381,15 @@ module {
   };
 
   public type Activity = {
-    vote : VoteV2;
+    vote : ?VoteV2;
+    pohVote : ?PohTypes.PohVote;
     providerId : ProviderId;
     providerName : Text;
     contentType : ContentType;
     status : ContentStatus;
     title : ?Text;
     createdAt : Timestamp;
-    updatedAt : Timestamp;
+    updatedAt : ?Timestamp;
     voteCount : Nat;
     requiredVotes : Nat;
     minStake : Nat;
@@ -422,10 +426,7 @@ module {
     };
   };
 
-  public type PohRulesViolated = {
-    challengeId : Text;
-    ruleId : Text;
-  };
+  public type PohRulesViolated = PohTypes.PohRulesViolated;
 
   public type Error = {
     #Unauthorized;

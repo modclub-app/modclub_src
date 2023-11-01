@@ -19,6 +19,8 @@ import RSTypes "../../../rs/types";
 import RSConstants "../../../rs/constants";
 import CommonTypes "../../../common/types";
 import ModSecurity "../../../common/security/guard";
+import VoteManager "../vote/vote";
+import QueueManager "../queue/queue";
 
 module ModeratorModule {
 
@@ -222,7 +224,9 @@ module ModeratorModule {
     moderatorId : Principal,
     isComplete : Bool,
     getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount,
-    state : GlobalState.State
+    state : GlobalState.State,
+    voteManager : VoteManager.VoteManager,
+    pohContentQueueManager : QueueManager.QueueManager
   ) : Result.Result<[Types.Activity], ModError> {
     let buf = Buffer.Buffer<Types.Activity>(0);
     label l for (vid in state.mods2votes.get0(moderatorId).vals()) {
@@ -239,16 +243,16 @@ module ModeratorModule {
               switch (state.providers.get(content.providerId)) {
                 case (?provider) {
                   let voteCount = getVoteCount(content.id, ?moderatorId);
-
                   let item : Types.Activity = {
-                    vote = vote;
+                    vote = ?vote;
+                    pohVote = null;
                     providerId = content.providerId;
                     providerName = provider.name;
                     contentType = content.contentType;
                     status = content.status;
                     title = content.title;
                     createdAt = content.createdAt;
-                    updatedAt = content.updatedAt;
+                    updatedAt = ?content.updatedAt;
                     voteCount = Nat.max(
                       voteCount.approvedCount,
                       voteCount.rejectedCount
@@ -282,6 +286,37 @@ module ModeratorModule {
         };
         case (_) return #err(#voteNotFound);
       };
+    };
+
+    var allPohVotes = voteManager.getPOHVotes(moderatorId);
+    label l for ((pohVote) in allPohVotes.vals()) {
+      var packageId = pohVote.contentId;
+      let finalDecision = pohContentQueueManager.getContentStatus(packageId);
+
+      if (finalDecision == #new and isComplete == true) {
+        continue l;
+      } else if (finalDecision != #new and isComplete == false) {
+        continue l;
+      };
+
+      let item : Types.Activity = {
+        vote = null; // This is pho Activity, hence no content vote
+        pohVote = ?pohVote;
+        providerId = pohVote.userId;
+        providerName = ""; // [TODO]
+        contentType = #media;
+        status = finalDecision;
+        title = ?"Poh Vote";
+        createdAt = pohVote.createdAt;
+        updatedAt = null;
+
+        voteCount = 0; // [TODO] needs clean up
+        requiredVotes = 0; // [TODO] needs clean up
+        minStake = 0; // [TODO] needs clean up
+        rewardRelease = Helpers.timeNow(); // [TODO] needs clean up
+        reward = -1; // [TODO] needs clean up
+      };
+      buf.add(item);
     };
     return #ok(Buffer.toArray<Types.Activity>(buf));
   };

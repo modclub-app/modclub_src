@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { formatDate } from "../../../utils/util";
 import { useConnect } from "@connect2icmodclub/react";
 import {
   Columns,
@@ -11,95 +10,19 @@ import {
   Icon,
 } from "react-bulma-components";
 import Userstats from "./Userstats";
-import Snippet from "../../common/snippet/Snippet";
-import * as Constant from "../../../utils/constant";
 import { modclub_types } from "../../../utils/types";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
-import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-
-const Table = ({
-  loading,
-  filteredActivity,
-  getLabel,
-  currentFilter,
-}: {
-  loading: Boolean;
-  filteredActivity: modclub_types.Activity[];
-  getLabel: (activity: string) => string;
-  currentFilter: string;
-}) => {
-  if (loading) {
-    return <div className="loader is-loading"></div>;
-  } else {
-    return (
-      <div className="table-container">
-        <table className="table is-striped">
-          <thead>
-            <tr>
-              <th>Your Vote</th>
-              <th>Final Vote</th>
-              <th>App</th>
-              <th>Title</th>
-              <th>Voted on</th>
-              <th>Total Reward</th>
-              <th>Locked Reward</th>
-              <th>Reputation Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredActivity.length ? (
-              filteredActivity.map((item) => (
-                <tr key={item.vote.id}>
-                  <td>
-                    {"approved" in item.vote.decision ? "Approved" : "Rejected"}
-                  </td>
-                  <td>
-                    {"new" in item.status
-                      ? "-"
-                      : "approved" in item.status
-                      ? "Approved"
-                      : "Rejected"}
-                  </td>
-                  <td>{item.providerName}</td>
-                  <td>
-                    <Snippet string={item.title[0]} truncate={15} />
-                  </td>
-                  <td>{formatDate(item.vote.createdAt)}</td>
-                  <td>
-                    {item.vote.totalReward.length === 0
-                      ? "0"
-                      : Number(item.vote.totalReward).toFixed(2)}
-                  </td>
-                  <td>
-                    {item.vote.lockedReward.length === 0
-                      ? "0"
-                      : Number(item.vote.lockedReward).toFixed(2)}
-                  </td>
-                  <td>
-                    {item.vote.rsReceived.length === 0
-                      ? "-"
-                      : Number(item.vote.rsReceived) / Constant.RS_FACTOR}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr className="is-relative">
-                <td colSpan={8}>No {getLabel(currentFilter)} Activity</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-};
+import { useAppState } from "../state_mgmt/context/state";
+import { Table } from "./ActivityTable";
 
 export default function Activity() {
   const { principal } = useConnect();
   const appState = useAppState();
   const { modclub } = useActors();
-  const [completedActivity, setCompletedActivity] = useState<Activity[]>([]);
+  const [completedActivity, setCompletedActivity] = useState<
+    modclub_types.Activity[]
+  >([]);
   const [inProgressActivity, setInProgressActivity] = useState<
     modclub_types.Activity[]
   >([]);

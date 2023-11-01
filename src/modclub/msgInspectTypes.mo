@@ -36,7 +36,6 @@ module {
     #editProviderAdmin : () -> (Principal, Principal, Text);
     #generateSigningKey : () -> ();
     #getActivity : () -> Bool;
-    #getPohActivity : () -> Bool;
     #getAdminProviderIDs : () -> ();
     #getAdmins : () -> ();
     #getAllContent : () -> Types.ContentStatus;
