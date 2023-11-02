@@ -2644,7 +2644,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     migrationAirdropWhitelistStable := List.fromArray<(Principal, Bool)>(Buffer.toArray<(Principal, Bool)>(migrationAirdropWhitelist));
 
     // TODO: remove this after upgrade
-    pohVoteStableStateV2 := voteManager.getStableState();
+    pohVoteStableStateV3 := voteManager.getStableState();
 
   };
 
@@ -2708,9 +2708,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     canistergeekLogger.setMaxMessagesCount(3000);
 
     // TODO: remove this after upgrade
-    pohVoteStableStateV3 := voteManager.migrateV2ToV3(pohVoteStableStateV2);
     voteManager := VoteManager.VoteManager(pohVoteStableStateV3);
-
+    pohVoteStableStateV3 := voteManager.migrateV2ToV3(pohVoteStableStateV2);
   };
 
   //SNS generic validate function
