@@ -362,9 +362,9 @@ module VoteModule {
     };
 
     public func migrateV2ToV3(pohVoteStableState2 : VoteStateV2.PohVoteStableState) : VoteStateV3.PohVoteStableState {
-      let buff = Buffer.Buffer<(Text, VoteTypes.PohVote)>(pohVoteStableState2.pohVotes.size());
+      let pohVotesBuff = Buffer.Buffer<(Text, VoteTypes.PohVote)>(pohVoteStableState2.pohVotes.size());
       for ((voteId, vote) in pohVoteStableState2.pohVotes.vals()) {
-        buff.add((
+        pohVotesBuff.add((
           voteId,
           {
             id = vote.id;
@@ -387,7 +387,7 @@ module VoteModule {
         approvedPohPackages = pohVoteStableState2.approvedPohPackages;
         rejectedPohPackages = pohVoteStableState2.rejectedPohPackages;
         package2Status = pohVoteStableState2.package2Status;
-        pohVotes = Buffer.toArray<(Text, VoteTypes.PohVote)>(buff);
+        pohVotes = Buffer.toArray<(Text, VoteTypes.PohVote)>(pohVotesBuff);
         pohContent2votes = pohVoteStableState2.pohContent2votes;
         mods2Pohvotes = pohVoteStableState2.mods2Pohvotes;
         autoApprovePOHUserIds = pohVoteStableState2.autoApprovePOHUserIds;

@@ -2708,8 +2708,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     canistergeekLogger.setMaxMessagesCount(3000);
 
     // TODO: remove this after upgrade
-    voteManager := VoteManager.VoteManager(pohVoteStableStateV3);
     pohVoteStableStateV3 := voteManager.migrateV2ToV3(pohVoteStableStateV2);
+    voteManager := VoteManager.VoteManager(pohVoteStableStateV3);
   };
 
   //SNS generic validate function
