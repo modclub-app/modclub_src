@@ -10,6 +10,7 @@ import {
   Heading,
   Icon,
   Button,
+  Notification,
 } from "react-bulma-components";
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
@@ -66,6 +67,7 @@ export default function Task() {
   const dispatch = useAppStateDispatch();
   const { taskId } = useParams<{ taskId: string }>();
   const [task, setTask] = useState(null);
+  const [error, setError] = useState(false);
   const [voted, setVoted] = useState<boolean>(true);
   const [level, setLevel] = useState<string>("");
   const [reserved, setReserved] = useState(false);
@@ -96,10 +98,20 @@ export default function Task() {
   };
 
   const fetchTask = async () => {
-    const content = await modclub.getContent(taskId);
-    const reservation = await modclub.getReservedByContentId(taskId);
-    setTask(content[0]);
-    setTimer(reservation);
+    try {
+      const content = await modclub.getContent(taskId);
+      const reservation = await modclub.getReservedByContentId(taskId);
+      setTask(content[0]);
+      if (content[0] == null) {
+        setError(true);
+      } else {
+        setError(false);
+      }
+      setTimer(reservation);
+    } catch (error) {
+      setError(true);
+      console.error(error);
+    }
   };
 
   const fetchData = async () => {
@@ -180,9 +192,13 @@ export default function Task() {
   return (
     <>
       <Userstats />
-
+      {error && (
+        <Notification color={"danger"} className="has-text-centered">
+          {Constant.DATA_REMOVE_MSG}
+        </Notification>
+      )}
       {!task ? (
-        <div className="loader is-loading p-4 mt-6" />
+        <>{!error && <div className="loader is-loading p-4 mt-6" />}</>
       ) : (
         <Columns>
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
