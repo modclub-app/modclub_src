@@ -22,7 +22,7 @@ const renderRow = (vote, item: modclub_types.Activity, isPoh: boolean) => (
     </td>
     <td>{item.providerName}</td>
     <td>
-      <Snippet string={item.title[0]} truncate={15} />
+      <Snippet string={item.title[0]} truncate={15} linkId={item.vote[0] ? `tasks/${item.vote[0].contentId}` : ''} isPoh={isPoh}/>
     </td>
     <td>
       {isPoh
