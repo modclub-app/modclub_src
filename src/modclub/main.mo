@@ -1000,11 +1000,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared ({ caller }) func claimLockedReward(amount : ICRCTypes.Tokens, customReceiver : ?Principal) : async Result.Result<Bool, Text> {
     if (not ModeratorManager.canClaimReward(caller, claimRewardsWhitelistBuf)) {
-      return throw Error.reject("Moderator not permitted to claim locked Tokens.");
+      return #err("Moderator not permitted to claim locked Tokens.");
     };
     let moderator = switch (ModeratorManager.getProfile(caller, stateV2)) {
       case (#ok(p)) p;
-      case (_)(throw Error.reject("Moderator does not exist"));
+      case (_)(return #err("Moderator does not exist"));
     };
     let moderatorAcc = {
       owner = caller;
@@ -1019,9 +1019,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let stakedAmount = await vestingActor.staked_for(moderatorAcc);
     let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
     if (stakedAmount < minStake) {
-      return throw Error.reject("You MUST stake amount of tokens to claim locked Tokens.");
+      return #err("You MUST stake amount of tokens to claim locked Tokens.");
     };
-
+    if (amount <= 0 ){
+      return #err("Amount of tokens must be greater than 0 to claim locked Tokens.");
+    }else if (lockedAmount < amount) {
+      return #err("Claim amount cannot exceed the locked Tokens.");
+    };
     let reduceReputation = (lockedAmount - amount) < minStake;
     let claimRes = await vestingActor.claim_vesting(moderatorAcc, amount);
     switch (claimRes) {
@@ -1046,7 +1050,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
         #ok(true);
       };
-      case (#err(e)) { return throw Error.reject(e) };
+      case (#err(e)) { return #err(e) };
     };
   };
 
