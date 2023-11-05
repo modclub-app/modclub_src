@@ -9,7 +9,16 @@ const PR_NUMBER = process.env.PR_NUMBER;
 const COMMIT_SHA = process.env.COMMIT_SHA;
 const LAST_DEPLOYMENT_TAG = process.env.LAST_DEPLOYMENT_TAG;
 const DEPLOYMENT_TAG = process.env.DEPLOYMENT_TAG;
-const WHATS_NEW_SINCE_LAST_DEP = process.env.WHATS_NEW_SINCE_LAST_DEP;
+
+let WHATS_NEW_SINCE_LAST_DEP = process.env.WHATS_NEW_SINCE_LAST_DEP;
+
+// https://api.slack.com/methods/chat.postMessage#:~:text=Ideally%2C%20messages%20should%20be%20short,containing%20more%20than%2040%2C000%20characters.
+SLACK_MSG_LEN_LIMIT = 4000;
+if (WHATS_NEW_SINCE_LAST_DEP.length >= SLACK_MSG_LEN_LIMIT) {
+  WHATS_NEW_SINCE_LAST_DEP =
+    WHATS_NEW_SINCE_LAST_DEP.substring(0, SLACK_MSG_LEN_LIMIT - 3) + "...";
+  // TODO: could use chatgpt api to summarize the content instead of truncate the value
+}
 
 const template = {
   blocks: [
