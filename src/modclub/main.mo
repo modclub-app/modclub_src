@@ -46,8 +46,7 @@ import MsgInspectTypes "msgInspectTypes";
 import EmailManager "./service/email/email";
 import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
-import VoteState "./service/vote/statev2";
-import VoteStateV2 "./service/vote/statev2";
+
 import VoteStateV3 "./service/vote/pohVoteState";
 
 import RSTypes "../rs/types";
@@ -92,10 +91,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     provider2ProviderUserId2Ip,
     provider2Ip2Wallet
   );
-
-  // TODO: remove these after upgrade
-  stable var pohVoteStableState = VoteState.emptyStableState();
-  stable var pohVoteStableStateV2 = VoteStateV2.emptyStableState();
 
   stable var pohVoteStableStateV3 = VoteStateV3.emptyStableState();
   var voteManager = VoteManager.VoteManager(pohVoteStableStateV3);
@@ -2635,7 +2630,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     pohCallbackDataByProvider := pohCombinedStableState.1;
     provider2ProviderUserId2Ip := pohCombinedStableState.2;
     provider2Ip2Wallet := pohCombinedStableState.3;
-    pohVoteStableStateV2 := voteManager.getStableState();
     contentStableState := contentState.getStableState();
     emailStableState := emailManager.getStableState();
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
@@ -2712,7 +2706,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     canistergeekLogger.setMaxMessagesCount(3000);
 
     // TODO: remove this after upgrade
-    pohVoteStableStateV3 := voteManager.migrateV2ToV3(pohVoteStableStateV2);
     voteManager := VoteManager.VoteManager(pohVoteStableStateV3);
   };
 
