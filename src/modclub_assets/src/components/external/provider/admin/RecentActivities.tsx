@@ -10,12 +10,16 @@ import {
   Dropdown,
   Icon,
 } from "react-bulma-components";
-import { useProfile } from "../../../contexts/profile";
-import { useActors } from "../../../hooks/actors";
-import { Table } from "../profile/ActivityTable";
+import { useActors } from "../../../../hooks/actors";
+// import { Table } from "../profile/ActivityTable";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../../app/state_mgmt/context/state";
 
 export default function AdminActivity() {
-  const { selectedProvider } = useProfile();
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const { modclub } = useActors();
   const [approvedActivity, setApprovedActivity] = useState([]);
   const [inProgressActivity, setInProgressActivity] = useState([]);
@@ -43,7 +47,7 @@ export default function AdminActivity() {
   });
 
   const history = useHistory();
-  if (!selectedProvider) {
+  if (!appState.selectedProvider) {
     history.push("/app");
   }
   const getLabel = (label: string) => {
@@ -52,11 +56,7 @@ export default function AdminActivity() {
     if (label === "rejected") return "Rejected";
   };
 
-  const getProviderContent = async (
-    selectedProvider,
-    selectedFilter,
-    doNotFetchExisting
-  ) => {
+  const getProviderContent = async (selectedFilter, doNotFetchExisting) => {
     let status = {};
     status[selectedFilter] = null;
     const startIndex = page[selectedFilter].startIndex;
@@ -72,7 +72,7 @@ export default function AdminActivity() {
       doNotFetchExisting
         ? []
         : await modclub.getProviderContent(
-            selectedProvider.id,
+            appState.selectedProvider.id,
             status,
             BigInt(startIndex),
             BigInt(endIndex)
@@ -116,16 +116,16 @@ export default function AdminActivity() {
       endIndex: start + PAGE_SIZE,
     };
     setPage({ ...page, ...page });
-    selectedProvider &&
+    appState.selectedProvider &&
       !loading &&
-      getProviderContent(selectedProvider, currentFilter, false);
+      getProviderContent(appState.selectedProvider, currentFilter, false);
   };
 
   useEffect(() => {
-    if (selectedProvider) {
-      getProviderContent(selectedProvider, "new", false);
+    if (appState.selectedProvider) {
+      getProviderContent(appState.selectedProvider, "new", false);
     }
-  }, [selectedProvider]);
+  }, [appState.selectedProvider]);
 
   return (
     <>
@@ -170,7 +170,11 @@ export default function AdminActivity() {
                     className="has-text-white mr-0"
                     onClick={() => {
                       setCurrentFilter(filter);
-                      getProviderContent(selectedProvider, filter, true);
+                      getProviderContent(
+                        appState.selectedProvider,
+                        filter,
+                        true
+                      );
                     }}
                   >
                     {getLabel(filter)}
@@ -184,7 +188,8 @@ export default function AdminActivity() {
         <Columns.Column size={12}>
           <Card>
             <Card.Content>
-              <Table
+              <h2>ActivityTable</h2>
+              {/* <Table
                 loading={loading}
                 filteredActivity={
                   currentFilter == "new"
@@ -195,7 +200,7 @@ export default function AdminActivity() {
                 }
                 getLabel={getLabel}
                 currentFilter={currentFilter}
-              />
+              /> */}
             </Card.Content>
           </Card>
         </Columns.Column>

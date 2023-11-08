@@ -11,6 +11,7 @@ import HowTo from "./HowTo";
 import Logout from "../auth/Logout";
 import Airdrop from "./Airdrop/Airdrop";
 import MigratedUsersAirdrop from "./migrated_users_airdrop/index";
+import ProviderApp from "./provider/App";
 
 export default function External() {
   return (
@@ -22,6 +23,7 @@ export default function External() {
         <Route path="/signup" component={NewProfile} />
         <Route path="/new-poh-profile" component={NewPohProfile} />
         <Route path="/admin-identity" component={AdminIdentity} />
+        <Route path="/provider" component={ProviderApp} />
         <Route path="/privacy" component={Privacy} />
         <Route path="/terms" component={Terms} />
         <Route path="/how-to" component={HowTo} />

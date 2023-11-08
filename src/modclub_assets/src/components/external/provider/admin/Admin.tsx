@@ -11,26 +11,28 @@ import {
   Notification,
 } from "react-bulma-components";
 import { Link } from "react-router-dom";
+
 import TrustedIdentities from "./TrustedIdentities";
-import walletImg from "../../../../assets/wallet.svg";
-import stakedImg from "../../../../assets/staked.svg";
+import walletImg from "../../../../../assets/wallet.svg";
+import stakedImg from "../../../../../assets/staked.svg";
 import EditProviderLogo from "./EditProviderLogo";
 import EditRulesModal from "./EditRulesModal";
 import RemoveRuleModal from "./RemoveRuleModal";
 import EditAppModal from "./EditAppModal";
+import { convert_to_mod, getUrlFromArray } from "../../../../utils/util";
+import Deposit from "../../../app/modals/Deposit";
+import { useActors } from "../../../../hooks/actors";
 import {
-  convert_to_mod,
-  getUrlFromArray,
-} from "../../../utils/util";
-import Deposit from "../modals/Deposit";
-import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+  useAppState,
+  useAppStateDispatch,
+} from "../../../app/state_mgmt/context/state";
 
-export default function Admin({
-  selectedProvider,
-  providerIdText,
-  setSelectedProvider,
-  providers,
-}) {
+export default function Admin() {
+  const { modclub } = useActors();
+  const [providers, setProviders] = useState([]);
+  const [selectedProvider, setSelectedProvider] = useState(null);
+  const providerIdText = "";
+
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
   const appState = useAppState();
@@ -46,9 +48,9 @@ export default function Admin({
   };
   const [rules, setRules] = useState([]);
 
-  const imgMetaData = selectedProvider.image[0];
+  const imgMetaData = appState.selectedProvider?.image[0];
   if (imgMetaData) {
-    selectedProvider.image[0].src = getUrlFromArray(
+    appState.selectedProvider.image[0].src = getUrlFromArray(
       imgMetaData.data,
       imgMetaData.imageType
     );
@@ -64,28 +66,23 @@ export default function Admin({
 
   const updateProvider = () => {
     providers.map((prvd) => {
-      if (
-        prvd.id === selectedProvider.id ||
-        prvd.id.toString() == selectedProvider.id.toString()
-      ) {
-        prvd = selectedProvider;
+      if (prvd.id.toString() == appState.selectedProvider.id.toString()) {
+        prvd = appState.selectedProvider;
       }
     });
   };
 
   useEffect(() => {
-    let adminInit = () => {
-      if (selectedProvider) {
-        setRules(selectedProvider.rules);
-      }
-    };
-    adminInit();
-  }, []);
+    if (appState.selectedProvider) {
+      setRules(appState.selectedProvider.rules);
+    }
+  }, [appState.selectedProvider]);
 
   const toggle = () => setShowModal(false);
+
   return (
     <>
-      {selectedProvider == null && providers.length != 0 ? (
+      {appState.selectedProvider == null && providers.length != 0 ? (
         <Modal show={showModal} onClose={toggle} showClose={true}>
           <Modal.Card backgroundColor="circles">
             <Modal.Card.Body>
@@ -122,7 +119,7 @@ export default function Admin({
           {imageUploadedMsg.value}
         </Notification>
       )}
-      {selectedProvider != null && (
+      {appState.selectedProvider != null && (
         <Columns>
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
             <Card className="is-fullheight">
@@ -135,7 +132,7 @@ export default function Admin({
                   >
                     <EditProviderLogo
                       principalID={providerIdText}
-                      selectedProvider={selectedProvider}
+                      selectedProvider={appState.selectedProvider}
                       setImageUploadedMsg={setImageUploadedMsg}
                     />
                   </Media.Item>
@@ -144,17 +141,11 @@ export default function Admin({
                       <tbody>
                         <tr>
                           <td>App Name:</td>
-                          <td>
-                            {!!selectedProvider ? selectedProvider.name : ""}
-                          </td>
+                          <td> {appState.selectedProvider?.name} </td>
                         </tr>
                         <tr>
                           <td>Description:</td>
-                          <td>
-                            {!!selectedProvider
-                              ? selectedProvider.description
-                              : ""}
-                          </td>
+                          <td> {appState.selectedProvider?.description} </td>
                         </tr>
                       </tbody>
                     </table>
@@ -176,26 +167,24 @@ export default function Admin({
                     <tr>
                       <td>Total Content Submitted</td>
                       <td>
-                        {!!selectedProvider
-                          ? selectedProvider.contentCount.toString()
-                          : "0"}
+                        {appState.selectedProvider?.contentCount?.toString() ||
+                          "0"}
                       </td>
                     </tr>
                     <tr>
                       <td>Content in Review</td>
                       <td>
-                        {!!selectedProvider
-                          ? selectedProvider.activeCount.toString()
-                          : "0"}
+                        {appState.selectedProvider?.activeCount?.toString() ||
+                          "0"}
                       </td>
                     </tr>
                     <tr>
                       <td>Content Reviewed</td>
                       <td>
-                        {!!selectedProvider
+                        {!!appState.selectedProvider
                           ? (
-                              selectedProvider.contentCount -
-                              selectedProvider.activeCount
+                              appState.selectedProvider.contentCount -
+                              appState.selectedProvider.activeCount
                             ).toString()
                           : "0"}
                       </td>
@@ -206,7 +195,7 @@ export default function Admin({
                     </tr> */}
                   </tbody>
                 </table>
-                <Link to="/app/admin/activity/" className="button ml-6">
+                <Link to="/provider/admin/activity/" className="button ml-6">
                   See Recent Activity
                 </Link>
               </Card.Content>
@@ -287,44 +276,27 @@ export default function Admin({
 
       <TrustedIdentities
         provider={providerIdText}
-        selectedProvider={selectedProvider}
+        selectedProvider={appState.selectedProvider}
       />
 
-      {showEditApp && (
-        <EditAppModal
-          toggle={toggleEditApp}
-          principalID={providerIdText}
-          selectedProvider={selectedProvider}
-          updateProvider={updateProvider}
-        />
-      )}
+      {showEditApp && <EditAppModal toggle={toggleEditApp} />}
 
       {showEditRules && (
         <EditRulesModal
           rules={rules}
           toggle={toggleEditRules}
-          principalID={providerIdText}
           updateState={setRules}
-          selectedProvider={selectedProvider}
-          updateProvider={updateProvider}
         />
       )}
 
       {showRemoveRule && (
-        <RemoveRuleModal
-          toggle={toggleRemoveRule}
-          rule={ruleToRemove}
-          principalID={providerIdText}
-          updateState={setRules}
-          selectedProvider={selectedProvider}
-          updateProvider={updateProvider}
-        />
+        <RemoveRuleModal toggle={toggleRemoveRule} rule={ruleToRemove} />
       )}
-      {isDepositOpen && selectedProvider && (
+      {isDepositOpen && appState.selectedProvider && (
         <Deposit
           toggle={toggleDeposit}
-          provider={selectedProvider.id.toString()}
-          isProvider={true} 
+          provider={appState.selectedProvider.id.toString()}
+          isProvider={true}
         />
       )}
     </>

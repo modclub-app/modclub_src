@@ -52,10 +52,25 @@ export async function asyncReducers(asyncState, action) {
           isAdminUser = true;
         }
       } catch (e) {
-        console.error("Error fetching showAdmins::", e);
         isAdminUser = false;
       }
       return { ...state, isAdminUser };
+    }
+    case "fetchUserProviders": {
+      let userProviders = state.userProviders;
+      let selectedProvider = state.selectedProvider;
+      try {
+        if (context.actors.modclub) {
+          const actor = context.actors.modclub.value;
+          userProviders = await actor.getAdminProviderIDs();
+          if (userProviders[0]) {
+            selectedProvider = await actor.getProvider(userProviders[0]);
+          }
+        }
+      } catch (e) {
+        console.error("Error fetchUserProviders::", e);
+      }
+      return { ...state, userProviders, selectedProvider };
     }
     case "fetchDecimals": {
       let decimals = state.decimals;
@@ -237,12 +252,12 @@ export async function asyncReducers(asyncState, action) {
     }
     case "fetchProviderBalance": {
       let providerBalance = state.providerBalance;
-      let providerBalanceLoading = !state.providerBalanceLoading;
+      let providerBalanceLoading = false;
       try {
-        if (context.actors.modclub && state.userProfile) {
+        if (context.actors.modclub && state.selectedProvider.id) {
           const actor = context.actors.modclub.value;
           providerBalance = await actor.providerSaBalance("RESERVE", [
-            state.providerId,
+            state.selectedProvider.id,
           ]);
         }
       } catch (e) {

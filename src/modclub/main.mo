@@ -1127,9 +1127,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (stakedAmount < minStake) {
       return #err("You MUST stake amount of tokens to claim locked Tokens.");
     };
-    if (amount <= 0 ){
+    if (amount <= 0) {
       return #err("Amount of tokens must be greater than 0 to claim locked Tokens.");
-    }else if (lockedAmount < amount) {
+    } else if (lockedAmount < amount) {
       return #err("Claim amount cannot exceed the locked Tokens.");
     };
     let reduceReputation = (lockedAmount - amount) < minStake;
@@ -2378,6 +2378,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       },
       canistergeekLogger
     );
+  };
+
+  public query ({ caller }) func isProviderAdmin() : async Bool {
+    return ProviderManager.isProviderAdmin(caller, stateV2);
   };
 
   public shared ({ caller }) func editProviderAdmin(

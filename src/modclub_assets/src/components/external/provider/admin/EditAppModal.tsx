@@ -1,21 +1,26 @@
 import { Field } from "react-final-form";
-import FormModal from "../modals/FormModal";
+import FormModal from "../../../app/modals/FormModal";
 import { Principal } from "@dfinity/principal";
-import { useActors } from "../../../hooks/actors";
+import { useActors } from "../../../../hooks/actors";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../../app/state_mgmt/context/state";
 
-const EditAppModal = ({
-  toggle,
-  principalID,
-  selectedProvider,
-  updateProvider,
-}) => {
+const EditAppModal = ({ toggle }) => {
   const { modclub } = useActors();
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const onFormSubmit = async (values: any) => {
-    await modclub.updateProvider(Principal.fromText(principalID), values);
-    selectedProvider.name = values.name;
-    selectedProvider.description = values.description;
-    updateProvider();
-    return "App Edited Successfully";
+    try {
+      await modclub.updateProvider(appState.selectedProvider.id, values);
+      dispatch({ type: "fetchUserProviders" });
+      return (
+        "Provider " + appState.selectedProvider?.name + " updated successfully."
+      );
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
@@ -28,7 +33,7 @@ const EditAppModal = ({
             type="text"
             className="input"
             placeholder="App Name"
-            initialValue={!!selectedProvider ? selectedProvider.name : ""}
+            initialValue={appState.selectedProvider?.name}
           />
         </div>
       </div>
@@ -40,9 +45,7 @@ const EditAppModal = ({
             component="textarea"
             className="textarea"
             placeholder="App Description"
-            initialValue={
-              !!selectedProvider ? selectedProvider.description : ""
-            }
+            initialValue={appState.selectedProvider?.description}
           />
         </div>
       </div>

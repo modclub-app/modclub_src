@@ -11,6 +11,7 @@ import Int "mo:base/Int";
 import Nat "mo:base/Nat";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
+import Array "mo:base/Array";
 
 import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
@@ -492,7 +493,9 @@ module ProviderModule {
       case (null) return #err(#NotFound);
       case (?adminMap) {
         adminMap.delete(arg.providerAdminPrincipalId);
-        state.profiles.delete(arg.providerAdminPrincipalId);
+        // -- Causes the BUG with removing all previously( before moder became a providerAdmin ) existed data
+        // state.profiles.delete(arg.providerAdminPrincipalId);
+        state.admin2Provider.delete(arg.providerAdminPrincipalId, arg.providerId);
         return #ok();
       };
     };
@@ -637,16 +640,12 @@ module ProviderModule {
   };
 
   public func isProviderAdmin(
-    providerId : Principal,
+    adminId : Principal,
     state : GlobalState.State
   ) : Bool {
-    switch (state.providersWhitelist.get(providerId)) {
-      case (null) {
-        return false;
-      };
-      case (?p) {
-        return true;
-      };
+    switch (state.admin2Provider.get0(adminId)) {
+      case (list) Array.size(list) > 0;
+      case (_) return false;
     };
   };
 

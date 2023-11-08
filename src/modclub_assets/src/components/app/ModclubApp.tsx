@@ -168,11 +168,7 @@ export default function ModclubApp() {
 
   useEffect(() => {
     if (!isJwtSet) {
-      if (appState.userProfile?.role?.hasOwnProperty("admin")) {
-        history.push("/app/admin");
-      } else {
-        isConnected && appState.userProfile && initialCall();
-      }
+      isConnected && appState.userProfile && initialCall();
     }
   }, [appState.userProfile, isConnected]);
 
@@ -242,11 +238,6 @@ export default function ModclubApp() {
               <Activity />
             </Route>
             <AdminRoute
-              path="/app/admin/activity/"
-              component={AdminActivity}
-              appState={appState}
-            />
-            <AdminRoute
               path="/app/leaderboard"
               component={Leaderboard}
               appState={appState}
@@ -254,24 +245,9 @@ export default function ModclubApp() {
             <Route exact path="/app/confirm/poh/alerts/:userID+">
               <AlertConfirmation />
             </Route>
-            {appState.userProfile ? (
-              <Route exact path="/app/admin">
-                {selectedProvider ? (
-                  <Admin
-                    selectedProvider={selectedProvider}
-                    providerIdText={providerIdText}
-                    setSelectedProvider={setSelectedProvider}
-                    providers={providers}
-                  />
-                ) : (
-                  <Tasks />
-                )}
-              </Route>
-            ) : (
-              <Route exact path="/app">
-                <Tasks />
-              </Route>
-            )}
+            <Route exact path="/app">
+              <Tasks />
+            </Route>
           </Switch>
         </Columns.Column>
       </Columns>

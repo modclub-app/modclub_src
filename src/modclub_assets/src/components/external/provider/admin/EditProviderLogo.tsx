@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import { Media, Image, Icon } from "react-bulma-components";
 import { Principal } from "@dfinity/principal";
-import { ImageData } from "../../../utils/types";
-import placeholder from "../../../../assets/user_placeholder.png";
-import { getUrlFromArray } from "../../../utils/util";
-import { useActors } from "../../../hooks/actors";
+import { ImageData } from "../../../../utils/types";
+import placeholder from "../../../../../assets/user_placeholder.png";
+import { getUrlFromArray } from "../../../../utils/util";
+import { useActors } from "../../../../hooks/actors";
 
 const EditProviderLogo = ({
   principalID,
