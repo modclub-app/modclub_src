@@ -17,7 +17,7 @@ export const initialState = {
   claimRewardPrice: 0,
   stakeBalance: 0,
   rs: { level: "", score: 0 },
-  rsLoading:false,
+  rsLoading: false,
   leaderboardContent: [],
   contentModerationTasks: [],
   moderationTasksLoading: false,
@@ -35,4 +35,8 @@ export const initialState = {
   providerId: null,
   pohReservedContent: null,
   contentReservedTime: 0,
+  contentProvidersFilter: null,
+  contentCategoriesFilter: null,
+  contentCategories: [],
+  contentProviders: [],
 };

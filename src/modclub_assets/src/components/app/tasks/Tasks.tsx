@@ -1,7 +1,15 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
-import { Modal, Columns, Card, Heading, Button } from "react-bulma-components";
+import {
+  Modal,
+  Columns,
+  Card,
+  Heading,
+  Button,
+  Dropdown,
+  Icon,
+} from "react-bulma-components";
 import RulesList from "../tasks/RulesList";
 import Userstats from "../profile/Userstats";
 import { fileToImgSrc, formatDate, unwrap } from "../../../utils/util";
@@ -54,10 +62,9 @@ const Task = ({ task }) => {
       <Card>
         <Card.Header>
           <Card.Header.Title>
-            {task.providerName}
-            <span>
-              Submitted by {task.sourceId} {formatDate(task.createdAt)}
-            </span>
+            <span> Submitted by </span> {":  " + task.providerName}
+            <span> {formatDate(task.createdAt)} </span>
+            <span>Category</span> {":  " + task.contentCategory}
           </Card.Header.Title>
         </Card.Header>
         <Card.Content>
@@ -112,6 +119,19 @@ export default function Tasks() {
   const [hasReachedEnd, setHasReachedEnd] = useState<boolean>(false);
   const { modclub, rs } = useActors();
 
+  const setFilterByProvider = (val) => {
+    dispatch({
+      type: "setContentProvidersFilter",
+      payload: val,
+    });
+  };
+  const setFilterByCategory = (val) => {
+    dispatch({
+      type: "setContentCategoriesFilter",
+      payload: val,
+    });
+  };
+
   useEffect(() => {
     if (
       modclub &&
@@ -135,7 +155,7 @@ export default function Tasks() {
     ) {
       dispatch({
         type: "refetchContentModerationTasks",
-        payload: FILTER_VOTES,
+        payload: { FILTER_VOTES },
       });
     }
   }, [appState.moderationTasksPage]);
@@ -145,6 +165,13 @@ export default function Tasks() {
       appState.contentModerationTasks.length < appState.moderationTasksPageSize
     );
   }, [appState.contentModerationTasks.length]);
+
+  useEffect(() => {
+    if (modclub) {
+      dispatch({ type: "fetchContentCategories" });
+      dispatch({ type: "fetchContentProviders" });
+    }
+  }, [modclub]);
 
   const nextPage = () => {
     let nextPageNum = appState.moderationTasksPage + 1;
@@ -158,13 +185,133 @@ export default function Tasks() {
     });
   };
 
+  const fetchByFilters = () => {
+    dispatch({
+      type: "refetchContentModerationTasks",
+      payload: { FILTER_VOTES },
+    });
+  };
+
   return (
     <>
       <Userstats />
       {appState.moderationTasksLoading ? (
-        <div className="loader is-loading p-5"></div>
+        <div className="loader is-loading p-5">
+        </div>
       ) : (
         <Columns>
+          {appState.contentModerationTasks.length > 0 ? (
+            <Columns.Column size={12}>
+              <Card>
+                <Card.Content>
+                  <Heading subtitle>Filter Tasks</Heading>
+                  <Columns>
+                    <Columns.Column size={4}>
+                      <span>By Provider:</span>
+                      <Dropdown
+                        className="mr-5"
+                        right
+                        label={appState.contentProviders.reduce(
+                          (l, p) =>
+                            p.id == appState.contentProvidersFilter
+                              ? p.name
+                              : l,
+                          ""
+                        )}
+                        icon={
+                          <Icon color="white">
+                            <span className="material-icons">expand_more</span>
+                          </Icon>
+                        }
+                      >
+                        <Dropdown.Item
+                          key={null}
+                          value={null}
+                          renderAs="a"
+                          className={
+                            !appState.contentProvidersFilter && "is-active"
+                          }
+                          onMouseDown={() => setFilterByProvider(null)}
+                        >
+                          {"none"}
+                        </Dropdown.Item>
+                        {appState.contentProviders.map((p) => (
+                          <Dropdown.Item
+                            key={p.id}
+                            value={p.id}
+                            renderAs="a"
+                            className={
+                              p.id == appState.contentProvidersFilter &&
+                              "is-active"
+                            }
+                            onMouseDown={() => setFilterByProvider(p.id)}
+                          >
+                            {p.name}
+                          </Dropdown.Item>
+                        ))}
+                      </Dropdown>
+                    </Columns.Column>
+                    <Columns.Column size={4}>
+                      <span>By Category:</span>
+                      <Dropdown
+                        className="mr-5"
+                        right
+                        label={appState.contentCategories.reduce(
+                          (l, c) =>
+                            c.id == appState.contentCategoriesFilter
+                              ? c.title
+                              : l,
+                          ""
+                        )}
+                        icon={
+                          <Icon color="white">
+                            <span className="material-icons">expand_more</span>
+                          </Icon>
+                        }
+                      >
+                        <Dropdown.Item
+                          key={null}
+                          value={null}
+                          renderAs="a"
+                          className={
+                            !appState.contentCategoriesFilter && "is-active"
+                          }
+                          onMouseDown={() => setFilterByCategory(null)}
+                        >
+                          {"none"}
+                        </Dropdown.Item>
+                        {appState.contentCategories.map((c) => (
+                          <Dropdown.Item
+                            key={c.id}
+                            value={c.id}
+                            renderAs="a"
+                            className={
+                              c.id == appState.contentCategoriesFilter &&
+                              "is-active"
+                            }
+                            onMouseDown={() => setFilterByCategory(c.id)}
+                          >
+                            {c.title}
+                          </Dropdown.Item>
+                        ))}
+                      </Dropdown>
+                    </Columns.Column>
+                    <Columns.Column size={2}>
+                      <Button
+                        color="primary"
+                        style={{ marginTop: "20px" }}
+                        onClick={fetchByFilters}
+                        className="ml-4 px-7 py-3"
+                      >
+                        Fetch
+                      </Button>
+                    </Columns.Column>
+                  </Columns>
+                </Card.Content>
+              </Card>
+            </Columns.Column>
+          ):(<div className="loader is-loading p-5">
+        </div>)}
           {appState.contentModerationTasks.length > 0 &&
             appState.contentModerationTasks.map((task) => (
               <Task key={task.id} task={task} />

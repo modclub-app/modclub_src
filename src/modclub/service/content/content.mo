@@ -1,5 +1,6 @@
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
+import HashMap "mo:base/HashMap";
 import Canistergeek "../../../common/canistergeek/canistergeek";
 import Debug "mo:base/Debug";
 import GlobalState "../../statev2";
@@ -29,7 +30,8 @@ module ContentModule {
     contentId : Text,
     voteCount : Types.VoteCount,
     globalState : GlobalState.State,
-    storage : StorageSolution.StorageSolution
+    storage : StorageSolution.StorageSolution,
+    content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>
   ) : async ?Types.ContentPlus {
     switch (globalState.content.get(contentId)) {
       case (?content) {
@@ -48,6 +50,7 @@ module ContentModule {
               hasVoted = ?voteCount.hasVoted;
               providerId = content.providerId;
               contentType = content.contentType;
+              contentCategory = Option.get<Types.CategoryId>(content2Category.get(content.id), "");
               status = content.status;
               sourceId = content.sourceId;
               title = content.title;
@@ -133,6 +136,7 @@ module ContentModule {
     common.globalState.content.put(content.id, content);
     common.globalState.provider2content.put(common.caller, content.id);
     common.globalState.textContent.put(content.id, textContent);
+
     arg.contentQueueManager.changeContentStatus(content.id, #new);
     return content.id;
   };
@@ -184,7 +188,8 @@ module ContentModule {
   };
 
   public func getProviderContent(
-    arg : ContentTypes.ProviderContentArg
+    arg : ContentTypes.ProviderContentArg,
+    content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>
   ) : async [Types.ContentPlus] {
     let buf = Buffer.Buffer<Types.ContentPlus>(0);
     let maxReturn : Nat = arg.end - arg.start;
@@ -196,7 +201,7 @@ module ContentModule {
           case (null)();
           case (?result) {
             let voteCount = arg.getVoteCount(cid, ?arg.providerId);
-            switch (getContentPlus(cid, ?arg.providerId, voteCount, arg.globalState)) {
+            switch (getContentPlus(cid, ?arg.providerId, voteCount, arg.globalState, content2Category)) {
               case (?result) {
                 if (result.status == arg.status) {
                   buf.add(result);
@@ -221,7 +226,8 @@ module ContentModule {
     logger : Canistergeek.Logger,
     globalState : GlobalState.State,
     randomizationEnabled : Bool,
-    storage : StorageSolution.StorageSolution
+    storage : StorageSolution.StorageSolution,
+    content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>
   ) : async [Types.ContentPlus] {
     let buf = Buffer.Buffer<Types.ContentPlus>(0);
     var count = 0;
@@ -234,7 +240,7 @@ module ContentModule {
     for (cid in contentQueue.keys()) {
       if (count < 11) {
         let voteCount = getVoteCount(cid, ?caller);
-        let cp = getContentPlus(cid, ?caller, voteCount, globalState);
+        let cp = getContentPlus(cid, ?caller, voteCount, globalState, content2Category);
         switch (cp) {
           case (?result) {
             buf.add(result);
@@ -327,11 +333,12 @@ module ContentModule {
   public func createReservation(
     contentId : Text,
     voteCount : Types.VoteCount,
-    arg : ContentTypes.CommonArg
+    arg : ContentTypes.CommonArg,
+    content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>
   ) : async Types.Reserved {
     switch (arg.globalState.content.get(contentId)) {
       case (?content) {
-        let contentPlus : ?Types.ContentPlus = getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState);
+        let contentPlus : ?Types.ContentPlus = getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState, content2Category);
         switch (contentPlus) {
           case (?provider) {
             let oldReserved : [Types.Reserved] = provider.reservedList;
@@ -366,6 +373,7 @@ module ContentModule {
               hasVoted = ?voteCount.hasVoted;
               providerId = provider.providerId;
               contentType = provider.contentType;
+              contentCategory = Option.get<Types.CategoryId>(content2Category.get(contentId), "");
               status = provider.status;
               sourceId = provider.sourceId;
               title = provider.title;
@@ -446,7 +454,8 @@ module ContentModule {
     contentId : Types.ContentId,
     caller : ?Principal,
     voteCount : Types.VoteCount,
-    globalState : GlobalState.State
+    globalState : GlobalState.State,
+    content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>
   ) : ?Types.ContentPlus {
     switch (globalState.content.get(contentId)) {
       case (?content) {
@@ -464,6 +473,7 @@ module ContentModule {
               hasVoted = ?voteCount.hasVoted;
               providerId = content.providerId;
               contentType = content.contentType;
+              contentCategory = Option.get<Types.CategoryId>(content2Category.get(content.id), "");
               status = content.status;
               sourceId = content.sourceId;
               title = content.title;
@@ -486,11 +496,17 @@ module ContentModule {
 
   // Retrieves only new content that needs to be approved ( i.e tasks )
   public func getTasks(
-    arg : ContentTypes.TasksArg
+    arg : ContentTypes.TasksArg,
+    filters : Types.ModerationTasksFilter,
+    indexes : HashMap.HashMap<Text, Buffer.Buffer<Types.ContentId>>,
+    content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>
   ) : Result.Result<[Types.ContentPlus], Text> {
     if (arg.start < 0 or arg.end < 0 or arg.start > arg.end) {
       return #err("Invalid range");
     };
+    let hasFilters = Option.isSome(filters.categories) or Option.isSome(filters.providers);
+    let whitelist = Helpers.getContentFilteringWhitelist(filters, indexes);
+
     let result = Buffer.Buffer<Types.ContentPlus>(0);
     let items = Buffer.Buffer<Types.Content>(0);
     var count : Nat = 0;
@@ -502,18 +518,20 @@ module ContentModule {
     );
 
     for (cid in contentQueue.keys()) {
-      switch (arg.globalState.content.get(cid)) {
-        case (?content) {
-          if (arg.filterVoted) {
-            let voteCount = arg.getVoteCount(cid, ?arg.caller);
-            if (voteCount.hasVoted != true) {
+      if (not hasFilters or Helpers.isWhitelisted(whitelist, cid)) {
+        switch (arg.globalState.content.get(cid)) {
+          case (?content) {
+            if (arg.filterVoted) {
+              let voteCount = arg.getVoteCount(cid, ?arg.caller);
+              if (voteCount.hasVoted != true) {
+                items.add(content);
+              };
+            } else {
               items.add(content);
             };
-          } else {
-            items.add(content);
           };
+          case (_)();
         };
-        case (_)();
       };
     };
 
@@ -521,7 +539,7 @@ module ContentModule {
     for (content in Array.sort(Buffer.toArray<Types.Content>(items), sortAsc).vals()) {
       if (index >= arg.start and index <= arg.end and count < maxReturn) {
         let voteCount = arg.getVoteCount(content.id, ?arg.caller);
-        switch (getContentPlus(content.id, ?arg.caller, voteCount, arg.globalState)) {
+        switch (getContentPlus(content.id, ?arg.caller, voteCount, arg.globalState, content2Category)) {
           case (?content) {
             result.add(content);
             count := count + 1;

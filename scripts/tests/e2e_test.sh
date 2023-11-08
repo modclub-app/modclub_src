@@ -171,9 +171,9 @@ function failed() {
 
 	declare PROV_AP_AFTER_SUB_TEXT=$(dfx canister call modclub_qa providerSaBalance '("ACCOUNT_PAYABLE", null)' | cut -d '(' -f 2 | cut -d " " -f 1)
 	echo "ACCOUNT_PAYABLE balance: $PROV_AP_AFTER_SUB_TEXT"
-	declare SUBMIT_01=$(dfx canister call modclub_qa submitText "(\""001"\",\"Text001\", opt \"TitleText001\",opt variant {simple})"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
-	declare SUBMIT_02=$(dfx canister call modclub_qa submitText "(\""002"\",\"Text002\", opt \"TitleText002\",opt variant {simple})"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
-	declare SUBMIT_03=$(dfx canister call modclub_qa submitText "(\""003"\",\"Text003\", opt \"TitleText003\",opt variant {simple})"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
+	declare SUBMIT_01=$(dfx canister call modclub_qa submitText "(\""001"\",\"Text001\", opt \"TitleText001\",opt variant {simple}, null)"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
+	declare SUBMIT_02=$(dfx canister call modclub_qa submitText "(\""002"\",\"Text002\", opt \"TitleText002\",opt variant {simple}, null)"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
+	declare SUBMIT_03=$(dfx canister call modclub_qa submitText "(\""003"\",\"Text003\", opt \"TitleText003\",opt variant {simple}, null)"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
 
 	if [[ "$PROV_AP_AFTER_SUB_TEXT" != "699_999_990" ]]; then
 		echo "AP Balance after submitText is wrong: $PROV_AP_AFTER_SUB_TEXT"
@@ -182,8 +182,8 @@ function failed() {
 	fi
 
 	echo "+++++++++++++++++++ Step 3.2: Call submitHtmlContent and check amount of tokens +++++++++++++++++++"
-	dfx canister call modclub_qa submitHtmlContent '("02","HTML", opt "TitleHTML",opt variant {simple})'
-	declare SUBMIT_04=$(dfx canister call modclub_qa submitHtmlContent '("02","HTML", opt "TitleHTML",opt variant {simple})'| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
+	dfx canister call modclub_qa submitHtmlContent '("02","HTML", opt "TitleHTML",opt variant {simple}, null)'
+	declare SUBMIT_04=$(dfx canister call modclub_qa submitHtmlContent '("02","HTML", opt "TitleHTML",opt variant {simple}, null)'| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)
 
 	echo "------- Check balance after call submitHtmlContent ---------"
 	declare PROV_RESERVE_AFTER_SUB_HTML=$(dfx canister call modclub_qa providerSaBalance '("RESERVE", null)'| cut -d '(' -f 2 | cut -d " " -f 1)
@@ -237,7 +237,7 @@ function failed() {
 	dfx identity use qa_test_moderator
 	declare INITIAL_LEVEL=$(dfx canister call rs_qa queryRSAndLevel)
 	echo "INITIAL_LEVEL $INITIAL_LEVEL"
-	dfx canister call modclub_qa getTasks '(0, 2, false)'
+	dfx canister call modclub_qa getTasks '(0, 2, false, record { categories = null; providers = null })'
 
 	echo "......#VOTE#......."
 	dfx canister call modclub_qa reserveContent '("'$SUBMIT_01'")'

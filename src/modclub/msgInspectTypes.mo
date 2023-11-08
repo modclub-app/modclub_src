@@ -47,6 +47,8 @@ module {
     #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
     #getContent : () -> Text;
     #getContentResult : () -> Text;
+    #getContentCategories : () -> (?Principal);
+    #getContentProviders : () -> ();
     #getDeployer : () -> ();
     #getModeratorEmailsForPOHAndSendEmail : () -> Text;
     #getModeratorLeaderboard : () -> (Nat, Nat);
@@ -64,7 +66,7 @@ module {
     #getReservedByContentId : () -> Text;
     #getRules : () -> Principal;
     #getTaskStats : () -> Int;
-    #getTasks : () -> (Nat, Nat, Bool);
+    #getTasks : () -> (Nat, Nat, Bool, Types.ModerationTasksFilter);
     #getVotePerformance : () -> ();
     #http_request : () -> Types.HttpRequest;
     #http_request_update : () -> Types.HttpRequest;
@@ -92,9 +94,9 @@ module {
     #shufflePohContent : () -> ();
     #stakeTokens : () -> Nat;
     #submitChallengeData : () -> PohTypes.PohChallengeSubmissionRequest;
-    #submitHtmlContent : () -> (Text, Text, ?Text, ?Types.Level);
-    #submitImage : () -> (Text, [Nat8], Text, ?Text, ?Types.Level);
-    #submitText : () -> (Text, Text, ?Text, ?Types.Level);
+    #submitHtmlContent : () -> (Text, Text, ?Text, ?Types.Level, ?Text);
+    #submitImage : () -> (Text, [Nat8], Text, ?Text, ?Types.Level, ?Text);
+    #submitText : () -> (Text, Text, ?Text, ?Types.Level, ?Text);
     #subscribe : () -> Types.SubscribeMessage;
     #subscribePohCallback : () -> PohTypes.SubscribePohMessage;
     #toggleAllowSubmission : () -> Bool;

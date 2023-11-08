@@ -67,13 +67,19 @@ export default function ModclubApp() {
     if (isConnected && modclub) {
       dispatch({ type: "fetchUserProfile" });
       dispatch({ type: "fetchIsUserAdmin" });
-      dispatch({ type: "refetchContentModerationTasks", payload: false });
+      dispatch({
+        type: "refetchContentModerationTasks",
+        payload: { FILTER_VOTES: false },
+      });
     }
   }, [isConnected, modclub]);
 
   useEffect(() => {
     if (isConnected && appState.moderationTasksLoading)
-      dispatch({ type: "refetchContentModerationTasks", payload: false });
+      dispatch({
+        type: "refetchContentModerationTasks",
+        payload: { FILTER_VOTES: false },
+      });
   }, [isConnected, appState.moderationTasksLoading]);
 
   useEffect(() => {

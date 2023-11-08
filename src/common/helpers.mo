@@ -27,6 +27,7 @@ import Types "../modclub/types";
 import UUID "mo:uuid/UUID";
 import Constants "constants";
 import Bool "mo:base/Bool";
+import Option "mo:base/Option";
 import RSTypes "../rs/types";
 import RSConstants "../rs/constants";
 
@@ -346,5 +347,71 @@ module Helpers {
     } else {
       return 0;
     };
+  };
+
+  public func upgradeContentIndex(
+    indexTextRep : Text,
+    contentId : Types.ContentId,
+    contentIndexes : HashMap.HashMap<Text, Buffer.Buffer<Types.ContentId>>
+  ) : HashMap.HashMap<Text, Buffer.Buffer<Types.ContentId>> {
+    let ids = Option.get(
+      contentIndexes.get(indexTextRep),
+      Buffer.Buffer<Types.ContentId>(100)
+    );
+    if (
+      Buffer.isEmpty(ids) or not Buffer.contains<Types.ContentId>(ids, contentId, Text.equal)
+    ) {
+      ids.add(contentId);
+      contentIndexes.put(indexTextRep, ids);
+    };
+    contentIndexes;
+  };
+
+  public func getContentFilteringWhitelist(
+    filters : { providers : ?[Principal]; categories : ?[Text] },
+    contentIndexes : HashMap.HashMap<Text, Buffer.Buffer<Types.ContentId>>
+  ) : Buffer.Buffer<Types.ContentId> {
+    let res = Buffer.Buffer<Types.ContentId>(0);
+    if (Option.isSome(filters.providers)) {
+      let providersIds = Option.get(filters.providers, []);
+      switch (Option.isSome(filters.categories)) {
+        case (true) {
+          let catsIds = Option.get(filters.categories, []);
+          for (pId in providersIds.vals()) {
+            for (cId in catsIds.vals()) {
+              let cIds = Option.get(
+                contentIndexes.get(Principal.toText(pId) # cId),
+                Buffer.Buffer<Types.ContentId>(100)
+              );
+              res.append(cIds);
+            };
+          };
+        };
+        case (false) {
+          for (pId in providersIds.vals()) {
+            let cIds = Option.get(
+              contentIndexes.get(Principal.toText(pId)),
+              Buffer.Buffer<Types.ContentId>(100)
+            );
+            res.append(cIds);
+          };
+        };
+      };
+    } else if (Option.isSome(filters.categories)) {
+      let catsIds = Option.get(filters.categories, []);
+      for (cId in catsIds.vals()) {
+        let cIds = Option.get(
+          contentIndexes.get(cId),
+          Buffer.Buffer<Types.ContentId>(100)
+        );
+        res.append(cIds);
+      };
+    };
+
+    res;
+  };
+
+  public func isWhitelisted(wl : Buffer.Buffer<Types.ContentId>, cid : Types.ContentId) : Bool {
+    Buffer.contains<Types.ContentId>(wl, cid, Text.equal);
   };
 };

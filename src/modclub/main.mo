@@ -137,6 +137,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var migrationAirdropWhitelistStable : List.List<(Principal, Bool)> = List.nil<(Principal, Bool)>();
   private var migrationAirdropWhitelist = Buffer.Buffer<(Principal, Bool)>(100);
 
+  stable var contentCategoriesStable : [(Types.CategoryId, Types.ContentCategory)] = [];
+  stable var content2CategoryStable : [(Types.ContentId, Types.CategoryId)] = [];
+  stable var contentIndexesStable : [(Text, [Types.CategoryId])] = [];
+  private var contentCategories = HashMap.HashMap<Types.CategoryId, Types.ContentCategory>(100, Text.equal, Text.hash);
+  private var content2Category = HashMap.HashMap<Types.ContentId, Types.CategoryId>(100, Text.equal, Text.hash);
+  private var contentIndexes = HashMap.HashMap<Text, Buffer.Buffer<Types.ContentId>>(100, Text.equal, Text.hash);
+
   var storageSolution = StorageSolution.StorageSolution(
     storageStateStable,
     retiredDataCanisterId,
@@ -491,14 +498,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   // ----------------------Content Related Methods------------------------------
   public shared ({ caller }) func getContent(id : Text) : async ?Types.ContentPlus {
     let voteCount = getVoteCount(id, ?caller);
-    return await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution);
+    return await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
   };
 
   public shared ({ caller }) func getContentResult(
     id : Text
   ) : async Types.ContentResult {
     let voteCount = getVoteCount(id, ?caller);
-    let cp = await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution);
+    let cp = await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
     switch (cp) {
       case (?result) {
         switch (PermissionsModule.checkProviderPermission(caller, ?result.providerId, stateV2)) {
@@ -526,7 +533,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     sourceId : Text,
     text : Text,
     title : ?Text,
-    complexity : ?Types.Level
+    complexity : ?Types.Level,
+    category : ?Text
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -549,13 +557,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
-    return await ContentManager.submitTextOrHtmlContent(
+    let cid = await ContentManager.submitTextOrHtmlContent(
       {
         sourceId;
         text;
         title;
         voteParam;
         contentType = #text;
+        category;
         contentQueueManager;
       },
       {
@@ -565,13 +574,39 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution = storageSolution;
       }
     );
+    if (Option.isSome(category)) {
+      let catTitle = Option.get(category, "");
+      let cat = switch (contentCategories.get(catTitle)) {
+        case (?c) { c };
+        case (null) {
+          let c = {
+            id = catTitle; // Tech debt: make it as UUID_v4
+            title = catTitle;
+            providerId = caller;
+            pid = null;
+          };
+          contentCategories.put(c.title, c);
+          c;
+        };
+      };
+
+      // Upgrade contentIndexes
+      let providerId = Principal.toText(caller);
+      contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
+      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
+      contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
+      content2Category.put(cid, cat.id);
+    };
+
+    return cid;
   };
 
   public shared ({ caller }) func submitHtmlContent(
     sourceId : Text,
     htmlContent : Text,
     title : ?Text,
-    complexity : ?Types.Level
+    complexity : ?Types.Level,
+    category : ?Text
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -593,13 +628,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
-    var contentID = await ContentManager.submitTextOrHtmlContent(
+    var cid = await ContentManager.submitTextOrHtmlContent(
       {
         sourceId;
         text = htmlContent;
         title;
         voteParam;
         contentType = #htmlContent;
+        category;
         contentQueueManager;
       },
       {
@@ -609,7 +645,31 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution;
       }
     );
-    return contentID;
+    if (Option.isSome(category)) {
+      let catTitle = Option.get(category, "");
+      let cat = switch (contentCategories.get(catTitle)) {
+        case (?c) { c };
+        case (null) {
+          let c = {
+            id = catTitle; // Tech debt: make it as UUID_v4
+            title = catTitle;
+            providerId = caller;
+            pid = null;
+          };
+          contentCategories.put(c.title, c);
+          c;
+        };
+      };
+
+      // Upgrade contentIndexes
+      let providerId = Principal.toText(caller);
+      contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
+      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
+      contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
+      content2Category.put(cid, cat.id);
+    };
+
+    return cid;
   };
 
   public shared ({ caller }) func submitImage(
@@ -617,7 +677,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     image : [Nat8],
     imageType : Text,
     title : ?Text,
-    complexity : ?Types.Level
+    complexity : ?Types.Level,
+    category : ?Text
   ) : async Text {
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
@@ -640,7 +701,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let voteParamId = getVoteParamIdByLevel(complexity);
     let voteParam = await getVoteParamsByVoteParamId(voteParamId);
 
-    return await ContentManager.submitImage(
+    let cid = await ContentManager.submitImage(
       {
         sourceId;
         image;
@@ -656,6 +717,46 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution;
       }
     );
+    if (Option.isSome(category)) {
+      let catTitle = Option.get(category, "");
+      let cat = switch (contentCategories.get(catTitle)) {
+        case (?c) { c };
+        case (null) {
+          let c = {
+            id = catTitle; // Tech debt: make it as UUID_v4
+            title = catTitle;
+            providerId = caller;
+            pid = null;
+          };
+          contentCategories.put(c.title, c);
+          c;
+        };
+      };
+
+      // Upgrade contentIndexes
+      let providerId = Principal.toText(caller);
+      contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
+      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
+      contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
+      content2Category.put(cid, cat.id);
+    };
+
+    return cid;
+  };
+
+  public query ({ caller }) func getContentCategories(provider : ?Principal) : async [Types.ContentCategory] {
+    let allCategories = Iter.toArray<Types.ContentCategory>(contentCategories.vals());
+    switch (provider) {
+      case (?p) {
+        Array.filter<Types.ContentCategory>(allCategories, func c = Principal.equal(c.providerId, p));
+      };
+      case (_) { allCategories };
+    };
+  };
+
+  public query ({ caller }) func getContentProviders() : async [(Principal, Types.ProviderStable)] {
+    // ADD GUARD HERE LIKE "ONLY FOR REGISTERED_USERS"
+    StateV2.fromState(stateV2).providers;
   };
 
   // Retrieve all content for the calling Provider
@@ -672,16 +773,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (start < 0 or end < 0 or start > end) {
       throw Error.reject("Invalid range");
     };
-    return await ContentManager.getProviderContent({
-      providerId;
-      getVoteCount;
-      globalState = stateV2;
-      status;
-      start;
-      end;
-      contentQueueManager;
-      storageSolution;
-    });
+    return await ContentManager.getProviderContent(
+      {
+        providerId;
+        getVoteCount;
+        globalState = stateV2;
+        status;
+        start;
+        end;
+        contentQueueManager;
+        storageSolution;
+      },
+      content2Category
+    );
   };
 
   public shared ({ caller }) func getAllContent(status : Types.ContentStatus) : async [
@@ -717,14 +821,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       canistergeekLogger,
       stateV2,
       randomizationEnabled,
-      storageSolution
+      storageSolution,
+      content2Category
     );
   };
 
   public query ({ caller }) func getTasks(
     start : Nat,
     end : Nat,
-    filterVoted : Bool
+    filterVoted : Bool,
+    filters : Types.ModerationTasksFilter
   ) : async [Types.ContentPlus] {
     Helpers.logMessage(
       canistergeekLogger,
@@ -754,18 +860,23 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      ContentManager.getTasks({
-        caller;
-        getVoteCount;
-        globalState = stateV2;
-        start;
-        end;
-        filterVoted;
-        logger = canistergeekLogger;
-        contentQueueManager;
-        randomizationEnabled;
-        storageSolution;
-      })
+      ContentManager.getTasks(
+        {
+          caller;
+          getVoteCount;
+          globalState = stateV2;
+          start;
+          end;
+          filterVoted;
+          logger = canistergeekLogger;
+          contentQueueManager;
+          randomizationEnabled;
+          storageSolution;
+        },
+        filters,
+        contentIndexes,
+        content2Category
+      )
     ) {
       case (#err(e)) {
         throw Error.reject(e);
@@ -2338,7 +2449,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         globalState = stateV2;
         contentState = contentStableState;
         storageSolution;
-      }
+      },
+      content2Category
     );
     return #ok(reserved);
   };
@@ -2644,6 +2756,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     // TODO: remove this after upgrade
     pohVoteStableStateV3 := voteManager.getStableState();
 
+    let contentIndexesStableMap = HashMap.map<Text, Buffer.Buffer<Types.ContentId>, (Text, [Types.ContentId])>(
+      contentIndexes,
+      Text.equal,
+      Text.hash,
+      func(k, ids) {
+        (k, Iter.toArray(ids.vals()));
+      }
+    );
+
+    contentCategoriesStable := Iter.toArray(contentCategories.entries());
+    content2CategoryStable := Iter.toArray(content2Category.entries());
+    contentIndexesStable := Iter.toArray(contentIndexesStableMap.vals());
+
   };
 
   stable var migrationDone = false;
@@ -2707,6 +2832,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     // TODO: remove this after upgrade
     voteManager := VoteManager.VoteManager(pohVoteStableStateV3);
+
+    for ((idx, ids) in contentIndexesStable.vals()) {
+      var idsBuf = Buffer.fromArray<Types.ContentId>(ids);
+      contentIndexes.put(idx, idsBuf);
+    };
+    contentCategories := HashMap.fromIter<Types.CategoryId, Types.ContentCategory>(contentCategoriesStable.vals(), contentCategoriesStable.size(), Text.equal, Text.hash);
+    content2Category := HashMap.fromIter<Types.ContentId, Types.CategoryId>(content2CategoryStable.vals(), content2CategoryStable.size(), Text.equal, Text.hash);
+
   };
 
   //SNS generic validate function

@@ -105,6 +105,7 @@ module {
     providerId : Principal;
     providerName : Text;
     contentType : ContentType;
+    contentCategory : CategoryId;
     sourceId : Text;
     status : ContentStatus;
     voteCount : Nat;
@@ -135,6 +136,15 @@ module {
     voteParameters : VoteParameters;
     reservedList : [Reserved];
     receipt : Receipt;
+  };
+
+  public type CategoryId = Text;
+
+  public type ContentCategory = {
+    id : CategoryId;
+    pid : ?CategoryId;
+    providerId : Principal;
+    title : Text;
   };
 
   public type Level = {
@@ -519,6 +529,11 @@ module {
 
   public type IC = actor {
     http_request : CanisterHttpRequestArgs -> async CanisterHttpResponsePayload;
+  };
+
+  public type ModerationTasksFilter = {
+    categories : ?[CategoryId];
+    providers : ?[Principal];
   };
 
 };

@@ -1,4 +1,5 @@
 import Principal "mo:base/Principal";
+import Text "mo:base/Text";
 import Types "../../types";
 import QueueManager "../queue/queue";
 import ContentState "./state";
@@ -36,6 +37,7 @@ module {
     voteParam : Types.VoteParameters;
     contentType : Types.ContentType;
     contentQueueManager : QueueManager.QueueManager;
+    category : ?Text;
   };
   public type ImageContentArg = {
     sourceId : Text;

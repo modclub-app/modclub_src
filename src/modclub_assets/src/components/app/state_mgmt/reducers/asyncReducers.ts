@@ -253,42 +253,28 @@ export async function asyncReducers(asyncState, action) {
       let rsLoading = !state.rsLoading;
       return { ...state, rs, rsLoading };
     }
-    case "fetchContentModerationTasks": {
-      let newTasks = [];
-      try {
-        if (context.actors.modclub) {
-          const actor = context.actors.modclub.value;
-          newTasks = await actor.getTasks(
-            state.moderationTasksPageStartIndex as unknown as bigint,
-            (state.moderationTasksPageStartIndex +
-              state.moderationTasksPageSize) as unknown as bigint,
-            action.payload // FILTER_VOTES
-          );
-          newTasks = newTasks.filter(
-            (newTask) =>
-              state.contentModerationTasks.find((t) => t.id == newTask.id) ==
-              undefined
-          );
-        }
-      } catch (e) {
-        console.error("Error fetching ContentModerationTasks::", e);
-      }
-      return {
-        ...state,
-        moderationTasksLoading: false,
-        contentModerationTasks: [...newTasks],
-      };
-    }
     case "refetchContentModerationTasks": {
       let contentModerationTasks = state.contentModerationTasks;
+      let tasks = [];
       try {
         if (context.actors.modclub) {
           const actor = context.actors.modclub.value;
-          contentModerationTasks = await actor.getTasks(
-            state.moderationTasksPageStartIndex as unknown as bigint,
-            (state.moderationTasksPageStartIndex +
-              state.moderationTasksPageSize) as unknown as bigint,
-            action.payload // FILTER_VOTES
+          const startIndex =
+            state.moderationTasksPageStartIndex as unknown as bigint;
+          const endIndex = (state.moderationTasksPageStartIndex +
+            state.moderationTasksPageSize) as unknown as bigint;
+          tasks = await actor.getTasks(
+            startIndex,
+            endIndex,
+            action.payload.FILTER_VOTES,
+            {
+              providers: Boolean(state.contentProvidersFilter)
+                ? [[Principal.from(state.contentProvidersFilter)]]
+                : [],
+              categories: Boolean(state.contentCategoriesFilter)
+                ? [[state.contentCategoriesFilter]]
+                : [],
+            } // filtering
           );
         }
       } catch (e) {
@@ -297,7 +283,43 @@ export async function asyncReducers(asyncState, action) {
       return {
         ...state,
         moderationTasksLoading: false,
-        contentModerationTasks,
+        contentModerationTasks: [...tasks],
+      };
+    }
+    case "fetchContentCategories": {
+      let contentCategories = state.contentCategories;
+      try {
+        if (context.actors.modclub) {
+          const actor = context.actors.modclub.value;
+          const providerFilter = state.contentProvidersFilter
+            ? [Principal.from(state.contentProvidersFilter)]
+            : [];
+          contentCategories = await actor.getContentCategories(providerFilter);
+        }
+      } catch (e) {
+        console.error("Error fetching ContentCategories::", e);
+      }
+      return {
+        ...state,
+        contentCategories,
+      };
+    }
+    case "fetchContentProviders": {
+      let providers = state.contentProviders;
+      try {
+        if (context.actors.modclub) {
+          const actor = context.actors.modclub.value;
+          providers = await actor.getContentProviders();
+        }
+      } catch (e) {
+        console.error("Error fetching ContentProviders::", e);
+      }
+      return {
+        ...state,
+        contentProviders: providers.map((p) => ({
+          id: p[0].toText(),
+          name: p[1].name,
+        })),
       };
     }
     case "setModerationTasksLoading": {
@@ -321,9 +343,32 @@ export async function asyncReducers(asyncState, action) {
     case "setPohReservedContent": {
       return { ...state, pohReservedContent: action.payload };
     }
-
     case "setContentReservedTime": {
       return { ...state, contentReservedTime: action.payload };
+    }
+    case "setContentProvidersFilter": {
+      let contentCategories = state.contentCategories;
+      try {
+        if (context.actors.modclub) {
+          const actor = context.actors.modclub.value;
+          const providerFilter = action.payload
+            ? [Principal.from(action.payload)]
+            : [];
+          contentCategories = await actor.getContentCategories(providerFilter);
+        }
+      } catch (e) {
+        console.error("Error fetching ContentCategories::", e);
+      }
+
+      return {
+        ...state,
+        contentProvidersFilter: action.payload,
+        contentCategories,
+        contentCategoriesFilter: null,
+      };
+    }
+    case "setContentCategoriesFilter": {
+      return { ...state, contentCategoriesFilter: action.payload };
     }
     default: {
       throw Error("Unknown action: " + action.type);

@@ -2,6 +2,7 @@ import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import HashMap "mo:base/HashMap";
+import Hash "mo:base/Hash";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 import Rel "data_structures/Rel";
@@ -192,6 +193,7 @@ module StateV1 {
         (Principal.hash, Principal.hash),
         (Principal.equal, Principal.equal)
       );
+
       appName = "MODCLUB";
 
       providerAllowedForAIFiltering = HashMap.HashMap<Principal, Bool>(
