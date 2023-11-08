@@ -1,42 +1,22 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
-import { releaseStake } from "../../../utils/api";
 import PopupModal from "./PopupModal";
-import {
-  convert_to_mod,
-  format_token,
-  timestampToDate,
-} from "../../../utils/util";
-import { useEffect, useState } from "react";
+import { convert_to_mod } from "../../../utils/util";
+import { useState } from "react";
 import { useActors } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import * as Constant from "../../../utils/constant";
+import { UnstakeHistoryTable } from "./UnstakeHistoryTable";
 
 const UpdateTable = ({
   stake,
   amount = 0,
   tokenHoldings,
-  lockBlock,
+  pendingStakeList,
+  lockBalance,
   digit,
-  userId,
 }) => {
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const { modclub } = useActors();
-  const appState = useAppState();
-  const hasLockBlock = Array.isArray(lockBlock) && lockBlock.length > 0;
-  const [releaseUnlocked, setReleaseUnlocked] = useState(false);
-  const unlockPrice = convert_to_mod(tokenHoldings.unLockedFor, digit);
-  const claimPrice = convert_to_mod(appState.claimedStakeBalance, digit);
-
-  const onFormSubmit = async () => {
-    try {
-      const res = await releaseStake(modclub, tokenHoldings.unLockedFor);
-      return { reserved: unlockPrice, transfer: res };
-    } catch (error) {
-      console.error("unStake Failed:", error);
-    }
-  };
-
   return (
     <>
       <Level className="has-text-silver px-5">
@@ -44,127 +24,18 @@ const UpdateTable = ({
         <span className="has-text-weight-bold">{stake}</span>
       </Level>
       <Level className="has-text-silver px-5">
-        <span>Claimed Stake amount: </span>
-        <span className="has-text-weight-bold">{claimPrice}</span>
-      </Level>
-      <Level className="has-text-silver px-5">
-        <span>Unlock amount:</span>
-        <span className="has-text-weight-bold">{unlockPrice}</span>
-      </Level>
-      <Level className="has-text-silver px-5">
         <span>After Unstake</span>
         <span className="has-text-weight-bold">
           {Math.max(0, stake - amount)}
         </span>
       </Level>
-      {hasLockBlock && (
-        <Level
-          className="has-text-silver px-5"
-          style={{
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-          onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-        >
-          Show Unstake History
-          {isHistoryOpen ? (
-            <Icon
-              style={{
-                color: "info",
-                alignItems: "right",
-                fontSize: "30px",
-                marginLeft: "auto",
-              }}
-            >
-              <b>{"<"}</b>
-            </Icon>
-          ) : (
-            <Icon
-              style={{
-                color: "info",
-                alignItems: "right",
-                fontSize: "35px",
-                marginLeft: "auto",
-              }}
-            >
-              <b>{">"}</b>
-            </Icon>
-          )}
-        </Level>
-      )}
-      {hasLockBlock && isHistoryOpen && (
-        <>
-          {lockBlock.map((block, index) => (
-            <Level key={index} className="has-text-silver px-5">
-              <span className="has-text-weight-bold">
-                {convert_to_mod(block.amount, digit)}
-              </span>
-              <span className="has-text-silver px-5">
-                MOD tokens release on
-              </span>
-              <span className="has-text-weight-bold">
-                {timestampToDate(
-                  Number(block.created_at_time) + Number(block.dissolveDelay)
-                )}
-              </span>
-            </Level>
-          ))}
-        </>
-      )}
-      {tokenHoldings.unLockedFor > 0 && (
-        <Level
-          className="has-text-silver px-5"
-          style={{
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-          onClick={() => setReleaseUnlocked(!releaseUnlocked)}
-        >
-          Release Unlocked Token
-          {releaseUnlocked ? (
-            <Icon
-              style={{
-                color: "info",
-                alignItems: "right",
-                fontSize: "30px",
-                marginLeft: "auto",
-              }}
-            >
-              <b>{"<"}</b>
-            </Icon>
-          ) : (
-            <Icon
-              style={{
-                color: "info",
-                alignItems: "right",
-                fontSize: "35px",
-                marginLeft: "auto",
-              }}
-            >
-              <b>{">"}</b>
-            </Icon>
-          )}
-        </Level>
-      )}
-      {releaseUnlocked && (
-        <PopupModal
-          title="Release Token"
-          subtitle="Congratulation!"
-          toggle={() => {
-            setReleaseUnlocked(!releaseUnlocked);
-          }}
-          handleSubmit={onFormSubmit}
-        >
-          <Level className="has-text-silver px-5">
-            <span className="has-text-weight-bold">
-              {format_token(unlockPrice)}
-            </span>
-            <span className="has-text-silver px-5">MOD</span>
-          </Level>
-        </PopupModal>
-      )}
+      <p>Unstake in progress: </p>
+      <UnstakeHistoryTable pendingStakeList={pendingStakeList} digit={digit} />
+      <p className="is-size-7">
+        <em style={{ fontWeight: 50, color: "#888" }}>
+          {Constant.UNSTAKE_WARN_MSG(lockBalance)}
+        </em>
+      </p>
     </>
   );
 };
@@ -173,7 +44,6 @@ export default function Unstake({
   toggle,
   tokenHoldings,
   userId,
-  lockBlock,
   digit,
   onUpdate,
 }) {
@@ -183,6 +53,11 @@ export default function Unstake({
   const [inputValue, setInputValue] = useState(0);
   const [load, setLoader] = useState(false);
   const [warning, setWarning] = useState(null);
+  const pendingList = appState.pendingStakeList;
+  const lockedBalance = convert_to_mod(
+    appState.lockedBalance,
+    appState.decimals
+  );
   const stakeBalance = convert_to_mod(
     appState.stakeBalance,
     BigInt(appState.decimals)
@@ -198,6 +73,8 @@ export default function Unstake({
         dispatch({ type: "personalBalanceLoading", payload: true });
       !appState.stakeBalanceLoading &&
         dispatch({ type: "stakeBalanceLoading", payload: true });
+      !appState.pendingStakeListLoading &&
+        dispatch({ type: "pendingStakeListLoading", payload: true });
       return { reserved: Number(amount), transfer: res };
     } catch (error) {
       console.error("unStake Failed:", error);
@@ -210,15 +87,15 @@ export default function Unstake({
       subtitle="Congratulation!"
       toggle={toggle}
       handleSubmit={onFormSubmit}
-      button1="Release Stake"
+      button1="Submit"
       loader={load}
       updateTable={
         <UpdateTable
           stake={stakeBalance}
           tokenHoldings={tokenHoldings}
-          lockBlock={lockBlock}
           digit={digit}
-          userId={userId}
+          pendingStakeList={pendingList}
+          lockBalance={lockedBalance}
         />
       }
     >

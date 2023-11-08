@@ -88,6 +88,11 @@ export default function ModclubApp() {
   }, [isConnected, appState.providerBalanceLoading]);
 
   useEffect(() => {
+    if (isConnected && vesting && appState.loginPrincipalId)
+      appState.pendingStakeListLoading && dispatch({ type: "fetchUserLockBlock" });
+  }, [isConnected, vesting, appState.loginPrincipalId, appState.pendingStakeListLoading]);
+
+  useEffect(() => {
     if (isConnected && selectedProvider) {
       dispatch({ type: "setProviderId", payload: selectedProvider.id });
     }

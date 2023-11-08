@@ -26,4 +26,7 @@ export const STAKE_BALANCE_MSG = "Stake function is available to unlock your pen
 export const PENDING_REWARDS_MSG = "The amount of rewards you earned through unstaking"
 export const TIMER = "05:00"
 export const TIMER_SECOND = 300
+export const UNSTAKE_WARN_MSG = (value: number) =>
+  `*Read before your unstake: The unstake process takes 7 days to complete, and if you unstake more than ${value} Mod, your levelling will be negatively affected.`;
+export const MICROSECONDS_IN_SECOND=1000000
 export const DATA_REMOVE_MSG = "Data has been removed due to Modclub's data policy"

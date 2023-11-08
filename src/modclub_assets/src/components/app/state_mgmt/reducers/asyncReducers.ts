@@ -213,6 +213,25 @@ export async function asyncReducers(asyncState, action) {
       }
       return { ...state, claimedStakeBalance, claimedStakeLoading };
     }
+    case "pendingStakeListLoading": {
+      return { ...state, pendingStakeListLoading: action.payload };
+    }
+    case "fetchUserLockBlock": {
+      let pendingStakeList = state.pendingStakeList;
+      let pendingStakeListLoading = !state.pendingStakeListLoading;
+      try {
+        if (context.actors.vesting && state.loginPrincipalId) {
+          const actor = context.actors.vesting.value;
+          pendingStakeList = await actor.pending_stakes_for({
+            owner: Principal.from(state.loginPrincipalId),
+            subaccount: [],
+          });
+        }
+      } catch (e) {
+        console.error("Error fetching User pendingStakeList::", e);
+      }
+      return { ...state, pendingStakeList, pendingStakeListLoading };
+    }
     case "providerBalanceLoading": {
       return { ...state, providerBalanceLoading: action.payload };
     }

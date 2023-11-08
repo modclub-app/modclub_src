@@ -97,10 +97,6 @@ export function unwrap<T>(val: Optional<T>): T | null {
 export const encodeArrayBuffer = (file: ArrayBuffer): number[] =>
   Array.from(new Uint8Array(file));
 
-export function nanoTimeStrToMilli(nano: bigint): bigint {
-  return nano / BigInt(1000000);
-}
-
 export function formatDate(integer: bigint, dateformate?: string) {
   const date = new Date(Number(integer));
   const current_date = new Date();
@@ -184,4 +180,8 @@ export function timestampToDate(timestamp: number): any {
   const formattedDate = date.toDateString();
   const formattedTime = date.toLocaleTimeString();
   return `${formattedDate}/${formattedTime}`;
+}
+
+export function microsecondToSecond(microsec: bigint): number{
+  return Number(microsec)/Constants.MICROSECONDS_IN_SECOND;
 }

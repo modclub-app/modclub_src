@@ -71,7 +71,6 @@ export default function Userstats({ detailed = false }) {
     claimPrice: 0,
   });
 
-  const [lockBlock, setLockBlock] = useState([]);
   const pendingRewards = convert_to_mod(
     appState.lockedBalance,
     appState.decimals,
@@ -126,9 +125,8 @@ export default function Userstats({ detailed = false }) {
             });
           }
         })
-        .catch((e) => {
-          console.error("CLAIM_CHECK::RESPONSE_ERROR_PAYLOAD::", e);
-          return "";
+        .catch((error) => {
+          console.error("CLAIM_CHECK::RESPONSE_ERROR_PAYLOAD::", error);
         });
     !appState.personalBalanceLoading &&
       dispatch({ type: "personalBalanceLoading", payload: true });
@@ -275,7 +273,7 @@ export default function Userstats({ detailed = false }) {
                 color="dark"
                 onClick={toggleClaim}
                 disabled={
-                  appState.lockedBalanceLoading || !claimRewards.canClaim
+                  level == "novice" || level == "junior" || holdingsUpdated
                 }
               >
                 Claims
@@ -296,7 +294,12 @@ export default function Userstats({ detailed = false }) {
         </StatBox>
       </Columns>
 
-      {showClaim && <Claim toggle={toggleClaim} userId={principal} />}
+      {showClaim && (
+        <Claim
+          toggle={toggleClaim}
+          userId={principal}
+        />
+      )}
 
       {showDeposit && (
         <Deposit toggle={toggleDeposit} isProvider={false} subacc={subacc} />
@@ -336,7 +339,6 @@ export default function Userstats({ detailed = false }) {
           tokenHoldings={tokenHoldings}
           onUpdate={() => setHoldingsUpdated(true)}
           userId={principal}
-          lockBlock={Array.isArray(lockBlock) ? lockBlock : []}
           digit={appState.decimals}
         />
       )}

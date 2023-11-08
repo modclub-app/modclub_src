@@ -12,6 +12,8 @@ export const initialState = {
   stakeBalanceLoading: true,
   lockedBalance: 0,
   lockedBalanceLoading: true,
+  pendingStakeList: [],
+  pendingStakeListLoading: true,
   canClaimRewards: false,
   claimRewardAmount: 0,
   claimRewardPrice: 0,
