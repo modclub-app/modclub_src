@@ -293,23 +293,31 @@ module ContentVotingModule {
     // Call the providers callback
     switch (state.providerSubs.get(arg.content.providerId)) {
       case (?result) {
-        result.callback(
-          {
+        try {
+          let callbackParams = {
             id = arg.content.id;
             sourceId = arg.content.sourceId;
             approvedCount = arg.aCount;
             rejectedCount = arg.rCount;
             status = status;
             violatedRules = getViolatedRuleCount(arg.violatedRulesCount);
-          }
-        );
-        Helpers.logMessage(
-          arg.logger,
-          "Called callback for provider " # Principal.toText(
-            arg.content.providerId
-          ),
-          #info
-        );
+          };
+          result.callback(callbackParams);
+          Helpers.logMessage(
+            arg.logger,
+            "Called callback for provider " # Principal.toText(
+              arg.content.providerId
+            ) # " With params: " # debug_show (callbackParams),
+            #info
+          );
+        } catch (e) {
+          Helpers.logMessage(
+            arg.logger,
+            "Error while Provider " # Principal.toText(arg.content.providerId) # " callback execution: " # Error.message(e),
+            #error
+          );
+          throw Error.reject("Error while Provider " # Principal.toText(arg.content.providerId) # " callback execution: " # Error.message(e));
+        };
       };
       case (_) {
         Helpers.logMessage(
