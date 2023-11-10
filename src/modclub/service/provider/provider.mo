@@ -239,9 +239,11 @@ module ProviderModule {
     rules : [Text],
     state : GlobalState.State,
     logger : Canistergeek.Logger
-  ) {
+  ) : [Text] {
+    let ruleIds = Buffer.Buffer<Text>(100);
     for (rule in rules.vals()) {
       var ruleId = Helpers.generateId(providerId, "rule", state);
+      ruleIds.add(ruleId);
       Helpers.logMessage(
         logger,
         "addRules - Provider " # Principal.toText(providerId) # "adding rule, ruleId:  " # ruleId # " text: " # rule,
@@ -256,6 +258,7 @@ module ProviderModule {
       );
       state.provider2rules.put(providerId, ruleId);
     };
+    return Buffer.toArray<Text>(ruleIds);
   };
 
   public func removeRules(

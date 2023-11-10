@@ -44,12 +44,31 @@ const Task = ({ task }) => {
   const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
     "img",
     "iframe",
+    "video",
+    "source",
+    "audio",
   ]);
 
   const iframeAttributes = ["src", "width", "height", "frameborder", "style"];
+  const videoAttributes = ["src", "width", "height", "controls"];
+  const audioAttributes = ["controls"];
+  const sourceAttributes = ["src", "type"];
+  const imgAttributes = [
+    "src",
+    "srcset",
+    "alt",
+    "title",
+    "width",
+    "height",
+    "loading",
+  ];
   const allowedAttributes = {
     ...sanitizeHtml.defaults.allowedAttributes,
     iframe: iframeAttributes,
+    video: videoAttributes,
+    audio: audioAttributes,
+    source: sourceAttributes,
+    img: imgAttributes,
   };
 
   const sanitizedHtml = sanitizeHtml(task.text[0], {
@@ -196,8 +215,7 @@ export default function Tasks() {
     <>
       <Userstats />
       {appState.moderationTasksLoading ? (
-        <div className="loader is-loading p-5">
-        </div>
+        <div className="loader is-loading p-5"></div>
       ) : (
         <Columns>
           {appState.contentModerationTasks.length > 0 ? (
@@ -310,8 +328,9 @@ export default function Tasks() {
                 </Card.Content>
               </Card>
             </Columns.Column>
-          ):(<div className="loader is-loading p-5">
-        </div>)}
+          ) : (
+            <div className="loader is-loading p-5"></div>
+          )}
           {appState.contentModerationTasks.length > 0 &&
             appState.contentModerationTasks.map((task) => (
               <Task key={task.id} task={task} />

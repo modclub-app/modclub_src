@@ -430,12 +430,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func addRules(
     rules : [Text],
     providerId : ?Principal
-  ) : async () {
+  ) : async [Text] {
     // checkProviderPermission will return either the caller or the passed in providerId depending if the caller is the provider or not
     switch (PermissionsModule.checkProviderPermission(caller, providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p)) {
-        ProviderManager.addRules(p, rules, stateV2, canistergeekLogger);
+        return ProviderManager.addRules(p, rules, stateV2, canistergeekLogger);
       };
     };
   };
