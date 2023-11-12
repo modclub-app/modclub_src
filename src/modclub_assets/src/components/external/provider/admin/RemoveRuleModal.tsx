@@ -1,30 +1,23 @@
 import { Principal } from "@dfinity/principal";
-import FormModal from "../modals/FormModal";
-import { useActors } from "../../../hooks/actors";
+import FormModal from "../../../app/modals/FormModal";
+import { useActors } from "../../../../hooks/actors";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../../app/state_mgmt/context/state";
 
-const RemoveRuleModal = ({
-  toggle,
-  rule,
-  principalID,
-  updateState,
-  selectedProvider,
-  updateProvider,
-}) => {
+const RemoveRuleModal = ({ toggle, rule }) => {
   const { modclub } = useActors();
-  s;
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const onRemoveRuleFormSubmit = async (values: any) => {
     let result: string;
 
     if (rule && rule.id) {
       await modclub
-        .removeRules([rule.id], [Principal.fromText(principalID)])
+        .removeRules([rule.id], [appState.selectedProvider.id])
         .then(async () => {
-          let updatedRules = await modclub.getRules(
-            Principal.fromText(principalID)
-          );
-          updateState(updatedRules);
-          selectedProvider.rules = updatedRules;
-          updateProvider();
+          dispatch({ type: "fetchUserProviders" });
           result = "Rule Removed Successfully!";
         })
         .catch((e) => {

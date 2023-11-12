@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { Card, Heading, Button, Icon } from "react-bulma-components";
 import { Field } from "react-final-form";
-import FormModal from "../modals/FormModal";
+import FormModal from "../../../app/modals/FormModal";
 
 import { Link } from "react-router-dom";
 
@@ -12,7 +12,11 @@ import {
   useActors,
   removeProviderAdmin,
   editProviderAdmin,
-} from "../../../utils";
+} from "../../../../utils";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../../app/state_mgmt/context/state";
 
 const principalIDValidationForInput = (ID, principalIDS) => {
   console.log("principalIDS", principalIDS);
@@ -40,15 +44,17 @@ const principalIDValidationForEditAndRemove = (ID, principalIDS) => {
   return false;
 };
 
-const AddModal = ({ toggle, principalIDS, setPrincipleIDs, Provider }) => {
+const AddModal = ({ toggle, principalIDS, setPrincipleIDs }) => {
   const { modclub } = useActors();
+  const appState = useAppState();
   const onFormSubmit = async (values: any) => {
     if (
       principalIDValidationForInput(values.id, principalIDS) &&
+      modclub &&
       (await addProviderAdmin(
         modclub,
         Principal.fromText(values.id),
-        Principal.fromText(Provider),
+        appState.selectedProvider.id,
         values.userName
       ))
     ) {
@@ -94,11 +100,11 @@ const EditModal = ({
   toggle,
   principalIDS,
   setPrincipleIDs,
-  Provider,
   userId,
   userName,
 }) => {
   const { modclub } = useActors();
+  const appState = useAppState();
   const onFormSubmit = async (values: any) => {
     console.log("onFormSubmit", values);
     const { amount } = values;
@@ -110,12 +116,13 @@ const EditModal = ({
       items[index].userName = values.userName;
 
       if (
-        await editProviderAdmin(
+        modclub &&
+        (await editProviderAdmin(
           modclub,
           values.id,
-          Principal.fromText(Provider),
+          appState.selectedProvider.id,
           values.userName
-        )
+        ))
       ) {
         setPrincipleIDs([...items]);
         return "Edit Trusted Identity form submitted";
@@ -157,15 +164,9 @@ const EditModal = ({
   );
 };
 
-const RemoveModal = ({
-  toggle,
-  principalIDS,
-  setPrincipleIDs,
-  toRemove,
-  Provider,
-}) => {
+const RemoveModal = ({ toggle, principalIDS, setPrincipleIDs, toRemove }) => {
   const { modclub } = useActors();
-
+  const appState = useAppState();
   const onFormSubmit = async (values: any) => {
     console.log(values);
     let items = [...principalIDS];
@@ -174,9 +175,13 @@ const RemoveModal = ({
     });
     items[index].userName = values.userName;
     items.splice(index, 1);
-    console.log(toRemove, Provider);
     if (
-      await removeProviderAdmin(modclub, toRemove, Principal.fromText(Provider))
+      modclub &&
+      (await removeProviderAdmin(
+        modclub,
+        toRemove,
+        appState.selectedProvider.id
+      ))
     ) {
       setPrincipleIDs([...items]);
       return "Remove Trusted Identity form submitted";
@@ -195,8 +200,10 @@ const RemoveModal = ({
   );
 };
 
-export default function TrustedIdentities({ provider, selectedProvider }) {
+export default function TrustedIdentities() {
   const { modclub } = useActors();
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const [checked, setChecked] = useState([]);
 
   const [showAdd, setAdd] = useState(false);
@@ -226,13 +233,16 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
   useEffect(() => {
     const controller = new AbortController();
     let trustedIdentitiesInit = async () => {
-      let allProfiles = await modclub.getProviderAdmins(selectedProvider.id);
-      setTrustedPrincipleIDs(allProfiles);
+      if (modclub && appState.selectedProvider?.id) {
+        let allProfiles = await modclub.getProviderAdmins(
+          appState.selectedProvider?.id
+        );
+        setTrustedPrincipleIDs(allProfiles);
+      }
       return () => controller.abort();
     };
     trustedIdentitiesInit();
-  }, [selectedProvider]);
-  console.log(trustedPrincipleIDs);
+  }, [appState.selectedProvider?.id?.toText(), modclub]);
 
   const handleCheck = (e) => {
     const item = e.target.id;
@@ -248,7 +258,7 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
 
   return (
     <>
-      {selectedProvider != null && (
+      {appState.selectedProvider != null && (
         <Card>
           <Card.Content>
             <Heading className="mb-2">Trusted identities</Heading>
@@ -347,7 +357,6 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
           toggle={toggleAdd}
           principalIDS={trustedPrincipleIDs}
           setPrincipleIDs={setTrustedPrincipleIDs}
-          Provider={provider}
         />
       )}
       {showEdit && (
@@ -355,7 +364,6 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
           toggle={toggleEdit}
           principalIDS={trustedPrincipleIDs}
           setPrincipleIDs={setTrustedPrincipleIDs}
-          Provider={provider}
           userId={editUserId}
           userName={editUserName}
         />
@@ -366,7 +374,6 @@ export default function TrustedIdentities({ provider, selectedProvider }) {
           principalIDS={trustedPrincipleIDs}
           setPrincipleIDs={setTrustedPrincipleIDs}
           toRemove={entryToRemove}
-          Provider={provider}
         />
       )}
     </>

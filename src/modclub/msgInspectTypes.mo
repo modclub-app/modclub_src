@@ -34,6 +34,7 @@ module {
     #deregisterProvider : () -> ();
     #downloadSupport : () -> (Text, Text, Nat, Nat);
     #editProviderAdmin : () -> (Principal, Principal, Text);
+    #isProviderAdmin : () -> ();
     #generateSigningKey : () -> ();
     #getActivity : () -> Bool;
     #getAdminProviderIDs : () -> ();

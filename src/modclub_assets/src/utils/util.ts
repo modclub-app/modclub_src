@@ -182,6 +182,10 @@ export function timestampToDate(timestamp: number): any {
   return `${formattedDate}/${formattedTime}`;
 }
 
-export function microsecondToSecond(microsec: bigint): number{
-  return Number(microsec)/Constants.MICROSECONDS_IN_SECOND;
+export function microsecondToSecond(microsec: bigint): number {
+  return Number(microsec) / Constants.MICROSECONDS_IN_SECOND;
+}
+
+export function nanoTimeStrToMilli(nano: bigint): bigint {
+  return nano / BigInt(1000000);
 }

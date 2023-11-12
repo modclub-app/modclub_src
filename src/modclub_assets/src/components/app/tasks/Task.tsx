@@ -137,12 +137,31 @@ export default function Task() {
   const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
     "img",
     "iframe",
+    "video",
+    "source",
+    "audio",
   ]);
 
   const iframeAttributes = ["src", "width", "height", "frameborder", "style"];
+  const videoAttributes = ["src", "width", "height", "controls"];
+  const audioAttributes = ["controls"];
+  const sourceAttributes = ["src", "type"];
+  const imgAttributes = [
+    "src",
+    "srcset",
+    "alt",
+    "title",
+    "width",
+    "height",
+    "loading",
+  ];
   const allowedAttributes = {
     ...sanitizeHtml.defaults.allowedAttributes,
     iframe: iframeAttributes,
+    video: videoAttributes,
+    audio: audioAttributes,
+    source: sourceAttributes,
+    img: imgAttributes,
   };
 
   const sanitizedHtml = sanitizeHtml((task && task.text[0]) || "<div></div>", {

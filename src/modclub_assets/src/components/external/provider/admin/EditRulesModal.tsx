@@ -1,17 +1,16 @@
 import { Field } from "react-final-form";
-import FormModal from "../modals/FormModal";
+import FormModal from "../../../app/modals/FormModal";
 import { Principal } from "@dfinity/principal";
 import { useState } from "react";
-import { useActors } from "../../../hooks/actors";
+import { useActors } from "../../../../hooks/actors";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../../app/state_mgmt/context/state";
 
-const EditRulesModal = ({
-  rules,
-  toggle,
-  principalID,
-  updateState,
-  selectedProvider,
-  updateProvider,
-}) => {
+const EditRulesModal = ({ rules, toggle, updateState }) => {
+  const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const [newRules, setNewRules] = useState(rules);
   const [loader, setLoader] = useState(false);
   let rulesBeingEdited = {};
@@ -47,13 +46,13 @@ const EditRulesModal = ({
 
     let result;
     await modclub
-      .addRules(newRulesToAdd, [Principal.fromText(principalID)])
+      .addRules(newRulesToAdd, [appState.selectedProvider.id])
       .then(async () => {
         let updateRulePromise = [];
         for (let principalID in rulesBeingEdited) {
           updateRulePromise.push(
             modclub.updateRules(rulesBeingEdited[principalID], [
-              Principal.fromText(principalID),
+              appState.selectedProvider.id,
             ])
           );
         }
@@ -61,13 +60,10 @@ const EditRulesModal = ({
         result = "Rules updated successfully";
       })
       .then(async () => {
-        let updatedRules = await modclub.getRules(
-          Principal.fromText(principalID)
-        );
+        let updatedRules = await modclub.getRules(appState.selectedProvider.id);
         updateState(updatedRules);
         setNewRules(updatedRules);
-        selectedProvider.rules = updatedRules;
-        updateProvider();
+        appState.selectedProvider.rules = updatedRules;
       })
       .catch((e) => {
         console.log(e);

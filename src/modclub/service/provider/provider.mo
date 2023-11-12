@@ -11,6 +11,7 @@ import Int "mo:base/Int";
 import Nat "mo:base/Nat";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
+import Array "mo:base/Array";
 
 import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
@@ -238,9 +239,11 @@ module ProviderModule {
     rules : [Text],
     state : GlobalState.State,
     logger : Canistergeek.Logger
-  ) {
+  ) : [Text] {
+    let ruleIds = Buffer.Buffer<Text>(100);
     for (rule in rules.vals()) {
       var ruleId = Helpers.generateId(providerId, "rule", state);
+      ruleIds.add(ruleId);
       Helpers.logMessage(
         logger,
         "addRules - Provider " # Principal.toText(providerId) # "adding rule, ruleId:  " # ruleId # " text: " # rule,
@@ -255,6 +258,7 @@ module ProviderModule {
       );
       state.provider2rules.put(providerId, ruleId);
     };
+    return Buffer.toArray<Text>(ruleIds);
   };
 
   public func removeRules(
@@ -492,7 +496,9 @@ module ProviderModule {
       case (null) return #err(#NotFound);
       case (?adminMap) {
         adminMap.delete(arg.providerAdminPrincipalId);
-        state.profiles.delete(arg.providerAdminPrincipalId);
+        // -- Causes the BUG with removing all previously( before moder became a providerAdmin ) existed data
+        // state.profiles.delete(arg.providerAdminPrincipalId);
+        state.admin2Provider.delete(arg.providerAdminPrincipalId, arg.providerId);
         return #ok();
       };
     };
@@ -637,16 +643,12 @@ module ProviderModule {
   };
 
   public func isProviderAdmin(
-    providerId : Principal,
+    adminId : Principal,
     state : GlobalState.State
   ) : Bool {
-    switch (state.providersWhitelist.get(providerId)) {
-      case (null) {
-        return false;
-      };
-      case (?p) {
-        return true;
-      };
+    switch (state.admin2Provider.get0(adminId)) {
+      case (list) Array.size(list) > 0;
+      case (_) return false;
     };
   };
 
