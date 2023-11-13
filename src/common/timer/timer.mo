@@ -47,7 +47,7 @@ module CommonTimer {
           func() : async () {
             let _ = await emailtimer();
             ignore Timer.recurringTimer(
-              #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
+              #nanoseconds(Constants.ONE_MIN_NANO_SECS),
               emailtimer
             );
           }

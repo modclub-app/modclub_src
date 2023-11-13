@@ -608,6 +608,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
+    let enabledLogging = true;
+    logMessageIfNeeded(enabledLogging, "submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -1911,7 +1913,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     });
   };
 
+  // Helper function for logging
+  private func logMessageIfNeeded(enableLogging : Bool, message : Text) {
+    if (enableLogging) {
+      Helpers.logMessage(canistergeekLogger, message, #info);
+    };
+  };
+
   public shared ({ caller }) func getModeratorEmailsForPOHAndSendEmail(emailType : Text) : async () {
+    let enableLogging = true;
+    logMessageIfNeeded(enableLogging, "getModeratorEmailsForPOHAndSendEmail - emailType: " # emailType);
+
     // As email is going to send to all the users who opted in to receive at the time of content submission
     var emailIDsHash = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
     let voteStateToSend = voteManager.getVoteState();
@@ -1934,7 +1946,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohStateToSend
       );
     };
+    // Found number of emails to send
+    logMessageIfNeeded(enableLogging, "Found number of emails to send: " # Nat.toText(emailIDsHash.size()));
     for ((email, totalCount) in emailIDsHash.entries()) {
+      logMessageIfNeeded(enableLogging, "Sending email to: " # email);
       // "prod" and principal are just place holders to prevent idempotency
       let callResult = await callLambdaToSendEmail(
         email,

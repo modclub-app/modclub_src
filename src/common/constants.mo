@@ -2,6 +2,7 @@ module Constants {
   public let EXPIRE_VOTE_TIME = 300000;
   public let VESTING_DISSOLVE_DELAY_SECONDS = 604800;
   public let TOKENS_DECIMAL = 8.0;
+  public let ONE_MIN_NANO_SECS = 60000000000;
   public let FIVE_MIN_NANO_SECS = 300000000000;
   public let TWENTY_FOUR_HOUR_NANO_SECS = 86400000000000;
   public let ONE_HOUR_NANO_SECS = 3600000000000;
@@ -11,7 +12,7 @@ module Constants {
   public let SENIOR_STAKING_EXPONENT = 2;
   public let CONTENT_CHUNK_LIMIT = 2097152; // 2Mb = 2 * 1024 * 1024
   public let DATA_TYPE_PLAIN_TEXT = "text/plain";
-  public let RESERVE_EXPIRE_TIME  = 300000;
+  public let RESERVE_EXPIRE_TIME = 300000;
 
   public let ICRC_RESERVE_SA = "-------------------------RESERVE" : Blob;
   public let ICRC_ACCOUNT_PAYABLE_SA = "-----------------ACCOUNT_PAYABLE" : Blob;
