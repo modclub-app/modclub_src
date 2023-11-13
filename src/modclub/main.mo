@@ -608,6 +608,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
+    let enabledLogging = true;
+    logMessageIfNeeded(enabledLogging, "submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -1944,6 +1946,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohStateToSend
       );
     };
+    // Found number of emails to send
+    logMessageIfNeeded(enableLogging, "Found number of emails to send: " # Nat.toText(emailIDsHash.size()));
     for ((email, totalCount) in emailIDsHash.entries()) {
       logMessageIfNeeded(enableLogging, "Sending email to: " # email);
       // "prod" and principal are just place holders to prevent idempotency
