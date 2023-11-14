@@ -65,6 +65,8 @@ import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import CommonTimer "../common/timer/timer";
 
+import Content "./service/queue/state";
+
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
 
   let MAX_WAIT_LIST_SIZE = 20000;
@@ -1920,6 +1922,30 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
+  func logQueueDetails(enableLogging : Bool, contentState : Content.QueueState) {
+    let myPrincipal = Principal.fromText("usks4-kvxom-pih6b-c4xx5-l6h2p-n3s47-bmxd2-i5sor-g5mw3-csvvc-uqe");
+    var foundMyUser = false;
+    for ((qId, contentMap) in contentState.newContentQueues.entries()) {
+      logMessageIfNeeded(enableLogging, "Queue ID: " # qId # ", Size: " # Nat.toText(contentMap.size()));
+      if (contentMap.size() != 0) {
+        var foundUserForQueue = false;
+        for ((userId, userQID) in contentState.userId2QueueId.entries()) {
+          if (Principal.equal(userId, myPrincipal)) {
+            foundMyUser := true;
+            logMessageIfNeeded(enableLogging, "User " # Principal.toText(userId) # " is assigned to Queue ID: " # userQID);
+          };
+          if (userQID == qId) {
+            foundUserForQueue := true;
+            logMessageIfNeeded(enableLogging, "User " # Principal.toText(userId) # " is assigned to Queue ID: " # qId);
+          };
+        };
+        if (not foundUserForQueue) {
+          logMessageIfNeeded(enableLogging, "No user found for Queue ID: " # qId);
+        };
+      };
+    };
+  };
+
   public shared ({ caller }) func getModeratorEmailsForPOHAndSendEmail(emailType : Text) : async () {
     let enableLogging = true;
     logMessageIfNeeded(enableLogging, "getModeratorEmailsForPOHAndSendEmail - emailType: " # emailType);
@@ -1930,6 +1956,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (emailType == "shc") {
       // Sends content email
       let queueStateToSend = contentQueueManager.getQueueState();
+      // Output queue size  queueStateToSend.newContentQueues.size()
+      logMessageIfNeeded(enableLogging, "Output content queue size: " # Nat.toText(queueStateToSend.newContentQueues.size()));
+      logQueueDetails(enableLogging, queueStateToSend);
       emailIDsHash := emailManager.getModeratorEmailsForContent(
         voteStateToSend,
         queueStateToSend,
@@ -1938,6 +1967,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     } else {
       // Sends POH email
       let pohContentState = pohContentQueueManager.getQueueState();
+      logMessageIfNeeded(enableLogging, "Output poh queue size: " # Nat.toText(pohContentState.newContentQueues.size()));
       let pohStateToSend = pohEngine.getPOHState();
       emailIDsHash := emailManager.getModeratorEmailsForPOH(
         voteStateToSend,
