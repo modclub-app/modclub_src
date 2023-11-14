@@ -17,6 +17,7 @@ on:
           - "prod"
       SUMMARY:
         description: "Proposal Summary"
+        type: "textarea"
         required: true
       CANISTER:
         description: "Canister for Proposal"
