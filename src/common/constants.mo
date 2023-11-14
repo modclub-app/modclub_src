@@ -35,4 +35,9 @@ module Constants {
   // Event bus topics
   // --- Moderator seniority transitions ---
   public let TOPIC_MODERATOR_PROMOTED_TO_SENIOR = "moderator_became_senior" : Text;
+
+  // --- Email Notification types ---
+  public let EMAIL_NOTIFICATION_NEW_POH = "new_poh_notification" : Text;
+  public let EMAIL_NOTIFICATION_NEW_CONTENT = "new_content_notification" : Text;
+  public let EMAIL_NOTIFICATION_USER_VERIFICATION = "user_verification_notification" : Text;
 };

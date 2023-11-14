@@ -258,12 +258,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Text {
     switch (stateV2.providersWhitelist.get(caller)) {
       case (null) {
-        Helpers.logMessage(
-          canistergeekLogger,
-          "registerProvider - Provider not in allow list with provider ID: " # Principal.toText(
-            caller
-          ),
-          #info
+        logMessage(
+          "registerProvider - Provider not in allow list with provider ID: " #
+          Principal.toText(caller)
         );
         return "Caller " # Principal.toText(caller) # " not in allow list";
       };
@@ -370,63 +367,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return psa;
   };
 
-  private func getVoteParamIdByLevel(
-    level : ?Types.Level
-  ) : Text {
-    let voteParamId = switch (level) {
-      case (?lv) {
-        return contentState.getVoteParamIdByLevel(lv, stateV2);
-      };
-      case (null) {
-        return contentState.getVoteParamIdByLevel(#simple, stateV2);
-      };
-    };
-
-    return voteParamId;
-  };
-
-  private func getVoteParamsIdByContentId(contentId : Types.ContentId) : ?Types.VoteParamsId {
-    return contentState.getVoteParamsIdByContentId(contentId);
-  };
-
-  private func getVoteParamsByVoteParamId(voteParamId : Types.VoteParamsId) : async Types.VoteParameters {
-    switch (contentState.getVoteParamsByVoteParamId(voteParamId)) {
-      case (null) {
-        let now = Helpers.timeNow();
-        let vp : Types.VoteParameters = {
-          id = "simplevoteParameter-0";
-          requiredVotes = 3;
-          createdAt = now;
-          updatedAt = now;
-          complexity = {
-            level = #simple;
-            expiryTime = now + Constants.EXPIRE_VOTE_TIME;
-          };
-        };
-        await contentState.setVoteParams(vp);
-        return vp;
-      };
-      case (?vote) {
-        return vote;
-      };
-    };
-  };
-
-  public shared ({ caller }) func setVoteParamsForLevel(requireVote : Int, level : Types.Level) : async () {
+  private func getVoteParamsByComplexity(complexity : ?Types.Level) : Types.VoteParameters {
     let now = Helpers.timeNow();
-    let id : Types.VoteParamsId = Helpers.generateVoteParamId(Helpers.level2Text(level) # "voteParameter", stateV2);
-    let vp : Types.VoteParameters = {
-      id = id;
-      requiredVotes = requireVote;
+    return {
+      id = "requiredVotesParameter-0"; // redundant structure
+      requiredVotes = ModClubParam.getVotesByComplexity(Option.get(complexity, #simple));
       createdAt = now;
       updatedAt = now;
       complexity = {
-        level = level;
+        level = Option.get(complexity, #simple);
         expiryTime = now + Constants.EXPIRE_VOTE_TIME;
       };
-
     };
-    let res = await contentState.setVoteParams(vp);
   };
 
   public shared ({ caller }) func addRules(
@@ -538,6 +490,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
+    logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -556,8 +509,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(complexity);
-    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
+    let voteParam = getVoteParamsByComplexity(complexity);
 
     let cid = await ContentManager.submitTextOrHtmlContent(
       {
@@ -610,8 +562,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
-    let enabledLogging = true;
-    logMessageIfNeeded(enabledLogging, "submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
+    logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -629,8 +580,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(complexity);
-    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
+    let voteParam = getVoteParamsByComplexity(complexity);
 
     var cid = await ContentManager.submitTextOrHtmlContent(
       {
@@ -702,8 +652,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(complexity);
-    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
+    let voteParam = getVoteParamsByComplexity(complexity);
 
     let cid = await ContentManager.submitImage(
       {
@@ -836,10 +785,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     filterVoted : Bool,
     filters : Types.ModerationTasksFilter
   ) : async [Types.ContentPlus] {
-    Helpers.logMessage(
-      canistergeekLogger,
-      "getTasks - provider called with provider ID: " # Principal.toText(caller),
-      #info
+    logMessage(
+      "getTasks - provider called with provider ID: " #
+      Principal.toText(caller)
     );
     switch (PermissionsModule.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
@@ -886,12 +834,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         throw Error.reject(e);
       };
       case (#ok(tasks)) {
-        Helpers.logMessage(
-          canistergeekLogger,
-          "getTasks - FINISHED - provider called with provider ID: " # Principal.toText(
-            caller
-          ),
-          #info
+        logMessage(
+          "getTasks - FINISHED - provider called with provider ID: " #
+          Principal.toText(caller)
         );
         return tasks;
       };
@@ -1253,14 +1198,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     var voteCount = getVoteCount(contentId, ?caller);
-    Helpers.logMessage(
-      canistergeekLogger,
+    logMessage(
       "vote - User ID: " # Principal.toText(caller) # " approved: " # Bool.toText(
         decision == #approved
       ) # " voting on content ID : " # contentId # " approve count : " # Nat.toText(
         voteCount.approvedCount
-      ) # " rejected count : " # Nat.toText(voteCount.rejectedCount),
-      #info
+      ) # " rejected count : " # Nat.toText(voteCount.rejectedCount)
     );
     await ContentVotingManager.vote({
       userId = caller;
@@ -1415,16 +1358,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (caller != Principal.fromActor(this)) {
       throw Error.reject("Unauthorized");
     };
-    Helpers.logMessage(
-      canistergeekLogger,
+    logMessage(
       "pohCallbackForModclub - status:  " # pohEngine.statusToString(
         message.status
       ) # " submittedAt: " # Int.toText(Option.get(message.submittedAt, -1)) # " requestedAt: " # Int.toText(
         Option.get(message.requestedAt, -1)
       ) # " completedAt: " # Int.toText(Option.get(message.completedAt, -1)) # "isFirstAssociation: " # Bool.toText(
         message.isFirstAssociation
-      ) # "providerUserId: " # message.providerUserId,
-      #info
+      ) # "providerUserId: " # message.providerUserId
     );
   };
 
@@ -1916,49 +1857,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   // Helper function for logging
-  private func logMessageIfNeeded(enableLogging : Bool, message : Text) {
-    if (enableLogging) {
-      Helpers.logMessage(canistergeekLogger, message, #info);
-    };
-  };
-
-  func logQueueDetails(enableLogging : Bool, contentState : Content.QueueState) {
-    let myPrincipal = Principal.fromText("usks4-kvxom-pih6b-c4xx5-l6h2p-n3s47-bmxd2-i5sor-g5mw3-csvvc-uqe");
-    var foundMyUser = false;
-    for ((qId, contentMap) in contentState.newContentQueues.entries()) {
-      logMessageIfNeeded(enableLogging, "Queue ID: " # qId # ", Size: " # Nat.toText(contentMap.size()));
-      if (contentMap.size() != 0) {
-        var foundUserForQueue = false;
-        for ((userId, userQID) in contentState.userId2QueueId.entries()) {
-          if (Principal.equal(userId, myPrincipal)) {
-            foundMyUser := true;
-            logMessageIfNeeded(enableLogging, "User " # Principal.toText(userId) # " is assigned to Queue ID: " # userQID);
-          };
-          if (userQID == qId) {
-            foundUserForQueue := true;
-            logMessageIfNeeded(enableLogging, "User " # Principal.toText(userId) # " is assigned to Queue ID: " # qId);
-          };
-        };
-        if (not foundUserForQueue) {
-          logMessageIfNeeded(enableLogging, "No user found for Queue ID: " # qId);
-        };
-      };
-    };
+  private func logMessage(message : Text) {
+    Helpers.logMessage(canistergeekLogger, message, #info);
   };
 
   public shared ({ caller }) func getModeratorEmailsForPOHAndSendEmail(emailType : Text) : async () {
-    let enableLogging = true;
-    logMessageIfNeeded(enableLogging, "getModeratorEmailsForPOHAndSendEmail - emailType: " # emailType);
+    logMessage("getModeratorEmailsForPOHAndSendEmail - emailType: " # emailType);
 
     // As email is going to send to all the users who opted in to receive at the time of content submission
     var emailIDsHash = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
     let voteStateToSend = voteManager.getVoteState();
-    if (emailType == "shc") {
+    if (emailType == Constants.EMAIL_NOTIFICATION_NEW_CONTENT) {
       // Sends content email
       let queueStateToSend = contentQueueManager.getQueueState();
-      // Output queue size  queueStateToSend.newContentQueues.size()
-      logMessageIfNeeded(enableLogging, "Output content queue size: " # Nat.toText(queueStateToSend.newContentQueues.size()));
-      logQueueDetails(enableLogging, queueStateToSend);
       emailIDsHash := emailManager.getModeratorEmailsForContent(
         voteStateToSend,
         queueStateToSend,
@@ -1967,7 +1878,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     } else {
       // Sends POH email
       let pohContentState = pohContentQueueManager.getQueueState();
-      logMessageIfNeeded(enableLogging, "Output poh queue size: " # Nat.toText(pohContentState.newContentQueues.size()));
       let pohStateToSend = pohEngine.getPOHState();
       emailIDsHash := emailManager.getModeratorEmailsForPOH(
         voteStateToSend,
@@ -1977,9 +1887,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       );
     };
     // Found number of emails to send
-    logMessageIfNeeded(enableLogging, "Found number of emails to send: " # Nat.toText(emailIDsHash.size()));
+    logMessage("Found number of emails to send: " # Nat.toText(emailIDsHash.size()));
     for ((email, totalCount) in emailIDsHash.entries()) {
-      logMessageIfNeeded(enableLogging, "Sending email to: " # email);
+      logMessage("Sending email to: " # email);
       // "prod" and principal are just place holders to prevent idempotency
       let callResult = await callLambdaToSendEmail(
         email,
@@ -2013,11 +1923,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (not Helpers.allowedCanistergeekCaller(caller)) {
       throw Error.reject("Unauthorized");
     };
-    Helpers.logMessage(
-      canistergeekLogger,
-      "Log from canister Log method.",
-      #info
-    );
+    logMessage("getCanisterLog - request from caller: " # Principal.toText(caller));
     canistergeekLogger.getLog(request);
   };
 
@@ -2096,11 +2002,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       pohContentQueueManager
     );
     if (finishedVoting == #ok(true)) {
-      Helpers.logMessage(
-        canistergeekLogger,
-        "Voting completed for packageId: " # packageId,
-        #info
-      );
+      logMessage("Voting completed for packageId: " # packageId);
       let finalDecision = pohContentQueueManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
       var contentIds : [Text] = [];
@@ -2110,10 +2012,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           packageId,
           #verified
         );
-        Helpers.logMessage(
-          canistergeekLogger,
-          "Voting completed for packageId: " # packageId # " Final decision: approved",
-          #info
+        logMessage(
+          "Voting completed for packageId: " # packageId # " Final decision: approved"
         );
       } else {
         contentIds := pohEngine.changeChallengePackageStatus(
@@ -2142,10 +2042,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           };
           case (_) {};
         };
-        Helpers.logMessage(
-          canistergeekLogger,
-          "Voting completed for packageId: " # packageId # " Final decision: rejected",
-          #info
+        logMessage(
+          "Voting completed for packageId: " # packageId # " Final decision: rejected"
         );
       };
 
@@ -2167,10 +2065,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               };
               isVoteCorrect := true;
             };
-            Helpers.logMessage(
-              canistergeekLogger,
-              "User:" # Principal.toText(v.userId) # ":Voting for packageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(isVoteCorrect),
-              #info
+            logMessage(
+              "User:" # Principal.toText(v.userId) # ":Voting for packageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(isVoteCorrect)
             );
             usersToRewardRS.add({
               userId = v.userId;
@@ -2199,10 +2095,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
         };
         let fullReward = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
-        Helpers.logMessage(
-          canistergeekLogger,
-          "UserID:" #Principal.toText(userVote.userId) # "RS Before Vote POH:" # Float.toText(userVote.rsBeforeVoting) # "Full rewards" # Float.toText(fullReward),
-          #info
+        logMessage(
+          "UserID:" # Principal.toText(userVote.userId) # "RS Before Vote POH:" # Float.toText(userVote.rsBeforeVoting) # "Full rewards" # Float.toText(fullReward)
         );
         let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
         let _ = await ledger.icrc1_transfer({
@@ -2777,11 +2671,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
 
   system func preupgrade() {
-    Helpers.logMessage(
-      canistergeekLogger,
-      "MODCLUB PREUPGRRADE",
-      #info
-    );
+    logMessage("MODCLUB PREUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
     stateSharedV2 := StateV2.fromState(stateV2);
 
     storageStateStable := storageSolution.getStableState();
@@ -2824,11 +2714,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var globalStateMigrationDone = false;
 
   system func postupgrade() {
-    Helpers.logMessage(
-      canistergeekLogger,
-      "MODCLUB POSTUPGRRADE",
-      #info
-    );
+    logMessage("MODCLUB POSTUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
 
     authGuard.subscribe("admins");
     admins := authGuard.setUpDefaultAdmins(
@@ -2877,7 +2763,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       canistergeekLogger
     );
     contentQueueStateStable := null;
-    canistergeekLogger.setMaxMessagesCount(3000);
+    canistergeekLogger.setMaxMessagesCount(5000);
 
     // TODO: remove this after upgrade
     voteManager := VoteManager.VoteManager(pohVoteStableStateV3);
@@ -2929,7 +2815,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#shuffleContent _) { authGuard.isAdmin(caller) };
       case (#shufflePohContent _) { authGuard.isAdmin(caller) };
       case (#getTaskStats _) { authGuard.isAdmin(caller) };
-      case (#setVoteParamsForLevel _) { authGuard.isAdmin(caller) };
       case (#setRandomization _) { authGuard.isAdmin(caller) };
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };
@@ -3156,11 +3041,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func importAirdropMetadata(payload : Types.AirdropMetadataImportPayload) : async {
     status : Bool;
   } {
-    Helpers.logMessage(
-      canistergeekLogger,
-      "MODCLUB Instanse has importAirdropMetadata call:: ",
-      #info
-    );
+    logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show payload);
     importedProfilesStable := List.nil<(Principal, Nat)>();
     importedProfiles.clear();
 
@@ -3177,11 +3058,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
       };
     };
-    Helpers.logMessage(
-      canistergeekLogger,
-      "AirdropMetadata import DONE :: Profiles - " # debug_show importedProfiles.size(),
-      #info
-    );
+    logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show importedProfilesStable);
     { status = true };
   };
 
@@ -3284,11 +3161,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func associateAccount(assocHash : Text, profileData : Types.ImportProfile, points : Int) : async Text {
-    Helpers.logMessage(
-      canistergeekLogger,
-      "associateAccount() called with parameters: assocHash = " # assocHash # ", profileData.userId = " # Principal.toText(profileData.id) # ", points = " # Int.toText(points),
-      #info
-    );
+    logMessage("MODCLUB Instanse has associateAccount call:: " # debug_show assocHash # " " # debug_show profileData # " " # debug_show points);
     let (associator, assocAccount, avh) = switch (accountsAssocHashes.get(assocHash)) {
       case (?assoc) {
         switch (assocVerificationHashes.get(assocHash)) {

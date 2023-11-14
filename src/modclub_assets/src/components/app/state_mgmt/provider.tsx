@@ -1,27 +1,28 @@
-import { useContext, useReducer, useState, useCallback } from "react";
+import { useContext, useReducer, useState, useCallback, useMemo } from "react";
 import { useActors } from "../../../hooks/actors";
 import { StateContext, StateDispatchContext } from "./context/state";
-import { asyncReducers } from "./reducers/asyncReducers";
+
+import { asyncLayer } from "./reducers";
+import { reducers } from "./reducers/infra/reducers";
+
 import { initialState } from "./state";
 import { Connect2ICContext } from "@connect2icmodclub/react";
 
 export function StateProvider({ children }) {
-  const [asyncState, dispatch] = useReducer(asyncReducers, initialState);
-  const actors = useActors();
-  let [state, setState] = useState(initialState);
-  Promise.resolve(asyncState).then((newState) => {
-    setState(newState);
-  });
   const { client } = useContext(Connect2ICContext);
 
-  let asyncDispatch = useCallback(
-    (payload) => {
-      dispatch({
-        ...payload,
-        context: (client._service && client._service._state.context) || {},
-      });
-    },
-    [actors, client._state]
+  const [state, dispatch] = useReducer(reducers, initialState);
+  const asyncDispatch = useCallback(
+    (payload) =>
+      asyncLayer(
+        state,
+        {
+          ...payload,
+          context: { ...(client._service?._state?.context || {}) },
+        },
+        dispatch
+      ),
+    [state, dispatch, client._service?._state]
   );
 
   return (

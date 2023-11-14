@@ -302,7 +302,7 @@ export default function Userstats({ detailed = false }) {
       )}
 
       {showDeposit && (
-        <Deposit toggle={toggleDeposit} isProvider={false} subacc={subacc} />
+        <Deposit toggle={toggleDeposit} subacc={subacc} />
       )}
 
       {showWithdraw && (

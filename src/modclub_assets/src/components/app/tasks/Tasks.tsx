@@ -50,7 +50,7 @@ const Task = ({ task }) => {
   ]);
 
   const iframeAttributes = ["src", "width", "height", "frameborder", "style"];
-  const videoAttributes = ["src", "width", "height", "controls"];
+  const videoAttributes = ["src", "width", "height", "controls", "preload"];
   const audioAttributes = ["controls"];
   const sourceAttributes = ["src", "type"];
   const imgAttributes = [
@@ -218,119 +218,113 @@ export default function Tasks() {
         <div className="loader is-loading p-5"></div>
       ) : (
         <Columns>
-          {appState.contentModerationTasks.length > 0 ? (
-            <Columns.Column size={12}>
-              <Card>
-                <Card.Content>
-                  <Heading subtitle>Filter Tasks</Heading>
-                  <Columns>
-                    <Columns.Column size={4}>
-                      <span>By Provider:</span>
-                      <Dropdown
-                        className="mr-5"
-                        right
-                        label={appState.contentProviders.reduce(
-                          (l, p) =>
-                            p.id == appState.contentProvidersFilter
-                              ? p.name
-                              : l,
-                          ""
-                        )}
-                        icon={
-                          <Icon color="white">
-                            <span className="material-icons">expand_more</span>
-                          </Icon>
+          <Columns.Column size={12}>
+            <Card>
+              <Card.Content>
+                <Heading subtitle>Filter Tasks</Heading>
+                <Columns>
+                  <Columns.Column size={4}>
+                    <span>By Provider:</span>
+                    <Dropdown
+                      className="mr-5"
+                      right
+                      label={appState.contentProviders.reduce(
+                        (l, p) =>
+                          p.id == appState.contentProvidersFilter ? p.name : l,
+                        ""
+                      )}
+                      icon={
+                        <Icon color="white">
+                          <span className="material-icons">expand_more</span>
+                        </Icon>
+                      }
+                    >
+                      <Dropdown.Item
+                        key={null}
+                        value={null}
+                        renderAs="a"
+                        className={
+                          !appState.contentProvidersFilter && "is-active"
                         }
+                        onMouseDown={() => setFilterByProvider(null)}
                       >
+                        {"none"}
+                      </Dropdown.Item>
+                      {appState.contentProviders.map((p) => (
                         <Dropdown.Item
-                          key={null}
-                          value={null}
+                          key={p.id}
+                          value={p.id}
                           renderAs="a"
                           className={
-                            !appState.contentProvidersFilter && "is-active"
+                            p.id == appState.contentProvidersFilter &&
+                            "is-active"
                           }
-                          onMouseDown={() => setFilterByProvider(null)}
+                          onMouseDown={() => setFilterByProvider(p.id)}
                         >
-                          {"none"}
+                          {p.name}
                         </Dropdown.Item>
-                        {appState.contentProviders.map((p) => (
-                          <Dropdown.Item
-                            key={p.id}
-                            value={p.id}
-                            renderAs="a"
-                            className={
-                              p.id == appState.contentProvidersFilter &&
-                              "is-active"
-                            }
-                            onMouseDown={() => setFilterByProvider(p.id)}
-                          >
-                            {p.name}
-                          </Dropdown.Item>
-                        ))}
-                      </Dropdown>
-                    </Columns.Column>
-                    <Columns.Column size={4}>
-                      <span>By Category:</span>
-                      <Dropdown
-                        className="mr-5"
-                        right
-                        label={appState.contentCategories.reduce(
-                          (l, c) =>
-                            c.id == appState.contentCategoriesFilter
-                              ? c.title
-                              : l,
-                          ""
-                        )}
-                        icon={
-                          <Icon color="white">
-                            <span className="material-icons">expand_more</span>
-                          </Icon>
+                      ))}
+                    </Dropdown>
+                  </Columns.Column>
+                  <Columns.Column size={4}>
+                    <span>By Category:</span>
+                    <Dropdown
+                      className="mr-5"
+                      right
+                      label={appState.contentCategories.reduce(
+                        (l, c) =>
+                          c.id == appState.contentCategoriesFilter
+                            ? c.title
+                            : l,
+                        ""
+                      )}
+                      icon={
+                        <Icon color="white">
+                          <span className="material-icons">expand_more</span>
+                        </Icon>
+                      }
+                    >
+                      <Dropdown.Item
+                        key={null}
+                        value={null}
+                        renderAs="a"
+                        className={
+                          !appState.contentCategoriesFilter && "is-active"
                         }
+                        onMouseDown={() => setFilterByCategory(null)}
                       >
+                        {"none"}
+                      </Dropdown.Item>
+                      {appState.contentCategories.map((c) => (
                         <Dropdown.Item
-                          key={null}
-                          value={null}
+                          key={c.id}
+                          value={c.id}
                           renderAs="a"
                           className={
-                            !appState.contentCategoriesFilter && "is-active"
+                            c.id == appState.contentCategoriesFilter &&
+                            "is-active"
                           }
-                          onMouseDown={() => setFilterByCategory(null)}
+                          onMouseDown={() => setFilterByCategory(c.id)}
                         >
-                          {"none"}
+                          {c.title}
                         </Dropdown.Item>
-                        {appState.contentCategories.map((c) => (
-                          <Dropdown.Item
-                            key={c.id}
-                            value={c.id}
-                            renderAs="a"
-                            className={
-                              c.id == appState.contentCategoriesFilter &&
-                              "is-active"
-                            }
-                            onMouseDown={() => setFilterByCategory(c.id)}
-                          >
-                            {c.title}
-                          </Dropdown.Item>
-                        ))}
-                      </Dropdown>
-                    </Columns.Column>
-                    <Columns.Column size={2}>
-                      <Button
-                        color="primary"
-                        style={{ marginTop: "20px" }}
-                        onClick={fetchByFilters}
-                        className="ml-4 px-7 py-3"
-                      >
-                        Fetch
-                      </Button>
-                    </Columns.Column>
-                  </Columns>
-                </Card.Content>
-              </Card>
-            </Columns.Column>
-          ) : (
-            <div className="loader is-loading p-5"></div>
-          )}
+                      ))}
+                    </Dropdown>
+                  </Columns.Column>
+                  <Columns.Column size={2}>
+                    <Button
+                      color="primary"
+                      style={{ marginTop: "20px" }}
+                      onClick={fetchByFilters}
+                      className="ml-4 px-7 py-3"
+                    >
+                      Fetch
+                    </Button>
+                  </Columns.Column>
+                </Columns>
+              </Card.Content>
+            </Card>
+          </Columns.Column>
           {appState.contentModerationTasks.length > 0 &&
             appState.contentModerationTasks.map((task) => (
               <Task key={task.id} task={task} />

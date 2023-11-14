@@ -1,4 +1,5 @@
 import Principal "mo:base/Principal";
+import Types "../../types";
 
 module {
 
@@ -46,7 +47,12 @@ module {
   public let STAKE_SA = "STAKE";
   public let MOD_RELEASE_PER_DAY = 12_577_000_000_000;
 
-  public func getModclubWallet() : Principal {
-    return Principal.fromText("kwqat-tqaaa-aaaah-qairq-cai");
+  public func getVotesByComplexity(level : Types.Level) : Nat {
+    switch (level) {
+      case (#simple) { return 3 };
+      case (#normal) { return 5 };
+      case (#hard) { return 7 };
+      case (#xhard) { return 9 };
+    };
   };
 };

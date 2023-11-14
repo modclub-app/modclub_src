@@ -19,8 +19,12 @@ module CommonTimer {
 
     public var isTimerSet : Bool = false;
     public func emailtimer() : async () {
-      let _ = mcactor.getModeratorEmailsForPOHAndSendEmail("p");
-      let _ = mcactor.getModeratorEmailsForPOHAndSendEmail("shc");
+      let _ = mcactor.getModeratorEmailsForPOHAndSendEmail(
+        Constants.EMAIL_NOTIFICATION_NEW_POH
+      );
+      let _ = mcactor.getModeratorEmailsForPOHAndSendEmail(
+        Constants.EMAIL_NOTIFICATION_NEW_CONTENT
+      );
     };
 
     public func releaseNextToken() : async () {
@@ -41,26 +45,16 @@ module CommonTimer {
       canistergeekMonitor : Canistergeek.Monitor
     ) : () {
       if (not isTimerSet) {
-        canistergeekMonitor.collectMetrics();
         ignore Timer.setTimer(
           #seconds(0),
           func() : async () {
             let _ = await emailtimer();
             ignore Timer.recurringTimer(
-              #nanoseconds(Constants.ONE_MIN_NANO_SECS),
+              #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
               emailtimer
             );
           }
         );
-
-        // TODO: Uncomment this when MOD-364 is complete
-        // ignore Timer.setTimer(
-        //   #seconds(0),
-        //   func() : async () {
-        //     let _ = await releaseNextToken();
-        //     ignore Timer.recurringTimer(#nanoseconds(Constants.ONE_YEAR_NANO_SECS), releaseNextToken);
-        //   }
-        // );
         isTimerSet := true;
       };
       isTimerSet := isTimerSet;

@@ -27,6 +27,7 @@ export const initialState = {
   moderationTasksPageStartIndex: 0,
   moderationTasksPageSize: 20,
   unlockStakeBalance: 0,
+  releaseUnStakedLoading: false,
   unlockStakeLoading: true,
   claimedStakeBalance: 0,
   claimedStakeLoading: true,
