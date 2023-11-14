@@ -34,11 +34,6 @@ function check_success() {
             echo "Error: Failed to register moderator"
         fi
         ;;
-    "setVoteParams")
-        if [ $? -ne 0 ]; then
-            echo "Error: Failed to setVoteParameter"
-        fi
-        ;;
     esac
 }
 
@@ -139,9 +134,6 @@ dfx ledger fabricate-cycles --canister modclub_qa
 dfx ledger fabricate-cycles --canister modclub_qa
 dfx ledger fabricate-cycles --canister modclub_qa
 echo "+++++++++++++++++++ Step 4.1: Set VoteParams  +++++++++++++++++++"
-dfx canister call modclub_qa setVoteParamsForLevel "(3, variant {simple})"
-check_success "setVoteParams"
-sleep 2
 dfx canister call rs_qa setRS "(principal $MOD_PRINCIPAL, 6900)"
 dfx identity use mod_provider
 declare SUBMIT_01=$(dfx canister call modclub_qa submitText "(\""001"\",\"Text001\", opt \"TitleText001\", opt variant {simple})"| cut -d '(' -f 2 | cut -d ')' -f -1| cut -d '"' -f 2 | cut -d '"' -f -1)

@@ -90,7 +90,6 @@ module {
     #sendVerificationEmail : () -> Text;
     #setRandomization : () -> Bool;
     #reserveContent : () -> Text;
-    #setVoteParamsForLevel : () -> (Int, Types.Level);
     #shuffleContent : () -> ();
     #shufflePohContent : () -> ();
     #stakeTokens : () -> Nat;

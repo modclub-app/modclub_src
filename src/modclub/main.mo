@@ -370,63 +370,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return psa;
   };
 
-  private func getVoteParamIdByLevel(
-    level : ?Types.Level
-  ) : Text {
-    let voteParamId = switch (level) {
-      case (?lv) {
-        return contentState.getVoteParamIdByLevel(lv, stateV2);
-      };
-      case (null) {
-        return contentState.getVoteParamIdByLevel(#simple, stateV2);
-      };
-    };
-
-    return voteParamId;
-  };
-
-  private func getVoteParamsIdByContentId(contentId : Types.ContentId) : ?Types.VoteParamsId {
-    return contentState.getVoteParamsIdByContentId(contentId);
-  };
-
-  private func getVoteParamsByVoteParamId(voteParamId : Types.VoteParamsId) : async Types.VoteParameters {
-    switch (contentState.getVoteParamsByVoteParamId(voteParamId)) {
-      case (null) {
-        let now = Helpers.timeNow();
-        let vp : Types.VoteParameters = {
-          id = "simplevoteParameter-0";
-          requiredVotes = 3;
-          createdAt = now;
-          updatedAt = now;
-          complexity = {
-            level = #simple;
-            expiryTime = now + Constants.EXPIRE_VOTE_TIME;
-          };
-        };
-        await contentState.setVoteParams(vp);
-        return vp;
-      };
-      case (?vote) {
-        return vote;
-      };
-    };
-  };
-
-  public shared ({ caller }) func setVoteParamsForLevel(requireVote : Int, level : Types.Level) : async () {
+  private func getVoteParamsByComplexity(complexity : ?Types.Level) : Types.VoteParameters {
     let now = Helpers.timeNow();
-    let id : Types.VoteParamsId = Helpers.generateVoteParamId(Helpers.level2Text(level) # "voteParameter", stateV2);
-    let vp : Types.VoteParameters = {
-      id = id;
-      requiredVotes = requireVote;
+    return {
+      id = "requiredVotesParameter-0"; // redundant structure
+      requiredVotes = ModClubParam.getVotesByComplexity(Option.get(complexity, #simple));
       createdAt = now;
       updatedAt = now;
       complexity = {
-        level = level;
+        level = Option.get(complexity, #simple);
         expiryTime = now + Constants.EXPIRE_VOTE_TIME;
       };
-
     };
-    let res = await contentState.setVoteParams(vp);
   };
 
   public shared ({ caller }) func addRules(
@@ -556,8 +511,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(complexity);
-    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
+    let voteParam = getVoteParamsByComplexity(complexity);
 
     let cid = await ContentManager.submitTextOrHtmlContent(
       {
@@ -629,8 +583,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(complexity);
-    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
+    let voteParam = getVoteParamsByComplexity(complexity);
 
     var cid = await ContentManager.submitTextOrHtmlContent(
       {
@@ -702,8 +655,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let taskFee = ProviderManager.getTaskFee(provider);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
-    let voteParamId = getVoteParamIdByLevel(complexity);
-    let voteParam = await getVoteParamsByVoteParamId(voteParamId);
+    let voteParam = getVoteParamsByComplexity(complexity);
 
     let cid = await ContentManager.submitImage(
       {
@@ -2929,7 +2881,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#shuffleContent _) { authGuard.isAdmin(caller) };
       case (#shufflePohContent _) { authGuard.isAdmin(caller) };
       case (#getTaskStats _) { authGuard.isAdmin(caller) };
-      case (#setVoteParamsForLevel _) { authGuard.isAdmin(caller) };
       case (#setRandomization _) { authGuard.isAdmin(caller) };
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };

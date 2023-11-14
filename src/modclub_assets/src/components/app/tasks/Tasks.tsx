@@ -50,7 +50,7 @@ const Task = ({ task }) => {
   ]);
 
   const iframeAttributes = ["src", "width", "height", "frameborder", "style"];
-  const videoAttributes = ["src", "width", "height", "controls"];
+  const videoAttributes = ["src", "width", "height", "controls", "preload"];
   const audioAttributes = ["controls"];
   const sourceAttributes = ["src", "type"];
   const imgAttributes = [

@@ -43,36 +43,7 @@ module Reserved {
       return reserved;
     };
 
-    public func getVoteParamsIdByContentId(
-      contentId : Types.ContentId
-    ) : ?Types.VoteParamsId {
-      let voteParamId : ?Types.VoteParamsId = contentState.voteParams2content.get(contentId);
-      return voteParamId;
-    };
-    public func getVoteParamsByVoteParamId(
-      voteParamId : Types.VoteParamsId
-    ) : ?Types.VoteParameters {
-      let voteParam : ?Types.VoteParameters = contentState.voteParams.get(voteParamId);
-      return voteParam;
-    };
-
-    public func getVoteParamIdByLevel(
-      level : Types.Level,
-      globalState : GlobalState.State
-    ) : Text {
-      let lv = Helpers.level2Text(level);
-      let id = lv # "voteParameter";
-      var count : Nat = 0;
-      switch (globalState.GLOBAL_ID_MAP.get(id)) {
-        case (?result) {
-          count := result - 1;
-        };
-        case (_)();
-      };
-      return id # "-" # (Nat.toText(count));
-    };
-
-    public func setVoteParams(
+    public func setVotingParams(
       vp : Types.VoteParameters
     ) : async () {
       if (((vp.requiredVotes % 2) != 0) and (vp.requiredVotes > 1)) {
