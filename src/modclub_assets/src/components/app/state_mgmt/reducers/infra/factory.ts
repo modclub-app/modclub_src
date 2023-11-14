@@ -18,10 +18,10 @@ export const reducersFactory = (state, icContext, dispatch) => {
     handle: (type, payload) => {
       const handler = reducers.get(type);
       if (!handler) {
-        // throw Error("Unknown action: " + action.type);
         console.log("NO reducer found for ", type);
+        // throw Error("Unknown action: " + action.type);
       } else {
-        console.log("[DEBUG] Running handler for Action: ", type);
+        // console.log("[DEBUG] Running handler for Action: ", type);
         handler(payload);
       }
     },

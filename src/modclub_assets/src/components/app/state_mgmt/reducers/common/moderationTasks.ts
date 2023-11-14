@@ -55,6 +55,12 @@ export async function refetchContentModerationTasks(context, payload) {
             : [],
         } // filtering
       );
+      !tasks.lenght &&
+        console.log(
+          "TASK_FILTERING_PARAMS::",
+          state.contentProvidersFilter,
+          state.contentCategoriesFilter
+        );
       console.log("FETCHED_TASKS::", tasks);
     }
   } catch (e) {
