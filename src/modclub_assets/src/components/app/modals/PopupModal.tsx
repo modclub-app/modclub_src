@@ -5,6 +5,7 @@ import { Form } from "react-final-form";
 import { format_token } from "../../../utils/util";
 interface PopupModal {
   toggle: () => void;
+  show: boolean;
   title: string;
   subtitle: string;
   handleSubmit: (values) => any;
@@ -19,6 +20,7 @@ interface PopupModal {
 
 export default function PopupModal({
   toggle,
+  show,
   title,
   subtitle,
   children,
@@ -48,7 +50,14 @@ export default function PopupModal({
               success: true,
               value: `You have successfully ${title.toLowerCase()} ${format_token(
                 result.reserved
-              )} MOD into your Mod wallet. Time to start your moderator journey with Modclub.`,
+              )} MOD into your Modclub wallet. Time to start your moderator journey with Modclub.`,
+            });
+          } else if (title.toLowerCase() == "deposit provider") {
+            setMessage({
+              success: true,
+              value: `You have successfully deposit ${format_token(
+                result.reserved
+              )} MOD into your provider Modclub wallet. Time to start your journey with Modclub.`,
             });
           } else if (title.toLowerCase() == "withdraw") {
             setMessage({
@@ -102,7 +111,7 @@ export default function PopupModal({
     setSubmitting(false);
   };
   return (
-    <Modal show={true} onClose={toggle} closeOnBlur={true} showClose={false}>
+    <Modal show={show} onClose={toggle} closeOnBlur={true} showClose={false}>
       {!message ? (
         <Modal.Card backgroundColor="circles" className="is-small">
           <Form

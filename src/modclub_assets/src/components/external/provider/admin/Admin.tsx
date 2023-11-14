@@ -11,23 +11,20 @@ import {
   Notification,
 } from "react-bulma-components";
 import { Link } from "react-router-dom";
-
 import { Connect2ICContext } from "@connect2icmodclub/react";
 
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../../assets/wallet.svg";
-import stakedImg from "../../../../../assets/staked.svg";
 import EditProviderLogo from "./EditProviderLogo";
 import EditRulesModal from "./EditRulesModal";
 import RemoveRuleModal from "./RemoveRuleModal";
 import EditAppModal from "./EditAppModal";
 import { convert_to_mod, getUrlFromArray } from "../../../../utils/util";
-import Deposit from "../../../app/modals/Deposit";
-import { useActors } from "../../../../hooks/actors";
 import {
   useAppState,
   useAppStateDispatch,
 } from "../../../app/state_mgmt/context/state";
+import ProviderDepositPopup from "./ProviderDepositPopup";
 
 export default function Admin() {
   const { modclub } = useActors();
@@ -39,6 +36,7 @@ export default function Admin() {
   const [showEditApp, setShowEditApp] = useState(false);
   const toggleEditApp = () => setShowEditApp(!showEditApp);
   const appState = useAppState();
+  const dispatch = useAppStateDispatch();
 
   const [showEditRules, setShowEditRules] = useState(false);
   const toggleEditRules = () => setShowEditRules(!showEditRules);
@@ -58,12 +56,19 @@ export default function Admin() {
       imgMetaData.imageType
     );
   }
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState<boolean>(true);
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [loader, setLoader] = useState(false);
   const [providerSubAcc, setProviderSubAcc] = useState(null);
   const [modclubCanId, setModclubCanId] = useState("MODCLUB_CANISTER_ID");
+
+  const providerBalance = convert_to_mod(
+    appState.providerBalance,
+    BigInt(appState.decimals),
+    2
+  );
+
 
   const toggleDeposit = () => {
     setIsDepositOpen(!isDepositOpen);
@@ -96,7 +101,9 @@ export default function Admin() {
     }
   }, [client._service?._state]);
 
-  const toggle = () => setShowModal(false);
+  const closeModalHandler = () => {
+    setShowModal(!showModal);
+  };
 
   return (
     <>
@@ -236,13 +243,7 @@ export default function Admin() {
                   style={{ whiteSpace: "nowrap", lineHeight: 0.5 }}
                 >
                   <Heading size={1} className="level">
-                    <span>
-                      {convert_to_mod(
-                        appState.providerBalance,
-                        BigInt(appState.decimals),
-                        2
-                      )}
-                    </span>
+                    <span>{providerBalance}</span>
                     <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
                       MOD
                       <br />
@@ -318,11 +319,7 @@ export default function Admin() {
         <RemoveRuleModal toggle={toggleRemoveRule} rule={ruleToRemove} />
       )}
       {isDepositOpen && appState.selectedProvider && (
-        <Deposit
-          toggle={toggleDeposit}
-          provider={appState.selectedProvider.id.toString()}
-          isProvider={true}
-        />
+        <ProviderDepositPopup toggle={closeModalHandler} show={showModal} />
       )}
     </>
   );

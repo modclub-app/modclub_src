@@ -1,25 +1,25 @@
 import { Field } from "react-final-form";
 import { Icon, Notification } from "react-bulma-components";
 import { useEffect, useState } from "react";
-import { icrc1Transfer } from "../../../utils/api";
+import { icrc1Transfer } from "../../../../utils/api";
 import { Principal } from "@dfinity/principal";
-import PopupModal from "./PopupModal";
-import { convert_to_mod, format_token } from "../../../utils/util";
-import { useActors } from "../../../hooks/actors";
+import PopupModal from "../../../app/modals/PopupModal";
+import { convert_to_mod, format_token } from "../../../../utils/util";
+import { useActors } from "../../../../hooks/actors";
 import { useConnect, useProviders } from "@connect2icmodclub/react";
-import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import {
+  useAppState,
+  useAppStateDispatch,
+} from "../../../app/state_mgmt/context/state";
 
 import { useContext } from "react";
 import { Connect2ICContext } from "@connect2icmodclub/react";
 
 interface DepositProps {
   toggle: () => void;
-  subacc?: Uint8Array;
+  show: boolean;
 }
-export default function Deposit({
-  toggle,
-  subacc,
-}: DepositProps) {
+export default function ProviderDepositPopup({ toggle, show }: DepositProps) {
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
   const [inputValue, setInputValue] = useState(0);
@@ -47,13 +47,20 @@ export default function Deposit({
     }
   }, [client]);
 
-  const handleDeposit = async (value: any) => {
+  const handleDepositProvider = async (value: any) => {
     setError(null);
     setLoader(true);
     const { reserved } = value;
     try {
       const amount: number =
         Number(reserved) * Math.pow(10, Number(appState.decimals));
+      let subacc = await modclub.getProviderSa("RESERVE", [
+        appState.selectedProvider.id,
+      ]);
+      if (subacc.length == 0) {
+        subacc = [];
+      }
+      // TECH-DEBT: REMOVE/REFACTOR THIS
       const transfer = await icrc1Transfer(
         wallet,
         activeProvider.meta.id,
@@ -61,10 +68,10 @@ export default function Deposit({
         Principal.fromText(receiver),
         subacc
       );
-      !appState.systemBalanceLoading &&
-        dispatch({ type: "systemBalanceLoading", payload: true });
       !appState.personalBalanceLoading &&
         dispatch({ type: "personalBalanceLoading", payload: true });
+      !appState.providerBalanceLoading &&
+        dispatch({ type: "providerBalanceLoading", payload: true });
       return { reserved: Number(reserved), transfer: transfer };
     } catch (err) {
       setError(err.message);
@@ -80,7 +87,7 @@ export default function Deposit({
             <h1 className="is-capitalized has-text-weight-bold is-size-6">
               Step 1:
             </h1>
-            <h2>Manually deposit into your account:</h2>
+            <h2>Manually deposit into your provider account:</h2>
             <p className="is-flex is-justify-content-center has-text-white has-background-grey-darker">
               {principal}
               <Icon
@@ -112,10 +119,10 @@ export default function Deposit({
               Step 2:
             </h1>
           </>
-        ) }{ activeProvider.meta.id === "stoic" &&
-          (
+        )}
+        {activeProvider.meta.id === "stoic" && (
           <>
-          <br/>
+            <br />
             <p>
               Your current Stoic Wallet balance:{" "}
               <b> {format_token(personalBalance)} MOD </b>
@@ -134,10 +141,11 @@ export default function Deposit({
       )}
       <PopupModal
         toggle={toggle}
-        title="Deposit"
+        show={show}
+        title="Deposit provider"
         subtitle="Congratulation!"
         loader={load}
-        handleSubmit={handleDeposit}
+        handleSubmit={handleDepositProvider}
       >
         {principal &&
           activeProvider.meta.id != "plug" &&
