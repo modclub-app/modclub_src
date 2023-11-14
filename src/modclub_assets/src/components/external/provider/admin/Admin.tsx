@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Principal } from "@dfinity/principal";
 import {
   Columns,
@@ -11,6 +11,8 @@ import {
   Notification,
 } from "react-bulma-components";
 import { Link } from "react-router-dom";
+
+import { Connect2ICContext } from "@connect2icmodclub/react";
 
 import TrustedIdentities from "./TrustedIdentities";
 import walletImg from "../../../../../assets/wallet.svg";
@@ -29,6 +31,7 @@ import {
 
 export default function Admin() {
   const { modclub } = useActors();
+  const { client } = useContext(Connect2ICContext);
   const [providers, setProviders] = useState([]);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const providerIdText = "";
@@ -59,6 +62,8 @@ export default function Admin() {
   const [imageUploadedMsg, setImageUploadedMsg] = useState(null);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [loader, setLoader] = useState(false);
+  const [providerSubAcc, setProviderSubAcc] = useState(null);
+  const [modclubCanId, setModclubCanId] = useState("MODCLUB_CANISTER_ID");
 
   const toggleDeposit = () => {
     setIsDepositOpen(!isDepositOpen);
@@ -75,8 +80,21 @@ export default function Admin() {
   useEffect(() => {
     if (appState.selectedProvider) {
       setRules(appState.selectedProvider.rules);
+      const sub_acc_rec = appState.selectedProvider.subaccounts.find(
+        (item) => item[0] === "RESERVE"
+      );
+      sub_acc_rec.length &&
+        setProviderSubAcc(new TextDecoder().decode(sub_acc_rec[1]));
     }
   }, [appState.selectedProvider]);
+
+  useEffect(() => {
+    if (client._service?._state?.context?.canisters?.modclub) {
+      setModclubCanId(
+        client._service?._state?.context?.canisters?.modclub.canisterId
+      );
+    }
+  }, [client._service?._state]);
 
   const toggle = () => setShowModal(false);
 
@@ -146,6 +164,13 @@ export default function Admin() {
                         <tr>
                           <td>Description:</td>
                           <td> {appState.selectedProvider?.description} </td>
+                        </tr>
+                        <tr>
+                          <td>ICRC1 Account:</td>
+                          <td>
+                            {" "}
+                            {`record { owner = principal "${modclubCanId}"; subaccount = opt blob "${providerSubAcc}" }`}{" "}
+                          </td>
                         </tr>
                       </tbody>
                     </table>

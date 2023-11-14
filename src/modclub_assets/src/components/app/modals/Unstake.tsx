@@ -1,10 +1,10 @@
 import * as React from "react";
 import { Field } from "react-final-form";
-import { Level, Icon } from "react-bulma-components";
+import { Level, Icon, Button } from "react-bulma-components";
 import PopupModal from "./PopupModal";
 import { convert_to_mod } from "../../../utils/util";
 import { useState } from "react";
-import { useActors } from "../../../utils";
+import { useActors, convert_from_mod } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
 import { UnstakeHistoryTable } from "./UnstakeHistoryTable";
@@ -17,6 +17,12 @@ const UpdateTable = ({
   lockBalance,
   digit,
 }) => {
+  const dispatch = useAppStateDispatch();
+  const appState = useAppState();
+  const unstakedBalance = convert_to_mod(
+    appState.unlockStakeBalance,
+    BigInt(appState.decimals)
+  );
   return (
     <>
       <Level className="has-text-silver px-5">
@@ -35,6 +41,23 @@ const UpdateTable = ({
         <em style={{ fontWeight: 50, color: "#888" }}>
           {Constant.UNSTAKE_WARN_MSG(lockBalance)}
         </em>
+      </p>
+      <hr />
+      <p>
+        Release unstaked tokens: {unstakedBalance} MOD
+        <Button
+          color="primary"
+          className={appState.releaseUnStakedLoading ? "is-loading" : ""}
+          style={{ marginLeft: "10px" }}
+          disabled={!(unstakedBalance > 0)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dispatch({ type: "setReleaseUnStakedLoading", payload: true });
+          }}
+        >
+          Release
+        </Button>
       </p>
     </>
   );

@@ -88,9 +88,21 @@ export default function ModclubApp() {
   }, [isConnected, appState.providerBalanceLoading]);
 
   useEffect(() => {
+    if (isConnected && appState.releaseUnStakedLoading) {
+      dispatch({ type: "releaseUnStakedTokens" });
+    }
+  }, [isConnected, appState.releaseUnStakedLoading]);
+
+  useEffect(() => {
     if (isConnected && vesting && appState.loginPrincipalId)
-      appState.pendingStakeListLoading && dispatch({ type: "fetchUserLockBlock" });
-  }, [isConnected, vesting, appState.loginPrincipalId, appState.pendingStakeListLoading]);
+      appState.pendingStakeListLoading &&
+        dispatch({ type: "fetchUserLockBlock" });
+  }, [
+    isConnected,
+    vesting,
+    appState.loginPrincipalId,
+    appState.pendingStakeListLoading,
+  ]);
 
   useEffect(() => {
     if (isConnected && selectedProvider) {
@@ -135,7 +147,7 @@ export default function ModclubApp() {
   useEffect(() => {
     if (isConnected && appState.loginPrincipalId && vesting)
       appState.unlockStakeLoading &&
-        dispatch({ type: "fetchUserUnlockedStakedBalance" });
+        dispatch({ type: "fetchUserUnlockedStakeBalance" });
   }, [
     isConnected,
     vesting,
