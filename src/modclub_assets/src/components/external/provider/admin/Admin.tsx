@@ -27,7 +27,6 @@ import {
 import ProviderDepositPopup from "./ProviderDepositPopup";
 
 export default function Admin() {
-  const { modclub } = useActors();
   const { client } = useContext(Connect2ICContext);
   const [providers, setProviders] = useState([]);
   const [selectedProvider, setSelectedProvider] = useState(null);
@@ -68,7 +67,6 @@ export default function Admin() {
     BigInt(appState.decimals),
     2
   );
-
 
   const toggleDeposit = () => {
     setIsDepositOpen(!isDepositOpen);

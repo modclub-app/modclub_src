@@ -275,6 +275,7 @@ export default function Userstats({ detailed = false }) {
                 disabled={
                   level == "novice" || level == "junior" || holdingsUpdated
                 }
+                show={claimRewards.canClaim}
               >
                 Claims
               </Button>
@@ -295,53 +296,45 @@ export default function Userstats({ detailed = false }) {
       </Columns>
 
       {showClaim && (
-        <Claim
-          toggle={toggleClaim}
-          userId={principal}
-        />
+        <Claim toggle={toggleClaim} userId={principal} show={showClaim} />
       )}
 
-      {showDeposit && (
-        <Deposit toggle={toggleDeposit} subacc={subacc} />
-      )}
+      <Deposit toggle={toggleDeposit} subacc={subacc} show={showDeposit} />
 
-      {showWithdraw && (
-        <Withdraw
-          toggle={toggleWithdraw}
-          userTokenBalance={convert_to_mod(
-            appState.systemBalance,
-            BigInt(appState.decimals),
-            2
-          )}
-          subacc={subacc}
-          to={principal}
-        />
-      )}
-      {showStake && (
-        <Stake
-          toggle={toggleStake}
-          wallet={convert_to_mod(
-            appState.systemBalance,
-            BigInt(appState.decimals),
-            2
-          )}
-          stake={convert_to_mod(
-            appState.stakeBalance,
-            BigInt(appState.decimals),
-            2
-          )}
-          onUpdate={() => setHoldingsUpdated(true)}
-        />
-      )}
-      {showUnstake && (
-        <Unstake
-          toggle={toggleUnstake}
-          tokenHoldings={tokenHoldings}
-          onUpdate={() => setHoldingsUpdated(true)}
-          userId={principal}
-          digit={appState.decimals}
-        />
-      )}
+      <Withdraw
+        toggle={toggleWithdraw}
+        show={showWithdraw}
+        userTokenBalance={convert_to_mod(
+          appState.systemBalance,
+          BigInt(appState.decimals),
+          2
+        )}
+        subacc={subacc}
+        to={principal}
+      />
+      <Stake
+        toggle={toggleStake}
+        show={showStake}
+        wallet={convert_to_mod(
+          appState.systemBalance,
+          BigInt(appState.decimals),
+          2
+        )}
+        stake={convert_to_mod(
+          appState.stakeBalance,
+          BigInt(appState.decimals),
+          2
+        )}
+        onUpdate={() => setHoldingsUpdated(true)}
+      />
+      <Unstake
+        toggle={toggleUnstake}
+        show={showUnstake}
+        tokenHoldings={tokenHoldings}
+        onUpdate={() => setHoldingsUpdated(true)}
+        userId={principal}
+        digit={appState.decimals}
+      />
     </>
   );
 }

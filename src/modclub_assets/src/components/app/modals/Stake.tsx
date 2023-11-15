@@ -29,7 +29,7 @@ const UpdateTable = ({ wallet, stake, amount = 0 }) => {
   );
 };
 
-export default function Stake({ toggle, wallet, stake, onUpdate }) {
+export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
   const { modclub } = useActors();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
@@ -59,6 +59,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate }) {
   return (
     <PopupModal
       title="Stake"
+      show={show}
       subtitle="Congratulation!"
       toggle={toggle}
       loader={load}
