@@ -106,8 +106,7 @@ export default function ProviderDepositPopup({ toggle, show }: DepositProps) {
         {activeProvider.meta.id === "ii" && (
           <>
             <p>
-              Your current account balance:{" "}
-              <b> {format_token(personalBalance)} MOD </b>
+              Your current account balance: <b> {personalBalance} MOD </b>
             </p>
             <p className="is-size-7">
               {
@@ -124,8 +123,7 @@ export default function ProviderDepositPopup({ toggle, show }: DepositProps) {
           <>
             <br />
             <p>
-              Your current Stoic Wallet balance:{" "}
-              <b> {format_token(personalBalance)} MOD </b>
+              Your current Stoic Wallet balance: <b> {personalBalance} MOD </b>
             </p>
           </>
         )}

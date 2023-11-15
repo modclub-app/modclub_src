@@ -317,7 +317,7 @@ export default function Admin() {
         <RemoveRuleModal toggle={toggleRemoveRule} rule={ruleToRemove} />
       )}
       {isDepositOpen && appState.selectedProvider && (
-        <ProviderDepositPopup toggle={closeModalHandler} show={showModal} />
+        <ProviderDepositPopup toggle={toggleDeposit} show={isDepositOpen} />
       )}
     </>
   );
