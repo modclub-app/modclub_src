@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Heading, Button, Notification } from "react-bulma-components";
 import { Form } from "react-final-form";
 import { format_token } from "../../../utils/util";
@@ -34,6 +34,10 @@ export default function PopupModal({
 }: PopupModal) {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
+
+  useEffect(() => {
+    if (!show) setMessage(null);
+  }, [show]);
 
   const onFormSubmit = async (values: any) => {
     setSubmitting(true);
