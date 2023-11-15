@@ -7,7 +7,7 @@ import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { convert_to_mod } from "../../../utils/util";
 
-export default function Claim({ toggle, userId }) {
+export default function Claim({ toggle, userId, show }) {
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
   const [error, setError] = useState(null);

@@ -1,7 +1,7 @@
 import { Principal } from "@dfinity/principal";
 
 export async function pendingStakeListLoading(context, payload) {
-  dispatch({
+  context.dispatch({
     type: "pendingStakeListLoading",
     pendingStakeListLoading: payload,
   });

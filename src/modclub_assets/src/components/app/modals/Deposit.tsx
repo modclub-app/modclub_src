@@ -16,10 +16,7 @@ interface DepositProps {
   toggle: () => void;
   subacc?: Uint8Array;
 }
-export default function Deposit({
-  toggle,
-  subacc,
-}: DepositProps) {
+export default function Deposit({ toggle, subacc, show }: DepositProps) {
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
   const [inputValue, setInputValue] = useState(0);
@@ -112,10 +109,10 @@ export default function Deposit({
               Step 2:
             </h1>
           </>
-        ) }{ activeProvider.meta.id === "stoic" &&
-          (
+        )}
+        {activeProvider.meta.id === "stoic" && (
           <>
-          <br/>
+            <br />
             <p>
               Your current Stoic Wallet balance:{" "}
               <b> {format_token(personalBalance)} MOD </b>
@@ -134,6 +131,7 @@ export default function Deposit({
       )}
       <PopupModal
         toggle={toggle}
+        show={show}
         title="Deposit"
         subtitle="Congratulation!"
         loader={load}

@@ -65,6 +65,7 @@ const UpdateTable = ({
 
 export default function Unstake({
   toggle,
+  show,
   tokenHoldings,
   userId,
   digit,
@@ -107,6 +108,7 @@ export default function Unstake({
   return (
     <PopupModal
       title="Unstake"
+      show={show}
       subtitle="Congratulation!"
       toggle={toggle}
       handleSubmit={onFormSubmit}

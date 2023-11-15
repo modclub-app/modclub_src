@@ -40,7 +40,13 @@ const UpdateTable = ({ amount }) => {
   );
 };
 
-export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
+export default function Withdraw({
+  toggle,
+  userTokenBalance,
+  subacc,
+  to,
+  show,
+}) {
   const appState = useAppState();
   const [inputValue, setInputValue] = useState(0);
   const dispatch = useAppStateDispatch();
@@ -80,6 +86,7 @@ export default function Withdraw({ toggle, userTokenBalance, subacc, to }) {
   return (
     <PopupModal
       toggle={toggle}
+      show={show}
       title="Withdraw"
       handleSubmit={onFormSubmit}
       subtitle="Congratulation!"
