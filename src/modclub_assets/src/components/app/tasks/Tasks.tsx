@@ -62,6 +62,7 @@ const Task = ({ task }) => {
     "height",
     "loading",
   ];
+  const linkAttributes = ["href", "target", "rel", "style"];
   const allowedAttributes = {
     ...sanitizeHtml.defaults.allowedAttributes,
     iframe: iframeAttributes,
@@ -69,6 +70,21 @@ const Task = ({ task }) => {
     audio: audioAttributes,
     source: sourceAttributes,
     img: imgAttributes,
+    a: linkAttributes,
+  };
+
+  const transformTags = {
+    a: (tagName, attribs) => {
+      // Ensure all <a> tags have target="_blank" so links open in new tab
+      return {
+        tagName: "a",
+        attribs: {
+          ...attribs,
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+      };
+    },
   };
 
   const transformTags = {
