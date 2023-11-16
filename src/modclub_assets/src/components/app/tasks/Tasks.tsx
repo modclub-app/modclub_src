@@ -87,20 +87,6 @@ const Task = ({ task }) => {
     },
   };
 
-  const transformTags = {
-    a: (tagName, attribs) => {
-      // Ensure all <a> tags have target="_blank" so links open in new tab
-      return {
-        tagName: "a",
-        attribs: {
-          ...attribs,
-          target: "_blank",
-          rel: "noopener noreferrer",
-        },
-      };
-    },
-  };
-
   const sanitizedHtml = sanitizeHtml(task.text[0], {
     allowedTags,
     allowedAttributes,
