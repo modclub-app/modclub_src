@@ -45,7 +45,7 @@ export async function refetchContentModerationTasks(context, payload) {
       tasks = await actor.getTasks(
         startIndex,
         endIndex,
-        payload.FILTER_VOTES,
+        payload.FILTER_ALREADY_VOTED,
         {
           providers: Boolean(state.contentProvidersFilter)
             ? [[Principal.from(state.contentProvidersFilter)]]

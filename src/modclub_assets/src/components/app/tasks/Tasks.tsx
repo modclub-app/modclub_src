@@ -21,7 +21,7 @@ import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
-const FILTER_VOTES = false;
+const FILTER_ALREADY_VOTED = true;
 
 const Task = ({ task }) => {
   const { modclub } = useActors();
@@ -71,20 +71,6 @@ const Task = ({ task }) => {
     source: sourceAttributes,
     img: imgAttributes,
     a: linkAttributes,
-  };
-
-  const transformTags = {
-    a: (tagName, attribs) => {
-      // Ensure all <a> tags have target="_blank" so links open in new tab
-      return {
-        tagName: "a",
-        attribs: {
-          ...attribs,
-          target: "_blank",
-          rel: "noopener noreferrer",
-        },
-      };
-    },
   };
 
   const transformTags = {
@@ -205,7 +191,7 @@ export default function Tasks() {
     ) {
       dispatch({
         type: "refetchContentModerationTasks",
-        payload: { FILTER_VOTES },
+        payload: { FILTER_ALREADY_VOTED },
       });
     }
   }, [appState.moderationTasksPage]);
@@ -238,7 +224,7 @@ export default function Tasks() {
   const fetchByFilters = () => {
     dispatch({
       type: "refetchContentModerationTasks",
-      payload: { FILTER_VOTES },
+      payload: { FILTER_ALREADY_VOTED },
     });
   };
 
