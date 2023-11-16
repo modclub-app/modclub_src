@@ -1862,7 +1862,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func getModeratorEmailsForPOHAndSendEmail(emailType : Text) : async () {
-    logMessage("getModeratorEmailsForPOHAndSendEmail - emailType: " # emailType);
 
     // As email is going to send to all the users who opted in to receive at the time of content submission
     var emailIDsHash = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
@@ -1887,9 +1886,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       );
     };
     // Found number of emails to send
-    logMessage("Found number of emails to send: " # Nat.toText(emailIDsHash.size()));
     for ((email, totalCount) in emailIDsHash.entries()) {
-      logMessage("Sending email to: " # email);
       // "prod" and principal are just place holders to prevent idempotency
       let callResult = await callLambdaToSendEmail(
         email,
