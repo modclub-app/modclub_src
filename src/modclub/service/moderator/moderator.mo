@@ -113,11 +113,11 @@ module ModeratorModule {
     };
   };
 
-  public func adminUpdateEmail(
+  public func updateEmail(
     moderatorId : Principal,
     newEmail : Text,
     state : GlobalState.State
-  ) : Result.Result<Types.Profile, ModError> {
+  ) : Result.Result<Types.ProfileStable, ModError> {
     switch (state.profiles.get(moderatorId)) {
       case (null) #err(#notFound);
       case (?result) {
@@ -131,8 +131,20 @@ module ModeratorModule {
           updatedAt = Helpers.timeNow();
         };
         state.profiles.put(result.id, profile);
-        return #ok(profile);
+        return #ok(profileToStable(profile));
       };
+    };
+  };
+
+  private func profileToStable(p : Types.Profile) : Types.ProfileStable {
+    return {
+      id = p.id;
+      userName = p.userName;
+      role = p.role;
+      subaccounts = Iter.toArray(p.subaccounts.entries());
+      email = p.email;
+      createdAt = p.createdAt;
+      updatedAt = p.updatedAt;
     };
   };
 

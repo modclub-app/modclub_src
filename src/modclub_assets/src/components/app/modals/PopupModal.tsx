@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { Modal, Heading, Button, Notification } from "react-bulma-components";
 import { Form } from "react-final-form";
-import { format_token } from "../../../utils/util";
+import { format_token, getErrorMessage, isObject } from "../../../utils/util";
 interface PopupModal {
   toggle: () => void;
   show: boolean;
@@ -95,7 +95,9 @@ export default function PopupModal({
         } else {
           setMessage({
             success: false,
-            value: `${Object.keys(result.transfer.Err || result.transfer.err)}`,
+            value: `${getErrorMessage(
+              result.transfer.Err || result.transfer.err
+            )}`,
           });
         }
       } else {

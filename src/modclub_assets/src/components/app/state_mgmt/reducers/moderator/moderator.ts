@@ -23,6 +23,19 @@ export async function fetchUserProfile(context, payload) {
   context.dispatch({ type: "fetchUserProfile", userProfile, requiresSignUp });
 }
 
+export async function updateUserEmail(context, payload) {
+  let userProfile = context.state.userProfile;
+  try {
+    const actor = context.icContext.actors.modclub?.value;
+    if (actor) {
+      userProfile = await actor.updateEmail(payload);
+    }
+  } catch (e) {
+    console.error("Error occurs on UserProfile upgrade ", e);
+  }
+  context.dispatch({ type: "updateUserProfile", userProfile });
+}
+
 export async function fetchIsUserAdmin(context, payload) {
   let isAdminUser = context.state.isAdminUser;
   try {
