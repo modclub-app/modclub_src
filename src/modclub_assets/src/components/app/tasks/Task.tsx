@@ -164,9 +164,24 @@ export default function Task() {
     img: imgAttributes,
   };
 
+  const transformTags = {
+    a: (tagName, attribs) => {
+      // Ensure all <a> tags have target="_blank" so link opens in new tab
+      return {
+        tagName: "a",
+        attribs: {
+          ...attribs,
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+      };
+    },
+  };
+
   const sanitizedHtml = sanitizeHtml((task && task.text[0]) || "<div></div>", {
     allowedTags,
     allowedAttributes,
+    transformTags,
   });
 
   const toggleReserveModal = () => {
