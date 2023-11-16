@@ -182,6 +182,18 @@ export function timestampToDate(timestamp: number): any {
   return `${formattedDate}/${formattedTime}`;
 }
 
+export function isObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function getErrorMessage(value) {
+  if (isObject(value)) {
+    return Object.keys(value);
+  } else {
+    return value;
+  }
+}
+
 export function microsecondToSecond(microsec: bigint): number {
   return Number(microsec) / Constants.MICROSECONDS_IN_SECOND;
 }

@@ -58,6 +58,7 @@ module {
     #getPohTaskDataForAdminUsers : () -> Text;
     #getPohTasks : () -> (Types.ContentStatus, Nat, Nat);
     #getProfile : () -> ();
+    #updateEmail : () -> Text;
     #getProfileById : () -> Principal;
     #getProvider : () -> Principal;
     #getProviderAdmins : () -> Principal;

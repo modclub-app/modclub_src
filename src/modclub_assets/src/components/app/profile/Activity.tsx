@@ -9,16 +9,18 @@ import {
   Dropdown,
   Icon,
 } from "react-bulma-components";
+import { Form, Field } from "react-final-form";
 import Userstats from "./Userstats";
 import { modclub_types } from "../../../utils/types";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
-import { useAppState } from "../state_mgmt/context/state";
+import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { Table } from "./ActivityTable";
 
 export default function Activity() {
   const { principal } = useConnect();
   const appState = useAppState();
+  const dispatch = useAppStateDispatch();
   const { modclub } = useActors();
   const [completedActivity, setCompletedActivity] = useState<
     modclub_types.Activity[]
@@ -27,6 +29,10 @@ export default function Activity() {
     modclub_types.Activity[]
   >([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [updateProfileLoader, setUpdateProfileLoader] =
+    useState<boolean>(false);
+  const [newEmail, setNewEmail] = useState<string>("");
+  const [editEmail, setEditEmail] = useState<boolean>(false);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
 
   const filters = ["completed", "new"];
@@ -48,6 +54,26 @@ export default function Activity() {
     setLoading(false);
   };
 
+  const updateProfileEmail = ({ email: _email }) => {
+    if (appState.userProfile && appState.userProfile?.email !== _email) {
+      setNewEmail(_email);
+      setUpdateProfileLoader(true);
+      dispatch({
+        type: "updateUserEmail",
+        payload: _email,
+      });
+    } else {
+      setEditEmail(false);
+    }
+  };
+
+  useEffect(() => {
+    if (appState.userProfile?.email == newEmail) {
+      setUpdateProfileLoader(false);
+      setEditEmail(false);
+    }
+  }, [appState.userProfile?.email]);
+
   useEffect(() => {
     appState.userProfile && fetchActivity(currentFilter);
   }, [appState.userProfile, modclub]);
@@ -56,10 +82,75 @@ export default function Activity() {
     fetchActivity(currentFilter);
   }, [currentFilter, modclub]);
 
+  const displayEmail = () => (
+    <p className="is-flex is-justify-content-center has-text-white">
+      {appState.userProfile?.email || ""}
+      <Icon
+        color="white"
+        className="ml-3 is-clickable"
+        onClick={() => {
+          navigator.clipboard.writeText(appState.userProfile?.email || "");
+        }}
+      >
+        <span className="material-icons">file_copy</span>
+      </Icon>
+      <Icon
+        color="white"
+        className="ml-3 is-clickable"
+        onClick={() => {
+          setEditEmail(true);
+        }}
+      >
+        <span className="material-icons">edit</span>
+      </Icon>
+    </p>
+  );
+
+  const displayEmailEdit = () => (
+    <div className="field">
+      <div className="control">
+        <Form
+          onSubmit={updateProfileEmail}
+          render={({ handleSubmit, values }) => (
+            <form onSubmit={handleSubmit}>
+              <Field
+                name="email"
+                component="input"
+                type="text"
+                className={"input"}
+                style={{ width: "500px" }}
+                initialValue={appState.userProfile?.email || ""}
+              />
+              <Button
+                color="primary"
+                style={{
+                  marginLeft: "10px",
+                  marginTop: "5px",
+                }}
+                className={updateProfileLoader ? "is-loading" : ""}
+                disabled={updateProfileLoader}
+              >
+                Save
+              </Button>
+            </form>
+          )}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Userstats detailed={true} />
       <Columns>
+        <Columns.Column size={12}>
+          <Card className="has-gradient">
+            <Card.Content textAlign="center">
+              <label className="label">My Email:</label>
+              {editEmail ? displayEmailEdit() : displayEmail()}
+            </Card.Content>
+          </Card>
+        </Columns.Column>
         <Columns.Column size={12}>
           <Card className="has-gradient">
             <Card.Content textAlign="center">

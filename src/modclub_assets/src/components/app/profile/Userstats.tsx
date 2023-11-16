@@ -267,37 +267,23 @@ export default function Userstats({ detailed = false }) {
           message={Constant.PENDING_REWARDS_MSG}
           isBar={false}
         >
-          {claimRewards.canClaim ? (
-            <Button.Group>
-              <Button
-                color="dark"
-                onClick={toggleClaim}
-                disabled={
-                  level == "novice" || level == "junior" || holdingsUpdated
-                }
-                show={claimRewards.canClaim}
-              >
-                Claims
-              </Button>
-            </Button.Group>
-          ) : (
-            <>
-              {claimRewards.claimPrice > 0 &&
-                Constant.CLAIM_LIMIT_MSG(
-                  convert_to_mod(
-                    BigInt(claimRewards.claimPrice),
-                    BigInt(appState.decimals),
-                    2
-                  )
-                )}
-            </>
-          )}
+          <Button.Group>
+            <Button
+              color="dark"
+              onClick={toggleClaim}
+              disabled={
+                level == "novice" ||
+                level == "junior" ||
+                appState.lockedBalanceLoading
+              }
+            >
+              Claims
+            </Button>
+          </Button.Group>
         </StatBox>
       </Columns>
 
-      {showClaim && (
-        <Claim toggle={toggleClaim} userId={principal} show={showClaim} />
-      )}
+      <Claim toggle={toggleClaim} userId={principal} show={showClaim} />
 
       <Deposit toggle={toggleDeposit} subacc={subacc} show={showDeposit} />
 

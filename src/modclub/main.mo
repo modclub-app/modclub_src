@@ -913,6 +913,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
+  public shared ({ caller }) func updateEmail(_email : Text) : async Types.ProfileStable {
+    switch (ModeratorManager.updateEmail(caller, _email, stateV2)) {
+      case (#ok(p)) {
+        return p;
+      };
+      case (_) {
+        throw Error.reject("profile not found");
+      };
+    };
+  };
+
   public query ({ caller }) func getProfileById(pid : Principal) : async Types.ProfileStable {
     switch (PermissionsModule.checkProfilePermission(caller, #vote, stateV2)) {
       case (#err(e)) { throw Error.reject("Unauthorized") };
@@ -942,17 +953,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func adminUpdateEmail(pid : Principal, email : Text) : async Types.ProfileStable {
-    switch (ModeratorManager.adminUpdateEmail(pid, email, stateV2)) {
+    switch (ModeratorManager.updateEmail(pid, email, stateV2)) {
       case (#ok(p)) {
-        return {
-          id = p.id;
-          userName = p.userName;
-          email = "";
-          role = p.role;
-          subaccounts = Iter.toArray(p.subaccounts.entries());
-          createdAt = p.createdAt;
-          updatedAt = p.updatedAt;
-        };
+        return p;
       };
       case (_) {
         throw Error.reject("profile not found");

@@ -9,6 +9,11 @@ export function reducers(state, action) {
 
       return { ...state, userProfile, requiresSignUp };
     }
+    case "updateUserProfile": {
+      let userProfile = action.userProfile;
+
+      return { ...state, userProfile };
+    }
     case "fetchIsUserAdmin": {
       let isAdminUser = action.isAdminUser;
 

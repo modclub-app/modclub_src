@@ -1,6 +1,7 @@
 import {
   setLoginPrincipalId,
   fetchUserProfile,
+  updateUserEmail,
   fetchIsUserAdmin,
   fetchUserProviders,
   systemBalanceLoading,
@@ -16,6 +17,7 @@ export const getModeratorReducers = (state, icContext, dispatch) => {
   return new Map([
     ["setLoginPrincipalId", (payload) => setLoginPrincipalId(context, payload)],
     ["fetchUserProfile", (payload) => fetchUserProfile(context, payload)],
+    ["updateUserEmail", (payload) => updateUserEmail(context, payload)],
     ["fetchIsUserAdmin", (payload) => fetchIsUserAdmin(context, payload)],
     ["fetchUserProviders", (payload) => fetchUserProviders(context, payload)],
     [
