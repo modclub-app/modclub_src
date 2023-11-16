@@ -41,6 +41,7 @@ export default function ModclubApp() {
   const [isJwtSet, setJwt] = useState(false);
   const actors = useActors();
   const { modclub, wallet, vesting, rs } = actors;
+  const FILTER_ALREADY_VOTED = true;
 
   const initialCall = async () => {
     const result = await modclub.verifyUserHumanityForModclub();
@@ -69,7 +70,7 @@ export default function ModclubApp() {
       dispatch({ type: "fetchIsUserAdmin" });
       dispatch({
         type: "refetchContentModerationTasks",
-        payload: { FILTER_VOTES: false },
+        payload: { FILTER_ALREADY_VOTED: FILTER_ALREADY_VOTED },
       });
     }
   }, [isConnected, modclub]);
@@ -78,7 +79,7 @@ export default function ModclubApp() {
     if (isConnected && appState.moderationTasksLoading)
       dispatch({
         type: "refetchContentModerationTasks",
-        payload: { FILTER_VOTES: false },
+        payload: { FILTER_ALREADY_VOTED: FILTER_ALREADY_VOTED },
       });
   }, [isConnected, appState.moderationTasksLoading]);
 

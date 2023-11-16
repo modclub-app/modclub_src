@@ -21,7 +21,7 @@ import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
-const FILTER_VOTES = false;
+const FILTER_ALREADY_VOTED = true;
 
 const Task = ({ task }) => {
   const { modclub } = useActors();
@@ -191,7 +191,7 @@ export default function Tasks() {
     ) {
       dispatch({
         type: "refetchContentModerationTasks",
-        payload: { FILTER_VOTES },
+        payload: { FILTER_ALREADY_VOTED },
       });
     }
   }, [appState.moderationTasksPage]);
@@ -224,7 +224,7 @@ export default function Tasks() {
   const fetchByFilters = () => {
     dispatch({
       type: "refetchContentModerationTasks",
-      payload: { FILTER_VOTES },
+      payload: { FILTER_ALREADY_VOTED },
     });
   };
 
