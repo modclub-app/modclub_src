@@ -35,6 +35,7 @@ module {
     #downloadSupport : () -> (Text, Text, Nat, Nat);
     #editProviderAdmin : () -> (Principal, Principal, Text);
     #isProviderAdmin : () -> ();
+    #exportToArchive : () -> (Text, Text);
     #generateSigningKey : () -> ();
     #getActivity : () -> Bool;
     #getAdminProviderIDs : () -> ();

@@ -64,7 +64,7 @@ import Timer "mo:base/Timer";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import CommonTimer "../common/timer/timer";
-
+import Archive "./service/archive/archive";
 import Content "./service/queue/state";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
@@ -3501,6 +3501,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
     };
     #ok(true);
+  };
+
+  public shared ({ caller }) func exportToArchive(stateName : Text, dataName : Text) : async Text {
+    var archiveManager = Archive.ArchiveManager(env.archive_canister_id, stateV2);
+    return await archiveManager.exportToArchive(stateName, dataName);
   };
 
 };

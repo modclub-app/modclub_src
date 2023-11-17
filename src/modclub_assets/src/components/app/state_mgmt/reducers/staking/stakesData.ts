@@ -38,7 +38,7 @@ export async function setReleaseUnStakedLoading(context, payload) {
 export async function releaseUnStakedTokens(context, payload) {
   let unlockStakeBalance = context.state.unlockStakeBalance;
   try {
-    const modclubActor = context.icContext.actors.vesting?.value;
+    const modclubActor = context.icContext.actors.modclub?.value;
     const vestingActor = context.icContext.actors.vesting?.value;
     if (modclubActor && vestingActor && context.state.loginPrincipalId) {
       const releaseResp = await modclubActor.releaseTokens(unlockStakeBalance);
