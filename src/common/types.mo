@@ -15,6 +15,7 @@ module {
     wallet_canister_id : Principal;
     auth_canister_id : Principal;
     vesting_canister_id : Principal;
+    archive_canister_id : Principal;
   };
 
   public type VestingCanisterActor = actor {

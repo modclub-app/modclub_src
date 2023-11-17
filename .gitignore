@@ -45,3 +45,6 @@ scripts/upgrade-bucket/dfx.json
 src/declarations/
 !src/declarations/wallet/
 !src/declarations/wallet/*
+.mops
+
+**/test_output*

@@ -17,7 +17,7 @@ function create_text_content() {
         echo "   -- sourceId: $sourceId"
         echo "   -- Title: $title"
         echo "   -- Text: $text"
-        dfx canister call modclub_qa submitText "(\"${sourceId}\",\"${text}\", opt \"${title}\",opt variant {simple})"
+        dfx canister call modclub_qa submitText "(\"${sourceId}\",\"${text}\", opt \"${title}\",opt variant {simple},null)"
     done
 
     log_step "Content submitted. "
@@ -39,9 +39,8 @@ function create_html_content() {
         echo "   -- htmlContent: $htmlContent"
         echo "   -- complexity: $complexity"
         
-        dfx canister call $modclub submitHtmlContent "(\"${sourceId}\",\"${htmlContent//\"/\\\"}\", opt \"${title}\",opt variant {${complexity}})"
+        dfx canister call $modclub submitHtmlContent "(\"${sourceId}\",\"${htmlContent//\"/\\\"}\", opt \"${title}\",opt variant {${complexity}}, null)"
     done
-
     
     log_step "Done create_html_content. "
 }

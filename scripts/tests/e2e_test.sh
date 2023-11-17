@@ -269,8 +269,10 @@ function failed() {
 	echo "MODERATOR CURRENT balance: $CURRENT_MODER_BALANCE"
 	echo "-------------------------------"
 
+	# // The tests below are broken for some reason. Skip it for now.
+
 	echo "###### Step 5: Check Moderator Deposit ########"
-	declare SUB_MOD=$(dfx canister call modclub_qa getProfileById '(principal '"$MOD_PRINCIPAL"')' | grep -E 'record \{ "ACCOUNT_PAYABLE"; blob "[a-f0-9]+"' | head -n 1 | grep -oE 'blob "[a-f0-9]+"')
+	declare SUB_MOD=$(dfx canister call modclub_qa getProfileById '(principal '"$MOD_PRINCIPAL"')' | grep -E 'record \{ "ACCOUNT_PAYABLE"; blob "[A-F0-9]+"' | head -n 1 | grep -oE 'blob "[A-F0-9]+"')
 	declare INIT_MOD_BALANCE=$(dfx canister call wallet_qa icrc1_balance_of '( record { owner = principal '"$MOD_PRINCIPAL"'; subaccount = opt '"$SUB_MOD"'} )'| cut -d '(' -f2 | cut -d':' -f1)
 
 	echo  $INIT_MOD_BALANCE

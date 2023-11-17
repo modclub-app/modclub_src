@@ -92,13 +92,11 @@ jobs:
           DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
           dfx --version
 
-      - name: Install vessel
+      - name: install moc
         run: |
-          wget https://github.com/dfinity/vessel/releases/download/v0.7.0/vessel-linux64
-          mv vessel-linux64 vessel
-          chmod +x vessel
-          mv vessel /usr/local/bin/.
-          vessel --version
+          npm i ic-mops -g
+          mops -v
+          mops install
 
       - name: Set up dfx identity
         run: |

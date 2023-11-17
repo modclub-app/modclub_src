@@ -86,13 +86,11 @@ jobs:
         env:
           IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_QA }}
 
-      - name: Install vessel
+      - name: install moc
         run: |
-          wget https://github.com/dfinity/vessel/releases/download/v0.6.4/vessel-linux64
-          mv vessel-linux64 vessel
-          chmod +x vessel
-          mv vessel /usr/local/bin/.
-          vessel --version
+          npm i ic-mops -g
+          mops -v
+          mops install
 
       - name: create-wallet_qa
         run: |
