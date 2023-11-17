@@ -39,6 +39,13 @@ export default function PopupModal({
     if (!show) setMessage(null);
   }, [show]);
 
+  const cancelModal = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setMessage(null);
+    toggle && toggle();
+  };
+
   const onFormSubmit = async (values: any) => {
     setSubmitting(true);
 
@@ -136,7 +143,11 @@ export default function PopupModal({
                 </Modal.Card.Body>
                 <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
                   <Button.Group>
-                    <Button disabled={submitting} color="dark" onClick={toggle}>
+                    <Button
+                      disabled={submitting}
+                      color="dark"
+                      onClick={cancelModal}
+                    >
                       Cancel
                     </Button>
                     <Button
