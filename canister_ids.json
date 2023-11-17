@@ -8,6 +8,15 @@
   "airdrop_qa": {
     "ic": "xvpp7-qyaaa-aaaam-qbcea-cai"
   },
+  "archive": {
+    "ic": "ww3sd-pqaaa-aaaah-qdcda-cai"
+  },
+  "archive_dev": {
+    "ic": "w7yz7-zyaaa-aaaah-qdccq-cai"
+  },
+  "archive_qa": {
+    "ic": "wyz7l-uaaaa-aaaah-qdcca-cai"
+  },
   "auth": {
     "ic": "gdtip-xiaaa-aaaah-qdbnq-cai"
   },
