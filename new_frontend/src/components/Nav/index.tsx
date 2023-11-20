@@ -32,17 +32,14 @@ export default function Nav() {
               <button className="primary-btn p-0">Sign Up</button>
             </Link>
           </li>
-          {/*<li>
-            <button className="secondary-btn">Log In</button>
+          <li>
+          <Link
+              href="https://modclub.app/#/app"
+              target="_blank"
+            >
+              <button className="secondary-btn">Moderator Login</button>
+            </Link>
           </li>
-          <li className="my-auto">
-            <Image
-              src="/assets/icon-nav.svg"
-              height={40}
-              width={40}
-              alt="Logo Icon"
-            />
-          </li>*/}
         </ul>
       </div>
     </nav>
