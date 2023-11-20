@@ -121,11 +121,11 @@ function failed() {
 	dfx identity use default
 	dfx canister call auth_qa registerAdmin '(principal "'$DEPLOYER_ACCOUNT'")'
 	dfx canister call modclub_qa addToAllowList '(principal "'$TEST_PROVIDER_PRINCIPAL'" )' || true
-
 	dfx identity use qa_test_provider
 	dfx canister call modclub_qa registerProvider '("TEMP_PROVIDER_NAME","TEMP_PROVIDER_DESCRIPTION", null)'
 	dfx canister call modclub_qa addProviderAdmin '(principal "'$TEST_PROVIDER_PRINCIPAL'" , "TEMP_PROVIDER_NAME", null)'
-
+	# Add rules for rejection
+	dfx canister call modclub_qa addRules '(vec {"Incorrect Content"}, opt principal "'$TEST_PROVIDER_PRINCIPAL'")'
 	dfx identity use $LEDGER_ACCOUNT_IDENTITY
 	echo "Transfering Tokens to QA_Provider main account..."
 	# For imitation that Provider has some amount of Tokens
@@ -317,12 +317,18 @@ function failed() {
 	declare CAN_CLAIM=$(dfx canister call modclub_qa canClaimLockedReward '(opt '"$CLAIMS_MOD2_VAL"')'| grep -E 'canClaim = .*;' | grep -oE 'true|false')
 	if [[ "$CAN_CLAIM" != "false" ]]; then
 		printf "${RED}[Incorrect] Should not able to Claim ${NC}\n"
+	else
+		printf "${GREEN}[Correct] Should not able to Claim ${NC}\n"
 	fi
 
 	echo "############# MUST FAILED ##########"
 	set +e
-	dfx canister call modclub_qa claimLockedReward '('"$CLAIMS_MOD2_VAL"', null)'
-	failed
+	declare CLAIM_REWARD_FAILED=$(dfx canister call modclub_qa claimLockedReward '('"$CLAIMS_MOD2_VAL"', null)'| grep -E 'err = .*')
+	if [[ -z "$CLAIM_REWARD_FAILED" ]]; then
+		printf "${RED}[Incorrect] Should fail to Claim Locked Rewards ${NC}\n"
+	else
+		printf "${GREEN}[Correct] Should fail to Claim Locked Rewards ${NC}\n"
+	fi
 	set -e
 
 	declare AFTER_CLAIMS2_VAL=$(dfx canister call vesting_qa locked_for '(record { owner = principal '"$MOD_PRINCIPAL2"' })'| cut -d '(' -f2 | cut -d':' -f1)

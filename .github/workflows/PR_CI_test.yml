@@ -25,12 +25,12 @@ jobs:
 
           echo $changed_files
           # Check if any of the changed files are .mo files
-          if [[ $changed_files =~ .*\.mo ]]; then
-            echo "The PR contains changes to .mo files. Proceeding with the workflow."
+          if [[ $changed_files =~ .*\.mo ]] || [[ $changed_files =~ .*\.sh ]]; then
+              echo "The PR contains changes to .mo or .sh files. Proceeding with the workflow."
           else
-            echo "No changes to .mo files found in the PR. Skipping the workflow."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0  # Exit with status code 0 to indicate successful completion (skipping)
+              echo "No changes to .mo or .sh files found in the PR. Skipping the workflow."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0  # Exit with status code 0 to indicate successful completion (skipping)
           fi
 
       - name: Set Node.js 18.x

@@ -128,8 +128,6 @@ function deploy_vesting_canister() {
 }
 
 
-
-
 # Deploy AuthCanister
 function deploy_qa_canisters() {
   export DEV_ENV=qa
@@ -172,6 +170,8 @@ function init_qa_content() {
   dfx ledger fabricate-cycles --canister $modclub
   dfx ledger fabricate-cycles --canister $modclub
   dfx ledger fabricate-cycles --canister $modclub
+   #Setup vote complexity
+  dfx identity use default
 
   create_provider_identity $PROVIDER_IDENTITY
   setup_provider qa $PROVIDER_IDENTITY
