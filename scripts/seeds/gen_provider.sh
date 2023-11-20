@@ -33,7 +33,9 @@ function setup_provider() {
 
     dfx identity use ${provider_identity}
     dfx canister call ${modclub} registerProvider '("'"${provider_name}"'","'"${provider_description}"'", null)'
+
     dfx canister call ${modclub} addProviderAdmin '(principal "'$provider_pricipal'" , "'${provider_name}'", null)'
+    dfx canister call modclub_qa addRules '(vec {"Incorrect Content"}, opt principal "'$provider_pricipal'")'
 
     log_step "Finished provider (${provider_identity}  ${provider_pricipal}) setup. "
 }
