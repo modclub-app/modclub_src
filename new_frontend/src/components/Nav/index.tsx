@@ -33,10 +33,7 @@ export default function Nav() {
             </Link>
           </li>
           <li>
-          <Link
-              href="https://modclub.app/#/app"
-              target="_blank"
-            >
+            <Link href="https://modclub.app/#/app" target="_blank">
               <button className="secondary-btn">Moderator Login</button>
             </Link>
           </li>
