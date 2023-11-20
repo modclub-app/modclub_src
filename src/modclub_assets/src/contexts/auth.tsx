@@ -8,11 +8,8 @@ import canisterIds from "../../../../canister_ids.json";
  * Connect2ic provides essential utilities for IC app development
  */
 import { createClient } from "@connect2icmodclub/core";
-import {
-  InternetIdentity,
-  PlugWallet,
-  StoicWallet,
-} from "@connect2icmodclub/core/providers";
+import { PlugWallet, StoicWallet } from "@connect2icmodclub/core/providers";
+import { InternetIdentity } from "../components/connect2ic/InternetIdentity";
 import { Connect2ICProvider } from "@connect2icmodclub/react";
 
 const env = process.env.DFX_NETWORK || "local";
