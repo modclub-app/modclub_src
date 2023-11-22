@@ -19,7 +19,7 @@
     "deploy_qa": "DEV_ENV=qa dfx deploy --network ic modclub_qa_assets",
     "deploy_modclub_qa": "dfx deploy --network ic modclub_qa",
     "deploy_prod": "npm run add_tags_prod && npm run deploy_gzip_prod",
-    "deploy_prod_frontend": "DEV_ENV=production npm run add_tags_prod && dfx build modclub --network ic && dfx generate modclub --network ic && dfx generate modclub_assets --network ic && dfx deploy modclub_assets --network ic",
+    "deploy_prod_frontend": "npm run add_tags_prod && dfx build modclub --network ic && dfx generate modclub --network ic && dfx generate modclub_assets --network ic && DEV_ENV=production dfx deploy modclub_assets --network ic",
     "deploy_gzip_prod": "dfx build --network ic modclub && gzip -f .dfx/ic/canisters/modclub/modclub.wasm && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub/modclub.wasm.gz --mode upgrade modclub && DEV_ENV=prod dfx deploy --network ic modclub_assets",
     "deploy_gzip_prod_no_frontend": "dfx build --network ic modclub && gzip -f .dfx/ic/canisters/modclub/modclub.wasm && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub/modclub.wasm.gz --mode upgrade modclub",
     "deploy_gzip_dev": "dfx build --network ic modclub_dev && gzip -f .dfx/ic/canisters/modclub_dev/modclub_dev.wasm && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub_dev/modclub_dev.wasm.gz --mode upgrade modclub_dev && DEV_ENV=dev dfx deploy --network ic --no-wallet modclub_dev_assets",
