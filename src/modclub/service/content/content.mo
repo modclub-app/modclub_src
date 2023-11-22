@@ -56,35 +56,8 @@ module ContentModule {
               title = content.title;
               createdAt = content.createdAt;
               updatedAt = content.updatedAt;
-              text = do ? {
-                switch (globalState.textContent.get(content.id)) {
-                  case (?entry) {
-                    var textContent = "";
-                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
-                      textContent #= Option.get(Text.decodeUtf8(blobChunk), "");
-                    };
-                    textContent;
-                  };
-                  case (_) "";
-                };
-              };
-              image = do ? {
-                switch (globalState.imageContent.get(content.id)) {
-                  case (?entry) {
-                    let imageContent = Buffer.Buffer<Nat8>(1);
-                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
-                      imageContent.append(Buffer.fromArray(Blob.toArray(blobChunk)));
-                    };
-                    {
-                      data = Buffer.toArray(imageContent);
-                      imageType = entry.image.imageType;
-                    };
-                  };
-                  case (null) {
-                    { data = []; imageType = "" };
-                  };
-                };
-              };
+              text = ?Helpers.getIfTextContent(content.contentType, chunkedContent);
+              image = ?Helpers.getIfImageContent(content.contentType, content.id, chunkedContent, globalState);
               voteParameters = content.voteParameters;
               reservedList = content.reservedList;
               receipt = content.receipt;
@@ -338,17 +311,16 @@ module ContentModule {
   ) : async Types.Reserved {
     switch (arg.globalState.content.get(contentId)) {
       case (?content) {
-        let contentPlus : ?Types.ContentPlus = getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState, content2Category);
-        switch (contentPlus) {
-          case (?provider) {
-            let oldReserved : [Types.Reserved] = provider.reservedList;
+        switch (getContentPlus(contentId, ?arg.caller, voteCount, arg.globalState, content2Category)) {
+          case (?contentPlus) {
+            let oldReserved : [Types.Reserved] = contentPlus.reservedList;
             let rid = Helpers.getContentReservationId(arg.caller, contentId);
             let reserved = Utils.isReserved(rid, oldReserved);
             if (reserved == true) {
               throw Error.reject("Already create");
             };
             let now = Helpers.timeNow();
-            let spot = provider.voteParameters.requiredVotes - (voteCount.approvedCount + voteCount.rejectedCount);
+            let spot = contentPlus.voteParameters.requiredVotes - (voteCount.approvedCount + voteCount.rejectedCount);
             let checkExpire = hasAvailableSpot(oldReserved, now, spot);
             if (checkExpire == false) {
               throw Error.reject("No spot left::" # debug_show (oldReserved)); // Debug for future bug resolve
@@ -363,59 +335,31 @@ module ContentModule {
               contentId
             );
             let newReserved = Array.append<Types.Reserved>(oldReserved, [reservation]);
-            let chunkedContent = await arg.storageSolution.getChunkedContent(content.id);
             let result : Types.ContentPlus = {
-              id = provider.id;
-              providerName = provider.providerName;
-              minStake = provider.minStake;
-              requiredVotes = provider.requiredVotes;
-              voteCount = provider.voteCount;
+              id = contentPlus.id;
+              providerName = contentPlus.providerName;
+              minStake = contentPlus.minStake;
+              requiredVotes = contentPlus.requiredVotes;
+              voteCount = contentPlus.voteCount;
               hasVoted = ?voteCount.hasVoted;
-              providerId = provider.providerId;
-              contentType = provider.contentType;
+              providerId = contentPlus.providerId;
+              contentType = contentPlus.contentType;
               contentCategory = Option.get<Types.CategoryId>(content2Category.get(contentId), "");
-              status = provider.status;
-              sourceId = provider.sourceId;
-              title = provider.title;
-              createdAt = provider.createdAt;
-              updatedAt = provider.updatedAt;
-              text = do ? {
-                switch (arg.globalState.textContent.get(content.id)) {
-                  case (?entry) {
-                    var textContent = "";
-                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
-                      textContent #= Option.get(Text.decodeUtf8(blobChunk), "");
-                    };
-                    textContent;
-                  };
-                  case (_) "";
-                };
-              };
-              image = do ? {
-                switch (arg.globalState.imageContent.get(content.id)) {
-                  case (?entry) {
-                    let imageContent = Buffer.Buffer<Nat8>(1);
-                    for (blobChunk in Option.get(chunkedContent, []).vals()) {
-                      imageContent.append(Buffer.fromArray(Blob.toArray(blobChunk)));
-                    };
-                    {
-                      data = Buffer.toArray(imageContent);
-                      imageType = entry.image.imageType;
-                    };
-                  };
-                  case (null) {
-                    { data = []; imageType = "" };
-                  };
-                };
-              };
-              voteParameters = provider.voteParameters;
+              status = contentPlus.status;
+              sourceId = contentPlus.sourceId;
+              title = contentPlus.title;
+              createdAt = contentPlus.createdAt;
+              updatedAt = contentPlus.updatedAt;
+              text = contentPlus.text;
+              image = contentPlus.image;
+              voteParameters = contentPlus.voteParameters;
               reservedList = newReserved;
-              receipt = provider.receipt;
+              receipt = contentPlus.receipt;
             };
             arg.globalState.content.put(content.id, result);
             return reservation;
           };
-          case (_) throw Error.reject("Provider incorrect");
+          case (_) throw Error.reject("No ContentPlus found");
         };
       };
       case (_) throw Error.reject("Content Incorrect");

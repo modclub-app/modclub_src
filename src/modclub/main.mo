@@ -506,10 +506,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (?p) p;
       case (_) throw Error.reject("Unauthorized");
     };
-    let taskFee = ProviderManager.getTaskFee(provider);
-    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
-
     let voteParam = getVoteParamsByComplexity(complexity);
+    let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
+    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
     let cid = await ContentManager.submitTextOrHtmlContent(
       {
@@ -577,10 +576,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (?p) p;
       case (_) throw Error.reject("Unauthorized. No Provider found.");
     };
-    let taskFee = ProviderManager.getTaskFee(provider);
-    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
     let voteParam = getVoteParamsByComplexity(complexity);
+    let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
+    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
     var cid = await ContentManager.submitTextOrHtmlContent(
       {
@@ -649,10 +648,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (?p) p;
       case (_) throw Error.reject("Unauthorized");
     };
-    let taskFee = ProviderManager.getTaskFee(provider);
-    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskFee);
 
     let voteParam = getVoteParamsByComplexity(complexity);
+    let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
+    await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
     let cid = await ContentManager.submitImage(
       {

@@ -17,7 +17,7 @@ function add_token_for_submitting_task() {
     dfx identity use ${ledger_identity}
     echo "Transfering Tokens to Provider main account..."
     # For imitation that Provider has some amount of Tokens
-    local provider_topUp_result=$(dfx canister call "${wallet}" icrc1_transfer '( record { from_subaccount = opt blob "-------------------------RESERVE"; to = record { owner = principal "'$provider_principal'" }; amount = 10_000'$TOKEN_DECIMALS' } )')
+    local provider_topUp_result=$(dfx canister call "${wallet}" icrc1_transfer '( record { from_subaccount = opt blob "-------------------------RESERVE"; to = record { owner = principal "'$provider_principal'" }; amount = 50_000'$TOKEN_DECIMALS' } )')
     echo $provider_topUp_result
 
 
@@ -26,7 +26,7 @@ function add_token_for_submitting_task() {
     local pSaReserve1=${providerSaReserveRaw#"(blob \""}
     local pSaReserve=${pSaReserve1%"\")"}
     echo "${pSaReserve}"
-    local transfer_result=$(dfx canister call $wallet icrc1_transfer '( record { to = record { owner = principal "'$modclub_canister_id'"; subaccount = opt blob "'$pSaReserve'" }; amount = 5_000_000_000 } )')
+    local transfer_result=$(dfx canister call $wallet icrc1_transfer '( record { to = record { owner = principal "'$modclub_canister_id'"; subaccount = opt blob "'$pSaReserve'" }; amount = 10_000_000_000 } )')
 
 
     echo "Check Modclub canister balance"

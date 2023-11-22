@@ -603,8 +603,8 @@ module ProviderModule {
     };
   };
 
-  public func getTaskFee(p : Types.Provider) : Float {
-    ModClubParam.CS * Float.fromInt(p.settings.requiredVotes);
+  public func getTaskCost(moderatorCount : Int) : Float {
+    ModClubParam.CS * Float.fromInt(moderatorCount);
   };
 
   public func topUpProviderSAPayable(

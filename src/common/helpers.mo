@@ -414,4 +414,42 @@ module Helpers {
   public func isWhitelisted(wl : Buffer.Buffer<Types.ContentId>, cid : Types.ContentId) : Bool {
     Buffer.contains<Types.ContentId>(wl, cid, Text.equal);
   };
+
+  public func getIfTextContent(cType : Types.ContentType, chunkedContent : ?[Blob]) : Text {
+    switch (cType) {
+      case (#text) {
+        var textContent = "";
+        for (blobChunk in Option.get<[Blob]>(chunkedContent, []).vals()) {
+          textContent #= Option.get<Text>(Text.decodeUtf8(blobChunk), "");
+        };
+        textContent;
+      };
+      case (_) "";
+    };
+  };
+
+  public func getIfImageContent(cType : Types.ContentType, cid : Text, chunkedContent : ?[Blob], state : GlobalState.State) : {
+    data : [Nat8];
+    imageType : Text;
+  } {
+    let empty = { data = []; imageType = "" };
+    switch (cType) {
+      case (#imageBlob) {
+        let imageContent = Buffer.Buffer<Nat8>(1);
+        for (blobChunk in Option.get<[Blob]>(chunkedContent, []).vals()) {
+          imageContent.append(Buffer.fromArray(Blob.toArray(blobChunk)));
+        };
+        switch (state.imageContent.get(cid)) {
+          case (?imgContent) {
+            return {
+              data = Buffer.toArray(imageContent);
+              imageType = imgContent.image.imageType;
+            };
+          };
+          case (_) empty;
+        };
+      };
+      case (_) empty;
+    };
+  };
 };
