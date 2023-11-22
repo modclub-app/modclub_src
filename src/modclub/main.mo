@@ -66,6 +66,7 @@ import Nat64 "mo:base/Nat64";
 import CommonTimer "../common/timer/timer";
 import Archive "./service/archive/archive";
 import Content "./service/queue/state";
+import Staking "./service/staking/staking";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
 
@@ -107,7 +108,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   stable var _canistergeekLoggerUD : ?Canistergeek.LoggerUpgradeData = null;
   private let canistergeekLogger = Canistergeek.Logger();
-
+  private let logger = Helpers.getLogger(canistergeekLogger);
   stable var contentQueueStateStable : ?QueueState.QueueStateStable = null;
   private let contentQueueManager = QueueManager.QueueManager();
   stable var randomizationEnabled = true;
@@ -145,6 +146,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private var contentCategories = HashMap.HashMap<Types.CategoryId, Types.ContentCategory>(100, Text.equal, Text.hash);
   private var content2Category = HashMap.HashMap<Types.ContentId, Types.CategoryId>(100, Text.equal, Text.hash);
   private var contentIndexes = HashMap.HashMap<Text, Buffer.Buffer<Types.ContentId>>(100, Text.equal, Text.hash);
+
+  var stakingManager = Staking.StakingManager(env, stateV2);
 
   var storageSolution = StorageSolution.StorageSolution(
     storageStateStable,
@@ -258,7 +261,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Text {
     switch (stateV2.providersWhitelist.get(caller)) {
       case (null) {
-        logMessage(
+        logger.logMessage(
           "registerProvider - Provider not in allow list with provider ID: " #
           Principal.toText(caller)
         );
@@ -490,7 +493,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
-    logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
+    logger.logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -561,7 +564,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
-    logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
+    logger.logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -784,7 +787,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     filterVoted : Bool,
     filters : Types.ModerationTasksFilter
   ) : async [Types.ContentPlus] {
-    logMessage(
+    logger.logMessage(
       "getTasks - provider called with provider ID: " #
       Principal.toText(caller)
     );
@@ -833,7 +836,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         throw Error.reject(e);
       };
       case (#ok(tasks)) {
-        logMessage(
+        logger.logMessage(
           "getTasks - FINISHED - provider called with provider ID: " #
           Principal.toText(caller)
         );
@@ -1069,7 +1072,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     let moderatorSystemAcc = {
       owner = Principal.fromActor(this);
-      subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+      subaccount = moderator.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
     };
     let stats = await ModeratorManager.getStats(caller, env);
     let lockedAmount = await vestingActor.locked_for(moderatorAcc);
@@ -1118,7 +1121,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     let moderatorSubAcc = {
       owner = Principal.fromActor(this);
-      subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+      subaccount = moderator.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
     };
     let moderatorAcc = { owner = caller; subaccount = null };
     switch (await ledger.icrc1_balance_of(moderatorSubAcc)) {
@@ -1127,7 +1130,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         if ((amount + fee) > tokensAvailable) {
           throw Error.reject("Insufficient ballance");
         };
-        switch (await ledger.icrc1_transfer({ from_subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE"); to = switch (customReceiver) { case (?p) { { owner = p; subaccount = null } }; case (null) { moderatorAcc } }; amount; fee = null; memo = null; created_at_time = null })) {
+        switch (await ledger.icrc1_transfer({ from_subaccount = moderator.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD); to = switch (customReceiver) { case (?p) { { owner = p; subaccount = null } }; case (null) { moderatorAcc } }; amount; fee = null; memo = null; created_at_time = null })) {
           case (#Ok(tsidx)) { #ok(tsidx) };
           case (_) {
             #err("Error occurs on icrc1_transfer for withdrawModeratorReward.");
@@ -1200,7 +1203,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     var voteCount = getVoteCount(contentId, ?caller);
-    logMessage(
+    logger.logMessage(
       "vote - User ID: " # Principal.toText(caller) # " approved: " # Bool.toText(
         decision == #approved
       ) # " voting on content ID : " # contentId # " approve count : " # Nat.toText(
@@ -1360,7 +1363,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (caller != Principal.fromActor(this)) {
       throw Error.reject("Unauthorized");
     };
-    logMessage(
+    logger.logMessage(
       "pohCallbackForModclub - status:  " # pohEngine.statusToString(
         message.status
       ) # " submittedAt: " # Int.toText(Option.get(message.submittedAt, -1)) # " requestedAt: " # Int.toText(
@@ -1858,11 +1861,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     });
   };
 
-  // Helper function for logging
-  private func logMessage(message : Text) {
-    Helpers.logMessage(canistergeekLogger, message, #info);
-  };
-
   public shared ({ caller }) func getModeratorEmailsForPOHAndSendEmail(emailType : Text) : async () {
 
     // As email is going to send to all the users who opted in to receive at the time of content submission
@@ -1922,7 +1920,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (not Helpers.allowedCanistergeekCaller(caller)) {
       throw Error.reject("Unauthorized");
     };
-    logMessage("getCanisterLog - request from caller: " # Principal.toText(caller));
+    logger.logMessage("getCanisterLog - request from caller: " # Principal.toText(caller));
     canistergeekLogger.getLog(request);
   };
 
@@ -2001,7 +1999,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       pohContentQueueManager
     );
     if (finishedVoting == #ok(true)) {
-      logMessage("Voting completed for packageId: " # packageId);
+      logger.logMessage("Voting completed for packageId: " # packageId);
       let finalDecision = pohContentQueueManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
       var contentIds : [Text] = [];
@@ -2011,7 +2009,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           packageId,
           #verified
         );
-        logMessage(
+        logger.logMessage(
           "Voting completed for packageId: " # packageId # " Final decision: approved"
         );
       } else {
@@ -2041,7 +2039,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           };
           case (_) {};
         };
-        logMessage(
+        logger.logMessage(
           "Voting completed for packageId: " # packageId # " Final decision: rejected"
         );
       };
@@ -2064,7 +2062,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               };
               isVoteCorrect := true;
             };
-            logMessage(
+            logger.logMessage(
               "User:" # Principal.toText(v.userId) # ":Voting for packageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(isVoteCorrect)
             );
             usersToRewardRS.add({
@@ -2091,10 +2089,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         let moderatorAcc = { owner = moderator.id; subaccount = null };
         let moderatorSystemAcc = {
           owner = Principal.fromActor(this);
-          subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+          subaccount = moderator.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
         };
         let fullReward = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
-        logMessage(
+        logger.logMessage(
           "UserID:" # Principal.toText(userVote.userId) # "RS Before Vote POH:" # Float.toText(userVote.rsBeforeVoting) # "Full rewards" # Float.toText(fullReward)
         );
         let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
@@ -2549,7 +2547,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         throw Error.reject("Unable to find user with principal::" # Principal.toText(caller));
       };
     };
-    let reserveSubAcc = switch (moderatorSubAccs.get("ACCOUNT_PAYABLE")) {
+    let reserveSubAcc = switch (moderatorSubAccs.get(Constants.ACCOUNT_PAYABLE_FIELD)) {
       case (?reserveSA) ?reserveSA;
       case (_) {
         throw Error.reject("No AP subaccount for moderator::" # Principal.toText(caller));
@@ -2592,77 +2590,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func releaseTokens(amount : ICRCTypes.Tokens) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
-    let moderatorAcc = { owner = caller; subaccount = null };
-    let modclubPrincipal = Principal.fromActor(this);
+    await stakingManager.releaseTokens(caller, amount);
+  };
 
-    let moderatorSubAccs = switch (stateV2.profiles.get(caller)) {
-      case (?moderator) { moderator.subaccounts };
-      case (_) {
-        throw Error.reject("Unable to find user with principal::" # Principal.toText(caller));
-      };
-    };
-    let pSubAcc = switch (moderatorSubAccs.get("ACCOUNT_PAYABLE")) {
-      case (?reserveSA) ?reserveSA;
-      case (_) {
-        throw Error.reject("No AP subaccount for moderator::" # Principal.toText(caller));
-      };
-    };
-
-    let fee = await ledger.icrc1_fee();
-    let unlockedAmount = await vestingActor.unlocked_stakes_for(moderatorAcc);
-    if (unlockedAmount < amount) {
-      return throw Error.reject("Withdraw amount cant be more than unlocked amount of tokens.");
-    };
-
-    let releaseStakeTransfer = await ledger.icrc1_transfer({
-      from_subaccount = ?Constants.ICRC_STAKING_SA;
-      to = { owner = modclubPrincipal; subaccount = pSubAcc };
-      amount = (amount - fee);
-      fee = ?fee;
-      memo = null;
-      created_at_time = null;
-    });
-    switch (releaseStakeTransfer) {
-      case (#Ok(txIndex)) {
-        let release = await vestingActor.release_staking(moderatorAcc, amount);
-        switch (release) {
-          case (#ok(res)) {
-            #Ok(txIndex);
-          };
-          case (#err(e)) {
-            return throw Error.reject("Can't withdraw unlocked amount of tokens.");
-          };
-          case (_) {
-            return throw Error.reject("UNKNOWN PATTERN FOR release_staking result");
-          };
-        };
-      };
-      case (#Err(e)) {
-        return throw Error.reject("Can't withdraw unlocked amount of tokens." # debug_show e);
-      };
-      case (_) {
-        return throw Error.reject("UNKNOWN PATTERN FOR releaseStakeTransfer result");
-      };
-    };
+  public shared ({ caller }) func releaseTokensFor(amount : ICRCTypes.Tokens, uid : Principal) : async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError> {
+    await stakingManager.releaseTokens(uid, amount);
   };
 
   public shared ({ caller }) func claimStakedTokens(amount : ICRCTypes.Tokens) : async Result.Result<Nat, Text> {
-    let moderatorAcc = { owner = caller; subaccount = null };
-    let stakedAmount = await vestingActor.staked_for(moderatorAcc);
-    if (stakedAmount < amount) {
-      return throw Error.reject("Amount can't be more than staked amount of tokens.");
-    };
-
-    let claimStaked = await vestingActor.claim_staking(moderatorAcc, amount);
-
-    ignore Timer.setTimer(
-      #seconds(Constants.VESTING_DISSOLVE_DELAY_SECONDS + 1),
-      func() : async () {
-        let releaseStaked = await vestingActor.unlock_staking(moderatorAcc, amount);
-      }
-    );
-
-    claimStaked;
+    let claimTxId = await stakingManager.claimStakedAmount(caller, amount);
+    claimTxId;
   };
 
   // Upgrade logic / code
@@ -2670,7 +2607,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
 
   system func preupgrade() {
-    logMessage("MODCLUB PREUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
+    logger.logMessage("MODCLUB PREUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
     stateSharedV2 := StateV2.fromState(stateV2);
 
     storageStateStable := storageSolution.getStableState();
@@ -2713,7 +2650,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var globalStateMigrationDone = false;
 
   system func postupgrade() {
-    logMessage("MODCLUB POSTUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
+    logger.logMessage("MODCLUB POSTUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
 
     authGuard.subscribe("admins");
     admins := authGuard.setUpDefaultAdmins(
@@ -2773,7 +2710,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     contentCategories := HashMap.fromIter<Types.CategoryId, Types.ContentCategory>(contentCategoriesStable.vals(), contentCategoriesStable.size(), Text.equal, Text.hash);
     content2Category := HashMap.fromIter<Types.ContentId, Types.CategoryId>(content2CategoryStable.vals(), content2CategoryStable.size(), Text.equal, Text.hash);
-
+    stakingManager := Staking.StakingManager(env, stateV2);
   };
 
   //SNS generic validate function
@@ -2843,6 +2780,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#airdropMigratedUser _) { authGuard.isAdmin(caller) };
       case (#airdropMigratedUsers _) { authGuard.isAdmin(caller) };
       case (#getModeratorLeaderboard _) { authGuard.isAdmin(caller) };
+      case (#releaseTokensFor _) {
+        authGuard.isAdmin(caller) or authGuard.isModclubVesting(caller);
+      };
       case _ { not Principal.isAnonymous(caller) };
     };
   };
@@ -3040,7 +2980,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func importAirdropMetadata(payload : Types.AirdropMetadataImportPayload) : async {
     status : Bool;
   } {
-    logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show payload);
+    logger.logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show payload);
     importedProfilesStable := List.nil<(Principal, Nat)>();
     importedProfiles.clear();
 
@@ -3050,14 +2990,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         importedProfilesStable := List.push<(Principal, Nat)>((uid, up), importedProfilesStable);
         importedProfiles.add((uid, up));
       } catch (e) {
-        Helpers.logMessage(
-          canistergeekLogger,
-          "AN ERROR OCCURS DURING userPoints import :: " # Error.message(e),
-          #error
-        );
+        logger.logError("AN ERROR OCCURS DURING userPoints import :: " # Error.message(e));
       };
     };
-    logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show importedProfilesStable);
+    logger.logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show importedProfilesStable);
     { status = true };
   };
 
@@ -3082,11 +3018,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         };
       };
     } catch (e) {
-      Helpers.logMessage(
-        canistergeekLogger,
-        "AN ERROR OCCURS DURING userPoints translate :: " # Error.message(e),
-        #error
-      );
+      logger.logError("AN ERROR OCCURS DURING userPoints translate :: " # Error.message(e));
     };
 
     #ok({ topSeniors; seniors; juniors; novice });
@@ -3127,11 +3059,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         };
       };
     } catch (e) {
-      Helpers.logMessage(
-        canistergeekLogger,
-        "AN ERROR OCCURS DURING userPoints translate :: " # Error.message(e),
-        #error
-      );
+      logger.logError("AN ERROR OCCURS DURING userPoints translate :: " # Error.message(e));
     };
 
     return usersAndStatsCsv;
@@ -3160,7 +3088,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func associateAccount(assocHash : Text, profileData : Types.ImportProfile, points : Int) : async Text {
-    logMessage("MODCLUB Instanse has associateAccount call:: " # debug_show assocHash # " " # debug_show profileData # " " # debug_show points);
+    logger.logMessage("MODCLUB Instanse has associateAccount call:: " # debug_show assocHash # " " # debug_show profileData # " " # debug_show points);
     let (associator, assocAccount, avh) = switch (accountsAssocHashes.get(assocHash)) {
       case (?assoc) {
         switch (assocVerificationHashes.get(assocHash)) {
@@ -3168,21 +3096,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             (assoc, assocAcc, vh);
           };
           case (_) {
-            Helpers.logMessage(
-              canistergeekLogger,
-              "No association record found in assocVerificationHashes for " # assocHash,
-              #error
-            );
+            logger.logError("No association record found in assocVerificationHashes for " # assocHash);
             throw Error.reject("No association record found in assocVerificationHashes for " # assocHash);
           };
         };
       };
       case (_) {
-        Helpers.logMessage(
-          canistergeekLogger,
-          "No association record found in assocVerificationHashes for " # assocHash,
-          #error
-        );
+        logger.logError("No association record found in assocVerificationHashes for " # assocHash);
         throw Error.reject("No association record found in accountsAssocHashes for " # assocHash);
       };
     };
@@ -3215,11 +3135,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         case (tokensAvailable) {
           let amount = (ModClubParam.REQUIRED_POH_REVIEWS * ModClubParam.REWARD_PER_POH_REVIEW) * Nat.pow(10, Nat8.toNat(decimals));
           if (tokensAvailable <= amount) {
-            Helpers.logMessage(
-              canistergeekLogger,
-              "Insufficient funds to pay for POH. tokensAvailable: " # Nat.toText(tokensAvailable) # " amount required: " # Nat.toText(amount) # " Account failed to associate " # assocHash,
-              #error
-            );
+            logger.logError("Insufficient funds to pay for POH. tokensAvailable: " # Nat.toText(tokensAvailable) # " amount required: " # Nat.toText(amount) # " Account failed to associate " # assocHash);
             throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
           };
           let _ = await ledger.icrc1_transfer({
@@ -3250,11 +3166,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           let (rsValue : Int, level : RSTypes.UserLevel) = Helpers.translateUpToRs(up);
           ignore await rs.setRS(associator, rsValue);
 
-          Helpers.logMessage(
-            canistergeekLogger,
-            "NEW Moderator Account has been Associated. RS Value set for associator " # Principal.toText(associator) # " = " # Int.toText(rsValue),
-            #info
-          );
+          logger.logMessage("NEW Moderator Account has been Associated. RS Value set for associator " # Principal.toText(associator) # " = " # Int.toText(rsValue));
         };
         case (_) {
           throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
@@ -3271,11 +3183,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
       return avh;
     } catch (e) {
-      Helpers.logMessage(
-        canistergeekLogger,
-        "AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e),
-        #error
-      );
+      logger.logError("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
       throw Error.reject("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
     };
   };
@@ -3394,7 +3302,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
                 from_subaccount = ?Constants.ICRC_AIRDROP_SA;
                 to = {
                   owner = Principal.fromActor(this);
-                  subaccount = profile.subaccounts.get("ACCOUNT_PAYABLE");
+                  subaccount = profile.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
                 };
                 amount = airdropAmount;
                 fee = null;
@@ -3406,11 +3314,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
                   migrationAirdropWhitelist.put(i, (oldAccPr, true));
                 };
                 case (#Err(e)) {
-                  Helpers.logMessage(
-                    canistergeekLogger,
-                    "[AIRDROP_ERROR] Error occurs on icrc1_transfer for Airdrop to user :: " # Principal.toText(profile.id) # " :: " # debug_show (e),
-                    #error
-                  );
+                  logger.logError("[AIRDROP_ERROR] Error occurs on icrc1_transfer for Airdrop to user :: " # Principal.toText(profile.id) # " :: " # debug_show (e));
                 };
               };
             };
@@ -3461,7 +3365,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
                 from_subaccount = ?Constants.ICRC_AIRDROP_SA;
                 to = {
                   owner = Principal.fromActor(this);
-                  subaccount = profile.subaccounts.get("ACCOUNT_PAYABLE");
+                  subaccount = profile.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
                 };
                 amount = airdropAmount;
                 fee = null;
@@ -3486,11 +3390,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
                   };
                 };
                 case (#Err(e)) {
-                  Helpers.logMessage(
-                    canistergeekLogger,
-                    "[AIRDROP_ERROR] Error occurs on icrc1_transfer for Airdrop to user :: " # Principal.toText(profile.id) # " :: " # debug_show (e),
-                    #error
-                  );
+                  logger.logError("[AIRDROP_ERROR] Error occurs on icrc1_transfer for Airdrop to user :: " # Principal.toText(profile.id) # " :: " # debug_show (e));
                 };
               };
             };

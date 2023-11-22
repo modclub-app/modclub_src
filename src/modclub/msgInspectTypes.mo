@@ -83,7 +83,8 @@ module {
     #setLambdaToken : () -> (Text);
     #registerProvider : () -> (Text, Text, ?Types.Image);
     #registerUserToReceiveAlerts : () -> (Principal, Bool);
-    #releaseTokens : () -> ICRCTypes.Tokens;
+    #releaseTokens : () -> (ICRCTypes.Tokens);
+    #releaseTokensFor : () -> (ICRCTypes.Tokens, Principal);
     #removeProviderAdmin : () -> (Principal, Principal);
     #removeRules : () -> ([Types.RuleId], ?Principal);
     #resetUserChallengeAttempt : () -> Text;

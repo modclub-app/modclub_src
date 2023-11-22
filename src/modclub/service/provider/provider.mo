@@ -24,6 +24,7 @@ import Canistergeek "../../../common/canistergeek/canistergeek";
 import ModClubParam "../parameters/params";
 import CommonTypes "../../../common/types";
 import Utils "../../../common/utils";
+import Constants "../../../common/constants";
 import ModSecurity "../../../common/security/guard";
 
 module ProviderModule {
@@ -619,7 +620,7 @@ module ProviderModule {
       from_subaccount = provider.subaccounts.get("RESERVE");
       to = {
         owner = modclubCanisterPrincipal;
-        subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+        subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
       };
       amount = tokens;
       created_at_time = null;

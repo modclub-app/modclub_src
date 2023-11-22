@@ -30,6 +30,7 @@ import Bool "mo:base/Bool";
 import Option "mo:base/Option";
 import RSTypes "../rs/types";
 import RSConstants "../rs/constants";
+import CommonTypes "./types";
 
 module Helpers {
 
@@ -237,6 +238,19 @@ module Helpers {
     };
   };
 
+  public func getLogger(cgLogger : Canistergeek.Logger) : CommonTypes.ModclubLogger {
+    return {
+      logMessage = func(m : Text) { logMessage(cgLogger, m, #info) };
+      logError = func(m : Text) { logMessage(cgLogger, m, #error) };
+      throwError = func(m : Text) : async () {
+        logMessage(cgLogger, m, #error);
+        throw Error.reject(m);
+      };
+      logWarn = func(m : Text) { logMessage(cgLogger, m, #warn) };
+      logDebug = func(m : Text) { logMessage(cgLogger, m, #debugLevel) };
+    };
+  };
+
   public func logMessage(
     canistergeekLogger : Canistergeek.Logger,
     logMessage : Text,
@@ -415,6 +429,10 @@ module Helpers {
     Buffer.contains<Types.ContentId>(wl, cid, Text.equal);
   };
 
+  public func nowSeconds() : Int {
+    Time.now() / 1000000000;
+  };
+
   public func getIfTextContent(cType : Types.ContentType, chunkedContent : ?[Blob]) : Text {
     switch (cType) {
       case (#text) {
@@ -451,5 +469,4 @@ module Helpers {
       };
       case (_) empty;
     };
-  };
 };

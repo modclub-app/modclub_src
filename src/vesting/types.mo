@@ -30,6 +30,14 @@ module {
     created_at_time : Nat64;
   };
 
+  public type UnlockJob = {
+    id : Text;
+    uid : Principal;
+    amount : Nat;
+    dissolve_at_time : Int;
+    created_at_time : Int;
+  };
+
   public type LocksLog = Buffer.Buffer<LockBlock>;
 
   public type Locks = {

@@ -8,6 +8,7 @@ import Text "mo:base/Text";
 import Iter "mo:base/Iter";
 import List "mo:base/List";
 import Int "mo:base/Int";
+import Nat "mo:base/Nat";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import Types "./types";
@@ -20,6 +21,7 @@ import ICRCTypes "../common/ICRCTypes";
 import CommonTypes "../common/types";
 import ModSecurity "../common/security/guard";
 import VestingLedger "./ledger";
+import Scheduler "./scheduler";
 import GlobalConstants "../common/constants";
 import Canistergeek "../common/canistergeek/canistergeek";
 import LoggerTypesModule "../common/canistergeek/logger/typesModule";
@@ -37,8 +39,14 @@ shared ({ caller = deployer }) actor class Vesting({
 
   stable var persistedVestingsStorage : [(Principal, Types.LocksStable)] = [];
 
+  stable var persistedStakingUnlocks : [(Principal, [Types.UnlockJob])] = [];
+  stable var persistedFailedUnlocks : [Types.UnlockJob] = [];
+
   var ledger = VestingLedger.Ledger();
+  var logger = Helpers.getLogger(canistergeekLogger);
   let authGuard = ModSecurity.Guard(env, "VESTING_CANISTER");
+  var scheduler = Scheduler.Scheduler(ledger, logger, authGuard);
+  ignore scheduler.startScheduler();
   ignore authGuard.setUpDefaultAdmins(List.nil<Principal>(), deployer, authGuard.getCanisterId(#modclub));
   authGuard.subscribe("admins");
 
@@ -108,7 +116,16 @@ shared ({ caller = deployer }) actor class Vesting({
     account : ICRCTypes.Account,
     amount : ICRCTypes.Tokens
   ) : async Result.Result<Nat, Text> {
-    ledger.claimStaking(account.owner, amount);
+    switch (ledger.claimStaking(account.owner, amount)) {
+      case (#ok(txId)) {
+        ignore await scheduler.applyUnlockJob(account.owner, amount);
+        #ok(txId);
+      };
+      case (#err(e)) {
+        logger.logError("[STAKING][ERROR] Unable to claim staked tokens, User: " # Principal.toText(account.owner) # " Amount: " # Nat.toText(amount) # " Message: " # e);
+        #err(e);
+      };
+    };
   };
 
   public shared ({ caller }) func unlock_staking(
@@ -170,6 +187,9 @@ shared ({ caller = deployer }) actor class Vesting({
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
     _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
     persistedVestingsStorage := ledger.toPersistedStorage();
+    scheduler.stopScheduler();
+    persistedStakingUnlocks := scheduler.toPersistentSchedule();
+    persistedFailedUnlocks := scheduler.toPersistentFailedJobs();
   };
 
   system func postupgrade() {
@@ -186,6 +206,10 @@ shared ({ caller = deployer }) actor class Vesting({
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
+
+    scheduler.fromPersistentSchedule(persistedStakingUnlocks);
+    scheduler.fromPersistentFailedJobs(persistedFailedUnlocks);
+    ignore scheduler.startScheduler();
   };
 
   system func inspect({

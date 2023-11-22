@@ -110,6 +110,7 @@ module {
 
   public type ModclubCanisterActorType = actor {
     getModeratorEmailsForPOHAndSendEmail : (Text) -> async ();
+    releaseTokensFor : (ICRCTypes.Tokens, Principal) -> async ICRCTypes.Result<ICRCTypes.TxIndex, ICRCTypes.TransferError>;
   };
 
   public type UserAndVote = {
@@ -182,4 +183,11 @@ module {
     #Err : Text;
   };
 
+  public type ModclubLogger = {
+    logMessage : (Text) -> ();
+    logError : (Text) -> ();
+    throwError : (Text) -> async ();
+    logWarn : (Text) -> ();
+    logDebug : (Text) -> ();
+  };
 };

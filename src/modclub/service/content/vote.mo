@@ -396,13 +396,13 @@ module ContentVotingModule {
       let moderatorAcc = { owner = moderator.id; subaccount = null };
       let moderatorSystemAcc = {
         owner = arg.modclubCanisterId;
-        subaccount = moderator.subaccounts.get("ACCOUNT_PAYABLE");
+        subaccount = moderator.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
       };
       let fullReward = (Float.fromInt(userVote.rsBeforeVoting) * ModClubParam.GAMMA_M * CT) / Float.fromInt(sumRS);
       let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
       // Dist of free part of rewarded tokens
       let _ = await ledger.icrc1_transfer({
-        from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+        from_subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
         to = moderatorSystemAcc;
         amount = modDistTokens;
         fee = null;
@@ -417,7 +417,7 @@ module ContentVotingModule {
       switch (lockRes) {
         case (#ok(lockLen)) {
           let _ = await ledger.icrc1_transfer({
-            from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+            from_subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
             to = {
               owner = arg.modclubCanisterId;
               subaccount = ?Constants.ICRC_VESTING_SA;
@@ -443,7 +443,7 @@ module ContentVotingModule {
 
     // treasury dist
     let _ = await ledger.icrc1_transfer({
-      from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+      from_subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
       to = {
         owner = arg.modclubCanisterId;
         subaccount = ?Constants.ICRC_TREASURY_SA;
@@ -463,7 +463,7 @@ module ContentVotingModule {
 
     // burn.
     ignore await ledger.icrc1_transfer({
-      from_subaccount = provider.subaccounts.get("ACCOUNT_PAYABLE");
+      from_subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
       to = minting_account;
       amount = Utils.floatToTokens(ModClubParam.GAMMA_B * CT);
       fee = null;

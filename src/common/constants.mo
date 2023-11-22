@@ -1,6 +1,7 @@
 module Constants {
   public let EXPIRE_VOTE_TIME = 300000;
   public let VESTING_DISSOLVE_DELAY_SECONDS = 604800;
+  public let STAKING_UNLOCK_HANDLER_INTERVAL_SECONDS = 300;
   public let TOKENS_DECIMAL = 8.0;
   public let ONE_MIN_NANO_SECS = 60000000000;
   public let FIVE_MIN_NANO_SECS = 300000000000;
@@ -40,4 +41,6 @@ module Constants {
   public let EMAIL_NOTIFICATION_NEW_POH = "new_poh_notification" : Text;
   public let EMAIL_NOTIFICATION_NEW_CONTENT = "new_content_notification" : Text;
   public let EMAIL_NOTIFICATION_USER_VERIFICATION = "user_verification_notification" : Text;
+
+  public let ACCOUNT_PAYABLE_FIELD = "ACCOUNT_PAYABLE";
 };
