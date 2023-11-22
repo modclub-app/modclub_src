@@ -1,36 +1,38 @@
 import Array "mo:base/Array";
-import Base32 "mo:encoding/Base32";
 import Blob "mo:base/Blob";
+import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
-import Canistergeek "./canistergeek/canistergeek";
 import Char "mo:base/Char";
-import GlobalState "../modclub/statev2";
+import Error "mo:base/Error";
+import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Int64 "mo:base/Int64";
 import Iter "mo:base/Iter";
-import LFSR "mo:rand/LFSR";
 import Nat "mo:base/Nat";
+import Nat16 "mo:base/Nat16";
 import Nat32 "mo:base/Nat32";
 import Nat64 "mo:base/Nat64";
 import Nat8 "mo:base/Nat8";
-import Nat16 "mo:base/Nat16";
-import Float "mo:base/Float";
+import Option "mo:base/Option";
 import Prim "mo:prim";
 import Principal "mo:base/Principal";
-import SHA256 "mo:crypto/SHA/SHA256";
-import Source "mo:uuid/async/SourceV4";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Error "mo:base/Error";
-import Types "../modclub/types";
+
+import Base32 "mo:encoding/Base32";
+import LFSR "mo:rand/LFSR";
+import SHA256 "mo:crypto/SHA/SHA256";
+import Source "mo:uuid/async/SourceV4";
 import UUID "mo:uuid/UUID";
-import Constants "constants";
-import Bool "mo:base/Bool";
-import Option "mo:base/Option";
-import RSTypes "../rs/types";
-import RSConstants "../rs/constants";
+
+import Canistergeek "./canistergeek/canistergeek";
 import CommonTypes "./types";
+import Constants "constants";
+import GlobalState "../modclub/statev2";
+import RSConstants "../rs/constants";
+import RSTypes "../rs/types";
+import Types "../modclub/types";
 
 module Helpers {
 
@@ -469,4 +471,5 @@ module Helpers {
       };
       case (_) empty;
     };
+  };
 };
