@@ -134,12 +134,8 @@ export default function Unstake({
             className={!load ? "input" : "input is-danger"}
             initialValue={inputValue}
             validate={(value) => {
-              if (isNaN(value) || Number(value) < 0) {
+              if (isNaN(value) || Number(value) <= 0) {
                 setWarning("Incorrect amount");
-                return setLoader(true);
-              }
-              if (isNaN(value) || Number(value) == 0) {
-                setWarning(null);
                 return setLoader(true);
               }
               if (Number(value) > stakeBalance) {

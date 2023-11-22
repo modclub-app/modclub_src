@@ -1059,6 +1059,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func claimLockedReward(amount : ICRCTypes.Tokens, customReceiver : ?Principal) : async Result.Result<Bool, Text> {
+    if (Nat.equal(amount, 0)) return #err("Claimed amount must be greater than 0 Tokens.");
     if (not ModeratorManager.canClaimReward(caller, claimRewardsWhitelistBuf)) {
       return #err("Moderator not permitted to claim locked Tokens.");
     };
