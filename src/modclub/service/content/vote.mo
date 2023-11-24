@@ -472,7 +472,7 @@ module ContentVotingModule {
     });
   };
 
-  private func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
+  public func getViolatedRuleCount(violatedRuleCount : HashMap.HashMap<Text, Nat>) : [Types.ViolatedRules] {
     let vRulesCountBuff = Buffer.Buffer<Types.ViolatedRules>(violatedRuleCount.size());
 
     for ((vRuleId, count) in violatedRuleCount.entries()) {

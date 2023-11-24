@@ -383,6 +383,15 @@ module {
     provider : Principal;
   };
 
+  public type VotingStats = ContentResult and {
+    cid : Text;
+  };
+
+  public type ProviderContentResponse = {
+    content : [ContentPlus];
+    voting : [VotingStats];
+  };
+
   public type VoteCount = {
     approvedCount : Nat;
     rejectedCount : Nat;

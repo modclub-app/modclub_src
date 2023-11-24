@@ -718,12 +718,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   // Retrieve all content for the calling Provider
-  public shared ({ caller }) func getProviderContent(
+  public query ({ caller }) func getProviderContent(
     providerId : Principal,
     status : Types.ContentStatus,
     start : Nat,
     end : Nat
-  ) : async [Types.ContentPlus] {
+  ) : async Types.ProviderContentResponse {
     switch (PermissionsModule.checkProviderPermission(caller, ?providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
@@ -731,7 +731,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (start < 0 or end < 0 or start > end) {
       throw Error.reject("Invalid range");
     };
-    return await ContentManager.getProviderContent(
+
+    let content = ContentManager.getProviderContent(
       {
         providerId;
         getVoteCount;
@@ -744,6 +745,27 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       },
       content2Category
     );
+    let voting = Buffer.Buffer<Types.VotingStats>(1);
+    Buffer.iterate<Types.ContentPlus>(
+      content,
+      func(c) {
+        let voteCount = getVoteCount(c.id, ?caller);
+        let votingStats : Types.VotingStats = {
+          cid = c.id;
+          sourceId = c.sourceId;
+          approvedCount = voteCount.approvedCount;
+          rejectedCount = voteCount.rejectedCount;
+          status = status;
+          violatedRules = ContentVotingManager.getViolatedRuleCount(voteCount.violatedRulesCount);
+        };
+        voting.add(votingStats);
+      }
+    );
+
+    return {
+      content = Buffer.toArray<Types.ContentPlus>(content);
+      voting = Buffer.toArray<Types.VotingStats>(voting);
+    };
   };
 
   public shared ({ caller }) func getAllContent(status : Types.ContentStatus) : async [
