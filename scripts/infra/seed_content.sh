@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ "$EXIT_ON_ERROR" = "yes" ]; then
+    echo "Enable exit on error..."
+    set -e
+fi
 
 # script to only add contents
 current_dir="$(dirname "$0")"

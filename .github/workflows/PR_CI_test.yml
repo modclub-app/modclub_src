@@ -112,6 +112,7 @@ jobs:
           ./scripts/infra/seed_content.sh
         env:
           DEV_ENV: qa
+          EXIT_ON_ERROR: yes
 
       - name: Run tests
         if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}

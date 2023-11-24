@@ -17,7 +17,7 @@ function setup_provider() {
     local provider_identity=$2
     local auth=$(get_canister_name_by_env "$env" "auth")
     local modclub=$(get_canister_name_by_env "$env" "modclub")
-    local provider_name="X company"
+    local provider_name="X_company"
     local provider_description="we provide x contents."
 
     log_step "Setup provider... (identity=${provider_identity})"
@@ -32,7 +32,7 @@ function setup_provider() {
     dfx canister call ${modclub} addToAllowList '(principal "'$provider_pricipal'" )'
 
     dfx identity use ${provider_identity}
-    dfx canister call ${modclub} registerProvider '("'"${provider_name}"'","'"${provider_description}"'", null)'
+    dfx canister call ${modclub} registerProvider '("'${provider_name}'","'"${provider_description}"'", null)'
 
     dfx canister call ${modclub} addProviderAdmin '(principal "'$provider_pricipal'" , "'${provider_name}'", null)'
     dfx canister call modclub_qa addRules '(vec {"Incorrect Content"}, opt principal "'$provider_pricipal'")'
