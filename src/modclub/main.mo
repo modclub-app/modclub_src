@@ -530,6 +530,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution = storageSolution;
       }
     );
+
+    let providerId = Principal.toText(caller);
     if (Option.isSome(category)) {
       let catTitle = Option.get(category, "");
       let cat = switch (contentCategories.get(catTitle)) {
@@ -547,12 +549,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
 
       // Upgrade contentIndexes
-      let providerId = Principal.toText(caller);
       contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
-      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
       contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
       content2Category.put(cid, cat.id);
     };
+    contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
 
     return cid;
   };
@@ -601,6 +602,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution;
       }
     );
+
+    let providerId = Principal.toText(caller);
     if (Option.isSome(category)) {
       let catTitle = Option.get(category, "");
       let cat = switch (contentCategories.get(catTitle)) {
@@ -618,12 +621,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
 
       // Upgrade contentIndexes
-      let providerId = Principal.toText(caller);
       contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
-      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
       contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
       content2Category.put(cid, cat.id);
     };
+    contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
 
     return cid;
   };
@@ -672,6 +674,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution;
       }
     );
+
+    let providerId = Principal.toText(caller);
     if (Option.isSome(category)) {
       let catTitle = Option.get(category, "");
       let cat = switch (contentCategories.get(catTitle)) {
@@ -689,12 +693,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
 
       // Upgrade contentIndexes
-      let providerId = Principal.toText(caller);
       contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
-      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
       contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
       content2Category.put(cid, cat.id);
     };
+    contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
 
     return cid;
   };
