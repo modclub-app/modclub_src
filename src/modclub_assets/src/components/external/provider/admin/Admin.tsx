@@ -86,8 +86,10 @@ export default function Admin() {
       const sub_acc_rec = appState.selectedProvider.subaccounts.find(
         (item) => item[0] === "RESERVE"
       );
-      sub_acc_rec.length &&
-        setProviderSubAcc(new TextDecoder().decode(sub_acc_rec[1]));
+      if (sub_acc_rec && sub_acc_rec.length > 1) {
+        const buffer = new Uint8Array(sub_acc_rec[1]);
+        setProviderSubAcc(new TextDecoder().decode(buffer));
+    }
     }
   }, [appState.selectedProvider]);
 
