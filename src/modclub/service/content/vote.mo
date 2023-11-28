@@ -91,7 +91,7 @@ module ContentVotingModule {
       throw Error.reject("User voted on Unauthorized Content.");
     };
     let state = arg.state;
-    let voteId = "vote-" # Principal.toText(arg.userId) # arg.contentId;
+    let voteId = Helpers.getContentVoteId(arg.userId, arg.contentId);
     switch (state.votes.get(voteId)) {
       case (?v) {
         throw Error.reject("User already voted");
@@ -113,10 +113,8 @@ module ContentVotingModule {
       case (_)(throw Error.reject("Content does not exist"));
     };
 
-    var voteApproved : Nat = 0;
-    var voteRejected : Nat = 0;
-    voteApproved := voteApproved + arg.voteCount.approvedCount;
-    voteRejected := voteRejected + arg.voteCount.rejectedCount;
+    var voteApproved : Nat = arg.voteCount.approvedCount;
+    var voteRejected : Nat = arg.voteCount.rejectedCount;
 
     // Check if the rules provided are valid
     if (arg.decision == #rejected) {

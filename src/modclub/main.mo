@@ -1891,24 +1891,26 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     // As email is going to send to all the users who opted in to receive at the time of content submission
     var emailIDsHash = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-    let voteStateToSend = voteManager.getVoteState();
+    let votesState = voteManager.getVoteState();
     if (emailType == Constants.EMAIL_NOTIFICATION_NEW_CONTENT) {
       // Sends content email
-      let queueStateToSend = contentQueueManager.getQueueState();
+      let contentQueuesState = contentQueueManager.getQueueState();
       emailIDsHash := emailManager.getModeratorEmailsForContent(
-        voteStateToSend,
-        queueStateToSend,
-        stateV2
+        contentQueuesState,
+        stateV2,
+        randomizationEnabled
       );
     } else {
       // Sends POH email
       let pohContentState = pohContentQueueManager.getQueueState();
-      let pohStateToSend = pohEngine.getPOHState();
+      let pohState = pohEngine.getPOHState();
       emailIDsHash := emailManager.getModeratorEmailsForPOH(
-        voteStateToSend,
+        votesState,
         pohContentState,
         stateV2,
-        pohStateToSend
+        pohState,
+        claimRewardsWhitelistBuf, // All Senior-level moderators here
+        randomizationEnabled
       );
     };
     // Found number of emails to send

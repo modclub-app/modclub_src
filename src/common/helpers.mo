@@ -472,4 +472,35 @@ module Helpers {
       case (_) empty;
     };
   };
+
+  public func getContentVoteId(uid : Principal, cid : Text) : Text {
+    "vote-" # Principal.toText(uid) # cid;
+  };
+
+  public func getEmailsForNotifs(
+    globalState : GlobalState.State,
+    usersToReceiveEmailAlerts : HashMap.HashMap<Principal, Bool>,
+    newContentAmount : Nat,
+    filter : ?Buffer.Buffer<Principal>
+  ) : HashMap.HashMap<Text, Nat> {
+    let userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+    for ((uid, notifsEnabled) in usersToReceiveEmailAlerts.entries()) {
+      let filterPass = switch (filter) {
+        case (?f) { Buffer.contains<Principal>(f, uid, Principal.equal) };
+        case (_) { true };
+      };
+      if (notifsEnabled and filterPass) {
+        switch (globalState.profiles.get(uid)) {
+          case (null)();
+          case (?profile) {
+            if (profile.email != "") {
+              userEmailIDs.put(profile.email, newContentAmount);
+            };
+          };
+        };
+      };
+    };
+
+    return userEmailIDs;
+  };
 };

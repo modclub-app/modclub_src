@@ -19,6 +19,8 @@ import VoteStateV3 "../vote/pohVoteState";
 import Content "../queue/state";
 import PohStateV2 "../poh/statev2";
 
+import Helpers "../../../common/helpers";
+
 module EmailModule {
 
   public class EmailManager(stableState : EmailState.EmailStateStable) {
@@ -100,8 +102,15 @@ module EmailModule {
       return EmailState.getStableState(state);
     };
 
-    public func getModeratorEmailsForContent(voteState : VoteStateV3.PohVoteState, contentState : Content.QueueState, globalState : GlobalState.State) : HashMap.HashMap<Text, Nat> {
-      let userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+    public func getModeratorEmailsForContent(contentState : Content.QueueState, globalState : GlobalState.State, isRandomized : Bool) : HashMap.HashMap<Text, Nat> {
+      var userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+      if (not isRandomized) {
+        let newContentAmount = contentState.allNewContentQueue.size();
+        userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, null);
+
+        return userEmailIDs;
+      };
+
       for ((qId, contentMap) in contentState.newContentQueues.entries()) {
         // Proceed further if there is content in present queue
         if (contentMap.size() != 0) {
@@ -114,10 +123,12 @@ module EmailModule {
                   case (null)();
                   case (?contentToCheck) {
                     let currentTime = Time.now() / 1000000;
+                    // Check if the content was created within the last 5 minutes
                     if (contentToCheck.createdAt > currentTime -300000 and contentToCheck.createdAt < currentTime) {
                       totalUserContents := totalUserContents +1;
-                      for (voteID in voteState.pohContent2votes.get0(contentID).vals()) {
-                        for (votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()) {
+                      let userVoteId = Helpers.getContentVoteId(userID, contentID);
+                      for (vId in globalState.content2votes.get0(contentID).vals()) {
+                        if (Text.equal(vId, userVoteId)) {
                           totalUserContents := totalUserContents -1;
                         };
                       };
@@ -148,42 +159,59 @@ module EmailModule {
       };
       return userEmailIDs;
     };
-    public func getModeratorEmailsForPOH(voteState : VoteStateV3.PohVoteState, contentState : Content.QueueState, globalState : GlobalState.State, pohState : PohStateV2.PohState) : HashMap.HashMap<Text, Nat> {
-      let userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-      for ((qId, contentMap) in contentState.newContentQueues.entries()) {
+
+    public func getModeratorEmailsForPOH(
+      voteState : VoteStateV3.PohVoteState,
+      pohContentState : Content.QueueState,
+      globalState : GlobalState.State,
+      pohState : PohStateV2.PohState,
+      seniorMods : Buffer.Buffer<Principal>,
+      isRandomized : Bool
+    ) : HashMap.HashMap<Text, Nat> {
+      var userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+      if (not isRandomized) {
+        let newContentAmount = pohContentState.allNewContentQueue.size();
+        userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, ?seniorMods);
+
+        return userEmailIDs;
+      };
+      for ((qId, contentMap) in pohContentState.newContentQueues.entries()) {
         // Proceed further if there is content in present queue
         if (contentMap.size() != 0) {
-          for ((userID, userQID) in contentState.userId2QueueId.entries()) {
-            // If current queueID matches with current user's queue then proceed further for that user
-            if (userQID == qId) {
-              var totalUserContents : Nat = 0;
-              for (contentID in contentMap.keys()) {
-                switch (pohState.pohChallengePackages.get(contentID)) {
-                  case (null)();
-                  case (?contentToCheck) {
-                    let currentTime = Time.now() / 1000000;
-                    if (contentToCheck.createdAt > currentTime -300000 and contentToCheck.createdAt < currentTime) {
-                      totalUserContents := totalUserContents +1;
-                      for (voteID in voteState.pohContent2votes.get0(contentID).vals()) {
-                        for (votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()) {
-                          totalUserContents := totalUserContents -1;
+          for ((userID, userQID) in pohContentState.userId2QueueId.entries()) {
+            if (Buffer.contains<Principal>(seniorMods, userID, Principal.equal)) {
+              // If current queueID matches with current user's queue then proceed further for that user
+              if (userQID == qId) {
+                var totalUserContents : Nat = 0;
+                for (contentID in contentMap.keys()) {
+                  switch (pohState.pohChallengePackages.get(contentID)) {
+                    case (null)();
+                    case (?contentToCheck) {
+                      let currentTime = Time.now() / 1000000;
+                      // Check if the content was created within the last 5 minutes
+                      if (contentToCheck.createdAt > currentTime -300000 and contentToCheck.createdAt < currentTime) {
+                        totalUserContents := totalUserContents +1;
+                        for (voteID in voteState.pohContent2votes.get0(contentID).vals()) {
+                          for (votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()) {
+                            totalUserContents := totalUserContents -1;
+                          };
                         };
                       };
                     };
                   };
                 };
-              };
-              if (totalUserContents > 0) {
-                // Check if current user opted in for email alerts
-                switch (state.usersToReceiveEmailAlerts.get(userID)) {
-                  case (null)();
-                  case (?userWantsToReceiveAlerts) {
-                    // If user opted in for email alerts
-                    switch (globalState.profiles.get(userID)) {
-                      case (null)();
-                      case (?result) {
-                        if (result.email != "") {
-                          userEmailIDs.put(result.email, totalUserContents);
+                if (totalUserContents > 0) {
+                  // Check if current user opted in for email alerts
+                  switch (state.usersToReceiveEmailAlerts.get(userID)) {
+                    case (null)();
+                    case (?userWantsToReceiveAlerts) {
+                      // If user opted in for email alerts
+                      switch (globalState.profiles.get(userID)) {
+                        case (null)();
+                        case (?result) {
+                          if (result.email != "") {
+                            userEmailIDs.put(result.email, totalUserContents);
+                          };
                         };
                       };
                     };
