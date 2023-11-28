@@ -1472,6 +1472,9 @@ module PohModule {
         case (#startPoh) {
           "startPoh";
         };
+        case (#processing) {
+          "processing";
+        };
       };
     };
 
