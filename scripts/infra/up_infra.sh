@@ -156,7 +156,9 @@ function init_qa_canisters() {
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Init QA Canisters...${NC}\n"
   dfx canister call modclub_qa adminInit &&
   dfx canister call modclub_qa configurePohForProvider "(principal \"$(dfx canister id modclub_qa)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)" &&
-  dfx canister call modclub_qa populateChallenges
+  dfx canister call modclub_qa populateChallenges &&
+	dfx canister call modclub_qa shuffleContent &&
+	dfx canister call modclub_qa shufflePohContent &&
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters INITIALIZED${NC}\n"
   return 0;
 }

@@ -1,6 +1,7 @@
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
+import Float "mo:base/Float";
 import Canistergeek "../../../common/canistergeek/canistergeek";
 import Debug "mo:base/Debug";
 import GlobalState "../../statev2";
@@ -22,6 +23,7 @@ import ContentTypes "types";
 import Reserved "reserved";
 import Error "mo:base/Error";
 import StorageSolution "../storage/storage";
+import ModClubParams "../parameters/params";
 
 module ContentModule {
 
@@ -163,7 +165,7 @@ module ContentModule {
   public func getProviderContent(
     arg : ContentTypes.ProviderContentArg,
     content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>
-  ) : async [Types.ContentPlus] {
+  ) : Buffer.Buffer<Types.ContentPlus> {
     let buf = Buffer.Buffer<Types.ContentPlus>(0);
     let maxReturn : Nat = arg.end - arg.start;
     var count : Nat = 0;
@@ -175,9 +177,9 @@ module ContentModule {
           case (?result) {
             let voteCount = arg.getVoteCount(cid, ?arg.providerId);
             switch (getContentPlus(cid, ?arg.providerId, voteCount, arg.globalState, content2Category)) {
-              case (?result) {
-                if (result.status == arg.status) {
-                  buf.add(result);
+              case (?cp) {
+                if (cp.status == arg.status) {
+                  buf.add(cp);
                   count := count + 1;
                 };
               };
@@ -188,7 +190,7 @@ module ContentModule {
       };
       index := index + 1;
     };
-    Buffer.toArray<Types.ContentPlus>(buf);
+    buf;
   };
 
   public func getAllContent(
@@ -281,7 +283,8 @@ module ContentModule {
   ) : Types.Content {
     let now = Helpers.timeNow();
     let reserved : [Types.Reserved] = [];
-    let rp : Types.Receipt = createReceipt({ caller = arg.caller; globalState; contentState }, 10);
+    let cost = ModClubParams.CS * Float.fromInt(arg.voteParam.requiredVotes);
+    let rp : Types.Receipt = createReceipt({ caller = arg.caller; globalState; contentState }, Float.toInt(cost));
     let content : Types.Content = {
       id = Helpers.generateId(arg.caller, "content", globalState);
       providerId = arg.caller;
@@ -405,6 +408,13 @@ module ContentModule {
       case (?content) {
         switch (globalState.providers.get(content.providerId)) {
           case (?provider) {
+            let cost = switch (content.receipt.cost == 10) {
+              // workaround for wrong cost calculation on old-tasks
+              case (true) {
+                Float.toInt(ModClubParams.CS * Float.fromInt(content.voteParameters.requiredVotes));
+              };
+              case (false) { content.receipt.cost };
+            };
             let result : Types.ContentPlus = {
               id = content.id;
               providerName = provider.name;
@@ -427,7 +437,11 @@ module ContentModule {
               image = ?{ data = []; imageType = "" };
               voteParameters = content.voteParameters;
               reservedList = content.reservedList;
-              receipt = content.receipt;
+              receipt = {
+                id = content.receipt.id;
+                cost;
+                createdAt = content.receipt.createdAt;
+              };
             };
             return ?result;
           };

@@ -530,6 +530,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution = storageSolution;
       }
     );
+
+    let providerId = Principal.toText(caller);
     if (Option.isSome(category)) {
       let catTitle = Option.get(category, "");
       let cat = switch (contentCategories.get(catTitle)) {
@@ -547,12 +549,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
 
       // Upgrade contentIndexes
-      let providerId = Principal.toText(caller);
       contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
-      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
       contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
       content2Category.put(cid, cat.id);
     };
+    contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
 
     return cid;
   };
@@ -601,6 +602,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution;
       }
     );
+
+    let providerId = Principal.toText(caller);
     if (Option.isSome(category)) {
       let catTitle = Option.get(category, "");
       let cat = switch (contentCategories.get(catTitle)) {
@@ -618,12 +621,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
 
       // Upgrade contentIndexes
-      let providerId = Principal.toText(caller);
       contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
-      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
       contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
       content2Category.put(cid, cat.id);
     };
+    contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
 
     return cid;
   };
@@ -672,6 +674,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         storageSolution;
       }
     );
+
+    let providerId = Principal.toText(caller);
     if (Option.isSome(category)) {
       let catTitle = Option.get(category, "");
       let cat = switch (contentCategories.get(catTitle)) {
@@ -689,12 +693,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
 
       // Upgrade contentIndexes
-      let providerId = Principal.toText(caller);
       contentIndexes := Helpers.upgradeContentIndex(cat.id, cid, contentIndexes);
-      contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
       contentIndexes := Helpers.upgradeContentIndex(Text.concat(providerId, cat.id), cid, contentIndexes);
       content2Category.put(cid, cat.id);
     };
+    contentIndexes := Helpers.upgradeContentIndex(providerId, cid, contentIndexes);
 
     return cid;
   };
@@ -715,12 +718,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   // Retrieve all content for the calling Provider
-  public shared ({ caller }) func getProviderContent(
+  public query ({ caller }) func getProviderContent(
     providerId : Principal,
     status : Types.ContentStatus,
     start : Nat,
     end : Nat
-  ) : async [Types.ContentPlus] {
+  ) : async Types.ProviderContentResponse {
     switch (PermissionsModule.checkProviderPermission(caller, ?providerId, stateV2)) {
       case (#err(error)) return throw Error.reject("Unauthorized");
       case (#ok(p))();
@@ -728,7 +731,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (start < 0 or end < 0 or start > end) {
       throw Error.reject("Invalid range");
     };
-    return await ContentManager.getProviderContent(
+
+    let content = ContentManager.getProviderContent(
       {
         providerId;
         getVoteCount;
@@ -741,6 +745,27 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       },
       content2Category
     );
+    let voting = Buffer.Buffer<Types.VotingStats>(1);
+    Buffer.iterate<Types.ContentPlus>(
+      content,
+      func(c) {
+        let voteCount = getVoteCount(c.id, ?caller);
+        let votingStats : Types.VotingStats = {
+          cid = c.id;
+          sourceId = c.sourceId;
+          approvedCount = voteCount.approvedCount;
+          rejectedCount = voteCount.rejectedCount;
+          status = status;
+          violatedRules = ContentVotingManager.getViolatedRuleCount(voteCount.violatedRulesCount);
+        };
+        voting.add(votingStats);
+      }
+    );
+
+    return {
+      content = Buffer.toArray<Types.ContentPlus>(content);
+      voting = Buffer.toArray<Types.VotingStats>(voting);
+    };
   };
 
   public shared ({ caller }) func getAllContent(status : Types.ContentStatus) : async [
@@ -1866,24 +1891,28 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     // As email is going to send to all the users who opted in to receive at the time of content submission
     var emailIDsHash = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-    let voteStateToSend = voteManager.getVoteState();
+    let votesState = voteManager.getVoteState();
     if (emailType == Constants.EMAIL_NOTIFICATION_NEW_CONTENT) {
       // Sends content email
-      let queueStateToSend = contentQueueManager.getQueueState();
+      let contentQueuesState = contentQueueManager.getQueueState();
       emailIDsHash := emailManager.getModeratorEmailsForContent(
-        voteStateToSend,
-        queueStateToSend,
-        stateV2
+        contentQueuesState,
+        stateV2,
+        randomizationEnabled,
+        canistergeekLogger
       );
     } else {
       // Sends POH email
       let pohContentState = pohContentQueueManager.getQueueState();
-      let pohStateToSend = pohEngine.getPOHState();
+      let pohState = pohEngine.getPOHState();
       emailIDsHash := emailManager.getModeratorEmailsForPOH(
-        voteStateToSend,
+        votesState,
         pohContentState,
         stateV2,
-        pohStateToSend
+        pohState,
+        claimRewardsWhitelistBuf, // All Senior-level moderators here
+        randomizationEnabled,
+        canistergeekLogger
       );
     };
     // Found number of emails to send
