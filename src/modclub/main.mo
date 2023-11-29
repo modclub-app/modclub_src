@@ -1898,7 +1898,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       emailIDsHash := emailManager.getModeratorEmailsForContent(
         contentQueuesState,
         stateV2,
-        randomizationEnabled
+        randomizationEnabled,
+        canistergeekLogger
       );
     } else {
       // Sends POH email
@@ -1910,7 +1911,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         stateV2,
         pohState,
         claimRewardsWhitelistBuf, // All Senior-level moderators here
-        randomizationEnabled
+        randomizationEnabled,
+        canistergeekLogger
       );
     };
     // Found number of emails to send
