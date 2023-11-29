@@ -169,8 +169,12 @@ module EmailModule {
 
       if (not isRandomized) {
         let newContent = filterNewContent(contentState.allNewContentQueue, globalState, null, currentTime, canistergeekLogger);
+        // Output to log the size of newContent
+        Helpers.logMessage(canistergeekLogger, "newContent size: " # Int.toText(newContent.size()), #info);
         let newContentAmount = newContent.size();
         userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, null);
+        // Output to log the size of userEmailIDs
+        Helpers.logMessage(canistergeekLogger, "userEmailIDs size: " # Int.toText(userEmailIDs.size()), #info);
         return userEmailIDs;
       };
 

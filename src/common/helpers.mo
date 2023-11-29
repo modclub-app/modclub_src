@@ -484,6 +484,11 @@ module Helpers {
     filter : ?Buffer.Buffer<Principal>
   ) : HashMap.HashMap<Text, Nat> {
     let userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+    // if no new content, return empty map
+    if (newContentAmount == 0) {
+      return userEmailIDs;
+    };
+
     for ((uid, notifsEnabled) in usersToReceiveEmailAlerts.entries()) {
       let filterPass = switch (filter) {
         case (?f) { Buffer.contains<Principal>(f, uid, Principal.equal) };
