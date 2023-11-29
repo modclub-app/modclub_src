@@ -135,8 +135,13 @@ module EmailModule {
         switch (createdAtTime) {
           case (null)();
           case (?createdAt) {
+            // Simplify the boolean expression
+            let fiveMinutesAgo = currentTime - FIVE_MINUTES_IN_MS;
+            let isContentCreatedWithinLastFiveMinutes = createdAt > fiveMinutesAgo and createdAt <= currentTime;
             // Output to log createdAtTime and currentTime and the difference between them
-            if (createdAt > currentTime - FIVE_MINUTES_IN_MS and createdAt <= currentTime) {
+            if (isContentCreatedWithinLastFiveMinutes) {
+              // Add another log which tests each of the boolean expressions
+              Helpers.logMessage(canistergeekLogger, "ContentId: " # contentId # " - createdAt: " # Int.toText(createdAt) # " - currentTime: " # Int.toText(currentTime) # " - fiveMinutesAgo: " # Int.toText(fiveMinutesAgo) # " - isContentCreatedWithinLastFiveMinutes: " # Bool.toText(isContentCreatedWithinLastFiveMinutes), #info);
               // Log the contentId plus the values of createdAt and currentTime
               Helpers.logMessage(canistergeekLogger, "ContentId: " # contentId # " - createdAt: " # Int.toText(createdAt) # " - currentTime: " # Int.toText(currentTime), #info);
               newContent.put(contentId, null);
