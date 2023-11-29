@@ -166,8 +166,9 @@ function execShellCommand(cmd) {
   const walletCanisterId = getCanisterId("wallet");
   const authCanisterId = getCanisterId("auth");
   const vestingCanisterId = getCanisterId("vesting");
+  const archiveCanisterId = getCanisterId("archive");
 
-  const upgradeArg = `record { modclub_canister_id = principal \\"${modclubCanisterId}\\"; old_modclub_canister_id = principal \\"la3yy-gaaaa-aaaah-qaiuq-cai\\"; rs_canister_id = principal \\"${rsCanisterId}\\"; wallet_canister_id = principal \\"${walletCanisterId}\\"; auth_canister_id = principal \\"${authCanisterId}\\"; vesting_canister_id = principal \\"${vestingCanisterId}\\"; }`;
+  const upgradeArg = `record { modclub_canister_id = principal \\"${modclubCanisterId}\\"; old_modclub_canister_id = principal \\"la3yy-gaaaa-aaaah-qaiuq-cai\\"; rs_canister_id = principal \\"${rsCanisterId}\\"; wallet_canister_id = principal \\"${walletCanisterId}\\"; auth_canister_id = principal \\"${authCanisterId}\\"; vesting_canister_id = principal \\"${vestingCanisterId}\\"; archive_canister_id = principal \\"${archiveCanisterId}\\"; }`;
 
   try {
     console.log("🚀 Preparing upgrade proposal...");
