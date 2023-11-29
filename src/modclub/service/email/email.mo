@@ -1,5 +1,6 @@
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
+import Canistergeek "../../../common/canistergeek/canistergeek";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
@@ -107,7 +108,8 @@ module EmailModule {
       contentIds : HashMap.HashMap<Text, ?Text>,
       globalState : GlobalState.State,
       pohState : ?PohStateV2.PohState,
-      currentTime : Int
+      currentTime : Int,
+      canistergeekLogger : Canistergeek.Logger
     ) : HashMap.HashMap<Text, ?Text> {
       var newContent = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
 
@@ -133,6 +135,8 @@ module EmailModule {
         switch (createdAtTime) {
           case (null)();
           case (?createdAt) {
+            // Output to log createdAtTime and currentTime and the difference between them
+            Helpers.logMessage(canistergeekLogger, "createdAtTime: " # Int.toText(createdAt) # " - currentTime: " # Int.toText(currentTime) # " - difference: " # Int.toText(currentTime - createdAt), #info);
             if (createdAt > currentTime - FIVE_MINUTES_IN_MS and createdAt <= currentTime) {
               newContent.put(contentId, null);
             };
@@ -145,19 +149,27 @@ module EmailModule {
       return newContent;
     };
 
-    public func getModeratorEmailsForContent(contentState : Content.QueueState, globalState : GlobalState.State, isRandomized : Bool) : HashMap.HashMap<Text, Nat> {
+    public func getModeratorEmailsForContent(
+      contentState : Content.QueueState,
+      globalState : GlobalState.State,
+      isRandomized : Bool,
+      canistergeekLogger : Canistergeek.Logger
+    ) : HashMap.HashMap<Text, Nat> {
       var userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-      let currentTime = Time.now() / 1000000;
+      let currentTime = Helpers.timeNow();
+
+      // Output to log currentTime and if isRandomized
+      Helpers.logMessage(canistergeekLogger, "Current time: " # Int.toText(currentTime) # " - isRandomized " # Bool.toText(isRandomized), #info);
 
       if (not isRandomized) {
-        let newContent = filterNewContent(contentState.allNewContentQueue, globalState, null, currentTime);
+        let newContent = filterNewContent(contentState.allNewContentQueue, globalState, null, currentTime, canistergeekLogger);
         let newContentAmount = newContent.size();
         userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, null);
         return userEmailIDs;
       };
 
       for ((qId, contentMap) in contentState.newContentQueues.entries()) {
-        let newContent = filterNewContent(contentMap, globalState, null, currentTime);
+        let newContent = filterNewContent(contentMap, globalState, null, currentTime, canistergeekLogger);
         if (newContent.size() != 0) {
           for ((userID, userQID) in contentState.userId2QueueId.entries()) {
             if (userQID == qId) {
@@ -199,20 +211,21 @@ module EmailModule {
       globalState : GlobalState.State,
       pohState : PohStateV2.PohState,
       seniorMods : Buffer.Buffer<Principal>,
-      isRandomized : Bool
+      isRandomized : Bool,
+      canistergeekLogger : Canistergeek.Logger
     ) : HashMap.HashMap<Text, Nat> {
       var userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
       let currentTime = Time.now() / 1000000;
 
       if (not isRandomized) {
-        let newContent = filterNewContent(pohContentState.allNewContentQueue, globalState, ?pohState, currentTime);
+        let newContent = filterNewContent(pohContentState.allNewContentQueue, globalState, ?pohState, currentTime, canistergeekLogger);
         let newContentAmount = newContent.size();
         userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, ?seniorMods);
 
         return userEmailIDs;
       };
       for ((qId, contentMap) in pohContentState.newContentQueues.entries()) {
-        let newContent = filterNewContent(pohContentState.allNewContentQueue, globalState, ?pohState, currentTime);
+        let newContent = filterNewContent(pohContentState.allNewContentQueue, globalState, ?pohState, currentTime, canistergeekLogger);
         // Proceed further if there is content in present queue
         if (newContent.size() != 0) {
           for ((userID, userQID) in pohContentState.userId2QueueId.entries()) {
