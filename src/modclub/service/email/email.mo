@@ -140,10 +140,6 @@ module EmailModule {
             let isContentCreatedWithinLastFiveMinutes = createdAt > fiveMinutesAgo and createdAt <= currentTime;
             // Output to log createdAtTime and currentTime and the difference between them
             if (isContentCreatedWithinLastFiveMinutes) {
-              // Add another log which tests each of the boolean expressions
-              Helpers.logMessage(canistergeekLogger, "ContentId: " # contentId # " - createdAt: " # Int.toText(createdAt) # " - currentTime: " # Int.toText(currentTime) # " - fiveMinutesAgo: " # Int.toText(fiveMinutesAgo) # " - isContentCreatedWithinLastFiveMinutes: " # Bool.toText(isContentCreatedWithinLastFiveMinutes), #info);
-              // Log the contentId plus the values of createdAt and currentTime
-              Helpers.logMessage(canistergeekLogger, "ContentId: " # contentId # " - createdAt: " # Int.toText(createdAt) # " - currentTime: " # Int.toText(currentTime), #info);
               newContent.put(contentId, null);
             };
           };
@@ -164,17 +160,10 @@ module EmailModule {
       var userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
       let currentTime = Helpers.timeNow();
 
-      // Output to log currentTime and if isRandomized
-      Helpers.logMessage(canistergeekLogger, "Current time: " # Int.toText(currentTime) # " - isRandomized " # Bool.toText(isRandomized), #info);
-
       if (not isRandomized) {
         let newContent = filterNewContent(contentState.allNewContentQueue, globalState, null, currentTime, canistergeekLogger);
-        // Output to log the size of newContent
-        Helpers.logMessage(canistergeekLogger, "newContent size: " # Int.toText(newContent.size()), #info);
         let newContentAmount = newContent.size();
         userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, null);
-        // Output to log the size of userEmailIDs
-        Helpers.logMessage(canistergeekLogger, "userEmailIDs size: " # Int.toText(userEmailIDs.size()), #info);
         return userEmailIDs;
       };
 
