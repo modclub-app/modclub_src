@@ -10,18 +10,18 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 
+import Content "../queue/state";
 import EmailState "./state";
 import GlobalState "../../statev2";
+import Helpers "../../../common/helpers";
+import PohStateV2 "../poh/statev2";
 import PohTypes "../poh/types";
-
 import VoteStateV3 "../vote/pohVoteState";
 
-import Content "../queue/state";
-import PohStateV2 "../poh/statev2";
-
-import Helpers "../../../common/helpers";
-
 module EmailModule {
+
+  // Time in milliseconds equivalent to 5 minutes
+  let FIVE_MINUTES_IN_MS : Int = 300_000;
 
   public class EmailManager(stableState : EmailState.EmailStateStable) {
 
@@ -102,46 +102,78 @@ module EmailModule {
       return EmailState.getStableState(state);
     };
 
+    // This function filters out the new content created within the last 5 minutes.
+    public func filterNewContent(
+      contentIds : HashMap.HashMap<Text, ?Text>,
+      globalState : GlobalState.State,
+      pohState : ?PohStateV2.PohState,
+      currentTime : Int
+    ) : HashMap.HashMap<Text, ?Text> {
+      var newContent = HashMap.HashMap<Text, ?Text>(1, Text.equal, Text.hash);
+
+      for (contentId in contentIds.keys()) {
+        // Determine the source of the content based on whether it's a PoH content or not
+        let createdAtTime = switch (pohState) {
+          // If it's a PoH content, get the createdAt time from pohChallengePackage
+          case (?poh) {
+            switch (poh.pohChallengePackages.get(contentId)) {
+              case (null) null;
+              case (?pohChallengePackage) ?pohChallengePackage.createdAt;
+            };
+          };
+          // Otherwise, get the content from globalState and use its createdAt time
+          case null {
+            switch (globalState.content.get(contentId)) {
+              case (null) null;
+              case (?content) ?content.createdAt;
+            };
+          };
+        };
+        // Check if the content or pohChallengePackage was created within the last 5 minutes
+        switch (createdAtTime) {
+          case (null)();
+          case (?createdAt) {
+            if (createdAt > currentTime - FIVE_MINUTES_IN_MS and createdAt <= currentTime) {
+              newContent.put(contentId, null);
+            };
+          };
+        };
+      };
+
+      // TODO: Move filtering of already voted content here
+
+      return newContent;
+    };
+
     public func getModeratorEmailsForContent(contentState : Content.QueueState, globalState : GlobalState.State, isRandomized : Bool) : HashMap.HashMap<Text, Nat> {
       var userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
-      if (not isRandomized) {
-        let newContentAmount = contentState.allNewContentQueue.size();
-        userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, null);
+      let currentTime = Time.now() / 1000000;
 
+      if (not isRandomized) {
+        let newContent = filterNewContent(contentState.allNewContentQueue, globalState, null, currentTime);
+        let newContentAmount = newContent.size();
+        userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, null);
         return userEmailIDs;
       };
 
       for ((qId, contentMap) in contentState.newContentQueues.entries()) {
-        // Proceed further if there is content in present queue
-        if (contentMap.size() != 0) {
+        let newContent = filterNewContent(contentMap, globalState, null, currentTime);
+        if (newContent.size() != 0) {
           for ((userID, userQID) in contentState.userId2QueueId.entries()) {
-            // If current queueID matches with current user's queue then proceed further for that user
             if (userQID == qId) {
-              var totalUserContents : Nat = 0;
-              for (contentID in contentMap.keys()) {
-                switch (globalState.content.get(contentID)) {
-                  case (null)();
-                  case (?contentToCheck) {
-                    let currentTime = Time.now() / 1000000;
-                    // Check if the content was created within the last 5 minutes
-                    if (contentToCheck.createdAt > currentTime -300000 and contentToCheck.createdAt < currentTime) {
-                      totalUserContents := totalUserContents +1;
-                      let userVoteId = Helpers.getContentVoteId(userID, contentID);
-                      for (vId in globalState.content2votes.get0(contentID).vals()) {
-                        if (Text.equal(vId, userVoteId)) {
-                          totalUserContents := totalUserContents -1;
-                        };
-                      };
-                    };
+              var totalUserContents : Nat = newContent.size();
+              for (contentID in newContent.keys()) {
+                let userVoteId = Helpers.getContentVoteId(userID, contentID);
+                for (vId in globalState.content2votes.get0(contentID).vals()) {
+                  if (Text.equal(vId, userVoteId)) {
+                    totalUserContents := totalUserContents - 1;
                   };
                 };
               };
               if (totalUserContents > 0) {
-                // Check if current user opted in for email alerts
                 switch (state.usersToReceiveEmailAlerts.get(userID)) {
                   case (null)();
                   case (?userWantsToReceiveAlerts) {
-                    // If user opted in for email alerts
                     switch (globalState.profiles.get(userID)) {
                       case (null)();
                       case (?result) {
@@ -157,6 +189,7 @@ module EmailModule {
           };
         };
       };
+
       return userEmailIDs;
     };
 
@@ -169,34 +202,28 @@ module EmailModule {
       isRandomized : Bool
     ) : HashMap.HashMap<Text, Nat> {
       var userEmailIDs = HashMap.HashMap<Text, Nat>(1, Text.equal, Text.hash);
+      let currentTime = Time.now() / 1000000;
+
       if (not isRandomized) {
-        let newContentAmount = pohContentState.allNewContentQueue.size();
+        let newContent = filterNewContent(pohContentState.allNewContentQueue, globalState, ?pohState, currentTime);
+        let newContentAmount = newContent.size();
         userEmailIDs := Helpers.getEmailsForNotifs(globalState, state.usersToReceiveEmailAlerts, newContentAmount, ?seniorMods);
 
         return userEmailIDs;
       };
       for ((qId, contentMap) in pohContentState.newContentQueues.entries()) {
+        let newContent = filterNewContent(pohContentState.allNewContentQueue, globalState, ?pohState, currentTime);
         // Proceed further if there is content in present queue
-        if (contentMap.size() != 0) {
+        if (newContent.size() != 0) {
           for ((userID, userQID) in pohContentState.userId2QueueId.entries()) {
             if (Buffer.contains<Principal>(seniorMods, userID, Principal.equal)) {
               // If current queueID matches with current user's queue then proceed further for that user
               if (userQID == qId) {
-                var totalUserContents : Nat = 0;
-                for (contentID in contentMap.keys()) {
-                  switch (pohState.pohChallengePackages.get(contentID)) {
-                    case (null)();
-                    case (?contentToCheck) {
-                      let currentTime = Time.now() / 1000000;
-                      // Check if the content was created within the last 5 minutes
-                      if (contentToCheck.createdAt > currentTime -300000 and contentToCheck.createdAt < currentTime) {
-                        totalUserContents := totalUserContents +1;
-                        for (voteID in voteState.pohContent2votes.get0(contentID).vals()) {
-                          for (votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()) {
-                            totalUserContents := totalUserContents -1;
-                          };
-                        };
-                      };
+                var totalUserContents : Nat = newContent.size();
+                for (contentID in newContent.keys()) {
+                  for (voteID in voteState.pohContent2votes.get0(contentID).vals()) {
+                    for (votedUserID in voteState.mods2Pohvotes.get1(voteID).vals()) {
+                      totalUserContents := totalUserContents - 1;
                     };
                   };
                 };
