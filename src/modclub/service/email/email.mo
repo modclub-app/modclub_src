@@ -136,8 +136,9 @@ module EmailModule {
           case (null)();
           case (?createdAt) {
             // Output to log createdAtTime and currentTime and the difference between them
-            Helpers.logMessage(canistergeekLogger, "createdAtTime: " # Int.toText(createdAt) # " - currentTime: " # Int.toText(currentTime) # " - difference: " # Int.toText(currentTime - createdAt), #info);
             if (createdAt > currentTime - FIVE_MINUTES_IN_MS and createdAt <= currentTime) {
+              // Log the contentId plus the values of createdAt and currentTime
+              Helpers.logMessage(canistergeekLogger, "ContentId: " # contentId # " - createdAt: " # Int.toText(createdAt) # " - currentTime: " # Int.toText(currentTime), #info);
               newContent.put(contentId, null);
             };
           };
