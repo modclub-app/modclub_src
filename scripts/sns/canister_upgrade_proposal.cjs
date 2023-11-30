@@ -1,107 +1,16 @@
 const path = require("path");
-const readline = require("readline");
-const { spawn, execSync } = require("child_process");
 const {
   developerNeuronId,
   pemFilePath,
   canisterCommands,
 } = require("./sns_config.cjs");
-const https = require("https");
-const webhookUrl = new URL(process.env.PROPOSAL_NOTIFICATION_SLACK_HOOK);
-
-function sendToSlack(message) {
-  return new Promise((resolve, reject) => {
-    const payload = JSON.stringify({
-      text: message,
-    });
-
-    const options = {
-      hostname: webhookUrl.hostname,
-      path: webhookUrl.pathname,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.from(payload).length,
-      },
-    };
-
-    const req = https.request(options, (res) => {
-      let data = "";
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
-      res.on("end", () => {
-        if (res.statusCode === 200) {
-          resolve(data);
-        } else {
-          console.error("Slack response:", data);
-          reject(
-            new Error(
-              `Failed to send message to Slack. Status Code: ${res.statusCode}`
-            )
-          );
-        }
-      });
-    });
-
-    req.on("error", (error) => {
-      reject(error);
-    });
-
-    req.write(payload);
-    req.end();
-  });
-}
+const { notifyToSlack, shellExec, getPrompt } = require("./utils.cjs");
 
 // Function to get input either from arguments, environment variables, or prompt
 function getInput(index, envVar, question) {
-  return process.argv[index] || process.env[envVar] || prompt(question);
-}
-
-async function prompt(question) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  rl.on("SIGINT", () => {
-    rl.close();
-    process.exit(0);
-  });
-
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      resolve(answer);
-      rl.close();
-    });
-  });
-}
-
-function execShellCommand(cmd) {
-  return new Promise((resolve, reject) => {
-    let output = "";
-    const command = spawn(cmd, {
-      shell: true,
-      stdio: ["inherit", "pipe", "pipe"],
-    });
-
-    command.stdout.on("data", (data) => {
-      output += data.toString();
-    });
-
-    command.stderr.on("data", (data) => {
-      output += data.toString();
-    });
-
-    command.on("error", (error) => reject(error));
-    command.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error(`Command exited with code ${code}: ${output}`));
-      } else {
-        resolve(output);
-      }
-    });
-  });
+  return (
+    process.argv[index] || process.env[envVar] || getPrompt(process)(question)
+  );
 }
 
 (async () => {
@@ -148,32 +57,16 @@ function execShellCommand(cmd) {
     `${canisterName}.wasm`
   );
 
-  function getCanisterId(canisterName) {
-    const fullCanisterName =
-      environment === "prod" ? canisterName : `${canisterName}_${environment}`;
-    return execSync(
-      environment === "prod"
-        ? `dfx canister id ${fullCanisterName} --network=ic`
-        : `dfx canister id ${fullCanisterName}`,
-      {
-        encoding: "utf8",
-      }
-    ).trim();
-  }
-
-  const modclubCanisterId = getCanisterId("modclub");
-  const rsCanisterId = getCanisterId("rs");
-  const walletCanisterId = getCanisterId("wallet");
-  const authCanisterId = getCanisterId("auth");
-  const vestingCanisterId = getCanisterId("vesting");
-  const archiveCanisterId = getCanisterId("archive");
-
-  const upgradeArg = `record { modclub_canister_id = principal \\"${modclubCanisterId}\\"; old_modclub_canister_id = principal \\"la3yy-gaaaa-aaaah-qaiuq-cai\\"; rs_canister_id = principal \\"${rsCanisterId}\\"; wallet_canister_id = principal \\"${walletCanisterId}\\"; auth_canister_id = principal \\"${authCanisterId}\\"; vesting_canister_id = principal \\"${vestingCanisterId}\\"; archive_canister_id = principal \\"${archiveCanisterId}\\"; }`;
-
   try {
     console.log("🚀 Preparing upgrade proposal...");
+    const upgradeArg = await shellExec(
+      `${path.join(
+        process.cwd(),
+        "./scripts/deployment/get_env_arguments.sh"
+      )} ${environment} ${network}`
+    );
     const makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg "(${upgradeArg})" ${developerNeuronId} > upgrade.json`;
-    await execShellCommand(makeProposalCommand);
+    await shellExec(makeProposalCommand);
 
     console.log("✅ Preparing proposal...");
     const sendCommand = `quill send upgrade.json ${
@@ -181,15 +74,15 @@ function execShellCommand(cmd) {
     } -y | grep -v "^ *new_canister_wasm"`;
 
     console.log("🚀 Sending proposal...");
-    const commandOutput = await execShellCommand(sendCommand);
+    const commandOutput = await shellExec(sendCommand);
     console.log(commandOutput);
-    sendToSlack(`✅ Proposal submitted successfully!`);
-    sendToSlack(`✅ Proposal Command Output: ${commandOutput}`);
+    notifyToSlack(`✅ Proposal submitted successfully!`);
+    notifyToSlack(`✅ Proposal Command Output: ${commandOutput}`);
   } catch (err) {
     console.log(" upgradeArg: " + upgradeArg);
     console.error("❌ Error:", err);
-    sendToSlack(`❌ Error while sending proposal: ${err.message}`);
-    sendToSlack(`upgradeArg: ${upgradeArg}`);
+    notifyToSlack(`❌ Error while sending proposal: ${err.message}`);
+    notifyToSlack(`upgradeArg: ${upgradeArg}`);
     console.log("debugging proposal: " + makeProposalCommand);
   }
 })();

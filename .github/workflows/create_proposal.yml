@@ -93,6 +93,7 @@ jobs:
           dfx --version
 
       - name: install moc
+        if: success()
         run: |
           npm i ic-mops -g
           mops -v
@@ -107,10 +108,23 @@ jobs:
           IC_IDENTITY_FILE_PROD: ${{ secrets.IC_IDENTITY_FILE_PROD }}
 
       - name: Build WASM for the Canister
+        if: success()
         run: |
           dfx build --network ${{ github.event.inputs.NETWORK }} ${{ github.event.inputs.CANISTER }}
 
+      - name: Notify to SlachChanel about build failure
+        if: failure()
+        run: |
+          PAYLOAD="{\"text\":\"Canister build for production upgrade proposal - FAILED.\\nCanister: $CANISTER\\nEnvironment: $ENVIRONMENT\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
+          exit 1
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+          CANISTER: ${{ github.event.inputs.CANISTER }}
+          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+
       - name: Execute canister upgrade proposal script
+        if: success()
         run: node scripts/sns/canister_upgrade_proposal.cjs
         env:
           PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
