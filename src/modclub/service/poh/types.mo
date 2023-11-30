@@ -13,6 +13,7 @@ module {
     #verified;
     #rejected;
     #expired;
+    #processing;
   };
   public type PohChallengeStatusV2 = {
     #notSubmitted;
@@ -63,19 +64,6 @@ module {
     updatedAt : Int;
   };
 
-  public type PohChallengesV2 = {
-    challengeId : Text;
-    challengeName : Text;
-    challengeDescription : Text;
-    // assuming there will be no transitive dependencies. else graph needs to be used
-    dependentChallengeId : ?[Text];
-    requiredField : PohChallengeRequiredField;
-    challengeType : PohChallengeTypeV2;
-    allowedViolationRules : [ViolatedRules];
-    createdAt : Int;
-    updatedAt : Int;
-  };
-
   public type PohChallengeRequiredField = {
     #textBlob;
     #imageBlob;
@@ -91,24 +79,7 @@ module {
     #fullName; // User full name
     #userName; // User name
     #email; // Email
-  };
-
-  public type PohChallengeTypeV2 = {
-    #ssn; // SSN
-    #dl; // Draw Lines
-    #selfPic; // Profile Pic
-    #selfVideo; // Video
-    #fullName; // User full name
-    #userName; // User name
-    #email; // Email
-    #uniquePohVideo;
-
-    // Adding additional types for future use cases
-    #extra1;
-    #extra2;
-    #extra3;
-    #extra4;
-    #extra5;
+    #uniquePohVideo; // Unique Video
   };
 
   // To be deleted after deployment
@@ -147,22 +118,6 @@ module {
     challengeType : PohChallengeType;
     userId : Principal;
     status : PohChallengeStatus;
-    createdAt : Int;
-    submittedAt : Int;
-    updatedAt : Int;
-    completedOn : Int;
-    dataCanisterId : ?Principal;
-    wordList : ?[Text];
-  };
-
-  public type PohChallengesAttemptV2 = {
-    attemptId : ?Text;
-    challengeId : Text;
-    challengeName : Text;
-    challengeDescription : Text;
-    challengeType : PohChallengeTypeV2;
-    userId : Principal;
-    status : PohChallengeStatusV2;
     createdAt : Int;
     submittedAt : Int;
     updatedAt : Int;
@@ -263,21 +218,6 @@ module {
     challengeType : PohChallengeType;
     userId : Principal;
     status : PohChallengeStatus;
-    contentId : ?Text;
-    dataCanisterId : ?Principal;
-    wordList : ?[Text];
-    allowedViolationRules : [ViolatedRules];
-    createdAt : Int;
-    updatedAt : Int;
-    submittedAt : Int;
-    completedOn : Int;
-  };
-
-  public type PohTaskDataV2 = {
-    challengeId : Text;
-    challengeType : PohChallengeTypeV2;
-    userId : Principal;
-    status : PohChallengeStatusV2;
     contentId : ?Text;
     dataCanisterId : ?Principal;
     wordList : ?[Text];

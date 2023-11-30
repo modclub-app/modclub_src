@@ -35,6 +35,7 @@ module PohModule {
   public let CHALLENGE_USER_VIDEO_ID = "challenge-user-video";
   public let CHALLENGE_USER_AUDIO_ID = "challenge-user-audio";
   public let CHALLENGE_DRAWING_ID = "challenge-drawing";
+  public let CHALLENGE_UNIQUE_POH_ID = "challenge-unique-poh";
 
   let SHAPE_LIST : [Text] = ["Triangle", "Smile", "Circle", "Square", "Star"];
 
@@ -961,7 +962,7 @@ module PohModule {
       var createPackage = true;
       let _ = do ? {
         let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
-        label l for (id in providerChallengeIds.vals()) {
+        for (id in providerChallengeIds.vals()) {
           let attempts = challengeAttempts.get(id)!;
           if (
             attempts.size() == 0 or attempts.get(attempts.size() - 1).status == #notSubmitted or attempts.get(
@@ -1287,7 +1288,7 @@ module PohModule {
         {
           challengeId = CHALLENGE_USER_AUDIO_ID;
           challengeName = "Please record your audio reading these words";
-          challengeDescription = "Please record your audio reading these words";
+          challengeDescription = "Please record your audio reading these words.";
           requiredField = #videoBlob;
           // TODO: Minor, Switch to just blob or audio blob, front end handles this correctly
           dependentChallengeId = null;
@@ -1319,6 +1320,21 @@ module PohModule {
           dependentChallengeId = null;
           challengeType = #dl;
           allowedViolationRules = challengeDrawingRules;
+          createdAt = Helpers.timeNow();
+          updatedAt = Helpers.timeNow();
+        }
+      );
+      state.pohChallenges.put(
+        CHALLENGE_UNIQUE_POH_ID,
+        {
+          challengeId = CHALLENGE_UNIQUE_POH_ID;
+          challengeName = "Please record your video saying these words";
+          challengeDescription = "Please record your video saying these words. Your head should be visible in the video and centered. Please move any hats or hair away from your face";
+          requiredField = #videoBlob;
+          // assuming there will be no transitive dependencies. else graph needs to be used
+          dependentChallengeId = null;
+          challengeType = #selfVideo;
+          allowedViolationRules = Buffer.toArray<PohTypes.ViolatedRules>(allowedViolationRules3);
           createdAt = Helpers.timeNow();
           updatedAt = Helpers.timeNow();
         }

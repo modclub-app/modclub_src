@@ -231,6 +231,14 @@ export default function NewPohProfile({ match }) {
                             goToNextStep={goToNextStep}
                           />
                         </Route>
+                        <Route path={`${match.path}/:challenge-unique-poh`}>
+                          <UserVideo
+                            step={steps.find(
+                              (s) => s.challengeId == "challenge-unique-poh"
+                            )}
+                            goToNextStep={goToNextStep}
+                          />
+                        </Route>
                         <Route path={`${match.path}/:confirm`}>
                           <Confirmation redirect_uri={redirectUri} />
                         </Route>

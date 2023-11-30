@@ -161,6 +161,8 @@ export default function PohApplicant() {
         return "Unique Phrase (Audio)";
       case "challenge-drawing":
         return "Unique Drawing";
+      case "challenge-unique-poh":
+        return "Unique Phrase (Video)";
       default:
         return challengeId;
     }
@@ -199,6 +201,8 @@ export default function PohApplicant() {
         return <UserAudio data={task} />;
       case "challenge-drawing":
         return <DrawingChallenge data={task} />;
+      case "challenge-unique-poh":
+        return <UserVideo data={task} />;
     }
   };
 
@@ -332,7 +336,7 @@ export default function PohApplicant() {
             <Heading subtitle className="is-flex">
               <span className="my-auto">Reservation expires: &nbsp;</span>
               <span className="has-background-grey p-1 box is-rounded my-auto">
-                {Constant.TIMER} 
+                {Constant.TIMER}
               </span>
             </Heading>
           </>

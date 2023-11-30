@@ -95,6 +95,7 @@ module {
       case (#fullName) "fullName";
       case (#userName) "userName";
       case (#email) "email";
+      case (#uniquePohVideo) "uniquePohVideo";
     };
   };
 
@@ -142,7 +143,9 @@ module {
       case (#expired) {
         "expired";
       };
+      case (#processing) {
+        "processing";
+      };
     };
   };
-
 };

@@ -1400,7 +1400,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
   };
 
-  public shared ({ caller }) func retrieveChallengesForUser(token : Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+  public shared ({ caller }) func retrieveChallengesForUser(token : Text) : async Result.Result<[PohTypes.PohChallengesAttemptV1], PohTypes.PohError> {
     switch (pohEngine.decodeToken(token)) {
       case (#err(err)) {
         return #err(err);
@@ -1557,7 +1557,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   // Admin method to create new attempts
-  public shared ({ caller }) func resetUserChallengeAttempt(packageId : Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+  public shared ({ caller }) func resetUserChallengeAttempt(packageId : Text) : async Result.Result<[PohTypes.PohChallengesAttemptV1], PohTypes.PohError> {
     switch (pohEngine.getPohChallengePackage(packageId)) {
       case (null) {
         throw Error.reject("Package doesn't exist");
