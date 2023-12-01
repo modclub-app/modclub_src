@@ -1478,85 +1478,113 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
+  // Validates and initiates processing of the challenge submission request.
   public shared ({ caller }) func submitChallengeData(
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest
   ) : async PohTypes.PohChallengeSubmissionResponse {
-    // let caller = Principal.fromText("2vxsx-fae");
     let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, caller);
     if (isValid == #ok) {
-      let _ = do ? {
-        let attemptId = pohEngine.getAttemptId(
-          pohDataRequest.challengeId,
-          caller
-        );
-        try {
-          let dataCanisterId = await storageSolution.putBlobsInDataCanister(
-            attemptId,
-            pohDataRequest.challengeDataBlob!,
-            pohDataRequest.offset,
-            pohDataRequest.numOfChunks,
-            pohDataRequest.mimeType,
-            pohDataRequest.dataSize
-          );
-          if (pohDataRequest.offset == pohDataRequest.numOfChunks) {
-            //last Chunk coming in
-            let _ = pohEngine.changeChallengeTaskStatus(
-              pohDataRequest.challengeId,
-              caller,
-              #pending
-            );
-
-            // Update challenge record with data canister's ID for efficient retrieval and management of the submitted challenge data.
-            pohEngine.updateDataCanisterId(
-              pohDataRequest.challengeId,
-              caller,
-              dataCanisterId
-            );
-
-            // Initiate creation of a challenge package for voting, aggregating challenge data for review and voting in the next phase.
-
-            let challengePackages = pohEngine.createChallengePackageForVoting(
-              caller,
-              pohContentQueueManager.getContentStatus,
-              stateV2,
-              canistergeekLogger
-            );
-            for (package in challengePackages.vals()) {
-              pohContentQueueManager.changeContentStatus(package.id, #new);
-              switch (pohEngine.getPohChallengePackage(package.id)) {
-                case (null)();
-                case (?package) {
-                  await pohEngine.issueCallbackToProviders(
-                    package.userId,
-                    stateV2,
-                    voteManager.getAllUniqueViolatedRules,
-                    pohContentQueueManager.getContentStatus,
-                    canistergeekLogger
-                  );
-                };
-              };
-            };
-          };
-        } catch e {
-          if (
-            Text.equal(
-              Error.message(e),
-              ModClubParam.PER_CONTENT_SIZE_EXCEEDED_ERROR
-            )
-          ) {
-            return {
-              challengeId = pohDataRequest.challengeId;
-              submissionStatus = #submissionDataLimitExceeded;
-            };
-          } else {
-            throw e;
-          };
-        };
-      };
+      return await processChallengeData(caller, pohDataRequest);
     };
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = isValid;
+    };
+  };
+
+  // Handles storing challenge data in a canister and manages package creation after storage.
+  private func processChallengeData(
+    caller : Principal,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest
+  ) : async PohTypes.PohChallengeSubmissionResponse {
+    let attemptId = pohEngine.getAttemptId(
+      pohDataRequest.challengeId,
+      caller
+    );
+    try {
+      let dataCanisterId = await storeDataInCanister(attemptId, pohDataRequest);
+      if (pohDataRequest.offset == pohDataRequest.numOfChunks) {
+        if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
+          let _ = pohEngine.changeChallengeTaskStatus(
+            pohDataRequest.challengeId,
+            caller,
+            #processing
+          );
+        };
+        await handlePackageCreation(caller, pohDataRequest, dataCanisterId);
+      };
+    } catch e {
+      if (Text.equal(Error.message(e), ModClubParam.PER_CONTENT_SIZE_EXCEEDED_ERROR)) {
+        return {
+          challengeId = pohDataRequest.challengeId;
+          submissionStatus = #submissionDataLimitExceeded;
+        };
+      } else {
+        throw e;
+      };
+    };
+    return {
+      challengeId = pohDataRequest.challengeId;
+      submissionStatus = #ok;
+    };
+  };
+
+  // Stores the submitted challenge data blob in a data canister and returns its ID.
+  private func storeDataInCanister(
+    attemptId : Text,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest
+  ) : async Principal {
+    return await storageSolution.putBlobsInDataCanister(
+      attemptId,
+      pohDataRequest.challengeDataBlob!,
+      pohDataRequest.offset,
+      pohDataRequest.numOfChunks,
+      pohDataRequest.mimeType,
+      pohDataRequest.dataSize
+    );
+  };
+
+  private func handlePackageCreation(
+    caller : Principal,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
+    dataCanisterId : Principal
+  ) : async () {
+    let _ = pohEngine.changeChallengeTaskStatus(
+      pohDataRequest.challengeId,
+      caller,
+      #pending
+    );
+
+    // Associate the challenge record with the data canister's ID
+    pohEngine.updateDataCanisterId(
+      pohDataRequest.challengeId,
+      caller,
+      dataCanisterId
+    );
+
+    // Create challenge packages for voting if applicable
+    let challengePackages = pohEngine.createChallengePackageForVoting(
+      caller,
+      pohContentQueueManager.getContentStatus,
+      stateV2,
+      canistergeekLogger
+    );
+
+    // Process each created package: update content status and issue callbacks to providers
+    for (package in challengePackages.vals()) {
+      pohContentQueueManager.changeContentStatus(package.id, #new);
+      switch (pohEngine.getPohChallengePackage(package.id)) {
+        case (null)();
+        case (?package) {
+          await pohEngine.issueCallbackToProviders(
+            package.userId,
+            stateV2,
+            voteManager.getAllUniqueViolatedRules,
+            pohContentQueueManager.getContentStatus,
+            canistergeekLogger
+          );
+        };
+      };
     };
   };
 
