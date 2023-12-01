@@ -18,6 +18,7 @@ import {
   useAppState,
   useAppStateDispatch,
 } from "../../app/state_mgmt/context/state";
+import UniquePoh from "./UniquePoh";
 
 const Confirmation = ({ redirect_uri }) => {
   const { disconnect } = useConnect();
@@ -232,7 +233,7 @@ export default function NewPohProfile({ match }) {
                           />
                         </Route>
                         <Route path={`${match.path}/:challenge-unique-poh`}>
-                          <UserVideo
+                          <UniquePoh
                             step={steps.find(
                               (s) => s.challengeId == "challenge-unique-poh"
                             )}
