@@ -1505,11 +1505,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               caller,
               #pending
             );
+
+            // Update challenge record with data canister's ID for efficient retrieval and management of the submitted challenge data.
             pohEngine.updateDataCanisterId(
               pohDataRequest.challengeId,
               caller,
               dataCanisterId
             );
+
+            // Initiate creation of a challenge package for voting, aggregating challenge data for review and voting in the next phase.
 
             let challengePackages = pohEngine.createChallengePackageForVoting(
               caller,
