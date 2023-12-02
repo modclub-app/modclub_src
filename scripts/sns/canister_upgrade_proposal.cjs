@@ -57,9 +57,11 @@ function getInput(index, envVar, question) {
     `${canisterName}.wasm`
   );
 
+  let upgradeArg = "";
+
   try {
     console.log("🚀 Preparing upgrade proposal...");
-    const upgradeArg = await shellExec(
+    upgradeArg = await shellExec(
       `${path.join(
         process.cwd(),
         "./scripts/deployment/get_env_arguments.sh"
