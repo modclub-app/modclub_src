@@ -74,6 +74,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   private stable var startTimeForPOHEmail = Helpers.timeNow();
   private stable var keyToCallLambda : Text = "";
+  private stable var keyToCallLambdaForPOH : Text = "";
   private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
   stable var allowSubmissionFlag : Bool = true;
@@ -1505,13 +1506,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       let dataCanisterId = await storeDataInCanister(attemptId, pohDataRequest);
       if (pohDataRequest.offset == pohDataRequest.numOfChunks) {
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
-          let _ = pohEngine.changeChallengeTaskStatus(
-            pohDataRequest.challengeId,
-            caller,
-            #processing
-          );
+          await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
+        } else {
+          await handlePackageCreation(caller, pohDataRequest, dataCanisterId);
         };
-        await handlePackageCreation(caller, pohDataRequest, dataCanisterId);
       };
     } catch e {
       if (Text.equal(Error.message(e), ModClubParam.PER_CONTENT_SIZE_EXCEEDED_ERROR)) {
@@ -1533,21 +1531,28 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private func storeDataInCanister(
     attemptId : Text,
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest
-  ) : async Principal {
-    return await storageSolution.putBlobsInDataCanister(
-      attemptId,
-      pohDataRequest.challengeDataBlob!,
-      pohDataRequest.offset,
-      pohDataRequest.numOfChunks,
-      pohDataRequest.mimeType,
-      pohDataRequest.dataSize
-    );
+  ) : async ?Principal {
+    switch (pohDataRequest.challengeDataBlob) {
+      case (null) {
+        // challengeDataBlob is null this shouldn't happen
+        throw Error.reject("Challenge data blob is null.");
+      };
+      case (?blob) {
+        return await storageSolution.putBlobsInDataCanister(
+          attemptId,
+          blob,
+          pohDataRequest.offset,
+          pohDataRequest.numOfChunks,
+          pohDataRequest.mimeType,
+          pohDataRequest.dataSize
+        );
+      };
+    };
   };
-
   private func handlePackageCreation(
     caller : Principal,
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
-    dataCanisterId : Principal
+    dataCanisterId : ?Principal
   ) : async () {
     let _ = pohEngine.changeChallengeTaskStatus(
       pohDataRequest.challengeId,
@@ -1586,6 +1591,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         };
       };
     };
+  };
+
+  private func initiateUniquePohProcessing(
+    caller : Principal,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
+    dataCanisterId : ?Principal
+  ) : async () {
+    let _ = pohEngine.changeChallengeTaskStatus(
+      pohDataRequest.challengeId,
+      caller,
+      #pending
+    );
+
   };
 
   // Admin method to create new attempts
@@ -2817,6 +2835,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };
       case (#setLambdaToken _) { authGuard.isAdmin(caller) };
+      case (#setPohLambdaToken _) { authGuard.isAdmin(caller) };
       case (#submitText _) { ProviderManager.providerExists(caller, stateV2) };
       case (#submitHtmlContent _) {
         ProviderManager.providerExists(caller, stateV2);
@@ -2969,6 +2988,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       throw Error.reject("Lambda key is not provided.");
     };
     keyToCallLambda := lambdaCallKey;
+  };
+
+  public shared ({ caller }) func setPohLambdaToken(key : Text) : async () {
+    if (key == "") {
+      throw Error.reject("Lambda key is not provided.");
+    };
+    keyToCallLambdaForPOH := key;
   };
 
   private func callLambdaToSendEmail(

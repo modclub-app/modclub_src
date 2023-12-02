@@ -1,33 +1,39 @@
 import Array "mo:base/Array";
 import Arrays "mo:base/Array";
+import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
-import Canistergeek "../../../common/canistergeek/canistergeek";
+import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
-import GlobalState "../../statev2";
 import HashMap "mo:base/HashMap";
-import Helpers "../../../common/helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
-import ModClubParam "../parameters/params";
+import List "mo:base/List";
 import Nat "mo:base/Nat";
+import Nat64 "mo:base/Nat64";
 import Option "mo:base/Option";
 import Order "mo:base/Order";
-import PohStateV2 "./statev2";
-import PohTypes "./types";
 import Principal "mo:base/Principal";
-import Rel "../../data_structures/Rel";
-import RelObj "../../data_structures/RelObj";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
-import Types "../../types";
-import EmailManager "../email/email";
-import VoteState "../vote/state";
+
+import JSON "mo:json/JSON";
+
+import Canistergeek "../../../common/canistergeek/canistergeek";
 import Content "../queue/state";
-import List "mo:base/List";
+import EmailManager "../email/email";
+import GlobalState "../../statev2";
+import Helpers "../../../common/helpers";
+import ModClubParam "../parameters/params";
+import PohStateV2 "./statev2";
+import PohTypes "./types";
+import Rel "../../data_structures/Rel";
+import RelObj "../../data_structures/RelObj";
+import Types "../../types";
+import VoteState "../vote/state";
 
 module PohModule {
 
@@ -36,6 +42,10 @@ module PohModule {
   public let CHALLENGE_USER_AUDIO_ID = "challenge-user-audio";
   public let CHALLENGE_DRAWING_ID = "challenge-drawing";
   public let CHALLENGE_UNIQUE_POH_ID = "challenge-unique-poh";
+
+  let HTTPS_OUTCALL_COST_PER_CALL : Nat = 171_360_000;
+  let HTTPS_OUTCALL_COST_PER_REQUEST_BYTE : Nat = 13_600;
+  let HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE : Nat = 27_200;
 
   let SHAPE_LIST : [Text] = ["Triangle", "Smile", "Circle", "Square", "Star"];
 
@@ -962,12 +972,10 @@ module PohModule {
       var createPackage = true;
       let _ = do ? {
         let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
-        for (id in providerChallengeIds.vals()) {
+        label l for (id in providerChallengeIds.vals()) {
           let attempts = challengeAttempts.get(id)!;
           if (
-            attempts.size() == 0 or attempts.get(attempts.size() - 1).status == #notSubmitted or attempts.get(
-              attempts.size() - 1
-            ).status == #rejected or attempts.get(attempts.size() - 1).status == #expired
+            attempts.size() == 0 or attempts.get(attempts.size() - 1).status == #notSubmitted or attempts.get(attempts.size() - 1).status == #rejected or attempts.get(attempts.size() - 1).status == #expired or attempts.get(attempts.size() - 1).status == #processing
           ) {
             createPackage := false;
             break l;
@@ -1509,6 +1517,141 @@ module PohModule {
         case (null) {
           return #err(#pohCallbackNotRegistered);
         };
+      };
+    };
+
+    private func calculateHttpOutcallCost(
+      url : Text,
+      body : Blob,
+      headers : [Types.HttpHeader],
+      maxResponseSize : Nat
+    ) : Nat {
+      // Calculate the total header size
+      var headerSize : Nat = 0;
+
+      for (header in headers.vals()) {
+        headerSize := headerSize + header.name.size() + header.value.size();
+      };
+
+      // Calculate the request size
+      let requestSize = url.size() + body.size() + headerSize;
+
+      // Calculate the HTTP outcall cost
+      let httpOutcallCost = HTTPS_OUTCALL_COST_PER_CALL +
+      HTTPS_OUTCALL_COST_PER_REQUEST_BYTE * requestSize +
+      HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE * maxResponseSize;
+      httpOutcallCost;
+    };
+
+    private func httpCallForProcessing(
+      userPrincipal : Principal,
+      dataCanisterId : Text,
+      contentId : Text,
+      env : Text,
+      apiKey : Text,
+      transformFunction : shared query Types.TransformArgs -> async Types.CanisterHttpResponsePayload,
+      canistergeekLogger : Canistergeek.Logger
+    ) : async Bool {
+
+      if (apiKey == "") {
+        throw Error.reject("POH API key is not provided. Please ask admin to set the key for lambda calls.");
+      };
+
+      let request_headers = [
+        { name = "Content-Type"; value = "application/json" },
+        {
+          name = "x-api-key";
+          value = apiKey;
+        }
+      ];
+
+      let host : Text = "x9ij2nl5xg.execute-api.us-east-1.amazonaws.com";
+      let env = "dev"; // TODO: Make this dynamic
+      let url = "https://" # host # "/" # env # "/start";
+
+      // Construct video URL
+      let videoUrl = "https://" # dataCanisterId # ".raw.icp0.io/storage?contentId=" # contentId;
+
+      Helpers.logMessage(
+        canistergeekLogger,
+        "httpCallForProcessing - videoUrl: " # videoUrl,
+        #info
+      );
+
+      let body : JSON.JSON = #Object([
+        ("video_url", #String(videoUrl)),
+        ("principal_id", #String(Principal.toText(userPrincipal)))
+      ]);
+
+      let DATA_POINTS_PER_API : Nat = 200;
+      let MAX_RESPONSE_BYTES : Nat = 10 * 6 * DATA_POINTS_PER_API;
+
+      let transform_context : Types.TransformContext = {
+        function = transformFunction;
+        context = Blob.fromArray([]);
+      };
+
+      let textBody = Text.encodeUtf8(JSON.show(body));
+
+      let request : Types.CanisterHttpRequestArgs = {
+        url = url;
+        headers = request_headers;
+        body = ?Blob.toArray(textBody);
+        method = #post;
+        max_response_bytes = ?Nat64.fromNat(MAX_RESPONSE_BYTES);
+        transform = ?transform_context;
+      };
+
+      // Estimate the cycle cost for the HTTP outcall
+      let estimatedCost = calculateHttpOutcallCost(
+        url,
+        textBody,
+        request_headers,
+        MAX_RESPONSE_BYTES
+      );
+
+      Helpers.logMessage(
+        canistergeekLogger,
+        "httpCallForProcessing - estimatedCost: " # Nat.toText(estimatedCost),
+        #info
+      );
+
+      // Check if the canister has enough cycles
+      if (Cycles.available() < estimatedCost) {
+        Helpers.logMessage(
+          canistergeekLogger,
+          "httpCallForProcessing - Not enough cycles to make the HTTP outcall.",
+          #info
+        );
+        throw Error.reject("Not enough cycles to make the HTTP outcall.");
+      };
+
+      try {
+        // Dynamically add cycles based on the useremail characters
+        Cycles.add(estimatedCost);
+        let ic : Types.IC = actor ("aaaaa-aa");
+        let response : Types.CanisterHttpResponsePayload = await ic.http_request(request);
+        switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
+          case null {
+            throw Error.reject("Remote response had no body.");
+          };
+          case (?body) {
+            Helpers.logMessage(
+              canistergeekLogger,
+              "httpCallForProcessing - response: " # body,
+              #info
+            );
+            return true;
+          };
+        };
+        return false;
+      } catch (err) {
+        Helpers.logMessage(
+          canistergeekLogger,
+          "httpCallForProcessing - error: " # Error.message(err),
+          #info
+        );
+        throw Error.reject(Error.message(err));
       };
     };
 
