@@ -57,7 +57,8 @@ function getInput(index, envVar, question) {
     `${canisterName}.wasm`
   );
 
-  let upgradeArg = "";
+  let upgradeArg;
+  let makeProposalCommand;
 
   try {
     console.log("🚀 Preparing upgrade proposal...");
