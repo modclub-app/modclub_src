@@ -73,6 +73,7 @@ module {
     #putChunks : () -> (Text, Nat, Blob, Nat, Text);
     #registerModerators : () -> [Principal];
     #runDeleteContentJob : () -> ();
+    #setLambdaKey : () -> Text;
     #setParams : () -> ([Principal], Text);
     #setSigningKey : () -> Text;
     #streamingCallback : () -> StreamingCallbackToken;
