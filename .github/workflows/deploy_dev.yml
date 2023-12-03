@@ -111,7 +111,7 @@ jobs:
 
       - name: Notify Slack - deployment end
         run: |
-          export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"%h - %an, %ar : %s" $LAST_DEPLOYMENT_TAG..HEAD)
+          export WHATS_NEW_SINCE_LAST_DEP=""
           echo $WHATS_NEW_SINCE_LAST_DEP
           node scripts/deployment/gh_deployment_notify_end.cjs
         env:
