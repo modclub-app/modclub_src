@@ -42,6 +42,9 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   var canistergeekTimer : ?TimerId = null;
   var deleteContentTimer : ?TimerId = null;
 
+  // This is the key used by our lambda function to access the canister
+  var lambdaKey : ?Text = ?"default";
+
   type DataCanisterState = {
     contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
     chunks : HashMap.HashMap<Types.ChunkId, Types.ChunkData>;
@@ -173,6 +176,12 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
 
   func isContentNotAccessible(contentId : Text) : Bool {
     return Trie.get(restrictedContentId, key(contentId), Text.equal) != null;
+  };
+
+  // Set lambda key
+  public shared ({ caller }) func setLambdaKey(key : Text) : async () {
+    await onlyOwners(caller);
+    lambdaKey := ?key;
   };
 
   public shared ({ caller }) func markContentNotAccessible(contentId : Text) : async () {
@@ -349,6 +358,16 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
       var contentId : ?Text = null;
       var jwt : Text = "";
       var chunkNum : Nat = 1;
+
+      // Extract x-api-key from request headers in case of lambda invocation
+      var apiKey : ?Text = null;
+      label l for (header : (Text, Text) in req.headers.vals()) {
+        if (header.0 == "x-api-key") {
+          apiKey := ?header.1;
+          break l;
+        };
+      };
+
       for (field : Text in fields) {
         let kv : [Text] = Iter.toArray<Text>(Text.split(field, #text("=")));
         if (kv[0] == "contentId") {
@@ -358,16 +377,24 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
         };
       };
 
-      if (not (isUserAllowed(jwt, contentId!))) {
+      // Process request if apiKey matches lambdaKey or if user is allowed
+      if (apiKey != lambdaKey and not (isUserAllowed(jwt, contentId!))) {
         Helpers.logMessage(
           canistergeekLogger,
-          "User " # Principal.toText(caller) # " tried to access data with invalid JWT",
+          "User " # Principal.toText(caller) # " tried to access data with invalid JWT or API Key",
           #error
         );
+
+        let msg : Blob = if (apiKey == null) {
+          "401 Unauthorized - Invalid JWT";
+        } else {
+          "401 Unauthorized - Invalid API Key";
+        };
+
         return {
           status_code = 401;
           headers = _headers;
-          body = "401 Unauthorized";
+          body = msg;
           streaming_strategy = null;
         };
       };
