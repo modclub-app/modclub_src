@@ -81,6 +81,7 @@ module {
     #registerAdmin : () -> Principal;
     #registerModerator : () -> (Text, ?Text);
     #setLambdaToken : () -> (Text);
+    #setPohLambdaToken : () -> (Text);
     #registerProvider : () -> (Text, Text, ?Types.Image);
     #registerUserToReceiveAlerts : () -> (Principal, Bool);
     #releaseTokens : () -> (ICRCTypes.Tokens);

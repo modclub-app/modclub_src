@@ -733,14 +733,13 @@ module PohModule {
         )!;
         let attempt = attempts.get(attempts.size() - 1);
         let updatedAttempt = {
-          attemptId = attempt.attemptId;
+          attemptId = attempt.attemptId; // This is the contentId now
           challengeId = attempt.challengeId;
           challengeName = attempt.challengeName;
           challengeDescription = attempt.challengeDescription;
           challengeType = attempt.challengeType;
           userId = attempt.userId;
           status = status;
-          // contentId = attempt.contentId;
           dataCanisterId = attempt.dataCanisterId;
           createdAt = attempt.createdAt;
           updatedAt = Helpers.timeNow();
@@ -974,15 +973,20 @@ module PohModule {
         let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
         label l for (id in providerChallengeIds.vals()) {
           let attempts = challengeAttempts.get(id)!;
-          if (
-            attempts.size() == 0 or attempts.get(attempts.size() - 1).status == #notSubmitted or attempts.get(attempts.size() - 1).status == #rejected or attempts.get(attempts.size() - 1).status == #expired or attempts.get(attempts.size() - 1).status == #processing
-          ) {
+          if (attempts.size() == 0) {
             createPackage := false;
             break l;
           };
-          if (attempts.get(attempts.size() - 1).status == #pending) {
+
+          // if last attempt is pending ( ready for review ) then add it to package
+          let lastAttemptStatus = attempts.get(attempts.size() - 1).status;
+          if (lastAttemptStatus == #pending) {
             challengeIdsForPackage.add(id);
+          } else {
+            createPackage := false;
+            break l;
           };
+
         };
       };
       if (not createPackage) {
@@ -1016,8 +1020,7 @@ module PohModule {
                     challengeType = att.challengeType;
                     userId = package.userId;
                     status = att.status;
-                    contentId = att.attemptId;
-                    //attemptId is contentId for a challenge
+                    contentId = att.attemptId; //attemptId is contentId for a challenge
                     dataCanisterId = att.dataCanisterId;
                     wordList = att.wordList;
                     allowedViolationRules = switch (challenge) {
@@ -1543,9 +1546,9 @@ module PohModule {
       httpOutcallCost;
     };
 
-    private func httpCallForProcessing(
+    public func httpCallForProcessing(
       userPrincipal : Principal,
-      dataCanisterId : Text,
+      dataCanisterId : Principal,
       contentId : Text,
       env : Text,
       apiKey : Text,
@@ -1570,7 +1573,7 @@ module PohModule {
       let url = "https://" # host # "/" # env # "/start";
 
       // Construct video URL
-      let videoUrl = "https://" # dataCanisterId # ".raw.icp0.io/storage?contentId=" # contentId;
+      let videoUrl = "https://" # Principal.toText(dataCanisterId) # ".raw.icp0.io/storage?contentId=" # contentId;
 
       Helpers.logMessage(
         canistergeekLogger,
@@ -1620,7 +1623,9 @@ module PohModule {
       if (Cycles.available() < estimatedCost) {
         Helpers.logMessage(
           canistergeekLogger,
-          "httpCallForProcessing - Not enough cycles to make the HTTP outcall.",
+          "httpCallForProcessing - Not enough cycles to make the HTTP outcall. available cycles: " # Nat.toText(
+            Cycles.available()
+          ) # " < estimated cyecles:" # Nat.toText(estimatedCost),
           #info
         );
         throw Error.reject("Not enough cycles to make the HTTP outcall.");
@@ -1630,6 +1635,13 @@ module PohModule {
         // Dynamically add cycles based on the useremail characters
         Cycles.add(estimatedCost);
         let ic : Types.IC = actor ("aaaaa-aa");
+
+        Helpers.logMessage(
+          canistergeekLogger,
+          "httpCallForProcessing - Initiating call to lambda",
+          #info
+        );
+
         let response : Types.CanisterHttpResponsePayload = await ic.http_request(request);
         switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
           case null {

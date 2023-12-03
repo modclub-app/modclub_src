@@ -1598,12 +1598,34 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
     dataCanisterId : ?Principal
   ) : async () {
-    let _ = pohEngine.changeChallengeTaskStatus(
-      pohDataRequest.challengeId,
-      caller,
-      #pending
-    );
-
+    let _ = do ? {
+      let contentId = pohEngine.changeChallengeTaskStatus(
+        pohDataRequest.challengeId,
+        caller,
+        #processing
+      );
+      // Initiate lambda trigger to process face
+      try {
+        await pohEngine.httpCallForProcessing(
+          caller,
+          dataCanisterId!,
+          contentId!,
+          "dev", // TODO: Dynamically set this
+          keyToCallLambdaForPOH,
+          transform,
+          canistergeekLogger
+        );
+      } catch (e) {
+        // Set the status to failed
+        logger.logError("initiateUniquePohProcessing - Failure to initiate processing setting task to #failed " # Error.message(e));
+        let _ = pohEngine.changeChallengeTaskStatus(
+          pohDataRequest.challengeId,
+          caller,
+          #rejected
+        );
+        false;
+      };
+    };
   };
 
   // Admin method to create new attempts
