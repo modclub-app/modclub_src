@@ -72,7 +72,7 @@
     "@babel/preset-react": "^7.14.5",
     "@connect2ic/core": "^0.2.0-beta.23",
     "@connect2ic/react": "^0.2.0-beta.23",
-    "@connect2icmodclub/core": "^0.0.1",
+    "@connect2icmodclub/core": "0.0.3",
     "@connect2icmodclub/react": "^0.0.1",
     "@dfinity/auth-client": "^0.19.1",
     "@dfinity/authentication": "^0.14.2",

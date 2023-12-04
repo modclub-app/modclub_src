@@ -38,6 +38,12 @@ function deepCopy(obj) {
 const providers_cb = (config) => {
   const II_config = deepCopy(config);
   II_config["providerUrl"] = process.env.LOCAL_II_CANISTER;
+  II_config["ii_auth_config"] = {
+    idleOptions: {
+      disableIdle: true,
+      disableDefaultIdleCallback: true,
+    },
+  };
   return [
     new InternetIdentity(II_config),
     new PlugWallet(config),
