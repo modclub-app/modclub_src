@@ -1619,18 +1619,6 @@ module PohModule {
         #info
       );
 
-      // Check if the canister has enough cycles
-      if (Cycles.available() < estimatedCost) {
-        Helpers.logMessage(
-          canistergeekLogger,
-          "httpCallForProcessing - Not enough cycles to make the HTTP outcall. available cycles: " # Nat.toText(
-            Cycles.available()
-          ) # " < estimated cyecles:" # Nat.toText(estimatedCost),
-          #info
-        );
-        throw Error.reject("Not enough cycles to make the HTTP outcall.");
-      };
-
       try {
         // Dynamically add cycles based on the useremail characters
         Cycles.add(estimatedCost);
