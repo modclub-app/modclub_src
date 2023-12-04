@@ -1568,9 +1568,8 @@ module PohModule {
         }
       ];
 
-      let host : Text = "x9ij2nl5xg.execute-api.us-east-1.amazonaws.com";
-      let env = "dev"; // TODO: Make this dynamic
-      let url = "https://" # host # "/" # env # "/start";
+      // TODO: Alter URL based on environment
+      let url = "https://4x4oeoympp4wl5tkbjmzcz3cdy0bcsnn.lambda-url.us-east-1.on.aws";
 
       // Construct video URL
       let videoUrl = "https://" # Principal.toText(dataCanisterId) # ".raw.icp0.io/storage?contentId=" # contentId;
