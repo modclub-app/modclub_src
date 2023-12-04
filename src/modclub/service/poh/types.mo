@@ -15,14 +15,6 @@ module {
     #expired;
     #processing;
   };
-  public type PohChallengeStatusV2 = {
-    #notSubmitted;
-    #pending;
-    #verified;
-    #rejected;
-    #expired;
-    #processing;
-  };
 
   public type PohVerificationStatus = {
     #startPoh;
@@ -109,7 +101,6 @@ module {
     expiry : Nat;
   };
 
-  // TODO: Delete this
   public type PohChallengesAttemptV1 = {
     attemptId : ?Text;
     challengeId : Text;
