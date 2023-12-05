@@ -1569,7 +1569,7 @@ module PohModule {
       ];
 
       // TODO: Alter URL based on environment
-      let url = "https://4x4oeoympp4wl5tkbjmzcz3cdy0bcsnn.lambda-url.us-east-1.on.aws";
+      let url = "https://uyjstuxdr3joi5jjmppug7nqae0lodoh.lambda-url.us-east-1.on.aws";
 
       // Construct video URL
       let videoUrl = "https://" # Principal.toText(dataCanisterId) # ".raw.icp0.io/storage?contentId=" # contentId;
