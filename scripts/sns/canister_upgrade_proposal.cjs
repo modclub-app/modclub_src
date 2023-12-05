@@ -68,7 +68,7 @@ function getInput(index, envVar, question) {
         "./scripts/deployment/get_env_arguments.sh"
       )} ${environment} ${network}`
     );
-    const makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg "(${upgradeArg})" ${developerNeuronId} > upgrade.json`;
+    makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg "(${upgradeArg})" ${developerNeuronId} > upgrade.json`;
     await shellExec(makeProposalCommand);
 
     console.log("✅ Preparing proposal...");
