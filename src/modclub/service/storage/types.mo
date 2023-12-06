@@ -1,3 +1,4 @@
+import Cycles "mo:base/ExperimentalCycles";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
@@ -60,6 +61,7 @@ module {
     #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
 
+    #availableCycles : () -> ();
     #deRegisterModerators : () -> [Principal];
     #getChunk : () -> (Text, Nat);
     #getChunkData : () -> ();
