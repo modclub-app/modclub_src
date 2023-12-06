@@ -101,8 +101,9 @@ jobs:
 
       - name: Set up dfx identity
         run: |
-          mkdir -p ~/.config/dfx/identity/default/
-          echo "$IC_IDENTITY_FILE_PROD" > ~/.config/dfx/identity/default/identity.pem
+          dfx identity new cicd_identity || exit 1
+          echo "$IC_IDENTITY_FILE_PROD" > ~/.config/dfx/identity/cicd_identity/identity.pem || exit 1
+          dfx identity use cicd_identity || exit 1
           dfx identity get-principal
         env:
           IC_IDENTITY_FILE_PROD: ${{ secrets.IC_IDENTITY_FILE_PROD }}
@@ -125,7 +126,8 @@ jobs:
 
       - name: Execute canister upgrade proposal script
         if: success()
-        run: node scripts/sns/canister_upgrade_proposal.cjs
+        run: |
+          node scripts/sns/canister_upgrade_proposal.cjs
         env:
           PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
         # Set git user configuration
