@@ -24,6 +24,7 @@ import JSON "mo:json/JSON";
 
 import Canistergeek "../../../common/canistergeek/canistergeek";
 import Content "../queue/state";
+import Constants "../../../common/constants";
 import EmailManager "../email/email";
 import GlobalState "../../statev2";
 import Helpers "../../../common/helpers";
@@ -42,10 +43,6 @@ module PohModule {
   public let CHALLENGE_USER_AUDIO_ID = "challenge-user-audio";
   public let CHALLENGE_DRAWING_ID = "challenge-drawing";
   public let CHALLENGE_UNIQUE_POH_ID = "challenge-unique-poh";
-
-  let HTTPS_OUTCALL_COST_PER_CALL : Nat = 171_360_000;
-  let HTTPS_OUTCALL_COST_PER_REQUEST_BYTE : Nat = 13_600;
-  let HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE : Nat = 27_200;
 
   let SHAPE_LIST : [Text] = ["Triangle", "Smile", "Circle", "Square", "Star"];
 
@@ -1540,9 +1537,9 @@ module PohModule {
       let requestSize = url.size() + body.size() + headerSize;
 
       // Calculate the HTTP outcall cost
-      let httpOutcallCost = HTTPS_OUTCALL_COST_PER_CALL +
-      HTTPS_OUTCALL_COST_PER_REQUEST_BYTE * requestSize +
-      HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE * maxResponseSize;
+      let httpOutcallCost = Constants.HTTPS_OUTCALL_COST_PER_CALL +
+      Constants.HTTPS_OUTCALL_COST_PER_REQUEST_BYTE * requestSize +
+      Constants.HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE * maxResponseSize;
       httpOutcallCost;
     };
 

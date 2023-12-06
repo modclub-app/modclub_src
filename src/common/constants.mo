@@ -43,4 +43,9 @@ module Constants {
   public let EMAIL_NOTIFICATION_USER_VERIFICATION = "user_verification_notification" : Text;
 
   public let ACCOUNT_PAYABLE_FIELD = "ACCOUNT_PAYABLE";
+
+  // --- HTTP Outcall Costs ---
+  public let HTTPS_OUTCALL_COST_PER_CALL : Nat = 171_360_000;
+  public let HTTPS_OUTCALL_COST_PER_REQUEST_BYTE : Nat = 13_600;
+  public let HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE : Nat = 27_200;
 };
