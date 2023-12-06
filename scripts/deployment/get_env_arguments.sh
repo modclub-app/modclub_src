@@ -1,3 +1,5 @@
+#!/bin/bash
+
 current_dir="$(dirname "$0")"
 source "${current_dir}/deployment_utils.sh"
 source "${current_dir}/../utils.sh"
