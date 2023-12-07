@@ -101,9 +101,10 @@ module RequestHandler {
 
   private func getHeaderValue(name : Text, headers : [(Text, Text)]) : ?Text {
     var result : ?Text = null;
-    for ((headerName, value) : (Text, Text) in headers.vals()) {
+    label l for ((headerName, value) : (Text, Text) in headers.vals()) {
       if (headerName == name) {
         result := ?value;
+        break l;
       };
     };
     return result;
