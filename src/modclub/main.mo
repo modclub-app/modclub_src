@@ -2903,15 +2903,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
     let path = RequestHandler.parseUrlAndGetPath(request.url);
-
     logger.logMessage("MODCLUB Instanse has http_request_update call:: " # path);
 
     switch (path) {
-      case "ipRegister" : return await RequestHandler.handleIpRegister(request, caller, pohEngine, provider2IpRestriction);
-      case "pohRegister" : return await RequestHandler.handlePohRegister(request, caller);
-      case _ :
-      // Handle unknown paths or return a 404 response
-      return RequestHandler.createHttpResponse(404, "Not Found");
+      case ("ipRegister") {
+        return await RequestHandler.handleIpRegister(request, caller, pohEngine, provider2IpRestriction);
+      };
+      case (_) {
+        return RequestHandler.createHttpResponse(404, "Not Found");
+      };
     };
   };
 

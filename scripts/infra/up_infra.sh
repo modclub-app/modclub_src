@@ -123,7 +123,7 @@ function get_local_canisters() {
 function deploy_vesting_canister() {
 	dfx identity use default
   local env=$(get_local_canisters)
-  dfx deploy vesting_qa  --argument="(record { env = $env } )"
+  dfx deploy vesting_qa  --argument="($env)"
   return 0;
 }
 

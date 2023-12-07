@@ -38,6 +38,12 @@ function deepCopy(obj) {
 const providers_cb = (config) => {
   const II_config = deepCopy(config);
   II_config["providerUrl"] = process.env.LOCAL_II_CANISTER;
+  II_config["ii_auth_config"] = {
+    idleOptions: {
+      disableIdle: true,
+      disableDefaultIdleCallback: true,
+    },
+  };
   return [
     new InternetIdentity(II_config),
     new PlugWallet(config),
@@ -46,24 +52,42 @@ const providers_cb = (config) => {
 };
 
 export function AuthProvider({ children }) {
-  const client = createClient({
-    canisters: {
-      modclub,
-      rs,
-      vesting,
-      wallet,
-      airdrop,
-    },
-    providers: providers_cb,
-    globalProviderConfig: {
-      host: env == "local" ? undefined : "https://icp-api.io",
-      //dev: true,
-      appName: "ModClub",
-      customDomain:
-        env !== "local" ? customDomains[process.env.DEV_ENV] : undefined,
-      derivationOrigin:
-        env !== "local" ? derivationOrigins[process.env.DEV_ENV] : undefined,
-    },
-  });
+  const [client, setClient] = useState(null);
+
+  useEffect(() => {
+    // This function will be called only once when the component mounts
+    const initializeClient = () => {
+      const newClient = createClient({
+        canisters: {
+          modclub,
+          rs,
+          vesting,
+          wallet,
+          airdrop,
+        },
+        providers: providers_cb,
+        globalProviderConfig: {
+          host: env === "local" ? undefined : "https://icp-api.io",
+          //dev: true,
+          appName: "Modclub",
+          customDomain:
+            env !== "local" ? customDomains[process.env.DEV_ENV] : undefined,
+          derivationOrigin:
+            env !== "local"
+              ? derivationOrigins[process.env.DEV_ENV]
+              : undefined,
+        },
+      });
+
+      setClient(newClient);
+    };
+
+    initializeClient();
+  }, []);
+
+  if (!client) {
+    return null; // or <LoadingSpinner />;
+  }
+
   return <Connect2ICProvider client={client}>{children}</Connect2ICProvider>;
 }

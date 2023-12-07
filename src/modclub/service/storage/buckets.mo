@@ -644,6 +644,10 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
     }
   );
 
+  public query ({ caller }) func availableCycles() : async Nat {
+    return Cycles.balance();
+  };
+
   system func preupgrade() {
     stateShared := fromDataCanisterState(state);
     _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();

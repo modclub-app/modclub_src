@@ -27,9 +27,7 @@ import Canistergeek "../common/canistergeek/canistergeek";
 import LoggerTypesModule "../common/canistergeek/logger/typesModule";
 import Helpers "../common/helpers";
 
-shared ({ caller = deployer }) actor class Vesting({
-  env : CommonTypes.ENV;
-}) = this {
+shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this {
 
   stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
