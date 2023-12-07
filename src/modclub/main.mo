@@ -2835,7 +2835,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case ("ipRegister") {
         return await RequestHandler.handleIpRegister(request, caller, pohEngine, provider2IpRestriction);
       };
-      case ("") {
+      case (_) {
         return RequestHandler.createHttpResponse(404, "Not Found");
       };
     };

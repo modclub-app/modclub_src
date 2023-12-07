@@ -72,6 +72,16 @@ module RequestHandler {
     };
   };
 
+  public func createHttpResponse(status_code : Nat16, body : Text) : Types.HttpResponse {
+    {
+      status_code = status_code;
+      headers = [];
+      body = Text.encodeUtf8(body);
+      streaming_strategy = null;
+      upgrade = null;
+    };
+  };
+
   // Helper function to parse query parameters
   private func parseQueryParams(url : Text) : HashMap.HashMap<Text, Text> {
     // Extract query string from URL
@@ -159,16 +169,6 @@ module RequestHandler {
       case (_) {
         throw Error.reject("Bad Request");
       };
-    };
-  };
-
-  func createHttpResponse(status_code : Nat16, body : Text) : Types.HttpResponse {
-    {
-      status_code = status_code;
-      headers = [];
-      body = Text.encodeUtf8(body);
-      streaming_strategy = null;
-      upgrade = null;
     };
   };
 
