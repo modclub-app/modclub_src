@@ -75,7 +75,7 @@ function getInput(index, envVar, question) {
       throw new Error("No Arguments found for canister deploy.");
     }
     makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg "(${upgradeArg})" ${developerNeuronId} > upgrade.json`;
-    // await shellExec(makeProposalCommand);
+    await shellExec(makeProposalCommand);
 
     console.log("✅ Preparing proposal...");
     const sendCommand = `quill send upgrade.json ${
@@ -83,10 +83,10 @@ function getInput(index, envVar, question) {
     } -y | grep -v "^ *new_canister_wasm"`;
 
     console.log("🚀 Sending proposal...");
-    // const commandOutput = await shellExec(sendCommand);
+    const commandOutput = await shellExec(sendCommand);
     console.log(commandOutput);
-    // notifyToSlack(`✅ Proposal submitted successfully!`);
-    // notifyToSlack(`✅ Proposal Command Output: ${commandOutput}`);
+    notifyToSlack(`✅ Proposal submitted successfully!`);
+    notifyToSlack(`✅ Proposal Command Output: ${commandOutput}`);
   } catch (err) {
     console.log(" upgradeArg: " + upgradeArg);
     console.error("❌ Error:", err);
