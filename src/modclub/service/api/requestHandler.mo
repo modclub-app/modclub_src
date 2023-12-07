@@ -1,15 +1,18 @@
-import Debug "mo:base/Debug";
-import Text "mo:base/Text";
-import Iter "mo:base/Iter";
 import Array "mo:base/Array";
-import HashMap "mo:base/Array";
+import Debug "mo:base/Debug";
 import Error "mo:base/Error";
-import JSON "mo:json/JSON";
-import Trie "mo:base/Trie";
-import Principal "mo:base/Principal";
-import Types "../../types";
+import HashMap "mo:base/HashMap";
+import Iter "mo:base/Iter";
 import Option "mo:base/Option";
+import Principal "mo:base/Principal";
+import Text "mo:base/Text";
+import Trie "mo:base/Trie";
+import Bool "mo:base/Bool";
+
+import JSON "mo:json/JSON";
+
 import Poh "../poh/poh";
+import Types "../../types";
 
 module RequestHandler {
 
@@ -25,17 +28,18 @@ module RequestHandler {
     provider2IpRestriction : Trie.Trie<Principal, Bool>
   ) : async Types.HttpResponse {
     // Extract IP from headers
-    let ip = Option.unwrap(getHeaderValue("x-real-ip", request.headers), "");
+    let ip : Text = Option.get(getHeaderValue("x-real-ip", request.headers), "");
 
     // Extract token from query parameters
     let queryParams = parseQueryParams(request.url);
-    let token = Option.unwrap(HashMap.get(queryParams, "token"), "");
+    let token : Text = Option.get(queryParams.get("token"), "");
 
     // Validate IP and token
     if (ip == "" or token == "") {
       return createHttpResponse(400, "IP or token couldn't be found");
     };
 
+    var ipRestrictionConfigured = false;
     // Decode token and get providerId and providerUserId
     switch (pohEngine.decodeToken(token)) {
       case (#err(err)) {
@@ -44,10 +48,10 @@ module RequestHandler {
       case (#ok(providerAndUserData)) {
         let providerId = providerAndUserData.providerId;
         let providerUserId = providerAndUserData.providerUserId;
-        let ipRestrictionConfigured = Option.get(
+        ipRestrictionConfigured := Option.get(
           Trie.get(
             provider2IpRestriction,
-            providerId,
+            key(providerId),
             Principal.equal
           ),
           false
@@ -71,15 +75,15 @@ module RequestHandler {
   // Helper function to parse query parameters
   private func parseQueryParams(url : Text) : HashMap.HashMap<Text, Text> {
     // Extract query string from URL
-    let queryString = Text.split(url, #char '?')[1];
+    let queryString = Iter.toArray<Text>(Text.split(url, #char '?'))[1];
     // Split the query string into key-value pairs
     let pairs = Text.split(queryString, #text("&"));
     // Convert pairs to a HashMap
-    let queryParams = HashMap.HashMap<Text, Text>(pairs.size(), Text.equal, Text.hash);
-    for (pair in pairs.vals()) {
-      let kv = Text.split(pair, #text("="));
-      if (Array.size(kv) == 2) {
-        HashMap.put(queryParams, kv[0], kv[1]);
+    let queryParams = HashMap.HashMap<Text, Text>(0, Text.equal, Text.hash);
+    for (pair in pairs) {
+      let kv : [Text] = Iter.toArray<Text>(Text.split(pair, #text("=")));
+      if (kv.size() == 2) {
+        queryParams.put(kv[0], kv[1]);
       };
     };
     return queryParams;
@@ -107,8 +111,11 @@ module RequestHandler {
       return ""; // No path found
     };
 
+    // size of parts array
+    let size : Nat = Array.size(partsArray) - 3;
+
     // Reconstruct the path from the fourth element onwards
-    let pathParts = Array.subArray(partsArray, 3, Array.size(partsArray) - 3);
+    let pathParts = Array.subArray(partsArray, 3, size);
     let fullPath = Text.join("/", pathParts.vals());
 
     // Split the path at the query string
@@ -163,5 +170,9 @@ module RequestHandler {
       streaming_strategy = null;
       upgrade = null;
     };
+  };
+
+  func key(t : Principal) : Trie.Key<Principal> {
+    { key = t; hash = Principal.hash(t) };
   };
 };
