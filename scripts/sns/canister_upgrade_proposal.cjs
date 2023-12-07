@@ -74,7 +74,7 @@ function getInput(index, envVar, question) {
     if (!upgradeArg.length) {
       throw new Error("No Arguments found for canister deploy.");
     }
-    makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg "(${upgradeArg})" ${developerNeuronId} > upgrade.json`;
+    makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg '(${upgradeArg})' ${developerNeuronId} > upgrade.json`;
     await shellExec(makeProposalCommand);
 
     console.log("✅ Preparing proposal...");
