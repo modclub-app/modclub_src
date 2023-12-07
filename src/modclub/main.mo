@@ -36,6 +36,7 @@ import Random "mo:base/Random";
 import Rel "./data_structures/Rel";
 import RelObj "./data_structures/RelObj";
 import Result "mo:base/Result";
+import RequestHandler "./service/api/requestHandler";
 import StateV2 "./statev2";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
@@ -2828,85 +2829,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
-    var ip = "";
-    for ((name, value) in request.headers.vals()) {
-      if (name == "x-real-ip") {
-        ip := value;
-      };
-    };
+    let path = RequestHandler.parseUrlAndGetPath(request.url);
 
-    var token = "";
-
-    switch (Text.stripStart(request.url, #text("/ipRegister?"))) {
-      case (null)();
-      case (?params) {
-        let fields : Iter.Iter<Text> = Text.split(params, #text("&"));
-        for (field : Text in fields) {
-          let kv : [Text] = Iter.toArray<Text>(Text.split(field, #text("=")));
-          if (kv[0] == "token") {
-            token := kv[1];
-          };
-        };
+    switch (path) {
+      case ("ipRegister") {
+        return await RequestHandler.handleIpRegister(request, caller, pohEngine, provider2IpRestriction);
       };
-    };
-    if (ip == "" or token == "") {
-      return {
-        status_code = 400;
-        headers = [];
-        body = Text.encodeUtf8("IP or token couldn't be found");
-        streaming_strategy = null;
-        upgrade = null;
+      case ("") {
+        return RequestHandler.createHttpResponse(404, "Not Found");
       };
-    };
-
-    var ipRestrictionConfigured = false;
-    var providerId = Principal.fromText("aaaaa-aa");
-    var providerUserId = "";
-    switch (pohEngine.decodeToken(token)) {
-      case (#err(err)) {
-        return {
-          status_code = 400;
-          headers = [];
-          body = Text.encodeUtf8("Invalid token.");
-          streaming_strategy = null;
-          upgrade = null;
-        };
-      };
-      case (#ok(providerAndUserData)) {
-        providerId := providerAndUserData.providerId;
-        providerUserId := providerAndUserData.providerUserId;
-        ipRestrictionConfigured := Option.get(
-          Trie.get(
-            provider2IpRestriction,
-            key(providerId),
-            Principal.equal
-          ),
-          false
-        );
-      };
-    };
-    if (ipRestrictionConfigured) {
-      let registed = pohEngine.registerIPWithProviderUser(
-        providerUserId,
-        ip,
-        providerId
-      );
-      if (not registed) {
-        return {
-          status_code = 500;
-          headers = [];
-          body = Text.encodeUtf8("Token is already associated.");
-          streaming_strategy = null;
-          upgrade = null;
-        };
-      };
-    };
-    {
-      status_code = 200;
-      headers = [];
-      body = Text.encodeUtf8("Token Associated with IP.");
-      streaming_strategy = null;
-      upgrade = null;
     };
   };
 
