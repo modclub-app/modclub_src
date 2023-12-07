@@ -62,12 +62,16 @@ function getInput(index, envVar, question) {
 
   try {
     console.log("🚀 Preparing upgrade proposal...");
-    upgradeArg = await shellExec(
+    const upgradeArgRaw = await shellExec(
       `${path.join(
         process.cwd(),
         "./scripts/deployment/get_env_arguments.sh"
       )} ${environment} ${network}`
     );
+    upgradeArg = upgradeArgRaw.substring(upgradeArgRaw.search(/record {/g));
+    if (!upgradeArg.length) {
+      throw new Error("No Arguments found for canister deploy.");
+    }
     makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg "(${upgradeArg})" ${developerNeuronId} > upgrade.json`;
     await shellExec(makeProposalCommand);
 
