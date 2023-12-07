@@ -155,7 +155,7 @@ module RequestHandler {
       // If no value exists or found string or json in place of number
       // 400 error
       case (_) {
-        throw Error.reject("Bad Request");
+        throw Error.reject("Expected number for property " # propertyName);
       };
     };
   };
@@ -168,7 +168,7 @@ module RequestHandler {
       // If no value exists or found string or json in place of number
       // 400 error
       case (_) {
-        throw Error.reject("Bad Request");
+        throw Error.reject("Expected text for property " # propertyName);
       };
     };
   };
