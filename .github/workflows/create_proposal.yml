@@ -101,7 +101,7 @@ jobs:
 
       - name: Set up dfx identity
         run: |
-          dfx identity new cicd_identity || exit 1
+          mkdir -p ~/.config/dfx/identity/cicd_identity/ || exit 1
           echo "$IC_IDENTITY_FILE_PROD" > ~/.config/dfx/identity/cicd_identity/identity.pem || exit 1
           dfx identity use cicd_identity || exit 1
           dfx identity get-principal
