@@ -2892,6 +2892,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func http_request(request : Types.HttpRequest) : async Types.HttpResponse {
+    logger.logMessage("http_request - calle for url " # request.url);
     return {
       status_code = 200;
       headers = [];
