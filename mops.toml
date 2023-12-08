@@ -1,5 +1,6 @@
 [dependencies]
-base = "0.9.5"
+base = "0.9.7"
+map = "8.1.0"
 uuid = "https://github.com/aviate-labs/uuid.mo#v0.2.0"
 array = "https://github.com/aviate-labs/array.mo#v0.1.1"
 crypto = "https://github.com/aviate-labs/crypto.mo#v0.2.0"
@@ -10,3 +11,4 @@ serde = "2.0.4"
 motoko-sequence = "https://github.com/matthewhammer/motoko-sequence#master@366c4191d856ed4842267f5ab89d7222ed2d71d0"
 motoko-matchers = "https://github.com/kritzcreek/motoko-matchers#master@3dac8a071b69e4e651b25a7d9683fe831eb7cffd"
 "encoding.mo" = "https://github.com/aviate-labs/encoding.mo#master@2711d18727e954b11afc0d37945608512b5fbce2"
+backup = "1.1.1"

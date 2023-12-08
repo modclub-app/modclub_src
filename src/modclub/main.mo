@@ -1,5 +1,6 @@
 import Array "mo:base/Array";
 import Base32 "mo:encoding/Base32";
+import Backup "mo:backup";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
@@ -65,6 +66,7 @@ import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import CommonTimer "../common/timer/timer";
 import Archive "./service/archive/archive";
+import ModclubBackup "./service/archive/backup";
 import Content "./service/queue/state";
 import Staking "./service/staking/staking";
 
@@ -170,6 +172,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     };
   };
+
+  stable let backupState = Backup.init(null);
+  var modclubBackup = ModclubBackup.ModclubBackup(backupState, stateV2);
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     switch (payload) {
@@ -2741,6 +2746,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     contentCategories := HashMap.fromIter<Types.CategoryId, Types.ContentCategory>(contentCategoriesStable.vals(), contentCategoriesStable.size(), Text.equal, Text.hash);
     content2Category := HashMap.fromIter<Types.ContentId, Types.CategoryId>(content2CategoryStable.vals(), content2CategoryStable.size(), Text.equal, Text.hash);
     stakingManager := Staking.StakingManager(env, stateV2);
+    modclubBackup := ModclubBackup.ModclubBackup(backupState, stateV2);
   };
 
   //SNS generic validate function
@@ -2813,6 +2819,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#releaseTokensFor _) {
         authGuard.isAdmin(caller) or authGuard.isModclubVesting(caller);
       };
+      case (#backup _) { Principal.isController(caller) };
+      case (#restore _) { Principal.isController(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };
@@ -3435,6 +3443,31 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func exportToArchive(stateName : Text, dataName : Text) : async Text {
     var archiveManager = Archive.ArchiveManager(env.archive_canister_id, stateV2);
     return await archiveManager.exportToArchive(stateName, dataName);
+  };
+
+  public shared ({ caller }) func getBackupCanisterId() : async Principal {
+    await modclubBackup.getBackupCanisterId();
+  };
+
+  public shared ({ caller }) func backup(fieldName : Text, extraTag : Text) : async Nat {
+    await modclubBackup.backup(fieldName, extraTag);
+  };
+
+  public shared ({ caller }) func restore(fieldName : Text, backupId : Nat) : async Result.Result<Text, Text> {
+    switch (fieldName) {
+      case ("stateV2") {
+        let result = await modclubBackup.restore_stateV2(
+          backupId,
+          func(s : StateV2.State) {
+            stateV2 := s;
+          }
+        );
+        return result;
+      };
+      case _ {
+        return #err("NotImplemented for fieldName: " # fieldName);
+      };
+    };
   };
 
 };

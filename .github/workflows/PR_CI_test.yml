@@ -93,6 +93,7 @@ jobs:
           source scripts/deployment/build_utils.sh
           source scripts/utils.sh
           DEV_ENV=qa create_canisters qa && build_be_canisters qa
+          find .dfx/local/canisters -name "*.wasm" -exec ls -l {} \;
 
       # Deploy using dfx. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
@@ -120,6 +121,7 @@ jobs:
           ./scripts/deployment/gh_pr_pipeline_test_runner.sh
         env:
           DEV_ENV: qa
+          CI: yes
 
       - name: Show success message
         run: echo success!
