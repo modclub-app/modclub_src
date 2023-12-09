@@ -2813,6 +2813,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#releaseTokensFor _) {
         authGuard.isAdmin(caller) or authGuard.isModclubVesting(caller);
       };
+      case (#http_request _) { true };
+      case (#http_request_update _) { true };
       case _ { not Principal.isAnonymous(caller) };
     };
   };
