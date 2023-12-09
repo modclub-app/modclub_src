@@ -40,3 +40,13 @@ export async function fetchObjectUrl(
   const imageBlob = await res.blob();
   return URL.createObjectURL(imageBlob);
 }
+
+export async function fetchDataBlob(
+  modclub: modclub_types.ModClub,
+  url: string
+): Promise<Blob> {
+  const res = await fetchWithJwt(modclub, url);
+  const dataBlob = await res.blob();
+
+  return dataBlob;
+}

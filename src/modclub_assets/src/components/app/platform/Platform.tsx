@@ -42,7 +42,8 @@ export default function Platform({ providerId }: { providerId: Principal }) {
   useEffect(() => {
     const fetchContent = async () => {
       const content = await modclub.getProvider(providerId);
-      console.log("content", content);
+      // USE APP_STATE!
+      console.log("provider", content);
       setContent(content);
       setLoading(false);
     };

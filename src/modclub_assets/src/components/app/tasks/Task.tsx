@@ -15,7 +15,7 @@ import {
 import Userstats from "../profile/Userstats";
 import Platform from "../platform/Platform";
 import TaskConfirmationModal from "./TaskConfirmationModal";
-import { fileToImgSrc, unwrap } from "../../../utils/util";
+import { fileToImgSrc, unwrap, getUrlForData } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import sanitizeHtml from "sanitize-html";
 import { useProfile } from "../../../contexts/profile";
@@ -25,6 +25,7 @@ import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import Timer from "../../common/timer/Timer";
+import { fetchDataBlob } from "../../../utils/jwt";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -62,11 +63,12 @@ function resizeIframe(iframe) {
 }
 
 export default function Task() {
-  const { principal } = useConnect();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
   const { taskId } = useParams<{ taskId: string }>();
   const [task, setTask] = useState(null);
+  const [contentRaw, setContentRaw] = useState(null);
+  const [contentText, setContentText] = useState("");
   const [error, setError] = useState(false);
   const [voted, setVoted] = useState<boolean>(true);
   const [level, setLevel] = useState<string>("");
@@ -83,56 +85,65 @@ export default function Task() {
     const image = unwrap<modclub_types.Image>(data);
     return fileToImgSrc(image.data, image.imageType);
   };
-  const setTimer = (reservation) => {
+  const setTimer = () => {
     const now = new Date().getTime();
-    const remind =
-      (Number(reservation.ok ? reservation.ok.reservedExpiryTime : 0) -
-        Number(now)) /
-      1000.0;
-    setReserved(remind > 0 ? true : false);
-    setCount(remind > 0 ? Number(remind) : 0);
-    dispatch({
-      type: "setContentReservedTime",
-      payload: remind > 0 ? Number(remind) : 0,
-    });
+    const reservation = (task?.reservedList || [])
+      .filter((r) => r.profileId == appState.loginPrincipalId.toString())
+      .find((r) => Number(r.reservedExpiryTime) - Number(now) > 0);
+
+    if (reservation) {
+      const remind =
+        (Number(reservation.reservedExpiryTime) - Number(now)) / 1000.0;
+      const isPending = remind > 0;
+      setReserved(isPending);
+      if (isPending) {
+        setCount(Number(remind));
+        dispatch({
+          type: "setContentReservedTime",
+          payload: Number(remind),
+        });
+      }
+    }
   };
 
   const fetchTask = async () => {
     try {
-      const content = await modclub.getContent(taskId);
-      const reservation = await modclub.getReservedByContentId(taskId);
-      setTask(content[0]);
-      if (content[0] == null) {
-        setError(true);
-      } else {
-        setError(false);
-      }
-      setTimer(reservation);
+      const tasks = await modclub.getContent(taskId);
+      const task = tasks[0];
+      const contentBucketUrl = getUrlForData(
+        task.contentCanisterId[0]?.toString(),
+        task.id
+      );
+      const contentBlob = await fetchDataBlob(modclub, contentBucketUrl);
+      task && setTask(task);
+      contentBlob && setContentRaw(contentBlob);
+      contentBlob &&
+        contentBlob.type.includes("text") &&
+        setContentText(await contentBlob.text());
+      setError(!task);
     } catch (error) {
       setError(true);
       console.error(error);
     }
   };
 
-  const fetchData = async () => {
-    const [can_reserved, get_level] = await Promise.all([
-      await modclub.canReserveContent(taskId.toString()),
-      await rs.queryRSAndLevelByPrincipal(Principal.fromText(principal)),
-    ]);
-    if (Object.keys(can_reserved)[0] == "ok") {
-      setFull(!Object.values<boolean>(can_reserved)[0]);
-    }
-    setLevel(Object.keys(get_level.level)[0].toString());
-  };
-
   useEffect(() => {
-    appState.userProfile && !task && fetchTask() && fetchData();
+    appState.userProfile && !task && fetchTask();
   }, [appState.userProfile]);
 
   useEffect(() => {
     appState.userProfile && voted && fetchTask();
     setVoted(false);
   }, [voted]);
+
+  useEffect(() => {
+    task && appState.loginPrincipalId && setTimer();
+  }, [task, appState.loginPrincipalId]);
+
+  useEffect(() => {
+    const userLevel = Object.keys(appState.rs.level);
+    userLevel.length && setLevel(userLevel[0]?.toString());
+  }, [appState.rs.level]);
 
   const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
     "img",
@@ -198,8 +209,15 @@ export default function Task() {
     setLoading(true);
     try {
       const res = await modclub.reserveContent(taskId);
-      setTimer(res);
-      toggleReserveModal();
+      if (res.ok) {
+        const newTask = {
+          ...task,
+          reservedList: [...task?.reservedList, res.ok],
+        };
+        setTask(newTask);
+        setTimer();
+        toggleReserveModal();
+      }
       setLoading(false);
     } catch (e) {
       setLoading(false);
@@ -241,17 +259,17 @@ export default function Task() {
             <Card>
               <Card.Header>
                 <Card.Header.Title>
-                  {task.providerName}
-                  <span>Submitted by {task.sourceId}</span>
+                  <span>{task.sourceId}</span>
+                  <span>Submitted by</span> {task.providerName}
                 </Card.Header.Title>
               </Card.Header>
               <Card.Content>
                 <Heading>{task.title}</Heading>
 
-                {"text" in task.contentType && <p>{task.text}</p>}
-                {"imageBlob" in task.contentType && (
+                {"text" in task.contentType && <p>{contentText}</p>}
+                {"imageBlob" in task.contentType && contentRaw && (
                   <img
-                    src={getImage(task.image)}
+                    src={URL.createObjectURL(contentRaw)}
                     alt="Image File"
                     style={{ display: "block", margin: "auto" }}
                   />
@@ -260,35 +278,11 @@ export default function Task() {
                   <div className="htmlContent content">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: sanitizedHtml,
+                        __html: contentText,
                       }}
                     />
                   </div>
                 )}
-
-                {/* <Card backgroundColor="dark" className="mt-5">
-                  <Card.Content>
-                    <Heading subtitle>
-                      Additional Information
-                    </Heading>
-
-                    <InfoItem
-                      icon="assignment_ind"
-                      title="Link to Post"
-                      info="http://www.example.com/post1"
-                    />
-                    <InfoItem
-                      icon="assignment_ind"
-                      title="Category"
-                      info="Gaming"
-                    />
-                    <InfoItem
-                      icon="assignment_ind"
-                      title="Comment"
-                      info="This post looked suspicious please review as we are not sure"
-                    />
-                  </Card.Content>
-                </Card> */}
               </Card.Content>
 
               {reserved && level != "novice" && (

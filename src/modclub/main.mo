@@ -459,16 +459,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   // ----------------------Content Related Methods------------------------------
-  public shared ({ caller }) func getContent(id : Text) : async ?Types.ContentPlus {
+  public query ({ caller }) func getContent(id : Text) : async ?Types.ContentPlus {
     let voteCount = getVoteCount(id, ?caller);
-    return await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
+    return ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
   };
 
-  public shared ({ caller }) func getContentResult(
+  public query ({ caller }) func getContentResult(
     id : Text
   ) : async Types.ContentResult {
     let voteCount = getVoteCount(id, ?caller);
-    let cp = await ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
+    let cp = ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
     switch (cp) {
       case (?result) {
         switch (PermissionsModule.checkProviderPermission(caller, ?result.providerId, stateV2)) {

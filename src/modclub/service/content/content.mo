@@ -34,12 +34,11 @@ module ContentModule {
     globalState : GlobalState.State,
     storage : StorageSolution.StorageSolution,
     content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>
-  ) : async ?Types.ContentPlus {
+  ) : ?Types.ContentPlus {
     switch (globalState.content.get(contentId)) {
       case (?content) {
         switch (globalState.providers.get(content.providerId)) {
           case (?provider) {
-            let chunkedContent = await storage.getChunkedContent(content.id);
             let result : Types.ContentPlus = {
               id = content.id;
               providerName = provider.name;
@@ -58,8 +57,9 @@ module ContentModule {
               title = content.title;
               createdAt = content.createdAt;
               updatedAt = content.updatedAt;
-              text = ?Helpers.getIfTextContent(content.contentType, chunkedContent);
-              image = ?Helpers.getIfImageContent(content.contentType, content.id, chunkedContent, globalState);
+              text = ?"";
+              image = ?{ data = []; imageType = "" };
+              contentCanisterId = storage.dataCanisterId(content.id);
               voteParameters = content.voteParameters;
               reservedList = content.reservedList;
               receipt = content.receipt;
@@ -355,6 +355,7 @@ module ContentModule {
               updatedAt = contentPlus.updatedAt;
               text = contentPlus.text;
               image = contentPlus.image;
+              contentCanisterId = contentPlus.contentCanisterId;
               voteParameters = contentPlus.voteParameters;
               reservedList = newReserved;
               receipt = contentPlus.receipt;
@@ -435,6 +436,7 @@ module ContentModule {
               updatedAt = content.updatedAt;
               text = ?"";
               image = ?{ data = []; imageType = "" };
+              contentCanisterId = null;
               voteParameters = content.voteParameters;
               reservedList = content.reservedList;
               receipt = {

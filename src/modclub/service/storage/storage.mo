@@ -84,7 +84,7 @@ module StorageModule {
       };
     };
 
-    public func dataCanisterId(contentId : Text) : async ?Types.DataCanisterId {
+    public func dataCanisterId(contentId : Text) : ?Types.DataCanisterId {
       storageState.contentIdToCanisterId.get(contentId);
     };
 

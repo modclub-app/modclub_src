@@ -332,7 +332,8 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   public query ({ caller }) func http_request(req : Types.HttpRequest) : async Types.HttpResponse {
     var _headers = [
       ("Content-Type", "text/html"),
-      ("Content-Disposition", "inline")
+      ("Content-Disposition", "inline"),
+      ("Access-Control-Allow-Origin", "*")
     ];
     let self : Principal = Principal.fromActor(this);
     let canisterId : Text = Principal.toText(self);
@@ -343,63 +344,75 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
     var _status_code : Nat16 = 404;
     var _body : Blob = "404 Not Found";
     var _streaming_strategy : ?Types.StreamingStrategy = null;
-    let _ = do ? {
-      let storageParams : Text = Text.stripStart(req.url, #text("/storage?"))!;
-      let fields : Iter.Iter<Text> = Text.split(storageParams, #text("&"));
-      var contentId : ?Text = null;
-      var jwt : Text = "";
-      var chunkNum : Nat = 1;
-      for (field : Text in fields) {
-        let kv : [Text] = Iter.toArray<Text>(Text.split(field, #text("=")));
-        if (kv[0] == "contentId") {
-          contentId := ?kv[1];
-        } else if (kv[0] == "token") {
-          jwt := kv[1];
-        };
-      };
 
-      if (not (isUserAllowed(jwt, contentId!))) {
-        Helpers.logMessage(
-          canistergeekLogger,
-          "User " # Principal.toText(caller) # " tried to access data with invalid JWT",
-          #error
-        );
-        return {
-          status_code = 401;
-          headers = _headers;
-          body = "401 Unauthorized";
-          streaming_strategy = null;
-        };
-      };
-
-      _body := state.chunks.get(chunkId(contentId!, chunkNum))!;
-      let info : ?Types.ContentInfo = state.contentInfo.get(contentId!);
-      _headers := [
-        ("Content-Type", info!.contentType),
-        ("Transfer-Encoding", "chunked"),
-        ("Content-Disposition", "inline"),
-        ("Access-Control-Allow-Origin", "*")
-      ];
-      _status_code := 200;
-      _streaming_strategy := ?#Callback(
-        {
-          token = {
-            content_encoding = "gzip";
-            key = contentId!;
-            index = chunkNum + 1;
-            //starts at 1
-            sha256 = null;
+    try {
+      let _ = do ? {
+        let storageParams : Text = Text.stripStart(req.url, #text("/storage?"))!;
+        let fields : Iter.Iter<Text> = Text.split(storageParams, #text("&"));
+        var contentId : ?Text = null;
+        var jwt : Text = "";
+        var chunkNum : Nat = 1;
+        for (field : Text in fields) {
+          let kv : [Text] = Iter.toArray<Text>(Text.split(field, #text("=")));
+          if (kv[0] == "contentId") {
+            contentId := ?kv[1];
+          } else if (kv[0] == "token") {
+            jwt := kv[1];
           };
-          callback = canister.streamingCallback;
-        }
-      );
+        };
+
+        if (not (isUserAllowed(jwt, contentId!))) {
+          Helpers.logMessage(
+            canistergeekLogger,
+            "User " # Principal.toText(caller) # " tried to access data with invalid JWT",
+            #error
+          );
+          return {
+            status_code = 401;
+            headers = _headers;
+            body = "401 Unauthorized";
+            streaming_strategy = null;
+          };
+        };
+
+        _body := state.chunks.get(chunkId(contentId!, chunkNum))!;
+        let info : ?Types.ContentInfo = state.contentInfo.get(contentId!);
+        _headers := [
+          ("Content-Type", info!.contentType),
+          ("Transfer-Encoding", "chunked"),
+          ("Content-Disposition", "inline"),
+          ("Access-Control-Allow-Origin", "*")
+        ];
+        _status_code := 200;
+        _streaming_strategy := ?#Callback(
+          {
+            token = {
+              content_encoding = "gzip";
+              key = contentId!;
+              index = chunkNum + 1;
+              //starts at 1
+              sha256 = null;
+            };
+            callback = canister.streamingCallback;
+          }
+        );
+      };
+    } catch e {
+      return {
+        status_code = 500;
+        headers = _headers;
+        body = Text.encodeUtf8("ERROR::" # Error.message(e));
+        streaming_strategy = null;
+      };
     };
+
     return {
       status_code = _status_code;
       headers = _headers;
       body = _body;
       streaming_strategy = _streaming_strategy;
     };
+
   };
 
   public query ({ caller }) func getCanisterMetrics(

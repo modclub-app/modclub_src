@@ -14,6 +14,12 @@ args[0].split(",").forEach((item, i) => {
       main: "../../src/modclub/service/storage/buckets.mo",
       type: "motoko",
     };
+    dfx["networks"] = {
+      local: {
+        bind: "127.0.0.1:8080",
+        type: "ephemeral",
+      },
+    };
     if (args[1] == "l") {
       ids[`${args[1]}_bucket_${i}`] = {
         local: item,
