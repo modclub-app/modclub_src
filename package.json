@@ -15,15 +15,7 @@
     "add_tags": "git tag -a $(date \"+%Y-%m-%d-%H.%M\") -m \"Deployed by ${GITHUB_ACTOR:-$(whoami)}\" && git push --tags",
     "add_tags_prod": "git tag -a PROD-$(date \"+%Y-%m-%d-%H.%M\") -m \"Deployed to PROD by ${GITHUB_ACTOR:-$(whoami)}\" && git push --tags",
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
-    "deploy_dev": "npm run deploy_gzip_dev",
-    "deploy_qa": "DEV_ENV=qa dfx deploy --network ic modclub_qa_assets",
-    "deploy_modclub_qa": "dfx deploy --network ic modclub_qa",
-    "deploy_prod": "npm run add_tags_prod && npm run deploy_gzip_prod",
     "deploy_prod_frontend": "npm run add_tags_prod && dfx build modclub --network ic && dfx generate modclub --network ic && dfx generate modclub_assets --network ic && DEV_ENV=production dfx deploy modclub_assets --network ic",
-    "deploy_gzip_prod": "dfx build --network ic modclub && gzip -f .dfx/ic/canisters/modclub/modclub.wasm && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub/modclub.wasm.gz --mode upgrade modclub && DEV_ENV=prod dfx deploy --network ic modclub_assets",
-    "deploy_gzip_prod_no_frontend": "dfx build --network ic modclub && gzip -f .dfx/ic/canisters/modclub/modclub.wasm && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub/modclub.wasm.gz --mode upgrade modclub",
-    "deploy_gzip_dev": "dfx build --network ic modclub_dev && gzip -f .dfx/ic/canisters/modclub_dev/modclub_dev.wasm && dfx canister install --network ic  --wasm .dfx/ic/canisters/modclub_dev/modclub_dev.wasm.gz --mode upgrade modclub_dev && DEV_ENV=dev dfx deploy --network ic --no-wallet modclub_dev_assets",
-    "quick_build": "~/.cache/dfinity/versions/0.12.0-beta.2/moc ./src/modclub/main.mo -o ./.dfx/local/canisters/modclub/modclub.wasm -c --debug --idl -v --public-metadata candid:service --actor-idl ./.dfx/local/canisters/idl/ --actor-alias modclub rrkah-fqaaa-aaaaa-aaaaq-cai --package array .vessel/array/v0.2.0/src --package base .vessel/base/494824a2787aee24ab4a5888aa519deb05ecfd60/src --package crypto .vessel/crypto/v0.2.0/src --package encoding .vessel/encoding/v0.3.2/src --package io .vessel/io/v0.3.1/src --package matchers .vessel/matchers/v1.2.0/src --package rand .vessel/rand/v0.2.2/src --package sequence .vessel/sequence/v0.1.1/src --package uuid .vessel/uuid/v0.2.0/src --package json .vessel/json/v0.2.0/src --stable-types -no-check-ir",
     "prepare": "husky install"
   },
   "devDependencies": {

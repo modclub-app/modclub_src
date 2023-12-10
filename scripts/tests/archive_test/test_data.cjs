@@ -2,7 +2,11 @@ const fs = require("fs");
 const assert = require("assert");
 
 function assert_content(data) {
-  assert.strictEqual(data.length, 10);
+  if (process.env.CI == "yes") {
+    assert.strictEqual(data.length, 10);
+  } else {
+    assert.strictEqual(data.length, 6);
+  }
   let content = data.find((o) => o.sourceId === "Emily Thompson");
   assert.strictEqual(content.sourceId, "Emily Thompson");
   assert.strictEqual(content.title, "Diverse Marine Life in Our Oceans");

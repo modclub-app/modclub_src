@@ -116,6 +116,7 @@ module {
     updatedAt : Timestamp;
     text : ?Text;
     image : ?Image;
+    contentCanisterId : ?Principal;
     hasVoted : ?Bool;
     // voteParameters : ?VoteParamsId;
     voteParameters : VoteParameters;

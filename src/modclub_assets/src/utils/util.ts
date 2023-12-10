@@ -115,12 +115,13 @@ export function validateEmail(email: string) {
 }
 
 export function getUrlForData(canisterId: String, contentId: String) {
-  if (window.location.hostname.includes("localhost")) {
-    return `http://localhost:8000/storage?canisterId=${canisterId}&contentId=${contentId}`;
+  const hostName = window.location.hostname;
+  const host = window.location.host;
+
+  if (hostName.includes("localhost") || hostName.includes("127.0.0.1")) {
+    return `http://${host}/storage?canisterId=${canisterId}&contentId=${contentId}`;
   } else {
-    return (
-      "https://" + canisterId + ".raw.icp0.io/storage?contentId=" + contentId
-    );
+    return `https://${canisterId}.raw.icp0.io/storage?contentId=${contentId}`;
   }
 }
 
@@ -183,7 +184,7 @@ export function timestampToDate(timestamp: number): any {
 }
 
 export function isObject(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export function getErrorMessage(value) {

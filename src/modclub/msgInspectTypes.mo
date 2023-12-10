@@ -10,6 +10,7 @@ import RSTypes "../rs/types";
 module {
 
   public type ModclubCanisterMethods = {
+    #backup : () -> (Text, Text);
     #burn : () -> (?ICRCTypes.Subaccount, Nat);
     #subscribeOnAdmins : () -> ();
     #showAdmins : () -> ();
@@ -45,6 +46,7 @@ module {
     #getAllPohTasksForAdminUsers : () -> (Types.ContentStatus, Nat, Nat, [Text], Int, Int);
     #getAllProfiles : () -> ();
     #getAllUsersWantToReceiveAlerts : () -> ();
+    #getBackupCanisterId : () -> ();
     #getCanisterLog : () -> ?LoggerTypesModule.CanisterLogRequest;
     #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
     #getContent : () -> Text;
@@ -94,6 +96,7 @@ module {
     #sendVerificationEmail : () -> Text;
     #setRandomization : () -> Bool;
     #reserveContent : () -> Text;
+    #restore : () -> (Text, Nat);
     #shuffleContent : () -> ();
     #shufflePohContent : () -> ();
     #stakeTokens : () -> Nat;

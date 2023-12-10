@@ -15,6 +15,16 @@ check_contains() {
 
 dfx identity use default
 
+
+echo "====== Backup/Restore Start"
+backupOutput=$(dfx canister call modclub_qa backup '("stateV2", "someTag")')
+backupId=$(echo $backupOutput | sed -n 's/.*(\([0-9]*\) : nat).*/\1/p')
+echo "Finished backup: $backupId"
+dfx canister call modclub_qa restore "(\"stateV2\", $backupId)"
+echo "Finished restore: $backupId"
+
+echo "====== Backup/Restore Done"
+
 dfx canister call  modclub_qa  exportToArchive '("global_state", "content")'
 content=$(dfx canister call archive_qa readData '("global_state", "content")')
 echo $content > test_output.txt

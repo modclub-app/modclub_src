@@ -94,6 +94,18 @@ jobs:
         env:
           DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
 
+      - name: Backup - before deployment
+
+        run: |
+          backupOutput=$(dfx canister call modclub_dev backup "(\"stateV2\", \"${DEPLOYMENT_TAG}\")" --network=ic)
+          backupId=$(echo $backupOutput | sed -n 's/.*(\([0-9]*\) : nat).*/\1/p')
+          echo "Finished backup: $backupId"
+          echo "backupId=${backupId}" >> "$GITHUB_ENV"
+          dfx canister call modclub_dev getBackupCanisterId --network=ic
+
+        env:
+          DEV_ENV: dev
+
       # Deploy using dfx. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
 
@@ -108,6 +120,12 @@ jobs:
           git config user.email "actions@github.com"
           git tag $DEPLOYMENT_TAG
           git push origin $DEPLOYMENT_TAG
+
+      - name: Restore - after deployment
+        run: |
+          dfx canister call modclub_dev restore "(\"stateV2\", $backupId)" --network=ic
+        env:
+          DEV_ENV: dev
 
       - name: Notify Slack - deployment end
         run: |
