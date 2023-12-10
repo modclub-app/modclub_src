@@ -189,9 +189,16 @@ function init_qa_content() {
 # Function for quick building and deploying a specific canister
 function quick_build_and_deploy_canister() {
     local canister_name=$1
-    # Remove '_qa' suffix from canister name to form the source path
-    local modified_canister_name=${canister_name%_qa}
-    local canister_source="./src/${modified_canister_name}/main.mo" # Adjust this path as needed
+    local canister_source
+
+    # Adjust the source path based on the canister name
+    if [ "$canister_name" == "auth_qa" ]; then
+        canister_source="./src/authentication/main.mo"
+    else
+        local modified_canister_name=${canister_name%_qa}
+        canister_source="./src/${modified_canister_name}/main.mo"
+    fi
+
     local canister_output="./.dfx/local/canisters/${canister_name}/${canister_name}.wasm" # Adjust this path as needed
 
     # Prepare local environment variables for deployment
@@ -229,8 +236,14 @@ function quick_build_and_deploy_canister() {
         exit 1
     fi
 
-    # Deploy the canister after building
-    dfx canister install $canister_name --argument="($local_env)"
+    # Gzip the WASM file
+    gzip -f $canister_output
+
+    # The gzipped file will have a .gz extension
+    local canister_output_gzipped="${canister_output}.gz"
+
+    # Deploy the gzipped canister
+    dfx canister install --wasm $canister_output_gzipped --mode upgrade $canister_name --argument="($local_env)"
 }
 
 # Function to quick build and deploy all QA canisters
@@ -279,14 +292,33 @@ function deploy_specific_canister() {
   esac
 }
 
+# Function to check if the canister build directories exist
+function check_canister_directories() {
+    local canisters=("modclub_qa" "rs_qa" "vesting_qa" "auth_qa") # Add all your canister names here
+
+    for canister in "${canisters[@]}"; do
+        if [ ! -d "./.dfx/local/canisters/${canister}" ]; then
+            echo "Directory for canister ${canister} not found. Please run a regular up_infra first."
+            return 1
+        fi
+    done
+
+    return 0
+}
+
 # Main execution
 if [ "$#" -eq 1 ]; then
     if [ "$1" == "--quick" ]; then
-        echo "Quick building and deploying all canisters..."
-        create_qa_canisters
-        deploy_quick_qa_canisters
-        init_qa_canisters
-        init_qa_content
+        echo "Checking canister directories for quick build..."
+        if check_canister_directories; then
+            echo "Quick building and deploying all canisters..."
+            create_qa_canisters
+            deploy_quick_qa_canisters
+            init_qa_canisters
+            init_qa_content
+        else
+            exit 1
+        fi
     else
         CANISTER_NAME=$1
         echo "Deploying specific canister: $CANISTER_NAME"
