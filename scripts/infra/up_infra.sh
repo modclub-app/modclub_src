@@ -189,7 +189,9 @@ function init_qa_content() {
 # Function for quick building and deploying a specific canister
 function quick_build_and_deploy_canister() {
     local canister_name=$1
-    local canister_source="./src/${canister_name}/main.mo" # Adjust this path as needed
+    # Remove '_qa' suffix from canister name to form the source path
+    local modified_canister_name=${canister_name%_qa}
+    local canister_source="./src/${modified_canister_name}/main.mo" # Adjust this path as needed
     local canister_output="./.dfx/local/canisters/${canister_name}/${canister_name}.wasm" # Adjust this path as needed
 
     # Prepare local environment variables for deployment
@@ -290,8 +292,6 @@ if [ "$#" -eq 1 ]; then
         echo "Deploying specific canister: $CANISTER_NAME"
         create_qa_canisters
         deploy_specific_canister $CANISTER_NAME
-        init_qa_canisters
-        init_qa_content
     fi
 elif [ "$#" -eq 2 ] && [ "$2" == "--quick" ]; then
     CANISTER_NAME=$1
