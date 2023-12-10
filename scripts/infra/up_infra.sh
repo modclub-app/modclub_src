@@ -328,8 +328,6 @@ elif [ "$#" -eq 2 ] && [ "$2" == "--quick" ]; then
     echo "Quick building and deploying canister: $CANISTER_NAME"
     create_qa_canisters
     quick_build_and_deploy_canister $CANISTER_NAME
-    init_qa_canisters
-    init_qa_content
 else
     echo "Deploying all canisters using standard process"
     create_qa_canisters && deploy_qa_canisters && init_qa_canisters && init_qa_content
