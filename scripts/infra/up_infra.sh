@@ -205,6 +205,7 @@ function quick_build_and_deploy_canister() {
     local local_env=$(get_local_canisters)
 
     # Building the canister using the moc command
+    # TODO: Create a Mops parser and use that to generate the moc command
     ~/.cache/dfinity/versions/0.15.2/moc $canister_source -o $canister_output -c --debug --idl --stable-types \
     --public-metadata candid:service --public-metadata candid:args --actor-idl ./.dfx/local/canisters/idl/ \
     --actor-alias $canister_name $(dfx canister id $canister_name) \
