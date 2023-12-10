@@ -186,5 +186,123 @@ function init_qa_content() {
   log "Content has been created successfully."
 }
 
-create_qa_canisters && deploy_qa_canisters && init_qa_canisters && init_qa_content
+# Function for quick building and deploying a specific canister
+function quick_build_and_deploy_canister() {
+    local canister_name=$1
+    local canister_source="./src/${canister_name}/main.mo" # Adjust this path as needed
+    local canister_output="./.dfx/local/canisters/${canister_name}/${canister_name}.wasm" # Adjust this path as needed
+
+    # Prepare local environment variables for deployment
+    local local_env=$(get_local_canisters)
+
+    # Building the canister using the moc command
+    ~/.cache/dfinity/versions/0.15.2/moc $canister_source -o $canister_output -c --debug --idl --stable-types \
+    --public-metadata candid:service --public-metadata candid:args --actor-idl ./.dfx/local/canisters/idl/ \
+    --actor-alias $canister_name $(dfx canister id $canister_name) \
+    --package base .mops/base@0.9.7/src \
+    --package uuid .mops/_github/uuid#v0.2.0/src \
+    --package encoding .mops/_github/encoding#v0.3.1/src \
+    --package array .mops/_github/array#v0.1.1/src \
+    --package io .mops/_github/io#v0.3.1/src \
+    --package crypto .mops/_github/crypto#v0.2.0/src \
+    --package rand .mops/_github/rand#v0.2.2/src \
+    --package json .mops/_github/json#v0.2.0/src \
+    --package parser-combinators .mops/_github/parser-combinators#v0.1.1/src \
+    --package serde .mops/serde@2.0.4/src \
+    --package itertools .mops/itertools@0.1.2/src \
+    --package candid .mops/candid@1.0.2/src \
+    --package xtended-numbers .mops/xtended-numbers@0.2.1/src \
+    --package map .mops/map@8.1.0/src \
+    --package motoko-sequence .mops/_github/motoko-sequence#master@366c4191d856ed4842267f5ab89d7222ed2d71d0/src \
+    --package motoko-matchers .mops/_github/motoko-matchers#master@3dac8a071b69e4e651b25a7d9683fe831eb7cffd/src \
+    --package backup .mops/backup@1.1.1/src \
+    --package linked-list .mops/linked-list@0.1.0/src \
+    --package http-types .mops/http-types@1.0.0/src \
+    --package motoko-datetime .mops/_github/motoko-datetime#v0.1.1/src \
+    -v --max-stable-pages 786432 -no-check-ir
+
+    # Check if build was successful
+    if [ $? -ne 0 ]; then
+        echo "Build failed for canister $canister_name"
+        exit 1
+    fi
+
+    # Deploy the canister after building
+    dfx canister install $canister_name --argument="($local_env)"
+}
+
+# Function to quick build and deploy all QA canisters
+function deploy_quick_qa_canisters() {
+    # List all your canisters here and call quick_build_and_deploy_canister for each
+    quick_build_and_deploy_canister "modclub_qa"
+    quick_build_and_deploy_canister "rs_qa"
+    quick_build_and_deploy_canister "auth_qa"
+    quick_build_and_deploy_canister "vesting_qa"
+    quick_build_and_deploy_canister "airdrop_qa"
+    # Add similar lines for other canisters
+    deploy_wallet_canister
+}
+
+# Function to deploy a specific canister
+function deploy_specific_canister() {
+  case $1 in
+    "internet_identity")
+      dfx deploy internet_identity ;;
+    "auth_qa")
+      local local_env=$(get_local_canisters)
+      dfx deploy auth_qa --argument="($local_env)" ;;
+    "wallet_qa")
+      deploy_wallet_canister ;;
+    "wallet_dev")
+      deploy_wallet_canister ;;
+    "rs_qa")
+      local local_env=$(get_local_canisters)
+      dfx deploy rs_qa --argument="($local_env)" ;;
+    "modclub_qa")
+      local local_env=$(get_local_canisters)
+      dfx deploy modclub_qa --argument="($local_env)" ;;
+    "vesting_qa")
+      deploy_vesting_canister ;;
+    "modclub_qa_assets")
+      DEV_ENV=qa dfx deploy modclub_qa_assets ;;
+    "airdrop_qa")
+      local local_env=$(get_local_canisters)
+      dfx deploy airdrop_qa --argument="($local_env)" ;;
+    "archive_qa")
+      local local_env=$(get_local_canisters)
+      dfx deploy archive_qa --argument="($local_env)" ;;
+    *)
+      echo "Unknown canister: $1"
+      exit 1 ;;
+  esac
+}
+
+# Main execution
+if [ "$#" -eq 1 ]; then
+    if [ "$1" == "--quick" ]; then
+        echo "Quick building and deploying all canisters..."
+        create_qa_canisters
+        deploy_quick_qa_canisters
+        init_qa_canisters
+        init_qa_content
+    else
+        CANISTER_NAME=$1
+        echo "Deploying specific canister: $CANISTER_NAME"
+        create_qa_canisters
+        deploy_specific_canister $CANISTER_NAME
+        init_qa_canisters
+        init_qa_content
+    fi
+elif [ "$#" -eq 2 ] && [ "$2" == "--quick" ]; then
+    CANISTER_NAME=$1
+    echo "Quick building and deploying canister: $CANISTER_NAME"
+    create_qa_canisters
+    quick_build_and_deploy_canister $CANISTER_NAME
+    init_qa_canisters
+    init_qa_content
+else
+    echo "Deploying all canisters using standard process"
+    create_qa_canisters && deploy_qa_canisters && init_qa_canisters && init_qa_content
+fi
+
 dfx identity use default # make sure to set back to default identity
