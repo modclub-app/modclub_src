@@ -380,20 +380,20 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
         };
 
         if (apiKey != lambdaKey and not (isUserAllowed(jwt, contentId!))) {
-          let msg : Blob = if (apiKey == null) {
+          let msg : Text = if (apiKey == null) {
             "401 Unauthorized - Invalid JWT";
           } else {
             "401 Unauthorized - Invalid API Key";
           };
           Helpers.logMessage(
             canistergeekLogger,
-            "User " # Principal.toText(caller) # " tried to access data with invalid JWT",
+            "Bucket - http_request - User " # Principal.toText(caller) # " tried to access data: " # msg,
             #error
           );
           return {
             status_code = 401;
             headers = _headers;
-            body = msg;
+            body = Text.encodeUtf8(msg);
             streaming_strategy = null;
           };
         };
