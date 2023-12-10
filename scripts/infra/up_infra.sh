@@ -314,8 +314,6 @@ if [ "$#" -eq 1 ]; then
             echo "Quick building and deploying all canisters..."
             create_qa_canisters
             deploy_quick_qa_canisters
-            init_qa_canisters
-            init_qa_content
         else
             exit 1
         fi
