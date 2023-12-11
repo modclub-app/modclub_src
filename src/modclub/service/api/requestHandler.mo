@@ -27,7 +27,9 @@ module RequestHandler {
     };
 
     // Extract body from request
-    // extractObjectProperties
+    let bodyJsonMap = extractObjectProperties(request.body);
+    let principalId = await extractText(bodyJsonMap, "principal_id");
+    let status = await extractText(bodyJsonMap, "status");
 
     return createHttpResponse(404, "Not implemented");
   };
@@ -145,6 +147,12 @@ module RequestHandler {
 
     // Return only the path part, excluding the query string
     return Iter.toArray<Text>(pathWithoutQuery)[0];
+  };
+
+  private func extractJson(data : Text) : JSON.JSON {
+    let x = Text.decodeUtf8(data);
+    let bodyJson : JSON.JSON = Option.get(JSON.parse(Option.get(Text.decodeUtf8(data), "{}")), #Object([]));
+    return bodyJson;
   };
 
   private func extractObjectProperties(body : Blob) : HashMap.HashMap<Text, JSON.JSON> {
