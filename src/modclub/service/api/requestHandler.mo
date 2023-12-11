@@ -147,7 +147,8 @@ module RequestHandler {
     return Iter.toArray<Text>(pathWithoutQuery)[0];
   };
 
-  private func extractObjectProperties(bodyJson : JSON.JSON) : HashMap.HashMap<Text, JSON.JSON> {
+  private func extractObjectProperties(body : Blob) : HashMap.HashMap<Text, JSON.JSON> {
+    let bodyJson : JSON.JSON = Option.get(JSON.parse(Option.get(Text.decodeUtf8(body), "{}")), #Object([]));
     switch (bodyJson) {
       case (#Object(json)) {
         return HashMap.fromIter(json.vals(), json.size(), Text.equal, Text.hash);
