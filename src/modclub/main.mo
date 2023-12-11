@@ -2913,12 +2913,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
+    logger.logMessage("http_request_update - called for url " # request.url);
     let path = RequestHandler.parseUrlAndGetPath(request.url);
-    // Log URL and Path
-    logger.logMessage("http_request_update - url: " # request.url);
-    logger.logMessage("http_request_update - path: " # path);
-    switch (path) {
-      case ("ipRegister") {
+    logger.logMessage("http_request_update - path " # path);
+    switch (request.url) {
+      case ("/ipRegister") {
         return await RequestHandler.handleIpRegister(
           request,
           caller,
@@ -2926,7 +2925,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           provider2IpRestriction
         );
       };
-      case ("pohRegister") {
+      case ("/pohRegister") {
         // Log that we received a POH registration request
         logger.logMessage("http_request_update - pohRegister called");
         return await RequestHandler.handlePohRegister(
