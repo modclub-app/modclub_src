@@ -13,25 +13,53 @@ import JSON "mo:json/JSON";
 
 import Poh "../poh/poh";
 import Types "../../types";
+import CommonTypes "../../../common/types";
 
 module RequestHandler {
 
-  public func handlePohRegister(request : Types.HttpRequest, pohEngine : Poh.PohEngine, apiKey : Text) : async Types.HttpResponse {
+  public func handlePohRegister(
+    request : Types.HttpRequest,
+    pohEngine : Poh.PohEngine,
+    apiKey : Text,
+    logger : CommonTypes.ModclubLogger
+  ) : async Types.HttpResponse {
     // Validate API key in header matches the configured API key
     let apiKeyHeader : Text = Option.get(
       getHeaderValue("x-api-key", request.headers),
       ""
     );
     if (apiKeyHeader == "" or apiKeyHeader != apiKey) {
+      // Log the error
+      logger.logError("hanglePohRegister: Invalid API key");
       return createHttpResponse(401, "Unauthorized");
     };
 
-    // Extract body from request
-    let bodyJsonMap = extractObjectProperties(request.body);
-    let principalId = await extractText(bodyJsonMap, "principal_id");
+    let bodyJsonMap = extractObjectProperties(Option.get(Text.decodeUtf8(request.body), "{}"));
     let status = await extractText(bodyJsonMap, "status");
+    let principalIdText = await extractText(bodyJsonMap, "principalId");
+    let message = await extractText(bodyJsonMap, "message");
+    let similarity = await extractNumber(bodyJsonMap, "similarity");
+    let matchedPrincipalId = await extractText(bodyJsonMap, "matchedPrincipalId");
+    // Log everything so we have details for debugging
+    logger.logMessage("Received request from poh with status: " # status # " principalId: " # principalIdText # " message: " # message # " similarity: " # similarity # " matchedPrincipalId: " # matchedPrincipalId);
 
-    return createHttpResponse(404, "Not implemented");
+    // External image id should be the principal id
+    let principalId = Principal.fromText(principalIdText);
+    let finalStatus = if (status == "SUCCESS") {
+      #pending // Set to pending so that it goes to manual review
+    } else {
+      #rejected;
+    };
+
+    let _ = pohEngine.changeChallengeTaskStatus(
+      Poh.CHALLENGE_UNIQUE_POH_ID,
+      principalId,
+      finalStatus
+    );
+
+    // TODO: Should we issue callback to providers here
+
+    return createHttpResponse(200, "OK");
   };
 
   public func handleIpRegister(
@@ -150,13 +178,12 @@ module RequestHandler {
   };
 
   private func extractJson(data : Text) : JSON.JSON {
-    let x = Text.decodeUtf8(data);
-    let bodyJson : JSON.JSON = Option.get(JSON.parse(Option.get(Text.decodeUtf8(data), "{}")), #Object([]));
+    let bodyJson : JSON.JSON = Option.get(JSON.parse(data), #Object([]));
     return bodyJson;
   };
 
-  private func extractObjectProperties(body : Blob) : HashMap.HashMap<Text, JSON.JSON> {
-    let bodyJson : JSON.JSON = Option.get(JSON.parse(Option.get(Text.decodeUtf8(body), "{}")), #Object([]));
+  private func extractObjectProperties(body : Text) : HashMap.HashMap<Text, JSON.JSON> {
+    let bodyJson : JSON.JSON = extractJson(body);
     switch (bodyJson) {
       case (#Object(json)) {
         return HashMap.fromIter(json.vals(), json.size(), Text.equal, Text.hash);
