@@ -107,13 +107,7 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git tag $DEPLOYMENT_TAG
-          git push origin $DEPLOYMENT_TAG
-
-      - name: Restore - after deployment
-        run: |
-          dfx canister call modclub_dev restore "(\"stateV2\", $backupId)" --network=ic
-        env:
-          DEV_ENV: dev
+          git push origin $DEPLOYMENT_TAGde45
 
       - name: Notify Slack - deployment end
         run: |

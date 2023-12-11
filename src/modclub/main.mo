@@ -2914,8 +2914,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
     let path = RequestHandler.parseUrlAndGetPath(request.url);
-    logger.logMessage("MODCLUB Instanse has http_request_update call:: " # path);
-
+    // Log URL and Path
+    logger.logMessage("http_request_update - url: " # request.url);
+    logger.logMessage("http_request_update - path: " # path);
     switch (path) {
       case ("ipRegister") {
         return await RequestHandler.handleIpRegister(
