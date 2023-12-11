@@ -43,7 +43,6 @@ module RequestHandler {
     // Log everything so we have details for debugging
     logger.logMessage("Received request from poh with status: " # status # " principalId: " # principalIdText # " message: " # message # " similarity: " # similarity # " matchedPrincipalId: " # matchedPrincipalId);
 
-    // External image id should be the principal id
     let principalId = Principal.fromText(principalIdText);
     let finalStatus = if (status == "SUCCESS") {
       #pending // Set to pending so that it goes to manual review
