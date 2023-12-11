@@ -4,7 +4,8 @@
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
+      "optimize": "cycles",
+      "gzip": true
     },
     "modclub_assets": {
       "frontend": {
@@ -21,7 +22,8 @@
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
+      "optimize": "cycles",
+      "gzip": true
     },
     "modclub_dev_assets": {
       "frontend": {
@@ -38,7 +40,8 @@
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
+      "optimize": "cycles",
+      "gzip": true
     },
     "modclub_qa_assets": {
       "dependencies": ["modclub_qa"],
