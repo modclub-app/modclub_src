@@ -16,8 +16,19 @@ import Types "../../types";
 
 module RequestHandler {
 
-  public func handlePohRegister(request : Types.HttpRequest, principal : Principal) : async Types.HttpResponse {
-    // Add code here to handle new endpoint - pohRegister
+  public func handlePohRegister(request : Types.HttpRequest, pohEngine : Poh.PohEngine, apiKey : Text) : async Types.HttpResponse {
+    // Validate API key in header matches the configured API key
+    let apiKeyHeader : Text = Option.get(
+      getHeaderValue("x-api-key", request.headers),
+      ""
+    );
+    if (apiKeyHeader == "" or apiKeyHeader != apiKey) {
+      return createHttpResponse(401, "Unauthorized");
+    };
+
+    // Extract body from request
+    // extractObjectProperties
+
     return createHttpResponse(404, "Not implemented");
   };
 

@@ -2920,6 +2920,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case ("ipRegister") {
         return await RequestHandler.handleIpRegister(request, caller, pohEngine, provider2IpRestriction);
       };
+      case ("pohRegister") {
+        // Log that we received a POH registration request
+        logger.logMessage("http_request_update - pohRegister called");
+        return await RequestHandler.handlePohRegister(request, pohEngine);
+      };
       case (_) {
         return RequestHandler.createHttpResponse(404, "Not Found");
       };
