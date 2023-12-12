@@ -1510,11 +1510,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
     try {
       let dataCanisterId = await storeDataInCanister(attemptId, pohDataRequest);
+
       if (pohDataRequest.offset == pohDataRequest.numOfChunks) {
+        // Associate the challenge record with the data canister's ID
+        pohEngine.updateDataCanisterId(
+          pohDataRequest.challengeId,
+          caller,
+          dataCanisterId
+        );
+
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
           await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
         } else {
-          await handlePackageCreation(caller, pohDataRequest, dataCanisterId);
+          await handlePackageCreation(caller, pohDataRequest.challengeId);
         };
       };
     } catch e {
@@ -1557,20 +1565,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
   private func handlePackageCreation(
     caller : Principal,
-    pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
-    dataCanisterId : ?Principal
+    challengeId : Text
   ) : async () {
     let _ = pohEngine.changeChallengeTaskStatus(
-      pohDataRequest.challengeId,
+      challengeId,
       caller,
       #pending
-    );
-
-    // Associate the challenge record with the data canister's ID
-    pohEngine.updateDataCanisterId(
-      pohDataRequest.challengeId,
-      caller,
-      dataCanisterId
     );
 
     // Create challenge packages for voting if applicable
@@ -2914,9 +2914,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
     logger.logMessage("http_request_update - called for url " # request.url);
-    let path = RequestHandler.parseUrlAndGetPath(request.url);
-    logger.logMessage("http_request_update - path " # path);
-    switch (request.url) {
+    let temp = RequestHandler.parseUrlAndGetPath(request);
+    logger.logMessage("http_request_update - temp " # temp);
+
+    switch (temp) {
       case ("/ipRegister") {
         return await RequestHandler.handleIpRegister(
           request,
@@ -2928,12 +2929,23 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case ("/pohRegister") {
         // Log that we received a POH registration request
         logger.logMessage("http_request_update - pohRegister called");
-        return await RequestHandler.handlePohRegister(
+        let userPrincipal = await RequestHandler.handlePohRegister(
           request,
           pohEngine,
           keyToCallLambdaForPOH,
           logger
         );
+
+        // Change this to a switch statement
+        switch (userPrincipal) {
+          case (?principal) {
+            await handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID);
+            return RequestHandler.createHttpResponse(200, "Package created for " # Principal.toText(principal));
+          };
+          case (_) {
+            return RequestHandler.createHttpResponse(500, "Internal Server Error");
+          };
+        };
       };
       case (_) {
         return RequestHandler.createHttpResponse(404, "Not Found");

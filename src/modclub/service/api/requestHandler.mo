@@ -22,7 +22,7 @@ module RequestHandler {
     pohEngine : Poh.PohEngine,
     apiKey : Text,
     logger : CommonTypes.ModclubLogger
-  ) : async Types.HttpResponse {
+  ) : async ?Principal {
     // Validate API key in header matches the configured API key
     let apiKeyHeader : Text = Option.get(
       getHeaderValue("x-api-key", request.headers),
@@ -31,7 +31,7 @@ module RequestHandler {
     if (apiKeyHeader == "" or apiKeyHeader != apiKey) {
       // Log the error
       logger.logError("hanglePohRegister: Invalid API key");
-      return createHttpResponse(401, "Unauthorized");
+      throw Error.reject("Invalid API key");
     };
 
     let bodyJsonMap = extractObjectProperties(Option.get(Text.decodeUtf8(request.body), "{}"));
@@ -44,21 +44,19 @@ module RequestHandler {
     logger.logMessage("Received request from poh with status: " # status # " principalId: " # principalIdText # " message: " # message # " similarity: " # similarity # " matchedPrincipalId: " # matchedPrincipalId);
 
     let principalId = Principal.fromText(principalIdText);
+
+    // If the POH request was successful, return the principalId for further processing
     let finalStatus = if (status == "SUCCESS") {
-      #pending // Set to pending so that it goes to manual review
+      return ?principalId;
     } else {
-      #rejected;
+      // Set the status to rejected since the user is probably registered already
+      let _ = pohEngine.changeChallengeTaskStatus(
+        Poh.CHALLENGE_UNIQUE_POH_ID,
+        principalId,
+        #rejected
+      );
+      return null;
     };
-
-    let _ = pohEngine.changeChallengeTaskStatus(
-      Poh.CHALLENGE_UNIQUE_POH_ID,
-      principalId,
-      finalStatus
-    );
-
-    // TODO: Should we issue callback to providers here
-
-    return createHttpResponse(200, "OK");
   };
 
   public func handleIpRegister(
@@ -150,30 +148,23 @@ module RequestHandler {
     return result;
   };
 
-  public func parseUrlAndGetPath(url : Text) : Text {
-    // Split the URL by slash
-    let parts = Text.split(url, #char '/');
+  public func parseUrlAndGetPath(request : Types.HttpRequest) : Text {
+    // Split the URL at 'path='
+    let parts = Iter.toArray(Text.split(request.url, #text("path=")));
 
-    // Convert the iterator to an array for easier manipulation
-    let partsArray = Iter.toArray<Text>(parts);
+    // Check if 'path=' is found and there is a part following it
+    if (Array.size(parts) > 1) {
+      let pathWithPossibleExtraParams = parts[1];
 
-    // Check if the array has at least 4 elements (protocol, empty, domain, path)
-    if (Array.size(partsArray) < 4) {
-      return ""; // No path found
+      // Further split to isolate the path value if there are additional query parameters
+      let pathParts = Iter.toArray(Text.split(pathWithPossibleExtraParams, #char '&'));
+
+      // The actual path value will be the first element of pathParts
+      let path = pathParts[0];
+      path;
+    } else {
+      request.url;
     };
-
-    // size of parts array
-    let size : Nat = Array.size(partsArray) - 3;
-
-    // Reconstruct the path from the fourth element onwards
-    let pathParts = Array.subArray(partsArray, 3, size);
-    let fullPath = Text.join("/", pathParts.vals());
-
-    // Split the path at the query string
-    let pathWithoutQuery = Text.split(fullPath, #char '?');
-
-    // Return only the path part, excluding the query string
-    return Iter.toArray<Text>(pathWithoutQuery)[0];
   };
 
   private func extractJson(data : Text) : JSON.JSON {
@@ -211,10 +202,8 @@ module RequestHandler {
       case (?#String(str)) {
         return str;
       };
-      // If no value exists or found string or json in place of number
-      // 400 error
       case (_) {
-        throw Error.reject("Expected text for property " # propertyName);
+        return "";
       };
     };
   };
