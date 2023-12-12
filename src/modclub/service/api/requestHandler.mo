@@ -30,7 +30,7 @@ module RequestHandler {
     );
     if (apiKeyHeader == "" or apiKeyHeader != apiKey) {
       // Log the error
-      logger.logError("hanglePohRegister: Invalid API key");
+      logger.logError("handlePohRegister: Invalid API key");
       throw Error.reject("Invalid API key");
     };
 

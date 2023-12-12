@@ -43,7 +43,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   var deleteContentTimer : ?TimerId = null;
 
   // This is the key used by our lambda function to access the canister
-  var lambdaKey : ?Text = ?"default";
+  stable var lambdaKey : ?Text = null;
 
   type DataCanisterState = {
     contentInfo : HashMap.HashMap<Text, Types.ContentInfo>;
@@ -379,7 +379,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
           };
         };
 
-        if (apiKey != lambdaKey and not (isUserAllowed(jwt, contentId!))) {
+        if (lambdaKey != null and apiKey != lambdaKey and not (isUserAllowed(jwt, contentId!))) {
           let msg : Text = if (apiKey == null) {
             "401 Unauthorized - Invalid JWT";
           } else {

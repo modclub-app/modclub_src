@@ -1573,6 +1573,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       #pending
     );
 
+    //TODO: We may have to move the updateDataCanisterId back here, if POH is failing
+
     // Create challenge packages for voting if applicable
     let challengePackages = pohEngine.createChallengePackageForVoting(
       caller,
@@ -2929,6 +2931,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case ("/pohRegister") {
         // Log that we received a POH registration request
         logger.logMessage("http_request_update - pohRegister called");
+
         let userPrincipal = await RequestHandler.handlePohRegister(
           request,
           pohEngine,
@@ -2936,7 +2939,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           logger
         );
 
-        // Change this to a switch statement
         switch (userPrincipal) {
           case (?principal) {
             await handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID);
