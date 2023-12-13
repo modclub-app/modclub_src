@@ -66,10 +66,10 @@ import Timer "mo:base/Timer";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import CommonTimer "../common/timer/timer";
-import Archive "./service/archive/archive";
 import ModclubBackup "./service/archive/backup";
 import Content "./service/queue/state";
 import Staking "./service/staking/staking";
+import SerializationGlobalStateUtil "./serialization/serialization_global_state";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
 
@@ -3373,9 +3373,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     #ok(true);
   };
 
-  public shared ({ caller }) func exportToArchive(stateName : Text, dataName : Text) : async Text {
-    var archiveManager = Archive.ArchiveManager(env.archive_canister_id, stateV2);
-    return await archiveManager.exportToArchive(stateName, dataName);
+  public shared ({ caller }) func toJson(fieldName : Text, dataName : Text) : async Text {
+    switch (fieldName) {
+      case ("stateV2") {
+        return SerializationGlobalStateUtil.serilize(stateV2, dataName);
+      };
+      case _ {
+        return "NotImplemented for fieldName: " # fieldName;
+      };
+    };
   };
 
   public shared ({ caller }) func getBackupCanisterId() : async Principal {

@@ -136,18 +136,6 @@
     "airdrop_qa": {
       "main": "src/airdrop/main.mo",
       "type": "motoko"
-    },
-    "archive_qa": {
-      "main": "src/archive/main.mo",
-      "type": "motoko"
-    },
-    "archive_dev": {
-      "main": "src/archive/main.mo",
-      "type": "motoko"
-    },
-    "archive": {
-      "main": "src/archive/main.mo",
-      "type": "motoko"
     }
   },
   "defaults": {

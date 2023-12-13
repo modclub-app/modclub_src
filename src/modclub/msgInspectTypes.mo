@@ -36,7 +36,6 @@ module {
     #downloadSupport : () -> (Text, Text, Nat, Nat);
     #editProviderAdmin : () -> (Principal, Principal, Text);
     #isProviderAdmin : () -> ();
-    #exportToArchive : () -> (Text, Text);
     #generateSigningKey : () -> ();
     #getActivity : () -> Bool;
     #getAdminProviderIDs : () -> ();
@@ -105,6 +104,7 @@ module {
     #submitText : () -> (Text, Text, ?Text, ?Types.Level, ?Text);
     #subscribe : () -> Types.SubscribeMessage;
     #subscribePohCallback : () -> PohTypes.SubscribePohMessage;
+    #toJson : () -> (Text, Text);
     #toggleAllowSubmission : () -> Bool;
     #transform : () -> Types.TransformArgs;
     #unregisterAdmin : () -> Text;

@@ -1,4 +1,4 @@
-canisters=("wallet" "auth" "rs" "modclub" "vesting" "airdrop" "archive")
+canisters=("wallet" "auth" "rs" "modclub" "vesting" "airdrop")
 
 function create_canisters() {
   local env=$1
