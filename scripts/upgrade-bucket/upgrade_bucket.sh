@@ -8,7 +8,7 @@ bucketIds=""
 canisterPostfix=""
 
 function get_local_canisters() {
-  echo "record { modclub_canister_id = principal \"$(dfx canister --network $network id modclub$canisterPostfix)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; rs_canister_id = principal \"$(dfx canister --network $network id rs$canisterPostfix)\"; wallet_canister_id = principal \"$(dfx canister --network $network id wallet$canisterPostfix)\"; auth_canister_id = principal \"$(dfx canister --network $network id auth$canisterPostfix)\"; vesting_canister_id = principal \"$(dfx canister --network $network id vesting$canisterPostfix)\"; archive_canister_id = principal \"$(dfx canister --network $network id archive$canisterPostfix)\";}"
+  echo "record { modclub_canister_id = principal \"$(dfx canister --network $network id modclub$canisterPostfix)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; rs_canister_id = principal \"$(dfx canister --network $network id rs$canisterPostfix)\"; wallet_canister_id = principal \"$(dfx canister --network $network id wallet$canisterPostfix)\"; auth_canister_id = principal \"$(dfx canister --network $network id auth$canisterPostfix)\"; vesting_canister_id = principal \"$(dfx canister --network $network id vesting$canisterPostfix)\"; }"
 }
 
 if [[ "$PWD" != *"scripts/upgrade-bucket"* ]]; then

@@ -37,7 +37,6 @@ function create_qa_canisters() {
   dfx canister create vesting_qa &&
   dfx canister create modclub_qa_assets &&
   dfx canister create airdrop_qa &&
-  dfx canister create archive_qa &&
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
 }
@@ -117,7 +116,7 @@ function deploy_wallet_canister() {
 }
 
 function get_local_canisters() {
-  echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"bkyz2-fmaaa-aaaaa-qaaaq-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; archive_canister_id = principal \"$(dfx canister id archive_qa)\"; }"
+  echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"bkyz2-fmaaa-aaaaa-qaaaq-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }"
 }
 
 function deploy_vesting_canister() {
@@ -142,7 +141,6 @@ function deploy_qa_canisters() {
   dfx deploy internet_identity &&
   dfx deploy rs_qa --argument="($local_env)" &&
 	dfx deploy modclub_qa --argument="($local_env)" &&
-  dfx deploy archive_qa --argument="($local_env)" &&
   generate_declarations "$DEV_ENV" &&
   node "$ROOT_DIR/scripts/build/gen_files_by_env.cjs" &&
   DEV_ENV=qa dfx deploy modclub_qa_assets &&

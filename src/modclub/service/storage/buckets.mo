@@ -341,8 +341,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   public query ({ caller }) func http_request(req : Types.HttpRequest) : async Types.HttpResponse {
     var _headers = [
       ("Content-Type", "text/html"),
-      ("Content-Disposition", "inline"),
-      ("Access-Control-Allow-Origin", "*")
+      ("Content-Disposition", "inline")
     ];
     let self : Principal = Principal.fromActor(this);
     let canisterId : Text = Principal.toText(self);
@@ -402,9 +401,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
         let info : ?Types.ContentInfo = state.contentInfo.get(contentId!);
         _headers := [
           ("Content-Type", info!.contentType),
-          ("Transfer-Encoding", "chunked"),
-          ("Content-Disposition", "inline"),
-          ("Access-Control-Allow-Origin", "*")
+          ("Content-Disposition", "inline")
         ];
         _status_code := 200;
         _streaming_strategy := ?#Callback(

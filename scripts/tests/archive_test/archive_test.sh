@@ -25,13 +25,11 @@ echo "Finished restore: $backupId"
 
 echo "====== Backup/Restore Done"
 
-dfx canister call  modclub_qa  exportToArchive '("global_state", "content")'
-content=$(dfx canister call archive_qa readData '("global_state", "content")')
+content=$(dfx canister call  modclub_qa  toJson '("stateV2", "content")')
 echo $content > test_output.txt
 node scripts/tests/archive_test/test_data.cjs content
 
 
-dfx canister call  modclub_qa  exportToArchive '("global_state", "profiles")'
-content=$(dfx canister call archive_qa readData '("global_state", "profiles")')
+content=$(dfx canister call  modclub_qa  toJson '("stateV2", "profiles")')
 echo $content > test_output.txt
 node scripts/tests/archive_test/test_data.cjs profiles
