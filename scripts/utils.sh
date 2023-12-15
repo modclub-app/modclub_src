@@ -15,20 +15,21 @@ get_canister_name_by_env() {
 }
 
 # generate canister declariations
-# generate_declarations <env>
+# generate_declarations <env> <network>
 function generate_declarations() {
   local current_dir="$(dirname "$0")"
+  local network="${2:-local}"  # Default to 'local' if not provided
   local m=$(get_canister_name_by_env "$1" "modclub")
   local w=$(get_canister_name_by_env "$1" "wallet")
   local v=$(get_canister_name_by_env "$1" "vesting")
   local r=$(get_canister_name_by_env "$1" "rs")
   local a=$(get_canister_name_by_env "$1" "airdrop")
   
-  dfx generate "$m" -v &&
-  dfx generate "$w" -v &&
-  dfx generate "$v" -v &&
-  dfx generate "$r" -v &&
-  dfx generate "$a" -v
+  dfx generate "$m" --network=$network -v &&
+  dfx generate "$w" --network=$network -v &&
+  dfx generate "$v" --network=$network -v &&
+  dfx generate "$r" --network=$network -v &&
+  dfx generate "$a" --network=$network -v
 }
 
 

@@ -15,7 +15,7 @@
     "add_tags": "git tag -a $(date \"+%Y-%m-%d-%H.%M\") -m \"Deployed by ${GITHUB_ACTOR:-$(whoami)}\" && git push --tags",
     "add_tags_prod": "git tag -a PROD-$(date \"+%Y-%m-%d-%H.%M\") -m \"Deployed to PROD by ${GITHUB_ACTOR:-$(whoami)}\" && git push --tags",
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
-    "deploy_prod_frontend": "npm run add_tags_prod && dfx build modclub --network ic && dfx generate modclub --network ic && dfx generate modclub_assets --network ic && DEV_ENV=production dfx deploy modclub_assets --network ic",
+    "deploy_prod_frontend": "export DEV_ENV=production && source ./scripts/utils.sh && generate_declarations prod ic && node scripts/build/gen_files_by_env.cjs && dfx generate modclub_assets --network ic && dfx deploy modclub_assets --network ic && npm run add_tags_prod",
     "prepare": "husky install"
   },
   "devDependencies": {
