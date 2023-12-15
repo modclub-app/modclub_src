@@ -98,20 +98,23 @@ jobs:
           dfx canister create wallet_qa
           dfx build wallet_qa
 
-      - name: Notify Slack - deployment start
-        run: |
-          export WHATS_NEW_SINCE_LAST_DEP=$(git log --no-merges --pretty=format:"%h - %an, %ar : %s" $LAST_DEPLOYMENT_TAG..HEAD)
-          node scripts/deployment/gh_deployment_notify_starts.cjs
-        env:
-          DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
-
       - name: Backup - before deployment
         run: |
           backupOutput=$(dfx canister call modclub_qa backup "(\"stateV2\", \"${DEPLOYMENT_TAG}\")" --network=ic)
-          backupId=$(echo $backupOutput | sed -n 's/.*(\([0-9]*\) : nat).*/\1/p')
-          echo "Finished backup: $backupId"
-          echo "backupId=${backupId}" >> "$GITHUB_ENV"
+          backupId_1=$(echo $backupOutput | sed -n 's/.*(\([0-9]*\) : nat).*/\1/p')
+          echo "Finished backup: $backupId_1"
+          echo "BACKUP_ID_1=${backupId_1}" >> "$GITHUB_ENV"
+          echo "BACKUP_FIELDNAME_1=stateV2" >> "$GITHUB_ENV"
+          cat $GITHUB_ENV
           dfx canister call modclub_qa getBackupCanisterId --network=ic
+
+      - name: Notify Slack - deployment start
+        run: |
+          export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"%s" $LAST_DEPLOYMENT_TAG..HEAD)
+          echo $WHATS_NEW_SINCE_LAST_DEP
+          node scripts/deployment/gh_deployment_notify_starts.cjs
+        env:
+          DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
 
       # Deploy using dfx. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
@@ -130,8 +133,6 @@ jobs:
 
       - name: Notify Slack - deployment end
         run: |
-          export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"%h - %an, %ar : %s" $LAST_DEPLOYMENT_TAG..HEAD)
-          echo $WHATS_NEW_SINCE_LAST_DEP
           node scripts/deployment/gh_deployment_notify_end.cjs
         env:
           DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}

@@ -48,8 +48,6 @@ jobs:
           LAST_DEPLOYMENT_TAG=$(git tag -l "DEV-*" | grep -E '^DEV-.*-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.[0-9]{2}$' | sort -t '-' -k4,7 | tail -n1)
           echo "LAST_DEPLOYMENT_TAG=${LAST_DEPLOYMENT_TAG}" >> "$GITHUB_ENV"
 
-          cat "$GITHUB_ENV"
-
       - name: Set Node.js 18.x
         uses: actions/setup-node@v3
         with:
@@ -87,15 +85,7 @@ jobs:
           dfx canister create wallet_dev
           dfx build wallet_dev
 
-      - name: Notify Slack - deployment start
-        run: |
-          export WHATS_NEW_SINCE_LAST_DEP=$(git log --no-merges --pretty=format:"%h - %an, %ar : %s" $LAST_DEPLOYMENT_TAG..HEAD)
-          node scripts/deployment/gh_deployment_notify_starts.cjs
-        env:
-          DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
-
       - name: Backup - before deployment
-
         run: |
           backupOutput=$(dfx canister call modclub_dev backup "(\"stateV2\", \"${DEPLOYMENT_TAG}\")" --network=ic)
           backupId=$(echo $backupOutput | sed -n 's/.*(\([0-9]*\) : nat).*/\1/p')
@@ -105,6 +95,14 @@ jobs:
 
         env:
           DEV_ENV: dev
+
+      - name: Notify Slack - deployment start
+        run: |
+          export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"%s" $LAST_DEPLOYMENT_TAG..HEAD)
+          echo $WHATS_NEW_SINCE_LAST_DEP
+          node scripts/deployment/gh_deployment_notify_starts.cjs
+        env:
+          DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
 
       # Deploy using dfx. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
@@ -129,7 +127,10 @@ jobs:
 
       - name: Notify Slack - deployment end
         run: |
-          export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"%h - %an, %ar : %s" $LAST_DEPLOYMENT_TAG..HEAD)
+          # Fetch list of merged PR titles since the last deployment
+          export WHATS_NEW_SINCE_LAST_DEP=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/pulls?state=closed&base=${LAST_DEPLOYMENT_TAG}..${{ github.sha }} \
+            | jq -r '.[].title')
           echo $WHATS_NEW_SINCE_LAST_DEP
           node scripts/deployment/gh_deployment_notify_end.cjs
         env:
