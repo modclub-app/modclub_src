@@ -287,7 +287,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
           ),
           #error
         );
-        "404 Not Found";
+        Blob.fromArray([]);
       };
     };
     let next_token : ?Types.StreamingCallbackToken = switch (
