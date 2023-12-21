@@ -14,24 +14,13 @@ export default function Claim({ toggle, userId, show }) {
     appState.decimals
   );
   const [load, setLoader] = useState(false);
-  const [claimValue, setClaimValue] = useState(pendingRewards);
 
   const [warning, setWarning] = useState(null);
-  const { modclub, vesting } = useActors();
 
-  const onFormSubmit = async () => {
-    setLoader(true);
+  const onFormSubmit = async (values: any) => {
     try {
-      const claimReq: number =
-        Number(claimValue) * Math.pow(10, Number(appState.decimals));
-      const res = await modclub.claimLockedReward(BigInt(claimReq), []);
-      if (Object.keys(res)[0] === "ok") {
-        !appState.systemBalanceLoading &&
-          dispatch({ type: "systemBalanceLoading", payload: true });
-        !appState.lockedBalanceLoading &&
-          dispatch({ type: "fetchUserLockedBalance", payload: true });
-      }
-      return { reserved: claimReq, transfer: res };
+      const { amount } = values;
+      dispatch({ type: "claimRewardsAction", payload: { amount } });
     } catch (err) {
       console.error("claimLockedReward::ERROR::", err.message);
     }
@@ -45,7 +34,7 @@ export default function Claim({ toggle, userId, show }) {
         subtitle={"Congratulation"}
         toggle={toggle}
         handleSubmit={onFormSubmit}
-        loader={load}
+        loader={!!appState.claimRewardsAction}
       >
         <div className="field">
           <div className="control">
@@ -54,10 +43,7 @@ export default function Claim({ toggle, userId, show }) {
               component="input"
               type="text"
               className={!load ? "input" : "input is-danger"}
-              initialValue={claimValue}
-              onChange={(e) => {
-                setClaimValue(e.target.value);
-              }}
+              initialValue={pendingRewards}
               validate={(value) => {
                 if (isNaN(value) || Number(value) < 0) {
                   setWarning("Incorrect amount");

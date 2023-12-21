@@ -6,16 +6,16 @@ import { useEffect, useState } from "react";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
-const UpdateTable = ({ wallet, stake, amount = 0 }) => {
+const UpdateTable = ({ activeBalance, stake, amount = 0 }) => {
   return (
     <>
       <Level className="has-text-silver px-5">
         <span>Available:</span>
-        <span className="has-text-weight-bold">{wallet}</span>
+        <span className="has-text-weight-bold">{activeBalance}</span>
       </Level>
       <Level className="has-text-silver px-5">
         <span>Available after:</span>
-        <span className="has-text-weight-bold">{wallet - amount}</span>
+        <span className="has-text-weight-bold">{activeBalance - amount}</span>
       </Level>
       <Level className="has-text-silver px-5">
         <span>Current Stake:</span>
@@ -36,20 +36,12 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
   const [inputValue, setInputValue] = useState(0);
   const [load, setLoader] = useState(false);
   const [warning, setWarning] = useState(null);
+
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     try {
       if (amount < wallet) {
-        const amounts: number =
-          Number(amount) * Math.pow(10, Number(appState.decimals));
-        const res = await modclub.stakeTokens(BigInt(amounts));
-        !appState.systemBalanceLoading &&
-          dispatch({ type: "systemBalanceLoading", payload: true });
-        !appState.personalBalanceLoading &&
-          dispatch({ type: "personalBalanceLoading", payload: true });
-        !appState.stakeBalanceLoading &&
-          dispatch({ type: "stakeBalanceLoading", payload: true });
-        return { reserved: Number(amount), transfer: res };
+        dispatch({ type: "stakeTokensAction", payload: { amount } });
       }
     } catch (error) {
       console.error("Stake Failed:", error);
@@ -62,9 +54,9 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
       show={show}
       subtitle="Congratulation!"
       toggle={toggle}
-      loader={load}
+      loader={!!appState.stakeTokensAction}
       handleSubmit={onFormSubmit}
-      updateTable={<UpdateTable wallet={wallet} stake={stake} />}
+      updateTable={<UpdateTable activeBalance={wallet} stake={stake} />}
     >
       <br />
       <div className="field">

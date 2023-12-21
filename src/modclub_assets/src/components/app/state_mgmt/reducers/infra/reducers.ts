@@ -209,6 +209,60 @@ export function reducers(state, action) {
         systemBalanceLoading,
       };
     }
+    case "accountDepositAction": {
+      return {
+        ...state,
+        accountDepositAction: action.payload,
+      };
+    }
+    case "accountWithdrawAction": {
+      return {
+        ...state,
+        accountWithdrawAction: action.payload,
+      };
+    }
+    case "stakeTokensAction": {
+      return {
+        ...state,
+        stakeTokensAction: action.payload,
+      };
+    }
+    case "unstakeTokensAction": {
+      return {
+        ...state,
+        unstakeTokensAction: action.payload,
+      };
+    }
+    case "claimRewardsAction": {
+      return {
+        ...state,
+        claimRewardsAction: action.payload,
+      };
+    }
+    case "appendNotification": {
+      return {
+        ...state,
+        notifications: [...state.notifications, action.payload],
+      };
+    }
+    case "setNotifications": {
+      return {
+        ...state,
+        notifications: action.payload,
+      };
+    }
+    case "appendError": {
+      return {
+        ...state,
+        errors: [...state.errors, action.payload],
+      };
+    }
+    case "setErrors": {
+      return {
+        ...state,
+        errors: action.payload,
+      };
+    }
     default: {
       throw Error("Unknown action: " + action.type);
     }

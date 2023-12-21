@@ -88,21 +88,7 @@ export default function Unstake({
   );
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
-    try {
-      const amounts: number = Number(amount) * Math.pow(10, Number(digit));
-      const res = await modclub.claimStakedTokens(BigInt(amounts));
-      !appState.systemBalanceLoading &&
-        dispatch({ type: "systemBalanceLoading", payload: true });
-      !appState.personalBalanceLoading &&
-        dispatch({ type: "personalBalanceLoading", payload: true });
-      !appState.stakeBalanceLoading &&
-        dispatch({ type: "stakeBalanceLoading", payload: true });
-      !appState.pendingStakeListLoading &&
-        dispatch({ type: "pendingStakeListLoading", payload: true });
-      return { reserved: Number(amount), transfer: res };
-    } catch (error) {
-      console.error("unStake Failed:", error);
-    }
+    dispatch({ type: "unstakeTokensAction", payload: { amount } });
   };
 
   return (
@@ -113,7 +99,7 @@ export default function Unstake({
       toggle={toggle}
       handleSubmit={onFormSubmit}
       button1="Submit"
-      loader={load}
+      loader={!!appState.unstakeTokensAction}
       updateTable={
         <UpdateTable
           stake={stakeBalance}

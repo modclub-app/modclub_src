@@ -1,4 +1,12 @@
-import { fetchDecimals, fetchTransactionFee } from "./tokenLedger";
+import { dropNotification, dropError, appendError } from "./internalEvents";
+import {
+  fetchDecimals,
+  fetchTransactionFee,
+  accountDepositAction,
+  accountWithdrawAction,
+  depositToBalance,
+  withdrawModeratorReward,
+} from "./tokenLedger";
 import {
   setModerationTasksLoading,
   setModerationTasksPage,
@@ -11,6 +19,7 @@ import {
   setContentCategoriesFilter,
   fetchContentCategories,
 } from "./contentFilters";
+import { claimRewardsAction, claimRewards } from "./rewards";
 
 export const getCommonReducers = (state, icContext, dispatch) => {
   const context = { state, icContext, dispatch };
@@ -49,5 +58,23 @@ export const getCommonReducers = (state, icContext, dispatch) => {
       "fetchContentCategories",
       (payload) => fetchContentCategories(context, payload),
     ],
+    [
+      "accountDepositAction",
+      (payload) => accountDepositAction(context, payload),
+    ],
+    ["depositToBalance", (payload) => depositToBalance(context, payload)],
+    [
+      "withdrawModeratorReward",
+      (payload) => withdrawModeratorReward(context, payload),
+    ],
+    [
+      "accountWithdrawAction",
+      (payload) => accountWithdrawAction(context, payload),
+    ],
+    ["claimRewardsAction", (payload) => claimRewardsAction(context, payload)],
+    ["claimRewards", (payload) => claimRewards(context, payload)],
+    ["dropNotification", (payload) => dropNotification(context, payload)],
+    ["appendError", (payload) => appendError(context, payload)],
+    ["dropError", (payload) => dropError(context, payload)],
   ]);
 };

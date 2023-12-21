@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { Switch, Route, useHistory, useLocation } from "react-router-dom";
-import { Columns } from "react-bulma-components";
+import { Columns, Notification } from "react-bulma-components";
 import NotAuthenticatedModal from "./modals/NotAuthenticated";
 import UserIncompleteModal from "./modals/UserIncompleteModal";
 import Sidebar from "./sidebar/Sidebar";
@@ -39,6 +39,8 @@ export default function ModclubApp() {
   const [rejectionReasons, setRejectionReasons] = useState<Array<String>>([]);
   const [token, setToken] = useState(null);
   const [isJwtSet, setJwt] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [error, setError] = useState(null);
   const actors = useActors();
   const { modclub, wallet, vesting, rs } = actors;
   const FILTER_ALREADY_VOTED = true;
@@ -191,6 +193,58 @@ export default function ModclubApp() {
     }
   }, [isConnected, appState.userProfile, appState.requiresSignUp]);
 
+  useEffect(() => {
+    if (isConnected && appState.accountDepositAction && wallet) {
+      dispatch({ type: "depositToBalance" });
+    }
+  }, [isConnected, appState.accountDepositAction, wallet]);
+
+  useEffect(() => {
+    if (isConnected && appState.accountWithdrawAction && modclub) {
+      dispatch({ type: "withdrawModeratorReward" });
+    }
+  }, [isConnected, appState.accountWithdrawAction, modclub]);
+
+  useEffect(() => {
+    if (isConnected && appState.stakeTokensAction && modclub) {
+      dispatch({ type: "stakeTokens" });
+    }
+  }, [isConnected, appState.stakeTokensAction, modclub]);
+
+  useEffect(() => {
+    if (isConnected && appState.unstakeTokensAction && modclub) {
+      dispatch({ type: "unstakeTokens" });
+    }
+  }, [isConnected, appState.unstakeTokensAction, modclub]);
+
+  useEffect(() => {
+    if (isConnected && appState.claimRewardsAction && modclub) {
+      dispatch({ type: "claimRewards" });
+    }
+  }, [isConnected, appState.claimRewardsAction, modclub]);
+
+  useEffect(() => {
+    if (isConnected && appState.notifications.length > 0) {
+      const notifText = appState.notifications[0];
+      setNotification(notifText);
+      setTimeout(() => {
+        setNotification(null);
+        dispatch({ type: "dropNotification", payload: notifText });
+      }, 3000);
+    }
+  }, [isConnected, appState.notifications.length]);
+
+  useEffect(() => {
+    if (isConnected && appState.errors.length > 0) {
+      const errText = appState.errors[0];
+      setError(errText);
+      setTimeout(() => {
+        setError(null);
+        dispatch({ type: "dropError", payload: errText });
+      }, 3000);
+    }
+  }, [isConnected, appState.errors.length]);
+
   const location = useLocation();
   const displayVerificationEmail = location.pathname.startsWith(
     "/app/confirm/poh/alerts/"
@@ -223,7 +277,34 @@ export default function ModclubApp() {
         style={{ position: "static" }}
       >
         <Sidebar />
-
+        {notification && (
+          <span
+            style={{
+              position: "absolute",
+              zIndex: 9999,
+              width: "100%",
+              heigh: 300,
+            }}
+          >
+            <Notification color={"success"} className="has-text-centered">
+              {notification}
+            </Notification>
+          </span>
+        )}
+        {error && (
+          <span
+            style={{
+              position: "absolute",
+              zIndex: 9999,
+              width: "100%",
+              heigh: 300,
+            }}
+          >
+            <Notification color={"danger"} className="has-text-centered">
+              {error}
+            </Notification>
+          </span>
+        )}
         <Columns.Column id="main-content" className="mt-6 pb-6">
           <Switch>
             <Route exact path="/app">

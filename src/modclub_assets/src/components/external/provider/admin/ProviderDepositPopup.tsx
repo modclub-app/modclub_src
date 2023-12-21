@@ -1,7 +1,6 @@
 import { Field } from "react-final-form";
 import { Icon, Notification } from "react-bulma-components";
 import { useEffect, useState } from "react";
-import { icrc1Transfer } from "../../../../utils/api";
 import { Principal } from "@dfinity/principal";
 import PopupModal from "../../../app/modals/PopupModal";
 import { convert_to_mod, format_token } from "../../../../utils/util";
@@ -50,29 +49,19 @@ export default function ProviderDepositPopup({ toggle, show }: DepositProps) {
   const handleDepositProvider = async (value: any) => {
     setError(null);
     setLoader(true);
-    const { reserved } = value;
+    const { amountMOD } = value;
     try {
       const amount: number =
-        Number(reserved) * Math.pow(10, Number(appState.decimals));
+        Number(amountMOD) * Math.pow(10, Number(appState.decimals));
       let subacc = await modclub.getProviderSa("RESERVE", [
         appState.selectedProvider.id,
       ]);
-      if (subacc.length == 0) {
-        subacc = [];
-      }
-      // TECH-DEBT: REMOVE/REFACTOR THIS
-      const transfer = await icrc1Transfer(
-        wallet,
-        activeProvider.meta.id,
-        BigInt(amount),
-        Principal.fromText(receiver),
-        subacc
-      );
-      !appState.personalBalanceLoading &&
-        dispatch({ type: "personalBalanceLoading", payload: true });
-      !appState.providerBalanceLoading &&
-        dispatch({ type: "providerBalanceLoading", payload: true });
-      return { reserved: Number(reserved), transfer: transfer };
+      subacc.length == 0 && (subacc = []);
+
+      dispatch({
+        type: "accountDepositAction",
+        payload: { amount, subAcc: subacc },
+      });
     } catch (err) {
       setError(err.message);
     }
@@ -142,7 +131,7 @@ export default function ProviderDepositPopup({ toggle, show }: DepositProps) {
         show={show}
         title="Deposit provider"
         subtitle="Congratulation!"
-        loader={load}
+        loader={!!appState.accountDepositAction}
         handleSubmit={handleDepositProvider}
       >
         {principal &&
@@ -154,7 +143,7 @@ export default function ProviderDepositPopup({ toggle, show }: DepositProps) {
           <div className="control">
             <div className="is-flex is-align-items-center">
               <Field
-                name="reserved"
+                name="amountMOD"
                 component="input"
                 type="number"
                 className={!load ? "input" : "input is-danger"}

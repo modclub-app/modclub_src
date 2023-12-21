@@ -107,18 +107,6 @@ export async function getAllPohTasksForAdminUsers(
   );
 }
 
-export async function claimStake(
-  modclub: modclub_types.ModClub,
-  amount: bigint
-): Promise<bigint> {
-  return trace_error(async () => {
-    let res = await modclub.claimStakedTokens(amount).catch((e) => {
-      console.log("Unstake Claim error:", e);
-    });
-    return res;
-  });
-}
-
 export async function releaseStake(
   modclub: modclub_types.ModClub,
   amount: bigint
@@ -129,66 +117,6 @@ export async function releaseStake(
     });
     return res;
   });
-}
-
-export async function withdrawModeratorReward(
-  modclub: modclub_types.ModClub,
-  amount: bigint,
-  receiver?: string
-): Promise<bigint> {
-  return trace_error(async () => {
-    let res = await modclub.withdrawModeratorReward(
-      amount,
-      receiver ? [Principal.fromText(receiver)] : []
-    );
-    return res;
-  });
-}
-
-export async function icrc1Transfer(
-  wallet: wallet_types._SERVICE,
-  wallet_name: string,
-  amount: bigint,
-  userId: Principal,
-  subAcc?: modclub_types.Subaccount,
-  from?: modclub_types.Subaccount
-): Promise<any> {
-  let walletToUse = "ii";
-  if (wallet_name === InternetIdentity.name) {
-    walletToUse = "ii";
-  } else if (wallet_name === StoicWallet.name) {
-    walletToUse = "stoic";
-  }
-
-  const acc: wallet_types.Account = {
-    owner: userId,
-    subaccount: subAcc ? [subAcc] : [],
-  };
-  const input: any = {
-    to: acc,
-    fee: [],
-    memo: [],
-    from_subaccount: from ? [from] : [],
-    created_at_time: [],
-    amount: amount,
-  };
-  if (walletToUse === "ii" || walletToUse === "stoic") {
-    try {
-      const res = await wallet.icrc1_transfer(input);
-      return res;
-    } catch (error) {
-      console.error("Transfer Failed:", error);
-      return;
-    }
-  } else {
-    try {
-      const res = await wallet.icrc1_transfer(input);
-      return res;
-    } catch (error) {
-      console.error("Transfer Failed:", error);
-      return;
-    }
-  }
 }
 
 export async function processAndUploadChunk(

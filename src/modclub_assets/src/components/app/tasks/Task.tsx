@@ -217,11 +217,20 @@ export default function Task() {
         setTask(newTask);
         setTimer();
         toggleReserveModal();
+      } else {
+        dispatch({
+          type: "appendError",
+          payload: `Error occurs for task reservation: ERROR::${res.err || ""}`,
+        });
       }
       setLoading(false);
     } catch (e) {
       setLoading(false);
       console.log("Error create Reservation:", e);
+      dispatch({
+        type: "appendError",
+        payload: `Unexpected Error occurs for task reservation: ERROR::${e.message}`,
+      });
     }
   };
 
