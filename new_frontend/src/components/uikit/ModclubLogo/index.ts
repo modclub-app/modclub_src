@@ -1,0 +1,1 @@
+export { ModclubLogo } from "./ModclubLogo";

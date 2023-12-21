@@ -29,7 +29,7 @@ for CANISTER in ${CANISTERS[@]}; do
   echo "Updating settings for $CANISTER"
   dfx canister --network ic update-settings $CANISTER --add-controller "$PRINCIPAL_ID"
   echo "Finished updating settings for $CANISTER"
-  # For modclub assets canister, additional authorize command is issued
+  # For modclub assets.depricated canister, additional authorize command is issued
   if [[ "$CANISTER" == *"assets"* ]]
   then
     echo "Authorizing principal for $CANISTER"
