@@ -91,7 +91,7 @@ jobs:
         run: |
           total_commits=$(git log --pretty=oneline $LAST_DEPLOYMENT_TAG..HEAD | wc -l | xargs)
           if [ "$total_commits" -le 20 ]; then
-              export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"Title: %s , Commit: %h" $LAST_DEPLOYMENT_TAG..HEAD | awk '/\(#?[0-9]+\)/ {p=1} p') | sed -E 's/(.*)\(#([0-9]+)\)(.*)/PR #\2 | \1\3/'
+              export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"Title: %s , Commit: %h" $LAST_DEPLOYMENT_TAG..HEAD | awk '/\(#?[0-9]+\)/ {p=1} p' | sed -E 's/(.*)\(#([0-9]+)\)(.*)/PR #\2 | \1\3/')
           else
               export WHATS_NEW_SINCE_LAST_DEP=$(
                   {
