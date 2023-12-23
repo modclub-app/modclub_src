@@ -24,7 +24,7 @@ export const DropButton: React.FC<DropButtonProps> = ({
       {title}
     </Typography>
     <div
-      className={cn("transition duration-300", {
+      className={cn("transition duration-300 pointer-events-none", {
         "rotate-45": currIndex === activeIndex,
         "rotate-0": currIndex !== activeIndex,
       })}
