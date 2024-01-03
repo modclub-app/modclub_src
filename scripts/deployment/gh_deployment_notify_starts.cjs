@@ -19,6 +19,7 @@ const backupId_1 = process.env.BACKUP_ID_1;
 const backupFieldName_1 = process.env.BACKUP_FIELDNAME_1;
 const LAST_DEPLOYMENT_TAG = process.env.LAST_DEPLOYMENT_TAG;
 const DEPLOYMENT_TAG = process.env.DEPLOYMENT_TAG;
+const CANISTER_ONLY = process.env.CANISTER_ONLY || "ALL";
 
 const template = {
   blocks: [
@@ -26,7 +27,7 @@ const template = {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*[${DEV_ENV}] Deployment(${DEPLOYMENT_TAG}) starts.* \n\n Commit: ${COMMIT_SHA}\n<https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|Check workflow>\n<https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}|View PR #${PR_NUMBER}> \n\n *What's new in the HEAD since last deployment(${LAST_DEPLOYMENT_TAG})* \n ${WHATS_NEW_SINCE_LAST_DEP} \n\n Backups:[${backupId_1} - ${backupFieldName_1}] \n`,
+        text: `*[${DEV_ENV}] Deployment (${DEPLOYMENT_TAG}) starts... (Canister:${CANISTER_ONLY})* \n\n Commit: ${COMMIT_SHA}\n<https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|Check workflow>\n<https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}|View PR #${PR_NUMBER}> \n\n *What's new in the HEAD since last deployment(${LAST_DEPLOYMENT_TAG})* \n ${WHATS_NEW_SINCE_LAST_DEP} \n\n Backups:[${backupId_1} - ${backupFieldName_1}] \n`,
       },
     },
   ],

@@ -12,6 +12,8 @@ function deploy_canisters() {
   local network=$2
   local old_modclub_inst=$3
 
+  local canister_only=${4:-ALL}
+
   export DEV_ENV=$env
   local env_vars=$(get_env_canisters_vars $env $network $old_modclub_inst)
 
@@ -27,20 +29,44 @@ function deploy_canisters() {
   local airdrop_canister_name=$(get_canister_name_by_env $env "airdrop")
 
 
-  log "Deploy ${env} Canisters..."
+  if [ "$canister_only" != "ALL" ]; then
+    log "[${env}] Only deploy $canister_only"
+  fi
 
-  dfx_deploy ${auth_canister_name} --network=${network} --argument="'(${env_vars})'" &&
-  deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
-  deploy_vesting_canister $env $network $old_modclub_inst &&
-  dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'" &&  
+  if [ "$canister_only" = "modclub_assets" ]; then
+    generate_declarations $env &&
+    node "$current_dir/../build/gen_files_by_env.cjs" &&
+    DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
+    log "${env} Canisters DEPLOYED"
+  elif [ "$canister_only" = "modclub" ]; then
+    dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'"
+  elif [ "$canister_only" = "auth" ]; then
+    dfx_deploy "${auth_canister_name}" --network="${network}" --argument="'(${env_vars})'"
+  elif [ "$canister_only" = "wallet" ]; then
+    deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity
+  elif [ "$canister_only" = "vesting" ]; then
+    deploy_vesting_canister $env $network $old_modclub_inst
+  elif [ "$canister_only" = "airdrop" ]; then
+    dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'"  
+  elif [ "$canister_only" = "rs" ]; then
+    dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'"
+  elif [ "$canister_only" = "ALL" ]; then
+    log "Deploy ${env} Canisters..."
+    dfx_deploy ${auth_canister_name} --network=${network} --argument="'(${env_vars})'" &&
+    deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
+    deploy_vesting_canister $env $network $old_modclub_inst &&
+    dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'" &&  
 
-  dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
-  dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
-  init_canisters $env &&
-  generate_declarations $env &&
-  node "$current_dir/../build/gen_files_by_env.cjs" &&
-  DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
-  log "${env} Canisters DEPLOYED"
+    dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
+    dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
+    init_canisters $env &&
+    generate_declarations $env &&
+    node "$current_dir/../build/gen_files_by_env.cjs" &&
+    DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
+    log "${env} Canisters DEPLOYED"
+  fi
+
+  
   return 0;
 }
 

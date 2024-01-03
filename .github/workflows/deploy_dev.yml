@@ -143,19 +143,8 @@ jobs:
           git tag $DEPLOYMENT_TAG
           git push origin $DEPLOYMENT_TAG
 
-      - name: Restore - after deployment
-        run: |
-          dfx canister call modclub_dev restore "(\"stateV2\", $backupId)" --network=ic
-        env:
-          DEV_ENV: dev
-
       - name: Notify Slack - deployment end
         run: |
-          # Fetch list of merged PR titles since the last deployment
-          export WHATS_NEW_SINCE_LAST_DEP=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/pulls?state=closed&base=${LAST_DEPLOYMENT_TAG}..${{ github.sha }} \
-            | jq -r '.[].title')
-          echo $WHATS_NEW_SINCE_LAST_DEP
           node scripts/deployment/gh_deployment_notify_end.cjs
         env:
           DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
