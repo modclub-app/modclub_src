@@ -10,6 +10,23 @@ on:
         type: "choice"
         options: ["yes", "no"]
 
+      CANISTER_ONLY:
+        description: "Select specific canister to deploy or 'ALL' to deploy all canisters"
+        required: false
+        default: "ALL"
+        type: "choice"
+        options:
+          [
+            "ALL",
+            "modclub_assets",
+            "modclub",
+            "auth",
+            "wallet",
+            "vesting",
+            "airdrop",
+            "rs",
+          ]
+
 jobs:
   dev-deploy:
     runs-on: ubuntu-latest
@@ -21,9 +38,11 @@ jobs:
       - name: Print branch name
         run: echo "Current branch is ${GITHUB_REF#refs/heads/}"
 
-      - name: Set BYPASS_PROMPT_YES env variable
+      - name: Set workflow_dispatch env variable
         if: github.event_name == 'workflow_dispatch'
-        run: echo "BYPASS_PROMPT_YES=${{ github.event.inputs.BYPASS_PROMPT_YES }}" >> $GITHUB_ENV
+        run: |
+          echo "BYPASS_PROMPT_YES=${{ github.event.inputs.BYPASS_PROMPT_YES }}" >> $GITHUB_ENV
+          echo "CANISTER_ONLY=${{ github.event.inputs.CANISTER_ONLY }}" >> $GITHUB_ENV
 
       - name: Generate DEPLOYMENT_TAG
         id: generate-tag
