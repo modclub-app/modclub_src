@@ -9,5 +9,5 @@ dev_env="${ENV:-qa}"
 
 printf "current DEV_ENV=${dev_env}"
 
-create_canisters $dev_env && build_canisters $dev_env
+create_canisters $dev_env && build_canisters $dev_env quick
 

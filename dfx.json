@@ -41,7 +41,6 @@
       "optimize": "cycles"
     },
     "modclub_qa_assets": {
-      "dependencies": ["modclub_qa"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },

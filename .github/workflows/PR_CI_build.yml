@@ -55,7 +55,7 @@ jobs:
         run: |
           source scripts/deployment/build_utils.sh
           source scripts/utils.sh
-          DEV_ENV=qa create_canisters qa && build_be_canisters qa
+          DEV_ENV=qa create_canisters qa && build_be_canisters_quick qa local
 
       - name: generate declaration
         run: |
@@ -71,63 +71,3 @@ jobs:
       - name: Check result
         run: |
           tree .dfx -P '*.wasm'
-
-  build-webpack:
-    runs-on: ubuntu-latest
-    environment:
-      name: ${{ github.ref_name }}
-
-    strategy:
-      matrix:
-        node-version: [18.x]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: yarn install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install
-
-        # Install dfx.
-      - name: Install dfx
-        run: |
-          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
-          dfx --version
-
-      - name: install moc
-        run: |
-          npm i ic-mops -g
-          mops -v
-          mops install
-
-      - name: dfx start
-        run: |
-          dfx start --background
-
-      - name: Build BE canisters
-        run: |
-          source scripts/deployment/build_utils.sh
-          source scripts/utils.sh
-          DEV_ENV=qa create_canisters qa && build_be_canisters qa
-
-      - name: generate declaration
-        run: |
-          source scripts/utils.sh
-          generate_declarations qa
-
-      - name: Build FE canisters
-        run: |
-          source scripts/deployment/build_utils.sh
-          source scripts/utils.sh
-          build_fe_canisters qa
-
-      - name: Webpack
-        run: |
-          NODE_ENV=qa node scripts/build/gen_files_by_env.cjs
-          NODE_ENV=qa DEPLOYMENT_TAG=test npx webpack

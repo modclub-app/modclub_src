@@ -129,6 +129,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
   authGuard.subscribe("admins");
+  admins := authGuard.setUpDefaultAdmins(
+    admins,
+    deployer,
+    Principal.fromText("aaaaa-aa"), // Just because its impossible to use this here.
+  );
 
   stable var importedProfilesStable : List.List<(Principal, Nat)> = List.nil<(Principal, Nat)>();
   private var importedProfiles = Buffer.Buffer<(Principal, Nat)>(100);

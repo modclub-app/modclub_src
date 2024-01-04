@@ -115,7 +115,7 @@ module ModSecurity {
       if (not isAdmin(initializer)) {
         admins := List.push<Principal>(initializer, admins);
       };
-      if (not isAdmin(mainActorPrincipal)) {
+      if (Text.notEqual(Principal.toText(mainActorPrincipal), "aaaaa-aa") and not isAdmin(mainActorPrincipal)) {
         admins := List.push<Principal>(mainActorPrincipal, admins);
       };
       for (admin in List.toArray(ssAdmins).vals()) {
