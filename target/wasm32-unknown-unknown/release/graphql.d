@@ -1,1 +1,0 @@
-/Users/rgovindji/Projects/modclub/target/wasm32-unknown-unknown/release/graphql.wasm: /Users/rgovindji/Projects/modclub/canisters/graphql/src/schema.graphql /Users/rgovindji/Projects/modclub/src/graphql/graphql.rs

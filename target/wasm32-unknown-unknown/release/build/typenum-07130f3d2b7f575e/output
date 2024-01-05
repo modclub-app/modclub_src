@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/rgovindji/Projects/modclub/target/wasm32-unknown-unknown/release/build/typenum-07130f3d2b7f575e/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/Users/rgovindji/Projects/modclub/target/wasm32-unknown-unknown/release/build/typenum-07130f3d2b7f575e/out/op.rs

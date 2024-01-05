@@ -20,19 +20,15 @@ import { useActors } from "../../../hooks/actors";
 import logger from "../../../utils/logger";
 import { setUserToStorage } from "../../../utils/util";
 import { KEY_LOCALSTORAGE_USER } from "../../../contexts/profile";
-import {
-  useAppState,
-  // useAppStateDispatch,
-} from "../../app/state_mgmt/context/state";
+import { useAppState } from "../../app/state_mgmt/context/state";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
   const appState = useAppState();
-  // const dispatch = useAppStateDispatch();
+
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState(null);
 
-  const [accAssociation, setAccAssociation] = useState(false);
   const [accAssocMetadata, setAccAssocMetadata] = useState(null);
   const [assocSourseLink, setAssocSourseLink] = useState("");
   const modclub = useActors().modclub;
@@ -45,36 +41,6 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       history.push("/app");
     }
   }, [appState.userProfile, history]);
-
-  const associateAccount = async () => {
-    setAccAssociation(true);
-    let data = await getAccAssocMetadata(modclub);
-    setAccAssocMetadata(data);
-    const localAssociationRedirect =
-      "http://localhost:8080/?canisterId=" +
-      process.env.MODCLUB_ASSET_OLD_CANISTER_ID +
-      "#/account-associate/" +
-      data.hash +
-      "/" +
-      data.targetCanister +
-      "/" +
-      window.location.search.replace("?canisterId=", "");
-    const icAssociationRedirect =
-      "https://" +
-      process.env.MODCLUB_ASSET_OLD_CANISTER_ID +
-      ".raw.ic0.app/#/account-associate/" +
-      data.hash +
-      "/" +
-      data.targetCanister +
-      "/" +
-      window.location.hostname;
-    setAssocSourseLink(
-      process.env.DFX_NETWORK == "local"
-        ? localAssociationRedirect
-        : icAssociationRedirect
-    );
-    setAccAssociation(false);
-  };
 
   const onFormSubmit = async (values: any) => {
     const { username, email } = values;
@@ -129,103 +95,59 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
           <Block>
             <Card>
               <Card.Content>
-                {accAssociation && (
-                  <Modal show={true} showClose={false}>
-                    <div className="loader is-loading p-5"></div>
-                  </Modal>
-                )}
-                {accAssocMetadata ? (
-                  <>
-                    <Block>
-                      <Heading textAlign="center" subtitle>
-                        To migrate your Account you will be required to login to
-                        your previous Modclub account.
-                      </Heading>
-                    </Block>
-                    <Block textAlign="center">
-                      <a href={assocSourseLink} target="_blank">
-                        <Button color="primary" size="large">
-                          Confirm
-                        </Button>
-                      </a>
-                    </Block>
-                  </>
-                ) : (
-                  <Card.Content className="level">
-                    <Heading marginless subtitle>
-                      Have an existing Modclub account ?
-                    </Heading>
-                    <Button
-                      color="primary"
-                      onClick={associateAccount}
-                      disabled={!modclub}
-                    >
-                      Migrate Account
-                    </Button>
-                  </Card.Content>
-                )}
+                <Heading textAlign="center">{instructionText}</Heading>
+                <Form
+                  onSubmit={onFormSubmit}
+                  render={({ handleSubmit, values }) => (
+                    <form onSubmit={handleSubmit}>
+                      <div className="field">
+                        <div className="control has-icons-left">
+                          <Field
+                            name="username"
+                            component="input"
+                            type="text"
+                            className="input is-medium"
+                            placeholder="Username"
+                          />
+                          <Icon align="left">
+                            <span className="material-icons">person</span>
+                          </Icon>
+                        </div>
+                      </div>
+                      <div className="field">
+                        <div className="control has-icons-left">
+                          <Field
+                            name="email"
+                            component="input"
+                            type="text"
+                            placeholder="Email (Optional)"
+                            className="input is-medium"
+                          />
+                          <Icon align="left">
+                            <span className="material-icons">email</span>
+                          </Icon>
+                        </div>
+                      </div>
+                      <div className="has-text-centered">
+                        Please provide your email in order to receive email
+                        alerts
+                      </div>
+                      <Button
+                        type="submit"
+                        disabled={!values.username || submitting}
+                        size="large"
+                        color="primary"
+                        fullwidth
+                        value="submit"
+                        className={submitting ? "is-loading" : ""}
+                      >
+                        Submit
+                      </Button>
+                    </form>
+                  )}
+                />
               </Card.Content>
             </Card>
-          </Block>
-          <Block></Block>
-          <Block>
-            {!accAssocMetadata && (
-              <Card>
-                <Card.Content>
-                  <Heading textAlign="center">{instructionText}</Heading>
-                  <Form
-                    onSubmit={onFormSubmit}
-                    render={({ handleSubmit, values }) => (
-                      <form onSubmit={handleSubmit}>
-                        <div className="field">
-                          <div className="control has-icons-left">
-                            <Field
-                              name="username"
-                              component="input"
-                              type="text"
-                              className="input is-medium"
-                              placeholder="Username"
-                            />
-                            <Icon align="left">
-                              <span className="material-icons">person</span>
-                            </Icon>
-                          </div>
-                        </div>
-                        <div className="field">
-                          <div className="control has-icons-left">
-                            <Field
-                              name="email"
-                              component="input"
-                              type="text"
-                              placeholder="Email (Optional)"
-                              className="input is-medium"
-                            />
-                            <Icon align="left">
-                              <span className="material-icons">email</span>
-                            </Icon>
-                          </div>
-                        </div>
-                        <div className="has-text-centered">
-                          Please provide your email in order to receive email
-                          alerts
-                        </div>
-                        <Button
-                          type="submit"
-                          disabled={!values.username || submitting}
-                          size="large"
-                          color="primary"
-                          fullwidth
-                          value="submit"
-                          className={submitting ? "is-loading" : ""}
-                        >
-                          Submit
-                        </Button>
-                      </form>
-                    )}
-                  />
-                </Card.Content>
-              </Card>
-            )}
           </Block>
         </Columns.Column>
       </Columns>

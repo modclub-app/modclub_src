@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/rgovindji/Projects/modclub/target/release/build/typenum-c8614dd907035996/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/Users/rgovindji/Projects/modclub/target/release/build/typenum-c8614dd907035996/out/op.rs

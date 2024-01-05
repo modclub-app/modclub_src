@@ -142,8 +142,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private var importedProviders = Buffer.Buffer<Principal>(100);
 
   stable var accountsAssociationsStable : List.List<(Principal, Principal)> = List.nil<(Principal, Principal)>();
-  private var accountsAssocHashes = HashMap.HashMap<Text, Principal>(1, Text.equal, Text.hash);
-  private var assocVerificationHashes = HashMap.HashMap<Text, (Principal, Text)>(1, Text.equal, Text.hash);
 
   stable var migrationAirdropWhitelistStable : List.List<(Principal, Bool)> = List.nil<(Principal, Bool)>();
   private var migrationAirdropWhitelist = Buffer.Buffer<(Principal, Bool)>(100);
@@ -2807,9 +2805,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
       case (#importAirdropMetadata _) { authGuard.isOldModclubInstance(caller) };
-      case (#associateAccount _) {
-        authGuard.isOldModclubInstance(caller) or authGuard.isAdmin(caller);
-      };
       case (#addToApprovedUser _) { authGuard.isAdmin(caller) };
       case (#validate _) { authGuard.isAdmin(caller) };
       case (#translateUserPoints _) { authGuard.isAdmin(caller) };
@@ -3039,129 +3034,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     return usersAndStatsCsv;
-  };
-
-  public shared ({ caller }) func generateAssocMetadata() : async {
-    hash : Text;
-    targetCanister : Principal;
-  } {
-    let assocHash = await Helpers.generateUUID();
-    accountsAssocHashes.put(assocHash, caller);
-    return { hash = assocHash; targetCanister = Principal.fromActor(this) };
-  };
-
-  public shared ({ caller }) func validateAssocHash(assocAcc : Principal, assocHash : Text, verificationHash : Text) : async Bool {
-    // Utils.mod_assert(authGuard.isOldModclubCanister(caller), ModSecurity.AccessMode.NotPermitted);
-    switch (accountsAssocHashes.get(assocHash)) {
-      case (?associator) {
-        assocVerificationHashes.put(assocHash, (assocAcc, verificationHash));
-        return true;
-      };
-      case (_) {
-        throw Error.reject("Impossible to validateAssocHash. " # assocHash);
-      };
-    };
-  };
-
-  public shared ({ caller }) func associateAccount(assocHash : Text, profileData : Types.ImportProfile, points : Int) : async Text {
-    logger.logMessage("MODCLUB Instanse has associateAccount call:: " # debug_show assocHash # " " # debug_show profileData # " " # debug_show points);
-    let (associator, assocAccount, avh) = switch (accountsAssocHashes.get(assocHash)) {
-      case (?assoc) {
-        switch (assocVerificationHashes.get(assocHash)) {
-          case (?(assocAcc, vh)) {
-            (assoc, assocAcc, vh);
-          };
-          case (_) {
-            logger.logError("No association record found in assocVerificationHashes for " # assocHash);
-            throw Error.reject("No association record found in assocVerificationHashes for " # assocHash);
-          };
-        };
-      };
-      case (_) {
-        logger.logError("No association record found in assocVerificationHashes for " # assocHash);
-        throw Error.reject("No association record found in accountsAssocHashes for " # assocHash);
-      };
-    };
-
-    try {
-      let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
-      let associated = List.find<(Principal, Principal)>(
-        accountsAssociationsStable,
-        func((_, assocAcc)) { Principal.equal(assocAcc, assocAccount) }
-      );
-      switch (associated) {
-        case (?elem) {
-          throw Error.reject("Account " # Principal.toText(assocAccount) # " has been already associated.");
-        };
-        case (_) {};
-      };
-      let subAccs = HashMap.fromIter<Text, Blob>(
-        (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
-        Array.size(Helpers.moderatorSubaccountTypes),
-        Text.equal,
-        Text.hash
-      );
-
-      let decimals = await ledger.icrc1_decimals();
-      let modclubAPBalance = await ledger.icrc1_balance_of({
-        owner = Principal.fromActor(this);
-        subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
-      });
-      switch (modclubAPBalance) {
-        case (tokensAvailable) {
-          let amount = (ModClubParam.REQUIRED_POH_REVIEWS * ModClubParam.REWARD_PER_POH_REVIEW) * Nat.pow(10, Nat8.toNat(decimals));
-          if (tokensAvailable <= amount) {
-            logger.logError("Insufficient funds to pay for POH. tokensAvailable: " # Nat.toText(tokensAvailable) # " amount required: " # Nat.toText(amount) # " Account failed to associate " # assocHash);
-            throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
-          };
-          let _ = await ledger.icrc1_transfer({
-            from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
-            to = {
-              owner = Principal.fromActor(this);
-              subaccount = ?Constants.ICRC_POH_REWARDS_SA;
-            };
-            amount;
-            fee = null;
-            memo = null;
-            created_at_time = null;
-          });
-
-          let profile = await ModeratorManager.registerModerator(
-            associator,
-            profileData.userName,
-            null,
-            stateV2,
-            subAccs
-          );
-
-          await storageSolution.registerModerators([associator]);
-          contentQueueManager.assignUserIds2QueueId([associator]);
-          pohContentQueueManager.assignUserIds2QueueId([associator]);
-          ignore await rs.setRS(associator, 10 * RSConstants.RS_FACTOR);
-
-          let (rsValue : Int, level : RSTypes.UserLevel) = Helpers.translateUpToRs(up);
-          ignore await rs.setRS(associator, rsValue);
-
-          logger.logMessage("NEW Moderator Account has been Associated. RS Value set for associator " # Principal.toText(associator) # " = " # Int.toText(rsValue));
-        };
-        case (_) {
-          throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
-        };
-      };
-
-      accountsAssociationsStable := List.filter<(Principal, Principal)>(
-        accountsAssociationsStable,
-        func((assoc, assocAcc)) {
-          not (Principal.equal(assoc, associator) and Principal.equal(assocAcc, assocAccount));
-        }
-      );
-      accountsAssociationsStable := List.push<(Principal, Principal)>((associator, assocAccount), accountsAssociationsStable);
-
-      return avh;
-    } catch (e) {
-      logger.logError("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
-      throw Error.reject("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
-    };
   };
 
   // ------------------  AIRDROP LOGIC ------------------ \\
