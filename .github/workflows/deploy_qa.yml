@@ -119,13 +119,9 @@ jobs:
 
       - name: Backup - before deployment
         run: |
-          backupOutput=$(dfx canister call modclub_qa backup "(\"stateV2\", \"${DEPLOYMENT_TAG}\")" --network=ic)
-          backupId_1=$(echo $backupOutput | sed -n 's/.*(\([0-9]*\) : nat).*/\1/p')
-          echo "Finished backup: $backupId_1"
-          echo "BACKUP_ID_1=${backupId_1}" >> "$GITHUB_ENV"
-          echo "BACKUP_FIELDNAME_1=stateV2" >> "$GITHUB_ENV"
-          cat $GITHUB_ENV
-          dfx canister call modclub_qa getBackupCanisterId --network=ic
+          ./scripts/deployment/gh_backup.sh
+        env:
+          ENVIRONMENT: qa
 
       - name: Notify Slack - deployment start
         run: |

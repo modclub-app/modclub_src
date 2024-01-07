@@ -45,6 +45,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Generate DEPLOYMENT_TAG
+        id: generate-tag
+        run: |
+          DEPLOYMENT_TAG="PROD-$(date +'%Y-%m-%d-%H.%M')"
+          echo "DEPLOYMENT_TAG=${DEPLOYMENT_TAG}" >> "$GITHUB_ENV"
+          echo "DEPLOYMENT_TAG=${DEPLOYMENT_TAG}" >> .env
+          cat .env
+
       - name: Set inputs as env variables
         run: |
           echo "TITLE=${{ github.event.inputs.TITLE }}" >> $GITHUB_ENV
@@ -124,6 +132,19 @@ jobs:
           CANISTER: ${{ github.event.inputs.CANISTER }}
           ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
 
+      - name: Backup - before deployment
+        run: |
+          if ! ./scripts/deployment/gh_backup.sh; then
+            echo "Backup failed"
+            exit 1
+          fi
+
+          PAYLOAD="{\"text\":\"Backup [$BACKUP_ID_1 - $BACKUP_FIELDNAME_1]\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
+        env:
+          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+
       - name: Execute canister upgrade proposal script
         if: success()
         run: |
@@ -140,7 +161,6 @@ jobs:
       - name: Add GitHub Tag
         if: success()
         run: |
-          DEPLOYMENT_TAG="PROD-$(date +'%Y-%m-%d-%H.%M')"
           git tag $DEPLOYMENT_TAG
           git push origin $DEPLOYMENT_TAG
 
