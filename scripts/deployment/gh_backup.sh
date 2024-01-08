@@ -21,11 +21,11 @@ echo "Finished backup: $backupId_1"
 echo "BACKUP_ID_1=${backupId_1}" >> "$GITHUB_ENV"
 echo "BACKUP_FIELDNAME_1=stateV2" >> "$GITHUB_ENV"
 
-
-backupId_2=$(backup_modclub "contentCategories" $DEPLOYMENT_TAG "ic")
-echo "Finished backup: $backupId_2"
-echo "BACKUP_ID_2=${backupId_2}" >> "$GITHUB_ENV"
-echo "BACKUP_FIELDNAME_2=contentCategories" >> "$GITHUB_ENV"
+# TODO: After successfully deploying PR #569, please retrieve the codes below.
+# backupId_2=$(backup_modclub "contentCategories" $DEPLOYMENT_TAG "ic")
+# echo "Finished backup: $backupId_2"
+# echo "BACKUP_ID_2=${backupId_2}" >> "$GITHUB_ENV"
+# echo "BACKUP_FIELDNAME_2=contentCategories" >> "$GITHUB_ENV"
 
 
 cat $GITHUB_ENV

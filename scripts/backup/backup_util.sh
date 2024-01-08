@@ -1,4 +1,5 @@
 backup_modclub() {
+    set -x
     local data_label=$1
     local tag=$2
     local network=$3
