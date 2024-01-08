@@ -12,23 +12,23 @@ fi
 
 current_dir="$(dirname "$0")"
 source "${current_dir}/../utils.sh"
+source "${current_dir}/../backup/backup_util.sh"
 
 modclub=$(get_canister_name_by_env $ENVIRONMENT "modclub")
 
-backupOutput=$(dfx canister call $modclub backup "(\"stateV2\", \"${DEPLOYMENT_TAG}\")" --network=ic)
-pattern='^\([0-9]+ : nat\)$'
-if [[ $backupOutput =~ $pattern ]]; then
-    backupId_1=$(echo $backupOutput | sed -n 's/.*(\([0-9]*\) : nat).*/\1/p')
-    echo "Extracted backupId: $backupId"
-else
-    echo "The backupOutput does NOT match the expected pattern."
-    exit 1
-fi
+local backupId_1=$(backup_modclub "stateV2" $DEPLOYMENT_TAG "ic")
 echo "Finished backup: $backupId_1"
 echo "BACKUP_ID_1=${backupId_1}" >> "$GITHUB_ENV"
 echo "BACKUP_FIELDNAME_1=stateV2" >> "$GITHUB_ENV"
-cat $GITHUB_ENV
 
+
+local backupId_2=$(backup_modclub "contentCategories" $DEPLOYMENT_TAG "ic")
+echo "Finished backup: $backupId_2"
+echo "BACKUP_ID_2=${backupId_2}" >> "$GITHUB_ENV"
+echo "BACKUP_FIELDNAME_2=contentCategories" >> "$GITHUB_ENV"
+
+
+cat $GITHUB_ENV
 echo "============="
 BACKUP_CANISTER_ID=$(dfx canister call $modclub getBackupCanisterId --network=ic)
 echo "Backup Canister ID: $BACKUP_CANISTER_ID"

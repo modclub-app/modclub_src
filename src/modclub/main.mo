@@ -178,7 +178,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   stable let backupState = Backup.init(null);
-  var modclubBackup = ModclubBackup.ModclubBackup(backupState, stateV2);
+  var modclubBackup = ModclubBackup.ModclubBackup(backupState, stateV2, contentCategories);
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     switch (payload) {
@@ -2750,7 +2750,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     contentCategories := HashMap.fromIter<Types.CategoryId, Types.ContentCategory>(contentCategoriesStable.vals(), contentCategoriesStable.size(), Text.equal, Text.hash);
     content2Category := HashMap.fromIter<Types.ContentId, Types.CategoryId>(content2CategoryStable.vals(), content2CategoryStable.size(), Text.equal, Text.hash);
     stakingManager := Staking.StakingManager(env, stateV2);
-    modclubBackup := ModclubBackup.ModclubBackup(backupState, stateV2);
+    modclubBackup := ModclubBackup.ModclubBackup(backupState, stateV2, contentCategories);
   };
 
   //SNS generic validate function
@@ -3276,6 +3276,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           backupId,
           func(s : StateV2.State) {
             stateV2 := s;
+          }
+        );
+        return result;
+      };
+      case ("contentCategories") {
+        let result = await modclubBackup.restore_contentCategories(
+          backupId,
+          func(s : HashMap.HashMap<Types.CategoryId, Types.ContentCategory>) {
+            contentCategories := s;
           }
         );
         return result;

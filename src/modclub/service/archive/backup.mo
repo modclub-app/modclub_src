@@ -19,7 +19,8 @@ module ModclubBackup {
 
   public class ModclubBackup(
     backupState : Backup.State,
-    stateV2 : StateV2.State
+    stateV2 : StateV2.State,
+    contentCategories : HashMap.HashMap<Types.CategoryId, Types.ContentCategory>
   ) {
     let backupUtil = BackupUtil.BackupUtil(backupState);
 
@@ -29,6 +30,9 @@ module ModclubBackup {
       switch (fieldName) {
         case ("stateV2") {
           await _backup_stateV2(stateV2, tag);
+        };
+        case ("contentCategories") {
+          await _backup_contentCategories(contentCategories, tag);
         };
         case _ {
           throw Error.reject("Unsupported field name: " # fieldName);
@@ -63,6 +67,31 @@ module ModclubBackup {
         cbSetRestoredVar
       );
     };
+
+    // backup/restore contentCategories
+    func _backup_contentCategories(contentCategories : HashMap.HashMap<Types.CategoryId, Types.ContentCategory>, tag : Text) : async Nat {
+      let contentCategoriesStable = Iter.toArray(contentCategories.entries());
+      let blob = to_candid (contentCategoriesStable);
+      await backupUtil.backup_blob(blob, tag);
+    };
+
+    public func restore_contentCategories(backupId : Nat, cbSetRestoredVar : (HashMap.HashMap<Types.CategoryId, Types.ContentCategory>) -> ()) : async Result.Result<Text, Text> {
+      let blob = await backupUtil.restore_blob(backupId);
+      let stateShared : ?[(Types.CategoryId, Types.ContentCategory)] = from_candid (blob);
+
+      backupUtil.restore_helper<[(Types.CategoryId, Types.ContentCategory)], HashMap.HashMap<Types.CategoryId, Types.ContentCategory>>(
+        backupId,
+        stateShared,
+        func(s : [(Types.CategoryId, Types.ContentCategory)]) {
+          HashMap.fromIter<Types.CategoryId, Types.ContentCategory>(s.vals(), s.size(), Text.equal, Text.hash);
+        },
+        cbSetRestoredVar
+      );
+    };
+
+    // TODO:
+    // backup/restore content2Category
+    // backup/restore contentIndexes
 
   };
 };
