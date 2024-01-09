@@ -11,6 +11,7 @@ module.exports = {
       "white-gradient-color": "#FBFBFB",
       "gray-color": "#F1F1F1",
       "grey-2-color": "#dedddd",
+      "grey-3-color": "#8d8d8d",
       "black-color": "#000000",
       "black-color-hover": "#242424",
       "vivid-color": "#5651FF",
