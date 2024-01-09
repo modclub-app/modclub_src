@@ -30,7 +30,7 @@ export const DropItem: React.FC<DropItemProps> = ({
   >
     {description && (
       <Typography tag="p" size="sm">
-        {description}
+        <span dangerouslySetInnerHTML={{ __html: description }} />
       </Typography>
     )}
 
@@ -43,7 +43,7 @@ export const DropItem: React.FC<DropItemProps> = ({
             </Typography>
             <div className="pt-4">
               <Typography tag="p" size="sm">
-                {item.description}
+                <span dangerouslySetInnerHTML={{ __html: item.description }} />
               </Typography>
             </div>
           </li>

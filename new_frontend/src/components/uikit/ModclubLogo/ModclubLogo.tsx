@@ -17,7 +17,8 @@ export const ModclubLogo: React.FC<ModclubLogoProps> = ({
   iconOnly,
   adaptive,
 }) => (
-  <div className="flex items-center">
+  <div className="flex items-center relative">
+    <a className="absolute top-0 left-0 w-full h-full" href="/" />
     <ModClubLogoIcon
       height={28}
       width={28}
