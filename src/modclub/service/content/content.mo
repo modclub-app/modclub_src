@@ -7,6 +7,7 @@ import Debug "mo:base/Debug";
 import GlobalState "../../statev2";
 import Helpers "../../../common/helpers";
 import Nat "mo:base/Nat";
+import Int "mo:base/Int";
 import Order "mo:base/Order";
 import Principal "mo:base/Principal";
 import QueueManager "../queue/queue";
@@ -191,6 +192,45 @@ module ContentModule {
       index := index + 1;
     };
     buf;
+  };
+
+  public func getProviderContentSummaries(
+    providerId : Principal,
+    globalState : GlobalState.State,
+    content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>,
+    getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount
+  ) : Types.ProviderSummaries {
+    var totalRejected : Nat = 0;
+    var totalApproved : Nat = 0;
+    var totalCost : Nat = 0;
+
+    for (cid in globalState.provider2content.get0(providerId).vals()) {
+      let voteCount = getVoteCount(cid, ?providerId);
+      switch (getContentPlus(cid, ?providerId, voteCount, globalState, content2Category)) {
+        case (?cp) {
+          let taskCost = cp.receipt.cost;
+          let requiredVotes = cp.voteParameters.requiredVotes;
+          let oneVoteCost = Option.get(Nat.fromText(Int.toText(taskCost / requiredVotes)), 0);
+          switch (cp.status) {
+            case (#approved) {
+              totalCost += oneVoteCost * cp.voteCount;
+              totalApproved += 1;
+            };
+            case (#rejected) {
+              totalCost += oneVoteCost * cp.voteCount;
+              totalRejected += 1;
+            };
+            case (_) {};
+          };
+        };
+        case (_) {};
+      };
+    };
+    return {
+      totalApproved;
+      totalRejected;
+      totalCost;
+    };
   };
 
   public func getAllContent(

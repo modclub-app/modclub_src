@@ -2641,6 +2641,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     claimTxId;
   };
 
+  public query ({ caller }) func getProviderSummaries(providerId : Principal) : async Result.Result<Types.ProviderSummaries, Text> {
+    switch (PermissionsModule.checkProviderPermission(caller, ?providerId, stateV2)) {
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p))();
+    };
+    let contentSummaries = ContentManager.getProviderContentSummaries(
+      providerId,
+      stateV2,
+      content2Category,
+      getVoteCount
+    );
+
+    return #ok(contentSummaries);
+  };
+
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();

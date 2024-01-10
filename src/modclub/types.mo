@@ -546,4 +546,10 @@ module {
     providers : ?[Principal];
   };
 
+  public type ProviderSummaries = {
+    totalRejected : Nat;
+    totalApproved : Nat;
+    totalCost : Nat;
+  };
+
 };

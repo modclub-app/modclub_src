@@ -65,6 +65,7 @@ module {
     #getProvider : () -> Principal;
     #getProviderAdmins : () -> Principal;
     #getProviderContent : () -> (Principal, Types.ContentStatus, Nat, Nat);
+    #getProviderSummaries : () -> Principal;
     #getProviderRules : () -> ();
     #getProviderSa : () -> (Text, ?Principal);
     #getReservedByContentId : () -> Text;
