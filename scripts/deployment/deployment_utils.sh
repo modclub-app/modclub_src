@@ -53,6 +53,8 @@ function deploy_canisters() {
   elif [ "$canister_only" = "rs" ]; then
     dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'"
   elif [ "$canister_only" = "ALL" ]; then
+    set -x
+    set -e
     log "Deploy ${env} Canisters..."
     dfx_deploy ${auth_canister_name} --network=${network} --argument="'(${env_vars})'" &&
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&

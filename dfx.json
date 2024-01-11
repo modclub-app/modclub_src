@@ -125,16 +125,19 @@
       "type": "motoko"
     },
     "airdrop": {
-      "main": "src/airdrop/main.mo",
-      "type": "motoko"
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
     },
     "airdrop_dev": {
-      "main": "src/airdrop/main.mo",
-      "type": "motoko"
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
     },
     "airdrop_qa": {
-      "main": "src/airdrop/main.mo",
-      "type": "motoko"
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
     }
   },
   "defaults": {
