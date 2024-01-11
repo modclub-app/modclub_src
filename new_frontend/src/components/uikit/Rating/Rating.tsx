@@ -1,5 +1,5 @@
 import React from "react";
-import { RatingStarIcon } from "@/components/uikit";
+import { RatingStarIcon } from "../../uikit";
 
 type RatingProps = {
   rating: number;

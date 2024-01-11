@@ -1,0 +1,28 @@
+.videocam-button {
+  padding: 12px 20px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  border-radius: 24px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #494949;
+
+  background-color: #f1f1f1;
+
+  & svg {
+    margin-left: 6px;
+  }
+
+  &:hover {
+    background-color: #e7e7e7;
+  }
+}

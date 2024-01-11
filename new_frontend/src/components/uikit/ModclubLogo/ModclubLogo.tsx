@@ -1,7 +1,7 @@
 import React from "react";
 import cn from "classnames";
 import { Inter } from "next/font/google";
-import { ModClubLogoIcon } from "@/components/uikit";
+import { ModClubLogoIcon } from "../../uikit";
 
 const interFont = Inter({
   subsets: ["latin"],

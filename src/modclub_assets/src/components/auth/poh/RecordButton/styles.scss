@@ -1,0 +1,53 @@
+.record-button {
+  position: relative;
+
+  min-width: 46px;
+  height: 46px;
+
+  transition: all 0.2s;
+  border: 6px solid rgba(100, 104, 107, 0.7);
+  border-radius: 50%;
+  cursor: pointer;
+
+  background: transparent;
+
+  &:before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+
+    width: 28px;
+    height: 28px;
+    display: block;
+
+    border-radius: 50%;
+    transition: transform 0.2s ease-in-out, border-radius 0.2s ease-in-out;
+
+    background-color: #f03;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 20%);
+  }
+
+  &.__active {
+    &:before {
+      transform: scaleX(0.65) scaleY(0.65) translate3d(-21px, -21px, 0);
+      border-radius: 5px;
+    }
+  }
+
+  &.__disabled {
+    pointer-events: none;
+    opacity: 0.6;
+
+    &:before {
+      background-color: #bbb;
+    }
+  }
+
+  &:not(.__active):hover {
+    &:before {
+      transform: scaleX(1.17) scaleY(1.17) translate3d(-12px, -12px, 0);
+    }
+  }
+}

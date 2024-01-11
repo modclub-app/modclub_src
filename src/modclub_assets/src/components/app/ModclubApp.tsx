@@ -16,16 +16,20 @@ import Moderators from "./moderators/Moderators";
 import Leaderboard from "./moderators/Leaderboard";
 import AlertConfirmation from "./poh/AlertConfirmation";
 import Activity from "./profile/Activity";
-import Admin from "./admin/Admin";
-import AdminActivity from "./admin/RecentActivities";
 import { useConnect } from "@connect2icmodclub/react";
 import { useProfile } from "../../contexts/profile";
 import { refreshJwt } from "../../utils/jwt";
-import logger from "../../utils/logger";
-import * as Constants from "../../utils/constant";
 import { useActors } from "../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "./state_mgmt/context/state";
 import AdminRoute from "../common/AdminRoute/AdminRoute";
+
+// My Imports
+import { useSetLoginPrincipalId } from "./MainPage/hooks/useSetLoginPrincipalId";
+import { useFetchUserAdminTasks } from "./MainPage/hooks/useFetchUserAdminTasks";
+import { useReFetchContentModerationTasks } from "./MainPage/hooks/useReFetchContentModerationTasks";
+import { useFetchProviderBalance } from "./MainPage/hooks/useFetchProviderBalance";
+import { useReleaseUnStakedTokens } from "./MainPage/hooks/useReleaseUnStakedTokens";
+import { useFetchUserLockBlock } from "./MainPage/hooks/useFetchUserLockBlock";
 
 export default function ModclubApp() {
   const history = useHistory();
@@ -43,7 +47,6 @@ export default function ModclubApp() {
   const [error, setError] = useState(null);
   const actors = useActors();
   const { modclub, wallet, vesting, rs } = actors;
-  const FILTER_ALREADY_VOTED = true;
 
   const initialCall = async () => {
     const result = await modclub.verifyUserHumanityForModclub();
@@ -61,51 +64,12 @@ export default function ModclubApp() {
     }
   };
 
-  useEffect(() => {
-    if (isConnected && principal)
-      dispatch({ type: "setLoginPrincipalId", payload: principal });
-  }, [isConnected, principal]);
-
-  useEffect(() => {
-    if (isConnected && modclub) {
-      dispatch({ type: "fetchUserProfile" });
-      dispatch({ type: "fetchIsUserAdmin" });
-      dispatch({
-        type: "refetchContentModerationTasks",
-        payload: { FILTER_ALREADY_VOTED: FILTER_ALREADY_VOTED },
-      });
-    }
-  }, [isConnected, modclub]);
-
-  useEffect(() => {
-    if (isConnected && appState.moderationTasksLoading)
-      dispatch({
-        type: "refetchContentModerationTasks",
-        payload: { FILTER_ALREADY_VOTED: FILTER_ALREADY_VOTED },
-      });
-  }, [isConnected, appState.moderationTasksLoading]);
-
-  useEffect(() => {
-    if (isConnected && appState.providerBalanceLoading)
-      dispatch({ type: "fetchProviderBalance" });
-  }, [isConnected, appState.providerBalanceLoading]);
-
-  useEffect(() => {
-    if (isConnected && appState.releaseUnStakedLoading) {
-      dispatch({ type: "releaseUnStakedTokens" });
-    }
-  }, [isConnected, appState.releaseUnStakedLoading]);
-
-  useEffect(() => {
-    if (isConnected && vesting && appState.loginPrincipalId)
-      appState.pendingStakeListLoading &&
-        dispatch({ type: "fetchUserLockBlock" });
-  }, [
-    isConnected,
-    vesting,
-    appState.loginPrincipalId,
-    appState.pendingStakeListLoading,
-  ]);
+  useSetLoginPrincipalId();
+  useFetchUserAdminTasks();
+  useReFetchContentModerationTasks();
+  useFetchProviderBalance();
+  useReleaseUnStakedTokens();
+  useFetchUserLockBlock();
 
   useEffect(() => {
     if (isConnected && selectedProvider) {

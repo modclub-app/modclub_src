@@ -1,0 +1,72 @@
+@mixin absolute-full {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+@mixin absolute-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.video-wrap {
+  position: relative;
+  padding-bottom: 75%;
+
+  &_webcam {
+    @include absolute-full;
+    height: 100%;
+    margin: auto;
+    object-fit: fill;
+  }
+
+  &_canvas > canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  &_timer {
+    @include absolute-center;
+    top: 12px;
+    z-index: 10;
+  }
+
+  &_info {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 10;
+  }
+
+  &_group {
+    @include absolute-center;
+    z-index: 1;
+    bottom: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    & button {
+      bottom: 0 !important; // this is very bad code, it's fix CaptureButton hardcode styles;
+    }
+  }
+
+  &_preview-button {
+    position: absolute;
+    right: calc(50% + 2.5rem);
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .video-wrap {
+    &_group {
+      bottom: 8px;
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import React from "react";
 import cn from "classnames";
-import { Typography } from "@/components/uikit";
+import { Typography } from "../../uikit";
 
 type LinkProps = {
   linkText: string;

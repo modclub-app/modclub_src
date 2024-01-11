@@ -8,8 +8,8 @@ export async function setLoginPrincipalId(context, payload) {
 }
 
 export async function fetchUserProfile(context, payload) {
-  let userProfile = context.state.userProfile;
-  let requiresSignUp = context.state.requiresSignUp;
+  let { userProfile, requiresSignUp } = context.state;
+
   try {
     const actor = context.icContext.actors.modclub?.value;
     if (actor) {
