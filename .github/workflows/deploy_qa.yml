@@ -131,9 +131,14 @@ jobs:
         env:
           DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
 
-      # Deploy using dfx. Ensure you handle any configuration or environment specifics.
+      - name: DEBUG Search for Motoko compiler
+        run: |
+          tree -d /home/runner/.cache/dfinity
+
+      # Deploy using quick build. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
-        run: ./scripts/deployment/gh_actions_deploy_quick.sh
+        run: |
+          ./scripts/deployment/gh_actions_deploy_quick.sh
         env:
           DEV_ENV: qa
           OLD_MODCLUB_INSTANCE: la3yy-gaaaa-aaaah-qaiuq-cai
