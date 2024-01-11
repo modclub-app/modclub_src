@@ -123,17 +123,19 @@ jobs:
         env:
           ENVIRONMENT: qa
 
-      - name: Notify Slack - deployment start
-        run: |
-          export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"Title: %s , Commit: %h" $LAST_DEPLOYMENT_TAG..HEAD | awk '/\(#?[0-9]+\)/ {p=1} p' | sed -E 's/(.*)\(#([0-9]+)\)(.*)/PR #\2 | \1\3/')
-          echo $WHATS_NEW_SINCE_LAST_DEP
-          node scripts/deployment/gh_deployment_notify_starts.cjs
-        env:
-          DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
+      # - name: Notify Slack - deployment start
+      #   run: |
+      #     export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"Title: %s , Commit: %h" $LAST_DEPLOYMENT_TAG..HEAD | awk '/\(#?[0-9]+\)/ {p=1} p' | sed -E 's/(.*)\(#([0-9]+)\)(.*)/PR #\2 | \1\3/')
+      #     echo $WHATS_NEW_SINCE_LAST_DEP
+      #     node scripts/deployment/gh_deployment_notify_starts.cjs
+      #   env:
+      #     DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
 
       - name: DEBUG Search for Motoko compiler
         run: |
           ls -la ~/.cache/dfinity
+          dfx cache show
+          dfx cache list
 
       # Deploy using quick build. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
