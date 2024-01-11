@@ -1,3 +1,5 @@
+#!/bin/bash
+set -e
 
 dfx_deploy() {
     local cmd="dfx deploy $@"

@@ -133,7 +133,7 @@ jobs:
 
       - name: DEBUG Search for Motoko compiler
         run: |
-          tree -d ~/.cache/dfinity
+          ls -la ~/.cache/dfinity
 
       # Deploy using quick build. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
