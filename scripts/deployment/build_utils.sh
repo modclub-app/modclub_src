@@ -1,4 +1,4 @@
-canisters=("wallet" "auth" "rs" "modclub" "vesting" "airdrop")
+canisters=("wallet" "auth" "rs" "modclub" "vesting")
 
 source "scripts/deployment/deployment_utils.sh"
 
@@ -6,6 +6,10 @@ function create_canisters() {
   local env=$1
 
   dfx identity use default
+
+  local a=$(get_canister_name_by_env "$env" "airdrop")
+  dfx canister create "$a"
+
   for canister in "${canisters[@]}"; do
     local cn=$(get_canister_name_by_env "$env" "$canister")
     dfx canister create "$cn"

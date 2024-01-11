@@ -1,0 +1,55 @@
+type TokenIndex = nat32;
+type Time = int;
+type Tier = variant {
+  bronze;
+  gold;
+  none;
+  silver;
+};
+type Result_2 = variant {
+  err : text;
+  ok : text;
+};
+type Result_1 = variant {
+  err : text;
+  ok : vec NFT;
+};
+type Result = variant {
+  err : text;
+  ok : nat;
+};
+type NFT = record {
+  claimCount : nat;
+  dissolveDelay : nat;
+  lastClaim : Claim;
+  tier : Tier;
+  tokenIndex : TokenIndex;
+};
+type ENV = record {
+  auth_canister_id : principal;
+  modclub_canister_id : principal;
+  old_modclub_canister_id : principal;
+  rs_canister_id : principal;
+  vesting_canister_id : principal;
+  wallet_canister_id : principal;
+};
+type ClaimStatus = variant {
+  available;
+  notRegistered;
+  timeLocked;
+};
+type Claim = record {
+  claimStatus : ClaimStatus;
+  timeStamp : Time;
+};
+type Airdrop = service {
+  airdrop : (nat32) -> (Result_2);
+  checkUnclaimedNFTs : (text) -> (Result_1);
+  getAllNFTs : () -> (Result_1);
+  getElapsedMonths : () -> (nat) query;
+  getNFTCount : (text) -> (Result);
+  getStartTimestamp : () -> (nat) query;
+  getSubAccountZero : () -> (AccountIdentifier) query;
+};
+type AccountIdentifier = text;
+service : (ENV) -> Airdrop;
