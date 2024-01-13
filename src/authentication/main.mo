@@ -18,6 +18,8 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   let NotPermitted = "Access denied. No Permissions.";
 
   stable var admins : AuthTypes.AdminsList = List.nil<Principal>();
+  stable var secrets : AuthTypes.SecretList = List.nil<CommonTypes.Secret>();
+
   stable var subscriptions = List.nil<AuthTypes.Subscriber>();
   stable var modclubBuckets = List.nil<Principal>();
 
@@ -69,6 +71,38 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
       func() : async () { await publish("admins") }
     );
 
+  };
+
+  public shared query ({ caller }) func getSecrets() : async Result.Result<[CommonTypes.Secret], Text> {
+    Utils.mod_assert(guard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
+    #ok(List.toArray(secrets));
+  };
+
+  public shared ({ caller }) func addSecret(secret : CommonTypes.Secret) : async Result.Result<AuthTypes.SecretList, Text> {
+    var secretList = secrets;
+    if (
+      not List.some<CommonTypes.Secret>(
+        secrets,
+        func(val : CommonTypes.Secret) : Bool { secret.name == val.name }
+      )
+    ) {
+      secretList := List.push<CommonTypes.Secret>(secret, secretList);
+    };
+
+    secrets := secretList;
+    // await publish("secrets");
+    #ok(secretList);
+  };
+
+  public shared ({ caller }) func removeSecret(name : Text) : async Result.Result<AuthTypes.SecretList, Text> {
+    var secretList = secrets;
+    secretList := List.filter<CommonTypes.Secret>(
+      secretList,
+      func(val : CommonTypes.Secret) : Bool { val.name != name }
+    );
+    secrets := secretList;
+    // await publish("secrets");
+    #ok(secretList);
   };
 
   public shared query ({ caller }) func getAdmins() : async Result.Result<[Principal], Text> {
@@ -181,6 +215,8 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     switch (msg) {
       case (#registerAdmin _) { _isAdmin(caller) };
       case (#unregisterAdmin _) { _isAdmin(caller) };
+      case (#addSecret _) { _isAdmin(caller) };
+      case (#removeSecret _) { _isAdmin(caller) };
       case (#getSubscriptions _) { _isAdmin(caller) };
       case (#setModclubBuckets _) {
         guard.isModclubCanister(caller) or _isAdmin(caller);
