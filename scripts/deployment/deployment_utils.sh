@@ -36,7 +36,7 @@ function deploy_canisters() {
   fi
 
   if [ "$canister_only" = "modclub_assets" ]; then
-    generate_declarations $env &&
+    generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
     DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
@@ -64,7 +64,7 @@ function deploy_canisters() {
     dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
     dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
     init_canisters $env &&
-    generate_declarations $env &&
+    generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
     DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
@@ -338,7 +338,7 @@ function deploy_canisters_quick() {
   quick_build_and_deploy_canister "auth" ${env} ${network} "${env_vars}" "${installation_mode}" &&
   quick_build_and_deploy_canister "vesting" ${env} ${network} "${env_vars}" "${installation_mode}" &&
   deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity "${installation_mode}" &&
-  generate_declarations $env &&
+  generate_declarations $env $network &&
   DEV_ENV=$env node "$current_dir/../build/gen_files_by_env.cjs" &&
   DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} --argument="'(${env_vars})'" && return 0 ||
   error "[CRASH] ${env} ${network} ${env_vars}" && exit 1;
