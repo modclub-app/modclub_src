@@ -10,6 +10,7 @@ module {
 
   public type ConsumerPayload = {
     #admins : [Principal];
+    #secrets : [CommonTypes.Secret];
   };
 
   public type Subscriber = {

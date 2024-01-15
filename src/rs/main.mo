@@ -40,6 +40,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   let authGuard = ModSecurity.Guard(env, "RS_CANISTER");
 
   authGuard.subscribe("admins");
+  authGuard.subscribe("secrets");
 
   stable var subscriptions = List.nil<Types.Subscriber>();
 
@@ -253,6 +254,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
       deployer,
       Principal.fromActor(this)
     );
+    authGuard.subscribe("secrets");
     rsByUserId := HashMap.fromIter<Principal, Int>(rsByUserIdStable.vals(), rsByUserIdStable.size(), Principal.equal, Principal.hash);
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
     _canistergeekMonitorUD := null;

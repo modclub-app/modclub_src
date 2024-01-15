@@ -17,6 +17,7 @@ module ModSecurity {
   public class Guard(env : CommonTypes.ENV, context : Text) {
 
     var admins : List.List<Principal> = List.nil<Principal>();
+    var secrets : List.List<CommonTypes.Secret> = List.nil<CommonTypes.Secret>();
 
     public func subscribe(topic : Text) : () {
       ignore Timer.setTimer(
@@ -36,8 +37,21 @@ module ModSecurity {
             };
           };
         };
+        case (#secrets(list)) {
+          secrets := List.fromArray(list);
+        };
         case (_) {};
       };
+    };
+
+    public func getSecrets(filterName : Text) : [CommonTypes.Secret] {
+      var filterSecrets = List.filter<CommonTypes.Secret>(
+        secrets,
+        func(val : CommonTypes.Secret) : Bool {
+          Text.contains(val.name, #text filterName);
+        }
+      );
+      List.toArray(filterSecrets);
     };
 
     public func getAdmins() : [Principal] {

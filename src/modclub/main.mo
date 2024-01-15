@@ -134,6 +134,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     deployer,
     Principal.fromText("aaaaa-aa"), // Just because its impossible to use this here.
   );
+  authGuard.subscribe("secrets");
 
   stable var importedProfilesStable : List.List<(Principal, Nat)> = List.nil<(Principal, Nat)>();
   private var importedProfiles = Buffer.Buffer<(Principal, Nat)>(100);
@@ -203,6 +204,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             case (_) {};
           };
         };
+      };
+      case (#secrets(list)) {
+        authGuard.handleSubscription(payload);
       };
     };
   };
@@ -2712,6 +2716,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       deployer,
       Principal.fromActor(this)
     );
+    authGuard.subscribe("secrets");
     claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
 
     migrationAirdropWhitelist := Buffer.fromIter<(Principal, Bool)>(List.toIter<(Principal, Bool)>(migrationAirdropWhitelistStable));

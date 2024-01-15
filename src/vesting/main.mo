@@ -47,6 +47,7 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
   ignore scheduler.startScheduler();
   ignore authGuard.setUpDefaultAdmins(List.nil<Principal>(), deployer, authGuard.getCanisterId(#modclub));
   authGuard.subscribe("admins");
+  authGuard.subscribe("secrets");
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     authGuard.handleSubscription(payload);
@@ -194,6 +195,7 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
     ledger.fromPersistedStorage(persistedVestingsStorage);
 
     authGuard.subscribe("admins");
+    authGuard.subscribe("secrets");
     ignore authGuard.setUpDefaultAdmins(
       List.nil<Principal>(),
       deployer,

@@ -42,6 +42,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   private func getPublicationPayload(topic : Text) : async AuthTypes.ConsumerPayload {
     switch (topic) {
       case ("admins") { #admins(List.toArray<Principal>(admins)) };
+      case ("secrets") { #secrets(List.toArray<CommonTypes.Secret>(secrets)) };
       case _ { throw Error.reject("Unknown(malformed) subscriptin Topic.") };
     };
   };
@@ -68,7 +69,10 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
 
     ignore Timer.setTimer(
       #seconds(0),
-      func() : async () { await publish("admins") }
+      func() : async () {
+        await publish("admins");
+        await publish("secrets");
+      }
     );
 
   };
@@ -90,7 +94,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     };
 
     secrets := secretList;
-    // await publish("secrets");
+    await publish("secrets");
     #ok(secretList);
   };
 
@@ -101,7 +105,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
       func(val : CommonTypes.Secret) : Bool { val.name != name }
     );
     secrets := secretList;
-    // await publish("secrets");
+    await publish("secrets");
     #ok(secretList);
   };
 

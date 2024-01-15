@@ -154,6 +154,7 @@ module {
   public type ConsumerPayload = {
     #admins : [Principal];
     #events : [Event];
+    #secrets : [Secret];
   };
 
   public type SubscriberCallback = shared ConsumerPayload -> async ();

@@ -29,7 +29,7 @@ import Types "./types";
 shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this {
   let authGuard = ModSecurity.Guard(env, "BUCKET_CANISTER");
   authGuard.subscribe("admins");
-
+  authGuard.subscribe("secrets");
   stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
 
@@ -644,6 +644,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
       deployer,
       Principal.fromActor(this)
     );
+    authGuard.subscribe("secrets");
     state := toDataCanisterState(stateShared);
     stateShared := emptyDataCanisterSharedState();
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
