@@ -1,0 +1,13 @@
+@import "./colors.scss";
+
+body {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+
+  background-color: $white-color;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+
+# Get the name of the current branch
+current_branch=$(git symbolic-ref --short HEAD)
+# Define the main branch name (e.g., "main" or "master")
+main_branch="main"
+# Check if the current branch is the main branch
+if [ "$current_branch" = "$main_branch" ]; then
+    echo "Error: You cannot commit directly to the main branch."
+    echo "Please create a feature branch and submit a pull request for review."
+    exit 1
+fi
+
+. "$(dirname -- "$0")/_/husky.sh"
+
+npx pretty-quick --staged
+cd new_frontend && npm run lint:fix

@@ -1,0 +1,100 @@
+{
+  "airdrop": {
+    "ic": "xsojl-5aaaa-aaaam-qbceq-cai"
+  },
+  "airdrop_dev": {
+    "ic": "wyblr-7qaaa-aaaam-qbcdq-cai"
+  },
+  "airdrop_qa": {
+    "ic": "xvpp7-qyaaa-aaaam-qbcea-cai"
+  },
+  "auth": {
+    "ic": "gdtip-xiaaa-aaaah-qdbnq-cai"
+  },
+  "auth_dev": {
+    "ic": "dnoft-qqaaa-aaaah-qdbra-cai"
+  },
+  "auth_qa": {
+    "ic": "h3xck-uaaaa-aaaap-qbj7q-cai"
+  },
+  "internet_identity": {
+    "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+  },
+  "modclub": {
+    "ic": "gwuzc-waaaa-aaaah-qdboa-cai"
+  },
+  "modclub_assets": {
+    "ic": "ddmi3-laaaa-aaaah-qdbqa-cai"
+  },
+  "modclub_dev": {
+    "ic": "d7isk-4aaaa-aaaah-qdbsa-cai"
+  },
+  "modclub_dev_assets": {
+    "ic": "dyju6-ryaaa-aaaah-qdbsq-cai"
+  },
+  "modclub_old": {
+    "ic": "la3yy-gaaaa-aaaah-qaiuq-cai",
+    "staging": "oqhcr-riaaa-aaaah-qcoma-cai"
+  },
+  "modclub_old_assets": {
+    "ic": "ljyte-qiaaa-aaaah-qaiva-cai",
+    "staging": "oxgef-4qaaa-aaaah-qcomq-cai"
+  },
+  "modclub_qa": {
+    "ic": "hvyqe-cyaaa-aaaah-qdbiq-cai"
+  },
+  "modclub_qa_assets": {
+    "ic": "h433y-uqaaa-aaaah-qdbja-cai"
+  },
+  "modclub_staging": {
+    "ic": "o6fpz-kyaaa-aaaah-qcona-cai"
+  },
+  "modclub_staging_assets": {
+    "ic": "ozejn-haaaa-aaaah-qconq-cai"
+  },
+  "provider": {
+    "ic": "h4p3v-vqaaa-aaaah-qc3jq-cai"
+  },
+  "rs": {
+    "ic": "grv7w-3yaaa-aaaah-qdboq-cai"
+  },
+  "rs_dev": {
+    "ic": "vflbk-kiaaa-aaaah-qc7wq-cai"
+  },
+  "rs_qa": {
+    "ic": "vmikw-4aaaa-aaaah-qc7xa-cai"
+  },
+  "sns_governance": {
+    "ic": "xvj4b-paaaa-aaaaq-aabfa-cai"
+  },
+  "sns_index": {
+    "ic": "xaonm-oiaaa-aaaaq-aabgq-cai"
+  },
+  "sns_ledger": {
+    "ic": "xsi2v-cyaaa-aaaaq-aabfq-cai"
+  },
+  "sns_root": {
+    "ic": "x4kx5-ziaaa-aaaaq-aabeq-cai"
+  },
+  "sns_swap": {
+    "ic": "xhply-dqaaa-aaaaq-aabga-cai"
+  },
+  "vesting": {
+    "ic": "g7xs6-aiaaa-aaaah-qdbpq-cai"
+  },
+  "vesting_dev": {
+    "ic": "dkpdh-5iaaa-aaaah-qdbrq-cai"
+  },
+  "vesting_qa": {
+    "ic": "idxpf-xiaaa-aaaap-abf2a-cai"
+  },
+  "wallet": {
+    "ic": "xsi2v-cyaaa-aaaaq-aabfq-cai"
+  },
+  "wallet_dev": {
+    "ic": "vxnwt-gyaaa-aaaah-qc7vq-cai"
+  },
+  "wallet_qa": {
+    "ic": "vckh6-hqaaa-aaaah-qc7wa-cai"
+  }
+}

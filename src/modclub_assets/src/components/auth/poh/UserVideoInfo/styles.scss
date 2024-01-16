@@ -1,0 +1,28 @@
+.info {
+  position: relative;
+  cursor: pointer;
+
+  &_message {
+    position: absolute;
+    top: 28px;
+    right: 0;
+
+    padding: 12px;
+
+    max-width: 240px;
+    width: max-content;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+
+    color: #fff;
+    background-color: rgba(46, 49, 54, 0.9);
+  }
+
+  &:hover {
+    .info_message {
+      opacity: 1;
+    }
+  }
+}

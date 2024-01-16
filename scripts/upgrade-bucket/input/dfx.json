@@ -1,0 +1,9 @@
+{
+  "canisters": {},
+  "defaults": {
+    "build": {
+      "packtool": "vessel sources"
+    }
+  },
+  "version": 1
+}

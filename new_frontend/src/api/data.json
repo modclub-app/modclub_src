@@ -1,0 +1,215 @@
+{
+  "nav": {
+    "login": {
+      "text": "Log in",
+      "href": "https://wne38odgjn9.typeform.com/to/ryzRV65E"
+    },
+    "actionLink": {
+      "text": "Moderator Login",
+      "href": "https://modclub.app/#/app"
+    }
+  },
+  "greetingBlock": {
+    "title": "Verification, Made",
+    "actionWord": "Easy",
+    "description": "AI powered user verification and content moderation.",
+    "image": "assets/greeting@3x.png",
+    "imageSet": [
+      {
+        "srcSet": "assets/greeting@3x.png",
+        "media": "(min-width: 976px)",
+        "type": "image/jpeg"
+      },
+      {
+        "srcSet": "assets/greeting@2x.png",
+        "media": "(min-width: 768px)",
+        "type": "image/jpeg"
+      },
+      {
+        "srcSet": "assets/greeting@1x.png",
+        "media": "(min-width: 480px)",
+        "type": "image/jpeg"
+      }
+    ],
+    "link": {
+      "text": "Get Started",
+      "href": "https://wne38odgjn9.typeform.com/to/ryzRV65E"
+    }
+  },
+  "trustedBy": {
+    "title": "Trusted by",
+    "partnersList": ["airbnb", "google", "GitHub"]
+  },
+  "contentModeration": {
+    "subTitle": "Content Moderation",
+    "title": "Hassle-Free Content Moderation",
+    "description": "Looking for an efficient way to manage user-generated content? Modclub's content moderation tool offers customizable moderation rules and real-time notifications, at a fraction of the cost of in-house moderation. <br/><br/> Integrate with Modclub and discover cost-effective, efficient, customizable, and analytical content moderation services that protect your brand reputation and foster user trust.",
+    "image": "assets/content_moderation@3x.png",
+    "imageSet": [
+      {
+        "srcSet": "assets/content_moderation@3x.png",
+        "media": "(min-width: 976px)",
+        "type": "image/jpeg"
+      },
+      {
+        "srcSet": "assets/content_moderation@2x.png",
+        "media": "(min-width: 768px)",
+        "type": "image/jpeg"
+      },
+      {
+        "srcSet": "assets/content_moderation@1x.png",
+        "media": "(min-width: 480px)",
+        "type": "image/jpeg"
+      }
+    ],
+    "link": {
+      "text": "Book Demo",
+      "href": "https://wne38odgjn9.typeform.com/to/ryzRV65E"
+    }
+  },
+  "proofOfHumanity": {
+    "subTitle": "User Verification",
+    "title": "Proof of Humanity Bot Protection",
+    "description": "Modclub offers a Proof of Humanity user-verification service that is flexible, transferable, and seamless. With customizable challenges that can be scaled to your project's needs, you can choose the level of verification required for your users. This service helps ensure that real humans are using your platform, improving security and user experience.",
+    "image": "assets/user_verification@3x.png",
+    "imageSet": [
+      {
+        "srcSet": "assets/user_verification@3x.png",
+        "media": "(min-width: 976px)",
+        "type": "image/jpeg"
+      },
+      {
+        "srcSet": "assets/user_verification@2x.png",
+        "media": "(min-width: 768px)",
+        "type": "image/jpeg"
+      },
+      {
+        "srcSet": "assets/user_verification@1x.png",
+        "media": "(min-width: 480px)",
+        "type": "image/jpeg"
+      }
+    ],
+    "link": {
+      "text": "Book Demo",
+      "href": "https://wne38odgjn9.typeform.com/to/ryzRV65E"
+    }
+  },
+  "advantages": {
+    "title": "Reimagine online safety",
+    "description": "Eliminate the risks, costs and resource burden of in-house content moderation and user verification. ",
+    "advantagesList": [
+      {
+        "title": "Cost-Effective",
+        "image": "assets/cost_effective.png",
+        "description": "Reduce your content moderation costs with flexible pricing plans that leverage the power of decentralization, allowing you to pay only for what you use."
+      },
+      {
+        "title": "Customizable",
+        "description": "Tailor your settings to suit your unique requirements - including your platform rules, training auto-moderation, and setting user verification levels.",
+        "image": "assets/customizable.png"
+      },
+      {
+        "title": "Efficient",
+        "description": "AI filtering moderates large volumes of user-generated content with speed and accuracy.",
+        "image": "assets/ai_verified.png"
+      },
+      {
+        "title": "Analytics",
+        "image": "assets/analytics.png",
+        "description": "Powerful analytics allow you to track your moderation performance, gain insights into user behavior, and make data-driven decisions to improve your platform."
+      }
+    ]
+  },
+  "humanReview": [
+    {
+      "title": "See how Modclub has helped businesses like yours",
+      "description": "Modclub content moderation is transparent- the way it should be. Easy to setup, and now it just runs in the background. One word seamless!\n\nFirst, we collect the relevant information about the content to be verified. Second, we use automated and manual techniques to verify the content, including visual and text analysis",
+      "rating": {
+        "stars": 5,
+        "name": "Nick O’Neill CEO",
+        "image": "assets/users/karman-ventures.png"
+      }
+    }
+  ],
+  "knowMore": {
+    "title": "Know More",
+    "list": [
+      {
+        "title": "Tokenomics",
+        "description": "Modclub's tokenomics model was developed in collaboration with Quantum Economics, a research department of Bochsler Consulting. To learn more about Modclub's tokenomics model read our <a class=\"text-vivid-color underline\" href=\"https://docsend.com/view/7sxwjz8be776m77q\">Tokenomics paper</a>."
+      },
+      {
+        "title": "Whitepaper",
+        "description": "Learn more about Modclub! Read our <a class=\"text-vivid-color underline\" href=\"https://docsend.com/view/kuxk6x5pghemyrje\">Whitepaper</a>."
+      },
+      {
+        "title": "Become a Moderator",
+        "description": "Join Modclub's community moderators and help make the internet a better place. Sign up now and moderate to earn!"
+      },
+      {
+        "title": "FAQs",
+        "descriptionList": [
+          {
+            "title": "What is Modclub?",
+            "description": "Modclub is a comprehensive content moderation platform that addresses the challenges of managing user-generated content. The platform offers customizable moderation rules, real-time notifications, and powerful analytics to ensure high-quality content and community safety."
+          },
+          {
+            "title": "How does Modclub's content moderation platform work?",
+            "description": "Modclub's platform combines AI capabilities with human-powered decentralized moderation services. Our AI algorithms help identify and address potential issues in user-generated content, while our community of moderators provides the human touch necessary to maintain the quality and integrity of your platform."
+          },
+          {
+            "title": "What types of platforms can benefit from Modclub's services?",
+            "description": "Modclub's services are designed to benefit various platforms, including social media platforms, online marketplaces, community forums, and any platform that deals with user-generated content."
+          },
+          {
+            "title": "How can Modclub help protect my brand reputation?",
+            "description": "By utilizing Modclub's content moderation platform, you can ensure that your platform is moderated in a fair and unbiased manner, protecting your brand reputation by maintaining high-quality content and fostering user trust."
+          },
+          {
+            "title": "Is Modclub's moderation process customizable?",
+            "description": "Yes, Modclub offers customizable moderation rules and parameters to meet your platform's specific needs. Tailor the level of scrutiny, number of votes required, and rewards given to moderators to align with your unique requirements."
+          },
+          {
+            "title": "How does Modclub ensure privacy and security of user data?",
+            "description": "Modclub prioritizes the privacy and security of user data. Our platform adheres to strict data protection protocols and follows industry best practices to ensure the confidentiality, integrity, and availability of user information.\nTo give the moderation process added security, rewards are locked for a defined period of time before being released. During this period, developers can review the results (and the moderator's past activity) and raise any objections.\nUsers signing up for Modclub platform as moderators have to undergo a Proof of Humanity process. Data collected in the Proof of Humanity process will be deleted after a grace period of approximately 5 days to ensure users data privacy."
+          },
+          {
+            "title": "What sets Modclub apart from other content moderation solutions?",
+            "description": "Modclub distinguishes itself by combining AI capabilities with expert moderation services. AI algorithms identify potential content issues, while experienced human moderators provide the judgment and context necessary to maintain the quality and integrity of your platform. Modclub's platform is highly customizable to suit your platform's unique needs, ensuring seamless alignment with your objectives and values."
+          },
+          {
+            "title": "How do I integrate with Modclub?",
+            "description": "To get started with Modclub, simply visit our website and sign up for an account. From there, you can explore our platform, customize your moderation parameters, and begin your journey towards efficient and effective content moderation. Reach out to us for access to our easy-to-use developer SDK."
+          },
+          {
+            "title": "What does the Modclub token do?",
+            "description": "The MOD token is the core utility and governance token of Modclub's platform. It serves as a means of payment for DApp developers using Modclub's verification services and for rewarding moderators. MOD token holders who stake their tokens in the Governance canister can participate in the decision-making process."
+          },
+          {
+            "title": "How can I become a moderator on Modclub and earn MOD tokens?",
+            "description": "To become a Modclub moderator and earn MOD tokens, sign up through our platform and complete our internal Proof of Humanity process. Once approved, you can start moderating content and earn MOD tokens based on your contributions, performance, and reputation score.\nJoin Modclub's community of moderators and help make the internet a better place!"
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "copyright": "© MODCLUB Foundation 2023",
+    "address": "MODCLUB FOUNDATION Torre Advanced Building, 1st Floor Ricardo Arlas Street Panama City, Republic of Panama",
+    "policy": "Privacy Policy",
+    "social": [
+      {
+        "name": "twitter",
+        "href": "https://twitter.com/ModclubApp"
+      },
+      {
+        "name": "discord",
+        "href": "https://discord.com/invite/8zUrHd46Tf"
+      },
+      {
+        "name": "medium",
+        "href": "https://medium.com/@modclub"
+      }
+    ]
+  }
+}

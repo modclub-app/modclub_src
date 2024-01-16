@@ -1,0 +1,27 @@
+[
+  {
+    "sourceId": "John Anderson",
+    "title": "Exploring The Intricacies of The Solar System",
+    "text": "Our solar system consists of eight planets orbiting around the sun. The closest planet to the sun is Mercury, followed by Venus, Earth, and Mars."
+  },
+  {
+    "sourceId": "John Smith",
+    "title": "The Rise and Fall of Prominent Ancient Civilizations",
+    "text": "Throughout history, various civilizations have risen and fallen. The ancient Egyptians, known for their pyramids, and the Romans, with their vast empire, are just two examples."
+  },
+  {
+    "sourceId": "Emily Thompson",
+    "title": "Diverse Marine Life in Our Oceans",
+    "text": "The ocean is teeming with life, from the tiniest plankton to the enormous blue whale. Coral reefs, often referred to as the 'rainforests of the sea', are biodiverse ecosystems."
+  },
+  {
+    "sourceId": "Rebecca Davis",
+    "title": "The Era of Technological Advances and Digital Revolution",
+    "text": "The digital age has ushered in a myriad of technological advancements. Smartphones, artificial intelligence, and space exploration are all testament to human innovation."
+  },
+  {
+    "sourceId": "Alexandra Martin",
+    "title": "A Journey Through World Literature",
+    "text": "Literature provides a window into the cultures, histories, and souls of societies. From Shakespeare to Murakami, the written word transcends borders."
+  }
+]

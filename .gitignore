@@ -1,0 +1,50 @@
+# Various IDEs and Editors
+.vscode/
+.idea/
+**/*~
+.env
+# Mac OSX temporary files
+.DS_Store
+**/.DS_Store
+
+# dfx temporary files
+.dfx/
+.vessel/
+output.txt
+generated.config.json
+
+# frontend code
+node_modules/
+dist/
+
+.history/
+
+download_state.iml
+downloads/
+downloads_archive/
+
+#ignore gzipped files
+.gz
+
+#Ignore any generated wasms
+*.wasm
+
+#Ignore candid forlder
+candid/
+
+#Ignore auto gen file
+src/modclub_assets/src/declarations_by_env.ts
+src/modclub_assets/src/actors_by_env.ts
+
+#Ignore auto gen files for upgrade bucket script
+scripts/upgrade-bucket/.upgrade_bucket.sh.swp
+scripts/upgrade-bucket/canister_ids.json
+scripts/upgrade-bucket/dfx.json
+
+
+src/declarations/
+!src/declarations/wallet/
+!src/declarations/wallet/*
+.mops
+
+**/test_output*

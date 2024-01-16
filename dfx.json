@@ -1,0 +1,157 @@
+{
+  "canisters": {
+    "modclub": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432",
+      "optimize": "cycles"
+    },
+    "modclub_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
+      "type": "assets"
+    },
+    "modclub_dev": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432",
+      "optimize": "cycles"
+    },
+    "modclub_dev_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
+      "type": "assets"
+    },
+    "modclub_qa": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432",
+      "optimize": "cycles"
+    },
+    "modclub_qa_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/qa_custom_domain/well-known/"
+      ],
+      "type": "assets"
+    },
+    "wallet": {
+      "build": "",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "remote": {
+        "id": {
+          "ic": "xsi2v-cyaaa-aaaaq-aabfq-cai",
+          "local": "r7inp-6aaaa-aaaaa-aaabq-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
+    },
+    "wallet_qa": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
+    },
+    "wallet_dev": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
+    },
+    "rs": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_qa": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_dev": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "auth": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
+    "auth_dev": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
+    "auth_qa": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
+    "vesting": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "vesting_dev": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "vesting_qa": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+        }
+      },
+      "frontend": {}
+    },
+    "bucket_qa": {
+      "main": "src/modclub/service/storage/buckets.mo",
+      "type": "motoko"
+    },
+    "airdrop": {
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
+    },
+    "airdrop_dev": {
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
+    },
+    "airdrop_qa": {
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "mops sources"
+    }
+  },
+  "dfx": "0.14.3",
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "stoicbind": "127.0.0.1:3000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}

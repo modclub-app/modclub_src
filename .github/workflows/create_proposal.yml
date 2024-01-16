@@ -1,0 +1,168 @@
+name: Execute Canister Upgrade Proposal
+
+on:
+  workflow_dispatch:
+    inputs:
+      TITLE:
+        description: "Proposal Title"
+        required: true
+      ENVIRONMENT:
+        description: "Environment"
+        required: true
+        default: "prod"
+        type: "choice"
+        options:
+          - "qa"
+          - "dev"
+          - "prod"
+      SUMMARY:
+        description: "Proposal Summary"
+        type: "textarea"
+        required: true
+      CANISTER:
+        description: "Canister for Proposal"
+        required: true
+        default: "modclub"
+      NETWORK:
+        description: "Choose which network to deploy to"
+        required: true
+        default: "ic"
+        type: "choice"
+        options:
+          - "ic"
+          - "local"
+      URL:
+        description: "Proposal URL"
+        required: false
+        default: "https://modclub.ai"
+
+jobs:
+  execute-proposal:
+    runs-on: ubuntu-latest
+    name: Execute the canister upgrade proposal
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Generate DEPLOYMENT_TAG
+        id: generate-tag
+        run: |
+          DEPLOYMENT_TAG="PROD-$(date +'%Y-%m-%d-%H.%M')"
+          echo "DEPLOYMENT_TAG=${DEPLOYMENT_TAG}" >> "$GITHUB_ENV"
+          echo "DEPLOYMENT_TAG=${DEPLOYMENT_TAG}" >> .env
+          cat .env
+
+      - name: Set inputs as env variables
+        run: |
+          echo "TITLE=${{ github.event.inputs.TITLE }}" >> $GITHUB_ENV
+          echo "ENVIRONMENT=${{ github.event.inputs.ENVIRONMENT }}" >> $GITHUB_ENV
+          echo "SUMMARY=${{ github.event.inputs.SUMMARY }}" >> $GITHUB_ENV
+          echo "CANISTER=${{ github.event.inputs.CANISTER }}" >> $GITHUB_ENV
+          echo "NETWORK=${{ github.event.inputs.NETWORK }}" >> $GITHUB_ENV
+          echo "URL=${{ github.event.inputs.URL }}" >> $GITHUB_ENV
+
+      - name: Notify Slack - Starting Proposal Process
+        run: |
+          PAYLOAD="{\"text\":\"Starting proposal creation process.\\nTitle: $TITLE\\nSummary: $SUMMARY\\nCanister: $CANISTER\\nEnvironment: $ENVIRONMENT\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+          TITLE: ${{ github.event.inputs.TITLE }}
+          SUMMARY: ${{ github.event.inputs.SUMMARY }}
+          CANISTER: ${{ github.event.inputs.CANISTER }}
+          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Install Quill
+        run: |
+          OS=$(uname -s)
+          if [[ "$OS" == "Linux" ]]; then
+            QUILL="linux"
+          elif [[ "$OS" == "Darwin" ]]; then
+            QUILL="macos"
+          else
+            echo "Unknown OS!"
+            exit 1
+          fi
+
+          curl -L "https://github.com/dfinity/quill/releases/download/v0.4.2/quill-${QUILL}-x86_64" -o quill
+          chmod +x quill
+          sudo mv quill /usr/local/bin/
+
+      # Install dfx.
+      - name: Install dfx
+        run: |
+          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          dfx --version
+
+      - name: install moc
+        if: success()
+        run: |
+          npm i ic-mops -g
+          mops -v
+          mops install
+
+      - name: Set up dfx identity
+        run: |
+          mkdir -p ~/.config/dfx/identity/cicd_identity/ || exit 1
+          echo "$IC_IDENTITY_FILE_PROD" > ~/.config/dfx/identity/cicd_identity/identity.pem || exit 1
+          dfx identity use cicd_identity || exit 1
+          dfx identity get-principal
+        env:
+          IC_IDENTITY_FILE_PROD: ${{ secrets.IC_IDENTITY_FILE_PROD }}
+
+      - name: Build WASM for the Canister
+        if: success()
+        run: |
+          dfx build --network ${{ github.event.inputs.NETWORK }} ${{ github.event.inputs.CANISTER }}
+
+      - name: Notify to SlachChanel about build failure
+        if: failure()
+        run: |
+          PAYLOAD="{\"text\":\"Canister build for production upgrade proposal - FAILED.\\nCanister: $CANISTER\\nEnvironment: $ENVIRONMENT\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
+          exit 1
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+          CANISTER: ${{ github.event.inputs.CANISTER }}
+          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+
+      - name: Backup - before deployment
+        run: |
+          if ! ./scripts/deployment/gh_backup.sh; then
+            echo "Backup failed"
+            exit 1
+          fi
+
+          PAYLOAD="{\"text\":\"Backup [$BACKUP_ID_1 - $BACKUP_FIELDNAME_1]\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
+        env:
+          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+
+      - name: Execute canister upgrade proposal script
+        if: success()
+        run: |
+          node scripts/sns/canister_upgrade_proposal.cjs
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+        # Set git user configuration
+      - name: Set git user
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      # Add a tag after the proposal script runs successfully
+      - name: Add GitHub Tag
+        if: success()
+        run: |
+          git tag $DEPLOYMENT_TAG
+          git push origin $DEPLOYMENT_TAG
+
+      - name: Show success message
+        run: echo success!
