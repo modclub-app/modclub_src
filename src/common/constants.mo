@@ -43,4 +43,7 @@ module Constants {
   public let EMAIL_NOTIFICATION_USER_VERIFICATION = "user_verification_notification" : Text;
 
   public let ACCOUNT_PAYABLE_FIELD = "ACCOUNT_PAYABLE";
+
+  // Secrets prefix
+  public let SECRETS_ALLOWED_CANISTER_GEEK_CALLER = "allowed_cg_caller_";
 };

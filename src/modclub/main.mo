@@ -12,6 +12,7 @@ import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import Trie "mo:base/Trie";
 import Helpers "../common/helpers";
+import ModSecurity "../common/security/guard";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import List "mo:base/List";
@@ -61,7 +62,6 @@ import CommonTypes "../common/types";
 import Reserved "service/content/reserved";
 import Constants "../common/constants";
 import RSConstants "../rs/constants";
-import ModSecurity "../common/security/guard";
 import Timer "mo:base/Timer";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
@@ -1944,14 +1944,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public query ({ caller }) func getCanisterMetrics(
     parameters : Canistergeek.GetMetricsParameters
   ) : async ?Canistergeek.CanisterMetrics {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({ caller }) func collectCanisterMetrics() : async () {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.collectMetrics();
@@ -1960,7 +1960,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public query ({ caller }) func getCanisterLog(
     request : ?LoggerTypesModule.CanisterLogRequest
   ) : async ?LoggerTypesModule.CanisterLogResponse {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     logger.logMessage("getCanisterLog - request from caller: " # Principal.toText(caller));

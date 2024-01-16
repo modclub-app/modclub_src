@@ -145,14 +145,14 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   public query ({ caller }) func getCanisterMetrics(
     parameters : Canistergeek.GetMetricsParameters
   ) : async ?Canistergeek.CanisterMetrics {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({ caller }) func collectCanisterMetrics() : async () {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.collectMetrics();
@@ -161,7 +161,7 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   public query ({ caller }) func getCanisterLog(
     request : ?LoggerTypesModule.CanisterLogRequest
   ) : async ?LoggerTypesModule.CanisterLogResponse {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekLogger.getLog(request);

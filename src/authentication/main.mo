@@ -12,6 +12,7 @@ import GlobalConstants "../common/constants";
 import Canistergeek "../common/canistergeek/canistergeek";
 import LoggerTypesModule "../common/canistergeek/logger/typesModule";
 import Helpers "../common/helpers";
+import ModSecurity "../common/security/guard";
 
 shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = this {
   let Unauthorized = "Unauthorized";
@@ -29,7 +30,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   stable var _canistergeekLoggerUD : ?Canistergeek.LoggerUpgradeData = null;
   private let canistergeekLogger = Canistergeek.Logger();
 
-  var guard = Security.Guard(env, "AUTH_CANISTER");
+  var authGuard = Security.Guard(env, "AUTH_CANISTER");
 
   private func publish(topic : Text) : async () {
     for (subscriber in List.toArray(subscriptions).vals()) {
@@ -48,7 +49,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared ({ caller }) func subscribe(_topic : Text) : async () {
-    Utils.mod_assert(guard.isModclubCanister(caller) or isModclubBucket(caller), NotPermitted);
+    Utils.mod_assert(authGuard.isModclubCanister(caller) or isModclubBucket(caller), NotPermitted);
 
     let exists = List.some<AuthTypes.Subscriber>(
       subscriptions,
@@ -78,7 +79,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared query ({ caller }) func getSecrets() : async Result.Result<[CommonTypes.Secret], Text> {
-    Utils.mod_assert(guard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
+    Utils.mod_assert(authGuard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
     #ok(List.toArray(secrets));
   };
 
@@ -110,19 +111,19 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared query ({ caller }) func getAdmins() : async Result.Result<[Principal], Text> {
-    Utils.mod_assert(guard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
+    Utils.mod_assert(authGuard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
 
     #ok(List.toArray(admins));
   };
 
   public shared query ({ caller }) func getSubscriptions() : async Result.Result<[AuthTypes.Subscriber], Text> {
-    Utils.mod_assert(guard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
+    Utils.mod_assert(authGuard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
 
     #ok(List.toArray(subscriptions));
   };
 
   public shared query ({ caller }) func isAdmin(id : Principal) : async Bool {
-    Utils.mod_assert(guard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
+    Utils.mod_assert(authGuard.isModclubCanister(caller) or _isAdmin(caller), NotPermitted);
     _isAdmin(id);
   };
 
@@ -164,14 +165,14 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   public query ({ caller }) func getCanisterMetrics(
     parameters : Canistergeek.GetMetricsParameters
   ) : async ?Canistergeek.CanisterMetrics {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({ caller }) func collectCanisterMetrics() : async () {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.collectMetrics();
@@ -180,7 +181,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   public query ({ caller }) func getCanisterLog(
     request : ?LoggerTypesModule.CanisterLogRequest
   ) : async ?LoggerTypesModule.CanisterLogResponse {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekLogger.getLog(request);
@@ -223,7 +224,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
       case (#removeSecret _) { _isAdmin(caller) };
       case (#getSubscriptions _) { _isAdmin(caller) };
       case (#setModclubBuckets _) {
-        guard.isModclubCanister(caller) or _isAdmin(caller);
+        authGuard.isModclubCanister(caller) or _isAdmin(caller);
       };
       case (#validate _) { _isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };

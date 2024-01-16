@@ -6,12 +6,26 @@ import Result "mo:base/Result";
 import Debug "mo:base/Debug";
 import Timer "mo:base/Timer";
 import CommonTypes "../types";
-import Utils "../utils";
+import Array "mo:base/Array";
+import Constants "../constants";
 
 module ModSecurity {
 
   public let AccessMode = {
     NotPermitted = "Access denied. No Permissions.";
+  };
+
+  public func allowedCanistergeekCaller(caller : Principal, authGuard : ModSecurity.Guard) : Bool {
+    let allowedCallersSecret : [CommonTypes.Secret] = authGuard.getSecrets(Constants.SECRETS_ALLOWED_CANISTER_GEEK_CALLER);
+    let callerStr = Principal.toText(caller);
+
+    var exists = Array.find<CommonTypes.Secret>(
+      allowedCallersSecret,
+      func(secret : CommonTypes.Secret) : Bool {
+        Text.equal(secret.value, callerStr);
+      }
+    );
+    exists != null;
   };
 
   public class Guard(env : CommonTypes.ENV, context : Text) {
