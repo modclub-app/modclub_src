@@ -11,12 +11,14 @@ import { Timer } from "./Timer";
 import { Modal, Button } from "react-bulma-components";
 import { CaptureButton } from "./Webcam";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
-import { formattedTime } from "../../../utils/util";
+import { formattedTime, hideStringWithStars } from "../../../utils/util";
 import { processAndUploadChunk, useActors } from "../../../utils";
 import {
   MESSAGE_FOR_USER_VIDEO_RECORD,
   VIDEO_SUPPORT_MESSAGE,
 } from "../../../utils/constant";
+import GTMManager from "../../../utils/gtm";
+import { useAppState } from "../../app/state_mgmt/context/state";
 
 export default function UserVideo({ step, goToNextStep }) {
   const [loading, setLoading] = useState<boolean>(true);
@@ -31,6 +33,7 @@ export default function UserVideo({ step, goToNextStep }) {
   const supportsWebm = MediaRecorder.isTypeSupported("video/webm");
   const mimeType = supportsWebm ? "video/webm" : "video/mp4";
   const { modclub } = useActors();
+  const appState = useAppState();
 
   const handleStartCaptureClick = useCallback(() => {
     if (!webcamRef.current || !webcamRef.current.stream) return;
@@ -115,6 +118,12 @@ export default function UserVideo({ step, goToNextStep }) {
         return;
       }
     }
+
+    // GTM: determine the quantity of submitted video challenge;
+    GTMManager.trackEvent("userPohChallenge", {
+      uId: hideStringWithStars(appState.loginPrincipalId),
+      type: "completed_video",
+    });
 
     setSubmitting(false);
     goToNextStep("challenge-user-video");

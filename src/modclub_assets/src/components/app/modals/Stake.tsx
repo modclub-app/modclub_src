@@ -5,6 +5,8 @@ import PopupModal from "./PopupModal";
 import { useEffect, useState } from "react";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import GTMManager from "../../../utils/gtm";
+import { hideStringWithStars } from "../../../utils/util";
 
 const UpdateTable = ({ activeBalance, stake, amount = 0 }) => {
   return (
@@ -43,6 +45,15 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
       if (amount < wallet) {
         dispatch({ type: "stakeTokensAction", payload: { amount } });
       }
+
+      // GTM: determine amount of Stake users make into
+      // their account and how many users made Stake;
+      GTMManager.trackEvent("accountTransaction", {
+        uId: hideStringWithStars(appState.loginPrincipalId),
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "stake",
+        amount,
+      });
     } catch (error) {
       console.error("Stake Failed:", error);
     }

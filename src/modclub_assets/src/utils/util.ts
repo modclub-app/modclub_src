@@ -208,3 +208,18 @@ export const formattedTime = (val) => {
   time.setSeconds(val);
   return format(time, "mm:ss");
 };
+
+export const hideStringWithStars = (str) => {
+  // Determine the length of the ID part that needs to be hidden
+  const totalLength = str.length;
+  const hideLength = Math.floor(totalLength / 2);
+
+  // Get the start and end positions of the hidden part
+  const start = Math.floor(totalLength / 4);
+  const end = start + hideLength;
+
+  // Hide the middle of the ID with '*' signs
+  return `${str.substring(0, start)}${"*".repeat(hideLength)}${str.substring(
+    end
+  )}`;
+};

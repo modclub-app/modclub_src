@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { Button, Heading, Icon, Notification } from "react-bulma-components";
-import { getUrlForData } from "../../../utils/util";
+import { getUrlForData, hideStringWithStars } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import { useActors } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import placeholder from "../../../../assets/user_placeholder.png";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import * as Constant from "../../../utils/constant";
+import GTMManager from "../../../utils/gtm";
 
 const ApplicantSnippet = ({
   applicant,
@@ -70,6 +71,13 @@ const ApplicantSnippet = ({
       setReserved(true);
       setMessage({ success: true, value: "Reserved POH successful" });
       setLoading(false);
+
+      // GTM: determine the quantity of reserved "human verification" tasks;
+      GTMManager.trackEvent("humanVerification", {
+        uId: hideStringWithStars(appState.loginPrincipalId),
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "reserve",
+      });
     } catch (error) {
       setReserved(false);
       setMessage({ success: false, value: "Reserved POH unsuccessful" });

@@ -1,6 +1,9 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { Modal, Heading, Card } from "react-bulma-components";
+import GTMManager from "../../../utils/gtm";
+import { hideStringWithStars } from "../../../utils/util";
+import { useAppState } from "../state_mgmt/context/state";
 
 export default function UserIncompleteModal({
   status,
@@ -11,6 +14,14 @@ export default function UserIncompleteModal({
   rejectionReasons: Array<String>;
   token: String;
 }) {
+  const appState = useAppState();
+  // GTM: determine the number of users who completed the Proof of Humanity;
+  const handlerOnClick = () =>
+    GTMManager.trackEvent("userPohChallenge", {
+      uId: hideStringWithStars(appState.loginPrincipalId),
+      type: "start",
+    });
+
   return (
     <Modal show={true} showClose={false} className="userIncompleteModal">
       <Modal.Card backgroundColor="circles">
@@ -62,6 +73,7 @@ export default function UserIncompleteModal({
               to={`/new-poh-profile?token=${token}`}
               className="button is-primary"
               style={{ textDecoration: "none" }}
+              onClick={handlerOnClick}
             >
               Continue
             </Link>

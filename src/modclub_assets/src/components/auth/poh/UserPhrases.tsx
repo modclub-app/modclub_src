@@ -14,6 +14,9 @@ import MicRecorder from "mic-recorder-to-mp3";
 import { format } from "date-fns";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
 import { processAndUploadChunk, useActors } from "../../../utils";
+import GTMManager from "../../../utils/gtm";
+import { hideStringWithStars } from "../../../utils/util";
+import { useAppState } from "../../app/state_mgmt/context/state";
 
 const RecordButton = styled.div`
   cursor: pointer;
@@ -74,6 +77,7 @@ const Timer = styled.div`
 export default function UserPhrases({ step, goToNextStep }) {
   const [loading, setLoading] = useState<boolean>(true);
   const phrases = step.wordList[0];
+  const appState = useAppState();
 
   const [capturing, setCapturing] = useState<boolean>(false);
   const [seconds, setSeconds] = useState<number>(0);
@@ -139,6 +143,12 @@ export default function UserPhrases({ step, goToNextStep }) {
         return;
       }
     }
+
+    // GTM: determine the quantity of submitted audio challenge;
+    GTMManager.trackEvent("userPohChallenge", {
+      uId: hideStringWithStars(appState.loginPrincipalId),
+      type: "completed_audio",
+    });
 
     setSubmitting(false);
     goToNextStep("challenge-user-audio");

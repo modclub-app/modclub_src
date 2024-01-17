@@ -1,16 +1,23 @@
 import moment from "moment";
 import { useEffect, useState } from "react";
+import GTMManager from "../../../utils/gtm";
+import { hideStringWithStars } from "../../../utils/util";
+import { useAppState } from "../../app/state_mgmt/context/state";
 
 // Timer: countdown in seconds -> detail = false
-//        countdown in timestamp -> detail = true 
+//        countdown in timestamp -> detail = true
 const Timer = ({ countdown, toggle, detail = false, showSecond = false }) => {
   const [counting, setCounting] = useState(countdown);
   const minutes = Math.floor((counting % 3600) / 60);
   const seconds = Math.floor(counting % 60);
+  const appState = useAppState();
 
   const getRemainingTime = () => {
-    if (!moment(countdown).isValid() || moment(countdown).isBefore(moment.utc())) {
-      return 'Invalid countdown timestamp';
+    if (
+      !moment(countdown).isValid() ||
+      moment(countdown).isBefore(moment.utc())
+    ) {
+      return "Invalid countdown timestamp";
     }
     const now = moment.utc();
     const endDate = moment.utc(countdown);
@@ -20,15 +27,26 @@ const Timer = ({ countdown, toggle, detail = false, showSecond = false }) => {
     const hours = duration.hours();
     const minutes = duration.minutes();
     const seconds = duration.seconds();
-    
-    return `${days} days ${hours} hours ${minutes} mins ${showSecond ? `${seconds} sec` : ''}`.trim();
-    
+
+    return `${days} days ${hours} hours ${minutes} mins ${
+      showSecond ? `${seconds} sec` : ""
+    }`.trim();
   };
 
-  useEffect(()=>{
+  const triggerGTMEvent = () => {
+    // GTM: determine the quantity of people who reserved "human verification" tasks
+    // but do not finish verification.
+    GTMManager.trackEvent("humanVerification", {
+      uId: hideStringWithStars(appState.loginPrincipalId),
+      userLevel: Object.keys(appState.rs.level)[0],
+      type: "reserve_expired",
+    });
+  };
+
+  useEffect(() => {
     setCounting(countdown);
-  },[countdown])
-  
+  }, [countdown]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCounting((prevCounting) => {
@@ -36,6 +54,7 @@ const Timer = ({ countdown, toggle, detail = false, showSecond = false }) => {
           return prevCounting - 1;
         } else {
           clearInterval(timer);
+          triggerGTMEvent();
           toggle();
           return prevCounting;
         }

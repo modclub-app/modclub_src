@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { formatDate, timestampToSecond } from "../../../utils/util";
+import {
+  formatDate,
+  hideStringWithStars,
+  timestampToSecond,
+} from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import {
   Heading,
@@ -25,6 +29,7 @@ import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import Timer from "../../common/timer/Timer";
+import GTMManager from "../../../utils/gtm";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -119,6 +124,7 @@ export default function PohApplicant() {
   };
 
   const toggleRefresh = () => {
+    console.log("refresh modal");
     window.location.reload();
   };
 
@@ -166,6 +172,7 @@ export default function PohApplicant() {
     }
   };
 
+  // TODO: Current logic duplicate Application Snippet logic;
   const onReservedPoh = async () => {
     setLoadingModal(true);
     try {
@@ -177,6 +184,13 @@ export default function PohApplicant() {
       setReserved(true);
       setMessage({ success: true, value: "Reserved POH successful" });
       setLoadingModal(false);
+
+      // GTM: determine the quantity of reserved "human verification" tasks;
+      GTMManager.trackEvent("humanVerification", {
+        uId: hideStringWithStars(appState.loginPrincipalId),
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "reserve",
+      });
     } catch (error) {
       setReserved(false);
       setMessage({ success: false, value: "Reserved POH unsuccessful" });
@@ -332,7 +346,7 @@ export default function PohApplicant() {
             <Heading subtitle className="is-flex">
               <span className="my-auto">Reservation expires: &nbsp;</span>
               <span className="has-background-grey p-1 box is-rounded my-auto">
-                {Constant.TIMER} 
+                {Constant.TIMER}
               </span>
             </Heading>
           </>

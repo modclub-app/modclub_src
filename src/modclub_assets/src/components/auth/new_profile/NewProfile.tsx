@@ -15,12 +15,13 @@ import { getAccAssocMetadata } from "../../../utils/api";
 import { useProfile } from "../../../contexts/profile";
 import { useHistory } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { validateEmail } from "../../../utils/util";
+import { validateEmail, hideStringWithStars } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import logger from "../../../utils/logger";
 import { setUserToStorage } from "../../../utils/util";
 import { KEY_LOCALSTORAGE_USER } from "../../../contexts/profile";
 import { useAppState } from "../../app/state_mgmt/context/state";
+import GTMManager from "../../../utils/gtm";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
@@ -62,6 +63,13 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
 
       setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
 
+      // GTM: determine the number of profiles created;
+      GTMManager.trackEvent("userCreatedProfile", {
+        uId: hideStringWithStars(appState.loginPrincipalId),
+        username,
+        email,
+      });
+
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });
         setTimeout(() => {
@@ -74,6 +82,13 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr ? errAr[1] : e });
       setSubmitting(false);
+
+      // GTM: determine the number of errors in created profiles;
+      GTMManager.trackEvent("userCreateProfileError", {
+        uId: appState.loginPrincipalId,
+        username,
+        email,
+      });
     }
 
     setTimeout(() => setMessage(null), 2000);

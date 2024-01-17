@@ -3,13 +3,18 @@ import { Icon, Notification } from "react-bulma-components";
 import { useEffect, useState } from "react";
 import { Principal } from "@dfinity/principal";
 import PopupModal from "./PopupModal";
-import { convert_to_mod, format_token } from "../../../utils/util";
+import {
+  convert_to_mod,
+  format_token,
+  hideStringWithStars,
+} from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import { useConnect, useProviders } from "@connect2icmodclub/react";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
 import { useContext } from "react";
 import { Connect2ICContext } from "@connect2icmodclub/react";
+import GTMManager from "../../../utils/gtm";
 
 interface DepositProps {
   toggle: () => void;
@@ -53,6 +58,15 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
       dispatch({
         type: "accountDepositAction",
         payload: { amount, subAcc: subacc },
+      });
+
+      // GTM: determine amount of Deposits users make into
+      // their account and how many users made Deposits;
+      GTMManager.trackEvent("accountTransaction", {
+        uId: hideStringWithStars(appState.loginPrincipalId),
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "deposit",
+        amount,
       });
     } catch (err) {
       setError(err.message);

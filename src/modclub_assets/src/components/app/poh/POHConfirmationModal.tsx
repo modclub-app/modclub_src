@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useFormState } from "react-final-form";
-import { getViolatedRules } from "../../../utils/util";
+import { getViolatedRules, hideStringWithStars } from "../../../utils/util";
 import {
   Card,
   Button,
@@ -17,6 +17,8 @@ import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { useActors } from "../../../hooks/actors";
 import * as Constant from "../../../utils/constant";
+import GTMManager from "../../../utils/gtm";
+import { useAppState } from "../state_mgmt/context/state";
 
 const ConfirmationModal = ({
   type,
@@ -33,6 +35,7 @@ const ConfirmationModal = ({
   const [message, setMessage] = useState(null);
   const history = useHistory();
   const { modclub } = useActors();
+  const appState = useAppState();
 
   const isDisabled = () => {
     if (
@@ -73,6 +76,14 @@ const ConfirmationModal = ({
         type === "approve" ? { approved: null } : { rejected: null },
         rules
       );
+
+      // GTM: determine the amount of voted “human verification” tasks;
+      GTMManager.trackEvent("humanVerification", {
+        uId: hideStringWithStars(appState.loginPrincipalId),
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "voted",
+      });
+
       setMessage({ success: true, value: "Vote submitted successfully" });
       setSubmitting(false);
       setTimeout(() => {

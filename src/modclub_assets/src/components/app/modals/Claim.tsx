@@ -3,8 +3,9 @@ import { Field } from "react-final-form";
 import { useState } from "react";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import { convert_to_mod } from "../../../utils/util";
+import { convert_to_mod, hideStringWithStars } from "../../../utils/util";
 import PopupModal from "./PopupModal";
+import GTMManager from "../../../utils/gtm";
 
 export default function Claim({ toggle, userId, show }) {
   const appState = useAppState();
@@ -21,6 +22,15 @@ export default function Claim({ toggle, userId, show }) {
     try {
       const { amount } = values;
       dispatch({ type: "claimRewardsAction", payload: { amount } });
+
+      // GTM: determine amount of Claim users make into
+      // their account and how many users made Claim;
+      GTMManager.trackEvent("accountTransaction", {
+        uId: hideStringWithStars(appState.loginPrincipalId),
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "claim",
+        amount,
+      });
     } catch (err) {
       console.error("claimLockedReward::ERROR::", err.message);
     }

@@ -11,6 +11,7 @@ import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
 import DrawingChallenge from "./DrawingChallenge";
 import { modclub_types } from "../../../utils/types";
+import { hideStringWithStars } from "../../../utils/util";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";
@@ -18,14 +19,23 @@ import {
   useAppState,
   useAppStateDispatch,
 } from "../../app/state_mgmt/context/state";
+import GTMManager from "../../../utils/gtm";
 
 const Confirmation = ({ redirect_uri }) => {
+  const appState = useAppState();
   const { disconnect } = useConnect();
   const handleRedirect = (e) => {
     e.preventDefault();
     disconnect();
     window.location.href = redirect_uri;
   };
+
+  // GTM: determine the number of users who completed the Proof of Humanity;
+  const handlerOnClick = () =>
+    GTMManager.trackEvent("userPohChallenge", {
+      uId: hideStringWithStars(appState.loginPrincipalId),
+      type: "completed",
+    });
 
   return (
     <div className="has-text-centered">
@@ -43,7 +53,11 @@ const Confirmation = ({ redirect_uri }) => {
           Back to App
         </a>
       ) : (
-        <Link to="/app" className="button is-large is-primary mt-5">
+        <Link
+          to="/app"
+          className="button is-large is-primary mt-5"
+          onClick={handlerOnClick}
+        >
           Back to MODCLUB
         </Link>
       )}
