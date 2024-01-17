@@ -111,7 +111,7 @@ export async function withdrawModeratorReward(context, payload) {
       const targetPrincipal = context.state.accountWithdrawAction.target;
 
       let res = await actor.withdrawModeratorReward(
-        amountInLowestDenom, //use it here
+        amountInLowestDenom,
         targetPrincipal ? [Principal.fromText(targetPrincipal)] : []
       );
 
