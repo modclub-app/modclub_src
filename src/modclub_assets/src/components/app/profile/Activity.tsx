@@ -35,6 +35,9 @@ export default function Activity() {
   const [editEmail, setEditEmail] = useState<boolean>(false);
   const [currentFilter, setCurrentFilter] = useState<string>("new");
 
+  // Add state for the sort order (default to 'desc' for descending)
+  const [sortOrder, setSortOrder] = useState("desc");
+
   const filters = ["completed", "new"];
 
   const getLabel = (label: string) => {
@@ -42,6 +45,67 @@ export default function Activity() {
     if (label === "completed") return "Completed";
   };
 
+  // Check if the 'vote' array is not empty and use its first element,
+  // otherwise, use the first element of the 'pohVote' array.
+  // If both are empty, return a default value.
+  const getLatestVoteTimestamp = (voteArray, pohVoteArray) => {
+    if (voteArray.length > 0) {
+      return voteArray[0].createdAt;
+    } else if (pohVoteArray.length > 0) {
+      return pohVoteArray[0].createdAt;
+    } else {
+      return BigInt(0);
+    }
+  };
+
+  //sort activities based on timestamp
+  const sortActivities = (activities, sortOrder) => {
+    const timestamps = activities.map((activity) => ({
+      activity,
+      timestamp:
+        Number(getLatestVoteTimestamp(activity.vote, activity.pohVote)) / 1000,
+    }));
+    return timestamps
+      .sort((a, b) => {
+        return sortOrder === "desc"
+          ? b.timestamp - a.timestamp
+          : a.timestamp - b.timestamp;
+      })
+      .map((item) => item.activity);
+  };
+
+  // Updates the activity list state
+  const updateActivitiesState = (activities, sortOrder) => {
+    const sortedActivities = sortActivities(activities, sortOrder);
+
+    if (currentFilter === "new") {
+      setInProgressActivity(sortedActivities);
+    } else {
+      setCompletedActivity(sortedActivities);
+    }
+  };
+
+  // Toggles the sorting order of activities and updates the state to reflect the change.
+  const handlerSortActivities = () => {
+    const currentSortFilter =
+      currentFilter === "new" ? inProgressActivity : completedActivity;
+    const currSortOrder = sortOrder === "desc" ? "asc" : "desc";
+    updateActivitiesState(currentSortFilter, currSortOrder);
+    setSortOrder(currSortOrder); //
+  };
+
+  //function to handle descending and ascending sort order on click of in progress and completed
+  const handleFilterChange = (newFilter) => {
+    // Set the sort order to 'desc' by default
+    setSortOrder("desc");
+    // Update the current filter
+    setCurrentFilter(newFilter);
+    // Call updateActivitiesState to apply the new sort order
+    const currentSortFilter =
+      newFilter === "new" ? inProgressActivity : completedActivity;
+    updateActivitiesState(currentSortFilter, "desc");
+  };
+  //fetch activities
   const fetchActivity = async (filter) => {
     setLoading(true);
     if (modclub) {
@@ -78,8 +142,28 @@ export default function Activity() {
     appState.userProfile && fetchActivity(currentFilter);
   }, [appState.userProfile, modclub]);
 
+  // This useEffect will now also re-sort the activities whenever sortOrder changes
   useEffect(() => {
-    fetchActivity(currentFilter);
+    const sortAndSetActivities = async () => {
+      setLoading(true);
+
+      let activities;
+      if (modclub) {
+        activities =
+          currentFilter === "new"
+            ? await modclub.getActivity(false)
+            : await modclub.getActivity(true);
+      } else {
+        // Handle the case where modclub is not available
+        activities = []; // or some default value
+      }
+
+      // Sort the activities
+      updateActivitiesState(activities, sortOrder);
+      setLoading(false);
+    };
+
+    sortAndSetActivities();
   }, [currentFilter, modclub]);
 
   const displayEmail = () => (
@@ -192,8 +276,8 @@ export default function Activity() {
                     key={filter}
                     value={filter}
                     renderAs="a"
-                    className={currentFilter === filter && "is-active"}
-                    onMouseDown={() => setCurrentFilter(filter)}
+                    className={currentFilter === filter ? "is-active" : ""}
+                    onMouseDown={() => handleFilterChange(filter)}
                   >
                     {getLabel(filter)}
                   </Dropdown.Item>
@@ -201,16 +285,20 @@ export default function Activity() {
               </Dropdown>
 
               <Button.Group className="is-hidden-mobile">
-                {filters.map((filter) => (
-                  <Button
-                    key={filter}
-                    color={currentFilter === filter ? "primary" : "ghost"}
-                    className="has-text-white mr-0"
-                    onClick={() => setCurrentFilter(filter)}
-                  >
-                    {getLabel(filter)}
-                  </Button>
-                ))}
+                <Button
+                  color={currentFilter === "new" ? "primary" : "ghost"}
+                  className="has-text-white mr-0"
+                  onClick={() => handleFilterChange("new")}
+                >
+                  In Progress
+                </Button>
+                <Button
+                  color={currentFilter === "completed" ? "primary" : "ghost"}
+                  className="has-text-white mr-0"
+                  onClick={() => handleFilterChange("completed")} // Update to use handleFilterChange
+                >
+                  Completed
+                </Button>
               </Button.Group>
             </Card.Content>
           </Card>
@@ -228,6 +316,8 @@ export default function Activity() {
                 }
                 getLabel={getLabel}
                 currentFilter={currentFilter}
+                sortOrder={sortOrder}
+                onSortOrderChange={() => handlerSortActivities()}
               />
             </Card.Content>
           </Card>
