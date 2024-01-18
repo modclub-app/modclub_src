@@ -6,7 +6,7 @@ import { useActors } from "../../../hooks/actors";
 import { useState } from "react";
 import PopupModal from "./PopupModal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import { convert_to_mod, hideStringWithStars } from "../../../utils/util";
+import { convert_to_mod } from "../../../utils/util";
 import GTMManager from "../../../utils/gtm";
 
 const UpdateTable = ({ amount }) => {

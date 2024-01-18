@@ -1,11 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import {
-  formatDate,
-  hideStringWithStars,
-  timestampToSecond,
-} from "../../../utils/util";
+import { formatDate, timestampToSecond } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import {
   Heading,

@@ -15,7 +15,7 @@ import { getAccAssocMetadata } from "../../../utils/api";
 import { useProfile } from "../../../contexts/profile";
 import { useHistory } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { validateEmail, hideStringWithStars } from "../../../utils/util";
+import { validateEmail } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import logger from "../../../utils/logger";
 import { setUserToStorage } from "../../../utils/util";

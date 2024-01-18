@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useFormState } from "react-final-form";
-import { getViolatedRules, hideStringWithStars } from "../../../utils/util";
+import { getViolatedRules } from "../../../utils/util";
 import {
   Card,
   Button,

@@ -1,7 +1,6 @@
 import moment from "moment";
 import { useEffect, useState } from "react";
 import GTMManager from "../../../utils/gtm";
-import { hideStringWithStars } from "../../../utils/util";
 import { useAppState } from "../../app/state_mgmt/context/state";
 
 // Timer: countdown in seconds -> detail = false

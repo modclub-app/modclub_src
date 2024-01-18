@@ -11,7 +11,7 @@ import { Timer } from "./Timer";
 import { Modal, Button } from "react-bulma-components";
 import { CaptureButton } from "./Webcam";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
-import { formattedTime, hideStringWithStars } from "../../../utils/util";
+import { formattedTime } from "../../../utils/util";
 import { processAndUploadChunk, useActors } from "../../../utils";
 import {
   MESSAGE_FOR_USER_VIDEO_RECORD,

@@ -3,11 +3,7 @@ import { Icon, Notification } from "react-bulma-components";
 import { useEffect, useState } from "react";
 import { Principal } from "@dfinity/principal";
 import PopupModal from "./PopupModal";
-import {
-  convert_to_mod,
-  format_token,
-  hideStringWithStars,
-} from "../../../utils/util";
+import { convert_to_mod, format_token } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import { useConnect, useProviders } from "@connect2icmodclub/react";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";

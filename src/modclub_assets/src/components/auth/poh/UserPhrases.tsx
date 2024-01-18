@@ -15,7 +15,6 @@ import { format } from "date-fns";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
 import { processAndUploadChunk, useActors } from "../../../utils";
 import GTMManager from "../../../utils/gtm";
-import { hideStringWithStars } from "../../../utils/util";
 import { useAppState } from "../../app/state_mgmt/context/state";
 
 const RecordButton = styled.div`

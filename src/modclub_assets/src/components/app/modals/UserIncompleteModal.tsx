@@ -2,7 +2,6 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { Modal, Heading, Card } from "react-bulma-components";
 import GTMManager from "../../../utils/gtm";
-import { hideStringWithStars } from "../../../utils/util";
 import { useAppState } from "../state_mgmt/context/state";
 
 export default function UserIncompleteModal({

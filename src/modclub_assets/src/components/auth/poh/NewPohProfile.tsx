@@ -11,7 +11,6 @@ import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
 import DrawingChallenge from "./DrawingChallenge";
 import { modclub_types } from "../../../utils/types";
-import { hideStringWithStars } from "../../../utils/util";
 import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";

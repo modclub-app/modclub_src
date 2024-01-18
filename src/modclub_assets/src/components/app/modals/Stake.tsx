@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import GTMManager from "../../../utils/gtm";
-import { hideStringWithStars } from "../../../utils/util";
 
 const UpdateTable = ({ activeBalance, stake, amount = 0 }) => {
   return (

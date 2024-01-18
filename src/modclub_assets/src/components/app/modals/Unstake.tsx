@@ -2,7 +2,7 @@ import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon, Button } from "react-bulma-components";
 import PopupModal from "./PopupModal";
-import { convert_to_mod, hideStringWithStars } from "../../../utils/util";
+import { convert_to_mod } from "../../../utils/util";
 import { useState } from "react";
 import { useActors, convert_from_mod } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";

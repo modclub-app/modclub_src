@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { Button, Heading, Icon, Notification } from "react-bulma-components";
-import { getUrlForData, hideStringWithStars } from "../../../utils/util";
+import { getUrlForData } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import { useActors } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
