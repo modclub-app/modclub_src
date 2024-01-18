@@ -1,24 +1,21 @@
 import * as React from "react";
-import { Switch, Route } from "react-router-dom";
-import { useHistory, Link, useLocation } from "react-router-dom";
-import { Modal, Columns, Card, Heading, Button } from "react-bulma-components";
 import { useEffect, useState } from "react";
+import { Link, Route, Switch, useHistory, useLocation } from "react-router-dom";
+import { Button, Card, Columns, Heading, Modal } from "react-bulma-components";
 import NotAuthenticatedModal from "../../app/modals/NotAuthenticated";
-import NewProfile from "../new_profile/NewProfile";
-import { Steps, Step } from "../../common/steps/Steps";
+import { Step, Steps } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
 import DrawingChallenge from "./DrawingChallenge";
 import { modclub_types } from "../../../utils/types";
-import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";
 import {
   useAppState,
   useAppStateDispatch,
 } from "../../app/state_mgmt/context/state";
-import GTMManager from "../../../utils/gtm";
+import { GTMEvent, GTMManager } from "../../../utils/gtm";
 
 const Confirmation = ({ redirect_uri }) => {
   const appState = useAppState();
@@ -32,7 +29,7 @@ const Confirmation = ({ redirect_uri }) => {
   // GTM: determine the number of users who completed the Proof of Humanity;
   const handlerOnClick = () =>
     GTMManager.trackEvent(
-      "userPohChallenge",
+      GTMEvent.UserPohChallenge,
       {
         uId: appState.loginPrincipalId,
         type: "completed",

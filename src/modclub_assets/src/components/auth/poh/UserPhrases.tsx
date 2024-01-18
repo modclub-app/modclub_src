@@ -1,20 +1,20 @@
 import * as React from "react";
-import styled from "styled-components";
 import { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
 import { Link } from "react-router-dom";
 import {
-  Modal,
-  Heading,
   Button,
-  Icon,
   Card,
   Columns,
+  Heading,
+  Icon,
+  Modal,
 } from "react-bulma-components";
 import MicRecorder from "mic-recorder-to-mp3";
 import { format } from "date-fns";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
 import { processAndUploadChunk, useActors } from "../../../utils";
-import GTMManager from "../../../utils/gtm";
+import { GTMEvent, GTMManager } from "../../../utils/gtm";
 import { useAppState } from "../../app/state_mgmt/context/state";
 
 const RecordButton = styled.div`
@@ -145,7 +145,7 @@ export default function UserPhrases({ step, goToNextStep }) {
 
     // GTM: determine the quantity of submitted audio challenge;
     GTMManager.trackEvent(
-      "userPohChallenge",
+      GTMEvent.UserPohChallenge,
       {
         uId: appState.loginPrincipalId,
         type: "completed_audio",

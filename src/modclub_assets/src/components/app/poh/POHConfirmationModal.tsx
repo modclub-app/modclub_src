@@ -1,14 +1,14 @@
 import * as React from "react";
+import { useState } from "react";
 import { useParams } from "react-router";
-import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useFormState } from "react-final-form";
 import { getViolatedRules } from "../../../utils/util";
 import {
-  Card,
   Button,
-  Modal,
+  Card,
   Heading,
+  Modal,
   Notification,
 } from "react-bulma-components";
 import Confirm from "../../common/confirm/Confirm";
@@ -17,7 +17,7 @@ import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { useActors } from "../../../hooks/actors";
 import * as Constant from "../../../utils/constant";
-import GTMManager from "../../../utils/gtm";
+import { GTMEvent, GTMManager } from "../../../utils/gtm";
 import { useAppState } from "../state_mgmt/context/state";
 
 const ConfirmationModal = ({
@@ -79,7 +79,7 @@ const ConfirmationModal = ({
 
       // GTM: determine the amount of voted “human verification” tasks;
       GTMManager.trackEvent(
-        "humanVerification",
+        GTMEvent.HumanVerification,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],

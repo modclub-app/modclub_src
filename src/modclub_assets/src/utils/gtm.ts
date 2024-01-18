@@ -1,11 +1,20 @@
 import { hideStringWithStars } from "./util";
 
+export enum GTMEvent {
+  UserCreatedProfile = "userCreatedProfile",
+  UserCreateProfileError = "userCreateProfileError",
+  LaunchApp = "launchApp",
+  UserPohChallenge = "userPohChallenge",
+  AccountTransaction = "accountTransaction",
+  HumanVerification = "humanVerification",
+}
+
 type GTMEventTypes = {
   event: string;
   [key: string]: any;
 };
 
-const GTMManager = {
+export const GTMManager = {
   _pushToDataLayer: (event: GTMEventTypes): void => {
     if (window && window.dataLayer) {
       window.dataLayer.push(event);
@@ -13,7 +22,7 @@ const GTMManager = {
   },
 
   trackEvent: (
-    eventName: string,
+    eventName: GTMEvent,
     eventData: Record<string, any>,
     fieldsToHide?: string[]
   ): void => {
@@ -28,5 +37,3 @@ const GTMManager = {
     GTMManager._pushToDataLayer({ event: eventName, ...eventData });
   },
 };
-
-export default GTMManager;

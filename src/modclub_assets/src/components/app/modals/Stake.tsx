@@ -1,11 +1,11 @@
 import * as React from "react";
+import { useState } from "react";
 import { Field } from "react-final-form";
-import { Level, Icon } from "react-bulma-components";
+import { Icon, Level } from "react-bulma-components";
 import PopupModal from "./PopupModal";
-import { useEffect, useState } from "react";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import GTMManager from "../../../utils/gtm";
+import { GTMEvent, GTMManager } from "../../../utils/gtm";
 
 const UpdateTable = ({ activeBalance, stake, amount = 0 }) => {
   return (
@@ -48,7 +48,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
       // GTM: determine amount of Stake users make into
       // their account and how many users made Stake;
       GTMManager.trackEvent(
-        "accountTransaction",
+        GTMEvent.AccountTransaction,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],

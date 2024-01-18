@@ -17,7 +17,7 @@ import discordImg from "../../../../assets/discord.jpeg";
 import dscvrImg from "../../../../assets/dscvr.jpeg";
 import mediumImg from "../../../../assets/medium.png";
 import { useHistory } from "react-router-dom";
-import GTMManager from "../../../utils/gtm";
+import { GTMEvent, GTMManager } from "../../../utils/gtm";
 
 export default function Landing() {
   const history = useHistory();
@@ -25,7 +25,7 @@ export default function Landing() {
   const handlerOnClick = (event) => {
     event.preventDefault();
     // GTM: determine the number of users who attempt to launch the app;
-    GTMManager.trackEvent("launchApp", {});
+    GTMManager.trackEvent(GTMEvent.LaunchApp, {});
     history.push("/app");
   };
 

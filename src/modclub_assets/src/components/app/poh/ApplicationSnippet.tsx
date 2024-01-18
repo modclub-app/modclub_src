@@ -8,10 +8,9 @@ import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { ReservedPohButton } from "./ReservedPohButton";
 import { fetchObjectUrl } from "../../../utils/jwt";
 import { Link } from "react-router-dom";
-import placeholder from "../../../../assets/user_placeholder.png";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import * as Constant from "../../../utils/constant";
-import GTMManager from "../../../utils/gtm";
+import { GTMEvent, GTMManager } from "../../../utils/gtm";
 
 const ApplicantSnippet = ({
   applicant,
@@ -74,7 +73,7 @@ const ApplicantSnippet = ({
 
       // GTM: determine the quantity of reserved "human verification" tasks;
       GTMManager.trackEvent(
-        "humanVerification",
+        GTMEvent.HumanVerification,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],

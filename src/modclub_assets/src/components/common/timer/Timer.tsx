@@ -1,6 +1,6 @@
 import moment from "moment";
 import { useEffect, useState } from "react";
-import GTMManager from "../../../utils/gtm";
+import { GTMManager, GTMEvent } from "../../../utils/gtm";
 import { useAppState } from "../../app/state_mgmt/context/state";
 
 // Timer: countdown in seconds -> detail = false
@@ -27,16 +27,15 @@ const Timer = ({ countdown, toggle, detail = false, showSecond = false }) => {
     const minutes = duration.minutes();
     const seconds = duration.seconds();
 
-    return `${days} days ${hours} hours ${minutes} mins ${
-      showSecond ? `${seconds} sec` : ""
-    }`.trim();
+    return `${days} days ${hours} hours ${minutes} 
+    mins ${showSecond ? `${seconds} sec` : ""}`.trim();
   };
 
   const triggerGTMEvent = () => {
     // GTM: determine the quantity of people who reserved "human verification" tasks
     // but do not finish verification.
-    GTMManager.trackEventWithHideFields(
-      "humanVerification",
+    GTMManager.trackEvent(
+      GTMEvent.HumanVerification,
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],

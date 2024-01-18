@@ -1,27 +1,22 @@
 import * as React from "react";
-import { Form, Field } from "react-final-form";
+import { useEffect, useState } from "react";
+import { Field, Form } from "react-final-form";
 import {
-  Notification,
-  Columns,
-  Card,
   Block,
-  Heading,
   Button,
+  Card,
+  Columns,
+  Heading,
   Icon,
-  Modal,
+  Notification,
 } from "react-bulma-components";
-
-import { getAccAssocMetadata } from "../../../utils/api";
-import { useProfile } from "../../../contexts/profile";
+import { KEY_LOCALSTORAGE_USER } from "../../../contexts/profile";
 import { useHistory } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { validateEmail } from "../../../utils/util";
+import { setUserToStorage, validateEmail } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import logger from "../../../utils/logger";
-import { setUserToStorage } from "../../../utils/util";
-import { KEY_LOCALSTORAGE_USER } from "../../../contexts/profile";
 import { useAppState } from "../../app/state_mgmt/context/state";
-import GTMManager from "../../../utils/gtm";
+import { GTMEvent, GTMManager } from "../../../utils/gtm";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
@@ -65,7 +60,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
 
       // GTM: determine the number of profiles created;
       GTMManager.trackEvent(
-        "userCreatedProfile",
+        GTMEvent.UserCreatedProfile,
         {
           uId: appState.loginPrincipalId,
           username,
@@ -89,7 +84,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
 
       // GTM: determine the number of errors in created profiles;
       GTMManager.trackEvent(
-        "userCreateProfileError",
+        GTMEvent.UserCreateProfileError,
         {
           uId: appState.loginPrincipalId,
           username,
