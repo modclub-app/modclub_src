@@ -32,10 +32,14 @@ const Confirmation = ({ redirect_uri }) => {
 
   // GTM: determine the number of users who completed the Proof of Humanity;
   const handlerOnClick = () =>
-    GTMManager.trackEvent("userPohChallenge", {
-      uId: hideStringWithStars(appState.loginPrincipalId),
-      type: "completed",
-    });
+    GTMManager.trackEvent(
+      "userPohChallenge",
+      {
+        uId: appState.loginPrincipalId,
+        type: "completed",
+      },
+      ["uId"]
+    );
 
   return (
     <div className="has-text-centered">

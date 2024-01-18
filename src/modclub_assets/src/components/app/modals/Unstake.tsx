@@ -93,12 +93,16 @@ export default function Unstake({
 
     // GTM: determine amount of UnStake users make into
     // their account and how many users made UnStake;
-    GTMManager.trackEvent("accountTransaction", {
-      uId: hideStringWithStars(appState.loginPrincipalId),
-      userLevel: Object.keys(appState.rs.level)[0],
-      type: "unstake",
-      amount,
-    });
+    GTMManager.trackEvent(
+      "accountTransaction",
+      {
+        uId: appState.loginPrincipalId,
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "unstake",
+        amount,
+      },
+      ["uId"]
+    );
   };
 
   return (

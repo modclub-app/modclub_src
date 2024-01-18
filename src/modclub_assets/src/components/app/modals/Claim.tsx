@@ -25,12 +25,16 @@ export default function Claim({ toggle, userId, show }) {
 
       // GTM: determine amount of Claim users make into
       // their account and how many users made Claim;
-      GTMManager.trackEvent("accountTransaction", {
-        uId: hideStringWithStars(appState.loginPrincipalId),
-        userLevel: Object.keys(appState.rs.level)[0],
-        type: "claim",
-        amount,
-      });
+      GTMManager.trackEvent(
+        "accountTransaction",
+        {
+          uId: appState.loginPrincipalId,
+          userLevel: Object.keys(appState.rs.level)[0],
+          type: "claim",
+          amount,
+        },
+        ["uId"]
+      );
     } catch (err) {
       console.error("claimLockedReward::ERROR::", err.message);
     }

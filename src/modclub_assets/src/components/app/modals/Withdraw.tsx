@@ -72,12 +72,16 @@ export default function Withdraw({
 
     // GTM: determine amount of Withdraw users make into
     // their account and how many users made Withdraw;
-    GTMManager.trackEvent("accountTransaction", {
-      uId: hideStringWithStars(appState.loginPrincipalId),
-      userLevel: Object.keys(appState.rs.level)[0],
-      type: "withdraw",
-      amount,
-    });
+    GTMManager.trackEvent(
+      "accountTransaction",
+      {
+        uId: appState.loginPrincipalId,
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "withdraw",
+        amount,
+      },
+      ["uId"]
+    );
   };
 
   return (

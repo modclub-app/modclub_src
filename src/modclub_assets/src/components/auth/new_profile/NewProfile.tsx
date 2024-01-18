@@ -64,11 +64,15 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
 
       // GTM: determine the number of profiles created;
-      GTMManager.trackEvent("userCreatedProfile", {
-        uId: hideStringWithStars(appState.loginPrincipalId),
-        username,
-        email,
-      });
+      GTMManager.trackEvent(
+        "userCreatedProfile",
+        {
+          uId: appState.loginPrincipalId,
+          username,
+          email,
+        },
+        ["uId", "username", "email"]
+      );
 
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });
@@ -84,11 +88,15 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       setSubmitting(false);
 
       // GTM: determine the number of errors in created profiles;
-      GTMManager.trackEvent("userCreateProfileError", {
-        uId: appState.loginPrincipalId,
-        username,
-        email,
-      });
+      GTMManager.trackEvent(
+        "userCreateProfileError",
+        {
+          uId: appState.loginPrincipalId,
+          username,
+          email,
+        },
+        ["uId", "username", "email"]
+      );
     }
 
     setTimeout(() => setMessage(null), 2000);

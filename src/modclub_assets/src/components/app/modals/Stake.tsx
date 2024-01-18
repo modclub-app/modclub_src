@@ -48,12 +48,16 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
 
       // GTM: determine amount of Stake users make into
       // their account and how many users made Stake;
-      GTMManager.trackEvent("accountTransaction", {
-        uId: hideStringWithStars(appState.loginPrincipalId),
-        userLevel: Object.keys(appState.rs.level)[0],
-        type: "stake",
-        amount,
-      });
+      GTMManager.trackEvent(
+        "accountTransaction",
+        {
+          uId: appState.loginPrincipalId,
+          userLevel: Object.keys(appState.rs.level)[0],
+          type: "stake",
+          amount,
+        },
+        ["uId"]
+      );
     } catch (error) {
       console.error("Stake Failed:", error);
     }

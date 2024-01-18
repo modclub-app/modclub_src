@@ -17,10 +17,14 @@ export default function UserIncompleteModal({
   const appState = useAppState();
   // GTM: determine the number of users who completed the Proof of Humanity;
   const handlerOnClick = () =>
-    GTMManager.trackEvent("userPohChallenge", {
-      uId: hideStringWithStars(appState.loginPrincipalId),
-      type: "start",
-    });
+    GTMManager.trackEvent(
+      "userPohChallenge",
+      {
+        uId: appState.loginPrincipalId,
+        type: "start",
+      },
+      ["uId"]
+    );
 
   return (
     <Modal show={true} showClose={false} className="userIncompleteModal">

@@ -78,11 +78,15 @@ const ConfirmationModal = ({
       );
 
       // GTM: determine the amount of voted “human verification” tasks;
-      GTMManager.trackEvent("humanVerification", {
-        uId: hideStringWithStars(appState.loginPrincipalId),
-        userLevel: Object.keys(appState.rs.level)[0],
-        type: "voted",
-      });
+      GTMManager.trackEvent(
+        "humanVerification",
+        {
+          uId: appState.loginPrincipalId,
+          userLevel: Object.keys(appState.rs.level)[0],
+          type: "voted",
+        },
+        ["uId"]
+      );
 
       setMessage({ success: true, value: "Vote submitted successfully" });
       setSubmitting(false);

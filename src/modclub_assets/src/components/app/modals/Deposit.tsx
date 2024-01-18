@@ -62,12 +62,16 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
 
       // GTM: determine amount of Deposits users make into
       // their account and how many users made Deposits;
-      GTMManager.trackEvent("accountTransaction", {
-        uId: hideStringWithStars(appState.loginPrincipalId),
-        userLevel: Object.keys(appState.rs.level)[0],
-        type: "deposit",
-        amount,
-      });
+      GTMManager.trackEvent(
+        "accountTransaction",
+        {
+          uId: appState.loginPrincipalId,
+          userLevel: Object.keys(appState.rs.level)[0],
+          type: "deposit",
+          amount,
+        },
+        ["uId"]
+      );
     } catch (err) {
       setError(err.message);
     }

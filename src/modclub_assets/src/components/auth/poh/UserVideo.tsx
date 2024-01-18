@@ -120,10 +120,14 @@ export default function UserVideo({ step, goToNextStep }) {
     }
 
     // GTM: determine the quantity of submitted video challenge;
-    GTMManager.trackEvent("userPohChallenge", {
-      uId: hideStringWithStars(appState.loginPrincipalId),
-      type: "completed_video",
-    });
+    GTMManager.trackEvent(
+      "userPohChallenge",
+      {
+        uId: appState.loginPrincipalId,
+        type: "completed_video",
+      },
+      ["uId"]
+    );
 
     setSubmitting(false);
     goToNextStep("challenge-user-video");
