@@ -208,3 +208,20 @@ export const formattedTime = (val) => {
   time.setSeconds(val);
   return format(time, "mm:ss");
 };
+
+type BrowserType = "Chrome" | "Safari" | "Other";
+export function detectBrowser(): BrowserType {
+    const userAgent: string = navigator.userAgent;
+
+    // Check if browser is Chrome
+    if (userAgent.match(/chrome|chromium|crios/i)) {
+        return "Chrome";
+    }
+    // Check if browser is Safari
+    else if (userAgent.match(/safari/i) && !userAgent.match(/chrome|chromium|crios/i)) {
+        return "Safari";
+    }
+    else {
+        return "Other";
+    }
+}
