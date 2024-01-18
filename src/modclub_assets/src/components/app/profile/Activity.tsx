@@ -45,9 +45,8 @@ export default function Activity() {
     if (label === "completed") return "Completed";
   };
 
-  // Check if the 'vote' array is not empty and use its first element,
-  // otherwise, use the first element of the 'pohVote' array.
-  // If both are empty, return a default value.
+  // Check if the 'vote' array is not empty and use its first element
+  // BigInt(0) is used as a fallback value when neither voteArray nor pohVoteArray have any elements
   const getLatestVoteTimestamp = (voteArray, pohVoteArray) => {
     if (voteArray.length > 0) {
       return voteArray[0].createdAt;
