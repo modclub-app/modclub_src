@@ -45,16 +45,24 @@ function getCurrentTimestamp() {
   return `${year}-${month}-${day}-${hour}.${minute}`;
 }
 
+
+// See readme of https://github.com/dfinity/internet-identity.
+// For some reason, we need different urls for different browsers.
 let LOCAL_II_CANISTER = "";
+let LOCAL_II_CANISTER_SAFARI = "";
 try {
-  // Replace this value with the ID of your local Internet Identity canister
+  LOCAL_II_CANISTER_SAFARI = network === "local"
+    ? `http://localhost:8000/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
+    : `https://identity.ic0.app`;
   LOCAL_II_CANISTER =
     network === "local"
-      ? `http://localhost:8000/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
+      ? `http://${process.env["INTERNET_IDENTITY_CANISTER_ID"]}.localhost:8000`
       : `https://identity.ic0.app`;
 } catch (e) {
   console.error("Error setting LOCAL_II_CANISTER: ", e);
   LOCAL_II_CANISTER =
+    "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
+  LOCAL_II_CANISTER_SAFARI = 
     "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
 }
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -157,6 +165,7 @@ module.exports = {
       AIRDROP_DEV_CANISTER_ID: canisters["airdrop_dev"] || "aaaaa-aa",
       AIRDROP_QA_CANISTER_ID: canisters["airdrop_qa"] || "aaaaa-aa",
       LOCAL_II_CANISTER,
+      LOCAL_II_CANISTER_SAFARI,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
       DEV_ENV: process.env.DEV_ENV || "production",
       DEPLOYMENT_TAG:
