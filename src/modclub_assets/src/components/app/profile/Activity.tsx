@@ -45,17 +45,26 @@ export default function Activity() {
     if (label === "completed") return "Completed";
   };
 
-  // Check if the 'vote' array is not empty and use its first element,
-  // otherwise, use the first element of the 'pohVote' array.
-  // If both are empty, return a default value.
+  // Check if the vote and pohVote arrays are not empty, compare them and use the first element,
+  // If both are empty, return a default value
   const getLatestVoteTimestamp = (voteArray, pohVoteArray) => {
+    let latestVoteTimestamp = BigInt(0);
+
     if (voteArray.length > 0) {
-      return voteArray[0].createdAt;
-    } else if (pohVoteArray.length > 0) {
-      return pohVoteArray[0].createdAt;
-    } else {
-      return BigInt(0);
+      latestVoteTimestamp = voteArray[0].createdAt;
     }
+
+    if (pohVoteArray.length > 0) {
+      // Convert nanoseconds to milliseconds for comparison
+      const pohLatestVoteTimestamp =
+        pohVoteArray[0].createdAt / BigInt(1000000);
+
+      if (pohLatestVoteTimestamp > latestVoteTimestamp) {
+        latestVoteTimestamp = pohLatestVoteTimestamp;
+      }
+    }
+
+    return latestVoteTimestamp;
   };
 
   //sort activities based on timestamp
@@ -77,7 +86,7 @@ export default function Activity() {
   // Updates the activity list state
   const updateActivitiesState = (activities, sortOrder) => {
     const sortedActivities = sortActivities(activities, sortOrder);
-
+    console.log("#2: ", currentFilter);
     if (currentFilter === "new") {
       setInProgressActivity(sortedActivities);
     } else {
@@ -91,7 +100,7 @@ export default function Activity() {
       currentFilter === "new" ? inProgressActivity : completedActivity;
     const currSortOrder = sortOrder === "desc" ? "asc" : "desc";
     updateActivitiesState(currentSortFilter, currSortOrder);
-    setSortOrder(currSortOrder); //
+    setSortOrder(currSortOrder);
   };
 
   //function to handle descending and ascending sort order on click of in progress and completed
@@ -142,29 +151,58 @@ export default function Activity() {
     appState.userProfile && fetchActivity(currentFilter);
   }, [appState.userProfile, modclub]);
 
-  // This useEffect will now also re-sort the activities whenever sortOrder changes
   useEffect(() => {
-    const sortAndSetActivities = async () => {
+    const fetchActivity = async (filter) => {
       setLoading(true);
-
-      let activities;
       if (modclub) {
-        activities =
-          currentFilter === "new"
-            ? await modclub.getActivity(false)
-            : await modclub.getActivity(true);
-      } else {
-        // Handle the case where modclub is not available
-        activities = []; // or some default value
-      }
+        let activities;
+        if (filter === "new") {
+          activities = await modclub.getActivity(false);
+        } else {
+          activities = await modclub.getActivity(true);
+        }
 
-      // Sort the activities
-      updateActivitiesState(activities, sortOrder);
+        // Apply sorting immediately after fetching
+        const sortedActivities = sortActivities(activities, sortOrder);
+
+        if (filter === "new") {
+          setInProgressActivity(sortedActivities);
+        } else {
+          setCompletedActivity(sortedActivities);
+        }
+      }
       setLoading(false);
     };
+    if (appState.userProfile) {
+      fetchActivity(currentFilter);
+    }
+  }, [appState.userProfile, currentFilter, modclub]);
 
-    sortAndSetActivities();
-  }, [currentFilter, modclub]);
+  //This useEffect will now also re-sort the activities whenever sortOrder changes
+  // useEffect(() => {
+  //   const sortAndSetActivities = async () => {
+  //     setLoading(true);
+
+  //     let activities;
+  //     if (modclub) {
+  //       activities =
+  //         currentFilter === "new"
+  //           ? await modclub.getActivity(false)
+  //           : await modclub.getActivity(true);
+  //     } else {
+  //       // Handle the case where modclub is not available
+  //       activities = []; // or some default value
+  //     }
+
+  //     // Sort the activities
+  //     console.log("#1: ", sortOrder);
+  //     updateActivitiesState(activities, sortOrder);
+  //     console.log("sortAndSetActivities: ", activities);
+  //     setLoading(false);
+  //   };
+
+  //   sortAndSetActivities();
+  // }, [currentFilter, sortOrder, modclub]);
 
   const displayEmail = () => (
     <p className="is-flex is-justify-content-center has-text-white">
@@ -222,7 +260,7 @@ export default function Activity() {
       </div>
     </div>
   );
-
+  console.log("#3:", inProgressActivity);
   return (
     <>
       <Userstats detailed={true} />
