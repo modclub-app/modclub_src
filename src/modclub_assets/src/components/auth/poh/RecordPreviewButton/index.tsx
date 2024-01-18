@@ -1,5 +1,5 @@
 import React from "react";
-import { VideoCamIcon } from "../../../../modkit";
+import { VideoCamIcon } from "../../../../modkit/components";
 import classNames from "classnames/bind";
 import styles from "./styles.scss";
 const cn = classNames.bind(styles);

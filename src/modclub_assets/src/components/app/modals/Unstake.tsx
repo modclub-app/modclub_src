@@ -1,13 +1,14 @@
 import * as React from "react";
+import { useState } from "react";
 import { Field } from "react-final-form";
-import { Level, Icon, Button } from "react-bulma-components";
+import { Button, Icon, Level } from "react-bulma-components";
 import PopupModal from "./PopupModal";
 import { convert_to_mod } from "../../../utils/util";
-import { useState } from "react";
-import { useActors, convert_from_mod } from "../../../utils";
+import { useActors } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
 import { UnstakeHistoryTable } from "./UnstakeHistoryTable";
+import { GTMEvent, GTMManager } from "../../../utils/gtm";
 
 const UpdateTable = ({
   stake,
@@ -89,6 +90,19 @@ export default function Unstake({
   const onFormSubmit = async (values: any) => {
     const { amount } = values;
     dispatch({ type: "unstakeTokensAction", payload: { amount } });
+
+    // GTM: determine amount of UnStake users make into
+    // their account and how many users made UnStake;
+    GTMManager.trackEvent(
+      GTMEvent.AccountTransaction,
+      {
+        uId: appState.loginPrincipalId,
+        userLevel: Object.keys(appState.rs.level)[0],
+        type: "unstake",
+        amount,
+      },
+      ["uId"]
+    );
   };
 
   return (

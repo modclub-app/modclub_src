@@ -45,15 +45,15 @@ function getCurrentTimestamp() {
   return `${year}-${month}-${day}-${hour}.${minute}`;
 }
 
-
 // See readme of https://github.com/dfinity/internet-identity.
 // For some reason, we need different urls for different browsers.
 let LOCAL_II_CANISTER = "";
 let LOCAL_II_CANISTER_SAFARI = "";
 try {
-  LOCAL_II_CANISTER_SAFARI = network === "local"
-    ? `http://localhost:8000/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
-    : `https://identity.ic0.app`;
+  LOCAL_II_CANISTER_SAFARI =
+    network === "local"
+      ? `http://localhost:8000/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
+      : `https://identity.ic0.app`;
   LOCAL_II_CANISTER =
     network === "local"
       ? `http://${process.env["INTERNET_IDENTITY_CANISTER_ID"]}.localhost:8000`
@@ -62,7 +62,7 @@ try {
   console.error("Error setting LOCAL_II_CANISTER: ", e);
   LOCAL_II_CANISTER =
     "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
-  LOCAL_II_CANISTER_SAFARI = 
+  LOCAL_II_CANISTER_SAFARI =
     "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
 }
 const isDevelopment = process.env.NODE_ENV !== "production";

@@ -39,12 +39,12 @@ function deepCopy(obj) {
 const providers_cb = (config) => {
   const II_config = deepCopy(config);
   const browser = detectBrowser();
-  if (browser === 'Safari') {
+  if (browser === "Safari") {
     II_config["providerUrl"] = process.env.LOCAL_II_CANISTER_SAFARI;
   } else {
     II_config["providerUrl"] = process.env.LOCAL_II_CANISTER;
   }
-  
+
   II_config["ii_auth_config"] = {
     idleOptions: {
       disableIdle: true,
