@@ -34,7 +34,7 @@ export default function Activity() {
   const [newEmail, setNewEmail] = useState<string>("");
   const [editEmail, setEditEmail] = useState<boolean>(false);
 
-  type FilterType = "new" | "primary" | "ghost" | "completed";
+  type FilterType = "new" | "completed";
   const [currentFilter, setCurrentFilter] = useState<FilterType>("new");
 
   // Add state for the sort order (default to 'desc' for descending)
@@ -86,7 +86,6 @@ export default function Activity() {
   // Updates the activity list state
   const updateActivitiesState = (activities, sortOrder) => {
     const sortedActivities = sortActivities(activities, sortOrder);
-    //console.log("#2: ", currentFilter);
     switch (currentFilter) {
       case "new":
         setInProgressActivity(sortedActivities);
