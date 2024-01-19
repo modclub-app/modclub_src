@@ -125,7 +125,7 @@ export default function Activity() {
         case "new":
           setInProgressActivity(await modclub.getActivity(false));
           break;
-        case "primary":
+        case "completed":
           setCompletedActivity(await modclub.getActivity(true));
           break;
       }
