@@ -33,7 +33,9 @@ export default function Activity() {
     useState<boolean>(false);
   const [newEmail, setNewEmail] = useState<string>("");
   const [editEmail, setEditEmail] = useState<boolean>(false);
-  const [currentFilter, setCurrentFilter] = useState<string>("new");
+
+  type FilterType = "new" | "primary" | "ghost" | "completed";
+  const [currentFilter, setCurrentFilter] = useState<FilterType>("new");
 
   // Add state for the sort order (default to 'desc' for descending)
   const [sortOrder, setSortOrder] = useState("desc");
@@ -45,8 +47,7 @@ export default function Activity() {
     if (label === "completed") return "Completed";
   };
 
-  // Check if the vote and pohVote arrays are not empty, compare them and use the first element,
-  // If both are empty, return a default value
+  // Function to find the latest timestamp from all(two) arrays of vote objects, handling different time units for comparison
   const getLatestVoteTimestamp = (voteArray, pohVoteArray) => {
     let latestVoteTimestamp = BigInt(0);
 
@@ -55,7 +56,7 @@ export default function Activity() {
     }
 
     if (pohVoteArray.length > 0) {
-      // Convert nanoseconds to milliseconds for comparison
+      // Convert nanoseconds to milliseconds for compatible comparison
       const pohLatestVoteTimestamp =
         pohVoteArray[0].createdAt / BigInt(1000000);
 
@@ -63,7 +64,6 @@ export default function Activity() {
         latestVoteTimestamp = pohLatestVoteTimestamp;
       }
     }
-
     return latestVoteTimestamp;
   };
 
@@ -86,11 +86,14 @@ export default function Activity() {
   // Updates the activity list state
   const updateActivitiesState = (activities, sortOrder) => {
     const sortedActivities = sortActivities(activities, sortOrder);
-    console.log("#2: ", currentFilter);
-    if (currentFilter === "new") {
-      setInProgressActivity(sortedActivities);
-    } else {
-      setCompletedActivity(sortedActivities);
+    //console.log("#2: ", currentFilter);
+    switch (currentFilter) {
+      case "new":
+        setInProgressActivity(sortedActivities);
+        break;
+      case "completed":
+        setCompletedActivity(sortedActivities);
+        break;
     }
   };
 
@@ -115,13 +118,16 @@ export default function Activity() {
     updateActivitiesState(currentSortFilter, "desc");
   };
   //fetch activities
-  const fetchActivity = async (filter) => {
+  const fetchActivity = async (filter: FilterType) => {
     setLoading(true);
     if (modclub) {
-      if (filter === "new") {
-        setInProgressActivity(await modclub.getActivity(false));
-      } else {
-        setCompletedActivity(await modclub.getActivity(true));
+      switch (filter) {
+        case "new":
+          setInProgressActivity(await modclub.getActivity(false));
+          break;
+        case "primary":
+          setCompletedActivity(await modclub.getActivity(true));
+          break;
       }
     }
     setLoading(false);
@@ -151,58 +157,39 @@ export default function Activity() {
     appState.userProfile && fetchActivity(currentFilter);
   }, [appState.userProfile, modclub]);
 
+  // useEffect hook to fetch and sort activities based on user profile and filter, updating relevant states
+  // used switch to avoid magic string
   useEffect(() => {
-    const fetchActivity = async (filter) => {
+    const fetchActivity = async (filter: FilterType) => {
       setLoading(true);
       if (modclub) {
         let activities;
-        if (filter === "new") {
-          activities = await modclub.getActivity(false);
-        } else {
-          activities = await modclub.getActivity(true);
+        switch (filter) {
+          case "new":
+            activities = await modclub.getActivity(false);
+            break;
+          case "completed":
+            activities = await modclub.getActivity(true);
+            break;
         }
 
-        // Apply sorting immediately after fetching
         const sortedActivities = sortActivities(activities, sortOrder);
-
-        if (filter === "new") {
-          setInProgressActivity(sortedActivities);
-        } else {
-          setCompletedActivity(sortedActivities);
+        switch (filter) {
+          case "new":
+            setInProgressActivity(sortedActivities);
+            break;
+          case "completed":
+            setCompletedActivity(sortedActivities);
+            break;
         }
       }
       setLoading(false);
     };
+
     if (appState.userProfile) {
       fetchActivity(currentFilter);
     }
   }, [appState.userProfile, currentFilter, modclub]);
-
-  //This useEffect will now also re-sort the activities whenever sortOrder changes
-  // useEffect(() => {
-  //   const sortAndSetActivities = async () => {
-  //     setLoading(true);
-
-  //     let activities;
-  //     if (modclub) {
-  //       activities =
-  //         currentFilter === "new"
-  //           ? await modclub.getActivity(false)
-  //           : await modclub.getActivity(true);
-  //     } else {
-  //       // Handle the case where modclub is not available
-  //       activities = []; // or some default value
-  //     }
-
-  //     // Sort the activities
-  //     console.log("#1: ", sortOrder);
-  //     updateActivitiesState(activities, sortOrder);
-  //     console.log("sortAndSetActivities: ", activities);
-  //     setLoading(false);
-  //   };
-
-  //   sortAndSetActivities();
-  // }, [currentFilter, sortOrder, modclub]);
 
   const displayEmail = () => (
     <p className="is-flex is-justify-content-center has-text-white">
@@ -260,7 +247,7 @@ export default function Activity() {
       </div>
     </div>
   );
-  console.log("#3:", inProgressActivity);
+  //console.log("#3:", inProgressActivity);
   return (
     <>
       <Userstats detailed={true} />
