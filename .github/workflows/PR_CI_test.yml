@@ -87,18 +87,20 @@ jobs:
         run: |
           dfx start --background
 
-      - name: Build BE canisters
+      - name: Create Canisters
         if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           source scripts/deployment/build_utils.sh
           source scripts/utils.sh
-          DEV_ENV=qa create_canisters qa && build_be_canisters qa
-          find .dfx/local/canisters -name "*.wasm" -exec ls -l {} \;
+          DEV_ENV=qa create_canisters qa
 
       # Deploy using dfx. Ensure you handle any configuration or environment specifics.
       - name: Run deployment script
         if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
-        run: ./scripts/deployment/gh_actions_deploy.sh
+        run: |
+          dfx identity use default
+          DEPLOY_MODE=install ./scripts/deployment/gh_actions_deploy.sh
+          find .dfx/local/canisters -name "*.wasm" -exec ls -l {} \;
           dfx canister call modclub_qa adminInit
           dfx canister call modclub_qa configurePohForProvider "(principal \"$(dfx canister id modclub_qa)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)"
           dfx canister call modclub_qa populateChallenges
@@ -110,6 +112,7 @@ jobs:
       - name: Seeding
         if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
+          dfx identity use default
           ./scripts/infra/seed_content.sh
         env:
           DEV_ENV: qa

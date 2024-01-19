@@ -202,3 +202,9 @@ export function microsecondToSecond(microsec: bigint): number {
 export function nanoTimeStrToMilli(nano: bigint): bigint {
   return nano / BigInt(1000000);
 }
+
+export const formattedTime = (val) => {
+  const time = new Date(0, 0, 0);
+  time.setSeconds(val);
+  return format(time, "mm:ss");
+};

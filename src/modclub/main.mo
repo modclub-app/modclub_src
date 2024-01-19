@@ -12,6 +12,7 @@ import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import Trie "mo:base/Trie";
 import Helpers "../common/helpers";
+import ModSecurity "../common/security/guard";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import List "mo:base/List";
@@ -61,7 +62,6 @@ import CommonTypes "../common/types";
 import Reserved "service/content/reserved";
 import Constants "../common/constants";
 import RSConstants "../rs/constants";
-import ModSecurity "../common/security/guard";
 import Timer "mo:base/Timer";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
@@ -130,6 +130,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
   authGuard.subscribe("admins");
+  admins := authGuard.setUpDefaultAdmins(
+    admins,
+    deployer,
+    Principal.fromText("aaaaa-aa"), // Just because its impossible to use this here.
+  );
+  authGuard.subscribe("secrets");
 
   stable var importedProfilesStable : List.List<(Principal, Nat)> = List.nil<(Principal, Nat)>();
   private var importedProfiles = Buffer.Buffer<(Principal, Nat)>(100);
@@ -138,8 +144,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private var importedProviders = Buffer.Buffer<Principal>(100);
 
   stable var accountsAssociationsStable : List.List<(Principal, Principal)> = List.nil<(Principal, Principal)>();
-  private var accountsAssocHashes = HashMap.HashMap<Text, Principal>(1, Text.equal, Text.hash);
-  private var assocVerificationHashes = HashMap.HashMap<Text, (Principal, Text)>(1, Text.equal, Text.hash);
 
   stable var migrationAirdropWhitelistStable : List.List<(Principal, Bool)> = List.nil<(Principal, Bool)>();
   private var migrationAirdropWhitelist = Buffer.Buffer<(Principal, Bool)>(100);
@@ -176,7 +180,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   stable let backupState = Backup.init(null);
-  var modclubBackup = ModclubBackup.ModclubBackup(backupState, stateV2);
+  var modclubBackup = ModclubBackup.ModclubBackup(backupState, stateV2, contentCategories);
 
   public shared ({ caller }) func handleSubscription(payload : CommonTypes.ConsumerPayload) : async () {
     switch (payload) {
@@ -201,6 +205,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             case (_) {};
           };
         };
+      };
+      case (#secrets(list)) {
+        authGuard.handleSubscription(payload);
       };
     };
   };
@@ -2011,14 +2018,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public query ({ caller }) func getCanisterMetrics(
     parameters : Canistergeek.GetMetricsParameters
   ) : async ?Canistergeek.CanisterMetrics {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({ caller }) func collectCanisterMetrics() : async () {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.collectMetrics();
@@ -2027,7 +2034,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public query ({ caller }) func getCanisterLog(
     request : ?LoggerTypesModule.CanisterLogRequest
   ) : async ?LoggerTypesModule.CanisterLogResponse {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     logger.logMessage("getCanisterLog - request from caller: " # Principal.toText(caller));
@@ -2712,6 +2719,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     claimTxId;
   };
 
+  public query ({ caller }) func getProviderSummaries(providerId : Principal) : async Result.Result<Types.ProviderSummaries, Text> {
+    switch (PermissionsModule.checkProviderPermission(caller, ?providerId, stateV2)) {
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p))();
+    };
+    let contentSummaries = ContentManager.getProviderContentSummaries(
+      providerId,
+      stateV2,
+      content2Category,
+      getVoteCount
+    );
+
+    return #ok(contentSummaries);
+  };
+
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
@@ -2768,6 +2790,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       deployer,
       Principal.fromActor(this)
     );
+    authGuard.subscribe("secrets");
     claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
 
     migrationAirdropWhitelist := Buffer.fromIter<(Principal, Bool)>(List.toIter<(Principal, Bool)>(migrationAirdropWhitelistStable));
@@ -2821,7 +2844,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     contentCategories := HashMap.fromIter<Types.CategoryId, Types.ContentCategory>(contentCategoriesStable.vals(), contentCategoriesStable.size(), Text.equal, Text.hash);
     content2Category := HashMap.fromIter<Types.ContentId, Types.CategoryId>(content2CategoryStable.vals(), content2CategoryStable.size(), Text.equal, Text.hash);
     stakingManager := Staking.StakingManager(env, stateV2);
-    modclubBackup := ModclubBackup.ModclubBackup(backupState, stateV2);
+    modclubBackup := ModclubBackup.ModclubBackup(backupState, stateV2, contentCategories);
   };
 
   //SNS generic validate function
@@ -2877,9 +2900,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (#handleSubscription _) { authGuard.isModclubAuth(caller) };
       case (#importAirdropMetadata _) { authGuard.isOldModclubInstance(caller) };
-      case (#associateAccount _) {
-        authGuard.isOldModclubInstance(caller) or authGuard.isAdmin(caller);
-      };
       case (#addToApprovedUser _) { authGuard.isAdmin(caller) };
       case (#validate _) { authGuard.isAdmin(caller) };
       case (#translateUserPoints _) { authGuard.isAdmin(caller) };
@@ -3147,129 +3167,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return usersAndStatsCsv;
   };
 
-  public shared ({ caller }) func generateAssocMetadata() : async {
-    hash : Text;
-    targetCanister : Principal;
-  } {
-    let assocHash = await Helpers.generateUUID();
-    accountsAssocHashes.put(assocHash, caller);
-    return { hash = assocHash; targetCanister = Principal.fromActor(this) };
-  };
-
-  public shared ({ caller }) func validateAssocHash(assocAcc : Principal, assocHash : Text, verificationHash : Text) : async Bool {
-    // Utils.mod_assert(authGuard.isOldModclubCanister(caller), ModSecurity.AccessMode.NotPermitted);
-    switch (accountsAssocHashes.get(assocHash)) {
-      case (?associator) {
-        assocVerificationHashes.put(assocHash, (assocAcc, verificationHash));
-        return true;
-      };
-      case (_) {
-        throw Error.reject("Impossible to validateAssocHash. " # assocHash);
-      };
-    };
-  };
-
-  public shared ({ caller }) func associateAccount(assocHash : Text, profileData : Types.ImportProfile, points : Int) : async Text {
-    logger.logMessage("MODCLUB Instanse has associateAccount call:: " # debug_show assocHash # " " # debug_show profileData # " " # debug_show points);
-    let (associator, assocAccount, avh) = switch (accountsAssocHashes.get(assocHash)) {
-      case (?assoc) {
-        switch (assocVerificationHashes.get(assocHash)) {
-          case (?(assocAcc, vh)) {
-            (assoc, assocAcc, vh);
-          };
-          case (_) {
-            logger.logError("No association record found in assocVerificationHashes for " # assocHash);
-            throw Error.reject("No association record found in assocVerificationHashes for " # assocHash);
-          };
-        };
-      };
-      case (_) {
-        logger.logError("No association record found in assocVerificationHashes for " # assocHash);
-        throw Error.reject("No association record found in accountsAssocHashes for " # assocHash);
-      };
-    };
-
-    try {
-      let up = Option.get<Nat>(Nat.fromText(Int.toText(points)), 0);
-      let associated = List.find<(Principal, Principal)>(
-        accountsAssociationsStable,
-        func((_, assocAcc)) { Principal.equal(assocAcc, assocAccount) }
-      );
-      switch (associated) {
-        case (?elem) {
-          throw Error.reject("Account " # Principal.toText(assocAccount) # " has been already associated.");
-        };
-        case (_) {};
-      };
-      let subAccs = HashMap.fromIter<Text, Blob>(
-        (await Helpers.generateSubAccounts(Helpers.moderatorSubaccountTypes)).vals(),
-        Array.size(Helpers.moderatorSubaccountTypes),
-        Text.equal,
-        Text.hash
-      );
-
-      let decimals = await ledger.icrc1_decimals();
-      let modclubAPBalance = await ledger.icrc1_balance_of({
-        owner = Principal.fromActor(this);
-        subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
-      });
-      switch (modclubAPBalance) {
-        case (tokensAvailable) {
-          let amount = (ModClubParam.REQUIRED_POH_REVIEWS * ModClubParam.REWARD_PER_POH_REVIEW) * Nat.pow(10, Nat8.toNat(decimals));
-          if (tokensAvailable <= amount) {
-            logger.logError("Insufficient funds to pay for POH. tokensAvailable: " # Nat.toText(tokensAvailable) # " amount required: " # Nat.toText(amount) # " Account failed to associate " # assocHash);
-            throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
-          };
-          let _ = await ledger.icrc1_transfer({
-            from_subaccount = ?Constants.ICRC_ACCOUNT_PAYABLE_SA;
-            to = {
-              owner = Principal.fromActor(this);
-              subaccount = ?Constants.ICRC_POH_REWARDS_SA;
-            };
-            amount;
-            fee = null;
-            memo = null;
-            created_at_time = null;
-          });
-
-          let profile = await ModeratorManager.registerModerator(
-            associator,
-            profileData.userName,
-            null,
-            stateV2,
-            subAccs
-          );
-
-          await storageSolution.registerModerators([associator]);
-          contentQueueManager.assignUserIds2QueueId([associator]);
-          pohContentQueueManager.assignUserIds2QueueId([associator]);
-          ignore await rs.setRS(associator, 10 * RSConstants.RS_FACTOR);
-
-          let (rsValue : Int, level : RSTypes.UserLevel) = Helpers.translateUpToRs(up);
-          ignore await rs.setRS(associator, rsValue);
-
-          logger.logMessage("NEW Moderator Account has been Associated. RS Value set for associator " # Principal.toText(associator) # " = " # Int.toText(rsValue));
-        };
-        case (_) {
-          throw Error.reject("Impossible to create new Moderator. Insufficient funds to pay for POH.");
-        };
-      };
-
-      accountsAssociationsStable := List.filter<(Principal, Principal)>(
-        accountsAssociationsStable,
-        func((assoc, assocAcc)) {
-          not (Principal.equal(assoc, associator) and Principal.equal(assocAcc, assocAccount));
-        }
-      );
-      accountsAssociationsStable := List.push<(Principal, Principal)>((associator, assocAccount), accountsAssociationsStable);
-
-      return avh;
-    } catch (e) {
-      logger.logError("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
-      throw Error.reject("AN ERROR OCCURS DURING ModeratorAccount Association :: " # Error.message(e));
-    };
-  };
-
   // ------------------  AIRDROP LOGIC ------------------ \\
   public shared func setMigrationAirdropWhitelist(whitelist : [Principal]) : async Result.Result<Bool, Text> {
     for (elem in whitelist.vals()) {
@@ -3510,6 +3407,15 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           backupId,
           func(s : StateV2.State) {
             stateV2 := s;
+          }
+        );
+        return result;
+      };
+      case ("contentCategories") {
+        let result = await modclubBackup.restore_contentCategories(
+          backupId,
+          func(s : HashMap.HashMap<Types.CategoryId, Types.ContentCategory>) {
+            contentCategories := s;
           }
         );
         return result;

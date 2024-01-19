@@ -44,7 +44,6 @@
       "gzip": true
     },
     "modclub_qa_assets": {
-      "dependencies": ["modclub_qa"],
       "frontend": {
         "entrypoint": "src/modclub_assets/src/index.html"
       },
@@ -115,8 +114,8 @@
     },
     "internet_identity": {
       "type": "custom",
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "candid": "https://github.com/dfinity/internet-identity/releases/download/release-2023-11-17/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/download/release-2023-11-17/internet_identity_dev.wasm.gz",
       "remote": {
         "id": {
           "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
@@ -129,16 +128,19 @@
       "type": "motoko"
     },
     "airdrop": {
-      "main": "src/airdrop/main.mo",
-      "type": "motoko"
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
     },
     "airdrop_dev": {
-      "main": "src/airdrop/main.mo",
-      "type": "motoko"
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
     },
     "airdrop_qa": {
-      "main": "src/airdrop/main.mo",
-      "type": "motoko"
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
     }
   },
   "defaults": {

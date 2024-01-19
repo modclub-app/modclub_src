@@ -252,7 +252,7 @@ function deploy_quick_qa_canisters() {
     quick_build_and_deploy_canister "rs_qa"
     quick_build_and_deploy_canister "auth_qa"
     quick_build_and_deploy_canister "vesting_qa"
-    quick_build_and_deploy_canister "airdrop_qa"
+
     # Add similar lines for other canisters
     deploy_wallet_canister
 }

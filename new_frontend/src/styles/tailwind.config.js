@@ -6,17 +6,25 @@ module.exports = {
     "@/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    borderColor: (theme) => ({
-      ...theme("colors"),
-      DEFAULT: theme("colors.green.100", "currentColor"),
-      primary: "#1B4444",
-      secondary: "#66DD95",
-    }),
+    screens: {
+      sm: "480px", // 30rem
+      md: "768px", // 48rem
+      lg: "976px", // 61rem
+      xl: "1440px", // 90rem
+    },
+    fontSize: {
+      base: "1rem",
+    },
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      spacing: {
+        5: "1.25rem",
+      },
+      gridTemplateColumns: {
+        8: "repeat(8, minmax(0, 1fr))",
+        12: "repeat(12, minmax(0, 1fr))",
+      },
+      gridGap: {
+        5: "1.25rem",
       },
     },
   },

@@ -44,8 +44,6 @@ module Constants {
 
   public let ACCOUNT_PAYABLE_FIELD = "ACCOUNT_PAYABLE";
 
-  // --- HTTP Outcall Costs ---
-  public let HTTPS_OUTCALL_COST_PER_CALL : Nat = 171_360_000;
-  public let HTTPS_OUTCALL_COST_PER_REQUEST_BYTE : Nat = 13_600;
-  public let HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE : Nat = 27_200;
+  // Secrets prefix
+  public let SECRETS_ALLOWED_CANISTER_GEEK_CALLER = "allowed_cg_caller_";
 };

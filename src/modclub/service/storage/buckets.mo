@@ -29,7 +29,7 @@ import Types "./types";
 shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this {
   let authGuard = ModSecurity.Guard(env, "BUCKET_CANISTER");
   authGuard.subscribe("admins");
-
+  authGuard.subscribe("secrets");
   stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
   private let canistergeekMonitor = Canistergeek.Monitor();
 
@@ -296,7 +296,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
           ),
           #error
         );
-        "404 Not Found";
+        Blob.fromArray([]);
       };
     };
     let next_token : ?Types.StreamingCallbackToken = switch (
@@ -438,14 +438,14 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   public query ({ caller }) func getCanisterMetrics(
     parameters : Canistergeek.GetMetricsParameters
   ) : async ?Canistergeek.CanisterMetrics {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({ caller }) func collectCanisterMetrics() : async () {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekMonitor.collectMetrics();
@@ -454,7 +454,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   public query ({ caller }) func getCanisterLog(
     request : ?LoggerTypesModule.CanisterLogRequest
   ) : async ?LoggerTypesModule.CanisterLogResponse {
-    if (not Helpers.allowedCanistergeekCaller(caller)) {
+    if (not ModSecurity.allowedCanistergeekCaller(caller, authGuard)) {
       throw Error.reject("Unauthorized");
     };
     canistergeekLogger.getLog(request);
@@ -667,6 +667,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
       deployer,
       Principal.fromActor(this)
     );
+    authGuard.subscribe("secrets");
     state := toDataCanisterState(stateShared);
     stateShared := emptyDataCanisterSharedState();
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);

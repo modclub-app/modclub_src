@@ -145,10 +145,10 @@ if [[ "$ENVIRONMENT" == *"qa"* ]]; then
     ledger_acc_principal=$(dfx identity get-principal)
     dfx identity use $currentPrincipal
 
-    check_required_opts && deploy_canisters qa $DEPLOY_NETWORK $OLD_MODCLUB_INSTANCE # $ledger_acc_principal $minter_principal
+    check_required_opts && deploy_canisters_quick qa $DEPLOY_NETWORK $OLD_MODCLUB_INSTANCE # $ledger_acc_principal $minter_principal
 elif [[ "$ENVIRONMENT" == *"dev"* ]]; then
     log "DEPLOY DEV CANISTERS STARTED..."
-    check_required_opts && deploy_canisters dev $DEPLOY_NETWORK $OLD_MODCLUB_INSTANCE
+    check_required_opts && deploy_canisters_quick dev $DEPLOY_NETWORK $OLD_MODCLUB_INSTANCE
 elif [[ "$ENVIRONMENT" == *"prod"* ]]; then
     log "DEPLOY PROD CANISTERS STARTED..."
     check_required_opts && deploy_canisters prod $DEPLOY_NETWORK $OLD_MODCLUB_INSTANCE

@@ -13,6 +13,10 @@ import {
   fetchUserLockBlock,
   setReleaseUnStakedLoading,
   releaseUnStakedTokens,
+  stakeTokensAction,
+  stakeTokens,
+  unstakeTokensAction,
+  unstakeTokens,
 } from "./stakesData";
 
 export const getStakingReducers = (state, icContext, dispatch) => {
@@ -54,5 +58,9 @@ export const getStakingReducers = (state, icContext, dispatch) => {
       "releaseUnStakedTokens",
       (payload) => releaseUnStakedTokens(context, payload),
     ],
+    ["stakeTokensAction", (payload) => stakeTokensAction(context, payload)],
+    ["stakeTokens", (payload) => stakeTokens(context, payload)],
+    ["unstakeTokensAction", (payload) => unstakeTokensAction(context, payload)],
+    ["unstakeTokens", (payload) => unstakeTokens(context, payload)],
   ]);
 };

@@ -1,7 +1,6 @@
 import { Field } from "react-final-form";
 import { Icon, Notification } from "react-bulma-components";
 import { useEffect, useState } from "react";
-import { icrc1Transfer } from "../../../utils/api";
 import { Principal } from "@dfinity/principal";
 import PopupModal from "./PopupModal";
 import { convert_to_mod, format_token } from "../../../utils/util";
@@ -51,18 +50,10 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
     try {
       const amount: number =
         Number(reserved) * Math.pow(10, Number(appState.decimals));
-      const transfer = await icrc1Transfer(
-        wallet,
-        activeProvider.meta.id,
-        BigInt(amount),
-        Principal.fromText(receiver),
-        subacc
-      );
-      !appState.systemBalanceLoading &&
-        dispatch({ type: "systemBalanceLoading", payload: true });
-      !appState.personalBalanceLoading &&
-        dispatch({ type: "personalBalanceLoading", payload: true });
-      return { reserved: Number(reserved), transfer: transfer };
+      dispatch({
+        type: "accountDepositAction",
+        payload: { amount, subAcc: subacc },
+      });
     } catch (err) {
       setError(err.message);
     }
@@ -134,7 +125,7 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
         show={show}
         title="Deposit"
         subtitle="Congratulation!"
-        loader={load}
+        loader={!!appState.accountDepositAction}
         handleSubmit={handleDeposit}
       >
         {principal &&

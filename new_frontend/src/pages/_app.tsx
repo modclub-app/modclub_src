@@ -1,15 +1,21 @@
-import "@/styles/globals.scss";
+import React from "react";
 import type { AppProps } from "next/app";
-import Head from "next/head";
+import { Lato } from "next/font/google";
+import { Navigation } from "@/components/layout";
+import { Footer } from "@/components/layout";
+
+const latoFont = Lato({
+  subsets: ["latin"],
+  weight: "300",
+});
+import "@/styles/globals.scss";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <>
-      <Head>
-        <title>Modclub</title>
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-      </Head>
+    <main className={latoFont.className}>
+      <Navigation />
       <Component {...pageProps} />
-    </>
+      <Footer />
+    </main>
   );
 }

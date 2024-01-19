@@ -13,5 +13,33 @@ fi
 
 . "$(dirname -- "$0")/_/husky.sh"
 
+is_snake_case() {
+  if echo "$1" | grep -Eq '^[a-z0-9]+(_[a-z0-9]+)*$'; then
+    return 0 # true
+  else
+    return 1 # false
+  fi
+}
+
+# Check each staged file name
+for file in $(git diff --cached --name-only --diff-filter=ACMR); do
+  # Skip files in the .husky directory
+  if [[ "$file" == .husky/* ]]; then
+    continue
+  fi
+
+  # Only process .sh files
+  if [[ "$file" != *.sh ]]; then
+    continue
+  fi
+
+  filename=$(basename "$file")
+  if ! is_snake_case "$filename"; then
+    echo "Error: File name '$filename' does not adhere to snake_case convention."
+    exit 1
+  fi
+done
+
+
 npx pretty-quick --staged
 cd new_frontend && npm run lint:fix

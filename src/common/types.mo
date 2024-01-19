@@ -146,9 +146,15 @@ module {
     payload : Principal;
   };
 
+  public type Secret = {
+    name : Text;
+    value : Text;
+  };
+
   public type ConsumerPayload = {
     #admins : [Principal];
     #events : [Event];
+    #secrets : [Secret];
   };
 
   public type SubscriberCallback = shared ConsumerPayload -> async ();

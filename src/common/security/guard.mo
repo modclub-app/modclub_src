@@ -6,7 +6,8 @@ import Result "mo:base/Result";
 import Debug "mo:base/Debug";
 import Timer "mo:base/Timer";
 import CommonTypes "../types";
-import Utils "../utils";
+import Array "mo:base/Array";
+import Constants "../constants";
 
 module ModSecurity {
 
@@ -14,9 +15,23 @@ module ModSecurity {
     NotPermitted = "Access denied. No Permissions.";
   };
 
+  public func allowedCanistergeekCaller(caller : Principal, authGuard : ModSecurity.Guard) : Bool {
+    let allowedCallersSecret : [CommonTypes.Secret] = authGuard.getSecrets(Constants.SECRETS_ALLOWED_CANISTER_GEEK_CALLER);
+    let callerStr = Principal.toText(caller);
+
+    var exists = Array.find<CommonTypes.Secret>(
+      allowedCallersSecret,
+      func(secret : CommonTypes.Secret) : Bool {
+        Text.equal(secret.value, callerStr);
+      }
+    );
+    exists != null;
+  };
+
   public class Guard(env : CommonTypes.ENV, context : Text) {
 
     var admins : List.List<Principal> = List.nil<Principal>();
+    var secrets : List.List<CommonTypes.Secret> = List.nil<CommonTypes.Secret>();
 
     public func subscribe(topic : Text) : () {
       ignore Timer.setTimer(
@@ -36,8 +51,21 @@ module ModSecurity {
             };
           };
         };
+        case (#secrets(list)) {
+          secrets := List.fromArray(list);
+        };
         case (_) {};
       };
+    };
+
+    public func getSecrets(filterName : Text) : [CommonTypes.Secret] {
+      var filterSecrets = List.filter<CommonTypes.Secret>(
+        secrets,
+        func(val : CommonTypes.Secret) : Bool {
+          Text.contains(val.name, #text filterName);
+        }
+      );
+      List.toArray(filterSecrets);
     };
 
     public func getAdmins() : [Principal] {
@@ -115,7 +143,7 @@ module ModSecurity {
       if (not isAdmin(initializer)) {
         admins := List.push<Principal>(initializer, admins);
       };
-      if (not isAdmin(mainActorPrincipal)) {
+      if (Text.notEqual(Principal.toText(mainActorPrincipal), "aaaaa-aa") and not isAdmin(mainActorPrincipal)) {
         admins := List.push<Principal>(mainActorPrincipal, admins);
       };
       for (admin in List.toArray(ssAdmins).vals()) {

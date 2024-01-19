@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { Switch, Route, useHistory, useLocation } from "react-router-dom";
-import { Columns } from "react-bulma-components";
+import { Columns, Notification } from "react-bulma-components";
 import { ProfileProvider } from "../../contexts/profile";
 import NotAuthenticatedModal from "../../app/modals/NotAuthenticated";
 
@@ -27,6 +27,8 @@ export default function ProviderLayout() {
   const dispatch = useAppStateDispatch();
 
   const { isConnected, principal } = useConnect();
+  const [notification, setNotification] = useState(null);
+  const [error, setError] = useState(null);
 
   const actors = useActors();
   const { modclub, wallet } = actors;
@@ -81,12 +83,68 @@ export default function ProviderLayout() {
     appState.personalBalanceLoading,
   ]);
 
+  useEffect(() => {
+    if (isConnected && appState.accountDepositAction && wallet) {
+      dispatch({ type: "depositToBalance" });
+    }
+  }, [isConnected, appState.accountDepositAction, wallet]);
+
+  useEffect(() => {
+    if (isConnected && appState.notifications.length > 0) {
+      const notifText = appState.notifications[0];
+      setNotification(notifText);
+      setTimeout(() => {
+        setNotification(null);
+        dispatch({ type: "dropNotification", payload: notifText });
+      }, 3000);
+    }
+  }, [isConnected, appState.notifications.length]);
+
+  useEffect(() => {
+    if (isConnected && appState.errors.length > 0) {
+      const errText = appState.errors[0];
+      setError(errText);
+      setTimeout(() => {
+        setError(null);
+        dispatch({ type: "dropError", payload: errText });
+      }, 3000);
+    }
+  }, [isConnected, appState.errors.length]);
+
   if (!isConnected) return <NotAuthenticatedModal />;
 
   return (
     <>
       {isConnected ? (
         <>
+          {notification && (
+            <span
+              style={{
+                position: "absolute",
+                zIndex: 9999,
+                width: "100%",
+                heigh: 300,
+              }}
+            >
+              <Notification color={"success"} className="has-text-centered">
+                {notification}
+              </Notification>
+            </span>
+          )}
+          {error && (
+            <span
+              style={{
+                position: "absolute",
+                zIndex: 9999,
+                width: "100%",
+                heigh: 300,
+              }}
+            >
+              <Notification color={"danger"} className="has-text-centered">
+                {error}
+              </Notification>
+            </span>
+          )}
           <Columns
             className="container"
             marginless

@@ -194,36 +194,6 @@ module Helpers {
     Nat64.toNat(Int64.toNat64(Int64.fromInt(value)));
   };
 
-  public func allowedCanistergeekCaller(caller : Principal) : Bool {
-    let authorizedCallers : [Principal] = [
-      Principal.fromText(
-        "hqyof-lxrze-ezy5y-bys4t-dm4bq-7i57t-uisji-lsnmt-5jdma-4ujdb-5qe"
-      ),
-      Principal.fromText(
-        "mni5w-twhal-we6re-mvbh2-r3e6x-2djsc-nubmb-hw2ra-avyuu-mu2gj-5qe"
-      ),
-      Principal.fromText(
-        "ov3ez-uxdlq-nu3dd-tpoic-653wi-seo7t-uwqwz-fcoou-homaw-sku6s-nae"
-      ),
-      Principal.fromText(
-        "vd5zo-22yle-so7c7-cnleg-vjzme-vjh2v-2sc7q-76zcs-ul27t-axccm-aqe"
-      ),
-      Principal.fromText(
-        "rticr-ll5pl-u37cr-zipyn-tun6r-gux4r-6j2pd-yfhu3-5mpzf-xmk6c-lqe"
-      ),
-      Principal.fromText(
-        "dowzh-nyaaa-aaaai-qnowq-cai"
-      )
-    ];
-    var exists = Array.find<Principal>(
-      authorizedCallers,
-      func(val : Principal) : Bool {
-        Principal.equal(val, caller);
-      }
-    );
-    exists != null;
-  };
-
   public func level2Text(lv : Types.Level) : Text {
     switch (lv) {
       case (#simple) {

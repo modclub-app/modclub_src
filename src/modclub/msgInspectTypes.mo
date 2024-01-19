@@ -65,6 +65,7 @@ module {
     #getProvider : () -> Principal;
     #getProviderAdmins : () -> Principal;
     #getProviderContent : () -> (Principal, Types.ContentStatus, Nat, Nat);
+    #getProviderSummaries : () -> Principal;
     #getProviderRules : () -> ();
     #getProviderSa : () -> (Text, ?Principal);
     #getReservedByContentId : () -> Text;
@@ -124,7 +125,6 @@ module {
     #withdrawModeratorReward : () -> (ICRCTypes.Tokens, ?Principal);
     #validate : () -> Any;
     #setModclubBuckets : () -> ();
-    #associateAccount : () -> (Text, Types.ImportProfile, Int);
     #generateAssocMetadata : () -> ();
     #validateAssocHash : () -> (Principal, Text, Text);
     #setMigrationAirdropWhitelist : () -> [Principal];

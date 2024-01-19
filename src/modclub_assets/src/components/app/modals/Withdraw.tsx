@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Field } from "react-final-form";
 import { Level, Icon } from "react-bulma-components";
-import { withdrawModeratorReward } from "../../../utils/api";
 import { convert_to_mod } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 
@@ -65,22 +64,10 @@ export default function Withdraw({
   );
   const onFormSubmit = async (values: any) => {
     const { amount, address } = values;
-    try {
-      const amountTokens: number =
-        Number(amount) * Math.pow(10, Number(appState.decimals));
-      const transfer = await withdrawModeratorReward(
-        modclub,
-        BigInt(amountTokens),
-        address
-      );
-      !appState.personalBalanceLoading &&
-        dispatch({ type: "personalBalanceLoading", payload: true });
-      !appState.systemBalanceLoading &&
-        dispatch({ type: "systemBalanceLoading", payload: true });
-      return { reserved: Number(amount), transfer: transfer };
-    } catch (err) {
-      console.error("Withdraw Failed:", err);
-    }
+    dispatch({
+      type: "accountWithdrawAction",
+      payload: { amount, target: address },
+    });
   };
 
   return (
@@ -90,7 +77,7 @@ export default function Withdraw({
       title="Withdraw"
       handleSubmit={onFormSubmit}
       subtitle="Congratulation!"
-      loader={load}
+      loader={!!appState.accountWithdrawAction}
       updateTable={<UpdateTable amount={inputValue || 0} />}
       isSubmitDisabled={!(address && amount)}
     >
