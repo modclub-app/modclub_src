@@ -246,7 +246,7 @@ export default function Activity() {
       </div>
     </div>
   );
-  //console.log("#3:", inProgressActivity);
+
   return (
     <>
       <Userstats detailed={true} />
