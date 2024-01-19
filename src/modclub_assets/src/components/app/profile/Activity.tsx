@@ -40,7 +40,7 @@ export default function Activity() {
   // Add state for the sort order (default to 'desc' for descending)
   const [sortOrder, setSortOrder] = useState("desc");
 
-  const filters = ["completed", "new"];
+  const filters: FilterType[] = ["completed", "new"];
 
   const getLabel = (label: string) => {
     if (label === "new") return "In Progress";
