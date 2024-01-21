@@ -25,7 +25,7 @@ canister_backup_restore() {
     local data_label=$1
 
     # Perform the backup
-    local backupId=$(backup_modclub $data_label "someTag" local)
+    local backupId=$(backup_modclub $data_label "someTag" local qa)
 
     echo "  ...restore $data_label from Backup:$backupId"
     # Perform the restore

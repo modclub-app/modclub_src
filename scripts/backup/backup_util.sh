@@ -3,8 +3,10 @@ backup_modclub() {
     local data_label=$1
     local tag=$2
     local network=$3
+    local env=$4
 
-    backupOutput=$(dfx canister call modclub_qa backup "(\"$data_label\", \"$tag\")" --network=$network)
+    modclub=$(get_canister_name_by_env $env "modclub")
+    backupOutput=$(dfx canister call $modclub backup "(\"$data_label\", \"$tag\")" --network=$network)
     
     pattern='^\([0-9]+ : nat\)$'    
     if [[ $backupOutput =~ $pattern ]]; then
