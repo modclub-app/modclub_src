@@ -3,6 +3,7 @@ set -e
 
 current_dir="$(dirname "$0")"
 source "${current_dir}/../../backup/backup_util.sh"
+source "${current_dir}/../../utils.sh"
 
 check_contains() {
     local string="$1"
@@ -25,7 +26,7 @@ canister_backup_restore() {
     local data_label=$1
 
     # Perform the backup
-    local backupId=$(backup_modclub $data_label "someTag" local)
+    local backupId=$(backup_modclub $data_label "someTag" local qa)
 
     echo "  ...restore $data_label from Backup:$backupId"
     # Perform the restore
