@@ -3,6 +3,7 @@ set -e
 
 current_dir="$(dirname "$0")"
 source "${current_dir}/../../backup/backup_util.sh"
+source "${current_dir}/../../utils.sh"
 
 check_contains() {
     local string="$1"
