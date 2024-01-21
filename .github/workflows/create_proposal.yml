@@ -133,6 +133,7 @@ jobs:
           ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
 
       - name: Backup - before deployment
+        if: ${{ github.event.inputs.CANISTER == 'modclub' }}
         run: |
           if ! ./scripts/deployment/gh_backup.sh; then
             echo "Backup failed"
