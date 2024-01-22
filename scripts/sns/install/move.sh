@@ -4,13 +4,13 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Move the quill script to /usr/local/bin
-sudo mv "$SCRIPT_DIR/bin/quill" /usr/local/bin/quill
-sudo mv "$SCRIPT_DIR/bin/didc" /usr/local/bin/didc
-sudo mv "$SCRIPT_DIR/bin/sns-quill" /usr/local/bin/sns-quill
-sudo mv "$SCRIPT_DIR/bin/sns" /usr/local/bin/sns-cli
+ mv "$SCRIPT_DIR/bin/quill" /usr/local/bin/quill #sudo deleted
+ mv "$SCRIPT_DIR/bin/didc" /usr/local/bin/didc #sudo deleted
+ mv "$SCRIPT_DIR/bin/sns-quill" /usr/local/bin/sns-quill #sudo deleted
+ mv "$SCRIPT_DIR/bin/sns" /usr/local/bin/sns-cli #sudo deleted
 
 # Make the scripts executable
-sudo chmod +x /usr/local/bin/quill
-sudo chmod +x /usr/local/bin/didc
-sudo chmod +x /usr/local/bin/sns-quill
-sudo chmod +x /usr/local/bin/sns-cli
+ chmod +x /usr/local/bin/quill #sudo deleted
+ chmod +x /usr/local/bin/didc #sudo deleted
+ chmod +x /usr/local/bin/sns-quill #sudo deleted
+ chmod +x /usr/local/bin/sns-cli #sudo deleted

@@ -1,89 +1,19 @@
 {
   "canisters": {
-    "modclub": {
-      "main": "src/modclub/main.mo",
-      "type": "motoko",
-      "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
-    },
-    "modclub_assets": {
-      "frontend": {
-        "entrypoint": "src/modclub_assets/src/index.html"
-      },
-      "source": [
-        "src/modclub_assets/assets",
-        "dist/modclub_assets/",
-        "src/well-known/"
-      ],
-      "type": "assets"
-    },
-    "modclub_dev": {
-      "main": "src/modclub/main.mo",
-      "type": "motoko",
-      "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
-    },
-    "modclub_dev_assets": {
-      "frontend": {
-        "entrypoint": "src/modclub_assets/src/index.html"
-      },
-      "source": [
-        "src/modclub_assets/assets",
-        "dist/modclub_assets/",
-        "src/well-known/"
-      ],
-      "type": "assets"
-    },
-    "modclub_qa": {
-      "main": "src/modclub/main.mo",
-      "type": "motoko",
-      "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
-    },
-    "modclub_qa_assets": {
-      "frontend": {
-        "entrypoint": "src/modclub_assets/src/index.html"
-      },
-      "source": [
-        "src/modclub_assets/assets",
-        "dist/modclub_assets/",
-        "src/qa_custom_domain/well-known/"
-      ],
-      "type": "assets"
-    },
-    "wallet": {
-      "build": "",
-      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
-      "remote": {
-        "id": {
-          "ic": "xsi2v-cyaaa-aaaaq-aabfq-cai",
-          "local": "r7inp-6aaaa-aaaaa-aaabq-cai"
-        }
-      },
+    "airdrop": {
+      "candid": "src/airdrop/airdrop.did",
       "type": "custom",
-      "wasm": ""
+      "wasm": "src/airdrop/airdrop.wasm"
     },
-    "wallet_qa": {
+    "airdrop_dev": {
+      "candid": "src/airdrop/airdrop.did",
       "type": "custom",
-      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
-      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
+      "wasm": "src/airdrop/airdrop.wasm"
     },
-    "wallet_dev": {
+    "airdrop_qa": {
+      "candid": "src/airdrop/airdrop.did",
       "type": "custom",
-      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
-      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
-    },
-    "rs": {
-      "main": "src/rs/main.mo",
-      "type": "motoko"
-    },
-    "rs_qa": {
-      "main": "src/rs/main.mo",
-      "type": "motoko"
-    },
-    "rs_dev": {
-      "main": "src/rs/main.mo",
-      "type": "motoko"
+      "wasm": "src/airdrop/airdrop.wasm"
     },
     "auth": {
       "main": "src/authentication/main.mo",
@@ -97,6 +27,114 @@
       "main": "src/authentication/main.mo",
       "type": "motoko"
     },
+    "bucket_qa": {
+      "main": "src/modclub/service/storage/buckets.mo",
+      "type": "motoko"
+    },
+    "internet_identity": {
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "frontend": {},
+      "remote": {
+        "id": {
+          "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
+    },
+    "modclub": {
+      "args": "-v --max-stable-pages 786432",
+      "main": "src/modclub/main.mo",
+      "optimize": "cycles",
+      "type": "motoko"
+    },
+    "modclub_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
+      "type": "assets"
+    },
+    "modclub_dev": {
+      "args": "-v --max-stable-pages 786432",
+      "main": "src/modclub/main.mo",
+      "optimize": "cycles",
+      "type": "motoko"
+    },
+    "modclub_dev_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
+      "type": "assets"
+    },
+    "modclub_qa": {
+      "args": "-v --max-stable-pages 786432",
+      "main": "src/modclub/main.mo",
+      "optimize": "cycles",
+      "type": "motoko"
+    },
+    "modclub_qa_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/qa_custom_domain/well-known/"
+      ],
+      "type": "assets"
+    },
+    "rs": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_dev": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_qa": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "sns_governance": {
+      "build": "",
+      "candid": "candid/sns_governance.did",
+      "type": "custom",
+      "wasm": ""
+    },
+    "sns_index": {
+      "build": "",
+      "candid": "candid/sns_index.did",
+      "type": "custom",
+      "wasm": ""
+    },
+    "sns_ledger": {
+      "build": "",
+      "candid": "candid/sns_ledger.did",
+      "type": "custom",
+      "wasm": ""
+    },
+    "sns_root": {
+      "build": "",
+      "candid": "candid/sns_root.did",
+      "type": "custom",
+      "wasm": ""
+    },
+    "sns_swap": {
+      "build": "",
+      "candid": "candid/sns_swap.did",
+      "type": "custom",
+      "wasm": ""
+    },
     "vesting": {
       "main": "src/vesting/main.mo",
       "type": "motoko"
@@ -109,35 +147,27 @@
       "main": "src/vesting/main.mo",
       "type": "motoko"
     },
-    "internet_identity": {
-      "type": "custom",
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+    "wallet": {
+      "build": "",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
       "remote": {
         "id": {
-          "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+          "ic": "xsi2v-cyaaa-aaaaq-aabfq-cai",
+          "local": "r7inp-6aaaa-aaaaa-aaabq-cai"
         }
       },
-      "frontend": {}
-    },
-    "bucket_qa": {
-      "main": "src/modclub/service/storage/buckets.mo",
-      "type": "motoko"
-    },
-    "airdrop": {
       "type": "custom",
-      "candid": "src/airdrop/airdrop.did",
-      "wasm": "src/airdrop/airdrop.wasm"
+      "wasm": ""
     },
-    "airdrop_dev": {
+    "wallet_dev": {
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
       "type": "custom",
-      "candid": "src/airdrop/airdrop.did",
-      "wasm": "src/airdrop/airdrop.wasm"
+      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
     },
-    "airdrop_qa": {
+    "wallet_qa": {
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
       "type": "custom",
-      "candid": "src/airdrop/airdrop.did",
-      "wasm": "src/airdrop/airdrop.wasm"
+      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
     }
   },
   "defaults": {
@@ -145,7 +175,7 @@
       "packtool": "mops sources"
     }
   },
-  "dfx": "0.14.3",
+  "dfx": "0.14.2",
   "networks": {
     "local": {
       "bind": "127.0.0.1:8000",
