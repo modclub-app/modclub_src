@@ -2790,6 +2790,31 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     }
   );
 
+  //----------- Crypto VetKeys part ----------
+
+  public shared ({ caller }) func symmetricKeyVerificationKey(clientId : ?Principal) : async Text {
+    let derivationIdPrincipal = Option.get(clientId, caller);
+    let { public_key } = await authGuard.getCryptoApiCanisterActor().vetkd_public_key({
+      canister_id = null;
+      derivation_path = Array.make(Text.encodeUtf8(Principal.toText(derivationIdPrincipal)));
+      key_id = { curve = #bls12_381; name = "test_key_1" };
+    });
+    Helpers.encode(Blob.toArray(public_key));
+  };
+
+  public shared ({ caller }) func encryptedSymmetricKeyForCaller(encryption_public_key : Blob, clientId : ?Principal) : async Text {
+    Debug.print("encrypted_symmetric_key_for_caller: caller: " # debug_show (caller));
+
+    let derivationIdPrincipal = Option.get(clientId, caller);
+    let { encrypted_key } = await authGuard.getCryptoApiCanisterActor().vetkd_encrypted_key({
+      derivation_id = Principal.toBlob(derivationIdPrincipal);
+      public_key_derivation_path = Array.make(Text.encodeUtf8(Principal.toText(derivationIdPrincipal)));
+      key_id = { curve = #bls12_381; name = "test_key_1" };
+      encryption_public_key;
+    });
+    Helpers.encode(Blob.toArray(encrypted_key));
+  };
+
   system func inspect({
     arg : Blob;
     caller : Principal;
@@ -3309,7 +3334,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
         return result;
       };
-  
       case _ {
         return #err("NotImplemented for fieldName: " # fieldName);
       };

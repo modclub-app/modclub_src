@@ -35,6 +35,7 @@ module {
     #deregisterProvider : () -> ();
     #downloadSupport : () -> (Text, Text, Nat, Nat);
     #editProviderAdmin : () -> (Principal, Principal, Text);
+    #encryptedSymmetricKeyForCaller : () -> (Blob, ?Principal);
     #isProviderAdmin : () -> ();
     #generateSigningKey : () -> ();
     #getActivity : () -> Bool;
@@ -105,6 +106,7 @@ module {
     #submitText : () -> (Text, Text, ?Text, ?Types.Level, ?Text);
     #subscribe : () -> Types.SubscribeMessage;
     #subscribePohCallback : () -> PohTypes.SubscribePohMessage;
+    #symmetricKeyVerificationKey : () -> ?Principal;
     #toJson : () -> (Text, Text);
     #toggleAllowSubmission : () -> Bool;
     #transform : () -> Types.TransformArgs;

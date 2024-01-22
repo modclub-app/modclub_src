@@ -249,7 +249,7 @@ module Helpers {
   /**
    * Encode an array of unsigned 8-bit integers in hexadecimal format.
    */
-  func encode(array : [Nat8]) : Text {
+  public func encode(array : [Nat8]) : Text {
     Array.foldLeft<Nat8, Text>(
       array,
       "",

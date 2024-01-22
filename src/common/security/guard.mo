@@ -131,6 +131,10 @@ module ModSecurity {
       actor (Principal.toText(getCanisterId(#modclub)));
     };
 
+    public func getCryptoApiCanisterActor() : CommonTypes.CryptoApiActorType {
+      actor (Principal.toText(getCanisterId(#crypto_api)));
+    };
+
     public func getICRootActor() : CommonTypes.IcRootActorType {
       actor ("aaaaa-aa");
     };
@@ -162,6 +166,7 @@ module ModSecurity {
         case (#wallet) { env.wallet_canister_id };
         case (#auth) { env.auth_canister_id };
         case (#vesting) { env.vesting_canister_id };
+        case (#crypto_api) { env.crypto_api_canister_id };
       };
     };
 

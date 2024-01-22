@@ -28,6 +28,7 @@ printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Modclub test infra START ...${NC}
 function create_qa_canisters() {
   printf  "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Creating QA Canisters...${NC}\n"
 	dfx identity use default
+  dfx canister create crypto_api_local &&
   dfx canister create internet_identity &&
   dfx canister create auth_qa &&
   dfx canister create wallet_qa &&
@@ -116,7 +117,7 @@ function deploy_wallet_canister() {
 }
 
 function get_local_canisters() {
-  echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"bkyz2-fmaaa-aaaaa-qaaaq-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }"
+  echo "record { crypto_api_canister_id = principal \"$(dfx canister id crypto_api_local)\"; modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"bkyz2-fmaaa-aaaaa-qaaaq-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }"
 }
 
 function deploy_vesting_canister() {
@@ -133,6 +134,8 @@ function deploy_qa_canisters() {
   local local_env=$(get_local_canisters)
 
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Deploy QA Canisters...${NC}\n"
+
+	dfx deploy crypto_api_local && #--argument="(record { master_sk_hex = $MK_HASH })" &&
 
 	dfx deploy auth_qa --argument="($local_env)" &&
   dfx deploy airdrop_qa --argument="($local_env)" &&

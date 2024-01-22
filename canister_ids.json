@@ -17,6 +17,12 @@
   "auth_qa": {
     "ic": "h3xck-uaaaa-aaaap-qbj7q-cai"
   },
+  "crypto_api_dev": {
+    "ic": "rf3rx-3aaaa-aaaah-qdcqa-cai"
+  },
+  "crypto_api_qa": {
+    "ic": "uzals-qiaaa-aaaah-qdcpq-cai"
+  },
   "internet_identity": {
     "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
   },

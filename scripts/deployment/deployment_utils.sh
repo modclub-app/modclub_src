@@ -29,6 +29,7 @@ function deploy_canisters() {
   local auth_canister_name=$(get_canister_name_by_env $env "auth")
   local assets_canister_name="$(get_canister_name_by_env $env "modclub")_assets"
   local airdrop_canister_name=$(get_canister_name_by_env $env "airdrop")
+  local crypto_api_canister_name=$(get_canister_name_by_env $env "crypto_api")
 
 
   if [ "$canister_only" != "ALL" ]; then
@@ -52,6 +53,8 @@ function deploy_canisters() {
     dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'"  
   elif [ "$canister_only" = "rs" ]; then
     dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'"
+  elif [ "$canister_only" = "crypto_api" ]; then
+    dfx_deploy ${crypto_api_canister_name} --network=${network} # --argument="'($MK_HASH)'"
   elif [ "$canister_only" = "ALL" ]; then
     set -x
     set -e
@@ -60,6 +63,8 @@ function deploy_canisters() {
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
     deploy_vesting_canister $env $network $old_modclub_inst &&
     dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'" &&  
+
+    dfx_deploy ${crypto_api_canister_name} --network=${network} && #--argument="'(record { master_sk_hex = $MK_HASH })'" &&
 
     dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
     dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
@@ -161,6 +166,7 @@ function get_env_canisters_vars() {
   local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
   local auth_canister_name=$(get_canister_name_by_env $env "auth")
   local vesting_canister_name=$(get_canister_name_by_env $env "vesting")
+  local crypto_api_canister_name=$(get_canister_name_by_env $env "crypto_api")
 
   local wallet_canister_id=$(dfx canister id ${wallet_canister_name} --network=${network})
 
@@ -168,7 +174,7 @@ function get_env_canisters_vars() {
     wallet_canister_id=$wallet_canister
   fi
 
-  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; }"
+  echo "record { crypto_api_canister_id = principal \"$(dfx canister id ${crypto_api_canister_name} --network=${network})\"; modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; }"
 }
 
 
@@ -236,6 +242,11 @@ function quick_build() {
 
     # No quick build for Wallet canister
     if [ "$canister_name" == "wallet" ]; then
+        return 0;
+    fi
+
+    # No quick build for Crypto canister
+    if [ "$canister_name" == "crypto_api" ]; then
         return 0;
     fi
 

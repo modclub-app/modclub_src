@@ -5,10 +5,12 @@ import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import Nat8 "mo:base/Nat8";
 import Float "mo:base/Float";
+import Blob "mo:base/Blob";
 import ICRCTypes "./ICRCTypes";
 
 module {
   public type ENV = {
+    crypto_api_canister_id : Principal;
     modclub_canister_id : Principal;
     old_modclub_canister_id : Principal;
     rs_canister_id : Principal;
@@ -68,6 +70,19 @@ module {
     updateRS : (Principal, Bool, Decision) -> async UserAndRS;
     setRS : (Principal, Int) -> async Result.Result<Bool, Text>;
     subscribe : (Text) -> async ();
+  };
+  public type CryptoApiActorType = actor {
+    vetkd_public_key : ({
+      canister_id : ?Principal;
+      derivation_path : [Blob];
+      key_id : { curve : { #bls12_381 }; name : Text };
+    }) -> async ({ public_key : Blob });
+    vetkd_encrypted_key : ({
+      public_key_derivation_path : [Blob];
+      derivation_id : Blob;
+      key_id : { curve : { #bls12_381 }; name : Text };
+      encryption_public_key : Blob;
+    }) -> async ({ encrypted_key : Blob });
   };
 
   public type IcRootActorType = actor {
@@ -166,6 +181,7 @@ module {
     #wallet;
     #auth;
     #vesting;
+    #crypto_api;
   };
 
   public type CanisterSettings = {

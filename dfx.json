@@ -111,8 +111,8 @@
     },
     "internet_identity": {
       "type": "custom",
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "candid": "https://github.com/dfinity/internet-identity/releases/download/release-2023-11-17/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/download/release-2023-11-17/internet_identity_dev.wasm.gz",
       "remote": {
         "id": {
           "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
@@ -138,6 +138,26 @@
       "type": "custom",
       "candid": "src/airdrop/airdrop.did",
       "wasm": "src/airdrop/airdrop.wasm"
+    },
+    "crypto_api": {
+      "candid": "src/crypto_api/vetkd_crypto_api.did",
+      "type": "custom",
+      "wasm": "src/crypto_api/crypto_api.wasm"
+    },
+    "crypto_api_dev": {
+      "candid": "src/crypto_api/vetkd_crypto_api.did",
+      "package": "vetkd_system_api",
+      "type": "rust"
+    },
+    "crypto_api_local": {
+      "candid": "src/crypto_api/vetkd_crypto_api.did",
+      "package": "vetkd_system_api",
+      "type": "rust"
+    },
+    "crypto_api_qa": {
+      "candid": "src/crypto_api/vetkd_crypto_api.did",
+      "type": "custom",
+      "wasm": "src/crypto_api/crypto_api.wasm"
     }
   },
   "defaults": {

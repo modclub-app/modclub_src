@@ -177,6 +177,9 @@ module.exports = {
       process: require.resolve("process/browser"),
     }),
   ],
+  experiments: {
+    asyncWebAssembly: true,
+  },
   // proxy /api to port 8000 during development
   devServer: {
     port: "9000",
