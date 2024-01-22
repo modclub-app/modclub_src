@@ -16,7 +16,7 @@ source "${current_dir}/../backup/backup_util.sh"
 
 modclub=$(get_canister_name_by_env $ENVIRONMENT "modclub")
 
-backupId_1=$(backup_modclub "stateV2" $DEPLOYMENT_TAG "ic")
+backupId_1=$(backup_modclub "stateV2" $DEPLOYMENT_TAG "ic" $ENVIRONMENT)
 echo "Finished backup: $backupId_1"
 echo "BACKUP_ID_1=${backupId_1}" >> "$GITHUB_ENV"
 echo "BACKUP_FIELDNAME_1=stateV2" >> "$GITHUB_ENV"
