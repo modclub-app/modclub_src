@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import useFaceDetection from "./hook/useFaceDetection";
 import WebcamInterface from "./WebcamInterface";
@@ -11,6 +11,13 @@ import { Timer } from "./Timer";
 import { Button, Modal } from "react-bulma-components";
 import { CaptureButton } from "./Webcam";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
+
+import {
+  get_aes_256_gcm_key,
+  aes_gcm_encrypt,
+} from "../../../utils/crypto_api";
+import { Connect2ICContext } from "@connect2icmodclub/react";
+
 import { formattedTime } from "../../../utils/util";
 import { processAndUploadChunk, useActors } from "../../../utils";
 import {
@@ -81,9 +88,18 @@ export default function UserVideo({ step, goToNextStep }) {
 
   const submit = async () => {
     setSubmitting(true);
+
+    const key = await get_aes_256_gcm_key(modclub, appState.loginPrincipalId);
+
     const blob = new Blob(recordedChunks, {
       type: mimeType,
     });
+    console.log("STARTING_ENCRYPTION...");
+    const ciphertext = await aes_gcm_encrypt(blob, key);
+    const encryptedBlob = new Blob([ciphertext], {
+      type: `encrypted/vetkd;original=${blob.type}`,
+    });
+
     if (blob.size <= MIN_FILE_SIZE) {
       alert(
         "File upload could not be completed. File size is too small. Please try again"
@@ -95,18 +111,18 @@ export default function UserVideo({ step, goToNextStep }) {
     let chunk = 1;
     for (
       let byteStart = 0;
-      byteStart < blob.size;
+      byteStart < encryptedBlob.size;
       byteStart += MAX_CHUNK_SIZE, chunk++
     ) {
       let res = await processAndUploadChunk(
         modclub,
         "challenge-user-video",
         MAX_CHUNK_SIZE,
-        blob,
+        encryptedBlob,
         byteStart,
         chunk,
-        blob.size,
-        blob.type
+        encryptedBlob.size,
+        encryptedBlob.type
       );
       if (res != null) {
         alert(

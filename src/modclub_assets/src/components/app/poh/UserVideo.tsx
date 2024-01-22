@@ -14,7 +14,7 @@ export default function UserVideo({ data }: { data: PohTaskData }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const urlObject = await fetchObjectUrl(modclub, videoUrl);
+      const urlObject = await fetchObjectUrl(modclub, videoUrl, data);
       setVideoObject(urlObject);
     };
     fetchData();

@@ -72,7 +72,7 @@ const useFaceDetection = () => {
             _score < FACE_DETECTION_MIN_SCORE;
           // If the face is outside the face template, we send a boolean variable;
           setIsOutOfBound(isOutOfBound);
-          console.info("Face detection information: ", detections);
+          // console.info("Face detection information: ", detections);
         }
       }
     }, FACE_DETECTION_INTERVAL);

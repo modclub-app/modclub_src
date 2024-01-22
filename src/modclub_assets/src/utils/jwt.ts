@@ -1,4 +1,5 @@
 import { modclub_types } from "./types";
+import { get_aes_256_gcm_key, aes_gcm_decrypt } from "./crypto_api";
 
 async function getJwt(modclub: modclub_types.ModClub) {
   let jwt = window.localStorage.getItem("jwt");
@@ -34,11 +35,27 @@ export async function refreshJwt(
 
 export async function fetchObjectUrl(
   modclub: modclub_types.ModClub,
-  url: string
+  url: string,
+  data: any = {}
 ): Promise<string> {
   const res = await fetchWithJwt(modclub, url);
-  const imageBlob = await res.blob();
-  return URL.createObjectURL(imageBlob);
+  const contentBlob = await res.blob();
+
+  if (contentBlob.type.includes("encrypted/vetkd")) {
+    const key = await get_aes_256_gcm_key(modclub, data.userId);
+    console.log("Starting decryption...");
+    console.log("Fetched Vet_KEY::");
+    const originalTypeEntry = contentBlob.type
+      .split(";")
+      .find((entry) => entry.includes("original="));
+    const originalType =
+      originalTypeEntry && originalTypeEntry.replace("original=", "");
+    const decryptedBlob = await aes_gcm_decrypt(contentBlob, key, originalType);
+    console.log("DECRYPTED_BLOB::", decryptedBlob);
+
+    return URL.createObjectURL(decryptedBlob);
+  }
+  return URL.createObjectURL(contentBlob);
 }
 
 export async function fetchDataBlob(
