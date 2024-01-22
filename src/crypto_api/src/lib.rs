@@ -20,7 +20,7 @@ const ENCRYPTED_KEY_CYCLE_COSTS: u64 = 0;
 thread_local! {
     static _MASTER_SK_HEX: RefCell<Option<String>> = RefCell::new(None);
     static RNG: RefCell<Option<ChaCha20Rng>> = RefCell::new(None);
-    // static _RNG_SEED_RAW_BYTES: RefCell<Option<[u8; 32]>> = RefCell::new(None);
+    static _RNG_SEED_RAW_BYTES: RefCell<Option<[u8; 32]>> = RefCell::new(None);
     static _MASTER_PK: RefCell<Option<G2Affine>> = RefCell::new(None);
     static _MASTER_SK: RefCell<Option<Scalar>> = RefCell::new(None);
 }
@@ -236,7 +236,7 @@ async fn with_rng<T>(fn_with_rng: impl FnOnce(&mut ChaCha20Rng) -> T) -> T {
         // ic_cdk::println!("[DEBUG] [raw_rand_32_bytes] initialized: {}", format!("{:?}", raw_rand_32_bytes));
         _RNG_SEED_RAW_BYTES.with(|opt_seed| {
             opt_seed.borrow_mut().get_or_insert(raw_rand_32_bytes);
-            // ic_cdk::print(format!("[DEBUG] _RNG_SEED_RAW_BYTES initialized."));
+            ic_cdk::print(format!("[DEBUG] _RNG_SEED_RAW_BYTES initialized."));
         });
         let rng = ChaCha20Rng::from_seed(raw_rand_32_bytes);
         RNG.with(|option_rng| {
