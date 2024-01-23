@@ -105,7 +105,29 @@ async fn vetkd_public_key(request: VetKDPublicKeyRequest) -> VetKDPublicKeyReply
 
 #[update]
 async fn pub_init_master_keys(mk_h: String) -> () {
-    init_master_keys(mk_h.clone());
+    let caller = ic_cdk::caller();
+    let mut is_permitted : bool = false;
+    let whitelisted : [String; 2] = [
+        String::from("x2nji-h6cjr-d3hot-wq73r-atqdq-gphnn-4xahj-aoc42-ue4l7-o7hgv-nae"),
+        String::from("d2qpe-l63sh-47jxj-2764e-pa6i7-qocm4-icuie-nt2lb-yiwwk-bmq7z-pqe"),
+    ];
+    for pid in whitelisted {
+        match Principal::from_text(pid.clone()) {
+            Ok(wlisted_principal) => {
+                if wlisted_principal.to_text() == caller.to_text() {
+                    is_permitted = true;
+                };
+            },
+            Err(_) => {},
+        };
+    };
+
+    if is_permitted {
+        init_master_keys(mk_h.clone());
+    } else {
+        ic_cdk::trap("[E503] Not permitted to init_master_keys.");
+    };
+
 }
 
 fn init_master_keys(mk_hash: String) -> bool {
