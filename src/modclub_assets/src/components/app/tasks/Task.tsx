@@ -227,7 +227,13 @@ export default function Task() {
     } catch (e) {
       setLoading(false);
       setFull(true);
+
       console.log("Reservation Error: ", e.message);
+
+      dispatch({
+        type: "appendError",
+        payload: e.message,
+      });
     }
   };
 
