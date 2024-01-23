@@ -226,11 +226,8 @@ export default function Task() {
       setLoading(false);
     } catch (e) {
       setLoading(false);
-      console.log("Error create Reservation:", e);
-      dispatch({
-        type: "appendError",
-        payload: `Unexpected Error occurs for task reservation: ERROR::${e.message}`,
-      });
+      setFull(true);
+      console.log("Reservation Error: ", e.message);
     }
   };
 
