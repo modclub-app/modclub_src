@@ -11,9 +11,9 @@ import {
 export const UserRecentActivityStatBox = ({}) => {
   const dispatch = useAppStateDispatch();
   const appState = useAppState();
-  dispatch({ type: "fetchUserActivitySummaries" });
+  dispatch({ type: "fetchUserProviderSummaries" });
 
-  if (appState.userActivitySummariesLoading) {
+  if (appState.userProviderSummariesLoading) {
     return null;
   }
 

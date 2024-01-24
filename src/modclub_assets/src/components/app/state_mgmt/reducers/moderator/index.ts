@@ -10,6 +10,7 @@ import {
   fetchUserPersonalBalance,
   rsLoading,
   fetchUserRS,
+  fetchUserProviderSummaries,
 } from "./moderator";
 
 export const getModeratorReducers = (state, icContext, dispatch) => {
@@ -38,5 +39,9 @@ export const getModeratorReducers = (state, icContext, dispatch) => {
     ],
     ["rsLoading", (payload) => rsLoading(context, payload)],
     ["fetchUserRS", (payload) => fetchUserRS(context, payload)],
+    [
+      "fetchUserProviderSummaries",
+      (payload) => fetchUserProviderSummaries(context, payload),
+    ],
   ]);
 };

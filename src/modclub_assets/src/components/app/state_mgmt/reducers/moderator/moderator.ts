@@ -184,3 +184,18 @@ export async function fetchUserRS(context, payload) {
   let rsLoading = !state.rsLoading;
   context.dispatch({ type: "fetchUserRS", rs, rsLoading });
 }
+
+export async function fetchUserProviderSummaries(context, payload) {
+  const { contentProviders } = context.state;
+
+  console.log("### CONTEXT ### ---> ", context);
+  try {
+    const actor = context.icContext.actors.modclub?.value;
+    // if (actor) {
+    //   const providerSum = await actor.getProviderSummaries();
+    //   console.log('### providerSum ---> ', providerSum);
+    // }
+  } catch (e) {
+    console.error("Error fetchProviderSummaries::", e);
+  }
+}
