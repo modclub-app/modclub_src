@@ -340,9 +340,12 @@ function deploy_canisters_quick() {
   local env_vars=$(get_env_canisters_vars $env $network $old_modclub_inst)
   local ledger_minter_identity=qa_ledger_minter
   local ledger_account_identity=qa_ledger_identity
+  local crypto_api_canister_name=$(get_canister_name_by_env $env "crypto_api")
 
   log "[DEBUG] ${env_vars}"
   log "[DEBUG] ${assets_canister_name}"
+
+  dfx_deploy ${crypto_api_canister_name} --network=${network} &&
   # List all your canisters here and call quick_build_and_deploy_canister for each
   quick_build_and_deploy_canister "modclub" ${env} ${network} "${env_vars}" "${installation_mode}" &&
   quick_build_and_deploy_canister "rs" ${env} ${network} "${env_vars}" "${installation_mode}" &&
