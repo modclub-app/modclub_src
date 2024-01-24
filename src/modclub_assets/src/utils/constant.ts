@@ -58,3 +58,5 @@ export const TINY_FACE_DETECTOR_MODEL = `${MODEL_BASE_URL}tiny_face_detector_mod
 export const FACE_LANDMARK_68_MODEL = `${MODEL_BASE_URL}face_landmark_68_model-weights_manifest.json`;
 export const FACE_RECOGNITION_MODEL = `${MODEL_BASE_URL}face_recognition_model-weights_manifest.json`;
 export const FACE_SSD_MOBILENETV1_MODEL = `${MODEL_BASE_URL}ssd_mobilenetv1_model-weights_manifest.json`;
+
+export const POH_VIDEO_CHALLENGE_CONTEXT = "poh_video_challenge";

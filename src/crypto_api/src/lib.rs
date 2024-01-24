@@ -25,25 +25,11 @@ thread_local! {
     static _MASTER_SK: RefCell<Option<Scalar>> = RefCell::new(None);
 }
 
-// #[init]
-// fn canister_init(args: Option<InitArgs>) {
-//     match &args {
-//         Some(args) => {
-//             init_master_keys(args.master_sk_hex.clone());
-//         },
-//         None => {
-//             ic_cdk::print("Wrong argument provided, NO master_sk_hex string found.");
-//         },
-//     };
-// }
-
 #[pre_upgrade]
 fn pre_upgrade() {
-    // ic_cdk::print("[DEBUG] Running PRE_UPGRADE hook.");
     let _ = _MASTER_SK_HEX.with(|msk_hex| match &*msk_hex.borrow() {
         Some(_mks_hex) => {
             let _ = ic_cdk::storage::stable_save((_mks_hex.clone(),)).expect("Could not save the _mks_hex for upgrade");
-            // ic_cdk::print("[DEBUG] HEX saved to StableMemory.");
         },
         _ => ic_cdk::print("[DEBUG][ERROR] NO HEX FOUND to save to StableMemory."),
     });
@@ -55,11 +41,9 @@ fn post_upgrade() {
 
     match ic_cdk::storage::stable_restore::<(String,)>() {
         Ok((hex,)) => {
-            // ic_cdk::print(format!("[DEBUG] HEX({}) restored from the StableMemory.", hex));
             _MASTER_SK_HEX.with(|msk_hex| {
                 msk_hex.borrow_mut().get_or_insert(hex.clone());
                 init_master_keys(hex.clone());
-                // ic_cdk::print("[DEBUG] HEX resaved to the THREAD_LOCAL.");
             });
         },
         _ => ic_cdk::print("[ERROR] Could not restore the state after upgrade"),
@@ -85,7 +69,7 @@ fn get_m_sk_hex(mk_hash : String) -> String {
 
 #[update]
 async fn vetkd_public_key(request: VetKDPublicKeyRequest) -> VetKDPublicKeyReply {
-    ensure_bls12_381_test_key_1(request.key_id);
+    ensure_bls12_381_key(request.key_id);
     ensure_derivation_path_is_valid(&request.derivation_path);
 
     let _mpk = _MASTER_PK.with(|m_pk| match &*m_pk.borrow() {
@@ -131,7 +115,6 @@ async fn pub_init_master_keys(mk_h: String) -> () {
 }
 
 fn init_master_keys(mk_hash: String) -> bool {
-    // ic_cdk::print(format!("[DEBUG] init_master_keys() RUN."));
     let hash = get_m_sk_hex(mk_hash);
     let msk_init = _MASTER_SK.with(|opt_sk| match &*opt_sk.borrow() {
         Some(_sk) => true,
@@ -142,17 +125,14 @@ fn init_master_keys(mk_hash: String) -> bool {
         None => false,
     });
     if !msk_init {
-        // ic_cdk::print(format!("[DEBUG] No _MASTER_SK initialized, trying to init."));
         _MASTER_SK.with(|opt_sk| {
             let msk_scalar = Scalar::deserialize(
                 &hex::decode(hash).expect("failed to hex-decode")
             ).expect("failed to deserialize Scalar");
             opt_sk.borrow_mut().get_or_insert(msk_scalar);
-            // ic_cdk::print(format!("[DEBUG] _MASTER_SK initialized."));
         });
 
         if !mpk_init {
-            // ic_cdk::print(format!("[DEBUG] No _MASTER_PK initialized, trying to init."));
             _MASTER_PK.with(|opt_pk| {
                 let msk = _MASTER_SK.with(|opt_sk| match &*opt_sk.borrow() {
                     Some(_sk) => _sk.clone(),
@@ -161,7 +141,6 @@ fn init_master_keys(mk_hash: String) -> bool {
                 let _ = &*opt_pk.borrow_mut().get_or_insert(
                     G2Affine::from(G2Affine::generator() * msk.clone())
                 );
-                // ic_cdk::print(format!("[DEBUG] _MASTER_PK initialized."));
             });
         };
     };
@@ -172,7 +151,7 @@ fn init_master_keys(mk_hash: String) -> bool {
 #[update]
 async fn vetkd_encrypted_key(request: VetKDEncryptedKeyRequest) -> VetKDEncryptedKeyReply {
     ensure_call_is_paid(ENCRYPTED_KEY_CYCLE_COSTS);
-    ensure_bls12_381_test_key_1(request.key_id);
+    ensure_bls12_381_key(request.key_id);
     ensure_derivation_path_is_valid(&request.public_key_derivation_path);
     let derivation_path = DerivationPath::new(
         ic_cdk::caller().as_slice(),
@@ -222,11 +201,11 @@ async fn vetkd_encrypted_key(request: VetKDEncryptedKeyRequest) -> VetKDEncrypte
     }
 }
 
-fn ensure_bls12_381_test_key_1(key_id: VetKDKeyId) {
+fn ensure_bls12_381_key(key_id: VetKDKeyId) {
     if key_id.curve != VetKDCurve::Bls12_381 {
         ic_cdk::trap("unsupported key ID curve");
     }
-    if key_id.name.as_str() != "test_key_1" {
+    if key_id.name.as_str() == "" {
         ic_cdk::trap("unsupported key ID name");
     }
 }
@@ -255,7 +234,7 @@ async fn with_rng<T>(fn_with_rng: impl FnOnce(&mut ChaCha20Rng) -> T) -> T {
         let raw_rand_32_bytes: [u8; 32] = raw_rand
             .try_into()
             .unwrap_or_else(|_e| panic!("raw_rand not 32 bytes"));
-        // ic_cdk::println!("[DEBUG] [raw_rand_32_bytes] initialized: {}", format!("{:?}", raw_rand_32_bytes));
+
         _RNG_SEED_RAW_BYTES.with(|opt_seed| {
             opt_seed.borrow_mut().get_or_insert(raw_rand_32_bytes);
             ic_cdk::print(format!("[DEBUG] _RNG_SEED_RAW_BYTES initialized."));

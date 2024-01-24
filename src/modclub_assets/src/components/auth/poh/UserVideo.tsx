@@ -11,6 +11,7 @@ import { Timer } from "./Timer";
 import { Button, Modal } from "react-bulma-components";
 import { CaptureButton } from "./Webcam";
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
+import { POH_VIDEO_CHALLENGE_CONTEXT } from "../../../utils/constant";
 
 import {
   get_aes_256_gcm_key,
@@ -89,7 +90,11 @@ export default function UserVideo({ step, goToNextStep }) {
   const submit = async () => {
     setSubmitting(true);
 
-    const key = await get_aes_256_gcm_key(modclub, appState.loginPrincipalId);
+    const key = await get_aes_256_gcm_key(
+      POH_VIDEO_CHALLENGE_CONTEXT,
+      modclub,
+      appState.loginPrincipalId
+    );
 
     const blob = new Blob(recordedChunks, {
       type: mimeType,

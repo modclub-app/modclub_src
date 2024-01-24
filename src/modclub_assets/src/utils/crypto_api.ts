@@ -3,7 +3,11 @@ import { Principal } from "@dfinity/principal";
 import { Actor } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 
-export async function get_aes_256_gcm_key(actor, derivationPrincipalId) {
+export async function get_aes_256_gcm_key(
+  context,
+  actor,
+  derivationPrincipalId
+) {
   if (!derivationPrincipalId) {
     throw new Error("No derivationPrincipal provided for get_aes_256_gcm_key");
   }
@@ -12,11 +16,12 @@ export async function get_aes_256_gcm_key(actor, derivationPrincipalId) {
   const tsk = new vetkd.TransportSecretKey(seed);
 
   const ek_bytes_hex = await actor.encryptedSymmetricKeyForCaller(
+    context,
     tsk.public_key(),
     [derivPrincipal]
   );
 
-  const pk_bytes_hex = await actor.symmetricKeyVerificationKey([
+  const pk_bytes_hex = await actor.symmetricKeyVerificationKey(context, [
     derivPrincipal,
   ]);
 

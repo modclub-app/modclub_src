@@ -36,15 +36,16 @@ export async function refreshJwt(
 export async function fetchObjectUrl(
   modclub: modclub_types.ModClub,
   url: string,
-  data: any = {}
+  data: any = {},
+  context: string = ""
 ): Promise<string> {
   const res = await fetchWithJwt(modclub, url);
   const contentBlob = await res.blob();
 
   if (contentBlob.type.includes("encrypted/vetkd")) {
-    const key = await get_aes_256_gcm_key(modclub, data.userId);
+    const key = await get_aes_256_gcm_key(context, modclub, data.userId);
     console.log("Starting decryption...");
-    console.log("Fetched Vet_KEY::");
+
     const originalTypeEntry = contentBlob.type
       .split(";")
       .find((entry) => entry.includes("original="));

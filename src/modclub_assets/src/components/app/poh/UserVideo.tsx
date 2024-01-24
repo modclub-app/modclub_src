@@ -4,6 +4,7 @@ import { Card, Columns, Button } from "react-bulma-components";
 import { getUrlForData } from "../../../utils/util";
 import { PohTaskData } from "../../../utils/types";
 import { fetchObjectUrl } from "../../../utils/jwt";
+import { POH_VIDEO_CHALLENGE_CONTEXT } from "../../../utils/constant";
 import { useActors } from "../../../utils";
 
 export default function UserVideo({ data }: { data: PohTaskData }) {
@@ -14,7 +15,12 @@ export default function UserVideo({ data }: { data: PohTaskData }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const urlObject = await fetchObjectUrl(modclub, videoUrl, data);
+      const urlObject = await fetchObjectUrl(
+        modclub,
+        videoUrl,
+        data,
+        POH_VIDEO_CHALLENGE_CONTEXT
+      );
       setVideoObject(urlObject);
     };
     fetchData();
