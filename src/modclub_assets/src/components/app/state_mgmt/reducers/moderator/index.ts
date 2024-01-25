@@ -39,9 +39,5 @@ export const getModeratorReducers = (state, icContext, dispatch) => {
     ],
     ["rsLoading", (payload) => rsLoading(context, payload)],
     ["fetchUserRS", (payload) => fetchUserRS(context, payload)],
-    [
-      "fetchUserProviderSummaries",
-      (payload) => fetchUserProviderSummaries(context, payload),
-    ],
   ]);
 };

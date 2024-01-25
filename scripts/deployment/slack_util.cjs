@@ -4,7 +4,7 @@ function notify_slack(template, path, error_callback) {
   const data = JSON.stringify(template);
 
   const options = {
-    hostname: "hooks.slack.com",
+    hostname: "hook.slack.com",
     path: path,
     method: "POST",
     headers: {

@@ -2,24 +2,28 @@ import React from "react";
 import classNames from "classnames/bind";
 import styles from "./styles.scss";
 const cn = classNames.bind(styles);
-import InfoButton from "../../../../common/infobutton/InfoButton";
+import InfoButton from "../../../../../common/infobutton/InfoButton";
 
-type RecentActivityStatBoxTypes = {
+type StatBoxTypes = {
   label: string;
-  amount: number;
-  typeView: string;
+  amount: bigint;
   message?: string;
+  loading?: boolean;
 };
 
-export const RecentActivityStatBox: React.FC<RecentActivityStatBoxTypes> = ({
+export const StatBox: React.FC<StatBoxTypes> = ({
   label,
   amount,
   message,
-  typeView,
+  loading,
 }) => (
   <div className={cn("stat-box")}>
     <span className={cn("stat-box_label")}>{label}</span>
-    <h4 className={cn("stat-box_title")}>{amount}</h4>
+    {loading ? (
+      <div className="loader is-loading"></div>
+    ) : (
+      <h4 className={cn("stat-box_title")}>{`${amount}`}</h4>
+    )}
     {message && (
       <div className={cn("stat-box_message")}>
         <InfoButton message={message} />

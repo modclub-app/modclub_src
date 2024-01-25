@@ -1,7 +1,6 @@
 import * as React from "react";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { formatDate } from "../../../utils/util";
 import {
   Columns,
   Card,
@@ -16,10 +15,10 @@ import {
   useAppState,
   useAppStateDispatch,
 } from "../../../app/state_mgmt/context/state";
+import { RecentActivityStatBoxes } from "./RecentActivityStatBoxes";
 
 export default function AdminActivity() {
   const appState = useAppState();
-  const dispatch = useAppStateDispatch();
   const { modclub } = useActors();
   const history = useHistory();
   const [contentHistory, setContentHistory] = useState([]);
@@ -125,6 +124,8 @@ export default function AdminActivity() {
               </Button.Group>
             </Card.Content>
           </Card>
+
+          <RecentActivityStatBoxes />
 
           <Card>
             <Card.Content>

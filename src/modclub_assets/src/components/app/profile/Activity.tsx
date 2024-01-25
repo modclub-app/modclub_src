@@ -12,11 +12,9 @@ import {
 import { Form, Field } from "react-final-form";
 import Userstats from "./Userstats";
 import { modclub_types } from "../../../utils/types";
-import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { Table } from "./ActivityTable";
-import { UserRecentActivityStatBox } from "./UserRecentActivityStats";
 
 export default function Activity() {
   const { principal } = useConnect();
@@ -328,8 +326,6 @@ export default function Activity() {
             </Card.Content>
           </Card>
         </Columns.Column>
-
-        <UserRecentActivityStatBox />
 
         <Columns.Column size={12}>
           <Card>
