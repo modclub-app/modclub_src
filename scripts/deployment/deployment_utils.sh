@@ -29,6 +29,7 @@ function deploy_canisters() {
   local auth_canister_name=$(get_canister_name_by_env $env "auth")
   local assets_canister_name="$(get_canister_name_by_env $env "modclub")_assets"
   local airdrop_canister_name=$(get_canister_name_by_env $env "airdrop")
+  local decideid_canister_name=$(get_canister_name_by_env $env "decideid")
 
 
   if [ "$canister_only" != "ALL" ]; then
@@ -52,6 +53,8 @@ function deploy_canisters() {
     dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'"  
   elif [ "$canister_only" = "rs" ]; then
     dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'"
+  elif [ "$canister_only" = "decideid" ]; then
+    dfx_deploy ${decideid_canister_name} --network=${network} --argument="'(${env_vars})'"
   elif [ "$canister_only" = "ALL" ]; then
     set -x
     set -e
@@ -63,6 +66,7 @@ function deploy_canisters() {
 
     dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
     dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
+    dfx_deploy ${decideid_canister_name} --network=${network} --argument="'(${env_vars})'" &&
     init_canisters $env &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
