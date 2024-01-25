@@ -1,4 +1,4 @@
-canisters=("wallet" "auth" "rs" "modclub" "vesting")
+canisters=("wallet" "auth" "rs" "modclub" "vesting" "decideid")
 
 source "scripts/deployment/deployment_utils.sh"
 
