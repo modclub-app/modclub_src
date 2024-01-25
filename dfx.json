@@ -138,6 +138,18 @@
       "type": "custom",
       "candid": "src/airdrop/airdrop.did",
       "wasm": "src/airdrop/airdrop.wasm"
+    },
+    "decideid_qa": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid_dev": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
     }
   },
   "defaults": {
