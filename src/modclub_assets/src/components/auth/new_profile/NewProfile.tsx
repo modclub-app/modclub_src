@@ -16,7 +16,7 @@ import { setUserToStorage, validateEmail } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import logger from "../../../utils/logger";
 import { useAppState } from "../../app/state_mgmt/context/state";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
@@ -65,7 +65,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
           uId: appState.loginPrincipalId,
           username,
           email,
-          eventType: GTMEvent.UserCreatedProfileEventType,
+          eventType: GTMTypes.UserCreatedProfileEventType,
         },
         ["uId", "username", "email"]
       );

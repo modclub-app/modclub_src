@@ -1,6 +1,6 @@
 import moment from "moment";
 import { useEffect, useState } from "react";
-import { GTMManager, GTMEvent } from "../../../utils/gtm";
+import { GTMManager, GTMEvent, GTMTypes } from "../../../utils/gtm";
 import { useAppState } from "../../app/state_mgmt/context/state";
 
 // Timer: countdown in seconds -> detail = false
@@ -39,7 +39,7 @@ const Timer = ({ countdown, toggle, detail = false, showSecond = false }) => {
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
-        eventType: GTMEvent.HumanVerificationExpiredEventType,
+        eventType: GTMTypes.HumanVerificationExpiredEventType,
       },
       ["uId"]
     );

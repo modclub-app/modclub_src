@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { Card, Heading, Modal } from "react-bulma-components";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 import { useAppState } from "../state_mgmt/context/state";
 
 export default function UserIncompleteModal({
@@ -20,7 +20,7 @@ export default function UserIncompleteModal({
       GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        eventType: GTMEvent.PohStartEventType,
+        eventType: GTMTypes.PohStartEventType,
       },
       ["uId"]
     );
@@ -77,7 +77,7 @@ export default function UserIncompleteModal({
               className="button is-primary"
               style={{ textDecoration: "none" }}
               onClick={handlerOnClick}
-              id={GTMEvent.PohStartEventType}
+              id={GTMTypes.PohStartEventType}
             >
               Continue
             </Link>

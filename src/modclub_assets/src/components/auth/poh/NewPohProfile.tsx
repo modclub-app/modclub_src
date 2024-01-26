@@ -15,7 +15,7 @@ import {
   useAppState,
   useAppStateDispatch,
 } from "../../app/state_mgmt/context/state";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const Confirmation = ({ redirect_uri }) => {
   const appState = useAppState();
@@ -32,7 +32,7 @@ const Confirmation = ({ redirect_uri }) => {
       GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        eventType: GTMEvent.PohCompletedEventType,
+        eventType: GTMTypes.PohCompletedEventType,
       },
       ["uId"]
     );
@@ -57,7 +57,7 @@ const Confirmation = ({ redirect_uri }) => {
           to="/app"
           className="button is-large is-primary mt-5"
           onClick={handlerOnClick}
-          id={GTMEvent.PohCompletedEventType}
+          id={GTMTypes.PohCompletedEventType}
         >
           Back to MODCLUB
         </Link>

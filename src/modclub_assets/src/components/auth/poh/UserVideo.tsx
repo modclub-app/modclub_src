@@ -17,7 +17,7 @@ import {
   MESSAGE_FOR_USER_VIDEO_RECORD,
   VIDEO_SUPPORT_MESSAGE,
 } from "../../../utils/constant";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 import { useAppState } from "../../app/state_mgmt/context/state";
 
 export default function UserVideo({ step, goToNextStep }) {
@@ -124,7 +124,7 @@ export default function UserVideo({ step, goToNextStep }) {
       GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        eventType: GTMEvent.PohCompletedVideoEventType,
+        eventType: GTMTypes.PohCompletedVideoEventType,
       },
       ["uId"]
     );
@@ -219,7 +219,7 @@ export default function UserVideo({ step, goToNextStep }) {
           color="primary"
           disabled={!recordedChunks.length || capturing}
           onClick={submit}
-          id={GTMEvent.PohCompletedVideoEventType}
+          id={GTMTypes.PohCompletedVideoEventType}
         >
           Next
         </Button>

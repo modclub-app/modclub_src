@@ -17,7 +17,7 @@ import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { useActors } from "../../../hooks/actors";
 import * as Constant from "../../../utils/constant";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 import { useAppState } from "../state_mgmt/context/state";
 
 const ConfirmationModal = ({
@@ -83,7 +83,7 @@ const ConfirmationModal = ({
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          eventType: GTMEvent.HumanVerificationVotedEventType,
+          eventType: GTMTypes.HumanVerificationVotedEventType,
         },
         ["uId"]
       );
@@ -129,7 +129,7 @@ const ConfirmationModal = ({
                 disabled={isDisabled()}
                 className={submitting && "is-loading"}
                 onClick={onFormSubmit}
-                id={GTMEvent.HumanVerificationVotedEventType}
+                id={GTMTypes.HumanVerificationVotedEventType}
               >
                 Submit
               </Button>

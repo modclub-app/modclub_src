@@ -5,7 +5,7 @@ import { Icon, Level } from "react-bulma-components";
 import PopupModal from "./PopupModal";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const UpdateTable = ({ activeBalance, stake, amount = 0 }) => {
   return (
@@ -53,7 +53,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
           amount,
-          eventType: GTMEvent.TransactionStakeEventType,
+          eventType: GTMTypes.TransactionStakeEventType,
         },
         ["uId"]
       );
@@ -71,7 +71,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
       loader={!!appState.stakeTokensAction}
       handleSubmit={onFormSubmit}
       updateTable={<UpdateTable activeBalance={wallet} stake={stake} />}
-      trackEventId={GTMEvent.TransactionStakeEventType}
+      trackEventId={GTMTypes.TransactionStakeEventType}
     >
       <br />
       <div className="field">

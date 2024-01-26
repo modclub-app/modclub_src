@@ -10,7 +10,7 @@ import { fetchObjectUrl } from "../../../utils/jwt";
 import { Link } from "react-router-dom";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import * as Constant from "../../../utils/constant";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const ApplicantSnippet = ({
   applicant,
@@ -77,7 +77,7 @@ const ApplicantSnippet = ({
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          eventType: GTMEvent.HumanVerificationReserveEventType,
+          eventType: GTMTypes.HumanVerificationReserveEventType,
         },
         ["uId"]
       );
@@ -173,7 +173,7 @@ const ApplicantSnippet = ({
         createReservation={onReservedPoh}
         reserved={reserved}
         loading={loading}
-        trackEventId={GTMEvent.HumanVerificationReserveEventType}
+        trackEventId={GTMTypes.HumanVerificationReserveEventType}
       />
     </div>
   );

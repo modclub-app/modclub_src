@@ -24,7 +24,7 @@ import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import Timer from "../../common/timer/Timer";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -185,7 +185,7 @@ export default function PohApplicant() {
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          eventType: GTMEvent.HumanVerificationReserveEventType,
+          eventType: GTMTypes.HumanVerificationReserveEventType,
         },
         ["uId"]
       );
@@ -353,7 +353,7 @@ export default function PohApplicant() {
         createReservation={onReservedPoh}
         reserved={reserved}
         loading={loadingModal}
-        trackEventId={GTMEvent.HumanVerificationReserveEventType}
+        trackEventId={GTMTypes.HumanVerificationReserveEventType}
       />
     </>
   );
