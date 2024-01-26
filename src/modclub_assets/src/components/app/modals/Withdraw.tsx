@@ -77,7 +77,7 @@ export default function Withdraw({
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
         amount,
-        type: GTMEvent.TransactionWithdrawEventType,
+        eventType: GTMEvent.TransactionWithdrawEventType,
       },
       ["uId"]
     );

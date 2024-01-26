@@ -32,7 +32,7 @@ const Confirmation = ({ redirect_uri }) => {
       GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: GTMEvent.PohCompletedEventType,
+        eventType: GTMEvent.PohCompletedEventType,
       },
       ["uId"]
     );

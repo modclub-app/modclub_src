@@ -59,16 +59,16 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
 
       // GTM: determine the number of profiles created;
-      // GTMManager.trackEvent(
-      //   GTMEvent.UserCreatedProfileEventName,
-      //   {
-      //     uId: appState.loginPrincipalId,
-      //     username,
-      //     email,
-      //     type: GTMEvent.UserCreatedProfileEventType
-      //   },
-      //   ["uId", "username", "email"]
-      // );
+      GTMManager.trackEvent(
+        GTMEvent.UserCreatedProfileEventName,
+        {
+          uId: appState.loginPrincipalId,
+          username,
+          email,
+          eventType: GTMEvent.UserCreatedProfileEventType,
+        },
+        ["uId", "username", "email"]
+      );
 
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });

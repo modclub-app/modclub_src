@@ -10,8 +10,8 @@ export enum GTMEvent {
   PohChallengeEventName = "gtm_poh_challenge",
   // --- Poh challenge events type and elements id ---
   PohStartEventType = "start",
+  PohCompletedAudioEventType = "completed_audio",
   PohCompletedVideoEventType = "completed_video",
-  PohCompletedAudioEventType = "completed_video",
   PohCompletedEventType = "completed",
 
   // --- Account transaction event name ---

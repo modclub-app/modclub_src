@@ -124,7 +124,7 @@ export default function UserVideo({ step, goToNextStep }) {
       GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: GTMEvent.PohCompletedVideoEventType,
+        eventType: GTMEvent.PohCompletedVideoEventType,
       },
       ["uId"]
     );

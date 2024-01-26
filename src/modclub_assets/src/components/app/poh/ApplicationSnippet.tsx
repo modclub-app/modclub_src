@@ -77,7 +77,7 @@ const ApplicantSnippet = ({
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: GTMEvent.HumanVerificationReserveEventType,
+          eventType: GTMEvent.HumanVerificationReserveEventType,
         },
         ["uId"]
       );

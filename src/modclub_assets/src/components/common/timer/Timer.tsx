@@ -39,7 +39,7 @@ const Timer = ({ countdown, toggle, detail = false, showSecond = false }) => {
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
-        type: GTMEvent.HumanVerificationExpiredEventType,
+        eventType: GTMEvent.HumanVerificationExpiredEventType,
       },
       ["uId"]
     );

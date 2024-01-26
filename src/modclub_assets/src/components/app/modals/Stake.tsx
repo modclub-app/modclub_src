@@ -53,7 +53,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
           amount,
-          type: GTMEvent.TransactionStakeEventType,
+          eventType: GTMEvent.TransactionStakeEventType,
         },
         ["uId"]
       );

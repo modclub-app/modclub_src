@@ -83,7 +83,7 @@ const ConfirmationModal = ({
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: GTMEvent.HumanVerificationVotedEventType,
+          eventType: GTMEvent.HumanVerificationVotedEventType,
         },
         ["uId"]
       );

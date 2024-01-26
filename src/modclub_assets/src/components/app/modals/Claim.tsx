@@ -30,7 +30,7 @@ export default function Claim({ toggle, userId, show }) {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
           amount,
-          type: GTMEvent.TransactionClaimEventType,
+          eventType: GTMEvent.TransactionClaimEventType,
         },
         ["uId"]
       );

@@ -148,7 +148,7 @@ export default function UserPhrases({ step, goToNextStep }) {
       GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: GTMEvent.PohCompletedAudioEventType,
+        eventType: GTMEvent.PohCompletedAudioEventType,
       },
       ["uId"]
     );

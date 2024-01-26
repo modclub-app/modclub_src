@@ -60,7 +60,7 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
           amount,
-          type: GTMEvent.TransactionDepositEventType,
+          eventType: GTMEvent.TransactionDepositEventType,
         },
         ["uId"]
       );

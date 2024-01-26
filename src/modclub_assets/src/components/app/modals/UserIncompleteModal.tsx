@@ -20,7 +20,7 @@ export default function UserIncompleteModal({
       GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: GTMEvent.PohStartEventType,
+        eventType: GTMEvent.PohStartEventType,
       },
       ["uId"]
     );
