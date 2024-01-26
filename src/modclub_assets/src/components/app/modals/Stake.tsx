@@ -45,15 +45,15 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
         dispatch({ type: "stakeTokensAction", payload: { amount } });
       }
 
-      // GTM: determine amount of Stake users make into
+      // GTM: determine amount of "Stake" users make into
       // their account and how many users made Stake;
       GTMManager.trackEvent(
-        GTMEvent.AccountTransaction,
+        GTMEvent.TransactionEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "stake",
           amount,
+          type: GTMEvent.TransactionStakeEventType,
         },
         ["uId"]
       );
@@ -71,6 +71,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
       loader={!!appState.stakeTokensAction}
       handleSubmit={onFormSubmit}
       updateTable={<UpdateTable activeBalance={wallet} stake={stake} />}
+      trackEventId={GTMEvent.TransactionStakeEventType}
     >
       <br />
       <div className="field">

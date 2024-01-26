@@ -71,13 +71,13 @@ const ApplicantSnippet = ({
       setMessage({ success: true, value: "Reserved POH successful" });
       setLoading(false);
 
-      // GTM: determine the quantity of reserved "human verification" tasks;
+      // GTM: determine the quantity of "reserved" human verification tasks;
       GTMManager.trackEvent(
-        GTMEvent.HumanVerification,
+        GTMEvent.HumanVerificationEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "reserve",
+          type: GTMEvent.HumanVerificationReserveEventType,
         },
         ["uId"]
       );
@@ -173,6 +173,7 @@ const ApplicantSnippet = ({
         createReservation={onReservedPoh}
         reserved={reserved}
         loading={loading}
+        trackEventId={GTMEvent.HumanVerificationReserveEventType}
       />
     </div>
   );

@@ -52,15 +52,15 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
         payload: { amount, subAcc: subacc },
       });
 
-      // GTM: determine amount of Deposits users make into
+      // GTM: determine amount of "Deposit" users make into
       // their account and how many users made Deposits;
       GTMManager.trackEvent(
-        GTMEvent.AccountTransaction,
+        GTMEvent.TransactionEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "deposit",
           amount,
+          type: GTMEvent.TransactionDepositEventType,
         },
         ["uId"]
       );
@@ -137,6 +137,7 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
         subtitle="Congratulation!"
         loader={!!appState.accountDepositAction}
         handleSubmit={handleDeposit}
+        trackEventId={GTMEvent.TransactionDepositEventType}
       >
         {principal &&
           activeProvider.meta.id != "plug" &&

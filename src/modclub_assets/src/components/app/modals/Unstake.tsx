@@ -91,15 +91,15 @@ export default function Unstake({
     const { amount } = values;
     dispatch({ type: "unstakeTokensAction", payload: { amount } });
 
-    // GTM: determine amount of UnStake users make into
+    // GTM: determine amount of "UnStake" users make into
     // their account and how many users made UnStake;
     GTMManager.trackEvent(
-      GTMEvent.AccountTransaction,
+      GTMEvent.TransactionEventName,
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
-        type: "unstake",
         amount,
+        type: GTMEvent.TransactionUnStakeEventType,
       },
       ["uId"]
     );
@@ -114,6 +114,7 @@ export default function Unstake({
       handleSubmit={onFormSubmit}
       button1="Submit"
       loader={!!appState.unstakeTokensAction}
+      trackEventId={GTMEvent.TransactionUnStakeEventType}
       updateTable={
         <UpdateTable
           stake={stakeBalance}

@@ -181,11 +181,11 @@ export default function PohApplicant() {
 
       // GTM: determine the quantity of reserved "human verification" tasks;
       GTMManager.trackEvent(
-        GTMEvent.HumanVerification,
+        GTMEvent.HumanVerificationEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "reserve",
+          type: GTMEvent.HumanVerificationReserveEventType,
         },
         ["uId"]
       );
@@ -353,6 +353,7 @@ export default function PohApplicant() {
         createReservation={onReservedPoh}
         reserved={reserved}
         loading={loadingModal}
+        trackEventId={GTMEvent.HumanVerificationReserveEventType}
       />
     </>
   );

@@ -59,15 +59,16 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
 
       // GTM: determine the number of profiles created;
-      GTMManager.trackEvent(
-        GTMEvent.UserCreatedProfile,
-        {
-          uId: appState.loginPrincipalId,
-          username,
-          email,
-        },
-        ["uId", "username", "email"]
-      );
+      // GTMManager.trackEvent(
+      //   GTMEvent.UserCreatedProfileEventName,
+      //   {
+      //     uId: appState.loginPrincipalId,
+      //     username,
+      //     email,
+      //     type: GTMEvent.UserCreatedProfileEventType
+      //   },
+      //   ["uId", "username", "email"]
+      // );
 
       if (!isPohFlow) {
         setMessage({ success: true, value: "Sign Up Successful!" });
@@ -81,17 +82,6 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr ? errAr[1] : e });
       setSubmitting(false);
-
-      // GTM: determine the number of errors in created profiles;
-      GTMManager.trackEvent(
-        GTMEvent.UserCreateProfileError,
-        {
-          uId: appState.loginPrincipalId,
-          username,
-          email,
-        },
-        ["uId", "username", "email"]
-      );
     }
 
     setTimeout(() => setMessage(null), 2000);
@@ -158,6 +148,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
                         fullwidth
                         value="submit"
                         className={submitting ? "is-loading" : ""}
+                        id={GTMEvent.UserCreatedProfileEventType}
                       >
                         Submit
                       </Button>

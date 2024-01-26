@@ -143,12 +143,12 @@ export default function UserPhrases({ step, goToNextStep }) {
       }
     }
 
-    // GTM: determine the quantity of submitted audio challenge;
+    // GTM: determine the quantity of submitted "poh audio" challenge;
     GTMManager.trackEvent(
-      GTMEvent.UserPohChallenge,
+      GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: "completed_audio",
+        type: GTMEvent.PohCompletedAudioEventType,
       },
       ["uId"]
     );
@@ -331,6 +331,7 @@ export default function UserPhrases({ step, goToNextStep }) {
           color="primary"
           disabled={!audioData || capturing}
           onClick={submit}
+          id={GTMEvent.PohCompletedAudioEventType}
         >
           Next
         </Button>

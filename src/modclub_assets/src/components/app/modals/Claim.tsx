@@ -22,15 +22,15 @@ export default function Claim({ toggle, userId, show }) {
       const { amount } = values;
       dispatch({ type: "claimRewardsAction", payload: { amount } });
 
-      // GTM: determine amount of Claim users make into
+      // GTM: determine amount of "Claim" users make into
       // their account and how many users made Claim;
       GTMManager.trackEvent(
-        GTMEvent.AccountTransaction,
+        GTMEvent.TransactionEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "claim",
           amount,
+          type: GTMEvent.TransactionClaimEventType,
         },
         ["uId"]
       );
@@ -48,6 +48,7 @@ export default function Claim({ toggle, userId, show }) {
         toggle={toggle}
         handleSubmit={onFormSubmit}
         loader={!!appState.claimRewardsAction}
+        trackEventId={GTMEvent.TransactionClaimEventType}
       >
         <div className="field">
           <div className="control">

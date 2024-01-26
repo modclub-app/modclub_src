@@ -35,11 +35,11 @@ const Timer = ({ countdown, toggle, detail = false, showSecond = false }) => {
     // GTM: determine the quantity of people who reserved "human verification" tasks
     // but do not finish verification.
     GTMManager.trackEvent(
-      GTMEvent.HumanVerification,
+      GTMEvent.HumanVerificationEventName,
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
-        type: "reserve_expired",
+        type: GTMEvent.HumanVerificationExpiredEventType,
       },
       ["uId"]
     );

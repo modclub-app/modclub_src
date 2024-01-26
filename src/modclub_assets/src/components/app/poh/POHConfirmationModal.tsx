@@ -79,11 +79,11 @@ const ConfirmationModal = ({
 
       // GTM: determine the amount of voted “human verification” tasks;
       GTMManager.trackEvent(
-        GTMEvent.HumanVerification,
+        GTMEvent.HumanVerificationEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "voted",
+          type: GTMEvent.HumanVerificationVotedEventType,
         },
         ["uId"]
       );
@@ -129,6 +129,7 @@ const ConfirmationModal = ({
                 disabled={isDisabled()}
                 className={submitting && "is-loading"}
                 onClick={onFormSubmit}
+                id={GTMEvent.HumanVerificationVotedEventType}
               >
                 Submit
               </Button>

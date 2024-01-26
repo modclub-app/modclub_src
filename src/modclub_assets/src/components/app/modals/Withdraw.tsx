@@ -69,15 +69,15 @@ export default function Withdraw({
       payload: { amount, target: address },
     });
 
-    // GTM: determine amount of Withdraw users make into
+    // GTM: determine amount of "Withdraw" users make into
     // their account and how many users made Withdraw;
     GTMManager.trackEvent(
-      GTMEvent.AccountTransaction,
+      GTMEvent.TransactionEventName,
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
-        type: "withdraw",
         amount,
+        type: GTMEvent.TransactionWithdrawEventType,
       },
       ["uId"]
     );
@@ -93,6 +93,7 @@ export default function Withdraw({
       loader={!!appState.accountWithdrawAction}
       updateTable={<UpdateTable amount={inputValue || 0} />}
       isSubmitDisabled={!(address && amount)}
+      trackEventId={GTMEvent.TransactionWithdrawEventType}
     >
       <label className="label">Enter your wallet address: </label>
       <div className="field">

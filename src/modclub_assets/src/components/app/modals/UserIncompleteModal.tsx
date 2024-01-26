@@ -14,13 +14,13 @@ export default function UserIncompleteModal({
   token: String;
 }) {
   const appState = useAppState();
-  // GTM: determine the number of users who completed the Proof of Humanity;
+  // GTM: determine the number of users who start the Proof of Humanity;
   const handlerOnClick = () =>
     GTMManager.trackEvent(
-      GTMEvent.UserPohChallenge,
+      GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: "start",
+        type: GTMEvent.PohStartEventType,
       },
       ["uId"]
     );
@@ -77,6 +77,7 @@ export default function UserIncompleteModal({
               className="button is-primary"
               style={{ textDecoration: "none" }}
               onClick={handlerOnClick}
+              id={GTMEvent.PohStartEventType}
             >
               Continue
             </Link>
