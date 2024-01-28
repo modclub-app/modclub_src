@@ -16,24 +16,6 @@ module ModSecurity {
     NotPermitted = "Access denied. No Permissions.";
   };
 
-  public func allowedCanistergeekCaller(caller : Principal, authGuard : ModSecurity.Guard) : Bool {
-    let allowedCallersSecret = authGuard.getSecretVals(Constants.SECRETS_ALLOWED_CANISTER_GEEK_CALLER);
-
-    if (Array.size(allowedCallersSecret) == 0) {
-      return false;
-    };
-
-    let callerStr = Principal.toText(caller);
-
-    var exists = Array.find<Text>(
-      allowedCallersSecret,
-      func(val : Text) : Bool {
-        Text.equal(val, callerStr);
-      }
-    );
-    exists != null;
-  };
-
   public class Guard(env : CommonTypes.ENV, context : Text) {
 
     var admins : List.List<Principal> = List.nil<Principal>();
@@ -180,6 +162,24 @@ module ModSecurity {
 
     public func getEnvs() : CommonTypes.ENV {
       env;
+    };
+
+    public func allowedCanistergeekCaller(caller : Principal) : Bool {
+      let allowedCallersSecret = getSecretVals(Constants.SECRETS_ALLOWED_CANISTER_GEEK_CALLER);
+
+      if (Array.size(allowedCallersSecret) == 0) {
+        return false;
+      };
+
+      let callerStr = Principal.toText(caller);
+
+      var exists = Array.find<Text>(
+        allowedCallersSecret,
+        func(val : Text) : Bool {
+          Text.equal(val, callerStr);
+        }
+      );
+      exists != null;
     };
   };
 };
