@@ -292,6 +292,9 @@ function deploy_specific_canister() {
     "archive_qa")
       local local_env=$(get_local_canisters)
       dfx deploy archive_qa --argument="($local_env)" ;;
+    "decideid_qa")
+      local local_env=$(get_local_canisters)
+      dfx deploy decideid_qa --argument="($local_env)" ;;
     *)
       echo "Unknown canister: $1"
       exit 1 ;;
