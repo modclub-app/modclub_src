@@ -8,6 +8,7 @@ import Timer "mo:base/Timer";
 import CommonTypes "../types";
 import Array "mo:base/Array";
 import Constants "../constants";
+import Iter "mo:base/Iter";
 
 module ModSecurity {
 
@@ -16,13 +17,18 @@ module ModSecurity {
   };
 
   public func allowedCanistergeekCaller(caller : Principal, authGuard : ModSecurity.Guard) : Bool {
-    let allowedCallersSecret : [CommonTypes.Secret] = authGuard.getSecrets(Constants.SECRETS_ALLOWED_CANISTER_GEEK_CALLER);
+    let allowedCallersSecret = authGuard.getSecretVals(Constants.SECRETS_ALLOWED_CANISTER_GEEK_CALLER);
+
+    if (Array.size(allowedCallersSecret) == 0) {
+      return false;
+    };
+
     let callerStr = Principal.toText(caller);
 
-    var exists = Array.find<CommonTypes.Secret>(
+    var exists = Array.find<Text>(
       allowedCallersSecret,
-      func(secret : CommonTypes.Secret) : Bool {
-        Text.equal(secret.value, callerStr);
+      func(val : Text) : Bool {
+        Text.equal(val, callerStr);
       }
     );
     exists != null;
@@ -58,14 +64,21 @@ module ModSecurity {
       };
     };
 
-    public func getSecrets(filterName : Text) : [CommonTypes.Secret] {
-      var filterSecrets = List.filter<CommonTypes.Secret>(
-        secrets,
-        func(val : CommonTypes.Secret) : Bool {
-          Text.contains(val.name, #text filterName);
-        }
+    public func getSecretVals(name : Text) : [Text] {
+      let existingSecretOpt = List.find<CommonTypes.Secret>(
+          secrets,
+          func(val : CommonTypes.Secret) : Bool { name == val.name }
       );
-      List.toArray(filterSecrets);
+      switch (existingSecretOpt) {
+          case (?existingSecret) {
+              let delimiter = Constants.SECRET_VALUE_DELIMITER;
+              let parts = Text.split(existingSecret.value, #char delimiter);
+              return Iter.toArray<Text>(parts);
+          };
+          case null {
+              return [];
+          };
+      };
     };
 
     public func getAdmins() : [Principal] {

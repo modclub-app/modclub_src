@@ -44,6 +44,7 @@ module Constants {
 
   public let ACCOUNT_PAYABLE_FIELD = "ACCOUNT_PAYABLE";
 
-  // Secrets prefix
-  public let SECRETS_ALLOWED_CANISTER_GEEK_CALLER = "allowed_cg_caller_";
+  // --- Secrets ----
+  public let SECRET_VALUE_DELIMITER = ',';
+  public let SECRETS_ALLOWED_CANISTER_GEEK_CALLER = "allowed_cg_callers";
 };

@@ -13,6 +13,7 @@ import Canistergeek "../common/canistergeek/canistergeek";
 import LoggerTypesModule "../common/canistergeek/logger/typesModule";
 import Helpers "../common/helpers";
 import ModSecurity "../common/security/guard";
+import Text "mo:base/Text";
 
 shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = this {
   let Unauthorized = "Unauthorized";
@@ -84,19 +85,39 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared ({ caller }) func addSecret(secret : CommonTypes.Secret) : async Result.Result<AuthTypes.SecretList, Text> {
+    // Copy the list to a new variable for modification
     var secretList = secrets;
-    if (
-      not List.some<CommonTypes.Secret>(
-        secrets,
-        func(val : CommonTypes.Secret) : Bool { secret.name == val.name }
-      )
-    ) {
-      secretList := List.push<CommonTypes.Secret>(secret, secretList);
+
+    // Check if a secret with the same name already exists
+    let existingSecretOpt = List.find<CommonTypes.Secret>(
+      secretList,
+      func(val : CommonTypes.Secret) : Bool { secret.name == val.name }
+    );
+
+    switch (existingSecretOpt) {
+        // If secret exists, update its value
+        case (?existingSecret) {
+            secretList := List.map<CommonTypes.Secret, CommonTypes.Secret>(
+                secretList, 
+                func(val : CommonTypes.Secret) : CommonTypes.Secret {
+                    if (val.name == secret.name) {
+                        { name = val.name; value = val.value # Text.fromChar(GlobalConstants.SECRET_VALUE_DELIMITER) # secret.value }
+                    } else {
+                        val
+                    }
+                }
+            );
+        };
+        // If secret does not exist, add it to the list
+        case null {
+            secretList := List.push<CommonTypes.Secret>(secret, secretList);
+        };
     };
 
+    // Update the original secrets list
     secrets := secretList;
     await publish("secrets");
-    #ok(secretList);
+    return #ok(secretList);
   };
 
   public shared ({ caller }) func removeSecret(name : Text) : async Result.Result<AuthTypes.SecretList, Text> {
