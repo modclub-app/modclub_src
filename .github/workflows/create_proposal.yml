@@ -121,6 +121,22 @@ jobs:
         run: |
           dfx build --network ${{ github.event.inputs.NETWORK }} ${{ github.event.inputs.CANISTER }}
 
+      - name: Gzip WASM file
+        run: |
+          gzip -f .dfx/${{ github.event.inputs.NETWORK }}/canisters/${{ github.event.inputs.CANISTER }}/${{ github.event.inputs.CANISTER }}.wasm
+
+      - name: Notify Slack - Build Complete and Hash
+        if: success()
+        run: |
+          WASM_FILE_PATH=".dfx/${{ github.event.inputs.NETWORK }}/canisters/${{ github.event.inputs.CANISTER }}/${{ github.event.inputs.CANISTER }}.wasm"
+          SHA256_HASH=$(sha256sum $WASM_FILE_PATH | awk '{ print $1 }')
+          PAYLOAD="{\"text\":\"Canister build for upgrade proposal - COMPLETED.\\nCanister: $CANISTER\\nEnvironment: $ENVIRONMENT\\nSHA256 Hash: $SHA256_HASH\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+          CANISTER: ${{ github.event.inputs.CANISTER }}
+          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+
       - name: Notify to SlachChanel about build failure
         if: failure()
         run: |

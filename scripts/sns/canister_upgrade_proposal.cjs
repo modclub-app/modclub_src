@@ -54,7 +54,7 @@ function getInput(index, envVar, question) {
     network,
     "canisters",
     canisterName,
-    `${canisterName}.wasm`
+    `${canisterName}.wasm.gz`
   );
 
   let upgradeArg;
