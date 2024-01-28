@@ -160,13 +160,11 @@ jobs:
       #       echo "Backup failed"
       #       exit 1
       #     fi
-
       #     PAYLOAD="{\"text\":\"Backup [$BACKUP_ID_1 - $BACKUP_FIELDNAME_1]\"}"
       #     curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
       #   env:
       #     ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
       #     PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
-
       - name: Execute canister upgrade proposal script
         if: success()
         run: |
@@ -185,21 +183,6 @@ jobs:
         run: |
           git tag $DEPLOYMENT_TAG
           git push origin $DEPLOYMENT_TAG
-
-      - name: Compare WASM Hashes and Notify Slack if Different
-        if: success()
-        run: |
-          DEPLOYED_HASH=$(dfx canister info ${{ github.event.inputs.CANISTER }} --network ${{ github.event.inputs.NETWORK }} | grep 'Module hash:' | awk '{ print $3 }')
-          if [ "$SHA256_HASH" != "$DEPLOYED_HASH" ]; then
-            PAYLOAD="{\"text\":\"ERROR: Mismatch in WASM hashes for Canister upgrade proposal.\\nCanister: $CANISTER\\nEnvironment: $ENVIRONMENT\\nBuilt Hash: $SHA256_HASH\\nDeployed Hash: $DEPLOYED_HASH\"}"
-            curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
-          fi
-        env:
-          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
-          CANISTER: ${{ github.event.inputs.CANISTER }}
-          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
-          NETWORK: ${{ github.event.inputs.NETWORK }}
-          SHA256_HASH: ${{ env.SHA256_HASH }}
 
       - name: Show success message
         run: echo success!
