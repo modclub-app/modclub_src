@@ -87,6 +87,15 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
         canistergeekLogger.postupgrade(_canistergeekLoggerUD);
         _canistergeekLoggerUD := null;
         canistergeekLogger.setMaxMessagesCount(3000);
+
+        authGuard.subscribe("admins");
+        admins := authGuard.setUpDefaultAdmins(
+            admins,
+            deployer,
+            Principal.fromText("aaaaa-aa"), // Just because its impossible to use this here.
+        );
+        authGuard.subscribe("secrets");
+
     };
 
 };
