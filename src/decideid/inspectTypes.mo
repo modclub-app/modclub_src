@@ -8,7 +8,7 @@ module {
     #handleSubscription : () -> CommonTypes.ConsumerPayload;
     #getCanisterLog : () -> ?LoggerTypesModule.CanisterLogRequest;
     #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
-    #hello : () -> ()
+    #hello : () -> ();
 
   }
 }

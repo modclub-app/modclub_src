@@ -11,21 +11,25 @@ import InspectTypes "inspectTypes"
 
 shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = this {
     
-    private var authGuard = ModSecurity.Guard(env, "DECIDEID_CANISTER");
-
     stable var admins : List.List<Principal> = List.nil<Principal>();
-    authGuard.subscribe("admins");
-    admins := authGuard.setUpDefaultAdmins(
-        admins,
-        deployer,
-        Principal.fromText("aaaaa-aa"), // Just because its impossible to use this here.
-    );
-    authGuard.subscribe("secrets");
+
+    private var authGuard = ModSecurity.Guard(env, "DECIDEID_CANISTER");
 
     private let canistergeekMonitor = Canistergeek.Monitor();
     stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
     stable var _canistergeekLoggerUD : ?Canistergeek.LoggerUpgradeData = null;
     private let canistergeekLogger = Canistergeek.Logger();
+
+    func _init_guard(): () {
+        authGuard.subscribe("admins");
+        admins := authGuard.setUpDefaultAdmins(
+            admins,
+            deployer,
+            Principal.fromText("aaaaa-aa"), // Just because its impossible to use this here.
+        );
+        authGuard.subscribe("secrets");
+    };
+    _init_guard();
 
     // dummy method
     public shared query ({ caller }) func hello() : async Text {
@@ -82,19 +86,13 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
     };
 
     system func postupgrade() {
+        _init_guard();
+
         canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
         _canistergeekMonitorUD := null;
         canistergeekLogger.postupgrade(_canistergeekLoggerUD);
         _canistergeekLoggerUD := null;
         canistergeekLogger.setMaxMessagesCount(3000);
-
-        authGuard.subscribe("admins");
-        admins := authGuard.setUpDefaultAdmins(
-            admins,
-            deployer,
-            Principal.fromText("aaaaa-aa"), // Just because its impossible to use this here.
-        );
-        authGuard.subscribe("secrets");
 
     };
 
