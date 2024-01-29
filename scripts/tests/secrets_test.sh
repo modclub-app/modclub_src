@@ -74,3 +74,7 @@ dfx canister call modclub_qa collectCanisterMetrics
 dfx canister call rs_qa collectCanisterMetrics
 dfx canister call vesting_qa collectCanisterMetrics
 dfx canister call decideid_qa collectCanisterMetrics
+
+# test multi-values on single secret
+dfx canister call auth_qa addSecret "(record { name = \"allowed_cg_callers\"; value = \"abd\" })"
+dfx canister call modclub_qa collectCanisterMetrics
