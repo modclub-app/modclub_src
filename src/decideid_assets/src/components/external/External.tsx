@@ -8,7 +8,6 @@ import Logout from "../auth/Logout";
 export default function External() {
   return (
     <>
-      <Header />
       <Switch>
         <Route exact path="/" component={Home} />
         <Route path="/logout" component={Logout} />

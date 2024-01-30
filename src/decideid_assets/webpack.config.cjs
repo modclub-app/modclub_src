@@ -115,6 +115,12 @@ module.exports = {
           // Translates CSS into CommonJS
           "css-loader",
           {
+            loader: "postcss-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+          {
             loader: "resolve-url-loader",
             options: {
               sourceMap: true,

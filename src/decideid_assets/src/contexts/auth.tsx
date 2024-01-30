@@ -28,8 +28,8 @@ const derivationOrigins = {
 
 const customDomains = {
   dev: undefined,
-  qa: "https://modclub.dev",
-  production: "https://modclub.app",
+  qa: "https://decideid.dev",
+  production: "https://decideid.app",
 };
 
 function deepCopy(obj) {
@@ -76,7 +76,7 @@ export function AuthProvider({ children }) {
         globalProviderConfig: {
           host: env === "local" ? undefined : "https://icp-api.io",
           //dev: true,
-          appName: "Modclub",
+          appName: "DecideID",
           customDomain:
             env !== "local" ? customDomains[process.env.DEV_ENV] : undefined,
           derivationOrigin:

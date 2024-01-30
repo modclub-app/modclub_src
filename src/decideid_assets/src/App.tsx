@@ -1,9 +1,7 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { Usergeek } from "usergeek-ic-js";
-import "./bulma.css";
-import "./App.scss";
-import "./Responsive.scss";
+import Header from "./components/header/Header";
 
 import {
   HashRouter as Router,
@@ -12,9 +10,8 @@ import {
   useHistory,
 } from "react-router-dom";
 
-import { StateProvider } from "./components/app/state_mgmt/provider";
 import External from "./components/external/External";
-import ModclubApp from "./components/app/ModclubApp";
+import AuthApp from "./components/app/AuthApp";
 
 import { ProfileProvider } from "./contexts/profile";
 
@@ -34,18 +31,15 @@ export default function App() {
 
   return (
     <>
+      <Header />
       <ProfileProvider>
         <Router history={history}>
           <Switch>
-            <Route path="/app" component={ModclubApp} />
+            <Route path="/app" component={AuthApp} />
+            <Route path="/" component={External} />
           </Switch>
         </Router>
       </ProfileProvider>
-      <Router history={history}>
-        <Switch>
-          <Route path="/" component={External} />
-        </Switch>
-      </Router>
     </>
   );
 }

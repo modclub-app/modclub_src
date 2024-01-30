@@ -3,7 +3,6 @@ import {
   StoicWallet,
 } from "@connect2icmodclub/core/providers";
 import { encodeArrayBuffer } from "./util";
-import { Principal } from "@dfinity/principal";
 import { modclub_types, wallet_types } from "../../src/declarations_by_env";
 
 export type Optional<Type> = [Type] | [];

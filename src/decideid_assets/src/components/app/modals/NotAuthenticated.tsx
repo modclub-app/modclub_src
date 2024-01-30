@@ -1,21 +1,17 @@
-import * as React from 'react'
-import { Modal, Heading } from "react-bulma-components";
+import * as React from 'react';
 import { SignIn } from '../../auth/SignIn';
 
 export default function NotAuthenticated() {
-
   return (
-    <Modal show={true} closeOnBlur={false} showClose={false}>
-      <Modal.Card backgroundColor="circles" className="is-small">
-        <Modal.Card.Body textAlign="center">
-          <Heading subtitle style={{ lineHeight: 1.5 }}>
-            You need to be logged in<br />to view this page
-          </Heading>
-        </Modal.Card.Body>
-        <Modal.Card.Footer className="pt-0 is-justify-content-flex-end is-block">
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"> {/* Modal Background */}
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"> {/* Modal Container */}
+        <div className="text-center"> {/* Modal Body */}
+          <h2 className="text-xl font-semibold">You need to be logged in<br />to view this page</h2>
+        </div>
+        <div className="mt-4 flex justify-end"> {/* Modal Footer */}
           <SignIn />
-        </Modal.Card.Footer>
-      </Modal.Card>
-    </Modal>
+        </div>
+      </div>
+    </div>
   );
 };

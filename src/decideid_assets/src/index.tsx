@@ -2,9 +2,7 @@ import * as React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import { AuthProvider } from "./contexts/auth";
-import { Connect2ICProvider } from "@connect2icmodclub/react";
-
-import "./index.scss";
+import './globals.css';
 
 /**
  * @dfinity/agent requires this. Can be removed once it's fixed

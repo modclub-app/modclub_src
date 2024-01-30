@@ -4,12 +4,9 @@ import { Switch, Route, useHistory, useLocation } from "react-router-dom";
 import NotAuthenticatedModal from "./modals/NotAuthenticated";
 
 import { useConnect } from "@connect2icmodclub/react";
-import { refreshJwt } from "../../utils/jwt";
-import { useActors } from "../../hooks/actors";
-import AdminRoute from "../common/AdminRoute/AdminRoute";
 
 
-export default function ModclubApp() {
+export default function AuthApp() {
   const history = useHistory();
 
   const { isConnected, principal } = useConnect();
@@ -19,7 +16,7 @@ export default function ModclubApp() {
 
   return (
     <>
-      {principal}`
+      Your principal: {principal}
     </>
   );
 }

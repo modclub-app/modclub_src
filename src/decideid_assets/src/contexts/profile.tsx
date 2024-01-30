@@ -1,154 +1,101 @@
-// ProfileContext.js
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { modclub_types } from "../utils/types";
-import { getUserFromStorage, setUserToStorage } from "../utils/util";
-import logger from "../utils/logger";
-import { useActors } from "../hooks/actors";
-import { useConnect } from "@connect2icmodclub/react";
+import React, { createContext, useState, useContext, FunctionComponent } from 'react';
 
-export interface IProfileContext {
-  hasAccount: boolean;
-  providers: Array<Object>;
-  providerIdText: string;
-  setSelectedProvider: (provider: Object) => void;
-  selectedProvider: Object;
-
-  userAlertVal: boolean;
-  setUserAlertVal: (alerts: boolean) => void;
-
-  updateProfile: (user: modclub_types.ProfileStable) => void;
+interface Profile {
+    id: string;
+    email?: string; 
 }
 
-const ProfileContext = createContext<IProfileContext>(null!);
-
-export const KEY_LOCALSTORAGE_USER = "user";
-
-let fetchedProviders = false;
-
-export function useProfile() {
-  return useContext(ProfileContext);
+// Define the type for your context
+interface ProfileContextType {
+    profile: Profile | null;
+    updateProfile: (newProfile: Profile) => Promise<void>; 
+    createProfile: (newProfile: Profile) => Promise<void>;
+    refreshProfile: () => Promise<void>;
+    clear: () => void;
 }
 
-export function ProfileProvider({ children }) {
-  const { isConnected, principal } = useConnect();
-  const { modclub } = useActors();
-  const [shouldSignup, setShouldSignup] = useState(false);
-  const [providers, setProviders] = useState([]);
-  const [providerIdText, setProviderIdText] = useState("");
-  const [userAlertVal, setUserAlertVal] = useState(false);
-  const [user, setUser] = useState<modclub_types.ProfileStable | undefined>();
-  const [selectedProvider, setSelectedProvider] = useState<
-    Object | undefined
-  >();
+// Create the context with an initial undefined value
+const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
-  const updateProfile = async (user) => {
-    logger.log("Updating profile provider..", user);
-    setUser(user);
-    setUserToStorage(localStorage, KEY_LOCALSTORAGE_USER, user);
-  };
+// ProfileProvider component
+export const ProfileProvider: FunctionComponent = ({ children }) => {
+    // Initialize state with data from localStorage if available
+    const initialProfile = localStorage.getItem('decideid_profile') 
+        ? JSON.parse(localStorage.getItem('decideid_profile')!) 
+        : null;
 
-  // Function to fetch the user profile based on the authentication state
-  const fetchUserProfile = async () => {
-    logger.info("User's principal: ", principal);
-    if (isConnected && modclub) {
-      try {
-        const lsUser = getUserFromStorage(localStorage, KEY_LOCALSTORAGE_USER);
-        if (lsUser && !user) {
-          // if local user
-          setUser(lsUser);
-          logger.log(
-            "Succesfully fetched user profile from local storage",
-            lsUser
-          );
+    const [profile, setProfile] = useState<Profile | null>(initialProfile);
+
+    // Function to update the profile in state and localStorage
+    const saveProfile = (newProfile: Profile | null) => {
+        setProfile(newProfile);
+        if (newProfile) {
+            localStorage.setItem('decideid_profile', JSON.stringify(newProfile));
         } else {
-          try {
-            const icUser: modclub_types.ProfileStable =
-              await modclub.getProfile();
-            if (icUser) {
-              logger.log(
-                "Succesfully fetched user profile from MC canister",
-                icUser
-              );
-              updateProfile(icUser);
-            } else {
-              // todo: I think we should move this setShouldSignup out of this function
-              setShouldSignup(true);
-              logger.warn("fetchUserProfile: return empty");
-            }
-          } catch (error) {
-            if (error.result.reject_message === "profile not found") {
-              logger.warn("fetchUserProfile:", error);
-              setShouldSignup(true);
-            } else {
-              logger.error("unknow error from fetchUserProfile:", error);
-              throw error;
-            }
-          }
+            localStorage.removeItem('decideid_profile');
         }
-      } catch (error) {
-        logger.error("Error fetching user profile:", error);
-      }
-    }
-  };
+    };
 
-  // Call fetchUserProfile when the component mounts or when the isSignedIn state changes
-  useEffect(() => {
-    if (isConnected && modclub && !user) {
-      // make sure it is already signed in before fetching profile
-      fetchUserProfile();
-    } else {
-      // if log out
-      setUser(undefined);
-      localStorage.removeItem(KEY_LOCALSTORAGE_USER);
-      setProviders([]);
-      fetchedProviders = false;
-      setUserAlertVal(false);
-      setSelectedProvider(undefined);
-    }
-  }, [isConnected, modclub]);
-
-  // For testing environments only, this bypasses the authentication with an
-  // identity provider for testing purposes.
-  //const DFX_NETWORK = process.env.DFX_NETWORK || "local";
-
-  // When user is set, and is not in local storage yet store the user object
-  // from the canister in local storage so the user doesn't need to be fetched
-  // every load. Then insure user is correctly logged in with identity service,
-  // and set them to not logged in if not.
-  useEffect(() => {
-    if (user && !fetchedProviders) {
-      let adminInitProperties = async () => {
-        fetchedProviders = true;
-        let adminProviders = await modclub.getAdminProviderIDs();
-        let providerListPromise = [];
-        for (let provider of adminProviders) {
-          providerListPromise.push(modclub.getProvider(provider));
+    // Function to update the profile
+    const updateProfile = async (newProfile: Profile) => {
+        try {
+            // Update profile in the backend
+            // ...
+            saveProfile(newProfile);
+        } catch (error) {
+            console.error('Failed to update profile', error);
+            // Handle errors appropriately
         }
-        let providerListPrm = await Promise.all(providerListPromise);
-        let providerList = providerListPrm.filter((provider) => provider);
-        setProviders(providerList);
-        if (adminProviders.length > 0) {
-          setProviderIdText(adminProviders[0].toText());
-        }
-      };
-      adminInitProperties();
-    }
-  }, [user]);
+    };
 
-  return (
-    <ProfileContext.Provider
-      value={{
-        hasAccount: user !== undefined,
-        updateProfile,
-        providers,
-        providerIdText,
-        setUserAlertVal,
-        userAlertVal,
-        setSelectedProvider,
-        selectedProvider,
-      }}
-    >
-      {children}
-    </ProfileContext.Provider>
-  );
+    // Function to create a new profile
+    const createProfile = async (newProfile: Profile) => {
+        try {
+            // Create profile in the backend
+            // ...
+            saveProfile(newProfile);
+        } catch (error) {
+            console.error('Failed to create profile', error);
+            // Handle errors appropriately
+        }
+    };
+
+    // Function to refresh the profile from the backend
+    const refreshProfile = async () => {
+        try {
+            // Fetch profile from the backend
+            // ...
+            // saveProfile(fetchedProfile);
+        } catch (error) {
+            console.error('Failed to refresh profile', error);
+            // Handle errors appropriately
+        }
+    };
+
+    // Function to clear profile data from state and localStorage
+    const clear = () => {
+        saveProfile(null);
+    };
+
+    return (
+        <ProfileContext.Provider value={{ profile, updateProfile, createProfile, refreshProfile, clear }}>
+            {children}
+        </ProfileContext.Provider>
+    );
+};
+
+// Custom hook to use the profile context
+export const useProfile = (): ProfileContextType => {
+    const context = useContext(ProfileContext);
+    if (!context) {
+        throw new Error('useProfile must be used within a ProfileProvider');
+    }
+    return context;
+};
+
+// Helper function to fetch profile data from the server (placeholder)
+async function fetchProfileFromServer(): Promise<Profile> {
+    // Implement the actual API call here
+    // For example: return await axios.get('/api/profile');
+    throw new Error('fetchProfileFromServer function is not implemented.');
 }
