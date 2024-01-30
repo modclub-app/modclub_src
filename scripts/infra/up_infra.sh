@@ -13,11 +13,17 @@ source "${ROOT_DIR}/scripts/utils.sh"
 source "${ROOT_DIR}/scripts/seeds/add_token.sh"
 source "${ROOT_DIR}/scripts/seeds/gen_content.sh"
 source "${ROOT_DIR}/scripts/seeds/gen_provider.sh"
+source "${ROOT_DIR}/scripts/deployment/deployment_utils.sh"
 
 
 LEDGER_IDENTITY="qa_ledger_identity"
 LEDGER_MINTER_IDENTITY="qa_ledger_minter"
 PROVIDER_IDENTITY="qa_test_provider"
+
+ENV=qa
+NETWORK=local
+OLD_MODCLUB_CANISTER_ID="la3yy-gaaaa-aaaah-qaiuq-cai"
+
 
 read -p "Press any key to continue..."
 
@@ -116,7 +122,8 @@ function deploy_wallet_canister() {
 }
 
 function get_local_canisters() {
-  echo "record { modclub_canister_id = principal \"$(dfx canister id modclub_qa)\"; old_modclub_canister_id = principal \"bkyz2-fmaaa-aaaaa-qaaaq-cai\"; rs_canister_id = principal \"$(dfx canister id rs_qa)\"; wallet_canister_id = principal \"$(dfx canister id wallet_qa)\"; auth_canister_id = principal \"$(dfx canister id auth_qa)\"; vesting_canister_id = principal \"$(dfx canister id vesting_qa)\"; }"
+  local env_vars=$(get_env_canisters_vars $ENV $NETWORK $OLD_MODCLUB_CANISTER_ID)
+  echo $env_vars
 }
 
 function deploy_vesting_canister() {
@@ -285,6 +292,9 @@ function deploy_specific_canister() {
     "archive_qa")
       local local_env=$(get_local_canisters)
       dfx deploy archive_qa --argument="($local_env)" ;;
+    "decideid_qa")
+      local local_env=$(get_local_canisters)
+      dfx deploy decideid_qa --argument="($local_env)" ;;
     *)
       echo "Unknown canister: $1"
       exit 1 ;;
