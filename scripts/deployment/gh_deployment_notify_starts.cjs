@@ -44,7 +44,7 @@ const template = {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*[${DEV_ENV}] Deployment (${DEPLOYMENT_TAG}) starts... (Canister:${CANISTER_ONLY})* \n\n Commit: ${COMMIT_SHA}\n<https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|Check workflow>\n<https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}|View PR #${PR_NUMBER}> \n\n *What's new in the HEAD since last deployment(${LAST_DEPLOYMENT_TAG})* \n ${WHATS_NEW_SINCE_LAST_DEP} \n\n Backups:${backupsString} \n`,
+        text: `Test Slack Msg\n`,
       },
     },
   ],
