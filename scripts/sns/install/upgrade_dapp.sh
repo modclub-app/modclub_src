@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script is used to create an SNS proposal for increasing the cost of proposal rejection to 200 MOD
-# This script is called by upgrade_test_canister.sh (please update the name when deploying on prod, replace test with the desired name)
+# This script is called by upgrade_test_canister.sh
 # For detailed explanation please see the GitHub Repo: https://github.com/dfinity/sns-testing/tree/main
 
 
@@ -12,48 +12,29 @@ CURRENTDIR="$(pwd)"
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 
 REPODIR="$(pwd)"
-# below parameters passed by upgrade_test_canister.sh
-export NAME="${1:-test}" # Name of the target canister or will be default to test
-export WASM="${2:-}" # Path to the new WASM module for the upgrade
-export ARG="${3:-()}" # Additional parameters or payload for the operation, formatted as required (often in Candid syntax)
 
 . ./constants.sh normal
 
-export DEVELOPER_NEURON_ID="$(dfx canister \
-  --network "${NETWORK}" \
-  call "${SNS_GOVERNANCE_CANISTER_ID}" \
-  --candid candid/sns_governance.did \
-  list_neurons "(record {of_principal = opt principal\"${DX_PRINCIPAL}\"; limit = 1})" \
-    | idl2json \
-    | jq -r ".neurons[0].id[0].id" \
-    | python3 -c "import sys; ints=sys.stdin.readlines(); sys.stdout.write(bytearray(eval(''.join(ints))).hex())")"
+# Hardcoding the DEVELOPER_NEURON_ID
+export DEVELOPER_NEURON_ID="194d3f742383afcee2f3fb4a1075aa6f9652f0299bc65cb3da353265206814b0"
 
 cd "${CURRENTDIR}"
 
-if [ -f "${ARG}" ]
-then
-  ARGFLAG="--canister-upgrade-arg-path"
-else
-  ARGFLAG="--canister-upgrade-arg"
-fi
-
-if [[ -z "${WASM}" ]]
-then
-  dfx build --network "${NETWORK}" "${NAME}"
-  export WASM=".dfx/${DX_NETWORK}/canisters/${NAME}/${NAME}.wasm"
-fi
-
-export CID="$(dfx canister --network "${NETWORK}" id "${NAME}")"
+# See the proposal format at https://internetcomputer.org/docs/current/references/quill-cli-reference/sns/quill-sns-make-proposal/
 quill sns  \
    --canister-ids-file "${REPODIR}/sns_canister_ids.json"  \
    --pem-file "${PEM_FILE}"  \
-   make-upgrade-canister-proposal  \
-   --summary "SNS Proposal for Increasing the Cost of Proposal Rejection to 200 MOD"  \
-   --title "SNS Proposal for Changing Proposal Rejection Cost"  \
-   --url "https://example.com/"  \
-   --target-canister-id "${CID}"  \
-   --wasm-path "${WASM}"  \
-   "${ARGFLAG}" "${ARG}"  \
+   make-proposal --proposal \
+   "(record { \
+       title = \"SNS Proposal for Changing Proposal Rejection Cost\"; \
+       url = \"https://example.com/\"; \
+       summary = \"SNS Proposal for Increasing the Cost of Proposal Rejection to 200 MOD\"; \
+       action = opt variant { \
+           Motion = record { \
+               motion_text = \"I hereby propose that the cost of rejecting proposals be increased to 200 MOD\"; \
+           } \
+       }; \
+   })" \
    "${DEVELOPER_NEURON_ID}" > msg.json
 quill send \
   --insecure-local-dev-mode \
