@@ -37,14 +37,14 @@ for (let i = 1; i <= totalBackups; i++) {
 backupsString += "]";
 
 console.log(backupsString);
-
+console.log(WHATS_NEW_SINCE_LAST_DEP)
 const template = {
   blocks: [
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `Test Slack Msg\n`,
+        text: `*[${DEV_ENV}] Deployment (${DEPLOYMENT_TAG}) starts... (Canister:${CANISTER_ONLY})* \n\n Commit: ${COMMIT_SHA}\n<https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|Check workflow>\n<https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}|View PR #${PR_NUMBER}> \n\n *What's new in the HEAD since last deployment(${LAST_DEPLOYMENT_TAG})* \n \n\n Backups:${backupsString} \n`,
       },
     },
   ],
