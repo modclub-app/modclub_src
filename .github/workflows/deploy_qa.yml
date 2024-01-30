@@ -30,8 +30,8 @@ on:
             "rs",
           ]
 
-  # pull_request:
-  #   branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
   dev-deploy:
@@ -131,32 +131,32 @@ jobs:
         env:
           DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
 
-      - name: DEBUG Search for Motoko compiler
-        run: |
-          ls -la ~/.cache/dfinity
-          dfx cache show
-          dfx cache list
+      # - name: DEBUG Search for Motoko compiler
+      #   run: |
+      #     ls -la ~/.cache/dfinity
+      #     dfx cache show
+      #     dfx cache list
 
-      # Deploy using quick build. Ensure you handle any configuration or environment specifics.
-      - name: Run deployment script
-        run: |
-          ./scripts/deployment/gh_actions_deploy.sh
-        env:
-          DEV_ENV: qa
-          OLD_MODCLUB_INSTANCE: la3yy-gaaaa-aaaah-qaiuq-cai
+      # # Deploy using quick build. Ensure you handle any configuration or environment specifics.
+      # - name: Run deployment script
+      #   run: |
+      #     ./scripts/deployment/gh_actions_deploy.sh
+      #   env:
+      #     DEV_ENV: qa
+      #     OLD_MODCLUB_INSTANCE: la3yy-gaaaa-aaaah-qaiuq-cai
 
-      - name: Add tag after successful deployment
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git tag $DEPLOYMENT_TAG
-          git push origin $DEPLOYMENT_TAG
+      # - name: Add tag after successful deployment
+      #   run: |
+      #     git config user.name "GitHub Actions Bot"
+      #     git config user.email "actions@github.com"
+      #     git tag $DEPLOYMENT_TAG
+      #     git push origin $DEPLOYMENT_TAG
 
-      - name: Notify Slack - deployment end
-        run: |
-          node scripts/deployment/gh_deployment_notify_end.cjs
-        env:
-          DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
+      # - name: Notify Slack - deployment end
+      #   run: |
+      #     node scripts/deployment/gh_deployment_notify_end.cjs
+      #   env:
+      #     DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
 
-      - name: Show success message
-        run: echo success!
+      # - name: Show success message
+      #   run: echo success!
