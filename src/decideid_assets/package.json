@@ -1,5 +1,5 @@
 {
-  "name": "modclub_assets",
+  "name": "decideid_assets",
   "version": "0.1.0",
   "description": "Modclub",
   "type": "module",
@@ -11,11 +11,7 @@
   ],
   "scripts": {
     "build": "node ../../scripts/build/gen_files_by_env.cjs && webpack",
-    "start": "export DEV_ENV=${DEV_ENV:-qa} &&  node ../../scripts/build/gen_files_by_env.cjs && webpack serve --mode development --config webpack.config.cjs",
-    "add_tags": "git tag -a $(date \"+%Y-%m-%d-%H.%M\") -m \"Deployed by ${GITHUB_ACTOR:-$(whoami)}\" && git push --tags",
-    "add_tags_prod": "git tag -a PROD-$(date \"+%Y-%m-%d-%H.%M\") -m \"Deployed to PROD by ${GITHUB_ACTOR:-$(whoami)}\" && git push --tags",
-    "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
-    "deploy_prod_frontend": "export DEV_ENV=production && source ./scripts/utils.sh && generate_declarations prod ic && node scripts/build/gen_files_by_env.cjs && dfx generate modclub_assets --network ic && dfx deploy modclub_assets --network ic && npm run add_tags_prod"
+    "start": "export DEV_ENV=${DEV_ENV:-qa} &&  node ../../scripts/build/gen_files_by_env.cjs && webpack serve --mode development --config webpack.config.cjs"
   },
   "devDependencies": {
     "@dfinity/agent": "^0.19.3",
@@ -100,7 +96,6 @@
     "react-router-hash-link": "^2.4.3",
     "react-scripts": "5.0.1",
     "react-webcam": "^6.0.0",
-    "sanitize-html": "^2.11.0",
     "semantic-ui-css": "^2.4.1",
     "styled-components": "^5.3.1",
     "tailwindcss": "^3.4.1",
