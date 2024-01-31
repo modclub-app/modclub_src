@@ -15,25 +15,43 @@ REPODIR="$(pwd)"
 
 . ./constants.sh normal
 
-# Hardcoding the DEVELOPER_NEURON_ID
 export DEVELOPER_NEURON_ID="194d3f742383afcee2f3fb4a1075aa6f9652f0299bc65cb3da353265206814b0"
 
 cd "${CURRENTDIR}"
 
-# See the proposal format at https://internetcomputer.org/docs/current/references/quill-cli-reference/sns/quill-sns-make-proposal/
+# See the proposal format at https://internetcomputer.org/docs/current/developer-docs/integrations/sns/managing/managing-nervous-system-parameters
 quill sns  \
-   --canister-ids-file "${REPODIR}/sns_canister_ids.json"  \
-   --pem-file "${PEM_FILE}"  \
+   --canister-ids-file "${REPODIR}/sns_canister_ids.json" \
+   --pem-file "${PEM_FILE}" \
    make-proposal --proposal \
-   "(record { \
-       title = \"SNS Proposal for Changing Proposal Rejection Cost\"; \
+    "(record { \
+       title = \"Increase Proposal Rejection Cost\"; \
        url = \"https://example.com/\"; \
-       summary = \"SNS Proposal for Increasing the Cost of Proposal Rejection to 200 MOD\"; \
+       summary = \"Proposal to increase the rejection cost to 200 MOD\"; \
        action = opt variant { \
-           Motion = record { \
-               motion_text = \"I hereby propose that the cost of rejecting proposals be increased to 200 MOD\"; \
+           ManageNervousSystemParameters = record { \
+               default_followees = null; \
+               max_dissolve_delay_seconds = null; \
+               max_dissolve_delay_bonus_percentage = null; \
+               max_followees_per_function = null; \
+               neuron_claimer_permissions = null; \
+               neuron_minimum_stake_e8s = null; \
+               max_neuron_age_for_age_bonus = null; \
+               initial_voting_period_seconds = null; \
+               neuron_minimum_dissolve_delay_to_vote_seconds = null; \
+	           reject_cost_e8s = opt (200_000_000 : nat64); \
+               max_proposals_to_keep_per_action = null; \
+               wait_for_quiet_deadline_increase_seconds = null; \
+               max_number_of_neurons = null; \
+               transaction_fee_e8s = null; \
+               max_number_of_proposals_with_ballots = null; \
+               max_age_bonus_percentage = null; \
+               neuron_grantable_permissions = null; \
+               voting_rewards_parameters = null; \
+               maturity_modulation_disabled = null; \
+               max_number_of_principals_per_neuron = null; \
            } \
-       }; \
+       } \
    })" \
    "${DEVELOPER_NEURON_ID}" > msg.json
 quill send \
