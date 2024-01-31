@@ -11,7 +11,7 @@ CURRENTDIR="$(pwd)"
 
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 
-REPODIR="$(pwd)"
+SCRIPT_DIR="$(pwd)"
 
 . ./constants.sh normal
 
@@ -21,7 +21,7 @@ cd "${CURRENTDIR}"
 
 # See the proposal format at https://internetcomputer.org/docs/current/developer-docs/integrations/sns/managing/managing-nervous-system-parameters
 quill sns  \
-   --canister-ids-file "${REPODIR}/sns_canister_ids.json" \
+   --canister-ids-file "${SCRIPT_DIR}/sns_canister_ids.json" \
    --pem-file "${PEM_FILE}" \
    make-proposal --proposal \
     "(record { \
