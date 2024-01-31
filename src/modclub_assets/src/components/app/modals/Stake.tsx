@@ -5,7 +5,7 @@ import { Icon, Level } from "react-bulma-components";
 import PopupModal from "./PopupModal";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const UpdateTable = ({ activeBalance, stake, amount = 0 }) => {
   return (
@@ -45,15 +45,15 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
         dispatch({ type: "stakeTokensAction", payload: { amount } });
       }
 
-      // GTM: determine amount of Stake users make into
+      // GTM: determine amount of "Stake" users make into
       // their account and how many users made Stake;
       GTMManager.trackEvent(
-        GTMEvent.AccountTransaction,
+        GTMEvent.TransactionEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "stake",
           amount,
+          eventType: GTMTypes.TransactionStakeEventType,
         },
         ["uId"]
       );
@@ -71,6 +71,7 @@ export default function Stake({ toggle, wallet, stake, onUpdate, show }) {
       loader={!!appState.stakeTokensAction}
       handleSubmit={onFormSubmit}
       updateTable={<UpdateTable activeBalance={wallet} stake={stake} />}
+      trackEventId={GTMTypes.TransactionStakeEventType}
     >
       <br />
       <div className="field">

@@ -1,12 +1,40 @@
 import { hideStringWithStars } from "./util";
 
 export enum GTMEvent {
-  UserCreatedProfile = "userCreatedProfile",
-  UserCreateProfileError = "userCreateProfileError",
-  LaunchApp = "launchApp",
-  UserPohChallenge = "userPohChallenge",
-  AccountTransaction = "accountTransaction",
-  HumanVerification = "humanVerification",
+  // --- User create profile event name ---
+  UserCreatedProfileEventName = "gtm_create_profile",
+
+  // --- Poh challenge start event name ---
+  PohChallengeEventName = "gtm_poh_challenge",
+
+  // --- Account transaction event name ---
+  TransactionEventName = "gtm_transaction",
+
+  // --- Human verification event name ---
+  HumanVerificationEventName = "gtm_human_verification",
+}
+
+export enum GTMTypes {
+  // --- User create profile event type and element id ---
+  UserCreatedProfileEventType = "create_profile",
+
+  // --- Poh challenge events type and elements id ---
+  PohStartEventType = "start",
+  PohCompletedAudioEventType = "completed_audio",
+  PohCompletedVideoEventType = "completed_video",
+  PohCompletedEventType = "completed",
+
+  // --- Account transaction events type and elements id ---
+  TransactionDepositEventType = "deposit",
+  TransactionWithdrawEventType = "withdraw",
+  TransactionStakeEventType = "stake",
+  TransactionUnStakeEventType = "unstake",
+  TransactionClaimEventType = "claim",
+
+  // --- Human verification events type and elements id ---
+  HumanVerificationReserveEventType = "reserve",
+  HumanVerificationExpiredEventType = "reserve_expired",
+  HumanVerificationVotedEventType = "gtm_human_verification_voted",
 }
 
 type GTMEventTypes = {

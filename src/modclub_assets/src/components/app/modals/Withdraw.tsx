@@ -6,7 +6,7 @@ import { useActors } from "../../../hooks/actors";
 import PopupModal from "./PopupModal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { convert_to_mod } from "../../../utils/util";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const UpdateTable = ({ amount }) => {
   const appState = useAppState();
@@ -69,15 +69,15 @@ export default function Withdraw({
       payload: { amount, target: address },
     });
 
-    // GTM: determine amount of Withdraw users make into
+    // GTM: determine amount of "Withdraw" users make into
     // their account and how many users made Withdraw;
     GTMManager.trackEvent(
-      GTMEvent.AccountTransaction,
+      GTMEvent.TransactionEventName,
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
-        type: "withdraw",
         amount,
+        eventType: GTMTypes.TransactionWithdrawEventType,
       },
       ["uId"]
     );
@@ -93,6 +93,7 @@ export default function Withdraw({
       loader={!!appState.accountWithdrawAction}
       updateTable={<UpdateTable amount={inputValue || 0} />}
       isSubmitDisabled={!(address && amount)}
+      trackEventId={GTMTypes.TransactionWithdrawEventType}
     >
       <label className="label">Enter your wallet address: </label>
       <div className="field">

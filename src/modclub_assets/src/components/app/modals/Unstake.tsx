@@ -8,7 +8,7 @@ import { useActors } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
 import { UnstakeHistoryTable } from "./UnstakeHistoryTable";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const UpdateTable = ({
   stake,
@@ -91,15 +91,15 @@ export default function Unstake({
     const { amount } = values;
     dispatch({ type: "unstakeTokensAction", payload: { amount } });
 
-    // GTM: determine amount of UnStake users make into
+    // GTM: determine amount of "UnStake" users make into
     // their account and how many users made UnStake;
     GTMManager.trackEvent(
-      GTMEvent.AccountTransaction,
+      GTMEvent.TransactionEventName,
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
-        type: "unstake",
         amount,
+        eventType: GTMTypes.TransactionUnStakeEventType,
       },
       ["uId"]
     );
@@ -114,6 +114,7 @@ export default function Unstake({
       handleSubmit={onFormSubmit}
       button1="Submit"
       loader={!!appState.unstakeTokensAction}
+      trackEventId={GTMTypes.TransactionUnStakeEventType}
       updateTable={
         <UpdateTable
           stake={stakeBalance}

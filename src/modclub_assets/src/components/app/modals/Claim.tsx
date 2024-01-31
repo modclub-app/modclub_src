@@ -4,7 +4,7 @@ import { Field } from "react-final-form";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { convert_to_mod } from "../../../utils/util";
 import PopupModal from "./PopupModal";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 export default function Claim({ toggle, userId, show }) {
   const appState = useAppState();
@@ -22,15 +22,15 @@ export default function Claim({ toggle, userId, show }) {
       const { amount } = values;
       dispatch({ type: "claimRewardsAction", payload: { amount } });
 
-      // GTM: determine amount of Claim users make into
+      // GTM: determine amount of "Claim" users make into
       // their account and how many users made Claim;
       GTMManager.trackEvent(
-        GTMEvent.AccountTransaction,
+        GTMEvent.TransactionEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "claim",
           amount,
+          eventType: GTMTypes.TransactionClaimEventType,
         },
         ["uId"]
       );
@@ -48,6 +48,7 @@ export default function Claim({ toggle, userId, show }) {
         toggle={toggle}
         handleSubmit={onFormSubmit}
         loader={!!appState.claimRewardsAction}
+        trackEventId={GTMTypes.TransactionClaimEventType}
       >
         <div className="field">
           <div className="control">

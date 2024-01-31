@@ -16,7 +16,7 @@ import { setUserToStorage, validateEmail } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import logger from "../../../utils/logger";
 import { useAppState } from "../../app/state_mgmt/context/state";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
@@ -60,11 +60,12 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
 
       // GTM: determine the number of profiles created;
       GTMManager.trackEvent(
-        GTMEvent.UserCreatedProfile,
+        GTMEvent.UserCreatedProfileEventName,
         {
           uId: appState.loginPrincipalId,
           username,
           email,
+          eventType: GTMTypes.UserCreatedProfileEventType,
         },
         ["uId", "username", "email"]
       );
@@ -81,17 +82,6 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
       let errAr = regEx.exec(e.message);
       setMessage({ success: false, value: errAr ? errAr[1] : e });
       setSubmitting(false);
-
-      // GTM: determine the number of errors in created profiles;
-      GTMManager.trackEvent(
-        GTMEvent.UserCreateProfileError,
-        {
-          uId: appState.loginPrincipalId,
-          username,
-          email,
-        },
-        ["uId", "username", "email"]
-      );
     }
 
     setTimeout(() => setMessage(null), 2000);
@@ -158,6 +148,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
                         fullwidth
                         value="submit"
                         className={submitting ? "is-loading" : ""}
+                        id={GTMEvent.UserCreatedProfileEventType}
                       >
                         Submit
                       </Button>

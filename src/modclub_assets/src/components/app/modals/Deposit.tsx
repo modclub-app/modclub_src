@@ -6,7 +6,7 @@ import { convert_to_mod, format_token } from "../../../utils/util";
 import { useActors } from "../../../hooks/actors";
 import { Connect2ICContext, useConnect } from "@connect2icmodclub/react";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 interface DepositProps {
   toggle: () => void;
@@ -52,15 +52,15 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
         payload: { amount, subAcc: subacc },
       });
 
-      // GTM: determine amount of Deposits users make into
+      // GTM: determine amount of "Deposit" users make into
       // their account and how many users made Deposits;
       GTMManager.trackEvent(
-        GTMEvent.AccountTransaction,
+        GTMEvent.TransactionEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "deposit",
           amount,
+          eventType: GTMTypes.TransactionDepositEventType,
         },
         ["uId"]
       );
@@ -137,6 +137,7 @@ export default function Deposit({ toggle, subacc, show }: DepositProps) {
         subtitle="Congratulation!"
         loader={!!appState.accountDepositAction}
         handleSubmit={handleDeposit}
+        trackEventId={GTMTypes.TransactionDepositEventType}
       >
         {principal &&
           activeProvider.meta.id != "plug" &&
