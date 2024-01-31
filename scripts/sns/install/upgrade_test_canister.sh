@@ -3,7 +3,8 @@
 
 set -euo pipefail
 
-cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+SCRIPT_DIR=$(dirname -- "${BASH_SOURCE[0]}")
+cd  SCRIPT_DIR
 
 . ./constants.sh normal
 
