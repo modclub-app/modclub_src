@@ -20,6 +20,7 @@ export DEVELOPER_NEURON_ID="194d3f742383afcee2f3fb4a1075aa6f9652f0299bc65cb3da35
 cd "${CURRENTDIR}"
 
 # See the proposal format at https://internetcomputer.org/docs/current/developer-docs/integrations/sns/managing/managing-nervous-system-parameters
+# For the other parameters, make sure comment, or change with the desired value, otherwise it will overwrite their value to null
 quill sns  \
    --canister-ids-file "${SCRIPT_DIR}/sns_canister_ids.json" \
    --pem-file "${PEM_FILE}" \
