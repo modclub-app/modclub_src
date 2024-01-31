@@ -30,8 +30,8 @@ on:
             "rs",
           ]
 
-  pull_request:
-    branches: ["main"]
+  # pull_request:
+  #   branches: ["main"]
 
 jobs:
   dev-deploy:
