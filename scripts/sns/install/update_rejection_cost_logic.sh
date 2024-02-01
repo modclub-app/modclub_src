@@ -22,7 +22,7 @@ cd "${CURRENTDIR}"
 
 # See the proposal format at https://internetcomputer.org/docs/current/developer-docs/integrations/sns/managing/managing-nervous-system-parameters
 # For the other parameters, other than rejection cost, if you want to update change the values accordingly.
-# default_followees = opt record { followees = vec {} }; has been removed from proposal for error handling!!! If you submit proposal like this its value will be set to null.
+# default_followees = opt record { followees = vec {} }; has been removed from proposal for error handling!
 quill sns  \
 --canister-ids-file "${REPO_DIR}/sns_canister_ids.json" \
 --pem-file "${PEM_FILE}" \
