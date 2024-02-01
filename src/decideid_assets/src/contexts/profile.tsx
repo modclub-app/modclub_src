@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, FunctionComponent } from 'react';
+import React, { createContext, useState, useContext, FC } from 'react';
 
 interface Profile {
     id: string;
@@ -18,7 +18,7 @@ interface ProfileContextType {
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 // ProfileProvider component
-export const ProfileProvider: FunctionComponent = ({ children }) => {
+export const ProfileProvider: FC = ({ children }) => {
     // Initialize state with data from localStorage if available
     const initialProfile = localStorage.getItem('decideid_profile') 
         ? JSON.parse(localStorage.getItem('decideid_profile')!) 

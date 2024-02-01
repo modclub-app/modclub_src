@@ -7,7 +7,7 @@
     "moduleResolution": "Node",
     "module": "esnext",
     "noUnusedLocals": false,
-    "strict": false,
+    "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "noEmitHelpers": true,

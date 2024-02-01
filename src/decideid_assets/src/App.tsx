@@ -5,15 +5,11 @@ import Header from "./components/header/Header";
 
 import {
   HashRouter as Router,
-  Switch,
-  Route,
   useHistory,
 } from "react-router-dom";
 
-import External from "./components/external/External";
-import AuthApp from "./components/app/AuthApp";
-
-import { ProfileProvider } from "./contexts/profile";
+import External from "./components/routers/External";
+import Authed from "./components/routers/Authed";
 
 export default function App() {
   const history = useHistory();
@@ -30,16 +26,10 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <Router history={history}>
       <Header />
-      <ProfileProvider>
-        <Router history={history}>
-          <Switch>
-            <Route path="/app" component={AuthApp} />
-            <Route path="/" component={External} />
-          </Switch>
-        </Router>
-      </ProfileProvider>
-    </>
+          <Authed />
+          <External />
+    </Router>
   );
 }
