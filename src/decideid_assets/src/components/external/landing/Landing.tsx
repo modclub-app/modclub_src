@@ -9,7 +9,7 @@ export default function Landing() {
   const handlerOnClick = (event) => {
     event.preventDefault();
     // GTM: determine the number of users who attempt to launch the app;
-    GTMManager.trackEvent(GTMEvent.LaunchApp, {});
+    // GTMManager.trackEvent(GTMEvent.LaunchApp, {});
     history.push("/app");
   };
 

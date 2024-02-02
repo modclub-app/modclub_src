@@ -24,9 +24,9 @@ const content = `// This file is auto generated from scripts/build/gen_files_by_
 // Current DEV_ENV=${DEV_ENV}
 
 import * as modclub_types from "../../declarations/modclub${postfix}/modclub${postfix}.did";
-import * as wallet_types from "../../declarations/wallet${postfix}/wallet${postfix}.did";
+import * as decideid_types from "../../declarations/decideid${postfix}/decideid${postfix}.did";
 
-export { modclub_types, wallet_types };
+export { modclub_types, decideid_types };
 `;
 
 // Write to the desired file
@@ -42,9 +42,9 @@ const actors_by_env_content = `// This file is auto generated from scripts/build
 // Current DEV_ENV=${DEV_ENV}
 
 import * as modclub_actor from "../../declarations/modclub${postfix}";
-import * as wallet_actor from "../../declarations/wallet${postfix}";
+import * as decidedid_actor from "../../declarations/decideid${postfix}";
 
-export { modclub_actor, wallet_actor };
+export { modclub_actor, decidedid_actor };
 `;
 
 // Write to the desired file

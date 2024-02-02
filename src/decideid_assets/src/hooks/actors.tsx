@@ -1,29 +1,33 @@
 import { useEffect } from "react";
 import {
+  decideid_types,
   modclub_types,
-  wallet_types,
 } from "../canister_types";
 
 import { useCanister } from "./useCanister";
 
 export interface IActors {
   modclub: modclub_types.ModClub;
-  wallet: wallet_types._SERVICE;
+  decideid: decideid_types._SERVICE;
 }
 
 export function useActors(): IActors {
   const [modclub] = useCanister("modclub", { mode: "connected" }) as [
-    ModClub,
-    { signedIn: boolean }
-  ];
-  const [wallet] = useCanister("wallet", { mode: "connected" }) as [
-    Wallet,
+    modclub_types.ModClub,
     { signedIn: boolean }
   ];
 
-  if (process.env.DEV_ENV == 'qa' || process.env.DEV_ENV == 'dev') {
+  const [decideid] = useCanister("decideid", { mode: "connected" }) as [
+    decideid_types.DecideID,
+    { signedIn: boolean }
+  ];
+
+  if (process.env.DEV_ENV != 'prod' || process.env.DEV_ENV != 'production') {
     // debug only
-    window["_actors"] = { modclub, wallet };
+    
+    useEffect(() => {
+      window["_actors"] = { modclub, decideid };
+    }, [modclub, decideid]);
   }
-  return { modclub, wallet };
+  return { modclub, decideid };
 }

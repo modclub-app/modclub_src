@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { modclub_actor, wallet_actor } from "../actors_by_env";
+import { modclub_actor, decidedid_actor } from "../actors_by_env";
 import canisterIds from "../../../../canister_ids.json";
 import { detectBrowser } from "../utils/util";
 
@@ -61,12 +61,13 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // This function will be called only once when the component mounts
+    const _canisters = {
+      modclub: modclub_actor,
+      decideid: decidedid_actor,
+    }
     const initializeClient = () => {
       const newClient = createClient({
-        canisters: {
-          modclub_actor,
-          wallet_actor,
-        },
+        canisters: _canisters,
         providers: providers_cb,
         globalProviderConfig: {
           host: env === "local" ? undefined : "https://icp-api.io",

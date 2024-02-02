@@ -9,7 +9,7 @@ import {
 import External from "./components/routers/External";
 import Authed from "./components/routers/Authed";
 
-export default function App() {
+export default function AppContainer() {
   const history = useHistory();
 
   return (
