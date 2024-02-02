@@ -1,12 +1,7 @@
 import { hideStringWithStars } from "./util";
 
 export enum GTMEvent {
-  UserCreatedProfile = "userCreatedProfile",
-  UserCreateProfileError = "userCreateProfileError",
-  LaunchApp = "launchApp",
-  UserPohChallenge = "userPohChallenge",
-  AccountTransaction = "accountTransaction",
-  HumanVerification = "humanVerification",
+  // todo
 }
 
 type GTMEventTypes = {
