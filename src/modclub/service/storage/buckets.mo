@@ -609,10 +609,6 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
         case (?tid) { Timer.cancelTimer(tid) };
         case (null) {};
       };
-      // switch (canistergeekTimer) {
-      //   case (?tid) { Timer.cancelTimer(tid) };
-      //   case (null) {};
-      // };
       canistergeekTimer := ?Timer.recurringTimer(
         #nanoseconds(Constants.ONE_HOUR_NANO_SECS),
         func() : async () { canistergeekMonitor.collectMetrics() }
@@ -653,6 +649,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
 
+    //second timer is to ensure that the timer is set again after upgrade
     ignore Timer.setTimer(
       #seconds 0,
       func() : async () {
@@ -661,10 +658,6 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
           case (?tid) { Timer.cancelTimer(tid) };
           case (null) {};
         };
-        // switch (canistergeekTimer) {
-        //   case (?tid) { Timer.cancelTimer(tid) };
-        //   case (null) {};
-        // };
         canistergeekTimer := ?Timer.recurringTimer(
           #nanoseconds(Constants.ONE_HOUR_NANO_SECS),
           func() : async () { canistergeekMonitor.collectMetrics() }
