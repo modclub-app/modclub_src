@@ -5,7 +5,7 @@ import {
   vesting_types,
   wallet_types,
   airdrop_types,
-} from "../declarations_by_env";
+} from "../canister_types";
 
 import { useCanister } from "./useCanister";
 

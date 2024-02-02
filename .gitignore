@@ -36,6 +36,9 @@ candid/
 src/modclub_assets/src/declarations_by_env.ts
 src/modclub_assets/src/actors_by_env.ts
 
+src/decideid_assets/src/actors_by_env.ts
+src/modclub_assets/src/canister_types.ts
+
 #Ignore auto gen files for upgrade bucket script
 scripts/upgrade-bucket/.upgrade_bucket.sh.swp
 scripts/upgrade-bucket/canister_ids.json
