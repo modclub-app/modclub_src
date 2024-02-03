@@ -1,16 +1,16 @@
 import * as React from "react";
 import "./Landing.scss";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { GTMEvent, GTMManager } from "../../../utils/gtm";
 
 export default function Landing() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
-  const handlerOnClick = (event) => {
+  const handlerOnClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     // GTM: determine the number of users who attempt to launch the app;
     // GTMManager.trackEvent(GTMEvent.LaunchApp, {});
-    history.push("/app");
+    navigate("/app");
   };
 
   return (

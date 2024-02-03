@@ -1,5 +1,5 @@
 
-export const hideStringWithStars = (str) => {
+export const hideStringWithStars = (str: String) => {
   // Determine the length of the ID part that needs to be hidden
   const totalLength = str.length;
   const hideLength = Math.floor(totalLength / 2);

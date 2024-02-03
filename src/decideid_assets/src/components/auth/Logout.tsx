@@ -1,15 +1,15 @@
 import React from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useConnect } from "@connect2icmodclub/react";
 
 const Logout = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { disconnect } = useConnect();
   const handleLogout = () => {
     disconnect();
     // Redirect to the home page after logout
-    history.push("/");
+    navigate("/");
   };
 
   // Call the logout function as soon as the component mounts

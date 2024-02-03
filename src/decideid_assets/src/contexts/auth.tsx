@@ -30,10 +30,12 @@ const customDomains = {
   production: "https://decideid.app",
 };
 
+// @ts-ignore
 function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+// @ts-ignore
 const providers_cb = (config) => {
   const II_config = deepCopy(config);
   const browser = detectBrowser();

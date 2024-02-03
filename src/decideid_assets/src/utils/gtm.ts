@@ -10,6 +10,8 @@ type GTMEventTypes = {
 };
 
 export const GTMManager = {
+
+  // @ts-ignore
   _pushToDataLayer: (event: GTMEventTypes): void => {
     if (window && window.dataLayer) {
       window.dataLayer.push(event);
@@ -17,7 +19,7 @@ export const GTMManager = {
   },
 
   trackEvent: (
-    eventName: GTMEvent,
+    eventName: string,
     eventData: Record<string, any>,
     fieldsToHide?: string[]
   ): void => {
