@@ -611,7 +611,10 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
       };
       canistergeekTimer := ?Timer.recurringTimer(
         #nanoseconds(Constants.ONE_HOUR_NANO_SECS),
-        func() : async () { canistergeekMonitor.collectMetrics() }
+        func() : async () {
+          Helpers.logMessage(canistergeekLogger, "Running Collecting Metrics job.", #info);
+          canistergeekMonitor.collectMetrics();
+        }
       );
       deleteContentTimer := ?Timer.recurringTimer(
         #nanoseconds(Constants.TWENTY_FOUR_HOUR_NANO_SECS),
@@ -649,28 +652,6 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
 
-    //second timer is to ensure that the timer is set again after upgrade
-    ignore Timer.setTimer(
-      #seconds 0,
-      func() : async () {
-        canistergeekMonitor.collectMetrics();
-        switch (canistergeekTimer) {
-          case (?tid) { Timer.cancelTimer(tid) };
-          case (null) {};
-        };
-        canistergeekTimer := ?Timer.recurringTimer(
-          #nanoseconds(Constants.ONE_HOUR_NANO_SECS),
-          func() : async () { canistergeekMonitor.collectMetrics() }
-        );
-        deleteContentTimer := ?Timer.recurringTimer(
-          #nanoseconds(Constants.TWENTY_FOUR_HOUR_NANO_SECS),
-          func() : async () {
-            Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
-            deleteContentAfterExpiry();
-          }
-        );
-      }
-    );
   };
 
   system func inspect({
