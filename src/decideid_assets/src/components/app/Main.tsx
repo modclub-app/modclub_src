@@ -13,7 +13,7 @@ export default function Main() {
   return (
     <>
       Your principal: {principal}
-      {!!!isLoading ? <p>Dmail: {profile?.email}</p> : null}
+      {!!!isLoading ? <p>Email: {profile?.email}</p> : null}
     </>
   );
 }
