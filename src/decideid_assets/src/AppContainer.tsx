@@ -9,13 +9,17 @@ import {
 import External from "./components/routers/External";
 import Authed from "./components/routers/Authed";
 
+import { AuthProvider } from "./contexts/auth"
+
 export default function AppContainer() {
   const history = useHistory();
 
   return (
     <Router history={history}>
       <Header />
-          <Authed />
+          <AuthProvider>
+            <Authed />
+          </AuthProvider>
           <External />
     </Router>
   );
