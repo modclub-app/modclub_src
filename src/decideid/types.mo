@@ -12,16 +12,17 @@ module {
   public type DecideID = Text;
 
   public type AccountType = {
-    #organic;  
+    #organic;
     #third_party;
   };
 
   public type AccountState = {
-    // represents the lifecycle of an account
-    #onboarding;   // during onboarding, asking users to submit different information
-    #review;       // during review, we will check dup and humananity 
-    #approved;     // finall
-    #rejected;
+    // Represents the lifecycle stages of an account.
+
+    #onboarding;   // The initial stage where users are prompted to submit their information for account setup.
+    #review;       // At this stage, submissions are under review for duplications and verification of authenticity (PoH).
+    #approved;     // Indicates the account has passed review and is now fully active and operational.
+    #rejected;     // Signifies the account did not meet the necessary criteria during the review and has been denied access.
   };
 
    public type OnboardingStep = {
