@@ -7,8 +7,13 @@ import Canistergeek "../common/canistergeek/canistergeek";
 import LoggerTypesModule "../common/canistergeek/logger/typesModule";
 import Helpers "../common/helpers";
 import ModSecurity "../common/security/guard";
-import InspectTypes "inspectTypes"
-
+import InspectTypes "inspectTypes";
+import Types "./types";
+import Map "mo:base/HashMap";
+import Text "mo:base/Text";
+import Iter "mo:base/Iter";
+import Result "mo:base/Result";
+import Account "service/account/account";
 shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = this {
     
     stable var admins : List.List<Principal> = List.nil<Principal>();
@@ -19,6 +24,25 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
     stable var _canistergeekMonitorUD : ?Canistergeek.UpgradeData = null;
     stable var _canistergeekLoggerUD : ?Canistergeek.LoggerUpgradeData = null;
     private let canistergeekLogger = Canistergeek.Logger();
+
+    
+    // -----------  Account  ----------
+    
+    // main account map, pk: decideid
+    stable var accountsStable : [(Types.DecideID, Types.Account)] = []; 
+    var accounts = Map.fromIter<Types.DecideID,Types.Account>(
+        accountsStable.vals(), 10, Text.equal, Text.hash);
+
+    // index: user's principal --> decideid
+    stable var principal2decideidStable : [(Principal, Types.DecideID)] = []; 
+    var principal2decideid = Map.fromIter<Principal,Types.DecideID>(
+        principal2decideidStable.vals(), 10, Principal.equal, Principal.hash);
+
+    // TODO: add extra associations, e.g. email --> decideid, other_id --> decideid
+    var accountManager = Account.AccountManager(
+        accounts,
+        principal2decideid
+    );
 
     func _init_guard(): () {
         authGuard.subscribe("admins");
@@ -65,6 +89,30 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
         authGuard.handleSubscription(payload);
     };
 
+
+    public shared ({ caller }) func registerAccount(  
+      firstName: Text,
+      lastName: Text, 
+      email: Text
+    ) : async Result.Result<Types.DecideID, Text> {
+        await accountManager.register(
+            caller,
+            caller,
+            firstName,
+            lastName,
+            email
+        );
+    };
+
+    // TODO: registerFromThirdParty()
+
+
+    public shared ({ caller }) func getAccount(
+        decideid: Types.DecideID
+    ) : async Result.Result<Types.Account, Text> {
+        await accountManager.get(decideid);
+    };
+
     system func inspect({
         arg : Blob;
         caller : Principal;
@@ -83,6 +131,8 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
     system func preupgrade() {
         _canistergeekMonitorUD := ?canistergeekMonitor.preupgrade();
         _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
+        accountsStable := Iter.toArray(accounts.entries());
+        principal2decideidStable := Iter.toArray(principal2decideid.entries());
     };
 
     system func postupgrade() {
@@ -94,6 +144,12 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
         _canistergeekLoggerUD := null;
         canistergeekLogger.setMaxMessagesCount(3000);
 
+        accounts := Map.fromIter<Types.DecideID,Types.Account>(accountsStable.vals(), 10, Text.equal, Text.hash);
+        principal2decideid := Map.fromIter<Principal,Types.DecideID>(principal2decideidStable.vals(), 10, Principal.equal, Principal.hash);
+        accountManager := Account.AccountManager(
+            accounts,
+            principal2decideid
+        );
     };
 
 };
