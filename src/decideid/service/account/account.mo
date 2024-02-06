@@ -1,15 +1,16 @@
 import Map "mo:base/HashMap";
 import Principal "mo:base/Principal";
-import Types "../../types";
 import Result "mo:base/Result";
 import Utils "../../utils";
 import Helpers "../../../common/helpers";
+import Types "./types";
 
 module Account {
 
   public class AccountManager(
     accounts: Map.HashMap<Types.DecideID, Types.Account>,
-    principal2accounts: Map.HashMap<Principal, Types.DecideID>
+    principal2accounts: Map.HashMap<Principal, Types.DecideID>,
+    profiles: Map.HashMap<Types.DecideID, Types.Profile>
   ) {
     public func register(
       caller: Principal,
@@ -38,6 +39,11 @@ module Account {
           };
           accounts.put(newDecideID, newAcc);
           principal2accounts.put(accUserPrincipal, newDecideID);
+          profiles.put(newDecideID, {
+            firstName = firstName;
+            lastName = lastName;
+            email = ?email;
+          });
           return #ok(newDecideID);
 
         };
@@ -50,13 +56,23 @@ module Account {
 
     public func get(
       decideid: Types.DecideID
-    ) : async Result.Result<Types.Account, Text> {
+    ) : async Result.Result<Types.GetAccountResponse, Text> {
       switch (accounts.get(decideid)) {
         case (null) {
           return #err("Cannot find account");
         };
         case (?account) {
-          return #ok(account);
+          switch (profiles.get(decideid)) {
+            case (null) {
+              return #err("Cannot find profile");
+            };
+            case (?profile) {
+              return #ok({
+                acc=account;
+                profile=profile
+              });
+            };
+          }
         };
       };
     }

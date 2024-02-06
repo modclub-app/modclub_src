@@ -33,7 +33,12 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
     var accounts = Map.fromIter<Types.DecideID,Types.Account>(
         accountsStable.vals(), 10, Text.equal, Text.hash);
 
-    // index: user's principal --> decideid
+    // profiles map, pk: decideid
+    stable var profilesStable : [(Types.DecideID, Types.Profile)] = []; 
+    var profiles = Map.fromIter<Types.DecideID,Types.Profile>(
+        profilesStable.vals(), 10, Text.equal, Text.hash);
+
+    // look up table: user's principal --> decideid
     stable var principal2decideidStable : [(Principal, Types.DecideID)] = []; 
     var principal2decideid = Map.fromIter<Principal,Types.DecideID>(
         principal2decideidStable.vals(), 10, Principal.equal, Principal.hash);
@@ -41,7 +46,8 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
     // TODO: add extra associations, e.g. email --> decideid, other_id --> decideid
     var accountManager = Account.AccountManager(
         accounts,
-        principal2decideid
+        principal2decideid,
+        profiles
     );
 
     func _init_guard(): () {
@@ -109,7 +115,7 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
 
     public shared ({ caller }) func getAccount(
         decideid: Types.DecideID
-    ) : async Result.Result<Types.Account, Text> {
+    ) : async Result.Result<Types.GetAccountResponse, Text> {
         await accountManager.get(decideid);
     };
 
@@ -133,6 +139,7 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
         _canistergeekLoggerUD := ?canistergeekLogger.preupgrade();
         accountsStable := Iter.toArray(accounts.entries());
         principal2decideidStable := Iter.toArray(principal2decideid.entries());
+        profilesStable := Iter.toArray(profiles.entries());
     };
 
     system func postupgrade() {
@@ -148,8 +155,10 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
         principal2decideid := Map.fromIter<Principal,Types.DecideID>(principal2decideidStable.vals(), 10, Principal.equal, Principal.hash);
         accountManager := Account.AccountManager(
             accounts,
-            principal2decideid
+            principal2decideid,
+            profiles
         );
+        profiles := Map.fromIter<Types.DecideID,Types.Profile>(profilesStable.vals(), 10, Text.equal, Text.hash);
     };
 
 };
