@@ -3,6 +3,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const ROOT_DIR = __dirname + '/../../';
+const CopyPlugin = require("copy-webpack-plugin");
 
 let localCanisters, prodCanisters, canisters, network;
 
@@ -177,6 +178,15 @@ module.exports = {
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],
       process: require.resolve("process/browser"),
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: `${ROOT_DIR}src/decideid_assets/src/.ic-assets.json*`,
+          to: ".ic-assets.json5",
+          noErrorOnMissing: true,
+        },
+      ],
     }),
   ],
   // proxy /api to port 8000 during development
