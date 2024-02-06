@@ -112,6 +112,18 @@ shared ({ caller = deployer }) actor class DecideID(env : CommonTypes.ENV) = thi
 
     // TODO: registerFromThirdParty()
 
+    public shared ({ caller }) func getAccByCaller(
+    ) : async Result.Result<Types.GetAccountResponse, Text> {
+        switch (principal2decideid.get(caller)) {
+        case (null) {
+          return #err("Not registered.");
+        };
+        case (?decideid) {
+          // User already registered
+          await accountManager.get(decideid);
+        };
+      };        
+    };
 
     public shared ({ caller }) func getAccount(
         decideid: Types.DecideID

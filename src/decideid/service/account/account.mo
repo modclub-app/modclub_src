@@ -9,7 +9,7 @@ module Account {
 
   public class AccountManager(
     accounts: Map.HashMap<Types.DecideID, Types.Account>,
-    principal2accounts: Map.HashMap<Principal, Types.DecideID>,
+    principal2decide: Map.HashMap<Principal, Types.DecideID>,
     profiles: Map.HashMap<Types.DecideID, Types.Profile>
   ) {
     public func register(
@@ -20,7 +20,7 @@ module Account {
       email: Text
     ) : async Result.Result<Types.DecideID, Text> {
       // Check if the user has already registered
-      switch (principal2accounts.get(accUserPrincipal)) {
+      switch (principal2decide.get(accUserPrincipal)) {
         case (null) {
           // User not registered, proceed with registration
           
@@ -38,7 +38,7 @@ module Account {
             createdBy = caller;
           };
           accounts.put(newDecideID, newAcc);
-          principal2accounts.put(accUserPrincipal, newDecideID);
+          principal2decide.put(accUserPrincipal, newDecideID);
           profiles.put(newDecideID, {
             firstName = firstName;
             lastName = lastName;

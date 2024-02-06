@@ -11,6 +11,7 @@ module {
     #getCanisterMetrics : () -> Canistergeek.GetMetricsParameters;
     #hello : () -> ();
     #getAccount : () -> Types.DecideID;
+    #getAccByCaller : () -> ();
     #registerAccount : () -> (Text, Text, Text);
 
   }
