@@ -1,0 +1,72 @@
+[workspace]
+
+[package]
+name = "decideid_assets"
+description = "Asset canister for DecideID with Verifiable Credentials Issuer support"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# local dependencies
+canister_sig_util = { path = "./src/canister_sig_util" }
+asset_util = { path = "./src/asset_util" }
+
+# ic dependencies
+candid = "0.10"
+ic-cdk = "0.12"
+ic-cdk-macros = "0.8"
+ic-certification = "2.2"
+ic-stable-structures = "0.6.0"
+include_dir = "0.7"
+
+# other
+serde_bytes = "0.11"
+serde = "1"
+
+
+[workspace.dependencies]
+# local dependencies
+canister_sig_util = { path = "src/decideid_assets/src/canister_sig_util" }
+asset_util = { path = "src/decideid_assets/src/asset_util" }
+internet_identity_interface = { path = "src/internet_identity_interface" }
+
+# ic dependencies
+candid = "0.10"
+candid_parser = "0.1.2"
+ic-cdk = "0.12"
+ic-cdk-macros = "0.8"
+ic-certification = "2.2"
+ic-http-certification = "2.2"
+ic-metrics-encoder = "1"
+ic-representation-independent-hash = "2.2"
+ic-response-verification = "2.2"
+ic-stable-structures = "0.6"
+ic-test-state-machine-client = "3"
+
+
+# vc dependencies
+identity_core = { git = "https://github.com/frederikrothenberger/identity.rs.git", branch = "frederik/wasm-test", default-features = false}
+identity_credential = {git = "https://github.com/frederikrothenberger/identity.rs.git", branch = "frederik/wasm-test", default-features = false, features = ["credential"]}
+identity_jose = { git = "https://github.com/frederikrothenberger/identity.rs.git", branch = "frederik/wasm-test", default-features = false, features = ["iccs"]}
+
+# other dependencies
+assert_matches = "1.5.0"
+hex = "0.4"
+serde_bytes = "0.11"
+serde_cbor = "0.11"
+serde_json = "1"
+sha2 = "^0.10" # set bound to match ic-certified-map bound
+strfmt = "0.2"
+
+base64 = "0.21"
+include_dir = "0.7"
+lazy_static = "1.4"
+regex = "1.9"
+serde = "1"
+
+[dev-dependencies]
+assert_matches = "1.5.0"
+candid_parser = "0.1"
+ic-http-certification = "2.2"
+ic-test-state-machine-client = "3"
+ic-response-verification = "2.2"

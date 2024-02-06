@@ -2,7 +2,7 @@ const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const ROOT_DIR = __dirname + '/../../';
+const ROOT_DIR = __dirname + "/../../";
 
 let localCanisters, prodCanisters, canisters, network;
 
@@ -23,7 +23,7 @@ function initCanisterIds() {
     console.log("No production canister_ids.json found. Continuing with local");
   }
 
-  console.log(localCanisters)
+  console.log(localCanisters);
   network =
     process.env.DFX_NETWORK ||
     (process.env.NODE_ENV === "production" ? "ic" : "local");
@@ -69,7 +69,7 @@ try {
     "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
 }
 const isDevelopment = process.env.NODE_ENV !== "production";
-const asset_entry = path.join("src", "decideid_assets", "src", "index.html");
+const asset_entry = path.join("src", "decideid_assets", "app", "index.html");
 
 module.exports = {
   target: "web",
@@ -79,7 +79,7 @@ module.exports = {
     // to replace the extension to `.js`.
     index: path.join(ROOT_DIR, asset_entry).replace(/\.html$/, ".tsx"),
   },
-  devtool: isDevelopment ? "source-map" : false,
+  devtool: false, // isDevelopment ? "source-map" : false,
   optimization: {
     minimize: !isDevelopment,
     minimizer: [new TerserPlugin()],
@@ -97,8 +97,20 @@ module.exports = {
     symlinks: false,
   },
   output: {
-    filename: "index.js",
+    filename: "[name].js",
     path: path.join(ROOT_DIR, "dist", "decideid_assets"),
+    chunkFilename: "[name].[contenthash].js",
+    clean: true, // Cleans the /dist folder before each build
+  },
+  optimization: {
+    splitChunks: {
+      chunks: "all",
+      /**
+       * We must to splits bundle into chunks if it exceed 2Mb size
+       * otherwise we will have "Replica Error: application payload size (...) cannot be larger than 3145728"
+       */
+      maxSize: 2048000,
+    },
   },
   module: {
     rules: [
@@ -108,7 +120,7 @@ module.exports = {
       },
       {
         test: /\.(sa|sc|c)ss$/,
-        include: path.resolve(ROOT_DIR, "src/decideid_assets/src"),
+        include: path.resolve(ROOT_DIR, "src/decideid_assets/app"),
         use: [
           // Creates `style` nodes from JS strings
           "style-loader",
@@ -136,17 +148,13 @@ module.exports = {
       },
       {
         test: /\.(png|jpe?g|gif|ico|svg|woff|woff2|eot|ttf)$/i,
-        include: path.resolve(ROOT_DIR, "src/decideid_assets/assets"),
-        use: [
-          {
-            loader: "file-loader",
-          },
-        ],
-      },
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/i,
-        include: path.resolve(ROOT_DIR, "src/decideid_assets/src"),
+        include: path.resolve(ROOT_DIR, "assets"),
         type: "asset/resource",
+        // use: [
+        //   {
+        //     loader: "file-loader",
+        //   },
+        // ],
       },
     ],
   },
@@ -155,9 +163,6 @@ module.exports = {
       template: path.join(ROOT_DIR, asset_entry),
       cache: false,
     }),
-    // new HtmlWebpackPlugin({
-    //   template: path.join(ROOT_DIR, 'src/decideid_assets/public/index.html'), // assuming your HTML file is located at public/index.html
-    // }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       MODCLUB_CANISTER_ID: canisters["modclub"] || "aaaaa-aa",

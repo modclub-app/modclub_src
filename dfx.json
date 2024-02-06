@@ -152,15 +152,11 @@
       "type": "motoko"
     },
     "decideid_qa_assets": {
-      "frontend": {
-        "entrypoint": "src/decideid_assets/src/index.html"
-      },
-      "source": [
-        "src/decideid_assets/assets",
-        "dist/decideid_assets/",
-        "src/qa_custom_domain/well-known/"
-      ],
-      "type": "assets"
+      "frontend": {},
+      "type": "custom",
+      "candid": "src/decideid_assets/decideid_assets.did",
+      "wasm": "src/decideid_assets/decideid_assets.wasm.gz",
+      "build": "src/decideid_assets/build.sh"
     }
   },
   "defaults": {
@@ -171,7 +167,7 @@
   "dfx": "0.14.3",
   "networks": {
     "local": {
-      "bind": "127.0.0.1:8000",
+      "bind": "127.0.0.1:8080",
       "stoicbind": "127.0.0.1:3000",
       "type": "ephemeral"
     }
