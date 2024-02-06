@@ -18,7 +18,7 @@ module {
     decideid_canister_id : Principal;
   };
 
-  public type Timestamp = Nat;
+  public type Timestamp = Int;
 
   public type VestingCanisterActor = actor {
     stake : (ICRCTypes.Account, ICRCTypes.Tokens) -> async Result.Result<Nat, Text>;
