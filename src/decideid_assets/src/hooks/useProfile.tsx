@@ -63,6 +63,7 @@ export function useProfile() {
     }
   }
   
+  // TODO: should consider optimistic mutations
   const createProfileMutation = useMutation(createProfileOnServer, {
     onSuccess: () => {
       queryClient.invalidateQueries('profile');
