@@ -87,4 +87,11 @@ jobs:
       - name: Check new or modified TypeScript files
         run: |
           git fetch origin ${{ github.base_ref }}
-          git diff --name-only origin/${{ github.base_ref }}...HEAD | grep '\.tsx\?$' | xargs tsc --noEmit
+          FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep '\.tsx\?$')
+          if [ -z "$FILES" ]; then
+            echo "No TypeScript files changed."
+          else
+            echo "Checking the following TypeScript files:"
+            echo $FILES
+            echo $FILES | xargs tsc --noEmit
+          fi
