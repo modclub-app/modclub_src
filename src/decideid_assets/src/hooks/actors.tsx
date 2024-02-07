@@ -1,8 +1,5 @@
 import { useEffect } from "react";
-import {
-  decideid_types,
-  modclub_types,
-} from "../canister_types";
+import { decideid_types, modclub_types } from "../canister_types";
 
 import { useCanister } from "./useCanister";
 
@@ -22,9 +19,9 @@ export function useActors(): IActors {
     { signedIn: boolean }
   ];
 
-  if (process.env.DEV_ENV != 'prod' || process.env.DEV_ENV != 'production') {
+  if (process.env.DEV_ENV != "prod" || process.env.DEV_ENV != "production") {
     // debug only
-    
+
     useEffect(() => {
       window["_actors"] = { modclub, decideid };
     }, [modclub, decideid]);

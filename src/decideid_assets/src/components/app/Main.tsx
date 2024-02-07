@@ -3,12 +3,11 @@ import { useEffect, useState } from "react";
 import NotAuthenticatedModal from "./modals/NotAuthenticated";
 
 import { useConnect } from "@connect2icmodclub/react";
-import { useProfile } from "../../hooks/useProfile"
-
+import { useProfile } from "../../hooks/useProfile";
 
 export default function Main() {
   const { principal } = useConnect();
-  const {profile, isLoading} = useProfile();
+  const { profile, isLoading } = useProfile();
 
   return (
     <>

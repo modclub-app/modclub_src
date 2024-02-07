@@ -14,7 +14,9 @@ export function SignIn() {
   const providers = useProviders();
 
   return (
-    <div className="flex flex-col items-center w-full"> {/* Parent container */}
+    <div className="flex flex-col items-center w-full">
+      {" "}
+      {/* Parent container */}
       {providers.map((provider) => (
         <button
           key={provider.meta.id}

@@ -14,5 +14,5 @@ module {
     #getAccByCaller : () -> ();
     #registerAccount : () -> (Text, Text, Text);
 
-  }
-}
+  };
+};

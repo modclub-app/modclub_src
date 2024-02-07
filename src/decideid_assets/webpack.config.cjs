@@ -2,7 +2,7 @@ const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const ROOT_DIR = __dirname + '/../../';
+const ROOT_DIR = __dirname + "/../../";
 
 let localCanisters, prodCanisters, canisters, network;
 
@@ -23,7 +23,7 @@ function initCanisterIds() {
     console.log("No production canister_ids.json found. Continuing with local");
   }
 
-  console.log(localCanisters)
+  console.log(localCanisters);
   network =
     process.env.DFX_NETWORK ||
     (process.env.NODE_ENV === "production" ? "ic" : "local");

@@ -169,7 +169,7 @@ module {
     #wallet;
     #auth;
     #vesting;
-    #decideid
+    #decideid;
   };
 
   public type CanisterSettings = {

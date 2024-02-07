@@ -1,8 +1,7 @@
 import { hideStringWithStars } from "./util";
 
-export enum GTMEvent {
-  // todo
-}
+export enum GTMEvent {}
+// todo
 
 type GTMEventTypes = {
   event: string;
@@ -10,7 +9,6 @@ type GTMEventTypes = {
 };
 
 export const GTMManager = {
-
   // @ts-ignore
   _pushToDataLayer: (event: GTMEventTypes): void => {
     if (window && window.dataLayer) {

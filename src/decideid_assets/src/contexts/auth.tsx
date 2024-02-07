@@ -66,7 +66,7 @@ export function AuthProvider({ children }) {
     const _canisters = {
       modclub: modclub_actor,
       decideid: decidedid_actor,
-    }
+    };
     const initializeClient = () => {
       const newClient = createClient({
         canisters: _canisters,

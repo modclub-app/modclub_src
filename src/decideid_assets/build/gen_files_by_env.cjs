@@ -30,10 +30,7 @@ export { modclub_types, decideid_types };
 `;
 
 // Write to the desired file
-const dest = path.join(
-  __dirname,
-  "../src/canister_types.ts"
-);
+const dest = path.join(__dirname, "../src/canister_types.ts");
 fs.writeFileSync(dest, content);
 console.log(`${dest} has been generated. `);
 
@@ -48,9 +45,6 @@ export { modclub_actor, decidedid_actor };
 `;
 
 // Write to the desired file
-const actors_by_env_dest = path.join(
-  __dirname,
-  "../src/actors_by_env.ts"
-);
+const actors_by_env_dest = path.join(__dirname, "../src/actors_by_env.ts");
 fs.writeFileSync(actors_by_env_dest, actors_by_env_content);
 console.log(`${actors_by_env_dest} has been generated. `);

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-    body {
-      @apply text-base;
-    }
+  body {
+    @apply text-base;
+  }
 }

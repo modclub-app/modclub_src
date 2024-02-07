@@ -9,9 +9,9 @@ import Principal "mo:base/Principal";
 import CommonTypes "../common/types";
 import AccountTypes "./service/account/types";
 module {
-  public type Account=AccountTypes.Account;
-  public type Profile=AccountTypes.Profile;
-  public type DecideID=AccountTypes.DecideID;
-  public type GetAccountResponse=AccountTypes.GetAccountResponse;
+  public type Account = AccountTypes.Account;
+  public type Profile = AccountTypes.Profile;
+  public type DecideID = AccountTypes.DecideID;
+  public type GetAccountResponse = AccountTypes.GetAccountResponse;
 
 };
