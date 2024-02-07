@@ -17,7 +17,6 @@ export const RecentActivityStatBoxes = () => {
             loading={!providerSummaries}
             label={item.label}
             amount={providerSummaries && providerSummaries[item.type]}
-            message={item.message}
           />
         );
       })}

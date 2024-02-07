@@ -63,16 +63,13 @@ export const RECENT_ACTIVITY_STATUS_BOXES_INFO = [
   {
     label: "Total Approved",
     type: "totalApproved",
-    message: null,
   },
   {
     label: "Total Rejected",
     type: "totalRejected",
-    message: null,
   },
   {
     label: "Total Cost",
     type: "totalCost",
-    message: null,
   },
 ];
