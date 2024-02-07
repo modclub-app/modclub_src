@@ -1,5 +1,7 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
+
 import './globals.css';
 import AppContainer from "./AppContainer";
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -11,11 +13,12 @@ const queryClient = new QueryClient();
  */
 window.global = window;
 
-ReactDOM.render(
+const root = createRoot(document.getElementById("app")!);
+
+root.render(
   <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <AppContainer />
       </QueryClientProvider>
-  </React.StrictMode>,
-  document.getElementById("app")
+  </React.StrictMode>
 );
