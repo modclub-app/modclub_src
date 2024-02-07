@@ -83,12 +83,6 @@ export function useProfile() {
     }
   }, [decideid, isConnected])
 
-  window['profile'] = {
-    updateProfile: updateProfileMutation.mutate,
-    createProfile: createProfileMutation.mutate,
-    refreshProfile,
-    clearProfile,
-  }
   return {
     profile,
     isLoading,
