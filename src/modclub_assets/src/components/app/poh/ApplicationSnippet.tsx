@@ -10,7 +10,7 @@ import { fetchObjectUrl } from "../../../utils/jwt";
 import { Link } from "react-router-dom";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import * as Constant from "../../../utils/constant";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const ApplicantSnippet = ({
   applicant,
@@ -71,13 +71,13 @@ const ApplicantSnippet = ({
       setMessage({ success: true, value: "Reserved POH successful" });
       setLoading(false);
 
-      // GTM: determine the quantity of reserved "human verification" tasks;
+      // GTM: determine the quantity of "reserved" human verification tasks;
       GTMManager.trackEvent(
-        GTMEvent.HumanVerification,
+        GTMEvent.HumanVerificationEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "reserve",
+          eventType: GTMTypes.HumanVerificationReserveEventType,
         },
         ["uId"]
       );
@@ -173,6 +173,7 @@ const ApplicantSnippet = ({
         createReservation={onReservedPoh}
         reserved={reserved}
         loading={loading}
+        trackEventId={GTMTypes.HumanVerificationReserveEventType}
       />
     </div>
   );

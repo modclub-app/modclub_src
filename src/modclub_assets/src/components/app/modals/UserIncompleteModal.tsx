@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { Card, Heading, Modal } from "react-bulma-components";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 import { useAppState } from "../state_mgmt/context/state";
 
 export default function UserIncompleteModal({
@@ -14,13 +14,13 @@ export default function UserIncompleteModal({
   token: String;
 }) {
   const appState = useAppState();
-  // GTM: determine the number of users who completed the Proof of Humanity;
+  // GTM: determine the number of users who start the Proof of Humanity;
   const handlerOnClick = () =>
     GTMManager.trackEvent(
-      GTMEvent.UserPohChallenge,
+      GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: "start",
+        eventType: GTMTypes.PohStartEventType,
       },
       ["uId"]
     );
@@ -77,6 +77,7 @@ export default function UserIncompleteModal({
               className="button is-primary"
               style={{ textDecoration: "none" }}
               onClick={handlerOnClick}
+              id={GTMTypes.PohStartEventType}
             >
               Continue
             </Link>

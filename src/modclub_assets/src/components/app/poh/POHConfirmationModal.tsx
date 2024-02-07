@@ -17,7 +17,7 @@ import approveImg from "../../../../assets/approve.svg";
 import rejectImg from "../../../../assets/reject.svg";
 import { useActors } from "../../../hooks/actors";
 import * as Constant from "../../../utils/constant";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 import { useAppState } from "../state_mgmt/context/state";
 
 const ConfirmationModal = ({
@@ -79,11 +79,11 @@ const ConfirmationModal = ({
 
       // GTM: determine the amount of voted “human verification” tasks;
       GTMManager.trackEvent(
-        GTMEvent.HumanVerification,
+        GTMEvent.HumanVerificationEventName,
         {
           uId: appState.loginPrincipalId,
           userLevel: Object.keys(appState.rs.level)[0],
-          type: "voted",
+          eventType: GTMTypes.HumanVerificationVotedEventType,
         },
         ["uId"]
       );
@@ -129,6 +129,7 @@ const ConfirmationModal = ({
                 disabled={isDisabled()}
                 className={submitting && "is-loading"}
                 onClick={onFormSubmit}
+                id={GTMTypes.HumanVerificationVotedEventType}
               >
                 Submit
               </Button>

@@ -138,6 +138,29 @@
       "type": "custom",
       "candid": "src/airdrop/airdrop.did",
       "wasm": "src/airdrop/airdrop.wasm"
+    },
+    "decideid_qa": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid_dev": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid_qa_assets": {
+      "frontend": {
+        "entrypoint": "src/decideid_assets/src/index.html"
+      },
+      "source": [
+        "src/decideid_assets/assets",
+        "dist/decideid_assets/",
+        "src/qa_custom_domain/well-known/"
+      ],
+      "type": "assets"
     }
   },
   "defaults": {

@@ -17,18 +17,9 @@ import discordImg from "../../../../assets/discord.jpeg";
 import dscvrImg from "../../../../assets/dscvr.jpeg";
 import mediumImg from "../../../../assets/medium.png";
 import { useHistory } from "react-router-dom";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
 
 export default function Landing() {
   const history = useHistory();
-
-  const handlerOnClick = (event) => {
-    event.preventDefault();
-    // GTM: determine the number of users who attempt to launch the app;
-    GTMManager.trackEvent(GTMEvent.LaunchApp, {});
-    history.push("/app");
-  };
-
   return (
     <div className="landing-page has-background-black">
       <section className="hero is-black is-medium">
@@ -45,7 +36,7 @@ export default function Landing() {
           <div>
             <a
               className="button is-large extra is-primary mt-6"
-              onClick={handlerOnClick}
+              onClick={() => history.push("/app")}
             >
               Launch App
             </a>

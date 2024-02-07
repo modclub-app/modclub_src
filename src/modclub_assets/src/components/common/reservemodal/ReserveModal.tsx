@@ -7,6 +7,7 @@ const ReserveModal = ({
   createReservation,
   reserved,
   loading,
+  trackEventId,
 }) => {
   return (
     <Modal
@@ -25,6 +26,7 @@ const ReserveModal = ({
               color="danger"
               onClick={createReservation}
               disabled={reserved}
+              id={trackEventId}
             >
               Okay
             </Button>

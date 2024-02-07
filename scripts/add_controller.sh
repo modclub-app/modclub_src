@@ -12,7 +12,7 @@ ENV=$1
 PRINCIPAL_ID=$2
 
 # Canister list
-CANISTERS=("modclub" "auth" "rs" "vesting")
+CANISTERS=("modclub" "auth" "rs" "vesting", "decideid")
 
 # Check if environment is production
 if [ "$ENV" != "prod" ]

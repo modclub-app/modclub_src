@@ -15,7 +15,7 @@ import {
   useAppState,
   useAppStateDispatch,
 } from "../../app/state_mgmt/context/state";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const Confirmation = ({ redirect_uri }) => {
   const appState = useAppState();
@@ -26,13 +26,13 @@ const Confirmation = ({ redirect_uri }) => {
     window.location.href = redirect_uri;
   };
 
-  // GTM: determine the number of users who completed the Proof of Humanity;
+  // GTM: determine the number of users who "poh completed";
   const handlerOnClick = () =>
     GTMManager.trackEvent(
-      GTMEvent.UserPohChallenge,
+      GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: "completed",
+        eventType: GTMTypes.PohCompletedEventType,
       },
       ["uId"]
     );
@@ -57,6 +57,7 @@ const Confirmation = ({ redirect_uri }) => {
           to="/app"
           className="button is-large is-primary mt-5"
           onClick={handlerOnClick}
+          id={GTMTypes.PohCompletedEventType}
         >
           Back to MODCLUB
         </Link>

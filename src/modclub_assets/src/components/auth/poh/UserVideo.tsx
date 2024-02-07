@@ -17,7 +17,7 @@ import {
   MESSAGE_FOR_USER_VIDEO_RECORD,
   VIDEO_SUPPORT_MESSAGE,
 } from "../../../utils/constant";
-import { GTMEvent, GTMManager } from "../../../utils/gtm";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 import { useAppState } from "../../app/state_mgmt/context/state";
 
 export default function UserVideo({ step, goToNextStep }) {
@@ -119,12 +119,12 @@ export default function UserVideo({ step, goToNextStep }) {
       }
     }
 
-    // GTM: determine the quantity of submitted video challenge;
+    // GTM: determine the quantity of submitted "poh video" challenge;
     GTMManager.trackEvent(
-      GTMEvent.UserPohChallenge,
+      GTMEvent.PohChallengeEventName,
       {
         uId: appState.loginPrincipalId,
-        type: "completed_video",
+        eventType: GTMTypes.PohCompletedVideoEventType,
       },
       ["uId"]
     );
@@ -219,6 +219,7 @@ export default function UserVideo({ step, goToNextStep }) {
           color="primary"
           disabled={!recordedChunks.length || capturing}
           onClick={submit}
+          id={GTMTypes.PohCompletedVideoEventType}
         >
           Next
         </Button>

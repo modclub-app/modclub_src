@@ -17,6 +17,15 @@
   "auth_qa": {
     "ic": "h3xck-uaaaa-aaaap-qbj7q-cai"
   },
+  "decideid": {
+    "ic": "rlz47-aqaaa-aaaah-qdcra-cai"
+  },
+  "decideid_dev": {
+    "ic": "rz7lg-maaaa-aaaah-qdcsa-cai"
+  },
+  "decideid_qa": {
+    "ic": "rmy2l-niaaa-aaaah-qdcrq-cai"
+  },
   "internet_identity": {
     "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
   },
