@@ -22,7 +22,6 @@ export default function Main() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="text-lg font-semibold">Your principal: {principal}</div>
         <p className="text-gray-500 mt-2">Loading profile...</p>
       </div>
     );
@@ -30,15 +29,16 @@ export default function Main() {
 
   // Once loading is complete, render the component conditionally based on the profile data
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="text-lg font-semibold">Your principal: {principal}</div>
+    <div className="flex flex-col min-h-screen p-4">
+      <div className="text-lg font-semibold">Your profile:</div>
       {!isLoading && profile ? (
-        <div>
-        <p className="text-blue-600 mt-2">Email: {profile.email}</p>
-        <p className="text-blue-600 mt-2">First Name: {profile.firstName}</p>
-        <p className="text-blue-600 mt-2">Last Name: {profile.lastName}</p>
+        <div className="mt-4">
+          <p className="text-blue-600">Email: {profile.email}</p>
+          <p className="text-blue-600 mt-2">First Name: {profile.firstName}</p>
+          <p className="text-blue-600 mt-2">Last Name: {profile.lastName}</p>
         </div>
       ) : null}
     </div>
   );
+  
 }
