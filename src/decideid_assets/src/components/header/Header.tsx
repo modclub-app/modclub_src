@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 const Header = () => {
   return (
@@ -7,7 +7,6 @@ const Header = () => {
         <h1 className="text-lg font-semibold">
           DECIDE ID
         </h1>
-        {/* Add additional header content here */}
       </div>
     </header>
   );
