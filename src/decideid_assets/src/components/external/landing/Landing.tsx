@@ -16,7 +16,7 @@ export default function Landing() {
   return (
     <>
       <div>
-        <h1>Landing Page</h1>
+        <h1 className="font-bold">Landing Page</h1>
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
           onClick={handlerOnClick}
