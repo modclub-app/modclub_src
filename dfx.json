@@ -151,6 +151,13 @@
       "main": "src/decideid/main.mo",
       "type": "motoko"
     },
+    "vc": {
+      "candid": "src/vc_rust/vc_issuer.did",
+      "wasm": "src/vc_rust/vc_issuer.wasm.gz",
+      "build": "src/vc_rust/build.sh",
+      "type": "custom",
+      "frontend": {}
+    },
     "decideid_qa_assets": {
       "frontend": {},
       "type": "custom",
