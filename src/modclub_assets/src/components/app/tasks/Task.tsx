@@ -26,6 +26,7 @@ import * as Constant from "../../../utils/constant";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import Timer from "../../common/timer/Timer";
 import { fetchDataBlob } from "../../../utils/jwt";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const InfoItem = ({ icon, title, info }) => {
   return (
@@ -205,6 +206,19 @@ export default function Task() {
     window.location.reload();
   };
 
+  const triggerGTMEvent = () => {
+    // GTM: determine the quantity of people who voted task
+    GTMManager.trackEvent(
+      GTMEvent.TaskVoteEventName,
+      {
+        uId: appState.loginPrincipalId,
+        userLevel: Object.keys(appState.rs.level)[0],
+        eventType: GTMTypes.TaskVoteReserveEventType,
+      },
+      ["uId"]
+    );
+  };
+
   const createReservation = async () => {
     setLoading(true);
     try {
@@ -214,6 +228,8 @@ export default function Task() {
           ...task,
           reservedList: [...task?.reservedList, res.ok],
         };
+        triggerGTMEvent();
+
         setTask(newTask);
         setTimer();
         toggleReserveModal();

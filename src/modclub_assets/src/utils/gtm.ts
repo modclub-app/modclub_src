@@ -41,6 +41,7 @@ export enum GTMTypes {
 
   // --- Task vote events type and elements id ---
   TaskVoteEventType = "task_voted",
+  TaskVoteReserveEventType = "task_reserve",
 }
 
 type GTMEventTypes = {
