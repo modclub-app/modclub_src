@@ -12,6 +12,9 @@ export enum GTMEvent {
 
   // --- Human verification event name ---
   HumanVerificationEventName = "gtm_human_verification",
+
+  // --- Task vote event name ---
+  TaskVoteEventName = "gtm_task_vote",
 }
 
 export enum GTMTypes {
@@ -34,7 +37,10 @@ export enum GTMTypes {
   // --- Human verification events type and elements id ---
   HumanVerificationReserveEventType = "reserve",
   HumanVerificationExpiredEventType = "reserve_expired",
-  HumanVerificationVotedEventType = "gtm_human_verification_voted",
+  HumanVerificationVotedEventType = "human_verification_voted",
+
+  // --- Task vote events type and elements id ---
+  TaskVoteEventType = "task_voted",
 }
 
 type GTMEventTypes = {
