@@ -10,3 +10,14 @@ export const withDisabled = async <A, _>(
     dsblResolver(false);
   }
 };
+
+export const readCanisterId = (): string => {
+  const setupJs = document.querySelector(
+    "[data-canister-id]"
+  ) as HTMLElement | null;
+  if (!setupJs || setupJs.dataset.canisterId === undefined) {
+    throw new Error("canisterId is undefined"); // abort further execution of this script
+  }
+
+  return setupJs.dataset.canisterId;
+};

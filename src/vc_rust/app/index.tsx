@@ -3,25 +3,9 @@ import ReactDOM from "react-dom/client";
 
 import { VcIssuer } from "./issuer";
 import { WithAuth } from "./components/auth";
-import { withDisabled } from "./utils";
+import { withDisabled, readCanisterId } from "./utils";
 
 import "./main.css";
-
-/** Reads the canister ID from the <script> tag.
- *
- * The canister injects the canister ID as a `data-canister-id` attribute on the script tag, which we then read to figure out where to make the IC calls.
- */
-const readCanisterId = (): string => {
-  // The backend uses a known element ID so that we can pick up the value from here
-  const setupJs = document.querySelector(
-    "[data-canister-id]"
-  ) as HTMLElement | null;
-  if (!setupJs || setupJs.dataset.canisterId === undefined) {
-    throw new Error("canisterId is undefined"); // abort further execution of this script
-  }
-
-  return setupJs.dataset.canisterId;
-};
 
 const App = () => {
   const [dsbld, setDsbld] = useState<boolean>(false);
@@ -53,12 +37,12 @@ const App = () => {
         },
         cert_platform.opener.origin
       );
-      cert_platform.close();
     }, 5000);
 
     const evnt = await new Promise((res, rej) => {
       const handler = (e) => {
         window.removeEventListener("message", handler);
+        cert_platform.close();
         res(e);
       };
       window.addEventListener("message", handler);
