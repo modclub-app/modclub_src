@@ -1,18 +1,34 @@
 import React, { useState } from "react";
 import { useProfile } from "../../../utils";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function NewProfile() {
+  const navigate = useNavigate();
+  const { createProfile, profile, isLoading } = useProfile();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const { createProfile } = useProfile()
 
   const handleCreateProfile = async () => {
     const newProfile = { firstName, lastName, email };
-    await createProfile(newProfile);
+    createProfile(newProfile);
   };
 
-  return (
+  useEffect(() => {
+    if (!isLoading) {
+      if (profile?.message == null && profile?.email != null) {
+        navigate('/app');
+      }
+    }
+  }, [isLoading, profile, navigate]);
+
+  return <>
+    { profile?.message ? (
+      <div className="mb-5 text-center">
+        <p>{profile.message}</p>
+      </div>
+    ) : 
     <div className="max-w-md mx-auto my-10 p-5 border rounded-lg shadow-lg">
       <h2 className="text-xl font-bold text-center mb-5">New Profile</h2>
       <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
@@ -52,6 +68,6 @@ export default function NewProfile() {
           Create Profile
         </button>
       </form>
-    </div>
-  );
+    </div> }
+  </>;
 }

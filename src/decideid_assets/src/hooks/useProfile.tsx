@@ -63,9 +63,23 @@ export function useProfile() {
     }
   }
   
-  // TODO: should consider optimistic mutations
   const createProfileMutation = useMutation(createProfileOnServer, {
+    onMutate: async (newUserData) => {
+      // Optionally, show a loading state
+
+      queryClient.setQueryData('profile', {
+        ...newUserData, // Assume the new user data will be successfully added
+        message: `Hey ${newUserData.firstName} ${newUserData.lastName}, welcome to use DecideID. We are creating your profile...`,
+      });
+  
+      return {};
+    },
+    onError: (err, newUserData, context) => {
+      // Roll back to the previous state in case of error
+      queryClient.setQueryData('profile', context.previousProfile);
+    },
     onSuccess: () => {
+      // Invalidate and refetch after success to make sure we have the latest data
       queryClient.invalidateQueries('profile');
     },
   });
@@ -75,6 +89,7 @@ export function useProfile() {
   };
 
   const clearProfile = () => {
+    queryClient.clear();
     queryClient.setQueryData('profile', null);
   };
 
