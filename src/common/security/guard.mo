@@ -48,18 +48,18 @@ module ModSecurity {
 
     public func getSecretVals(name : Text) : [Text] {
       let existingSecretOpt = List.find<CommonTypes.Secret>(
-          secrets,
-          func(val : CommonTypes.Secret) : Bool { name == val.name }
+        secrets,
+        func(val : CommonTypes.Secret) : Bool { name == val.name }
       );
       switch (existingSecretOpt) {
-          case (?existingSecret) {
-              let delimiter = Constants.SECRET_VALUE_DELIMITER;
-              let parts = Text.split(existingSecret.value, #char delimiter);
-              return Iter.toArray<Text>(parts);
-          };
-          case null {
-              return [];
-          };
+        case (?existingSecret) {
+          let delimiter = Constants.SECRET_VALUE_DELIMITER;
+          let parts = Text.split(existingSecret.value, #char delimiter);
+          return Iter.toArray<Text>(parts);
+        };
+        case null {
+          return [];
+        };
       };
     };
 

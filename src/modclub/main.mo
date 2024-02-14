@@ -3309,7 +3309,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
         return result;
       };
-  
+
       case _ {
         return #err("NotImplemented for fieldName: " # fieldName);
       };

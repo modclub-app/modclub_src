@@ -12,7 +12,6 @@ import {
 import { Form, Field } from "react-final-form";
 import Userstats from "./Userstats";
 import { modclub_types } from "../../../utils/types";
-import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { Table } from "./ActivityTable";

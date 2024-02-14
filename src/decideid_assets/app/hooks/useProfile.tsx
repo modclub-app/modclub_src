@@ -8,38 +8,30 @@ import {
 } from "react-query";
 import { useActors } from "./actors";
 import { useConnect } from "@connect2icmodclub/react";
-
-interface Profile {
-  id: string;
-  email?: string;
-  // add other profile properties here
-}
+import { decideid_types } from "../canister_types";
 
 export function useProfile() {
   const queryClient = useQueryClient();
   const { decideid } = useActors();
   const { isConnected } = useConnect();
 
-  async function fetchProfile(): Promise<Profile> {
+  async function fetchProfile(): Promise<decideid_types.Profile> {
     if (decideid) {
-      const server_hello = await decideid.hello();
-      const res = {
-        id: "random",
-        email: server_hello,
-      };
-      console.log(res);
-      return res;
+      const result = await decideid.getAccByCaller();
+      if ("err" in result) {
+        throw new Error(result.err);
+      } else if ("ok" in result) {
+        return result.ok.profile;
+      }
     }
     throw new Error("decideid is not ready");
   }
 
-  async function updateProfileOnServer(newProfile: Profile): Promise<Profile> {
+  async function updateProfileOnServer(
+    newProfile: decideid_types.Profile
+  ): Promise<decideid_types.Profile> {
     // Replace with your actual update logic
     throw new Error("updateProfileOnServer function is not implemented.");
-  }
-
-  async function createProfileOnServer(newProfile: Profile): Promise<Profile> {
-    throw new Error("createProfileOnServer function is not implemented.");
   }
 
   const {
@@ -47,21 +39,53 @@ export function useProfile() {
     error,
     isError,
     isLoading,
-  }: UseQueryResult<Profile, Error> = useQuery("profile", fetchProfile);
+  }: UseQueryResult<decideid_types.Profile, Error> = useQuery(
+    "profile",
+    fetchProfile,
+    {
+      retry: false, // Do not retry on failure
+    }
+  );
 
-  const updateProfileMutation: UseMutationResult<Profile, Error, Profile> =
-    useMutation(updateProfileOnServer, {
-      onSuccess: () => {
-        queryClient.invalidateQueries("profile");
-      },
-    });
+  const updateProfileMutation: UseMutationResult<
+    decideid_types.Profile,
+    Error,
+    decideid_types.Profile
+  > = useMutation(updateProfileOnServer, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("profile");
+    },
+  });
 
-  const createProfileMutation: UseMutationResult<Profile, Error, Profile> =
-    useMutation(createProfileOnServer, {
-      onSuccess: () => {
-        queryClient.invalidateQueries("profile");
-      },
-    });
+  async function createProfileOnServer(userData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  }): Promise<string> {
+    const { firstName, lastName, email } = userData;
+    try {
+      const result = await decideid.registerAccount(firstName, lastName, email);
+      // Process result
+      if ("ok" in result) {
+        const decideID: string = result.ok; // decideid
+        return decideID;
+      } else if ("err" in result) {
+        throw new Error(result.err);
+      } else {
+        throw new Error("Unexpected result from registerAccount");
+      }
+    } catch (error) {
+      console.error("Failed to create profile on server:", error);
+      throw error;
+    }
+  }
+
+  // TODO: should consider optimistic mutations
+  const createProfileMutation = useMutation(createProfileOnServer, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("profile");
+    },
+  });
 
   const refreshProfile = () => {
     queryClient.invalidateQueries("profile");

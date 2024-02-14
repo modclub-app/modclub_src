@@ -8,7 +8,7 @@ import NotAuthenticatedModal from "../app/modals/NotAuthenticated";
 import { useActors } from "../../utils";
 
 export default function Authed() {
-  const { isConnected, isInitializing } = useConnect();
+  const { isConnected, isInitializing, principal } = useConnect();
   const { decideid } = useActors();
 
   if (isInitializing) {
@@ -24,10 +24,13 @@ export default function Authed() {
   }
 
   return (
-    <Routes>
-      <Route path="/app" element={<Main />} />
-      <Route path="/logout" element={<Logout />} />
-      <Route path="/signup" element={<NewProfile />} />
-    </Routes>
+    <div>
+      <p className="text-sm text-gray-600 mb-4">Your principal: {principal}</p>
+      <Routes>
+        <Route path="/app" element={<Main />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/signup" element={<NewProfile />} />
+      </Routes>
+    </div>
   );
 }

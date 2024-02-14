@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import useFaceDetection from "./hook/useFaceDetection";
+import useFaceDetection from "./hooks/useFaceDetection";
 import WebcamInterface from "./WebcamInterface";
 import { Phrases } from "./Phrases";
 import { VideoWrap } from "./VideoWrap";

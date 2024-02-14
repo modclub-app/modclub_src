@@ -95,23 +95,26 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     );
 
     switch (existingSecretOpt) {
-        // If secret exists, update its value
-        case (?existingSecret) {
-            secretList := List.map<CommonTypes.Secret, CommonTypes.Secret>(
-                secretList, 
-                func(val : CommonTypes.Secret) : CommonTypes.Secret {
-                    if (val.name == secret.name) {
-                        { name = val.name; value = val.value # Text.fromChar(GlobalConstants.SECRET_VALUE_DELIMITER) # secret.value }
-                    } else {
-                        val
-                    }
-                }
-            );
-        };
-        // If secret does not exist, add it to the list
-        case null {
-            secretList := List.push<CommonTypes.Secret>(secret, secretList);
-        };
+      // If secret exists, update its value
+      case (?existingSecret) {
+        secretList := List.map<CommonTypes.Secret, CommonTypes.Secret>(
+          secretList,
+          func(val : CommonTypes.Secret) : CommonTypes.Secret {
+            if (val.name == secret.name) {
+              {
+                name = val.name;
+                value = val.value # Text.fromChar(GlobalConstants.SECRET_VALUE_DELIMITER) # secret.value;
+              };
+            } else {
+              val;
+            };
+          }
+        );
+      };
+      // If secret does not exist, add it to the list
+      case null {
+        secretList := List.push<CommonTypes.Secret>(secret, secretList);
+      };
     };
 
     // Update the original secrets list
