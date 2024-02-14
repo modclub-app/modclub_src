@@ -207,7 +207,7 @@ export default function Task() {
   };
 
   const triggerGTMEvent = () => {
-    // GTM: determine the quantity of people who voted task
+    // GTM: determine the quantity of people who reserved task
     GTMManager.trackEvent(
       GTMEvent.TaskVoteEventName,
       {
