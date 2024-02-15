@@ -86,7 +86,10 @@ const ConfirmationModal = ({
       {
         uId: appState.loginPrincipalId,
         userLevel: Object.keys(appState.rs.level)[0],
-        eventType: GTMTypes.TaskVoteEventType,
+        eventType:
+          title === "Approve Confirmation"
+            ? GTMTypes.TaskVotedApproveEventType
+            : GTMTypes.TaskVotedRejectEventType,
       },
       ["uId"]
     );

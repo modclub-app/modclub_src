@@ -40,7 +40,8 @@ export enum GTMTypes {
   HumanVerificationVotedEventType = "human_verification_voted",
 
   // --- Task vote events type and elements id ---
-  TaskVoteEventType = "task_voted",
+  TaskVotedApproveEventType = "voted_approve",
+  TaskVotedRejectEventType = "voted_reject",
   TaskVoteReserveEventType = "task_reserve",
 }
 
