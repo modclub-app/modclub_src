@@ -32,7 +32,7 @@ export function useProfile() {
 
 
 
-  const { data: profile, error, isError, isLoading }: UseQueryResult<decideid_types.Profile, Error> = useQuery('profile', fetchProfile, {
+  const { data: profile, error, isError, isLoading, isSuccess }: UseQueryResult<decideid_types.Profile, Error> = useQuery('profile', fetchProfile, {
     retry: false, // Do not retry on failure
   });
 
@@ -63,23 +63,9 @@ export function useProfile() {
     }
   }
   
+  // TODO: should consider optimistic mutations
   const createProfileMutation = useMutation(createProfileOnServer, {
-    onMutate: async (newUserData) => {
-      // Optionally, show a loading state
-
-      queryClient.setQueryData('profile', {
-        ...newUserData, // Assume the new user data will be successfully added
-        message: `Hey ${newUserData.firstName} ${newUserData.lastName}, welcome to use DecideID. We are creating your profile...`,
-      });
-  
-      return {};
-    },
-    onError: (err, newUserData, context) => {
-      // Roll back to the previous state in case of error
-      queryClient.setQueryData('profile', context.previousProfile);
-    },
     onSuccess: () => {
-      // Invalidate and refetch after success to make sure we have the latest data
       queryClient.invalidateQueries('profile');
     },
   });
@@ -101,8 +87,9 @@ export function useProfile() {
 
   return {
     profile,
-    isLoading,
-    isError,
+    isLoading, // if there's no cached data and no query attempt was finished yet.
+    isSuccess, // if the query has received a response with no errors and is ready to display its data.
+    isError,   // if the query attempt resulted in an error. The corresponding error property has the error received from the attempted fetch
     error,
     updateProfile: updateProfileMutation.mutate,
     createProfile: createProfileMutation.mutate,

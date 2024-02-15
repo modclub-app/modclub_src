@@ -1,34 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useProfile } from "../../../utils";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 export default function NewProfile() {
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const { createProfile, isLoading, isSuccess} = useProfile();
   const navigate = useNavigate();
-  const { createProfile, profile, isLoading } = useProfile();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
 
   const handleCreateProfile = async () => {
     const newProfile = { firstName, lastName, email };
+    setIsSubmitted(true);
     createProfile(newProfile);
   };
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (profile?.message == null && profile?.email != null) {
-        navigate('/app');
-      }
+  useEffect(()=>{
+    if (!isLoading && isSuccess) {
+      // means we have valid profile now. should go to main app endpoint.
+      navigate('/app');
     }
-  }, [isLoading, profile, navigate]);
+  }, [isLoading, isSuccess]);
 
-  return <>
-    { profile?.message ? (
-      <div className="mb-5 text-center">
-        <p>{profile.message}</p>
-      </div>
-    ) : 
+  // optimistic mutations
+  return isSubmitted ? (
+    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      <h1 className="text-lg font-semibold text-gray-900 mb-2">Welcome, {firstName} {lastName}!</h1>
+      <p className="text-sm text-gray-700 mb-4">
+        Please wait while we are creating your account. This may take a few seconds.
+      </p>
+      <h2 className="text-md font-semibold text-gray-900 mb-2">Do you know about Decide ID?</h2>
+      <p className="text-sm text-gray-700">
+        Decide ID is the unique identifier we use to securely manage your account details and preferences. More information on how and why we use Decide ID will be available in the main dashboard.
+      </p>
+    </div>
+  ):
+  (
     <div className="max-w-md mx-auto my-10 p-5 border rounded-lg shadow-lg">
       <h2 className="text-xl font-bold text-center mb-5">New Profile</h2>
       <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
@@ -68,6 +76,6 @@ export default function NewProfile() {
           Create Profile
         </button>
       </form>
-    </div> }
-  </>;
+    </div>
+  );
 }
