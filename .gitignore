@@ -51,3 +51,5 @@ src/declarations/
 .mops
 
 **/test_output*
+
+target

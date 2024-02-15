@@ -152,15 +152,11 @@
       "type": "motoko"
     },
     "decideid_qa_assets": {
-      "frontend": {
-        "entrypoint": "src/decideid_assets/src/index.html"
-      },
-      "source": [
-        "src/decideid_assets/assets",
-        "dist/decideid_assets/",
-        "src/qa_custom_domain/well-known/"
-      ],
-      "type": "assets"
+      "type": "custom",
+      "candid": "src/decideid_assets/decideid_assets.did",
+      "wasm": "src/decideid_assets/decideid_assets.wasm.gz",
+      "build": "src/decideid_assets/build.sh",
+      "frontend": {}
     }
   },
   "defaults": {
