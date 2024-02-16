@@ -93,7 +93,7 @@ service : (opt IssuerConfig) -> {
   /// Configure the issuer (e.g. set the root key), used for deployment/testing.
   configure : (IssuerConfig) -> ();
 
-  add_poh_verified : (principal) -> (text);
+  add_poh_verified : (principal) -> (variant { Ok : nat32; Err : text });
   register_certification_platform : (text, principal) -> (variant { Ok : bool; Err : text });
   check_certificate : (text, principal) -> (variant { Ok : bool; Err : text });
 

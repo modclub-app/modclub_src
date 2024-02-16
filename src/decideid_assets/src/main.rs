@@ -45,7 +45,6 @@ const PROD_II_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
 const LOCAL_II_CANISTER_ID: &str = "gc5gl-leaaa-aaaaa-qaara-cai";
 // The expiration of issued verifiable credentials.
 const VC_EXPIRATION_PERIOD_NS: u64 = 15 * MINUTE_NS;
-// const VC_EMPLOYER_NAME: &str = "MODCLUB Foundation";
 
 #[derive(Debug)]
 pub enum SupportedCredentialType {
@@ -165,7 +164,6 @@ pub fn http_request(req: HttpRequest) -> HttpResponse {
     let mut headers = static_headers();
     match maybe_asset {
         Some(asset) => {
-            // println!("[DEBUG]::[HTTP_REQUEST]::[_ASSET_]{:?}", &asset);
             headers.extend(asset.headers);
             HttpResponse {
                 status_code: 200,
@@ -182,7 +180,7 @@ pub fn http_request(req: HttpRequest) -> HttpResponse {
 }
 
 fn static_headers() -> Vec<(String, String)> {
-    let canister_id = "huw6a-6uaaa-aaaaa-qaaua-cai"; // api::id();
+    let canister_id = api::id();
     // TODO: Put real II origin here instead of "*"
     vec![
         ("Access-Control-Allow-Origin".to_string(), "*".to_string()),
@@ -227,8 +225,6 @@ pub struct HttpResponse {
 
 fn fixup_html(html: &str) -> String {
     let canister_id = api::id();
-    // println!("[DEBUG]::[FIXUP_HTML]::[CANISTER_ID]::{:?}", &canister_id);
-    // println!("[DEBUG]::[FIXUP_HTML]::[SCRIPT_ENTRY]::{:?}", &html.find(r#"<script defer src="index.js"></script>"#));
     // the string we are replacing here is inserted by BUNDLER during the front-end build
     html.replace(
             r#"<script defer src="index.js"></script>"#,
@@ -238,8 +234,6 @@ fn fixup_html(html: &str) -> String {
 
 
 // ------------
-
-
 
 
 fn authorize_vc_request(
@@ -456,7 +450,7 @@ fn verify_credential_spec(spec: &CredentialSpec) -> Result<SupportedCredentialTy
                 "verificationType",
                 ArgumentValue::String("human-moderation".to_string()),
             )?;
-            Ok(ProofOfHumanity("__".to_string()))
+            Ok(ProofOfHumanity("ProofOfHumanity".to_string()))
         }
         other => Err(format!("Credential {} is not supported", other)),
     }
@@ -508,9 +502,20 @@ fn verify_single_argument(
 
 #[update]
 #[candid_method]
-fn add_poh_verified(uid: Principal) -> String {
-    POH_VERIFIED.with_borrow_mut(|poh_verified_users| poh_verified_users.insert(uid));
-    format!("Added poh_verified_user {}", uid)
+fn add_poh_verified(uid: Principal) -> Result<u32, String> {
+    let status : bool = POH_VERIFIED.with_borrow_mut(|poh_verified_users| {
+        println!(
+            "*** [DEBUG] [add_poh_verified] [User_ID] {:?} \n",
+            uid
+        );
+        poh_verified_users.insert(uid)
+    });
+    let new_len : u32 = POH_VERIFIED.with_borrow(|pvu| {
+        pvu.len()
+    }).try_into().unwrap();
+
+    println!("Add poh_verified_user STATUS {}, New Lenght {}", uid, new_len);
+    Ok(new_len)
 }
 
 fn main() {}

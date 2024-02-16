@@ -10,9 +10,12 @@
     "Canister"
   ],
   "scripts": {
-    "build": "npm run dynamically_gen_files && webpack --config ./webpack.config.cjs",
+    "build": "npm run dynamically_gen_files && npm run generate && webpack --config ./webpack.config.cjs",
     "dynamically_gen_files": "node ./build/gen_files_by_env.cjs",
-    "start": "export DEV_ENV=${DEV_ENV:-qa} &&  npm run dynamically_gen_files && webpack serve --mode development --config webpack.config.cjs"
+    "start": "export DEV_ENV=${DEV_ENV:-qa} &&  npm run dynamically_gen_files && webpack serve --mode development --config webpack.config.cjs",
+    "generate": "npm run generate:types && npm run generate:js",
+    "generate:types": "didc bind ./decideid_assets.did -t ts > ./app/generated_for_vc/decideid_assets_types.d.ts",
+    "generate:js": "didc bind ./decideid_assets.did -t js > ./app/generated_for_vc/decideid_assets_idl.js"
   },
   "devDependencies": {
     "@dfinity/agent": "^0.19.3",
