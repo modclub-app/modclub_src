@@ -19,6 +19,7 @@ import { modclub } from "../../../../../declarations/modclub";
 import { use } from "chai";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const ConfirmationModal = ({
   title,
@@ -43,6 +44,7 @@ const ConfirmationModal = ({
   const [message, setMessage] = useState(null);
 
   const dispatch = useAppStateDispatch();
+  const appState = useAppState();
 
   const { modclub } = useActors();
 
@@ -77,6 +79,22 @@ const ConfirmationModal = ({
   };
   const levelMsg = LevelMessage[level];
 
+  const triggerGTMEvent = () => {
+    // GTM: determine the quantity of people who voted task
+    GTMManager.trackEvent(
+      GTMEvent.TaskVoteEventName,
+      {
+        uId: appState.loginPrincipalId,
+        userLevel: Object.keys(appState.rs.level)[0],
+        eventType:
+          title === "Approve Confirmation"
+            ? GTMTypes.TaskVotedApproveEventType
+            : GTMTypes.TaskVotedRejectEventType,
+      },
+      ["uId"]
+    );
+  };
+
   const onFormSubmit = async (values: any) => {
     const checked = getViolatedRules(values);
 
@@ -93,6 +111,7 @@ const ConfirmationModal = ({
         type: "setModerationTasksLoading",
         payload: { status: true },
       });
+      triggerGTMEvent();
       setSubmitting(false);
       setMessage({
         success: result === "Vote successful" ? true : false,
