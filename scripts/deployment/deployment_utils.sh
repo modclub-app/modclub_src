@@ -160,20 +160,26 @@ function get_env_canisters_vars() {
   local network=$2
   local old_modclub_inst=$3
 
-  local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
-  local rs_canister_name=$(get_canister_name_by_env $env "rs")
-  local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
-  local auth_canister_name=$(get_canister_name_by_env $env "auth")
-  local vesting_canister_name=$(get_canister_name_by_env $env "vesting")
-  local decideid_canister_name=$(get_canister_name_by_env $env "decideid")
+  local modclub_canister_name=$(get_canister_name_by_env "$env" "modclub")
+  local rs_canister_name=$(get_canister_name_by_env "$env" "rs")
+  local wallet_canister_name=$(get_canister_name_by_env "$env" "wallet")
+  local auth_canister_name=$(get_canister_name_by_env "$env" "auth")
+  local vesting_canister_name=$(get_canister_name_by_env "$env" "vesting")
+  local decideid_canister_name=$(get_canister_name_by_env "$env" "decideid") 
 
-  local wallet_canister_id=$(dfx canister id ${wallet_canister_name} --network=${network})
-
-  if [ "$wallet_canister" != "" ]; then
-    wallet_canister_id=$wallet_canister
+  decideid_canister_id=$DECIDEID_CANISTER_ID
+  if [ -z "$decideid_canister_id" ]; then
+    decideid_canister_id=$(dfx canister id "${decideid_canister_name}" --network="${network}")
   fi
 
-  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; decideid_canister_id = principal \"$(dfx canister id ${decideid_canister_name} --network=${network})\";}"
+  local wallet_canister_id=$(dfx canister id "${wallet_canister_name}" --network="${network}")
+
+  # Assuming there's a condition or external variable to decide if wallet_canister_id should be overridden
+  if [ ! -z "$wallet_canister_override" ]; then
+    wallet_canister_id=$wallet_canister_override
+  fi
+
+  echo "record { modclub_canister_id = principal \"$(dfx canister id "${modclub_canister_name}" --network="${network}")\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id "${rs_canister_name}" --network="${network}")\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id "${auth_canister_name}" --network="${network}")\"; vesting_canister_id = principal \"$(dfx canister id "${vesting_canister_name}" --network="${network}")\"; decideid_canister_id = principal \"$decideid_canister_id\";}"
 }
 
 

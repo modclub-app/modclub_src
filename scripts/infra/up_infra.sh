@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! -z "$DEBUG" ]; then
+  # DEBUG is set, enable debug mode
+  set -x
+fi
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -30,6 +35,21 @@ read -p "Press any key to continue..."
 
 printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Modclub test infra START ...${NC}\n"
 
+function create_decideid_qa() {
+  # Push the current directory to the stack and navigate to ../decideid
+  pushd ../decideid >/dev/null
+
+  # Create the canister and print its ID
+  dfx canister create decideid_qa
+  dfx canister id decideid_qa
+
+  # Pop the original directory from the stack to return to it
+  popd >/dev/null
+}
+
+# Execute the function and capture its output
+DECIDEID_CANISTER_ID="$(create_decideid_qa)"
+
 # Prepare test infra
 function create_qa_canisters() {
   printf  "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Creating QA Canisters...${NC}\n"
@@ -42,9 +62,7 @@ function create_qa_canisters() {
   dfx canister create modclub_qa &&
   dfx canister create vesting_qa &&
   dfx canister create modclub_qa_assets &&
-  dfx canister create decideid_qa_assets &&
   dfx canister create airdrop_qa &&
-  dfx canister create decideid_qa &&
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
 }
@@ -154,7 +172,6 @@ function deploy_qa_canisters() {
   node "$ROOT_DIR/scripts/build/gen_files_by_env.cjs" &&
   DEV_ENV=qa dfx deploy modclub_qa_assets &&
   dfx ledger fabricate-cycles --canister $(dfx canister id modclub_qa) --amount 10 &&
-  DEV_ENV=qa dfx deploy decideid_qa_assets &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
 	return 0;
 }
@@ -289,17 +306,12 @@ function deploy_specific_canister() {
       deploy_vesting_canister ;;
     "modclub_qa_assets")
       DEV_ENV=qa dfx deploy modclub_qa_assets ;;
-    "decideid_qa_assets")
-      DEV_ENV=qa dfx deploy decideid_qa_assets ;;
     "airdrop_qa")
       local local_env=$(get_local_canisters)
       dfx deploy airdrop_qa --argument="($local_env)" ;;
     "archive_qa")
       local local_env=$(get_local_canisters)
       dfx deploy archive_qa --argument="($local_env)" ;;
-    "decideid_qa")
-      local local_env=$(get_local_canisters)
-      dfx deploy decideid_qa --argument="($local_env)" ;;
     *)
       echo "Unknown canister: $1"
       exit 1 ;;
