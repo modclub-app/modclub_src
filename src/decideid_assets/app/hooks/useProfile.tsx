@@ -39,6 +39,7 @@ export function useProfile() {
     error,
     isError,
     isLoading,
+    isSuccess,
   }: UseQueryResult<decideid_types.Profile, Error> = useQuery(
     "profile",
     fetchProfile,
@@ -92,6 +93,7 @@ export function useProfile() {
   };
 
   const clearProfile = () => {
+    queryClient.clear();
     queryClient.setQueryData("profile", null);
   };
 
@@ -103,7 +105,12 @@ export function useProfile() {
 
   return {
     profile,
+    // If there's no cached data and no query attempt was finished yet.
     isLoading,
+    // If the query has received a response with no errors and is ready to display its data.
+    isSuccess,
+    // If the query attempt resulted in an error.
+    // The corresponding error property has the error received from the attempted fetch
     isError,
     error,
     updateProfile: updateProfileMutation.mutate,
