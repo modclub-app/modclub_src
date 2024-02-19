@@ -20,11 +20,20 @@
   "decideid": {
     "ic": "rlz47-aqaaa-aaaah-qdcra-cai"
   },
+  "decideid_assets": {
+    "ic": "qgxyr-pyaaa-aaaah-qdcwq-cai"
+  },
   "decideid_dev": {
     "ic": "rz7lg-maaaa-aaaah-qdcsa-cai"
   },
+  "decideid_dev_assets": {
+    "ic": "qbw6f-caaaa-aaaah-qdcwa-cai"
+  },
   "decideid_qa": {
     "ic": "rmy2l-niaaa-aaaah-qdcrq-cai"
+  },
+  "decideid_qa_assets": {
+    "ic": "qurpi-diaaa-aaaah-qdcvq-cai"
   },
   "internet_identity": {
     "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
