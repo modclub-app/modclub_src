@@ -381,7 +381,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
           ("Content-Disposition", "inline")
         ];
         _status_code := 200;
-        _streaming_strategy := ? #Callback(
+        _streaming_strategy := ?#Callback(
           {
             token = {
               content_encoding = "gzip";
