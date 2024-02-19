@@ -12,8 +12,8 @@ export default function Main() {
 
   useEffect(() => {
     if (!isLoading) {
-      if (error && error.message === 'Not registered.') {
-        navigate('/signup');
+      if (error && error.message === "Not registered.") {
+        navigate("/signup");
       }
     }
   }, [isLoading, error, isError, navigate]);
@@ -40,5 +40,4 @@ export default function Main() {
       ) : null}
     </div>
   );
-  
 }

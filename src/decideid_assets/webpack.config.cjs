@@ -55,21 +55,21 @@ let LOCAL_II_CANISTER_SAFARI = "";
 try {
   LOCAL_II_CANISTER_SAFARI =
     network === "local"
-      ? `http://localhost:8000/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
+      ? `http://localhost:8080/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
       : `https://identity.ic0.app`;
   LOCAL_II_CANISTER =
     network === "local"
-      ? `http://${process.env["INTERNET_IDENTITY_CANISTER_ID"]}.localhost:8000`
+      ? `http://${process.env["INTERNET_IDENTITY_CANISTER_ID"]}.localhost:8080`
       : `https://identity.ic0.app`;
 } catch (e) {
   console.error("Error setting LOCAL_II_CANISTER: ", e);
   LOCAL_II_CANISTER =
-    "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
+    "http://localhost:8080/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
   LOCAL_II_CANISTER_SAFARI =
-    "http://localhost:8000/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
+    "http://localhost:8080/?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai";
 }
 const isDevelopment = process.env.NODE_ENV !== "production";
-const asset_entry = path.join("src", "decideid_assets", "src", "index.html");
+const asset_entry = path.join("src", "decideid_assets", "app", "index.html");
 
 module.exports = {
   target: "web",
@@ -79,10 +79,18 @@ module.exports = {
     // to replace the extension to `.js`.
     index: path.join(ROOT_DIR, asset_entry).replace(/\.html$/, ".tsx"),
   },
-  devtool: isDevelopment ? "source-map" : false,
+  // devtool: isDevelopment ? "source-map" : false,
   optimization: {
     minimize: !isDevelopment,
     minimizer: [new TerserPlugin()],
+    splitChunks: {
+      chunks: "all",
+      /**
+       * We must to splits bundle into chunks if it exceed 2Mb size
+       * otherwise we will have "Replica Error: application payload size (...) cannot be larger than 3145728"
+       */
+      maxSize: 1024000,
+    },
   },
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx"],
@@ -97,8 +105,10 @@ module.exports = {
     symlinks: false,
   },
   output: {
-    filename: "index.js",
+    filename: "[name].js",
     path: path.join(ROOT_DIR, "dist", "decideid_assets"),
+    chunkFilename: "[name].[contenthash].js",
+    clean: true, // Cleans the /dist folder before each build
   },
   module: {
     rules: [
@@ -108,7 +118,7 @@ module.exports = {
       },
       {
         test: /\.(sa|sc|c)ss$/,
-        include: path.resolve(ROOT_DIR, "src/decideid_assets/src"),
+        include: path.resolve(ROOT_DIR, "src/decideid_assets/app"),
         use: [
           // Creates `style` nodes from JS strings
           "style-loader",
@@ -117,19 +127,19 @@ module.exports = {
           {
             loader: "postcss-loader",
             options: {
-              sourceMap: true,
+              sourceMap: false,
             },
           },
           {
             loader: "resolve-url-loader",
             options: {
-              sourceMap: true,
+              sourceMap: false,
             },
           },
           {
             loader: "sass-loader",
             options: {
-              sourceMap: true,
+              sourceMap: false,
             },
           },
         ],
@@ -145,7 +155,7 @@ module.exports = {
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
-        include: path.resolve(ROOT_DIR, "src/decideid_assets/src"),
+        include: path.resolve(ROOT_DIR, "src/decideid_assets/app"),
         type: "asset/resource",
       },
     ],

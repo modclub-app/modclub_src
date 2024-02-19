@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "src/decideid_assets",
+]
+resolver = "2"

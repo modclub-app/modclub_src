@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { useProfile } from "../../../utils";
 
 export default function NewProfile() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const { createProfile } = useProfile()
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const { createProfile } = useProfile();
 
   const handleCreateProfile = async () => {
     const newProfile = { firstName, lastName, email };
@@ -17,7 +17,12 @@ export default function NewProfile() {
       <h2 className="text-xl font-bold text-center mb-5">New Profile</h2>
       <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
         <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name:</label>
+          <label
+            htmlFor="firstName"
+            className="block text-sm font-medium text-gray-700"
+          >
+            First Name:
+          </label>
           <input
             id="firstName"
             value={firstName}
@@ -26,7 +31,12 @@ export default function NewProfile() {
           />
         </div>
         <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name:</label>
+          <label
+            htmlFor="lastName"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Last Name:
+          </label>
           <input
             id="lastName"
             value={lastName}
@@ -35,7 +45,12 @@ export default function NewProfile() {
           />
         </div>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email:</label>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Email:
+          </label>
           <input
             id="email"
             type="email"
