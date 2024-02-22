@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dfx
         run: |
-          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          DFX_VERSION=0.14.3 DFXVM_INIT_YES=true sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
           dfx --version
 
       - name: Set up dfx identity
