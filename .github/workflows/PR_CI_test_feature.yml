@@ -1,4 +1,4 @@
-name: "PR Test"
+name: "PR Test - feature branch"
 
 on:
   pull_request:
