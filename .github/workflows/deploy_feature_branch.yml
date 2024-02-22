@@ -2,7 +2,7 @@ name: Deploy QA environment
 
 on:
   push:
-    branches: ["qa"]
+    branches: ["feature_branch"]
 
   workflow_dispatch:
     inputs:
