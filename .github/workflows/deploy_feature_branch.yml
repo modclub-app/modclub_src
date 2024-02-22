@@ -1,0 +1,156 @@
+name: Deploy QA environment
+
+on:
+  push:
+    branches: ["qa"]
+
+  workflow_dispatch:
+    inputs:
+      BYPASS_PROMPT_YES:
+        description: "Bypass Prompt?"
+        required: false
+        default: "no"
+        type: "choice"
+        options: ["yes", "no"]
+
+      CANISTER_ONLY:
+        description: "Select specific canister to deploy or 'ALL' to deploy all canisters"
+        required: false
+        default: "ALL"
+        type: "choice"
+        options:
+          [
+            "ALL",
+            "modclub_assets",
+            "modclub",
+            "auth",
+            "wallet",
+            "vesting",
+            "airdrop",
+            "rs",
+          ]
+
+  # pull_request:
+  #   branches: ["qa"]
+
+jobs:
+  dev-deploy:
+    runs-on: ubuntu-latest
+    name: Deploy QA environment
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Exit if the branch is not main
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "Branch is not main, exiting."
+            exit 1
+          fi
+
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Set workflow_dispatch env variable
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "BYPASS_PROMPT_YES=${{ github.event.inputs.BYPASS_PROMPT_YES }}" >> $GITHUB_ENV
+          echo "CANISTER_ONLY=${{ github.event.inputs.CANISTER_ONLY }}" >> $GITHUB_ENV
+
+      - name: Generate DEPLOYMENT_TAG
+        id: generate-tag
+        run: |
+          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')  # Extract branch name from GITHUB_REF
+          CURRENT_DATE=$(date +'%Y-%m-%d-%H.%M')
+          DEPLOYMENT_TAG="QA-$BRANCH_NAME-$CURRENT_DATE"
+          echo "DEPLOYMENT_TAG=${DEPLOYMENT_TAG}" >> "$GITHUB_ENV"
+
+          echo "DEPLOYMENT_TAG=${DEPLOYMENT_TAG}" >> .env
+          cat .env
+
+      - name: Set env variables
+        run: |
+          echo "DEV_ENV=qa" >> $GITHUB_ENV
+          echo "COMMIT_SHA=${{ github.sha }}" >> $GITHUB_ENV
+          echo "TRIGGER_USER=${{ github.actor }}" >> $GITHUB_ENV
+          PR_NUMBER=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/search/issues?q=${{ github.sha }}+type:pr+repo:${{ github.repository }} \
+            | jq '.items[0].number')
+          echo "PR_NUMBER=${PR_NUMBER}" >> $GITHUB_ENV
+          LAST_DEPLOYMENT_TAG=$(git tag -l "QA-*" | grep -E '^QA-.*-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.[0-9]{2}$' | sort -t '-' -k4,7 | tail -n1)
+          echo "LAST_DEPLOYMENT_TAG=${LAST_DEPLOYMENT_TAG}" >> "$GITHUB_ENV"
+
+          cat $GITHUB_ENV
+
+      - name: yarn install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      # Install dfx.
+      - name: Install dfx
+        run: |
+          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          dfx --version
+
+      - name: Set up dfx identity
+        run: |
+          mkdir -p ~/.config/dfx/identity/default/
+          echo "$IC_IDENTITY_FILE" > ~/.config/dfx/identity/default/identity.pem
+          dfx identity get-principal
+          cat ~/.config/dfx/identity/default/identity.pem
+        env:
+          IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_QA }}
+
+      - name: install mops
+        run: |
+          npm i ic-mops -g
+          mops -v
+          mops install
+
+      - name: create-wallet_qa
+        run: |
+          dfx start --background
+          dfx canister create wallet_qa
+          dfx build wallet_qa
+
+      # - name: Backup - before deployment
+      #   run: |
+      #     ./scripts/deployment/gh_backup.sh
+      #   env:
+      #     ENVIRONMENT: qa
+
+      - name: Notify Slack - deployment start
+        run: |
+          export WHATS_NEW_SINCE_LAST_DEP=$(git log --pretty=format:"Title: %s , Commit: %h" $LAST_DEPLOYMENT_TAG..HEAD | awk '/\(#?[0-9]+\)/ {p=1} p' | sed -E 's/(.*)\(#([0-9]+)\)(.*)/PR #\2 | \1\3/')
+          echo $WHATS_NEW_SINCE_LAST_DEP
+          node scripts/deployment/gh_deployment_notify_starts.cjs
+        env:
+          DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
+
+      # Deploy using quick build. Ensure you handle any configuration or environment specifics.
+      - name: Run deployment script
+        run: |
+          ./scripts/deployment/gh_actions_deploy.sh
+        env:
+          DEV_ENV: feature
+          OLD_MODCLUB_INSTANCE: la3yy-gaaaa-aaaah-qaiuq-cai
+
+      - name: Add tag after successful deployment
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git tag $DEPLOYMENT_TAG
+          git push origin $DEPLOYMENT_TAG
+
+      - name: Notify Slack - deployment end
+        run: |
+          node scripts/deployment/gh_deployment_notify_end.cjs
+        env:
+          DEPLOYMENT_NOTIFICATION_PATH: ${{ secrets.DEPLOYMENT_NOTIFICATION_PATH }}
+
+      - name: Show success message
+        run: echo success!
