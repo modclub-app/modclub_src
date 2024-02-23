@@ -5,6 +5,9 @@
   "airdrop_dev": {
     "ic": "wyblr-7qaaa-aaaam-qbcdq-cai"
   },
+  "airdrop_feature": {
+    "ic": "xxx"
+  },
   "airdrop_qa": {
     "ic": "xvpp7-qyaaa-aaaam-qbcea-cai"
   },
@@ -16,6 +19,9 @@
   },
   "auth_qa": {
     "ic": "h3xck-uaaaa-aaaap-qbj7q-cai"
+  },
+  "auth_feature": {
+    "ic": "xxx"
   },
   "decideid": {
     "ic": "rlz47-aqaaa-aaaah-qdcra-cai"
@@ -35,6 +41,12 @@
   "decideid_qa_assets": {
     "ic": "qurpi-diaaa-aaaah-qdcvq-cai"
   },
+  "decideid_feature": {
+    "ic": "xxx"
+  },
+  "decideid_feature_assets": {
+    "ic": "xxx"
+  },
   "internet_identity": {
     "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
   },
@@ -46,6 +58,12 @@
   },
   "modclub_dev": {
     "ic": "d7isk-4aaaa-aaaah-qdbsa-cai"
+  },
+  "modclub_feature": {
+    "ic": "xxx"
+  },
+  "modclub_feature_assets": {
+    "ic": "xxx"
   },
   "modclub_dev_assets": {
     "ic": "dyju6-ryaaa-aaaah-qdbsq-cai"
@@ -82,6 +100,9 @@
   "rs_qa": {
     "ic": "vmikw-4aaaa-aaaah-qc7xa-cai"
   },
+  "rs_feature": {
+    "ic": "xxx"
+  },
   "sns_governance": {
     "ic": "xvj4b-paaaa-aaaaq-aabfa-cai"
   },
@@ -106,6 +127,9 @@
   "vesting_qa": {
     "ic": "idxpf-xiaaa-aaaap-abf2a-cai"
   },
+  "vesting_feature": {
+    "ic": "xxx"
+  },
   "wallet": {
     "ic": "xsi2v-cyaaa-aaaaq-aabfq-cai"
   },
@@ -114,5 +138,8 @@
   },
   "wallet_qa": {
     "ic": "vckh6-hqaaa-aaaah-qc7wa-cai"
+  },
+  "wallet_feature": {
+    "ic": "xxx"
   }
 }

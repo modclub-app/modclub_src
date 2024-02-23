@@ -51,6 +51,23 @@
       ],
       "type": "assets"
     },
+    "modclub_feature": {
+      "main": "src/modclub/main.mo",
+      "type": "motoko",
+      "args": "-v --max-stable-pages 786432",
+      "optimize": "cycles"
+    },
+    "modclub_feature_assets": {
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/qa_custom_domain/well-known/"
+      ],
+      "type": "assets"
+    },
     "wallet": {
       "build": "",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
@@ -68,6 +85,11 @@
       "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
       "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
     },
+    "wallet_feature": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
+    },
     "wallet_dev": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
@@ -78,6 +100,10 @@
       "type": "motoko"
     },
     "rs_qa": {
+      "main": "src/rs/main.mo",
+      "type": "motoko"
+    },
+    "rs_feature": {
       "main": "src/rs/main.mo",
       "type": "motoko"
     },
@@ -97,6 +123,10 @@
       "main": "src/authentication/main.mo",
       "type": "motoko"
     },
+    "auth_feature": {
+      "main": "src/authentication/main.mo",
+      "type": "motoko"
+    },
     "vesting": {
       "main": "src/vesting/main.mo",
       "type": "motoko"
@@ -106,6 +136,10 @@
       "type": "motoko"
     },
     "vesting_qa": {
+      "main": "src/vesting/main.mo",
+      "type": "motoko"
+    },
+    "vesting_feature": {
       "main": "src/vesting/main.mo",
       "type": "motoko"
     },
@@ -124,6 +158,10 @@
       "main": "src/modclub/service/storage/buckets.mo",
       "type": "motoko"
     },
+    "bucket_feature": {
+      "main": "src/modclub/service/storage/buckets.mo",
+      "type": "motoko"
+    },
     "airdrop": {
       "type": "custom",
       "candid": "src/airdrop/airdrop.did",
@@ -139,7 +177,16 @@
       "candid": "src/airdrop/airdrop.did",
       "wasm": "src/airdrop/airdrop.wasm"
     },
+    "airdrop_feature": {
+      "type": "custom",
+      "candid": "src/airdrop/airdrop.did",
+      "wasm": "src/airdrop/airdrop.wasm"
+    },
     "decideid_qa": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid_feature": {
       "main": "src/decideid/main.mo",
       "type": "motoko"
     },
@@ -152,6 +199,13 @@
       "type": "motoko"
     },
     "decideid_qa_assets": {
+      "type": "custom",
+      "candid": "src/decideid_assets/decideid_assets.did",
+      "wasm": "src/decideid_assets/decideid_assets.wasm.gz",
+      "build": "src/decideid_assets/build.sh",
+      "frontend": {}
+    },
+    "decideid_feature_assets": {
       "type": "custom",
       "candid": "src/decideid_assets/decideid_assets.did",
       "wasm": "src/decideid_assets/decideid_assets.wasm.gz",
