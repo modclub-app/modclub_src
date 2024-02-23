@@ -1,7 +1,7 @@
 import React from "react";
 import classNames from "classnames/bind";
 import styles from "./styles.scss";
-import { InfoIcon } from "../../../../modkit";
+import { InfoIcon } from "../../../../modkit/components";
 const cn = classNames.bind(styles);
 
 type UserVideoInfoProps = {

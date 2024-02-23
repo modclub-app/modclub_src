@@ -24,12 +24,15 @@ function generate_declarations() {
   local v=$(get_canister_name_by_env "$1" "vesting")
   local r=$(get_canister_name_by_env "$1" "rs")
   local a=$(get_canister_name_by_env "$1" "airdrop")
+  local d=$(get_canister_name_by_env "$1" "decideid")
   
   dfx generate "$m" --network=$network -v &&
   dfx generate "$w" --network=$network -v &&
   dfx generate "$v" --network=$network -v &&
   dfx generate "$r" --network=$network -v &&
-  dfx generate "$a" --network=$network -v
+  dfx generate "$a" --network=$network -v &&
+  dfx generate "$d" --network=$network -v
+
 }
 
 

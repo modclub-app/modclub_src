@@ -34,8 +34,47 @@ check_canister_subscription modclub_qa
 check_canister_subscription vesting_qa
 check_canister_subscription rs_qa
 
+dfx canister call auth_qa removeSecret 'my_secret_1'
+dfx canister call auth_qa removeSecret 'my_secret_2'
+dfx canister call auth_qa removeSecret 'allowed_cg_callers'
+
+principal_1=$(dfx identity get-principal)
+
 dfx canister call auth_qa addSecret '(record { name = "my_secret_1"; value = "abcd" })'
+dfx canister call auth_qa addSecret '(record { name = "my_secret_1"; value = "efgh" })'
 dfx canister call auth_qa addSecret '(record { name = "my_secret_2"; value = "12345" })'
 
-check_auth_secrets my_secret_1 "abcd"
+
+function expected_unauthorized_collectCanisterMetrics_call() {
+    local canister_name=$1
+    local output=$(dfx canister call "$canister_name" collectCanisterMetrics 2>&1) || true
+
+    local expected_error="The replica returned a replica error: Replica Error: reject code CanisterReject, reject message Unauthorized, error code None"
+
+    if [[ "$output" == *"$expected_error"* ]]; then
+        echo "Expected error occurred for $canister_name: $expected_error"
+    else
+        echo "Unexpected result or error for $canister_name: $output"
+        exit 1
+    fi
+}
+
+expected_unauthorized_collectCanisterMetrics_call modclub_qa
+expected_unauthorized_collectCanisterMetrics_call rs_qa
+expected_unauthorized_collectCanisterMetrics_call vesting_qa
+expected_unauthorized_collectCanisterMetrics_call decideid_qa
+
+
+dfx canister call auth_qa addSecret "(record { name = \"allowed_cg_callers\"; value = \"$principal_1\" })"
+
+check_auth_secrets my_secret_1 "abcd,efgh"
 check_auth_secrets my_secret_2 "12345"
+
+dfx canister call modclub_qa collectCanisterMetrics
+dfx canister call rs_qa collectCanisterMetrics
+dfx canister call vesting_qa collectCanisterMetrics
+dfx canister call decideid_qa collectCanisterMetrics
+
+# test multi-values on single secret
+dfx canister call auth_qa addSecret "(record { name = \"allowed_cg_callers\"; value = \"abd\" })"
+dfx canister call modclub_qa collectCanisterMetrics

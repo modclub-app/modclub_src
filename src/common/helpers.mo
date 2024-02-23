@@ -3,7 +3,6 @@ import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Char "mo:base/Char";
-import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
@@ -244,7 +243,6 @@ module Helpers {
         level := "DEBUG: ";
       };
     };
-    Debug.print(level # logMessage);
     canistergeekLogger.logMessage(level # logMessage);
   };
 

@@ -103,9 +103,15 @@ export async function withdrawModeratorReward(context, payload) {
     const actor = context.icContext.actors.modclub?.value;
     if (actor) {
       const amountMOD = context.state.accountWithdrawAction.amount;
+      // Convert amount to the lowest denomination and ensure it's an integer
+      const amountInLowestDenom = Math.round(
+        convert_from_mod(amountMOD, context.state.decimals)
+      );
+
       const targetPrincipal = context.state.accountWithdrawAction.target;
+
       let res = await actor.withdrawModeratorReward(
-        convert_from_mod(amountMOD, context.state.decimals),
+        amountInLowestDenom,
         targetPrincipal ? [Principal.fromText(targetPrincipal)] : []
       );
 

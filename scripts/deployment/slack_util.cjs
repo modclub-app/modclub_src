@@ -1,7 +1,7 @@
 const https = require("https");
 
 function notify_slack(template, path, error_callback) {
-  const data = JSON.stringify(template);
+  const data = Buffer.from(JSON.stringify(template), "utf-8");
 
   const options = {
     hostname: "hooks.slack.com",

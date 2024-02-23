@@ -1,17 +1,17 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { formatDate, timestampToSecond } from "../../../utils/util";
+import { formatDate } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import {
-  Heading,
-  Card,
   Button,
-  Modal,
+  Card,
+  Heading,
   Icon,
+  Modal,
   Notification,
 } from "react-bulma-components";
-import { Form, Field } from "react-final-form";
+import { Field, Form } from "react-final-form";
 import Userstats from "../profile/Userstats";
 import ProfileDetails from "./ProfileDetails";
 import ProfilePic from "./ProfilePic";
@@ -19,12 +19,12 @@ import UserVideo from "./UserVideo";
 import UserAudio from "./UserAudio";
 import DrawingChallenge from "./DrawingChallenge";
 import POHConfirmationModal from "./POHConfirmationModal";
-import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import * as Constant from "../../../utils/constant";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
 import Timer from "../../common/timer/Timer";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const CheckBox = ({ id, label, values }) => {
   return (
@@ -161,13 +161,12 @@ export default function PohApplicant() {
         return "Unique Phrase (Audio)";
       case "challenge-drawing":
         return "Unique Drawing";
-      case "challenge-unique-poh":
-        return "Unique Phrase (Video)";
       default:
         return challengeId;
     }
   };
 
+  // TODO: Current logic duplicate Application Snippet logic;
   const onReservedPoh = async () => {
     setLoadingModal(true);
     try {
@@ -179,6 +178,17 @@ export default function PohApplicant() {
       setReserved(true);
       setMessage({ success: true, value: "Reserved POH successful" });
       setLoadingModal(false);
+
+      // GTM: determine the quantity of reserved "human verification" tasks;
+      GTMManager.trackEvent(
+        GTMEvent.HumanVerificationEventName,
+        {
+          uId: appState.loginPrincipalId,
+          userLevel: Object.keys(appState.rs.level)[0],
+          eventType: GTMTypes.HumanVerificationReserveEventType,
+        },
+        ["uId"]
+      );
     } catch (error) {
       setReserved(false);
       setMessage({ success: false, value: "Reserved POH unsuccessful" });
@@ -201,8 +211,6 @@ export default function PohApplicant() {
         return <UserAudio data={task} />;
       case "challenge-drawing":
         return <DrawingChallenge data={task} />;
-      case "challenge-unique-poh":
-        return <UserVideo data={task} />;
     }
   };
 
@@ -345,6 +353,7 @@ export default function PohApplicant() {
         createReservation={onReservedPoh}
         reserved={reserved}
         loading={loadingModal}
+        trackEventId={GTMTypes.HumanVerificationReserveEventType}
       />
     </>
   );

@@ -4,8 +4,7 @@
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles",
-      "gzip": true
+      "optimize": "cycles"
     },
     "modclub_assets": {
       "frontend": {
@@ -22,8 +21,7 @@
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles",
-      "gzip": true
+      "optimize": "cycles"
     },
     "modclub_dev_assets": {
       "frontend": {
@@ -40,8 +38,7 @@
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles",
-      "gzip": true
+      "optimize": "cycles"
     },
     "modclub_qa_assets": {
       "frontend": {
@@ -114,8 +111,8 @@
     },
     "internet_identity": {
       "type": "custom",
-      "candid": "https://github.com/dfinity/internet-identity/releases/download/release-2023-11-17/internet_identity.did",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/download/release-2023-11-17/internet_identity_dev.wasm.gz",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
       "remote": {
         "id": {
           "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
@@ -141,6 +138,25 @@
       "type": "custom",
       "candid": "src/airdrop/airdrop.did",
       "wasm": "src/airdrop/airdrop.wasm"
+    },
+    "decideid_qa": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid_dev": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid": {
+      "main": "src/decideid/main.mo",
+      "type": "motoko"
+    },
+    "decideid_qa_assets": {
+      "type": "custom",
+      "candid": "src/decideid_assets/decideid_assets.did",
+      "wasm": "src/decideid_assets/decideid_assets.wasm.gz",
+      "build": "src/decideid_assets/build.sh",
+      "frontend": {}
     }
   },
   "defaults": {

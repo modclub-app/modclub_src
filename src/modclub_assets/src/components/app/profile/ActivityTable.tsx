@@ -22,7 +22,12 @@ const renderRow = (vote, item: modclub_types.Activity, isPoh: boolean) => (
     </td>
     <td>{item.providerName}</td>
     <td>
-      <Snippet string={item.title[0]} truncate={15} linkId={item.vote[0] ? `tasks/${item.vote[0].contentId}` : ''} isPoh={isPoh}/>
+      <Snippet
+        string={item.title[0]}
+        truncate={15}
+        linkId={item.vote[0] ? `tasks/${item.vote[0].contentId}` : ""}
+        isPoh={isPoh}
+      />
     </td>
     <td>
       {isPoh
@@ -40,11 +45,15 @@ export const Table = ({
   filteredActivity,
   getLabel,
   currentFilter,
+  sortOrder,
+  onSortOrderChange,
 }: {
   loading: Boolean;
   filteredActivity: modclub_types.Activity[];
   getLabel: (activity: string) => string;
   currentFilter: string;
+  sortOrder: string;
+  onSortOrderChange: () => void;
 }) => {
   if (loading) {
     return <div className="loader is-loading"></div>;
@@ -58,7 +67,19 @@ export const Table = ({
               <th>Final Vote</th>
               <th>App</th>
               <th>Title</th>
-              <th>Voted on</th>
+              <th
+                onClick={() =>
+                  filteredActivity.length > 0 && onSortOrderChange()
+                }
+              >
+                Voted on{" "}
+                {filteredActivity.length > 0
+                  ? sortOrder === "desc"
+                    ? "↓"
+                    : "↑"
+                  : null}
+              </th>
+
               <th>Total Reward</th>
               <th>Locked Reward</th>
               <th>Reputation Score</th>

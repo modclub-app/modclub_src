@@ -97,7 +97,9 @@ jobs:
       # Install dfx.
       - name: Install dfx
         run: |
-          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          DFX_VERSION=0.14.3 DFXVM_INIT_YES=true sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          source "$HOME/.local/share/dfx/env"
+          echo "$HOME/.local/share/dfx/bin" >> $GITHUB_PATH
           dfx --version
 
       - name: install moc
@@ -121,6 +123,27 @@ jobs:
         run: |
           dfx build --network ${{ github.event.inputs.NETWORK }} ${{ github.event.inputs.CANISTER }}
 
+      - name: Store WASM Hash
+        run: |
+          WASM_FILE_PATH=".dfx/${{ github.event.inputs.NETWORK }}/canisters/${{ github.event.inputs.CANISTER }}/${{ github.event.inputs.CANISTER }}.wasm"
+          SHA256_HASH=$(sha256sum $WASM_FILE_PATH | awk '{ print $1 }')
+          echo "SHA256_HASH=$SHA256_HASH" >> $GITHUB_ENV
+
+      - name: Notify Slack - Build Complete with Hash
+        if: success()
+        run: |
+          PAYLOAD="{\"text\":\"Canister build for upgrade proposal - COMPLETED.\\nCanister: $CANISTER\\nEnvironment: $ENVIRONMENT\\nSHA256 Hash: $SHA256_HASH\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
+        env:
+          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
+          CANISTER: ${{ github.event.inputs.CANISTER }}
+          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+          SHA256_HASH: ${{ env.SHA256_HASH }}
+
+      - name: Gzip WASM file
+        run: |
+          gzip -f .dfx/${{ github.event.inputs.NETWORK }}/canisters/${{ github.event.inputs.CANISTER }}/${{ github.event.inputs.CANISTER }}.wasm
+
       - name: Notify to SlachChanel about build failure
         if: failure()
         run: |
@@ -132,19 +155,18 @@ jobs:
           CANISTER: ${{ github.event.inputs.CANISTER }}
           ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
 
-      - name: Backup - before deployment
-        run: |
-          if ! ./scripts/deployment/gh_backup.sh; then
-            echo "Backup failed"
-            exit 1
-          fi
-
-          PAYLOAD="{\"text\":\"Backup [$BACKUP_ID_1 - $BACKUP_FIELDNAME_1]\"}"
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
-        env:
-          ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
-          PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
-
+      # - name: Backup - before deployment
+      #   if: ${{ github.event.inputs.CANISTER == 'modclub' }}
+      #   run: |
+      #     if ! ./scripts/deployment/gh_backup.sh; then
+      #       echo "Backup failed"
+      #       exit 1
+      #     fi
+      #     PAYLOAD="{\"text\":\"Backup [$BACKUP_ID_1 - $BACKUP_FIELDNAME_1]\"}"
+      #     curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $PROPOSAL_NOTIFICATION_SLACK_HOOK
+      #   env:
+      #     ENVIRONMENT: ${{ github.event.inputs.ENVIRONMENT }}
+      #     PROPOSAL_NOTIFICATION_SLACK_HOOK: ${{ secrets.PROPOSAL_NOTIFICATION_SLACK_HOOK }}
       - name: Execute canister upgrade proposal script
         if: success()
         run: |

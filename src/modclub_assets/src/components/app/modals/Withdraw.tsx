@@ -1,12 +1,12 @@
 import * as React from "react";
-import { Field } from "react-final-form";
-import { Level, Icon } from "react-bulma-components";
-import { convert_to_mod } from "../../../utils/util";
-import { useActors } from "../../../hooks/actors";
-
 import { useState } from "react";
+import { Field } from "react-final-form";
+import { Icon, Level } from "react-bulma-components";
+import { useActors } from "../../../hooks/actors";
 import PopupModal from "./PopupModal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import { convert_to_mod } from "../../../utils/util";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const UpdateTable = ({ amount }) => {
   const appState = useAppState();
@@ -68,6 +68,19 @@ export default function Withdraw({
       type: "accountWithdrawAction",
       payload: { amount, target: address },
     });
+
+    // GTM: determine amount of "Withdraw" users make into
+    // their account and how many users made Withdraw;
+    GTMManager.trackEvent(
+      GTMEvent.TransactionEventName,
+      {
+        uId: appState.loginPrincipalId,
+        userLevel: Object.keys(appState.rs.level)[0],
+        amount,
+        eventType: GTMTypes.TransactionWithdrawEventType,
+      },
+      ["uId"]
+    );
   };
 
   return (
@@ -80,6 +93,7 @@ export default function Withdraw({
       loader={!!appState.accountWithdrawAction}
       updateTable={<UpdateTable amount={inputValue || 0} />}
       isSubmitDisabled={!(address && amount)}
+      trackEventId={GTMTypes.TransactionWithdrawEventType}
     >
       <label className="label">Enter your wallet address: </label>
       <div className="field">

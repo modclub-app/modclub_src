@@ -364,9 +364,9 @@ module ContentModule {
             };
             let now = Helpers.timeNow();
             let spot = contentPlus.voteParameters.requiredVotes - (voteCount.approvedCount + voteCount.rejectedCount);
-            let checkExpire = hasAvailableSpot(oldReserved, now, spot);
-            if (checkExpire == false) {
-              throw Error.reject("No spot left::" # debug_show (oldReserved)); // Debug for future bug resolve
+            let isReservationsAvailable = hasAvailableSpot(oldReserved, now, spot);
+            if (isReservationsAvailable == false) {
+              throw Error.reject("No more reservations available, please try again later"); // Debug for future bug resolve
             };
             let reservation = takeReservation(
               {

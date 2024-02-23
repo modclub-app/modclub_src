@@ -1,32 +1,42 @@
 import * as React from "react";
-import { Switch, Route } from "react-router-dom";
-import { useHistory, Link, useLocation } from "react-router-dom";
-import { Modal, Columns, Card, Heading, Button } from "react-bulma-components";
 import { useEffect, useState } from "react";
+import { Link, Route, Switch, useHistory, useLocation } from "react-router-dom";
+import { Button, Card, Columns, Heading, Modal } from "react-bulma-components";
 import NotAuthenticatedModal from "../../app/modals/NotAuthenticated";
-import NewProfile from "../new_profile/NewProfile";
-import { Steps, Step } from "../../common/steps/Steps";
+import { Step, Steps } from "../../common/steps/Steps";
 import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
 import DrawingChallenge from "./DrawingChallenge";
+import UniquePoh from "./UniquePoh";
 import { modclub_types } from "../../../utils/types";
-import { useProfile } from "../../../contexts/profile";
 import { useActors } from "../../../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";
 import {
   useAppState,
   useAppStateDispatch,
 } from "../../app/state_mgmt/context/state";
-import UniquePoh from "./UniquePoh";
+import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 
 const Confirmation = ({ redirect_uri }) => {
+  const appState = useAppState();
   const { disconnect } = useConnect();
   const handleRedirect = (e) => {
     e.preventDefault();
     disconnect();
     window.location.href = redirect_uri;
   };
+
+  // GTM: determine the number of users who "poh completed";
+  const handlerOnClick = () =>
+    GTMManager.trackEvent(
+      GTMEvent.PohChallengeEventName,
+      {
+        uId: appState.loginPrincipalId,
+        eventType: GTMTypes.PohCompletedEventType,
+      },
+      ["uId"]
+    );
 
   return (
     <div className="has-text-centered">
@@ -44,7 +54,12 @@ const Confirmation = ({ redirect_uri }) => {
           Back to App
         </a>
       ) : (
-        <Link to="/app" className="button is-large is-primary mt-5">
+        <Link
+          to="/app"
+          className="button is-large is-primary mt-5"
+          onClick={handlerOnClick}
+          id={GTMTypes.PohCompletedEventType}
+        >
           Back to MODCLUB
         </Link>
       )}

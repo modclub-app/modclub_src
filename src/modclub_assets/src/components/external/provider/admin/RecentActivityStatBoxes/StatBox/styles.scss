@@ -1,0 +1,29 @@
+.stat-box {
+  position: relative;
+
+  padding: 1.5rem;
+  box-sizing: border-box;
+
+  border-radius: 0.25rem;
+
+  background-color: #121212;
+
+  &_label {
+    font-size: 14px;
+    color: #c4c4c4;
+  }
+
+  &_title {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+
+    color: #fff;
+  }
+
+  &_message {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+  }
+}

@@ -1,9 +1,8 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
-import { Modal, Heading, Button, Notification } from "react-bulma-components";
+import { Modal, Heading, Button } from "react-bulma-components";
 import { Form } from "react-final-form";
-import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import { format_token, getErrorMessage, isObject } from "../../../utils/util";
+import { useAppStateDispatch } from "../state_mgmt/context/state";
+
 interface PopupModal {
   toggle: () => void;
   show: boolean;
@@ -17,6 +16,7 @@ interface PopupModal {
   loader?: any;
   button1?: string;
   isSubmitDisabled?: boolean;
+  trackEventId?: string;
 }
 
 export default function PopupModal({
@@ -32,6 +32,7 @@ export default function PopupModal({
   loader = null,
   button1 = "Submit",
   isSubmitDisabled = false,
+  trackEventId,
 }: PopupModal) {
   const dispatch = useAppStateDispatch();
 
@@ -83,6 +84,7 @@ export default function PopupModal({
                     color="primary"
                     className={loader ? "is-loading" : ""}
                     disabled={loader || isSubmitDisabled}
+                    id={trackEventId}
                   >
                     {button1}
                   </Button>
