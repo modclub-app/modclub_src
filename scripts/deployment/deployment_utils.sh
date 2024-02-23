@@ -30,7 +30,7 @@ function deploy_canisters() {
   local assets_canister_name="$(get_canister_name_by_env $env "modclub")_assets"
   local airdrop_canister_name=$(get_canister_name_by_env $env "airdrop")
   local decideid_canister_name=$(get_canister_name_by_env $env "decideid")
-
+  local decideid_assets_canister_name="$(get_canister_name_by_env $env "decideid")_assets"
 
   if [ "$canister_only" != "ALL" ]; then
     log "[${env}] Only deploy $canister_only"
@@ -71,6 +71,7 @@ function deploy_canisters() {
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
     DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
+    DEV_ENV=$env dfx_deploy ${decideid_assets_canister_name} --network=${network}
     log "${env} Canisters DEPLOYED"
   fi
 
