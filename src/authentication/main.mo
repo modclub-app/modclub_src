@@ -50,7 +50,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared ({ caller }) func subscribe(_topic : Text) : async () {
-    Utils.mod_assert(authGuard.isModclubCanister(caller) or authGuard.isDecideid(caller) or isModclubBucket(caller), NotPermitted);
+    Utils.mod_assert(authGuard.isModclubCanister(caller) or isModclubBucket(caller), NotPermitted);
 
     let exists = List.some<AuthTypes.Subscriber>(
       subscriptions,
