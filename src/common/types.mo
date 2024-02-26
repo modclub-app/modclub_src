@@ -15,7 +15,6 @@ module {
     wallet_canister_id : Principal;
     auth_canister_id : Principal;
     vesting_canister_id : Principal;
-    decideid_canister_id : Principal;
   };
 
   public type Timestamp = Int;

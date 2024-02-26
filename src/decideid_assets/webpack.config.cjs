@@ -173,7 +173,6 @@ module.exports = {
       MODCLUB_CANISTER_ID: canisters["modclub"] || "aaaaa-aa",
       MODCLUB_DEV_CANISTER_ID: canisters["modclub_dev"] || "aaaaa-aa",
       MODCLUB_QA_CANISTER_ID: canisters["modclub_qa"] || "aaaaa-aa",
-      DECIDEID_CANISTER_ID: canisters["decideid"] || "aaaaa-aa",
       DECIDEID_DEV_CANISTER_ID: canisters["decideid_dev"] || "aaaaa-aa",
       DECIDEID_QA_CANISTER_ID: canisters["decideid_qa"] || "aaaaa-aa",
       LOCAL_II_CANISTER,

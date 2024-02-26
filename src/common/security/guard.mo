@@ -161,7 +161,6 @@ module ModSecurity {
         case (#wallet) { env.wallet_canister_id };
         case (#auth) { env.auth_canister_id };
         case (#vesting) { env.vesting_canister_id };
-        case (#decideid) { env.decideid_canister_id };
       };
     };
 
