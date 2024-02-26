@@ -154,14 +154,6 @@
       },
       "frontend": {}
     },
-    "bucket_qa": {
-      "main": "src/modclub/service/storage/buckets.mo",
-      "type": "motoko"
-    },
-    "bucket_feature": {
-      "main": "src/modclub/service/storage/buckets.mo",
-      "type": "motoko"
-    },
     "airdrop": {
       "type": "custom",
       "candid": "src/airdrop/airdrop.did",

@@ -29,7 +29,7 @@ function setup_provider() {
 
     dfx identity use default
     dfx canister call ${auth} registerAdmin '(principal "'$default_principal'")'
-    dfx canister call ${modclub} addToAllowList '(principal "'$provider_pricipal'" )'
+    dfx canister call ${modclub} addToAllowList '(principal "'$provider_pricipal'" )' || true
 
     dfx identity use ${provider_identity}
     dfx canister call ${modclub} registerProvider '("'${provider_name}'","'"${provider_description}"'", null)'
