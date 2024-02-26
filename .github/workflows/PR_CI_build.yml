@@ -85,3 +85,17 @@ jobs:
       - name: Check result
         run: |
           tree .dfx -P '*.wasm'
+      
+      - name: Check new or modified TypeScript files
+        run: |
+          git fetch origin main
+          # Use a direct comparison against origin/main
+          FILES=$(git diff --name-only FETCH_HEAD $(git merge-base FETCH_HEAD HEAD) | grep '\.tsx\?$')
+          if [ -z "$FILES" ]; then
+            echo "No TypeScript files changed."
+          else
+            echo "Checking the following TypeScript files:"
+            echo $FILES
+            # Use echo to safely handle filenames with spaces
+            echo "$FILES" | xargs -d '\n' tsc --noEmit
+          fi
