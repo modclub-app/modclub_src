@@ -1,4 +1,4 @@
-canisters=("wallet" "auth" "rs" "modclub" "vesting" "decideid")
+canisters=("wallet" "auth" "rs" "modclub" "vesting")
 
 source "scripts/deployment/deployment_utils.sh"
 
@@ -16,7 +16,6 @@ function create_canisters() {
   done
 
   dfx canister create "$(get_canister_name_by_env $env "modclub")_assets"
-  dfx canister create "$(get_canister_name_by_env $env "decideid")_assets"
 
   wait
   return 0;
