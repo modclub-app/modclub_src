@@ -1536,11 +1536,14 @@ module PohModule {
       // Calculate the request size
       let requestSize = url.size() + body.size() + headerSize;
 
-      // Calculate the HTTP outcall cost
-      let httpOutcallCost = Constants.HTTPS_OUTCALL_COST_PER_CALL +
-      Constants.HTTPS_OUTCALL_COST_PER_REQUEST_BYTE * requestSize +
-      Constants.HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE * maxResponseSize;
-      httpOutcallCost;
+      let n = 13 /* number of nodes in the subnet */;
+      let HTTPS_OUTCALL_COST_PER_CALL = (3_000_000 + 60_000 * n) * n;
+      let HTTPS_OUTCALL_COST_PER_REQUEST_BYTE = 400 * n;
+      let HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE = 800 * n;
+
+      let httpOutcallCost = HTTPS_OUTCALL_COST_PER_CALL +
+      HTTPS_OUTCALL_COST_PER_REQUEST_BYTE * requestSize +
+      HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE * maxResponseSize;
     };
 
     public func httpCallForProcessing(
