@@ -26,10 +26,10 @@ gzip_and_deploy() {
   echo "Deploying ${canister_name}..."
 
   echo "Env vars ${env_vars}"
-  
-  echo "dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode  --argument=\"'(${env_vars})'\" $canister_name"
 
-  dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode  --argument="'(${env_vars})'" $canister_name &&
+  echo "dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode  --argument="${env_vars}" $canister_name"
+
+  dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument="${env_vars}" $canister_name &&
   echo "[DEPLOY] Canister ${canister_name} deployed successfully." ||
   echo "[ERROR] Unable to deploy ${canister_name}" && exit 1
 }
