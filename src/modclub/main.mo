@@ -2921,6 +2921,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (#http_request _) { true };
       case (#http_request_update _) { true };
+      case (#isLatestVersion _) { true };
       case (#backup _) { Principal.isController(caller) };
       case (#restore _) { Principal.isController(caller) };
       case _ { not Principal.isAnonymous(caller) };
