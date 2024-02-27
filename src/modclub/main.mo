@@ -2287,6 +2287,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return finishedVoting;
   };
 
+  public query func isLatestVersion() : async Bool {
+    return true;
+  };
+
   public shared ({ caller }) func createPohVoteReservation(
     packageId : Text
   ) : async Result.Result<Types.Reserved, VoteTypes.POHVoteError> {
