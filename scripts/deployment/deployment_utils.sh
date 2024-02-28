@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 gzip_and_deploy() {
   local canister_name=$1
@@ -29,7 +30,8 @@ gzip_and_deploy() {
 
   echo "dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode  --argument="${env_vars}" $canister_name"
 
-  dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument="${env_vars}" $canister_name &&
+  eval dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument="${env_vars}" $canister_name
+
   echo "[DEPLOY] Canister ${canister_name} deployed successfully." ||
   echo "[ERROR] Unable to deploy ${canister_name}" && exit 1
 }
