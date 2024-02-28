@@ -132,6 +132,12 @@ module StorageModule {
       };
     };
 
+    public func setLambdaKey(lambdaKey : Text) : async () {
+      for ((bucketId, bucket) in storageState.dataCanisters.entries()) {
+        await bucket.setLambdaKey(lambdaKey);
+      };
+    };
+
     public func deRegisterModerators(moderatorIds : [Principal]) : async () {
       for (modId in moderatorIds.vals()) {
         storageState.moderatorsId.delete(modId);
