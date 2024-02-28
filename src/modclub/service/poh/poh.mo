@@ -6,6 +6,7 @@ import Buffer "mo:base/Buffer";
 import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
+import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
@@ -1544,6 +1545,17 @@ module PohModule {
       let httpOutcallCost = HTTPS_OUTCALL_COST_PER_CALL +
       HTTPS_OUTCALL_COST_PER_REQUEST_BYTE * requestSize +
       HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE * maxResponseSize;
+
+      // Define the buffer percentage (e.g., 3%)
+      let bufferPercentage : Float = 0.03;
+
+      // Calculate the buffer
+      let buffer = Float.fromInt(httpOutcallCost) * bufferPercentage;
+      // Round and convert to a Nat
+      let roundedBuffer = Int.abs(Float.toInt(Float.nearest(buffer)));
+
+      // Add the buffer to the httpOutcallCost and return the total
+      return httpOutcallCost + roundedBuffer;
     };
 
     public func httpCallForProcessing(
