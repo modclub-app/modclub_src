@@ -30,7 +30,8 @@ gzip_and_deploy() {
 
   echo "dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode  --argument="${env_vars}" $canister_name"
 
-  dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument="${env_vars}" $canister_name &&
+  eval canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument="${env_vars}" $canister_name
+
   echo "[DEPLOY] Canister ${canister_name} deployed successfully." ||
   echo "[ERROR] Unable to deploy ${canister_name}" && exit 1
 }
@@ -66,7 +67,6 @@ function deploy_canisters() {
     DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
   elif [ "$canister_only" = "modclub" ]; then
-    dfx canister install --network=ic --wasm .dfx/local/canisters/modclub_dev/modclub_dev.wasm.gz --mode upgrade  '--argument=(record { modclub_canister_id = principal "d7isk-4aaaa-aaaah-qdbsa-cai"; old_modclub_canister_id = principal "la3yy-gaaaa-aaaah-qaiuq-cai"; rs_canister_id = principal "vflbk-kiaaa-aaaah-qc7wq-cai"; wallet_canister_id = principal "vxnwt-gyaaa-aaaah-qc7vq-cai"; auth_canister_id = principal "dnoft-qqaaa-aaaah-qdbra-cai"; vesting_canister_id = principal "dkpdh-5iaaa-aaaah-qdbrq-cai";})' modclub_dev
     gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "auth" ]; then
     gzip_and_deploy $auth_canister_name $network "'(${env_vars})'"
