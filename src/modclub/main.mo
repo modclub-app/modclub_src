@@ -3014,6 +3014,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       throw Error.reject("Lambda key is not provided.");
     };
     keyToCallLambdaForPOH := key;
+    await storageSolution.setLambdaKey(key);
   };
 
   private func callLambdaToSendEmail(
