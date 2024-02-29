@@ -1642,18 +1642,34 @@ module PohModule {
         );
 
         let response : Types.CanisterHttpResponsePayload = await ic.http_request(request);
-        switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
-          case null {
-            throw Error.reject("Remote response had no body.");
-          };
-          case (?body) {
+        // Check if the response status code indicates success (e.g., 200)
+        if (response.status >= 200 and response.status < 300) {
+            // Handle successful response
+            switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
+                case null {
+                    throw Error.reject("Remote response had no body.");
+                };
+                case (?body) {
+                    Helpers.logMessage(
+                        canistergeekLogger,
+                        "httpCallForProcessing - response: " # body,
+                        #info
+                    );
+                    return true;
+                };
+            };
+        } else {
+            // Handle error response
+            let errorMessage = switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
+                case null { "Error: No response body." };
+                case (?body) { "Error: " # body };
+            };
             Helpers.logMessage(
-              canistergeekLogger,
-              "httpCallForProcessing - response: " # body,
-              #info
+                canistergeekLogger,
+                "httpCallForProcessing - error: status code: " # Int.toText(response.status) # " message: " # errorMessage,
+                #info
             );
-            return true;
-          };
+            throw Error.reject(errorMessage);
         };
         return false;
       } catch (err) {
