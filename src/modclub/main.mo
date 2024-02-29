@@ -124,6 +124,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var claimRewardsWhitelist : List.List<Principal> = List.nil<Principal>();
   private var claimRewardsWhitelistBuf = Buffer.Buffer<Principal>(100);
 
+  stable var verifiedCredentialsWL : List.List<Principal> = List.nil<Principal>();
+  private var verifiedCredentialsWLBuf = Buffer.Buffer<Principal>(100);
+
   private var commonTimer = CommonTimer.CommonTimer(env, "CommonTimer");
   commonTimer.initTimer(canistergeekMonitor);
 
@@ -213,6 +216,48 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared ({ caller }) func toggleAllowSubmission(allow : Bool) : async () {
     allowSubmissionFlag := allow;
+  };
+
+  public shared ({ caller }) func toggleVCForUser(isEnabled : Bool) : async Result.Result<Bool, Text> {
+    switch (isEnabled) {
+      case (true) {
+        if (not Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
+          let resp = await (actor ("g6z42-4eaaa-aaaaa-qaata-cai") : Types.VCIssuer).add_poh_verified(caller);
+          Debug.print("***[DEBUG] MODCLUB toggleVCForUser call:: " # debug_show resp);
+          switch (resp) {
+            case (#Ok(_)) {
+              verifiedCredentialsWLBuf.add(caller);
+            };
+            case (#Err(msg)) {
+              throw Error.reject(msg);
+            };
+          };
+        };
+      };
+      case (false) {
+        if (Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
+          let resp = await (actor ("g6z42-4eaaa-aaaaa-qaata-cai") : Types.VCIssuer).remove_poh_verified(caller);
+          Debug.print("***[DEBUG] MODCLUB toggleVCForUser call:: " # debug_show resp);
+          switch (resp) {
+            case (#Ok(_)) {
+              verifiedCredentialsWLBuf.filterEntries(func(_, vcWlPid) = not Principal.equal(vcWlPid, caller));
+            };
+            case (#Err(msg)) {
+              // For debug
+              verifiedCredentialsWLBuf.filterEntries(func(_, vcWlPid) = not Principal.equal(vcWlPid, caller));
+              throw Error.reject(msg);
+            };
+          };
+        };
+      };
+    };
+    return #ok(
+      Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)
+    );
+  };
+
+  public query ({ caller }) func isEnabledVCForUser() : async Bool {
+    Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal);
   };
 
   public shared ({ caller }) func generateSigningKey() : async () {
@@ -2325,6 +2370,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func addToApprovedUser(userId : Principal) : async () {
     voteManager.addToAutoApprovedPOHUser(userId);
   };
+
+  // public shared ({ caller }) func confirmVCToggle(userId : Principal) : async () {
+  //   let resp = await (actor ("g6z42-4eaaa-aaaaa-qaata-cai") : actor {
+  //     add_poh_verified : (Principal) -> async Types.RustResult<Nat32, Text>;
+  //   }).add_poh_verified(userId);
+  //   logger.logMessage("MODCLUB Instanse made add_poh_verified call:: " # debug_show resp);
+  // };
 
   public shared ({ caller }) func getProviderAdmins(providerId : Principal) : async [Types.ProfileStable] {
     let pStable = Buffer.Buffer<Types.ProfileStable>(1);

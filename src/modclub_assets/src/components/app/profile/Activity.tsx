@@ -33,6 +33,8 @@ export default function Activity() {
   const [newEmail, setNewEmail] = useState<string>("");
   const [editEmail, setEditEmail] = useState<boolean>(false);
 
+  const [vcStatus, setVcStatus] = useState<FilterType>(false);
+
   type FilterType = "new" | "completed";
   const [currentFilter, setCurrentFilter] = useState<FilterType>("new");
 
@@ -155,6 +157,19 @@ export default function Activity() {
     appState.userProfile && fetchActivity(currentFilter);
   }, [appState.userProfile, modclub]);
 
+  useEffect(() => {
+    modclub &&
+      modclub
+        .isEnabledVCForUser()
+        .then((vcRes) => {
+          console.log("isEnabledVCForUser::", vcRes);
+          vcRes && setVcStatus(vcRes);
+        })
+        .catch((e) => {
+          console.error("An ERROR occurs on isEnabledVCForUser::", e);
+        });
+  }, [modclub]);
+
   // useEffect hook to fetch and sort activities based on user profile and filter, updating relevant states
   // used switch to avoid magic string
   useEffect(() => {
@@ -246,9 +261,100 @@ export default function Activity() {
     </div>
   );
 
+  const VCDropdownLabel = ({ toggle }) => {
+    return (
+      <>
+        <Icon style={{ marginLeft: "3px" }}>
+          <span className="material-icons">assignment_ind</span>
+        </Icon>
+        <div className="is-flex" onClick={toggle}>
+          <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center has-text-left">
+            <Heading size={6}>
+              Verified Credentials : {vcStatus ? "ENABLED" : "DISABLED"}
+            </Heading>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  const vcChange = (val) => {
+    const vcStatus = "enabled".includes(val);
+    modclub &&
+      modclub
+        .toggleVCForUser(vcStatus)
+        .then((res) => {
+          !res.err && setVcStatus(res.ok);
+        })
+        .catch((e) => {
+          console.error("An ERROR occurs in toggleVCForUser::", e.message);
+          if (e.message.includes("No POH candidate")) {
+            const vc_enabling = (msg) => {
+              // console.log("POST_MESSAGE_RECEIVED::", msg);
+              if (
+                msg.data &&
+                msg.data.type == "add_poh_candidate" &&
+                msg.data.isOk
+              ) {
+                modclub
+                  .toggleVCForUser(true)
+                  .then((r) => {
+                    console.log("VC Activated Successfully.");
+                    setVcStatus(true);
+                  })
+                  .catch((e) => {
+                    console.log("VC Not Activated.");
+                    setVcStatus(false);
+                    console.error("ERROR on toggleVCForUser: ", e);
+                  });
+              } else {
+                console.log("VC Not Activated.");
+                setVcStatus(false);
+              }
+              window.removeEventListener("message", vc_enabling);
+            };
+            window.addEventListener("message", vc_enabling);
+            const decide = window.open(
+              `http://g6z42-4eaaa-aaaaa-qaata-cai.localhost:8080/#/vc/${appState.loginPrincipalId}`
+            );
+          }
+        });
+  };
+
   return (
     <>
       <Userstats detailed={true} />
+      <Dropdown
+        className="mb-5"
+        color="ghost"
+        style={{
+          right: "1em",
+          maxWidth: "20em",
+          zIndex: 999,
+        }}
+        icon={
+          <Icon color="white">
+            <span className="material-icons">expand_more</span>
+          </Icon>
+        }
+        label={<VCDropdownLabel />}
+        onChange={vcChange}
+      >
+        <Dropdown.Item
+          renderAs="a"
+          value="enabled"
+          style={{ backgroundColor: vcStatus ? "blue" : "" }}
+        >
+          Enabled
+        </Dropdown.Item>
+        <Dropdown.Item
+          renderAs="a"
+          value="disabled"
+          style={{ backgroundColor: !vcStatus ? "blue" : "" }}
+        >
+          Disabled
+        </Dropdown.Item>
+      </Dropdown>
       <Columns>
         <Columns.Column size={12}>
           <Card className="has-gradient">
