@@ -13,6 +13,10 @@ import { Form, Field } from "react-final-form";
 import Userstats from "./Userstats";
 import { modclub_types } from "../../../utils/types";
 import { useActors } from "../../../hooks/actors";
+import {
+  getCurrentDomain,
+  getDecideIdAssetsCanisterID,
+} from "../../../utils/util";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { Table } from "./ActivityTable";
 
@@ -290,7 +294,6 @@ export default function Activity() {
           console.error("An ERROR occurs in toggleVCForUser::", e.message);
           if (e.message.includes("No POH candidate")) {
             const vc_enabling = (msg) => {
-              // console.log("POST_MESSAGE_RECEIVED::", msg);
               if (
                 msg.data &&
                 msg.data.type == "add_poh_candidate" &&
@@ -315,7 +318,11 @@ export default function Activity() {
             };
             window.addEventListener("message", vc_enabling);
             const decide = window.open(
-              `http://g6z42-4eaaa-aaaaa-qaata-cai.localhost:8080/#/vc/${appState.loginPrincipalId}`
+              `${
+                window.location.protocol
+              }//${getDecideIdAssetsCanisterID()}.${getCurrentDomain()}/#/vc/${
+                appState.loginPrincipalId
+              }`
             );
           }
         });

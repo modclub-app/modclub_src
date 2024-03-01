@@ -222,8 +222,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     switch (isEnabled) {
       case (true) {
         if (not Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
-          let resp = await (actor ("g6z42-4eaaa-aaaaa-qaata-cai") : Types.VCIssuer).add_poh_verified(caller);
-          Debug.print("***[DEBUG] MODCLUB toggleVCForUser call:: " # debug_show resp);
+          let resp = await (actor (Principal.toText(env.decideid_assets_canister_id)) : Types.VCIssuer).add_poh_verified(caller);
           switch (resp) {
             case (#Ok(_)) {
               verifiedCredentialsWLBuf.add(caller);
@@ -236,14 +235,12 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (false) {
         if (Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
-          let resp = await (actor ("g6z42-4eaaa-aaaaa-qaata-cai") : Types.VCIssuer).remove_poh_verified(caller);
-          Debug.print("***[DEBUG] MODCLUB toggleVCForUser call:: " # debug_show resp);
+          let resp = await (actor (Principal.toText(env.decideid_assets_canister_id)) : Types.VCIssuer).remove_poh_verified(caller);
           switch (resp) {
             case (#Ok(_)) {
               verifiedCredentialsWLBuf.filterEntries(func(_, vcWlPid) = not Principal.equal(vcWlPid, caller));
             };
             case (#Err(msg)) {
-              // For debug
               verifiedCredentialsWLBuf.filterEntries(func(_, vcWlPid) = not Principal.equal(vcWlPid, caller));
               throw Error.reject(msg);
             };
@@ -2736,6 +2733,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     claimRewardsWhitelist := List.fromArray<Principal>(Buffer.toArray<Principal>(claimRewardsWhitelistBuf));
 
+    verifiedCredentialsWL := List.fromArray<Principal>(Buffer.toArray<Principal>(verifiedCredentialsWLBuf));
+
     migrationAirdropWhitelistStable := List.fromArray<(Principal, Bool)>(Buffer.toArray<(Principal, Bool)>(migrationAirdropWhitelist));
 
     // TODO: remove this after upgrade
@@ -2770,6 +2769,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
     authGuard.subscribe("secrets");
     claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
+
+    verifiedCredentialsWLBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(verifiedCredentialsWL));
 
     migrationAirdropWhitelist := Buffer.fromIter<(Principal, Bool)>(List.toIter<(Principal, Bool)>(migrationAirdropWhitelistStable));
 

@@ -242,3 +242,26 @@ export function detectBrowser(): BrowserType {
     return "Other";
   }
 }
+
+export const getCurrentDomain = () => {
+  return process.env.DFX_NETWORK == "local"
+    ? `localhost:${window.location.port}`
+    : `ic0.app`;
+};
+
+export const getDecideIdAssetsCanisterID = () => {
+  switch (process.env.DEV_ENV) {
+    case "dev":
+      return process.env.CANISTER_ID_DECIDEID_DEV_ASSETS
+        ? process.env.CANISTER_ID_DECIDEID_DEV_ASSETS[process.env.DFX_NETWORK]
+        : "";
+    case "qa":
+      return process.env.CANISTER_ID_DECIDEID_QA_ASSETS
+        ? process.env.CANISTER_ID_DECIDEID_QA_ASSETS[process.env.DFX_NETWORK]
+        : "";
+    default:
+      return process.env.CANISTER_ID_DECIDEID_ASSETS
+        ? process.env.CANISTER_ID_DECIDEID_ASSETS[process.env.DFX_NETWORK]
+        : "";
+  }
+};
