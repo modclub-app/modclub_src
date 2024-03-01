@@ -2368,13 +2368,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     voteManager.addToAutoApprovedPOHUser(userId);
   };
 
-  // public shared ({ caller }) func confirmVCToggle(userId : Principal) : async () {
-  //   let resp = await (actor ("g6z42-4eaaa-aaaaa-qaata-cai") : actor {
-  //     add_poh_verified : (Principal) -> async Types.RustResult<Nat32, Text>;
-  //   }).add_poh_verified(userId);
-  //   logger.logMessage("MODCLUB Instanse made add_poh_verified call:: " # debug_show resp);
-  // };
-
   public shared ({ caller }) func getProviderAdmins(providerId : Principal) : async [Types.ProfileStable] {
     let pStable = Buffer.Buffer<Types.ProfileStable>(1);
     for (p in ProviderManager.getProviderAdmins(providerId, stateV2).vals()) {
