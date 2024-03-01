@@ -246,7 +246,7 @@ export function detectBrowser(): BrowserType {
 export const getCurrentDomain = () => {
   return process.env.DFX_NETWORK == "local"
     ? `localhost:${window.location.port}`
-    : `ic0.app`;
+    : `icp0.io`;
 };
 
 export const getDecideIdAssetsCanisterID = () => {
