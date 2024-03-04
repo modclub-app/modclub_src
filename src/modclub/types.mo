@@ -11,6 +11,13 @@ import ICRCTypes "../common/ICRCTypes";
 import PohTypes "service/vote/types"
 
 module {
+  public type RustResult<T, E> = { #Ok : T; #Err : E };
+
+  public type VCIssuer = actor {
+    add_poh_verified : (Principal) -> async RustResult<Nat32, Text>;
+    remove_poh_verified : (Principal) -> async RustResult<Nat32, Text>;
+  };
+
   public type TransferToProviderArgs = {
     fromSubaccount : Blob;
     to : ICRCTypes.Account;
