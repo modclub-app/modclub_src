@@ -1581,7 +1581,7 @@ module PohModule {
       ];
 
       // TODO: Alter URL based on environment
-      let url = "https://uyjstuxdr3joi5jjmppug7nqae0lodoh.lambda-url.us-east-1.on.aws";
+      let url = "https://jkow94v3b2.execute-api.us-east-1.amazonaws.com/dev/start";
 
       // Construct video URL
       let videoUrl = "https://" # Principal.toText(dataCanisterId) # ".raw.icp0.io/storage?contentId=" # contentId;
@@ -1644,32 +1644,32 @@ module PohModule {
         let response : Types.CanisterHttpResponsePayload = await ic.http_request(request);
         // Check if the response status code indicates success (e.g., 200)
         if (response.status >= 200 and response.status < 300) {
-            // Handle successful response
-            switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
-                case null {
-                    throw Error.reject("Remote response had no body.");
-                };
-                case (?body) {
-                    Helpers.logMessage(
-                        canistergeekLogger,
-                        "httpCallForProcessing - response: " # body,
-                        #info
-                    );
-                    return true;
-                };
+          // Handle successful response
+          switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
+            case null {
+              throw Error.reject("Remote response had no body.");
             };
-        } else {
-            // Handle error response
-            let errorMessage = switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
-                case null { "Error: No response body." };
-                case (?body) { "Error: " # body };
-            };
-            Helpers.logMessage(
+            case (?body) {
+              Helpers.logMessage(
                 canistergeekLogger,
-                "httpCallForProcessing - error: status code: " # Int.toText(response.status) # " message: " # errorMessage,
+                "httpCallForProcessing - response: " # body,
                 #info
-            );
-            throw Error.reject(errorMessage);
+              );
+              return true;
+            };
+          };
+        } else {
+          // Handle error response
+          let errorMessage = switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
+            case null { "Error: No response body." };
+            case (?body) { "Error: " # body };
+          };
+          Helpers.logMessage(
+            canistergeekLogger,
+            "httpCallForProcessing - error: status code: " # Int.toText(response.status) # " message: " # errorMessage,
+            #info
+          );
+          throw Error.reject(errorMessage);
         };
         return false;
       } catch (err) {
