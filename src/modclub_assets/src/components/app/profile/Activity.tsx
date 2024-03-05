@@ -21,7 +21,7 @@ import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { Table } from "./ActivityTable";
 
 export default function Activity() {
-  const { principal } = useConnect();
+  const { activeProvider, principal } = useConnect();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
   const { modclub } = useActors();
@@ -331,37 +331,39 @@ export default function Activity() {
   return (
     <>
       <Userstats detailed={true} />
-      <Dropdown
-        className="mb-5"
-        color="ghost"
-        style={{
-          right: "1em",
-          maxWidth: "20em",
-          zIndex: 999,
-        }}
-        icon={
-          <Icon color="white">
-            <span className="material-icons">expand_more</span>
-          </Icon>
-        }
-        label={<VCDropdownLabel />}
-        onChange={vcChange}
-      >
-        <Dropdown.Item
-          renderAs="a"
-          value="enabled"
-          style={{ backgroundColor: vcStatus ? "blue" : "" }}
+      {activeProvider.meta.id === "ii" && (
+        <Dropdown
+          className="mb-5"
+          color="ghost"
+          style={{
+            right: "1em",
+            maxWidth: "20em",
+            zIndex: 999,
+          }}
+          icon={
+            <Icon color="white">
+              <span className="material-icons">expand_more</span>
+            </Icon>
+          }
+          label={<VCDropdownLabel />}
+          onChange={vcChange}
         >
-          Enabled
-        </Dropdown.Item>
-        <Dropdown.Item
-          renderAs="a"
-          value="disabled"
-          style={{ backgroundColor: !vcStatus ? "blue" : "" }}
-        >
-          Disabled
-        </Dropdown.Item>
-      </Dropdown>
+          <Dropdown.Item
+            renderAs="a"
+            value="enabled"
+            style={{ backgroundColor: vcStatus ? "blue" : "" }}
+          >
+            Enabled
+          </Dropdown.Item>
+          <Dropdown.Item
+            renderAs="a"
+            value="disabled"
+            style={{ backgroundColor: !vcStatus ? "blue" : "" }}
+          >
+            Disabled
+          </Dropdown.Item>
+        </Dropdown>
+      )}
       <Columns>
         <Columns.Column size={12}>
           <Card className="has-gradient">
