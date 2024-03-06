@@ -54,19 +54,6 @@ export default function UserIncompleteModal({
                 Your Proof of Humanity has been rejected. Please submit a new
                 Proof of Humanity.
               </p>
-              <p className="my-3">These were the failed requirements:</p>
-              <Card backgroundColor="dark">
-                <Card.Content>
-                  <ul>
-                    {rejectionReasons &&
-                      rejectionReasons.map((reason, index) => (
-                        <li key={index}>
-                          {index + 1}. {reason}
-                        </li>
-                      ))}
-                  </ul>
-                </Card.Content>
-              </Card>
             </>
           )}
         </Modal.Card.Body>
