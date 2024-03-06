@@ -1592,9 +1592,12 @@ module PohModule {
         #info
       );
 
+      // Create idempotency key so the backend knows to process one request
+      let idempotencyKey = Principal.toText(userPrincipal) # "-" # Int.toText(Time.now());
       let body : JSON.JSON = #Object([
         ("video_url", #String(videoUrl)),
-        ("principal_id", #String(Principal.toText(userPrincipal)))
+        ("user_id", #String(Principal.toText(userPrincipal))),
+        ("idempotency_key", #String(idempotencyKey))
       ]);
 
       let DATA_POINTS_PER_API : Nat = 200;
