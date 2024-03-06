@@ -36,10 +36,10 @@ module RequestHandler {
 
     let bodyJsonMap = extractObjectProperties(Option.get(Text.decodeUtf8(request.body), "{}"));
     let status = await extractText(bodyJsonMap, "status");
-    let principalIdText = await extractText(bodyJsonMap, "principalId");
+    let principalIdText = await extractText(bodyJsonMap, "user_id");
     let message = await extractText(bodyJsonMap, "message");
     let similarity = await extractText(bodyJsonMap, "similarity");
-    let matchedPrincipalId = await extractText(bodyJsonMap, "matchedPrincipalId");
+    let matchedPrincipalId = await extractText(bodyJsonMap, "matched_user_id");
     // Log everything so we have details for debugging
     logger.logMessage("Received request from poh with status: " # status # " principalId: " # principalIdText # " message: " # message # " similarity: " # similarity # " matchedPrincipalId: " # matchedPrincipalId);
 
