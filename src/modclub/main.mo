@@ -2973,7 +2973,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
             return RequestHandler.createHttpResponse(200, "Package created for " # Principal.toText(principal));
           };
           case (_) {
-            return RequestHandler.createHttpResponse(500, "Internal Server Error");
+            return RequestHandler.createHttpResponse(200, "User POH rejectedgit s");
           };
         };
       };
