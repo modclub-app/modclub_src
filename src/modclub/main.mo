@@ -3029,16 +3029,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     totalContents : Nat
   ) : async Bool {
 
-    let hosts : Text = guard.getSecretVals("EMAIL_LAMBDA_HOST");
-    let _keyToCallLambda = guard.getSecretVals("LAMBDA_KEY");
-    if (hosts.length == 0) {
+    let hosts : [Text] = authGuard.getSecretVals("EMAIL_LAMBDA_HOST");
+    let _keyToCallLambda = authGuard.getSecretVals("LAMBDA_KEY");
+    if (hosts.size() == 0) {
       throw Error.reject("Lambda HOST is not provided. Please ask admin to set the HOST for lambda calls.");
     };
     let host : Text = hosts[0];
     var minCycles : Nat = 210244050000;
     // prepare system http_request call
 
-    if (_keyToCallLambda.length == 0) {
+    if (_keyToCallLambda.size() == 0) {
       throw Error.reject("Lambda key is not provided. Please ask admin to set the key for lambda calls.");
     };
 
