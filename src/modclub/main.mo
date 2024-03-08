@@ -1496,6 +1496,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func submitChallengeData(
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest
   ) : async PohTypes.PohChallengeSubmissionResponse {
+    // Debug.print("[POH_DEBUG]::[submitChallengeData] call...");
     let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, caller);
     if (isValid == #ok) {
       return await processChallengeData(caller, pohDataRequest);
@@ -1511,6 +1512,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     caller : Principal,
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest
   ) : async PohTypes.PohChallengeSubmissionResponse {
+    // Debug.print("[POH_DEBUG]::[processChallengeData] call...");
     let attemptId = pohEngine.getAttemptId(
       pohDataRequest.challengeId,
       caller
@@ -1527,8 +1529,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
 
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
+          Debug.print("[POH_DEBUG]::[CHALLENGE_ID] [CHALLENGE_UNIQUE_POH_ID]...");
           await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
         } else {
+          Debug.print("[POH_DEBUG]::[CHALLENGE_ID] [NOT_CHALLENGE_UNIQUE_POH_ID]...");
           await handlePackageCreation(caller, pohDataRequest.challengeId);
         };
       };
@@ -1613,6 +1617,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
     dataCanisterId : ?Principal
   ) : async () {
+    // Debug.print("[POH_DEBUG]::[initiateUniquePohProcessing] call...");
     let _ = do ? {
       let contentId = pohEngine.changeChallengeTaskStatus(
         pohDataRequest.challengeId,
@@ -1631,6 +1636,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           canistergeekLogger
         );
       } catch (e) {
+        // Debug.print("[POH_DEBUG]::[initiateUniquePohProcessing] [ERROR] Failure to initiate processing setting task to #failed.");
         // Set the status to failed
         logger.logError("initiateUniquePohProcessing - Failure to initiate processing setting task to #failed " # Error.message(e));
         let _ = pohEngine.changeChallengeTaskStatus(
@@ -2289,7 +2295,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     return finishedVoting;
   };
-
 
   public shared ({ caller }) func createPohVoteReservation(
     packageId : Text
@@ -3024,11 +3029,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     totalContents : Nat
   ) : async Bool {
 
-    let host : Text = "bgl2dihq47pqfjtth2odwdakcm0cislr.lambda-url.us-east-1.on.aws";
+    let hosts : Text = guard.getSecretVals("EMAIL_LAMBDA_HOST");
+    let _keyToCallLambda = guard.getSecretVals("LAMBDA_KEY");
+    if (hosts.length == 0) {
+      throw Error.reject("Lambda HOST is not provided. Please ask admin to set the HOST for lambda calls.");
+    };
+    let host : Text = hosts[0];
     var minCycles : Nat = 210244050000;
     // prepare system http_request call
 
-    if (keyToCallLambda == "") {
+    if (_keyToCallLambda.length == 0) {
       throw Error.reject("Lambda key is not provided. Please ask admin to set the key for lambda calls.");
     };
 
@@ -3036,7 +3046,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       { name = "Content-Type"; value = "application/json" },
       {
         name = "Authorization";
-        value = keyToCallLambda;
+        value = _keyToCallLambda[0];
       }
     ];
     let url = "https://" # host # "/";
