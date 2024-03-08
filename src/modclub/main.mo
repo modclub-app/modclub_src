@@ -1496,7 +1496,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func submitChallengeData(
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest
   ) : async PohTypes.PohChallengeSubmissionResponse {
-    // Debug.print("[POH_DEBUG]::[submitChallengeData] call...");
     let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, caller);
     if (isValid == #ok) {
       return await processChallengeData(caller, pohDataRequest);
@@ -1512,7 +1511,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     caller : Principal,
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest
   ) : async PohTypes.PohChallengeSubmissionResponse {
-    // Debug.print("[POH_DEBUG]::[processChallengeData] call...");
     let attemptId = pohEngine.getAttemptId(
       pohDataRequest.challengeId,
       caller
@@ -1529,10 +1527,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
 
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
-          Debug.print("[POH_DEBUG]::[CHALLENGE_ID] [CHALLENGE_UNIQUE_POH_ID]...");
           await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
         } else {
-          Debug.print("[POH_DEBUG]::[CHALLENGE_ID] [NOT_CHALLENGE_UNIQUE_POH_ID]...");
           await handlePackageCreation(caller, pohDataRequest.challengeId);
         };
       };
@@ -1617,7 +1613,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
     dataCanisterId : ?Principal
   ) : async () {
-    // Debug.print("[POH_DEBUG]::[initiateUniquePohProcessing] call...");
     let _ = do ? {
       let contentId = pohEngine.changeChallengeTaskStatus(
         pohDataRequest.challengeId,
@@ -1636,7 +1631,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           canistergeekLogger
         );
       } catch (e) {
-        // Debug.print("[POH_DEBUG]::[initiateUniquePohProcessing] [ERROR] Failure to initiate processing setting task to #failed.");
         // Set the status to failed
         logger.logError("initiateUniquePohProcessing - Failure to initiate processing setting task to #failed " # Error.message(e));
         let _ = pohEngine.changeChallengeTaskStatus(
