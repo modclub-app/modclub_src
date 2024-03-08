@@ -2941,7 +2941,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
     logger.logMessage("http_request_update - called for url " # request.url);
     let temp = RequestHandler.parseUrlAndGetPath(request);
-    logger.logMessage("http_request_update - temp " # temp);
 
     switch (temp) {
       case ("/ipRegister") {
@@ -2954,7 +2953,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case ("/pohRegister") {
         // Log that we received a POH registration request
-        logger.logMessage("http_request_update - pohRegister called");
 
         let userPrincipal = await RequestHandler.handlePohRegister(
           request,

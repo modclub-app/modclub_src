@@ -23,6 +23,7 @@ module RequestHandler {
     apiKey : Text,
     logger : CommonTypes.ModclubLogger
   ) : async ?Principal {
+    logger.logMessage("POH Register request received");
     // Validate API key in header matches the configured API key
     let apiKeyHeader : Text = Option.get(
       getHeaderValue("x-api-key", request.headers),
@@ -33,8 +34,10 @@ module RequestHandler {
       logger.logError("handlePohRegister: Invalid API key");
       throw Error.reject("Invalid API key");
     };
+    let decodedBody = Option.get(Text.decodeUtf8(request.body), "{}");
+    logger.logMessage("POH Register request decoded body: " # decodedBody);
 
-    let bodyJsonMap = extractObjectProperties(Option.get(Text.decodeUtf8(request.body), "{}"));
+    let bodyJsonMap = extractObjectProperties(decodedBody);
     let status = await extractText(bodyJsonMap, "status");
     let principalIdText = await extractText(bodyJsonMap, "user_id");
     let message = await extractText(bodyJsonMap, "message");
