@@ -27,7 +27,6 @@ import AdminRoute from "../common/AdminRoute/AdminRoute";
 import { useSetLoginPrincipalId } from "./MainPage/hooks/useSetLoginPrincipalId";
 import { useFetchUserAdminTasks } from "./MainPage/hooks/useFetchUserAdminTasks";
 import { useReFetchContentModerationTasks } from "./MainPage/hooks/useReFetchContentModerationTasks";
-import { useFetchProviderBalance } from "./MainPage/hooks/useFetchProviderBalance";
 import { useReleaseUnStakedTokens } from "./MainPage/hooks/useReleaseUnStakedTokens";
 import { useFetchUserLockBlock } from "./MainPage/hooks/useFetchUserLockBlock";
 
@@ -67,7 +66,6 @@ export default function ModclubApp() {
   useSetLoginPrincipalId();
   useFetchUserAdminTasks();
   useReFetchContentModerationTasks();
-  useFetchProviderBalance();
   useReleaseUnStakedTokens();
   useFetchUserLockBlock();
 
