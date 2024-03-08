@@ -38,11 +38,17 @@ module RequestHandler {
     logger.logMessage("POH Register request decoded body: " # decodedBody);
 
     let bodyJsonMap = extractObjectProperties(decodedBody);
+    logger.logMessage("1 ");
     let status = await extractText(bodyJsonMap, "status");
+     logger.logMessage("2 status " # status);
     let principalIdText = await extractText(bodyJsonMap, "user_id");
+    logger.logMessage("3 principalId " # principalIdText);
     let message = await extractText(bodyJsonMap, "message");
+     logger.logMessage("4 message " # message);
     let similarity = await extractText(bodyJsonMap, "similarity");
+    logger.logMessage("5 similarity " # similarity);
     let matchedPrincipalId = await extractText(bodyJsonMap, "matched_user_id");
+    logger.logMessage("6 matchedPrincipalId " # matchedPrincipalId);
     // Log everything so we have details for debugging
     logger.logMessage("Received request from poh with status: " # status # " principalId: " # principalIdText # " message: " # message # " similarity: " # similarity # " matchedPrincipalId: " # matchedPrincipalId);
 
