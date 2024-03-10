@@ -282,15 +282,17 @@ module PohModule {
                 );
 
                 // if any of the challenge is rejected, then overall status is rejected
-                if (status == #rejected) {
+                if (status == #rejectedDuplicate) {
+                  overAllStatus := #rejectedDuplicate;
+                } else if (status != #rejectedDuplicate and status == #rejected ) {
                   overAllStatus := #rejected;
-                } else if (overAllStatus != #rejected and status == #expired) {
+                }else if (overAllStatus != #rejectedDuplicate and overAllStatus != #rejected and status == #expired) {
                   // if any of the challenge is expired and none is rejected, then overall status is expired
                   overAllStatus := #expired;
                 };
 
                 // so that rejected or expired overallstatus can't be overidden
-                if (overAllStatus != #rejected and overAllStatus != #expired) {
+                if (overAllStatus != #rejectedDuplicate and overAllStatus != #rejected and overAllStatus != #expired) {
                   // if any of the challenge is not submitted then it's not submitted.
                   if (status == #notSubmitted) {
                     overAllStatus := #notSubmitted;
@@ -685,7 +687,8 @@ module PohModule {
                 return #alreadySubmitted;
               } else if (attempts.get(attempts.size() -1).status == #verified) {
                 return #alreadyApproved;
-              } else if (attempts.get(attempts.size() -1).status == #rejected) {
+              } else if (attempts.get(attempts.size() -1).status == #rejected or 
+              attempts.get(attempts.size() -1).status == #rejectedDuplicate) {
                 return #alreadyRejected;
               };
               return #ok;
@@ -725,7 +728,7 @@ module PohModule {
     ) : ?Text {
       let _ = do ? {
         var completedOn = -1;
-        if (status == #verified or status == #rejected) {
+        if (status == #verified or status == #rejected or status == #rejectedDuplicate) {
           completedOn := Helpers.timeNow();
         };
         let attempts = state.pohUserChallengeAttempts.get(userId)!.get(
@@ -1067,9 +1070,8 @@ module PohModule {
           case (null)();
           case (?package) {
             if (
-              package.challengeIds.size() == challengeIds.size() and getContentStatus(
-                package.id
-              ) == #rejected
+              package.challengeIds.size() == challengeIds.size() and
+              getContentStatus( package.id ) == #rejected
             ) {
               let cIdsMap = HashMap.HashMap<Text, Text>(
                 1,
@@ -1403,7 +1405,7 @@ module PohModule {
                   getContentStatus
                 );
                 if (
-                  resp.status == #verified or resp.status == #rejected or resp.status == #pending or resp.status == #processing
+                  resp.status == #verified or resp.status == #rejected or resp.status == #pending or resp.status == #processing or resp.status == #rejectedDuplicate
                 ) {
                   let statusText = statusToString(resp.status);
                   switch (callbackData.get(statusText)) {

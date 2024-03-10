@@ -58,7 +58,7 @@ export default function UserIncompleteModal({
           )}
         </Modal.Card.Body>
         <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
-          {status !== "pending" && status !== "verified" && (
+          {(status !== "pending" || status !== "processing") && status !== "verified" && (
             <Link
               to={`/new-poh-profile?token=${token}`}
               className="button is-primary"

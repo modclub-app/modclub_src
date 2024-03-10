@@ -57,7 +57,7 @@ module RequestHandler {
       let _ = pohEngine.changeChallengeTaskStatus(
         Poh.CHALLENGE_UNIQUE_POH_ID,
         principalId,
-        #rejected
+        #rejectedDuplicate
       );
       return null;
     };
