@@ -298,6 +298,8 @@ module PohModule {
                     overAllStatus != #notSubmitted and status == #pending
                   ) {
                     overAllStatus := #pending;
+                  } else if (overAllStatus != #notSubmitted and status == #processing) {
+                    overAllStatus := #processing;
                   };
                 };
               };
@@ -1267,8 +1269,8 @@ module PohModule {
         CHALLENGE_USER_VIDEO_ID,
         {
           challengeId = CHALLENGE_USER_VIDEO_ID;
-          challengeName = "Please record your video saying these words";
-          challengeDescription = "Please record your video saying these words";
+          challengeName = "Please record your video saying these numbers";
+          challengeDescription = "Please record your video saying these numbers";
           requiredField = #videoBlob;
           // assuming there will be no transitive dependencies. else graph needs to be used
           dependentChallengeId = null;
@@ -1283,13 +1285,13 @@ module PohModule {
       allowedViolationRules4.add(
         {
           ruleId = "1";
-          ruleDesc = "The person in the audio says all the words in order in the box above";
+          ruleDesc = "The person in the audio says all the numbers in order in the box above";
         }
       );
       allowedViolationRules4.add(
         {
           ruleId = "2";
-          ruleDesc = "The person in the audio appears to be sound like a real person and not  an AI-generated voice";
+          ruleDesc = "The person in the audio appears to be sound like a real person and not an AI-generated voice";
         }
       );
       state.pohChallenges.put(
@@ -1337,8 +1339,8 @@ module PohModule {
         CHALLENGE_UNIQUE_POH_ID,
         {
           challengeId = CHALLENGE_UNIQUE_POH_ID;
-          challengeName = "Please record your video saying these words";
-          challengeDescription = "Please record your video saying these words. Your head should be visible in the video and centered. Please move any hats or hair away from your face";
+          challengeName = "Please record your video saying these numbers";
+          challengeDescription = "Please record your video saying these numbers. Your head should be visible in the video and centered. Please move any hats or hair away from your face";
           requiredField = #videoBlob;
           // assuming there will be no transitive dependencies. else graph needs to be used
           dependentChallengeId = null;
@@ -1350,56 +1352,16 @@ module PohModule {
       );
 
       state.wordList.clear();
-      state.wordList.add("Cute");
-      state.wordList.add("Free");
-      state.wordList.add("Pair");
-      state.wordList.add("Jolt");
-      state.wordList.add("Safe");
-      state.wordList.add("Lack");
-      state.wordList.add("Live");
-      state.wordList.add("Seal");
-      state.wordList.add("Need");
-      state.wordList.add("Crop");
-      state.wordList.add("Five");
-      state.wordList.add("Dull");
-      state.wordList.add("Dead");
-      state.wordList.add("Tile");
-      state.wordList.add("Meet");
-      state.wordList.add("Till");
-      state.wordList.add("Form");
-      state.wordList.add("Very");
-      state.wordList.add("Blue");
-      state.wordList.add("City");
-      state.wordList.add("Neat");
-      state.wordList.add("Stun");
-      state.wordList.add("Rank");
-      state.wordList.add("Cove");
-      state.wordList.add("Bell");
-      state.wordList.add("Fail");
-      state.wordList.add("Rose");
-      state.wordList.add("Rook");
-      state.wordList.add("Disk");
-      state.wordList.add("Sing");
-      state.wordList.add("List");
-      state.wordList.add("Fear");
-      state.wordList.add("Shop");
-      state.wordList.add("Okra");
-      state.wordList.add("Side");
-      state.wordList.add("Cask");
-      state.wordList.add("Axie");
-      state.wordList.add("Stag");
-      state.wordList.add("Cake");
-      state.wordList.add("Bold");
-      state.wordList.add("Desk");
-      state.wordList.add("Stub");
-      state.wordList.add("Soar");
-      state.wordList.add("Pole");
-      state.wordList.add("Halo");
-      state.wordList.add("Plow");
-      state.wordList.add("Team");
-      state.wordList.add("Lace");
-      state.wordList.add("Gaze");
-      state.wordList.add("Kill");
+      state.wordList.add("0");
+      state.wordList.add("1");
+      state.wordList.add("2");
+      state.wordList.add("3");
+      state.wordList.add("4");
+      state.wordList.add("5");
+      state.wordList.add("6");
+      state.wordList.add("7");
+      state.wordList.add("8");
+      state.wordList.add("9");
     };
 
     public func issueCallbackToProviders(
@@ -1441,7 +1403,7 @@ module PohModule {
                   getContentStatus
                 );
                 if (
-                  resp.status == #verified or resp.status == #rejected or resp.status == #pending
+                  resp.status == #verified or resp.status == #rejected or resp.status == #pending or resp.status == #processing
                 ) {
                   let statusText = statusToString(resp.status);
                   switch (callbackData.get(statusText)) {
@@ -1499,6 +1461,9 @@ module PohModule {
         };
         case (#processing) {
           "processing";
+        };
+        case (#rejectedDuplicate) {
+          "rejectedDuplicate";
         };
       };
     };

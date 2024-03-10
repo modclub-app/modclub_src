@@ -146,6 +146,9 @@ module {
       case (#processing) {
         "processing";
       };
+      case (#rejectedDuplicate) {
+        "processingDuplicate";
+      };
     };
   };
 };

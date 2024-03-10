@@ -14,6 +14,7 @@ module {
     #rejected;
     #expired;
     #processing;
+    #rejectedDuplicate;
   };
 
   public type PohVerificationStatus = {
@@ -24,6 +25,7 @@ module {
     #rejected;
     #expired;
     #processing;
+    #rejectedDuplicate;
   };
 
   // To be deleted after deployment

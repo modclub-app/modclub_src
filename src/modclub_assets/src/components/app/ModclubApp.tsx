@@ -49,6 +49,7 @@ export default function ModclubApp() {
 
   const initialCall = async () => {
     const result = await modclub.verifyUserHumanityForModclub();
+    console.log("Debugging POH result:", result);
     if (result.rejectionReasons && result.rejectionReasons.length) {
       setRejectionReasons(result.rejectionReasons);
     }
@@ -212,12 +213,20 @@ export default function ModclubApp() {
     "/app/confirm/poh/alerts/"
   );
 
-  if (!isConnected)
+  if (!isConnected) {
     return displayVerificationEmail ? (
       <AlertConfirmation />
     ) : (
       <NotAuthenticatedModal />
     );
+  }
+
+  if (appState.userProfile && status && status !== "verified" && !selectedProvider && token) {
+    console.log("Debug Info - UserProfile:", appState.userProfile);
+    console.log("Debug Info - Status:", status);
+    console.log("Debug Info - Selected Provider:", selectedProvider);
+    console.log("Debug Info - Token:", token);
+  }
 
   return (
     <>
