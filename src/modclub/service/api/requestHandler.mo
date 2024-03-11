@@ -14,6 +14,7 @@ import JSON "mo:json/JSON";
 import Poh "../poh/poh";
 import Types "../../types";
 import CommonTypes "../../../common/types";
+import PohTypes "../poh/types";
 
 module RequestHandler {
 
@@ -53,11 +54,15 @@ module RequestHandler {
     let finalStatus = if (status == "SUCCESS") {
       return ?principalId;
     } else {
+      var failureStatus: PohTypes.PohChallengeStatus = #rejected;
+      if ( status == "FAILED_DUPLICATE") {
+        failureStatus := #rejectedDuplicate;
+      };
       // Set the status to rejected since the user is probably registered already
       let _ = pohEngine.changeChallengeTaskStatus(
         Poh.CHALLENGE_UNIQUE_POH_ID,
         principalId,
-        #rejectedDuplicate
+        failureStatus
       );
       return null;
     };
