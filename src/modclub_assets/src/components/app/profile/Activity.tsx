@@ -17,6 +17,7 @@ import {
   getCurrentDomain,
   getDecideIdAssetsCanisterID,
 } from "../../../utils/util";
+import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 import { Table } from "./ActivityTable";
 
@@ -283,10 +284,9 @@ export default function Activity() {
   };
 
   const vcChange = (val) => {
-    const vcStatus = "enabled".includes(val);
     modclub &&
       modclub
-        .toggleVCForUser(vcStatus)
+        .toggleVCForUser(val)
         .then((res) => {
           !res.err && setVcStatus(res.ok);
         })
@@ -331,40 +331,29 @@ export default function Activity() {
   return (
     <>
       <Userstats detailed={true} />
-      {activeProvider.meta.id === "ii" && (
-        <Dropdown
-          className="mb-5"
-          color="ghost"
-          style={{
-            right: "1em",
-            maxWidth: "20em",
-            zIndex: 999,
-          }}
-          icon={
-            <Icon color="white">
-              <span className="material-icons">expand_more</span>
-            </Icon>
-          }
-          label={<VCDropdownLabel />}
-          onChange={vcChange}
-        >
-          <Dropdown.Item
-            renderAs="a"
-            value="enabled"
-            style={{ backgroundColor: vcStatus ? "blue" : "" }}
-          >
-            Enabled
-          </Dropdown.Item>
-          <Dropdown.Item
-            renderAs="a"
-            value="disabled"
-            style={{ backgroundColor: !vcStatus ? "blue" : "" }}
-          >
-            Disabled
-          </Dropdown.Item>
-        </Dropdown>
-      )}
+      {/* Verified Credentials */}
       <Columns>
+        {activeProvider.meta.id === "ii" && (
+          <Columns.Column size={12}>
+            <Card className="has-gradient">
+              <Card.Content textAlign="center">
+                <label className="label">Verified Credentials</label>
+                <p className="pb-2">
+                  {`Your Verified Credentials is currently turn ${
+                    vcStatus ? "on" : "off"
+                  }`}
+                </p>
+                <ToggleSwitch
+                  id="verifiedCredentialsSwitcher"
+                  checked={!!vcStatus}
+                  onChange={vcChange}
+                />
+              </Card.Content>
+            </Card>
+          </Columns.Column>
+        )}
+
+        {/* Email */}
         <Columns.Column size={12}>
           <Card className="has-gradient">
             <Card.Content textAlign="center">
@@ -373,6 +362,8 @@ export default function Activity() {
             </Card.Content>
           </Card>
         </Columns.Column>
+
+        {/* Principal ID */}
         <Columns.Column size={12}>
           <Card className="has-gradient">
             <Card.Content textAlign="center">
