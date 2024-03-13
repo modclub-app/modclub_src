@@ -5,6 +5,10 @@ import {
   DETECTION_X_RIGHT,
   DETECTION_Y_TOP,
   DETECTION_Y_BOTTOM,
+  DETECTION_X_LEFT_MOBILE,
+  DETECTION_X_RIGHT_MOBILE,
+  DETECTION_Y_TOP_MOBILE,
+  DETECTION_Y_BOTTOM_MOBILE,
   FACE_DETECTION_MIN_SCORE,
   TINY_FACE_DETECTOR_MODEL,
   FACE_LANDMARK_68_MODEL,
@@ -12,6 +16,7 @@ import {
   FACE_SSD_MOBILENETV1_MODEL,
   FACE_DETECTION_INTERVAL,
 } from "../../../../utils/constant";
+import { isMobileDevice } from "../../../../utils/util";
 
 const useFaceDetection = () => {
   const [isOutOfBound, setIsOutOfBound] = useState<boolean>(false);
@@ -64,12 +69,25 @@ const useFaceDetection = () => {
             detection: { _score },
           } = detections;
           // Find face position outside the face template;
-          const isOutOfBound =
-            _box._x > DETECTION_X_LEFT ||
-            _box._x < DETECTION_X_RIGHT ||
-            _box._y > DETECTION_Y_BOTTOM ||
-            _box._y < DETECTION_Y_TOP ||
-            _score < FACE_DETECTION_MIN_SCORE;
+          let isOutOfBound = null;
+
+          console.log("_BOX -> ", _box);
+
+          if (isMobileDevice()) {
+            isOutOfBound =
+              _box._x > DETECTION_X_LEFT_MOBILE ||
+              _box._x < DETECTION_X_RIGHT_MOBILE ||
+              _box._y > DETECTION_Y_BOTTOM_MOBILE ||
+              _box._y < DETECTION_Y_TOP_MOBILE ||
+              _score < FACE_DETECTION_MIN_SCORE;
+          } else {
+            isOutOfBound =
+              _box._x > DETECTION_X_LEFT ||
+              _box._x < DETECTION_X_RIGHT ||
+              _box._y > DETECTION_Y_BOTTOM ||
+              _box._y < DETECTION_Y_TOP ||
+              _score < FACE_DETECTION_MIN_SCORE;
+          }
           // If the face is outside the face template, we send a boolean variable;
           setIsOutOfBound(isOutOfBound);
           console.info("Face detection information: ", detections);

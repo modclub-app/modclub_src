@@ -41,17 +41,29 @@ export const MESSAGE_FOR_USER_VIDEO_RECORD =
   "During the recording, it's crucial that your face remains within the outlined oval. If you happen to move out of the oval's boundaries while recording, the process will automatically stop, and you'll need to start over. Please make sure to keep your face inside the oval to ensure the best quality of your video.";
 export const VIDEO_WIDTH = 667;
 export const VIDEO_HEIGHT = 500;
+export const VIDEO_HEIGHT_MOBILE = 665;
 export const VIDEO_SUPPORT_MESSAGE =
   "Your browser does not support the video tag.";
 export const VIDEO_POSITION_TEXT = "Please position your face at the center";
 export const VIDEO_MODELS_LOADING = "Please wait, the video is loading";
 
+// Desktop detection coords for FaceAPI
 export const DETECTION_X_RIGHT = 155;
 export const DETECTION_X_LEFT = 290;
 export const DETECTION_Y_BOTTOM = 240;
 export const DETECTION_Y_TOP = 80;
+
+// Mobile detection coords for FaceAPI
+export const DETECTION_X_RIGHT_MOBILE = 110;
+export const DETECTION_X_LEFT_MOBILE = 210;
+export const DETECTION_Y_BOTTOM_MOBILE = 305;
+export const DETECTION_Y_TOP_MOBILE = 80;
+
+// Detection settings for FaceAPI
 export const FACE_DETECTION_INTERVAL = 300;
 export const FACE_DETECTION_MIN_SCORE = 0.7;
+
+// Face API models urls
 export const MODEL_BASE_URL =
   "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/";
 export const TINY_FACE_DETECTOR_MODEL = `${MODEL_BASE_URL}tiny_face_detector_model-weights_manifest.json`;
