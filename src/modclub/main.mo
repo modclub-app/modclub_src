@@ -3062,14 +3062,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     keyToCallLambda := lambdaCallKey;
   };
 
-  public shared ({ caller }) func setPohLambdaToken(key : Text) : async () {
-    if (key == "") {
-      throw Error.reject("Lambda key is not provided.");
-    };
-    keyToCallLambdaForPOH := key;
-    await storageSolution.setLambdaKey(key);
-  };
-
   private func callLambdaToSendEmail(
     userEmail : Text,
     envForBaseURL : Text,
