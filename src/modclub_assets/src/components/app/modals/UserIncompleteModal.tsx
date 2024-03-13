@@ -56,9 +56,16 @@ export default function UserIncompleteModal({
               </p>
             </>
           )}
+          {status === "rejectedDuplicate" && (
+            <>
+              <p>
+                Your Proof of Humanity has been rejected, duplicate account detected.
+              </p>
+            </>
+          )}
         </Modal.Card.Body>
         <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
-          {!(status === "pending" || status === "processing" || status === "verified") && (
+          {!(status === "pending" || status === "processing" || status === "verified" || status === "rejectedDuplicate") && (
             <Link
               to={`/new-poh-profile?token=${token}`}
               className="button is-primary"

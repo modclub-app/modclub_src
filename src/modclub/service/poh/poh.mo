@@ -1252,19 +1252,19 @@ module PohModule {
       allowedViolationRules3.add(
         {
           ruleId = "1";
-          ruleDesc = "The person in the video is the same person in the profile picture";
+          ruleDesc = "The person in the video says all the numbers in order in the box above";
         }
       );
       allowedViolationRules3.add(
         {
           ruleId = "2";
-          ruleDesc = "The person in the video says all the words in order in the box above";
+          ruleDesc = "The person in the video appears to be a real person and not AI generated";
         }
       );
       allowedViolationRules3.add(
         {
           ruleId = "3";
-          ruleDesc = "The person in the video appears to be a real person and not AI generated";
+          ruleDesc = "The person in the video is not hiding their face or using a disguise or mask.";
         }
       );
       state.pohChallenges.put(
