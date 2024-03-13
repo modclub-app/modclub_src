@@ -243,6 +243,13 @@ export function detectBrowser(): BrowserType {
   }
 }
 
+export const isMobileDevice = () => {
+  const userAgent = navigator.userAgent;
+  return /android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos/i.test(
+    userAgent
+  );
+};
+
 export const getCurrentDomain = () => {
   return process.env.DFX_NETWORK == "local"
     ? `localhost:${window.location.port}`
