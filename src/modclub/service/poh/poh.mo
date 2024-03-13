@@ -1531,10 +1531,10 @@ module PohModule {
       contentId : Text,
       env : Text,
       apiKey : Text,
+      pohLambdaHost : Text,
       transformFunction : shared query Types.TransformArgs -> async Types.CanisterHttpResponsePayload,
       canistergeekLogger : Canistergeek.Logger
     ) : async Bool {
-
       if (apiKey == "") {
         throw Error.reject("POH API key is not provided. Please ask admin to set the key for lambda calls.");
       };
@@ -1548,7 +1548,7 @@ module PohModule {
       ];
 
       // TODO: Alter URL based on environment
-      let url = "https://27m37kuih2qvzm3oydsugqc7m40plzsc.lambda-url.us-east-1.on.aws/";
+      let url = "https://" # pohLambdaHost # "/";
 
       // Construct video URL
       let videoUrl = "https://" # Principal.toText(dataCanisterId) # ".raw.icp0.io/storage?contentId=" # contentId;
