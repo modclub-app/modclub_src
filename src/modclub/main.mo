@@ -1661,6 +1661,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         caller,
         #processing
       );
+
+      let hosts : [Text] = authGuard.getSecretVals("POH_LAMBDA_HOST");
+      let keyToCallLambdaForPOH = authGuard.getSecretVals("POH_LAMBDA_KEY");
+      if (hosts.size() == 0) {
+        throw Error.reject("POH Lambda HOST is not provided. Please ask admin to set the POH_LAMBDA_HOST for lambda calls.");
+      };
+      if (keyToCallLambdaForPOH.size() == 0) {
+        throw Error.reject("POH Lambda key is not provided. Please ask admin to set the POH_LAMBDA_KEY for lambda calls.");
+      };
+
       // Initiate lambda trigger to process face
       try {
         await pohEngine.httpCallForProcessing(
@@ -1668,7 +1678,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           dataCanisterId!,
           contentId!,
           "dev", // TODO: Dynamically set this
-          keyToCallLambdaForPOH,
+          keyToCallLambdaForPOH[0],
+          hosts[0],
           transform,
           canistergeekLogger
         );
@@ -3067,11 +3078,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     totalContents : Nat
   ) : async Bool {
 
-    let host : Text = "bgl2dihq47pqfjtth2odwdakcm0cislr.lambda-url.us-east-1.on.aws";
+    let hosts : [Text] = authGuard.getSecretVals("EMAIL_LAMBDA_HOST");
+    let _keyToCallLambda = authGuard.getSecretVals("LAMBDA_KEY");
+    if (hosts.size() == 0) {
+      throw Error.reject("Lambda HOST is not provided. Please ask admin to set the HOST for lambda calls.");
+    };
+    let host : Text = hosts[0];
     var minCycles : Nat = 210244050000;
     // prepare system http_request call
 
-    if (keyToCallLambda == "") {
+    if (_keyToCallLambda.size() == 0) {
       throw Error.reject("Lambda key is not provided. Please ask admin to set the key for lambda calls.");
     };
 
@@ -3079,7 +3095,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       { name = "Content-Type"; value = "application/json" },
       {
         name = "Authorization";
-        value = keyToCallLambda;
+        value = _keyToCallLambda[0];
       }
     ];
     let url = "https://" # host # "/";
