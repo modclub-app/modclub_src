@@ -8,4 +8,3 @@ set -x
 ./scripts/tests/e2e_test.sh
 ./scripts/tests/archive_test/archive_test.sh
 ./scripts/tests/secrets_test.sh
-./scripts/tests/decideid_test/sanity_test.sh

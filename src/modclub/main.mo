@@ -125,6 +125,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var claimRewardsWhitelist : List.List<Principal> = List.nil<Principal>();
   private var claimRewardsWhitelistBuf = Buffer.Buffer<Principal>(100);
 
+  stable var verifiedCredentialsWL : List.List<Principal> = List.nil<Principal>();
+  private var verifiedCredentialsWLBuf = Buffer.Buffer<Principal>(100);
+
   private var commonTimer = CommonTimer.CommonTimer(env, "CommonTimer");
   commonTimer.initTimer(canistergeekMonitor);
 
@@ -214,6 +217,45 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared ({ caller }) func toggleAllowSubmission(allow : Bool) : async () {
     allowSubmissionFlag := allow;
+  };
+
+  public shared ({ caller }) func toggleVCForUser(isEnabled : Bool) : async Result.Result<Bool, Text> {
+    switch (isEnabled) {
+      case (true) {
+        if (not Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
+          let resp = await (actor (Principal.toText(env.decideid_assets_canister_id)) : Types.VCIssuer).add_poh_verified(caller);
+          switch (resp) {
+            case (#Ok(_)) {
+              verifiedCredentialsWLBuf.add(caller);
+            };
+            case (#Err(msg)) {
+              throw Error.reject(msg);
+            };
+          };
+        };
+      };
+      case (false) {
+        if (Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
+          let resp = await (actor (Principal.toText(env.decideid_assets_canister_id)) : Types.VCIssuer).remove_poh_verified(caller);
+          switch (resp) {
+            case (#Ok(_)) {
+              verifiedCredentialsWLBuf.filterEntries(func(_, vcWlPid) = not Principal.equal(vcWlPid, caller));
+            };
+            case (#Err(msg)) {
+              verifiedCredentialsWLBuf.filterEntries(func(_, vcWlPid) = not Principal.equal(vcWlPid, caller));
+              throw Error.reject(msg);
+            };
+          };
+        };
+      };
+    };
+    return #ok(
+      Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)
+    );
+  };
+
+  public query ({ caller }) func isEnabledVCForUser() : async Bool {
+    Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal);
   };
 
   public shared ({ caller }) func generateSigningKey() : async () {
@@ -2290,7 +2332,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return finishedVoting;
   };
 
-
   public shared ({ caller }) func createPohVoteReservation(
     packageId : Text
   ) : async Result.Result<Types.Reserved, VoteTypes.POHVoteError> {
@@ -2762,6 +2803,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
     claimRewardsWhitelist := List.fromArray<Principal>(Buffer.toArray<Principal>(claimRewardsWhitelistBuf));
 
+    verifiedCredentialsWL := List.fromArray<Principal>(Buffer.toArray<Principal>(verifiedCredentialsWLBuf));
+
     migrationAirdropWhitelistStable := List.fromArray<(Principal, Bool)>(Buffer.toArray<(Principal, Bool)>(migrationAirdropWhitelist));
 
     // TODO: remove this after upgrade
@@ -2796,6 +2839,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
     authGuard.subscribe("secrets");
     claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
+
+    verifiedCredentialsWLBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(verifiedCredentialsWL));
 
     migrationAirdropWhitelist := Buffer.fromIter<(Principal, Bool)>(List.toIter<(Principal, Bool)>(migrationAirdropWhitelistStable));
 

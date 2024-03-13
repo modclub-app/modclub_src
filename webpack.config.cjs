@@ -164,6 +164,14 @@ module.exports = {
       AIRDROP_CANISTER_ID: canisters["airdrop"] || "aaaaa-aa",
       AIRDROP_DEV_CANISTER_ID: canisters["airdrop_dev"] || "aaaaa-aa",
       AIRDROP_QA_CANISTER_ID: canisters["airdrop_qa"] || "aaaaa-aa",
+      DECIDEID_CANISTER_ID: canisters["decideid"] || "aaaaa-aa",
+      DECIDEID_DEV_CANISTER_ID: canisters["decideid_dev"] || "aaaaa-aa",
+      DECIDEID_QA_CANISTER_ID: canisters["decideid_qa"] || "aaaaa-aa",
+      CANISTER_ID_DECIDEID_ASSETS: canisters["decideid_assets"] || "aaaaa-aa",
+      CANISTER_ID_DECIDEID_DEV_ASSETS:
+        canisters["decideid_dev_assets"] || "aaaaa-aa",
+      CANISTER_ID_DECIDEID_QA_ASSETS:
+        canisters["decideid_qa_assets"] || "aaaaa-aa",
       LOCAL_II_CANISTER,
       LOCAL_II_CANISTER_SAFARI,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",

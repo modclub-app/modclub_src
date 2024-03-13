@@ -32,6 +32,7 @@ module {
     #configurePohForProvider : () -> (Principal, [Text], Nat, Bool);
     #createPohVoteReservation : () -> (Text);
     #isReservedPOHContent : () -> (Text);
+    #isEnabledVCForUser : () -> ();
     #deregisterProvider : () -> ();
     #downloadSupport : () -> (Text, Text, Nat, Nat);
     #editProviderAdmin : () -> (Principal, Principal, Text);
@@ -108,6 +109,7 @@ module {
     #subscribePohCallback : () -> PohTypes.SubscribePohMessage;
     #toJson : () -> (Text, Text);
     #toggleAllowSubmission : () -> Bool;
+    #toggleVCForUser : () -> Bool;
     #transform : () -> Types.TransformArgs;
     #unregisterAdmin : () -> Text;
     #updateProvider : () -> (Principal, Types.ProviderMeta);

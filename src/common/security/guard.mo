@@ -102,10 +102,6 @@ module ModSecurity {
       Principal.equal(getCanisterId(#vesting), caller);
     };
 
-    public func isDecideid(caller : Principal) : Bool {
-      Principal.equal(getCanisterId(#decideid), caller);
-    };
-
     public func isModclubCanister(caller : Principal) : Bool {
       isModclubMain(caller) or isModclubWallet(caller) or isModclubRs(caller) or isModclubVesting(caller);
     };
