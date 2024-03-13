@@ -81,6 +81,7 @@ module {
     #streamingCallback : () -> StreamingCallbackToken;
     #showAdmins : () -> ();
     #subscribeOnAdmins : () -> ();
+    #subscribeOnSecrets : () -> ();
   };
 
 };
