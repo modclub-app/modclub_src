@@ -1374,7 +1374,7 @@
     simple-cbor "^0.4.1"
     ts-node "^10.8.2"
 
-"@dfinity/agent@^0.19.2", "@dfinity/agent@^0.19.3":
+"@dfinity/agent@^0.19.2":
   version "0.19.3"
   resolved "https://registry.npmjs.org/@dfinity/agent/-/agent-0.19.3.tgz"
   integrity sha512-q410aNLoOA1ZkwdAMgSo6t++pjISn9TfSybRXhPRI5Ume7eG6+6qYr/rlvcXy7Nb2+Ar7LTsHNn34IULfjni7w==
@@ -1384,6 +1384,18 @@
     borc "^2.1.1"
     simple-cbor "^0.4.1"
 
+"@dfinity/agent@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@dfinity/agent/-/agent-1.0.1.tgz#4207490454c5900b35f72c617a9ae5fbc8069eb6"
+  integrity sha512-QoCiKIWEgsXoaiHpb76M2qLXYDS9IdfvC81dLJYvX9KVXRq8Ojo4S82tBqBFGtM0j0EKEC6mIAJV/bqhOJTtjQ==
+  dependencies:
+    "@noble/curves" "^1.2.0"
+    "@noble/hashes" "^1.3.1"
+    base64-arraybuffer "^0.2.0"
+    borc "^2.1.1"
+    buffer "^6.0.3"
+    simple-cbor "^0.4.1"
+
 "@dfinity/auth-client@^0.15.5":
   version "0.15.7"
   resolved "https://registry.npmjs.org/@dfinity/auth-client/-/auth-client-0.15.7.tgz"
@@ -1391,10 +1403,10 @@
   dependencies:
     idb "^7.0.2"
 
-"@dfinity/auth-client@^0.19.1":
-  version "0.19.3"
-  resolved "https://registry.npmjs.org/@dfinity/auth-client/-/auth-client-0.19.3.tgz"
-  integrity sha512-fN5sZXkO3pzsBE+dVOD57Nv59n2H5jtK1JRWP7NEKmxgUk/dOOX6I5ZwUYVOQA3VcJ3azvV9SbXUHSgaFcf0sw==
+"@dfinity/auth-client@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@dfinity/auth-client/-/auth-client-1.0.1.tgz#486693b18194d04f65c03955babcccff63bed537"
+  integrity sha512-QooHufXCDHTXySC1Tb1xf9+KRJISbw1sLYLIgY7PTxrA4Nc1ZgA7o4exwgRyIuJgoWMKrjgHPUZcu4N5ak69OQ==
   dependencies:
     idb "^7.0.2"
 
@@ -1424,10 +1436,15 @@
   dependencies:
     ts-node "^10.8.2"
 
-"@dfinity/candid@^0.19.2", "@dfinity/candid@^0.19.3":
+"@dfinity/candid@^0.19.2":
   version "0.19.3"
   resolved "https://registry.npmjs.org/@dfinity/candid/-/candid-0.19.3.tgz"
   integrity sha512-yXfbLSWTeRd4G0bLLxYoDqpXH3Jim0P+1PPZOoktXNC1X1hB+ea3yrZebX75t4GVoQK7123F7mxWHiPjuV2tQQ==
+
+"@dfinity/candid@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@dfinity/candid/-/candid-1.0.1.tgz#8176dc1f9940b630ba71e00b9aefe966b4e2b464"
+  integrity sha512-PfZNV1fTOWtl+NhLOw71ACLYGugKF9HdEJKtkyBJqbj+6pqshvK6rllCUkGwMsmXfP8YopLzmoNVdy1rp/eOgg==
 
 "@dfinity/identity@^0.10.0":
   version "0.10.4"
@@ -1461,7 +1478,7 @@
     js-sha256 "^0.9.0"
     tweetnacl "^1.0.1"
 
-"@dfinity/identity@^0.19.1", "@dfinity/identity@^0.19.2":
+"@dfinity/identity@^0.19.2":
   version "0.19.3"
   resolved "https://registry.npmjs.org/@dfinity/identity/-/identity-0.19.3.tgz"
   integrity sha512-6XHrkNQ8tVN6+MERyXPy+avGHTd2zoX3l47bu6gSwreDdOZQnAnXpHVzLcXhnUptkBVetcC70YQEKCmqtuLriA==
@@ -1469,6 +1486,15 @@
     "@noble/hashes" "^1.3.1"
     borc "^2.1.1"
     tweetnacl "^1.0.1"
+
+"@dfinity/identity@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@dfinity/identity/-/identity-1.0.1.tgz#0e282c9ee1c156a50678b9698f94a09578703911"
+  integrity sha512-ArajyKSkiA4LjOq/ocGLMd66svgMVntF9j9P7irZScrzTCPcEXk5c7VteAqRGMwHCpI4LRipjmuZA1agwmUzRw==
+  dependencies:
+    "@noble/curves" "^1.2.0"
+    "@noble/hashes" "^1.3.1"
+    borc "^2.1.1"
 
 "@dfinity/principal@^0.10.0":
   version "0.10.4"
@@ -1490,10 +1516,17 @@
     js-sha256 "^0.9.0"
     ts-node "^10.8.2"
 
-"@dfinity/principal@^0.19.2", "@dfinity/principal@^0.19.3":
+"@dfinity/principal@^0.19.2":
   version "0.19.3"
   resolved "https://registry.npmjs.org/@dfinity/principal/-/principal-0.19.3.tgz"
   integrity sha512-+nixVvdGt7ECxRvLXDXsvU9q9sSPssBtDQ4bXa149SK6gcYcmZ6lfWIi3DJNqj3tGROxILVBsguel9tECappsA==
+  dependencies:
+    "@noble/hashes" "^1.3.1"
+
+"@dfinity/principal@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@dfinity/principal/-/principal-1.0.1.tgz#91658b70449186976c8e981d51a2aa7b6c34c946"
+  integrity sha512-pCAuTLcvZEZ8fYgVzTVhfUfFGadxeWN4v2z8Q0rizeiqcHKhbJVfWUiXXjzPGG5lNz2DxKyUHQ/WS4UTbTaxvg==
   dependencies:
     "@noble/hashes" "^1.3.1"
 
@@ -2192,6 +2225,18 @@
   integrity sha512-54/JRvkLIzzDWshCWfuhadfrfZVPiElY8Fcgmg1HroEly/EDSszzhBAsarCux+D/kOslTRquNzuyGSmUSTTHGg==
   dependencies:
     eslint-scope "5.1.1"
+
+"@noble/curves@^1.2.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.3.0.tgz#01be46da4fd195822dab821e72f71bf4aeec635e"
+  integrity sha512-t01iSXPuN+Eqzb4eBX0S5oubSqXbK/xXa1Ne18Hj8f9pStxztHCE2gfboSp/dZRLSqfuLpRK2nDXDK+W9puocA==
+  dependencies:
+    "@noble/hashes" "1.3.3"
+
+"@noble/hashes@1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.3.tgz#39908da56a4adc270147bb07968bf3b16cfe1699"
+  integrity sha512-V7/fPHgl+jsVPXqqeOzT8egNj2iBIVt+ECeMMG8TdcnTikP3oaBtUVqpT/gYCR68aEBJSF+XbYUxStjbFMqIIA==
 
 "@noble/hashes@^1.3.1":
   version "1.3.2"
