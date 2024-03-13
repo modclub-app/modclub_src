@@ -5,6 +5,7 @@ import Webcam from "react-webcam";
 import {
   VIDEO_WIDTH,
   VIDEO_HEIGHT,
+  VIDEO_HEIGHT_MOBILE,
   VIDEO_POSITION_TEXT,
   VIDEO_MODELS_LOADING,
 } from "../../../../utils/constant";
@@ -64,7 +65,7 @@ const WebcamInterface: ForwardRefRenderFunction<WebcamRef, WebcamProps> = (
       forceScreenshotSourceSize
       videoConstraints={{
         width: VIDEO_WIDTH,
-        height: VIDEO_HEIGHT,
+        height: isMobileDevice() ? VIDEO_HEIGHT_MOBILE : VIDEO_HEIGHT,
       }}
     />
   </div>
