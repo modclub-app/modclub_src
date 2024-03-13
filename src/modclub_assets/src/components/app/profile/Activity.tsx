@@ -339,8 +339,8 @@ export default function Activity() {
               <Card.Content textAlign="center">
                 <label className="label">Verified Credentials</label>
                 <p className="pb-2">
-                  {`Your Verified Credentials is currently turn ${
-                    vcStatus ? "on" : "off"
+                  {`Your Verified Credentials is currently ${
+                    vcStatus ? "Enable" : "Disable"
                   }`}
                 </p>
                 <ToggleSwitch
