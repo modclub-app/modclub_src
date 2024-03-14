@@ -10,6 +10,9 @@ function create_canisters() {
   local a=$(get_canister_name_by_env "$env" "airdrop")
   dfx canister create "$a"
 
+  local did_assets="$(get_canister_name_by_env "$env" "decideid")_assets"
+  dfx canister create $did_assets
+
   for canister in "${canisters[@]}"; do
     local cn=$(get_canister_name_by_env "$env" "$canister")
     dfx canister create "$cn"
