@@ -179,7 +179,9 @@ function deploy_wallet_canister() {
 
   echo $wallet_arg
 
-  dfx deploy ${wallet_canister_name} --network=${network}  --argument="'${wallet_arg}'" &&
+  local cmd="dfx deploy ${wallet_canister_name} --network=${network}  --argument='${wallet_arg}'"
+
+  eval $cmd &&
   return 0;
 }
 
