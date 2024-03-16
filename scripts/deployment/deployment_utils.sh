@@ -175,7 +175,7 @@ function deploy_wallet_canister() {
           controller_id = principal "'${ARCHIVE_CONTROLLER}'";
         }
   }})'
-  wallet_arg="'$wallet_arg'"
+  #wallet_arg="'$wallet_arg'"
 
   echo $wallet_arg
 
