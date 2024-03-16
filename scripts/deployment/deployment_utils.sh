@@ -35,7 +35,7 @@ gzip_and_deploy() {
   fi
 
   eval $cmd &&
-  echo "[DEPLOY] Canister ${canister_name} deployed successfully." ||
+  echo "[DEPLOY] Canister ${canister_name} deployed successfully." && return 0; ||
   echo "[ERROR] Unable to deploy ${canister_name}" && exit 1
 }
 
@@ -97,7 +97,7 @@ function deploy_canisters() {
     init_canisters $env &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
-    DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network}
+    DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
   fi
 
