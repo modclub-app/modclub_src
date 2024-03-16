@@ -70,7 +70,7 @@ function deploy_canisters() {
   if [ "$canister_only" = "modclub_assets" ]; then
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
-    DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
+    DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
   elif [ "$canister_only" = "modclub" ]; then
     gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'"
@@ -98,7 +98,7 @@ function deploy_canisters() {
     init_canisters $env &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
-    DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
+    DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
   fi
 
@@ -179,7 +179,7 @@ function deploy_wallet_canister() {
 
   echo $wallet_arg
 
-  dfx_deploy ${wallet_canister_name} --network=${network}  --argument=$wallet_arg
+  dfx deploy ${wallet_canister_name} --network=${network}  --argument=$wallet_arg &&
   return 0;
 }
 
@@ -216,8 +216,8 @@ function deploy_vesting_canister() {
   # Handle "prod" environment separately
   local canister_name=$(get_canister_name_by_env $env "vesting")
 
-  dfx_deploy ${canister_name} --network=${network} --argument="'($env_vars)'"
-  dfx generate ${canister_name} -v
+  dfx deploy ${canister_name} --network=${network} --argument="'($env_vars)'" &&
+  dfx generate ${canister_name} -v &&
   return 0;
 }
 
@@ -374,6 +374,6 @@ function deploy_canisters_quick() {
   deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity "${installation_mode}" &&
   generate_declarations $env $network &&
   DEV_ENV=$env node "$current_dir/../build/gen_files_by_env.cjs" &&
-  DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} --argument="'(${env_vars})'" && return 0 ||
+  DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} --argument="'(${env_vars})'" && return 0 ||
   error "[CRASH] ${env} ${network} ${env_vars}" && exit 1;
 }
