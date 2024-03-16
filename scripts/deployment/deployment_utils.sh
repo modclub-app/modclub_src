@@ -35,7 +35,8 @@ gzip_and_deploy() {
   fi
 
   eval $cmd &&
-  echo "[DEPLOY] Canister ${canister_name} deployed successfully." && return 0; ||
+  echo "[DEPLOY] Canister ${canister_name} deployed successfully." && return 0;
+  
   echo "[ERROR] Unable to deploy ${canister_name}" && exit 1
 }
 
