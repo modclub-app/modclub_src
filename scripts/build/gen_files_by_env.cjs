@@ -35,7 +35,7 @@ export { modclub_types, rs_types, vesting_types, wallet_types, airdrop_types };
 // Write to the desired file
 const dest = path.join(
   __dirname,
-  "../../src/modclub_assets/src/declarations_by_env.ts"
+  "../../src/modclub_assets/app/declarations_by_env.ts"
 );
 fs.writeFileSync(dest, content);
 console.log(`${dest} has been generated. `);
@@ -56,7 +56,7 @@ export { modclub, rs, vesting, wallet, airdrop };
 // Write to the desired file
 const actors_by_env_dest = path.join(
   __dirname,
-  "../../src/modclub_assets/src/actors_by_env.ts"
+  "../../src/modclub_assets/app/actors_by_env.ts"
 );
 fs.writeFileSync(actors_by_env_dest, actors_by_env_content);
 console.log(`${actors_by_env_dest} has been generated. `);

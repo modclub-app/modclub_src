@@ -41,15 +41,11 @@
       "optimize": "cycles"
     },
     "modclub_qa_assets": {
-      "frontend": {
-        "entrypoint": "src/modclub_assets/src/index.html"
-      },
-      "source": [
-        "src/modclub_assets/assets",
-        "dist/modclub_assets/",
-        "src/qa_custom_domain/well-known/"
-      ],
-      "type": "assets"
+      "type": "custom",
+      "candid": "src/modclub_assets/modclub_assets.did",
+      "wasm": "src/modclub_assets/modclub_assets.wasm.gz",
+      "build": "src/modclub_assets/build.sh",
+      "frontend": {}
     },
     "wallet": {
       "build": "",
