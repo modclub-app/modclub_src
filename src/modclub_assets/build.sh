@@ -14,6 +14,8 @@ then
 fi
 
 # Build the app
+cd ../../ && yarn install &&
+cd src/modclub_assets &&
 yarn install &&
 yarn run build &&
 mkdir ../../dist/modclub_assets/shapes &&

@@ -288,6 +288,7 @@ fn static_headers() -> Vec<(String, String)> {
 static ASSET_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/../../dist/modclub_assets");
 pub fn init_assets() {
     ASSETS.with_borrow_mut(|assets| {
+        println!("[DEBUG]::[_INIT_ASSETS_]::[_CALL_]::{:?}", &assets);
         *assets = CertifiedAssets::certify_assets(
             collect_assets(&ASSET_DIR, Some(fixup_html)),
             &static_headers(),
