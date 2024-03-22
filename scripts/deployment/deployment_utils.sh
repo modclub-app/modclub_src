@@ -157,7 +157,7 @@ function get_env_canisters_vars() {
   local network=$2
   local old_modclub_inst=$3
 
-  local decideid_assets_canister_name="$(get_canister_name_by_env $env "decideid")_assets"
+  # local decideid_assets_canister_name="$(get_canister_name_by_env $env "decideid")_assets"
 
   local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
   local rs_canister_name=$(get_canister_name_by_env $env "rs")
@@ -171,7 +171,7 @@ function get_env_canisters_vars() {
     wallet_canister_id=$wallet_canister
   fi
 
-  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; decideid_assets_canister_id = principal \"$(dfx canister id ${decideid_assets_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; }"
+  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; }"
 }
 
 

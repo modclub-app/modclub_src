@@ -2,6 +2,8 @@ const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
+const CompressionPlugin = require("compression-webpack-plugin");
+
 const ROOT_DIR = __dirname + "/../../";
 
 let localCanisters, prodCanisters, canisters, network;
@@ -154,6 +156,10 @@ module.exports = {
     ],
   },
   plugins: [
+    new CompressionPlugin({
+      test: /\.(js|map)(\?.*)?$/i,
+      algorithm: "gzip",
+    }),
     new HtmlWebpackPlugin({
       template: path.join(ROOT_DIR, asset_entry),
       cache: false,

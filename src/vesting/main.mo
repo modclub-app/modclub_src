@@ -194,8 +194,8 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
   system func postupgrade() {
     ledger.fromPersistedStorage(persistedVestingsStorage);
 
-    authGuard.subscribe("admins");
-    authGuard.subscribe("secrets");
+    authGuard.subscribe<system>("admins");
+    authGuard.subscribe<system>("secrets");
     ignore authGuard.setUpDefaultAdmins(
       List.nil<Principal>(),
       deployer,

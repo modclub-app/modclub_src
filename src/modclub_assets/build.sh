@@ -22,6 +22,13 @@ mkdir ../../dist/modclub_assets/shapes &&
 cp ./assets/shapes/* ../../dist/modclub_assets/shapes &&
 rsync -vt ./assets/* ../../dist/modclub_assets
 
+# Define the directory to search in
+DIRECTORY="../../dist/modclub_assets" &&
+# Use the find command to locate all .js and .js.map files and delete them
+find "$DIRECTORY" -type f \( -name "*.js" -o -name "*.js.map" \) -exec rm -f {} + &&
+echo "All .js and .js.map files have been removed from $DIRECTORY." ||
+echo "Impossible to remove .js and .js.map files from $DIRECTORY."
+
 cargo build --release --target wasm32-unknown-unknown --manifest-path ./Cargo.toml -j1 &&
 cp ./target/wasm32-unknown-unknown/release/modclub_assets.wasm ./modclub_assets_bkp.wasm &&
 ic-wasm "./target/wasm32-unknown-unknown/release/modclub_assets.wasm" -o "./modclub_assets.wasm" shrink &&

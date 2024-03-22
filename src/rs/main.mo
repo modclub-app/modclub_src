@@ -248,13 +248,13 @@ shared ({ caller = deployer }) actor class RSManager(env : CommonTypes.ENV) = th
   };
 
   system func postupgrade() {
-    authGuard.subscribe("admins");
+    authGuard.subscribe<system>("admins");
     admins := authGuard.setUpDefaultAdmins(
       admins,
       deployer,
       Principal.fromActor(this)
     );
-    authGuard.subscribe("secrets");
+    authGuard.subscribe<system>("secrets");
     rsByUserId := HashMap.fromIter<Principal, Int>(rsByUserIdStable.vals(), rsByUserIdStable.size(), Principal.equal, Principal.hash);
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
     _canistergeekMonitorUD := null;

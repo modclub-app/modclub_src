@@ -2754,13 +2754,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   system func postupgrade() {
     logger.logMessage("MODCLUB POSTUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
 
-    authGuard.subscribe("admins");
+    authGuard.subscribe<system>("admins");
     admins := authGuard.setUpDefaultAdmins(
       admins,
       deployer,
       Principal.fromActor(this)
     );
-    authGuard.subscribe("secrets");
+    authGuard.subscribe<system>("secrets");
     claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
 
     verifiedCredentialsWLBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(verifiedCredentialsWL));

@@ -10,7 +10,6 @@ import ICRCTypes "./ICRCTypes";
 module {
   public type ENV = {
     modclub_canister_id : Principal;
-    decideid_assets_canister_id : Principal;
     old_modclub_canister_id : Principal;
     rs_canister_id : Principal;
     wallet_canister_id : Principal;

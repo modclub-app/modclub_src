@@ -458,7 +458,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   };
 
   public shared ({ caller }) func subscribeOnAdmins() : async () {
-    authGuard.subscribe("admins");
+    authGuard.subscribe<system>("admins");
   };
 
   private func isUserAllowed(jwt : Text, contentId : Text) : Bool {
@@ -637,13 +637,13 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   };
 
   system func postupgrade() {
-    authGuard.subscribe("admins");
+    authGuard.subscribe<system>("admins");
     ignore authGuard.setUpDefaultAdmins(
       List.nil<Principal>(),
       deployer,
       Principal.fromActor(this)
     );
-    authGuard.subscribe("secrets");
+    authGuard.subscribe<system>("secrets");
     state := toDataCanisterState(stateShared);
     stateShared := emptyDataCanisterSharedState();
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);
