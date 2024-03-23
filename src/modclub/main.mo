@@ -1167,7 +1167,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     } else if (lockedAmount < amount) {
       return #err("Claim amount cannot exceed the locked Tokens.");
     };
-    let reduceReputation = (lockedAmount - amount) < minStake;
+
     let claimRes = await vestingActor.claim_vesting(moderatorAcc, amount);
     switch (claimRes) {
       case (#ok(blockIdx)) {
@@ -1182,12 +1182,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           memo = null;
           created_at_time = null;
         });
-
-        if (reduceReputation) {
-          // REDUCE REPUTATION
-          ignore await ModeratorManager.reduceToJunior(caller, env);
-          claimRewardsWhitelistBuf.filterEntries(func(i, p) : Bool { not Principal.equal(caller, p) });
-        };
 
         #ok(true);
       };
@@ -2683,8 +2677,21 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func claimStakedTokens(amount : ICRCTypes.Tokens) : async Result.Result<Nat, Text> {
-    let claimTxId = await stakingManager.claimStakedAmount(caller, amount);
-    claimTxId;
+    let claimResp = await stakingManager.claimStakedAmount(caller, amount);
+    switch (claimResp) {
+      case(#ok(txId)) {
+        let stats = await ModeratorManager.getStats(caller, env);
+        let stakedAmount = await vestingActor.staked_for(moderatorAcc);
+        let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
+        let reduceReputation = (stakedAmount - amount) < minStake;
+        if (reduceReputation) {
+          ignore await ModeratorManager.reduceToJunior(caller, env);
+          claimRewardsWhitelistBuf.filterEntries(func(i, p) : Bool { not Principal.equal(caller, p) });
+        };
+        txId;
+      };
+      case(#err(e)) { #err(Error.message(e)) };
+    };
   };
 
   public query ({ caller }) func getProviderSummaries(providerId : Principal) : async Result.Result<Types.ProviderSummaries, Text> {
