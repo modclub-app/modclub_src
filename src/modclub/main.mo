@@ -2688,9 +2688,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           ignore await ModeratorManager.reduceToJunior(caller, env);
           claimRewardsWhitelistBuf.filterEntries(func(i, p) : Bool { not Principal.equal(caller, p) });
         };
-        txId;
+        #ok(txId);
       };
-      case(#err(e)) { #err(Error.message(e)) };
+      case(#err(eMessage)) { #err(eMessage); };
     };
   };
 
