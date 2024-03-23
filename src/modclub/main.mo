@@ -2680,6 +2680,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let claimResp = await stakingManager.claimStakedAmount(caller, amount);
     switch (claimResp) {
       case(#ok(txId)) {
+        let moderatorAcc = {
+          owner = caller;
+          subaccount = null;
+        };
         let stats = await ModeratorManager.getStats(caller, env);
         let stakedAmount = await vestingActor.staked_for(moderatorAcc);
         let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
