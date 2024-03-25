@@ -2680,7 +2680,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     let moderatorAcc = {
       owner = caller;
       subaccount = null;
-    };
+    }; // acc
     let stakedAmount = await vestingActor.staked_for(moderatorAcc);
     let claimResp = await stakingManager.claimStakedAmount(caller, amount);
     let stats = await ModeratorManager.getStats(caller, env);
