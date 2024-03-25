@@ -97,7 +97,7 @@ jobs:
       # Install dfx.
       - name: Install dfx
         run: |
-          DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+          yes | DFX_VERSION=0.14.3 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
           dfx --version
 
       - name: install moc
