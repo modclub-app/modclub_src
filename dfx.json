@@ -138,12 +138,6 @@
       "type": "custom",
       "candid": "src/airdrop/airdrop.did",
       "wasm": "src/airdrop/airdrop.wasm"
-    },
-    "decideid_qa_assets": {
-      "type": "custom",
-      "candid": "https://github.com/modclub-app/decide_id/blob/main/src/decideid_assets/decideid_assets.did",
-      "wasm": "https://github.com/modclub-app/decide_id/blob/main/src/decideid_assets/decideid_assets.wasm.gz",
-      "frontend": {}
     }
   },
   "defaults": {

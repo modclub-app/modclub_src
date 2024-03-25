@@ -43,7 +43,6 @@ function create_qa_canisters() {
   dfx canister create vesting_qa &&
   dfx canister create modclub_qa_assets &&
   dfx canister create airdrop_qa &&
-  dfx canister create decideid_qa_assets &&
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters CREATED${NC}\n"
 	return 0
 }
