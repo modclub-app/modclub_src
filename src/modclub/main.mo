@@ -175,7 +175,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared func subscribeOnRsEvets() : async () {
     try {
-      ModeratorManager.subscribeOnEvents(env, Constants.TOPIC_MODERATOR_PROMOTED_TO_SENIOR);
+      ModeratorManager.subscribeOnEvents<system>(env, Constants.TOPIC_MODERATOR_PROMOTED_TO_SENIOR);
     } catch e {
 
     };
@@ -222,7 +222,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     switch (isEnabled) {
       case (true) {
         if (not Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
-          let resp = await (actor (Principal.toText(env.decideid_assets_canister_id)) : Types.VCIssuer).add_poh_verified(caller);
+          let resp = await (actor (Principal.toText(env.modclub_assets_canister_id)) : Types.VCIssuer).add_poh_verified(caller);
           switch (resp) {
             case (#Ok(_)) {
               verifiedCredentialsWLBuf.add(caller);
@@ -235,7 +235,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (false) {
         if (Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
-          let resp = await (actor (Principal.toText(env.decideid_assets_canister_id)) : Types.VCIssuer).remove_poh_verified(caller);
+          let resp = await (actor (Principal.toText(env.modclub_assets_canister_id)) : Types.VCIssuer).remove_poh_verified(caller);
           switch (resp) {
             case (#Ok(_)) {
               verifiedCredentialsWLBuf.filterEntries(func(_, vcWlPid) = not Principal.equal(vcWlPid, caller));

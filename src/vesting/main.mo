@@ -44,7 +44,7 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
   var logger = Helpers.getLogger(canistergeekLogger);
   let authGuard = ModSecurity.Guard(env, "VESTING_CANISTER");
   var scheduler = Scheduler.Scheduler(ledger, logger, authGuard);
-  ignore scheduler.startScheduler();
+  ignore scheduler.startScheduler<system>();
   ignore authGuard.setUpDefaultAdmins(List.nil<Principal>(), deployer, authGuard.getCanisterId(#modclub));
   authGuard.subscribe("admins");
   authGuard.subscribe("secrets");
@@ -209,7 +209,7 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
 
     scheduler.fromPersistentSchedule(persistedStakingUnlocks);
     scheduler.fromPersistentFailedJobs(persistedFailedUnlocks);
-    ignore scheduler.startScheduler();
+    ignore scheduler.startScheduler<system>();
   };
 
   system func inspect({

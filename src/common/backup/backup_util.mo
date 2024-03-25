@@ -9,7 +9,7 @@ module BackupUtil {
   public let ChunkSizeByte = 1000000;
 
   public class BackupUtil(backupState : Backup.State) {
-    public let backupManager = Backup.BackupManager(backupState);
+    public let backupManager = Backup.BackupManager(backupState, {maxBackups=100});
 
     public func backup_blob(blob : Blob, tag : Text) : async Nat {
       let bak = backupManager.NewBackup(tag);
