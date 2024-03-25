@@ -2635,17 +2635,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func claimStakedTokens(amount : ICRCTypes.Tokens) : async Result.Result<Nat, Text> {
+    let moderatorAcc = {
+      owner = caller;
+      subaccount = null;
+    }; // acc
+    let stakedAmount = await vestingActor.staked_for(moderatorAcc);
     let claimResp = await stakingManager.claimStakedAmount(caller, amount);
+    let stats = await ModeratorManager.getStats(caller, env);
+    let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
+    let reduceReputation = (stakedAmount - amount) < minStake;
     switch (claimResp) {
       case(#ok(txId)) {
-        let moderatorAcc = {
-          owner = caller;
-          subaccount = null;
-        };
-        let stats = await ModeratorManager.getStats(caller, env);
-        let stakedAmount = await vestingActor.staked_for(moderatorAcc);
-        let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
-        let reduceReputation = (stakedAmount - amount) < minStake;
         if (reduceReputation) {
           ignore await ModeratorManager.reduceToJunior(caller, env);
           claimRewardsWhitelistBuf.filterEntries(func(i, p) : Bool { not Principal.equal(caller, p) });
