@@ -284,9 +284,9 @@ module PohModule {
                 // if any of the challenge is rejected, then overall status is rejected
                 if (status == #rejectedDuplicate) {
                   overAllStatus := #rejectedDuplicate;
-                } else if (status != #rejectedDuplicate and status == #rejected ) {
+                } else if (status != #rejectedDuplicate and status == #rejected) {
                   overAllStatus := #rejected;
-                }else if (overAllStatus != #rejectedDuplicate and overAllStatus != #rejected and status == #expired) {
+                } else if (overAllStatus != #rejectedDuplicate and overAllStatus != #rejected and status == #expired) {
                   // if any of the challenge is expired and none is rejected, then overall status is expired
                   overAllStatus := #expired;
                 };
@@ -687,8 +687,7 @@ module PohModule {
                 return #alreadySubmitted;
               } else if (attempts.get(attempts.size() -1).status == #verified) {
                 return #alreadyApproved;
-              } else if (attempts.get(attempts.size() -1).status == #rejected or 
-              attempts.get(attempts.size() -1).status == #rejectedDuplicate) {
+              } else if (attempts.get(attempts.size() -1).status == #rejected or attempts.get(attempts.size() -1).status == #rejectedDuplicate) {
                 return #alreadyRejected;
               };
               return #ok;
@@ -1070,8 +1069,7 @@ module PohModule {
           case (null)();
           case (?package) {
             if (
-              package.challengeIds.size() == challengeIds.size() and
-              getContentStatus( package.id ) == #rejected
+              package.challengeIds.size() == challengeIds.size() and getContentStatus(package.id) == #rejected
             ) {
               let cIdsMap = HashMap.HashMap<Text, Text>(
                 1,
@@ -1529,7 +1527,6 @@ module PohModule {
       userPrincipal : Principal,
       dataCanisterId : Principal,
       contentId : Text,
-      env : Text,
       apiKey : Text,
       pohLambdaHost : Text,
       transformFunction : shared query Types.TransformArgs -> async Types.CanisterHttpResponsePayload,

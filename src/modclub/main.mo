@@ -1677,7 +1677,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           caller,
           dataCanisterId!,
           contentId!,
-          "dev", // TODO: Dynamically set this
           keyToCallLambdaForPOH[0],
           hosts[0],
           transform,
