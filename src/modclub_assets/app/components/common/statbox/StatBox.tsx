@@ -1,3 +1,4 @@
+import React from "react";
 import PowerBar from "../../common/powerbar/PowerBar";
 import InfoButton from "../../common/infobutton/InfoButton";
 import { Columns, Heading, Card } from "react-bulma-components";

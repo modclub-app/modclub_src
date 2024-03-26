@@ -1,4 +1,4 @@
-use crate::consent_message::{get_vc_consent_message, SupportedLanguage};
+
 use candid::{candid_method, CandidType, Deserialize, Principal};
 use canister_sig_util::signature_map::{SignatureMap, LABEL_SIG};
 use canister_sig_util::{extract_raw_root_pk_from_der, CanisterSigPublicKey, IC_ROOT_PK_DER};
@@ -20,8 +20,7 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use vc_util::issuer_api::{
     ArgumentValue, CredentialSpec, DerivationOriginData, DerivationOriginError,
-    DerivationOriginRequest, GetCredentialRequest, Icrc21ConsentInfo, Icrc21Error,
-    Icrc21ErrorInfo, Icrc21VcConsentMessageRequest, IssueCredentialError, IssuedCredentialData,
+    DerivationOriginRequest, GetCredentialRequest, Icrc21ConsentInfo, Icrc21Error, Icrc21VcConsentMessageRequest, IssueCredentialError, IssuedCredentialData,
     PrepareCredentialRequest, PreparedCredentialData, SignedIdAlias,
 };
 use vc_util::{
@@ -183,7 +182,7 @@ fn init(init_arg: Option<IssuerInit>) {
 }
 
 #[post_upgrade]
-fn post_upgrade(init_arg: Option<IssuerInit>) {
+fn post_upgrade(_init_arg: Option<IssuerInit>) {
     init_assets();
     init_mc_ids();
     POH_VC_STABLE.with_borrow(|poh_vc_stable_cell| {
@@ -245,7 +244,7 @@ pub fn http_request(req: HttpRequest) -> HttpResponse {
     let path = parts[0];
     let sigs_root_hash =
         SIGNATURES.with_borrow(|sigs| pruned(labeled_hash(LABEL_SIG, &sigs.root_hash())));
-    let assets_keys: Vec<String> = ASSETS.with_borrow(|assets| {
+    let _assets_keys: Vec<String> = ASSETS.with_borrow(|assets| {
         assets.get_certified_assets()
     });
 
@@ -507,7 +506,7 @@ fn get_credential(req: GetCredentialRequest) -> Result<IssuedCredentialData, Iss
 #[update]
 #[candid_method]
 async fn vc_consent_message(
-    req: Icrc21VcConsentMessageRequest,
+    _req: Icrc21VcConsentMessageRequest,
 ) -> Result<Icrc21ConsentInfo, Icrc21Error> {
     // let credential_type = match verify_credential_spec(&req.credential_spec) {
     //     Ok(credential_type) => credential_type,
@@ -677,7 +676,7 @@ fn calculate_seed(principal: &Principal) -> Hash {
     hash_bytes(bytes)
 }
 
-fn poh_credential(subject_principal: Principal, employer_name: &str) -> Credential {
+fn poh_credential(subject_principal: Principal, _title: &str) -> Credential {
     let subject: Subject = Subject::from_json_value(json!({
       "id": did_for_principal(subject_principal),
       "humanity_verified": {
