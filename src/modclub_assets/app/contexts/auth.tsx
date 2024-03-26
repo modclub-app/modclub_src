@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Identity } from "@dfinity/agent";
 import type { IDL } from "@dfinity/candid";
-import { modclub, rs, vesting, wallet, airdrop } from "../actors_by_env";
+import { modclub, rs, vesting, wallet, airdrop, modclub_assets } from "../actors_by_env";
 import canisterIds from "../../../../canister_ids.json";
 import { detectBrowser } from "../utils/util";
 import { defaultProviders } from "@connect2icmodclub/core/providers";
@@ -69,6 +69,7 @@ export function AuthProvider({ children }) {
       const newClient = createClient({
         canisters: {
           modclub,
+          modclub_assets,
           rs,
           vesting,
           wallet,

@@ -33,9 +33,7 @@ downloads_archive/
 candid/
 
 #Ignore auto gen file
-src/modclub_assets/src/declarations_by_env.ts
-src/modclub_assets/src/actors_by_env.ts
-
+src/modclub_assets/app/declarations_by_env.ts
 src/modclub_assets/app/actors_by_env.ts
 src/modclub_assets/app/canister_types.ts
 

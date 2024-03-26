@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import {
   modclub_types,
+  modclub_assets_types,
   rs_types,
   vesting_types,
   wallet_types,
@@ -11,6 +12,7 @@ import { useCanister } from "./useCanister";
 
 export interface IActors {
   modclub: modclub_types.ModClub;
+  modclub_assets: modclub_assets_types._SERVICE;
   rs: rs_types.RSManager;
   vesting: vesting_types.Vesting;
   wallet: wallet_types._SERVICE;
@@ -19,6 +21,10 @@ export interface IActors {
 
 export function useActors(): IActors {
   const [modclub] = useCanister("modclub", { mode: "connected" }) as [
+    ModClub,
+    { signedIn: boolean }
+  ];
+  const [modclub_assets] = useCanister("modclub_assets", { mode: "connected" }) as [
     ModClub,
     { signedIn: boolean }
   ];
@@ -40,5 +46,5 @@ export function useActors(): IActors {
   ];
   // console.log("MODCLUB_CANISTER_ACTOR::", modclub);
   // window["_actors"] = { modclub, rs, vesting, wallet, airdrop };
-  return { modclub, rs, vesting, wallet, airdrop };
+  return { modclub, modclub_assets, rs, vesting, wallet, airdrop };
 }

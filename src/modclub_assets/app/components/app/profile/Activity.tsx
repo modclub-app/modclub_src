@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
+import { Principal } from "@dfinity/principal";
 import { useConnect } from "@connect2icmodclub/react";
 import {
   Columns,
@@ -15,7 +16,6 @@ import { modclub_types } from "../../../utils/types";
 import { useActors } from "../../../hooks/actors";
 import {
   getCurrentDomain,
-  getDecideIdAssetsCanisterID,
 } from "../../../utils/util";
 import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
@@ -25,7 +25,7 @@ export default function Activity() {
   const { activeProvider, principal } = useConnect();
   const appState = useAppState();
   const dispatch = useAppStateDispatch();
-  const { modclub } = useActors();
+  const { modclub, modclub_assets } = useActors();
   const [completedActivity, setCompletedActivity] = useState<
     modclub_types.Activity[]
   >([]);
@@ -266,23 +266,6 @@ export default function Activity() {
     </div>
   );
 
-  const VCDropdownLabel = ({ toggle }) => {
-    return (
-      <>
-        <Icon style={{ marginLeft: "3px" }}>
-          <span className="material-icons">assignment_ind</span>
-        </Icon>
-        <div className="is-flex" onClick={toggle}>
-          <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center has-text-left">
-            <Heading size={6}>
-              Verified Credentials : {vcStatus ? "ENABLED" : "DISABLED"}
-            </Heading>
-          </div>
-        </div>
-      </>
-    );
-  };
-
   const vcChange = (val) => {
     modclub &&
       modclub
@@ -292,39 +275,6 @@ export default function Activity() {
         })
         .catch((e) => {
           console.error("An ERROR occurs in toggleVCForUser::", e.message);
-          if (e.message.includes("No POH candidate")) {
-            const vc_enabling = (msg) => {
-              if (
-                msg.data &&
-                msg.data.type == "add_poh_candidate" &&
-                msg.data.isOk
-              ) {
-                modclub
-                  .toggleVCForUser(true)
-                  .then((r) => {
-                    console.log("VC Activated Successfully.");
-                    setVcStatus(true);
-                  })
-                  .catch((e) => {
-                    console.log("VC Not Activated.");
-                    setVcStatus(false);
-                    console.error("ERROR on toggleVCForUser: ", e);
-                  });
-              } else {
-                console.log("VC Not Activated.");
-                setVcStatus(false);
-              }
-              window.removeEventListener("message", vc_enabling);
-            };
-            window.addEventListener("message", vc_enabling);
-            const decide = window.open(
-              `${
-                window.location.protocol
-              }//${getDecideIdAssetsCanisterID()}.${getCurrentDomain()}/#/vc/${
-                appState.loginPrincipalId
-              }`
-            );
-          }
         });
   };
 

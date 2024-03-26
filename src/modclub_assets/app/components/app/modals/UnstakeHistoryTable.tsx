@@ -1,3 +1,4 @@
+import React from "react";
 import moment from "moment";
 import { vesting_types } from "../../../declarations_by_env";
 import { convert_to_mod, microsecondToSecond } from "../../../utils/util";

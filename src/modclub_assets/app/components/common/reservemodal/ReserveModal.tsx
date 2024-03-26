@@ -1,3 +1,4 @@
+import React from "react";
 import { Modal, Button } from "react-bulma-components";
 
 const ReserveModal = ({

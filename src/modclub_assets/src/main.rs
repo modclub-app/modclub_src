@@ -59,7 +59,6 @@ thread_local! {
     static POH_VC_STABLE: RefCell<PohVCCell> = RefCell::new(PohVCCell::init(config_memory(), PohVerifiedCredentials::default()).expect("failed to initialize stable cell for PohVerifiedCredentials"));
     static SIGNATURES : RefCell<SignatureMap> = RefCell::new(SignatureMap::default());
     static POH_VERIFIED : RefCell<HashSet<Principal>> = RefCell::new(HashSet::new());
-    static POH_CANDIDATES : RefCell<HashMap<Principal, Principal>> = RefCell::new(HashMap::new());
     static ASSETS: RefCell<CertifiedAssets> = RefCell::new(CertifiedAssets::default());
     static MODCLUB_CANISTER_IDS: RefCell<HashSet<String>> = RefCell::new(HashSet::new());
 }
@@ -138,7 +137,6 @@ struct IssuerInit {
 #[derive(CandidType, Deserialize)]
 struct PohVerifiedCredentials {
     verified: Vec<Principal>,
-    poh_candidates: Vec<(Principal, Principal)>,
 }
 
 impl Storable for PohVerifiedCredentials {
@@ -155,18 +153,14 @@ impl Default for PohVerifiedCredentials {
     fn default() -> Self {
         Self {
             verified: vec![],
-            poh_candidates: vec![],
         }
     }
 }
 
 impl PohVerifiedCredentials {
-    fn from_state(verified : HashSet<Principal>, candidates : HashMap<Principal, Principal>) -> Self {
-        let candidates_vec : Vec<(Principal, Principal)> = candidates.iter().map(|(k, v)| { (k.clone(), v.clone()) }).collect();
-
+    fn from_state(verified : HashSet<Principal>) -> Self {
         Self {
             verified: Vec::from_iter(verified.clone()),
-            poh_candidates: candidates_vec,
         }
     }
 }
@@ -192,11 +186,6 @@ fn post_upgrade(_init_arg: Option<IssuerInit>) {
                 poh_verified_users.insert(v_pid.clone());
             }
         });
-        POH_CANDIDATES.with_borrow_mut(|poh_candidate_users| {
-            for (k, v) in poh_vc_stable.poh_candidates.iter() {
-                poh_candidate_users.insert(k.clone(), v.clone());
-            }
-        });
     });
 }
 
@@ -205,11 +194,9 @@ fn pre_upgrade() {
     let _verified = POH_VERIFIED.with_borrow(|poh_verified| {
         poh_verified.clone()
     });
-    let _candidates = POH_CANDIDATES.with_borrow(|poh_candidate_users| {
-        poh_candidate_users.clone()
-    });
+
     POH_VC_STABLE
-    .with_borrow_mut(|poh_vc_cell| poh_vc_cell.set(PohVerifiedCredentials::from_state(_verified, _candidates)))
+    .with_borrow_mut(|poh_vc_cell| poh_vc_cell.set(PohVerifiedCredentials::from_state(_verified)))
     .expect("failed to apply POH_VC_STABLE from state");
 }
 
@@ -227,7 +214,12 @@ fn apply_config(init: IssuerInit) {
 
 fn init_mc_ids() {
     MODCLUB_CANISTER_IDS.with_borrow_mut(|mc_ids| {
-        let ids = vec!["hvyqe-cyaaa-aaaah-qdbiq-cai", "d7isk-4aaaa-aaaah-qdbsa-cai", "gwuzc-waaaa-aaaah-qdboa-cai", "cbopz-duaaa-aaaaa-qaaka-cai"];
+        let ids = vec![
+            "by6od-j4aaa-aaaaa-qaadq-cai",
+            "hvyqe-cyaaa-aaaah-qdbiq-cai",
+            "d7isk-4aaaa-aaaah-qdbsa-cai",
+            "gwuzc-waaaa-aaaah-qdboa-cai",
+            ];
         for cid in ids.iter() {
             mc_ids.insert(String::from(cid.clone()));
         };
@@ -587,27 +579,21 @@ fn add_poh_verified(uid: Principal) -> Result<u32, String> {
     MODCLUB_CANISTER_IDS.with_borrow(|mc_ids| {
         assert!(mc_ids.contains(&(caller().to_text())));
     });
-    POH_CANDIDATES.with_borrow(|poh_candidate_users| {
-        match poh_candidate_users.get(&uid) {
-            Some(&d_pid) => {
-                POH_VERIFIED.with_borrow_mut(|poh_verified_users| {
-                    println!(
-                        "*** [DEBUG] [add_poh_verified] [User_ID] {:?}\n",
-                        uid
-                    );
-                    poh_verified_users.insert(d_pid.clone());
-                });
+    POH_VERIFIED.with_borrow_mut(|poh_verified_users| {
+        println!(
+            "*** [DEBUG] [add_poh_verified] [User_ID] {:?}\n",
+            uid
+        );
+        poh_verified_users.insert(uid.clone());
+    });
 
-                let new_len : u32 = POH_VERIFIED.with_borrow(|pvu| {
-                    pvu.len()
-                }).try_into().unwrap();
+    let new_len : u32 = POH_VERIFIED.with_borrow(|pvu| {
+        pvu.len()
+    }).try_into().unwrap();
 
-                println!("Add poh_verified_user STATUS {}, New Lenght {}", uid, new_len);
-                return Ok(new_len);
-            }
-            None => { return Err(format!("No POH candidate found.")); }
-        };
-    })
+    println!("Add poh_verified_user STATUS {}, New Lenght {}", uid, new_len);
+
+    return Ok(new_len);
 }
 
 #[update]
@@ -616,48 +602,19 @@ fn remove_poh_verified(uid: Principal) -> Result<u32, String> {
     MODCLUB_CANISTER_IDS.with_borrow(|mc_ids| {
         assert!(mc_ids.contains(&(caller().to_text())));
     });
-    POH_CANDIDATES.with_borrow(|poh_candidate_users| {
-        match poh_candidate_users.get(&uid) {
-            Some(&d_pid) => {
-                POH_VERIFIED.with_borrow_mut(|poh_verified_users| {
-                    let rem_res = poh_verified_users.remove(&d_pid.clone());
-                    println!(
-                        "*** [DEBUG] [remove_poh_verified] [User_ID] {:?} [STATUS] {:?} \n",
-                        &d_pid.clone().to_text(), rem_res
-                    );
-                });
-            
-                let new_len : u32 = POH_VERIFIED.with_borrow(|pvu| {
-                    pvu.len()
-                }).try_into().unwrap();
-
-                return Ok(new_len);
-            }
-            None => { return Err(format!("No POH candidate found to remove_poh_verified.")); }
-        };
-    })
-}
-
-#[update]
-#[candid_method]
-fn add_poh_candidate(uid: Principal) -> Result<u32, String> {
-    let inserted_pid = POH_CANDIDATES.with_borrow_mut(|poh_candidate_users| {
+    POH_VERIFIED.with_borrow_mut(|poh_verified_users| {
+        let rem_res = poh_verified_users.remove(&uid.clone());
         println!(
-            "*** [DEBUG] [add_poh_candidate] [User_ID] {:?} \n",
-            uid.to_text()
+            "*** [DEBUG] [remove_poh_verified] [User_ID] {:?} [STATUS] {:?} \n",
+            &uid.clone().to_text(), rem_res
         );
-        poh_candidate_users.insert(uid.clone(), caller());
-        match poh_candidate_users.get(&uid) {
-            Some(&c_pid) => { c_pid.clone() },
-            None => { panic!("Error occurs for [add_poh_candidate]. UID {}", uid.to_text()) },
-        }
     });
-    let new_len : u32 = POH_CANDIDATES.with_borrow(|pсu| {
-        pсu.len()
+
+    let new_len : u32 = POH_VERIFIED.with_borrow(|pvu| {
+        pvu.len()
     }).try_into().unwrap();
 
-    println!("Add add_poh_candidate INSERTED_PAIR:: <{}, {}>, \n New Lenght {}", inserted_pid.to_text(), uid, new_len);
-    Ok(new_len)
+    return Ok(new_len);
 }
 
 fn main() {}
