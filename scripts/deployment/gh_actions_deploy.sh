@@ -19,6 +19,9 @@ elif grep -q "Error: Failed while trying to deploy canisters" deploy_logs.txt; t
 elif grep -q "Error: Failed while trying to generate type declarations" deploy_logs.txt; then
     echo "Detected the 'Error: Failed while trying to generate type declarations' error in deploy_logs.txt. Failing the script."
     exit 1
+elif grep -q "Error: " deploy_logs.txt; then
+    echo "Detected the 'Error: ' error in deploy_logs.txt. Failing the script."
+    exit 1
 else
     echo "All good."
     exit 0

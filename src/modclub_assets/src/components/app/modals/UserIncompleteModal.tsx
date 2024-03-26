@@ -30,7 +30,7 @@ export default function UserIncompleteModal({
       <Modal.Card backgroundColor="circles">
         <Modal.Card.Body>
           <Heading subtitle>Proof of Humanity</Heading>
-          {status === "pending" && (
+          {(status === "pending" || status === "processing") && (
             <p>
               Your Proof of Humanity approval is in progress. You will be able
               to access MODCLUB once it is approved. Please come back later to
@@ -54,24 +54,18 @@ export default function UserIncompleteModal({
                 Your Proof of Humanity has been rejected. Please submit a new
                 Proof of Humanity.
               </p>
-              <p className="my-3">These were the failed requirements:</p>
-              <Card backgroundColor="dark">
-                <Card.Content>
-                  <ul>
-                    {rejectionReasons &&
-                      rejectionReasons.map((reason, index) => (
-                        <li key={index}>
-                          {index + 1}. {reason}
-                        </li>
-                      ))}
-                  </ul>
-                </Card.Content>
-              </Card>
+            </>
+          )}
+          {status === "rejectedDuplicate" && (
+            <>
+              <p>
+                Your Proof of Humanity has been rejected, duplicate account detected.
+              </p>
             </>
           )}
         </Modal.Card.Body>
         <Modal.Card.Footer className="pt-0" justifyContent="flex-end">
-          {status !== "pending" && status !== "verified" && (
+          {!(status === "pending" || status === "processing" || status === "verified" || status === "rejectedDuplicate") && (
             <Link
               to={`/new-poh-profile?token=${token}`}
               className="button is-primary"

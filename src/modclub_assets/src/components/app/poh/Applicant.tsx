@@ -157,6 +157,8 @@ export default function PohApplicant() {
         return "Profile Picture";
       case "challenge-user-video":
         return "Unique Phrase (Video)";
+      case "challenge-unique-poh":
+        return "Unique Humanity (Video)";
       case "challenge-user-audio":
         return "Unique Phrase (Audio)";
       case "challenge-drawing":
@@ -206,6 +208,8 @@ export default function PohApplicant() {
       case "challenge-profile-pic":
         return <ProfilePic data={task} />;
       case "challenge-user-video":
+        return <UserVideo data={task} />;
+      case "challenge-unique-poh":
         return <UserVideo data={task} />;
       case "challenge-user-audio":
         return <UserAudio data={task} />;

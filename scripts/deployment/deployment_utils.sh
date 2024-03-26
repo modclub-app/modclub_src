@@ -1,12 +1,43 @@
 #!/bin/bash
 set -e
+set -x
 
-dfx_deploy() {
-    local cmd="dfx deploy $@"
-    if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
-        cmd+=" --yes"
-    fi
-    eval $cmd
+gzip_and_deploy() {
+  local canister_name=$1
+  local network=$2
+  local env_vars=$3
+  local mode=${4:-"install"}
+
+  echo "Creating canister ${canister_name}..."
+  dfx canister create ${canister_name}
+
+  echo "Building ${canister_name}..."
+  dfx build ${canister_name}
+
+  # Specify the output wasm file path
+  local canister_output=".dfx/local/canisters/${canister_name}/${canister_name}.wasm"
+
+  echo "Gzipping ${canister_output}..."
+  gzip -f $canister_output
+
+  # The gzipped file will have a .gz extension
+  local canister_output_gzipped="${canister_output}.gz"
+
+  # Deploy the gzipped canister
+  echo "Deploying ${canister_name}..."
+
+  echo "Env vars ${env_vars}"
+
+  local cmd="dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument=${env_vars} $canister_name"
+  
+  if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
+      cmd+=" --yes"
+  fi
+
+  eval $cmd &&
+  echo "[DEPLOY] Canister ${canister_name} deployed successfully." && return 0;
+  
+  echo "[ERROR] Unable to deploy ${canister_name}" && exit 1
 }
 
 function deploy_canisters() {
@@ -39,35 +70,35 @@ function deploy_canisters() {
   if [ "$canister_only" = "modclub_assets" ]; then
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
-    DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
+    DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
   elif [ "$canister_only" = "modclub" ]; then
-    dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'"
+    gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "auth" ]; then
-    dfx_deploy "${auth_canister_name}" --network="${network}" --argument="'(${env_vars})'"
+    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "wallet" ]; then
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity
   elif [ "$canister_only" = "vesting" ]; then
     deploy_vesting_canister $env $network $old_modclub_inst
   elif [ "$canister_only" = "airdrop" ]; then
-    dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'"  
+    gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "rs" ]; then
-    dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'"
+    gzip_and_deploy $rs_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "ALL" ]; then
     set -x
     set -e
     log "Deploy ${env} Canisters..."
-    dfx_deploy ${auth_canister_name} --network=${network} --argument="'(${env_vars})'" &&
+    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'" &&
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
     deploy_vesting_canister $env $network $old_modclub_inst &&
-    dfx_deploy ${airdrop_canister_name} --network=${network} --argument="'(${env_vars})'" &&  
+    gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'" &&  
 
-    dfx_deploy ${rs_canister_name} --network=${network} --argument="'(${env_vars})'" &&
-    dfx_deploy ${modclub_canister_name} --network=${network} --argument="'(${env_vars})'" &&
+    gzip_and_deploy $rs_canister_name $network "'(${env_vars})'" &&
+    gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'" &&
     init_canisters $env &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
-    DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} &&
+    DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
   fi
 
@@ -144,11 +175,12 @@ function deploy_wallet_canister() {
           controller_id = principal "'${ARCHIVE_CONTROLLER}'";
         }
   }})'
-  wallet_arg="'$wallet_arg'"
 
   echo $wallet_arg
 
-  dfx_deploy ${wallet_canister_name} --network=${network}  --argument=$wallet_arg
+  local cmd="dfx deploy ${wallet_canister_name} --network=${network}  --argument='${wallet_arg}'"
+
+  eval $cmd &&
   return 0;
 }
 
@@ -185,8 +217,10 @@ function deploy_vesting_canister() {
   # Handle "prod" environment separately
   local canister_name=$(get_canister_name_by_env $env "vesting")
 
-  dfx_deploy ${canister_name} --network=${network} --argument="'($env_vars)'"
-  dfx generate ${canister_name} -v
+  local cmd="dfx deploy ${canister_name} --network=${network} --argument='(${env_vars})'"
+
+  eval $cmd &&
+  dfx generate ${canister_name} -v &&
   return 0;
 }
 
@@ -343,6 +377,6 @@ function deploy_canisters_quick() {
   deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity "${installation_mode}" &&
   generate_declarations $env $network &&
   DEV_ENV=$env node "$current_dir/../build/gen_files_by_env.cjs" &&
-  DEV_ENV=$env dfx_deploy ${assets_canister_name} --network=${network} --argument="'(${env_vars})'" && return 0 ||
+  DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} --argument="'(${env_vars})'" && return 0 ||
   error "[CRASH] ${env} ${network} ${env_vars}" && exit 1;
 }

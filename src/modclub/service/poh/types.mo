@@ -7,13 +7,14 @@ import Types "../../types";
 import VoteTypes "../vote/types";
 
 module {
-
   public type PohChallengeStatus = {
     #notSubmitted;
     #pending;
     #verified;
     #rejected;
     #expired;
+    #processing;
+    #rejectedDuplicate;
   };
 
   public type PohVerificationStatus = {
@@ -23,6 +24,8 @@ module {
     #verified;
     #rejected;
     #expired;
+    #processing;
+    #rejectedDuplicate;
   };
 
   // To be deleted after deployment
@@ -63,20 +66,14 @@ module {
   };
 
   public type PohChallengeType = {
-    #ssn;
-    // SSN
-    #dl;
-    // Draw Lines
-    #selfPic;
-    // Profile Pic
-    #selfVideo;
-    // Video
-    #fullName;
-    // User full name
-    #userName;
-    // User name
-    #email;
-    // Email
+    #ssn; // SSN
+    #dl; // Draw Lines
+    #selfPic; // Profile Pic
+    #selfVideo; // Video
+    #fullName; // User full name
+    #userName; // User name
+    #email; // Email
+    #uniquePohVideo; // Unique Video
   };
 
   // To be deleted after deployment
@@ -104,23 +101,6 @@ module {
   public type PohConfigurationForProvider = {
     challengeIds : [Text];
     expiry : Nat;
-  };
-
-  // Type representing Challenge attempt
-  // To be deleted
-  public type PohChallengesAttempt = {
-    attemptId : ?Text;
-    challengeId : Text;
-    challengeName : Text;
-    challengeDescription : Text;
-    challengeType : PohChallengeType;
-    userId : Principal;
-    status : PohChallengeStatus;
-    createdAt : Int;
-    updatedAt : Int;
-    completedOn : Int;
-    dataCanisterId : ?Principal;
-    wordList : ?[Text];
   };
 
   public type PohChallengesAttemptV1 = {

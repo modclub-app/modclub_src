@@ -29,8 +29,10 @@ function generate_declarations() {
   dfx generate "$w" --network=$network -v &&
   dfx generate "$v" --network=$network -v &&
   dfx generate "$r" --network=$network -v &&
-  dfx generate "$a" --network=$network -v
+  dfx generate "$a" --network=$network -v &&
+  return 0;
 
+  echo "[ERROR] Impossible to generate declarations" && exit 1
 }
 
 
