@@ -77,6 +77,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   private stable var startTimeForPOHEmail = Helpers.timeNow();
   private stable var keyToCallLambda : Text = "";
+  private stable var keyToCallLambdaForPOH : Text = "";
   private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
   stable var allowSubmissionFlag : Bool = true;
@@ -1167,7 +1168,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     } else if (lockedAmount < amount) {
       return #err("Claim amount cannot exceed the locked Tokens.");
     };
-    let reduceReputation = (lockedAmount - amount) < minStake;
+
     let claimRes = await vestingActor.claim_vesting(moderatorAcc, amount);
     switch (claimRes) {
       case (#ok(blockIdx)) {
@@ -1182,12 +1183,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           memo = null;
           created_at_time = null;
         });
-
-        if (reduceReputation) {
-          // REDUCE REPUTATION
-          ignore await ModeratorManager.reduceToJunior(caller, env);
-          claimRewardsWhitelistBuf.filterEntries(func(i, p) : Bool { not Principal.equal(caller, p) });
-        };
 
         #ok(true);
       };
@@ -1455,7 +1450,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
   };
 
-  public shared ({ caller }) func retrieveChallengesForUser(token : Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+  public shared ({ caller }) func retrieveChallengesForUser(token : Text) : async Result.Result<[PohTypes.PohChallengesAttemptV1], PohTypes.PohError> {
     switch (pohEngine.decodeToken(token)) {
       case (#err(err)) {
         return #err(err);
@@ -1533,77 +1528,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
+  // Validates and initiates processing of the challenge submission request.
   public shared ({ caller }) func submitChallengeData(
     pohDataRequest : PohTypes.PohChallengeSubmissionRequest
   ) : async PohTypes.PohChallengeSubmissionResponse {
-    // let caller = Principal.fromText("2vxsx-fae");
     let isValid = pohEngine.validateChallengeSubmission(pohDataRequest, caller);
     if (isValid == #ok) {
-      let _ = do ? {
-        let attemptId = pohEngine.getAttemptId(
-          pohDataRequest.challengeId,
-          caller
-        );
-        try {
-          let dataCanisterId = await storageSolution.putBlobsInDataCanister(
-            attemptId,
-            pohDataRequest.challengeDataBlob!,
-            pohDataRequest.offset,
-            pohDataRequest.numOfChunks,
-            pohDataRequest.mimeType,
-            pohDataRequest.dataSize
-          );
-          if (pohDataRequest.offset == pohDataRequest.numOfChunks) {
-            //last Chunk coming in
-            let _ = pohEngine.changeChallengeTaskStatus(
-              pohDataRequest.challengeId,
-              caller,
-              #pending
-            );
-            pohEngine.updateDataCanisterId(
-              pohDataRequest.challengeId,
-              caller,
-              dataCanisterId
-            );
-
-            let challengePackages = pohEngine.createChallengePackageForVoting(
-              caller,
-              pohContentQueueManager.getContentStatus,
-              stateV2,
-              canistergeekLogger
-            );
-            for (package in challengePackages.vals()) {
-              pohContentQueueManager.changeContentStatus(package.id, #new);
-              switch (pohEngine.getPohChallengePackage(package.id)) {
-                case (null)();
-                case (?package) {
-                  await pohEngine.issueCallbackToProviders(
-                    package.userId,
-                    stateV2,
-                    voteManager.getAllUniqueViolatedRules,
-                    pohContentQueueManager.getContentStatus,
-                    canistergeekLogger
-                  );
-                };
-              };
-            };
-          };
-        } catch e {
-          if (
-            Text.equal(
-              Error.message(e),
-              ModClubParam.PER_CONTENT_SIZE_EXCEEDED_ERROR
-            )
-          ) {
-            return {
-              challengeId = pohDataRequest.challengeId;
-              submissionStatus = #submissionDataLimitExceeded;
-            };
-          } else {
-            throw e;
-          };
-        };
-      };
+      return await processChallengeData(caller, pohDataRequest);
     };
     return {
       challengeId = pohDataRequest.challengeId;
@@ -1611,8 +1542,155 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
+  // Handles storing challenge data in a canister and manages package creation after storage.
+  private func processChallengeData(
+    caller : Principal,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest
+  ) : async PohTypes.PohChallengeSubmissionResponse {
+    let attemptId = pohEngine.getAttemptId(
+      pohDataRequest.challengeId,
+      caller
+    );
+    try {
+      let dataCanisterId = await storeDataInCanister(attemptId, pohDataRequest);
+
+      if (pohDataRequest.offset == pohDataRequest.numOfChunks) {
+        // Associate the challenge record with the data canister's ID
+        pohEngine.updateDataCanisterId(
+          pohDataRequest.challengeId,
+          caller,
+          dataCanisterId
+        );
+
+        if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
+          await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
+        } else {
+          await handlePackageCreation(caller, pohDataRequest.challengeId);
+        };
+      };
+    } catch e {
+      if (Text.equal(Error.message(e), ModClubParam.PER_CONTENT_SIZE_EXCEEDED_ERROR)) {
+        return {
+          challengeId = pohDataRequest.challengeId;
+          submissionStatus = #submissionDataLimitExceeded;
+        };
+      } else {
+        throw e;
+      };
+    };
+    return {
+      challengeId = pohDataRequest.challengeId;
+      submissionStatus = #ok;
+    };
+  };
+
+  // Stores the submitted challenge data blob in a data canister and returns its ID.
+  private func storeDataInCanister(
+    attemptId : Text,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest
+  ) : async ?Principal {
+    switch (pohDataRequest.challengeDataBlob) {
+      case (null) {
+        // challengeDataBlob is null this shouldn't happen
+        throw Error.reject("Challenge data blob is null.");
+      };
+      case (?blob) {
+        return await storageSolution.putBlobsInDataCanister(
+          attemptId,
+          blob,
+          pohDataRequest.offset,
+          pohDataRequest.numOfChunks,
+          pohDataRequest.mimeType,
+          pohDataRequest.dataSize
+        );
+      };
+    };
+  };
+  private func handlePackageCreation(
+    caller : Principal,
+    challengeId : Text
+  ) : async () {
+    let _ = pohEngine.changeChallengeTaskStatus(
+      challengeId,
+      caller,
+      #pending
+    );
+
+    //TODO: We may have to move the updateDataCanisterId back here, if POH is failing
+
+    // Create challenge packages for voting if applicable
+    let challengePackages = pohEngine.createChallengePackageForVoting(
+      caller,
+      pohContentQueueManager.getContentStatus,
+      stateV2,
+      canistergeekLogger
+    );
+
+    // Process each created package: update content status and issue callbacks to providers
+    for (package in challengePackages.vals()) {
+      pohContentQueueManager.changeContentStatus(package.id, #new);
+      switch (pohEngine.getPohChallengePackage(package.id)) {
+        case (null)();
+        case (?package) {
+          await pohEngine.issueCallbackToProviders(
+            package.userId,
+            stateV2,
+            voteManager.getAllUniqueViolatedRules,
+            pohContentQueueManager.getContentStatus,
+            canistergeekLogger
+          );
+        };
+      };
+    };
+  };
+
+  private func initiateUniquePohProcessing(
+    caller : Principal,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
+    dataCanisterId : ?Principal
+  ) : async () {
+    let _ = do ? {
+      let contentId = pohEngine.changeChallengeTaskStatus(
+        pohDataRequest.challengeId,
+        caller,
+        #processing
+      );
+
+      let hosts : [Text] = authGuard.getSecretVals("POH_LAMBDA_HOST");
+      let keyToCallLambdaForPOH = authGuard.getSecretVals("POH_LAMBDA_KEY");
+      if (hosts.size() == 0) {
+        throw Error.reject("POH Lambda HOST is not provided. Please ask admin to set the POH_LAMBDA_HOST for lambda calls.");
+      };
+      if (keyToCallLambdaForPOH.size() == 0) {
+        throw Error.reject("POH Lambda key is not provided. Please ask admin to set the POH_LAMBDA_KEY for lambda calls.");
+      };
+
+      // Initiate lambda trigger to process face
+      try {
+        await pohEngine.httpCallForProcessing(
+          caller,
+          dataCanisterId!,
+          contentId!,
+          keyToCallLambdaForPOH[0],
+          hosts[0],
+          transform,
+          canistergeekLogger
+        );
+      } catch (e) {
+        // Set the status to failed
+        logger.logError("initiateUniquePohProcessing - Failure to initiate processing setting task to #failed " # Error.message(e));
+        let _ = pohEngine.changeChallengeTaskStatus(
+          pohDataRequest.challengeId,
+          caller,
+          #rejected
+        );
+        false;
+      };
+    };
+  };
+
   // Admin method to create new attempts
-  public shared ({ caller }) func resetUserChallengeAttempt(packageId : Text) : async Result.Result<[PohTypes.PohChallengesAttempt], PohTypes.PohError> {
+  public shared ({ caller }) func resetUserChallengeAttempt(packageId : Text) : async Result.Result<[PohTypes.PohChallengesAttemptV1], PohTypes.PohError> {
     switch (pohEngine.getPohChallengePackage(packageId)) {
       case (null) {
         throw Error.reject("Package doesn't exist");
@@ -2683,8 +2761,25 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func claimStakedTokens(amount : ICRCTypes.Tokens) : async Result.Result<Nat, Text> {
-    let claimTxId = await stakingManager.claimStakedAmount(caller, amount);
-    claimTxId;
+    let moderatorAcc = {
+      owner = caller;
+      subaccount = null;
+    }; // acc
+    let stakedAmount = await vestingActor.staked_for(moderatorAcc);
+    let claimResp = await stakingManager.claimStakedAmount(caller, amount);
+    let stats = await ModeratorManager.getStats(caller, env);
+    let minStake = Utils.getStakingAmountForRewardWithdraw(Option.get(Nat.fromText(Int.toText(stats.score)), 0));
+    let reduceReputation = (stakedAmount - amount) < minStake;
+    switch (claimResp) {
+      case(#ok(txId)) {
+        if (reduceReputation) {
+          ignore await ModeratorManager.reduceToJunior(caller, env);
+          claimRewardsWhitelistBuf.filterEntries(func(i, p) : Bool { not Principal.equal(caller, p) });
+        };
+        #ok(txId);
+      };
+      case(#err(eMessage)) { #err(eMessage); };
+    };
   };
 
   public query ({ caller }) func getProviderSummaries(providerId : Principal) : async Result.Result<Types.ProviderSummaries, Text> {
@@ -2861,6 +2956,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (#sendVerificationEmail _) { not authGuard.isAnonymous(caller) };
       case (#registerModerator _) { not authGuard.isAnonymous(caller) };
       case (#setLambdaToken _) { authGuard.isAdmin(caller) };
+      case (#setPohLambdaToken _) { authGuard.isAdmin(caller) };
       case (#submitText _) { ProviderManager.providerExists(caller, stateV2) };
       case (#submitHtmlContent _) {
         ProviderManager.providerExists(caller, stateV2);
@@ -2895,6 +2991,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func http_request(request : Types.HttpRequest) : async Types.HttpResponse {
+    logger.logMessage("http_request - called for url " # request.url);
     return {
       status_code = 200;
       headers = [];
@@ -2905,11 +3002,37 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
-    let path = RequestHandler.parseUrlAndGetPath(request.url);
+    logger.logMessage("http_request_update - called for url " # request.url);
+    let temp = RequestHandler.parseUrlAndGetPath(request);
 
-    switch (path) {
-      case ("ipRegister") {
-        return await RequestHandler.handleIpRegister(request, caller, pohEngine, provider2IpRestriction);
+    switch (temp) {
+      case ("/ipRegister") {
+        return await RequestHandler.handleIpRegister(
+          request,
+          caller,
+          pohEngine,
+          provider2IpRestriction
+        );
+      };
+      case ("/pohRegister") {
+        // Log that we received a POH registration request
+
+        let userPrincipal = await RequestHandler.handlePohRegister(
+          request,
+          pohEngine,
+          keyToCallLambdaForPOH,
+          logger
+        );
+
+        switch (userPrincipal) {
+          case (?principal) {
+            await handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID);
+            return RequestHandler.createHttpResponse(200, "Package created for " # Principal.toText(principal));
+          };
+          case (_) {
+            return RequestHandler.createHttpResponse(200, "User POH rejectedgit s");
+          };
+        };
       };
       case (_) {
         return RequestHandler.createHttpResponse(404, "Not Found");
@@ -2954,11 +3077,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     totalContents : Nat
   ) : async Bool {
 
-    let host : Text = "bgl2dihq47pqfjtth2odwdakcm0cislr.lambda-url.us-east-1.on.aws";
+    let hosts : [Text] = authGuard.getSecretVals("EMAIL_LAMBDA_HOST");
+    let _keyToCallLambda = authGuard.getSecretVals("LAMBDA_KEY");
+    if (hosts.size() == 0) {
+      throw Error.reject("Lambda HOST is not provided. Please ask admin to set the HOST for lambda calls.");
+    };
+    let host : Text = hosts[0];
     var minCycles : Nat = 210244050000;
     // prepare system http_request call
 
-    if (keyToCallLambda == "") {
+    if (_keyToCallLambda.size() == 0) {
       throw Error.reject("Lambda key is not provided. Please ask admin to set the key for lambda calls.");
     };
 
@@ -2966,7 +3094,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       { name = "Content-Type"; value = "application/json" },
       {
         name = "Authorization";
-        value = keyToCallLambda;
+        value = _keyToCallLambda[0];
       }
     ];
     let url = "https://" # host # "/";
@@ -3355,7 +3483,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
         return result;
       };
-
       case _ {
         return #err("NotImplemented for fieldName: " # fieldName);
       };

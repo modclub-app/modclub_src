@@ -1,33 +1,41 @@
 import Array "mo:base/Array";
 import Arrays "mo:base/Array";
+import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
-import Canistergeek "../../../common/canistergeek/canistergeek";
+import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
-import GlobalState "../../statev2";
+import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
-import Helpers "../../../common/helpers";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
-import ModClubParam "../parameters/params";
+import List "mo:base/List";
 import Nat "mo:base/Nat";
+import Nat64 "mo:base/Nat64";
 import Option "mo:base/Option";
 import Order "mo:base/Order";
-import PohStateV2 "./statev2";
-import PohTypes "./types";
 import Principal "mo:base/Principal";
-import Rel "../../data_structures/Rel";
-import RelObj "../../data_structures/RelObj";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
-import Types "../../types";
-import EmailManager "../email/email";
-import VoteState "../vote/state";
+
+import JSON "mo:json/JSON";
+
+import Canistergeek "../../../common/canistergeek/canistergeek";
 import Content "../queue/state";
-import List "mo:base/List";
+import Constants "../../../common/constants";
+import EmailManager "../email/email";
+import GlobalState "../../statev2";
+import Helpers "../../../common/helpers";
+import ModClubParam "../parameters/params";
+import PohStateV2 "./statev2";
+import PohTypes "./types";
+import Rel "../../data_structures/Rel";
+import RelObj "../../data_structures/RelObj";
+import Types "../../types";
+import VoteState "../vote/state";
 
 module PohModule {
 
@@ -35,6 +43,7 @@ module PohModule {
   public let CHALLENGE_USER_VIDEO_ID = "challenge-user-video";
   public let CHALLENGE_USER_AUDIO_ID = "challenge-user-audio";
   public let CHALLENGE_DRAWING_ID = "challenge-drawing";
+  public let CHALLENGE_UNIQUE_POH_ID = "challenge-unique-poh";
 
   let SHAPE_LIST : [Text] = ["Triangle", "Smile", "Circle", "Square", "Star"];
 
@@ -273,15 +282,17 @@ module PohModule {
                 );
 
                 // if any of the challenge is rejected, then overall status is rejected
-                if (status == #rejected) {
+                if (status == #rejectedDuplicate) {
+                  overAllStatus := #rejectedDuplicate;
+                } else if (status != #rejectedDuplicate and status == #rejected) {
                   overAllStatus := #rejected;
-                } else if (overAllStatus != #rejected and status == #expired) {
+                } else if (overAllStatus != #rejectedDuplicate and overAllStatus != #rejected and status == #expired) {
                   // if any of the challenge is expired and none is rejected, then overall status is expired
                   overAllStatus := #expired;
                 };
 
                 // so that rejected or expired overallstatus can't be overidden
-                if (overAllStatus != #rejected and overAllStatus != #expired) {
+                if (overAllStatus != #rejectedDuplicate and overAllStatus != #rejected and overAllStatus != #expired) {
                   // if any of the challenge is not submitted then it's not submitted.
                   if (status == #notSubmitted) {
                     overAllStatus := #notSubmitted;
@@ -289,6 +300,8 @@ module PohModule {
                     overAllStatus != #notSubmitted and status == #pending
                   ) {
                     overAllStatus := #pending;
+                  } else if (overAllStatus != #notSubmitted and status == #processing) {
+                    overAllStatus := #processing;
                   };
                 };
               };
@@ -674,7 +687,7 @@ module PohModule {
                 return #alreadySubmitted;
               } else if (attempts.get(attempts.size() -1).status == #verified) {
                 return #alreadyApproved;
-              } else if (attempts.get(attempts.size() -1).status == #rejected) {
+              } else if (attempts.get(attempts.size() -1).status == #rejected or attempts.get(attempts.size() -1).status == #rejectedDuplicate) {
                 return #alreadyRejected;
               };
               return #ok;
@@ -714,7 +727,7 @@ module PohModule {
     ) : ?Text {
       let _ = do ? {
         var completedOn = -1;
-        if (status == #verified or status == #rejected) {
+        if (status == #verified or status == #rejected or status == #rejectedDuplicate) {
           completedOn := Helpers.timeNow();
         };
         let attempts = state.pohUserChallengeAttempts.get(userId)!.get(
@@ -722,14 +735,13 @@ module PohModule {
         )!;
         let attempt = attempts.get(attempts.size() - 1);
         let updatedAttempt = {
-          attemptId = attempt.attemptId;
+          attemptId = attempt.attemptId; // This is the contentId now
           challengeId = attempt.challengeId;
           challengeName = attempt.challengeName;
           challengeDescription = attempt.challengeDescription;
           challengeType = attempt.challengeType;
           userId = attempt.userId;
           status = status;
-          // contentId = attempt.contentId;
           dataCanisterId = attempt.dataCanisterId;
           createdAt = attempt.createdAt;
           updatedAt = Helpers.timeNow();
@@ -963,17 +975,20 @@ module PohModule {
         let challengeAttempts = state.pohUserChallengeAttempts.get(userId)!;
         label l for (id in providerChallengeIds.vals()) {
           let attempts = challengeAttempts.get(id)!;
-          if (
-            attempts.size() == 0 or attempts.get(attempts.size() - 1).status == #notSubmitted or attempts.get(
-              attempts.size() - 1
-            ).status == #rejected or attempts.get(attempts.size() - 1).status == #expired
-          ) {
+          if (attempts.size() == 0) {
             createPackage := false;
             break l;
           };
-          if (attempts.get(attempts.size() - 1).status == #pending) {
+
+          // if last attempt is pending ( ready for review ) then add it to package
+          let lastAttemptStatus = attempts.get(attempts.size() - 1).status;
+          if (lastAttemptStatus == #pending) {
             challengeIdsForPackage.add(id);
+          } else {
+            createPackage := false;
+            break l;
           };
+
         };
       };
       if (not createPackage) {
@@ -1007,8 +1022,7 @@ module PohModule {
                     challengeType = att.challengeType;
                     userId = package.userId;
                     status = att.status;
-                    contentId = att.attemptId;
-                    //attemptId is contentId for a challenge
+                    contentId = att.attemptId; //attemptId is contentId for a challenge
                     dataCanisterId = att.dataCanisterId;
                     wordList = att.wordList;
                     allowedViolationRules = switch (challenge) {
@@ -1055,9 +1069,7 @@ module PohModule {
           case (null)();
           case (?package) {
             if (
-              package.challengeIds.size() == challengeIds.size() and getContentStatus(
-                package.id
-              ) == #rejected
+              package.challengeIds.size() == challengeIds.size() and getContentStatus(package.id) == #rejected
             ) {
               let cIdsMap = HashMap.HashMap<Text, Text>(
                 1,
@@ -1238,27 +1250,27 @@ module PohModule {
       allowedViolationRules3.add(
         {
           ruleId = "1";
-          ruleDesc = "The person in the video is the same person in the profile picture";
+          ruleDesc = "The person in the video says all the numbers in order in the box above";
         }
       );
       allowedViolationRules3.add(
         {
           ruleId = "2";
-          ruleDesc = "The person in the video says all the words in order in the box above";
+          ruleDesc = "The person in the video appears to be a real person and not AI generated";
         }
       );
       allowedViolationRules3.add(
         {
           ruleId = "3";
-          ruleDesc = "The person in the video appears to be a real person and not AI generated";
+          ruleDesc = "The person in the video is not hiding their face or using a disguise or mask.";
         }
       );
       state.pohChallenges.put(
         CHALLENGE_USER_VIDEO_ID,
         {
           challengeId = CHALLENGE_USER_VIDEO_ID;
-          challengeName = "Please record your video saying these words";
-          challengeDescription = "Please record your video saying these words";
+          challengeName = "Please record your video saying these numbers";
+          challengeDescription = "Please record your video saying these numbers";
           requiredField = #videoBlob;
           // assuming there will be no transitive dependencies. else graph needs to be used
           dependentChallengeId = null;
@@ -1273,13 +1285,13 @@ module PohModule {
       allowedViolationRules4.add(
         {
           ruleId = "1";
-          ruleDesc = "The person in the audio says all the words in order in the box above";
+          ruleDesc = "The person in the audio says all the numbers in order in the box above";
         }
       );
       allowedViolationRules4.add(
         {
           ruleId = "2";
-          ruleDesc = "The person in the audio appears to be sound like a real person and not  an AI-generated voice";
+          ruleDesc = "The person in the audio appears to be sound like a real person and not an AI-generated voice";
         }
       );
       state.pohChallenges.put(
@@ -1287,7 +1299,7 @@ module PohModule {
         {
           challengeId = CHALLENGE_USER_AUDIO_ID;
           challengeName = "Please record your audio reading these words";
-          challengeDescription = "Please record your audio reading these words";
+          challengeDescription = "Please record your audio reading these words.";
           requiredField = #videoBlob;
           // TODO: Minor, Switch to just blob or audio blob, front end handles this correctly
           dependentChallengeId = null;
@@ -1323,58 +1335,33 @@ module PohModule {
           updatedAt = Helpers.timeNow();
         }
       );
+      state.pohChallenges.put(
+        CHALLENGE_UNIQUE_POH_ID,
+        {
+          challengeId = CHALLENGE_UNIQUE_POH_ID;
+          challengeName = "Please record your video saying these numbers";
+          challengeDescription = "Please record your video saying these numbers. Your head should be visible in the video and centered. Please move any hats or hair away from your face";
+          requiredField = #videoBlob;
+          // assuming there will be no transitive dependencies. else graph needs to be used
+          dependentChallengeId = null;
+          challengeType = #selfVideo;
+          allowedViolationRules = Buffer.toArray<PohTypes.ViolatedRules>(allowedViolationRules3);
+          createdAt = Helpers.timeNow();
+          updatedAt = Helpers.timeNow();
+        }
+      );
 
       state.wordList.clear();
-      state.wordList.add("Cute");
-      state.wordList.add("Free");
-      state.wordList.add("Pair");
-      state.wordList.add("Jolt");
-      state.wordList.add("Safe");
-      state.wordList.add("Lack");
-      state.wordList.add("Live");
-      state.wordList.add("Seal");
-      state.wordList.add("Need");
-      state.wordList.add("Crop");
-      state.wordList.add("Five");
-      state.wordList.add("Dull");
-      state.wordList.add("Dead");
-      state.wordList.add("Tile");
-      state.wordList.add("Meet");
-      state.wordList.add("Till");
-      state.wordList.add("Form");
-      state.wordList.add("Very");
-      state.wordList.add("Blue");
-      state.wordList.add("City");
-      state.wordList.add("Neat");
-      state.wordList.add("Stun");
-      state.wordList.add("Rank");
-      state.wordList.add("Cove");
-      state.wordList.add("Bell");
-      state.wordList.add("Fail");
-      state.wordList.add("Rose");
-      state.wordList.add("Rook");
-      state.wordList.add("Disk");
-      state.wordList.add("Sing");
-      state.wordList.add("List");
-      state.wordList.add("Fear");
-      state.wordList.add("Shop");
-      state.wordList.add("Okra");
-      state.wordList.add("Side");
-      state.wordList.add("Cask");
-      state.wordList.add("Axie");
-      state.wordList.add("Stag");
-      state.wordList.add("Cake");
-      state.wordList.add("Bold");
-      state.wordList.add("Desk");
-      state.wordList.add("Stub");
-      state.wordList.add("Soar");
-      state.wordList.add("Pole");
-      state.wordList.add("Halo");
-      state.wordList.add("Plow");
-      state.wordList.add("Team");
-      state.wordList.add("Lace");
-      state.wordList.add("Gaze");
-      state.wordList.add("Kill");
+      state.wordList.add("0");
+      state.wordList.add("1");
+      state.wordList.add("2");
+      state.wordList.add("3");
+      state.wordList.add("4");
+      state.wordList.add("5");
+      state.wordList.add("6");
+      state.wordList.add("7");
+      state.wordList.add("8");
+      state.wordList.add("9");
     };
 
     public func issueCallbackToProviders(
@@ -1416,7 +1403,7 @@ module PohModule {
                   getContentStatus
                 );
                 if (
-                  resp.status == #verified or resp.status == #rejected or resp.status == #pending
+                  resp.status == #verified or resp.status == #rejected or resp.status == #pending or resp.status == #processing or resp.status == #rejectedDuplicate
                 ) {
                   let statusText = statusToString(resp.status);
                   switch (callbackData.get(statusText)) {
@@ -1472,6 +1459,12 @@ module PohModule {
         case (#startPoh) {
           "startPoh";
         };
+        case (#processing) {
+          "processing";
+        };
+        case (#rejectedDuplicate) {
+          "rejectedDuplicate";
+        };
       };
     };
 
@@ -1490,6 +1483,169 @@ module PohModule {
         case (null) {
           return #err(#pohCallbackNotRegistered);
         };
+      };
+    };
+
+    private func calculateHttpOutcallCost(
+      url : Text,
+      body : Blob,
+      headers : [Types.HttpHeader],
+      maxResponseSize : Nat
+    ) : Nat {
+      // Calculate the total header size
+      var headerSize : Nat = 0;
+
+      for (header in headers.vals()) {
+        headerSize := headerSize + header.name.size() + header.value.size();
+      };
+
+      // Calculate the request size
+      let requestSize = url.size() + body.size() + headerSize;
+
+      let n = 13 /* number of nodes in the subnet */;
+      let HTTPS_OUTCALL_COST_PER_CALL = (3_000_000 + 60_000 * n) * n;
+      let HTTPS_OUTCALL_COST_PER_REQUEST_BYTE = 400 * n;
+      let HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE = 800 * n;
+
+      let httpOutcallCost = HTTPS_OUTCALL_COST_PER_CALL +
+      HTTPS_OUTCALL_COST_PER_REQUEST_BYTE * requestSize +
+      HTTPS_OUTCALL_COST_PER_RESPONSE_BYTE * maxResponseSize;
+
+      // Define the buffer percentage (e.g., 3%)
+      let bufferPercentage : Float = 0.03;
+
+      // Calculate the buffer
+      let buffer = Float.fromInt(httpOutcallCost) * bufferPercentage;
+      // Round and convert to a Nat
+      let roundedBuffer = Int.abs(Float.toInt(Float.nearest(buffer)));
+
+      // Add the buffer to the httpOutcallCost and return the total
+      return httpOutcallCost + roundedBuffer;
+    };
+
+    public func httpCallForProcessing(
+      userPrincipal : Principal,
+      dataCanisterId : Principal,
+      contentId : Text,
+      apiKey : Text,
+      pohLambdaHost : Text,
+      transformFunction : shared query Types.TransformArgs -> async Types.CanisterHttpResponsePayload,
+      canistergeekLogger : Canistergeek.Logger
+    ) : async Bool {
+      if (apiKey == "") {
+        throw Error.reject("POH API key is not provided. Please ask admin to set the key for lambda calls.");
+      };
+
+      let request_headers = [
+        { name = "Content-Type"; value = "application/json" },
+        {
+          name = "x-api-key";
+          value = apiKey;
+        }
+      ];
+
+      // TODO: Alter URL based on environment
+      let url = "https://" # pohLambdaHost # "/";
+
+      // Construct video URL
+      let videoUrl = "https://" # Principal.toText(dataCanisterId) # ".raw.icp0.io/storage?contentId=" # contentId;
+
+      Helpers.logMessage(
+        canistergeekLogger,
+        "httpCallForProcessing - videoUrl: " # videoUrl,
+        #info
+      );
+
+      // Create idempotency key so the backend knows to process one request
+      let idempotencyKey = Principal.toText(userPrincipal) # "-" # Int.toText(Time.now());
+      let body : JSON.JSON = #Object([
+        ("video_url", #String(videoUrl)),
+        ("user_id", #String(Principal.toText(userPrincipal))),
+        ("idempotency_key", #String(idempotencyKey))
+      ]);
+
+      let DATA_POINTS_PER_API : Nat = 200;
+      let MAX_RESPONSE_BYTES : Nat = 10 * 6 * DATA_POINTS_PER_API;
+
+      let transform_context : Types.TransformContext = {
+        function = transformFunction;
+        context = Blob.fromArray([]);
+      };
+
+      let textBody = Text.encodeUtf8(JSON.show(body));
+
+      let request : Types.CanisterHttpRequestArgs = {
+        url = url;
+        headers = request_headers;
+        body = ?Blob.toArray(textBody);
+        method = #post;
+        max_response_bytes = ?Nat64.fromNat(MAX_RESPONSE_BYTES);
+        transform = ?transform_context;
+      };
+
+      // Estimate the cycle cost for the HTTP outcall
+      let estimatedCost = calculateHttpOutcallCost(
+        url,
+        textBody,
+        request_headers,
+        MAX_RESPONSE_BYTES
+      );
+
+      Helpers.logMessage(
+        canistergeekLogger,
+        "httpCallForProcessing - estimatedCost: " # Nat.toText(estimatedCost),
+        #info
+      );
+
+      try {
+        // Dynamically add cycles based on the useremail characters
+        Cycles.add(estimatedCost);
+        let ic : Types.IC = actor ("aaaaa-aa");
+
+        Helpers.logMessage(
+          canistergeekLogger,
+          "httpCallForProcessing - Initiating call to lambda",
+          #info
+        );
+
+        let response : Types.CanisterHttpResponsePayload = await ic.http_request(request);
+        // Check if the response status code indicates success (e.g., 200)
+        if (response.status >= 200 and response.status < 300) {
+          // Handle successful response
+          switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
+            case null {
+              throw Error.reject("Remote response had no body.");
+            };
+            case (?body) {
+              Helpers.logMessage(
+                canistergeekLogger,
+                "httpCallForProcessing - response: " # body,
+                #info
+              );
+              return true;
+            };
+          };
+        } else {
+          // Handle error response
+          let errorMessage = switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
+            case null { "Error: No response body." };
+            case (?body) { "Error: " # body };
+          };
+          Helpers.logMessage(
+            canistergeekLogger,
+            "httpCallForProcessing - error: status code: " # Int.toText(response.status) # " message: " # errorMessage,
+            #info
+          );
+          throw Error.reject(errorMessage);
+        };
+        return false;
+      } catch (err) {
+        Helpers.logMessage(
+          canistergeekLogger,
+          "httpCallForProcessing - error: " # Error.message(err),
+          #info
+        );
+        throw Error.reject(Error.message(err));
       };
     };
 

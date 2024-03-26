@@ -15,13 +15,12 @@ export const Phrases: React.FC<PhrasesProps> = ({ phrases }) => (
         style={{ width: "100%" }}
       >
         Record yourself saying the following
-        <br /> words in order:
+        <br /> numbers in order:
       </Heading>
 
       {phrases.map((phrase, index) => (
         <Columns.Column key={phrase} size={4}>
           <Button fullwidth isStatic>
-            {index + 1}
             <span className="ml-2" style={{ width: 40 }}>
               {phrase}
             </span>

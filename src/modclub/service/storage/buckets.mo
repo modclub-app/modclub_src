@@ -340,6 +340,11 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
       streamingCallback : shared () -> async ();
     };
 
+    let _lambdaKey = authGuard.getSecretVals("POH_CONTENT_ACCESS_KEY");
+    if (_lambdaKey.size() == 0) {
+      throw Error.reject("POH Lambda key is not provided. Please ask admin to set the POH_CONTENT_ACCESS_KEY for calls from POH lambda.");
+    };
+
     var _status_code : Nat16 = 404;
     var _body : Blob = "404 Not Found";
     var _streaming_strategy : ?Types.StreamingStrategy = null;
@@ -360,16 +365,30 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
           };
         };
 
-        if (not (isUserAllowed(jwt, contentId!))) {
+        // Extract x-api-key from request headers in case of lambda invocation
+        var apiKey : ?Text = null;
+        label l for (header : (Text, Text) in req.headers.vals()) {
+          if (header.0 == "x-api-key") {
+            apiKey := ?header.1;
+            break l;
+          };
+        };
+
+        if (apiKey != _lambdaKey[0] and not (isUserAllowed(jwt, contentId!))) {
+          let msg : Text = if (apiKey == null) {
+            "401 Unauthorized - Invalid JWT";
+          } else {
+            "401 Unauthorized - Invalid API Key";
+          };
           Helpers.logMessage(
             canistergeekLogger,
-            "User " # Principal.toText(caller) # " tried to access data with invalid JWT",
+            "Bucket - http_request - User " # Principal.toText(caller) # " tried to access data: " # msg,
             #error
           );
           return {
             status_code = 401;
             headers = _headers;
-            body = "401 Unauthorized";
+            body = Text.encodeUtf8(msg);
             streaming_strategy = null;
           };
         };
@@ -459,6 +478,10 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
 
   public shared ({ caller }) func subscribeOnAdmins() : async () {
     authGuard.subscribe<system>("admins");
+  };
+
+  public shared ({ caller }) func subscribeOnSecrets() : async () {
+    authGuard.subscribe("secrets");
   };
 
   private func isUserAllowed(jwt : Text, contentId : Text) : Bool {
@@ -661,6 +684,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   }) : Bool {
     switch (msg) {
       case (#subscribeOnAdmins _) { authGuard.isAdmin(caller) };
+      case (#subscribeOnSecrets _) { authGuard.isAdmin(caller) };
       case _ { not Principal.isAnonymous(caller) };
     };
   };

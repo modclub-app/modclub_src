@@ -210,6 +210,9 @@ export const formattedTime = (val) => {
 };
 
 export const hideStringWithStars = (str = "") => {
+  if (!str || !str.length) {
+    return "";
+  }
   // Determine the length of the ID part that needs to be hidden
   const totalLength = str.length;
   const hideLength = Math.floor(totalLength / 2);

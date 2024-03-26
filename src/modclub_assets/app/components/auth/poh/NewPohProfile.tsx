@@ -8,6 +8,7 @@ import ProfilePic from "./ProfilePic";
 import UserVideo from "./UserVideo";
 import UserPhrases from "./UserPhrases";
 import DrawingChallenge from "./DrawingChallenge";
+import UniquePoh from "./UniquePoh";
 import { modclub_types } from "../../../utils/types";
 import { useActors } from "../../../hooks/actors";
 import { useConnect } from "@connect2icmodclub/react";
@@ -242,6 +243,14 @@ export default function NewPohProfile({ match }) {
                           <DrawingChallenge
                             step={steps.find(
                               (s) => s.challengeId == "challenge-drawing"
+                            )}
+                            goToNextStep={goToNextStep}
+                          />
+                        </Route>
+                        <Route path={`${match.path}/:challenge-unique-poh`}>
+                          <UniquePoh
+                            step={steps.find(
+                              (s) => s.challengeId == "challenge-unique-poh"
                             )}
                             goToNextStep={goToNextStep}
                           />

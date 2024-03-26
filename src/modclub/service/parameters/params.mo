@@ -20,8 +20,8 @@ module {
   public let TOTAL_QUEUES = 100;
   public let ASSIGN_CONTENT_QUEUES = 70;
 
-  public let WORD_SIZE_FOR_VIDEO = 6;
-  public let WORD_SIZE_FOR_AUDIO = 6;
+  public let WORD_SIZE_FOR_VIDEO = 3;
+  public let WORD_SIZE_FOR_AUDIO = 3;
   public let SHAPE_COUNT = 3;
   public let PER_CONTENT_SIZE_EXCEEDED_ERROR = "Per Submission Data limit exceeded.";
 
