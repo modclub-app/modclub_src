@@ -1,6 +1,6 @@
 import Array "mo:base/Array";
 import Base32 "mo:encoding/Base32";
-import Backup "mo:backup";
+import Backup "../common/backup/lib";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
