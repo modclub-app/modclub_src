@@ -323,6 +323,7 @@ function quick_build() {
     --package motoko-sequence .mops/_github/motoko-sequence#master@366c4191d856ed4842267f5ab89d7222ed2d71d0/src \
     --package motoko-matchers .mops/_github/motoko-matchers#master@3dac8a071b69e4e651b25a7d9683fe831eb7cffd/src \
     --package backup .mops/backup@2.0.1/src \
+    --package memory-region .mops/memory-region@0.1.1/src \
     --package linked-list .mops/linked-list@0.1.0/src \
     --package http-types .mops/http-types@1.0.1/src \
     --package motoko-datetime .mops/_github/motoko-datetime#v0.1.1/src \
