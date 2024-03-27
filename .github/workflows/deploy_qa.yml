@@ -97,6 +97,7 @@ jobs:
           source "$HOME/.local/share/dfx/env"
           echo "$HOME/.local/share/dfx/bin" >> $GITHUB_PATH
           dfx --version
+          rustup target add wasm32-unknown-unknown
 
       - name: Set up dfx identity
         run: |
