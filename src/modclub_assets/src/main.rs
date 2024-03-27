@@ -88,7 +88,13 @@ impl Storable for IssuerConfig {
         Cow::Owned(candid::encode_one(self).expect("failed to encode IssuerConfig"))
     }
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        candid::decode_one(&bytes).expect("failed to decode IssuerConfig")
+        match candid::decode_one(&bytes) {
+            Ok(config) => config,
+            Err(e) => {
+                println!("[DEBUG]::[ISSUER_CONFIG]::[FROM_BYTES_ERROR]::{:?}", &e);
+                Self::default()
+            },
+        }
     }
     const BOUND: Bound = Bound::Unbounded;
 }
