@@ -1,4 +1,4 @@
-import Backup "mo:backup";
+import Backup "./lib";
 import Buffer "mo:base/Buffer";
 import Blob "mo:base/Blob";
 import Nat "mo:base/Nat";
