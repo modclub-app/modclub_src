@@ -77,7 +77,7 @@ jobs:
         env:
           IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_QA }}
 
-      - name: install moc
+      - name: install mops
         if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           npm i ic-mops -g

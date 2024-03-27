@@ -303,7 +303,7 @@ function quick_build() {
 
     # Building the canister using the moc command
     # TODO: Create a Mops parser and use that to generate the moc command
-    ~/.cache/dfinity/versions/0.14.3/moc $canister_source -o $canister_output -c --debug --idl --stable-types \
+    ~/.cache/dfinity/versions/0.18.0/moc $canister_source -o $canister_output -c --debug --idl --stable-types \
     --public-metadata candid:service --public-metadata candid:args --actor-idl ./.dfx/local/canisters/idl/ \
     --actor-alias $canister_name_with_env $(dfx canister id $canister_name_with_env) \
     --package base .mops/base@0.9.7/src \
