@@ -69,7 +69,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
       );
     };
 
-    ignore Timer.setTimer(
+    ignore Timer.setTimer<system>(
       #seconds(0),
       func() : async () {
         await publish("admins");
@@ -255,11 +255,11 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     };
   };
 
-  ignore Timer.setTimer(
+  ignore Timer.setTimer<system>(
     #seconds 0,
     func() : async () {
       canistergeekMonitor.collectMetrics();
-      ignore Timer.recurringTimer(
+      ignore Timer.recurringTimer<system>(
         #nanoseconds(GlobalConstants.FIVE_MIN_NANO_SECS),
         func() : async () { canistergeekMonitor.collectMetrics() }
       );

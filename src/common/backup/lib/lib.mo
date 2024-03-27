@@ -1,6 +1,5 @@
 import Principal "mo:base/Principal";
 import Debug "mo:base/Debug";
-import Timer "mo:base/Timer";
 import ExperimentalCycles "mo:base/ExperimentalCycles";
 
 import Types "./types";

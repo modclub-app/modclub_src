@@ -49,7 +49,7 @@ module CommonTimer {
           #seconds(0),
           func() : async () {
             let _ = await emailtimer();
-            ignore Timer.recurringTimer(
+            ignore Timer.recurringTimer<system>(
               #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
               emailtimer
             );

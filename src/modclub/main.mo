@@ -129,7 +129,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private var verifiedCredentialsWLBuf = Buffer.Buffer<Principal>(100);
 
   private var commonTimer = CommonTimer.CommonTimer(env, "CommonTimer");
-  commonTimer.initTimer(canistergeekMonitor);
+  commonTimer.initTimer<system>(canistergeekMonitor);
 
   private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
   authGuard.subscribe("admins");
@@ -2920,11 +2920,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   // Canister Geek timer collection of metrics
-  ignore Timer.setTimer(
+  ignore Timer.setTimer<system>(
     #seconds 0,
     func() : async () {
       canistergeekMonitor.collectMetrics();
-      ignore Timer.recurringTimer(
+      ignore Timer.recurringTimer<system>(
         #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
         func() : async () { canistergeekMonitor.collectMetrics() }
       );
