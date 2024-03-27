@@ -306,7 +306,7 @@ function quick_build() {
     ~/.cache/dfinity/versions/0.18.0/moc $canister_source -o $canister_output -c --debug --idl --stable-types \
     --public-metadata candid:service --public-metadata candid:args --actor-idl ./.dfx/local/canisters/idl/ \
     --actor-alias $canister_name_with_env $(dfx canister id $canister_name_with_env) \
-    --package base .mops/base@0.9.7/src \
+    --package base .mops/base@0.11.1/src \
     --package uuid .mops/_github/uuid#v0.2.0/src \
     --package encoding .mops/_github/encoding#v0.3.1/src \
     --package array .mops/_github/array#v0.1.1/src \
@@ -319,12 +319,12 @@ function quick_build() {
     --package itertools .mops/itertools@0.1.2/src \
     --package candid .mops/candid@1.0.2/src \
     --package xtended-numbers .mops/xtended-numbers@0.2.1/src \
-    --package map .mops/map@8.1.0/src \
+    --package map .mops/map@9.0.1/src \
     --package motoko-sequence .mops/_github/motoko-sequence#master@366c4191d856ed4842267f5ab89d7222ed2d71d0/src \
     --package motoko-matchers .mops/_github/motoko-matchers#master@3dac8a071b69e4e651b25a7d9683fe831eb7cffd/src \
-    --package backup .mops/backup@1.1.1/src \
+    --package backup .mops/backup@2.0.1/src \
     --package linked-list .mops/linked-list@0.1.0/src \
-    --package http-types .mops/http-types@1.0.0/src \
+    --package http-types .mops/http-types@1.0.1/src \
     --package motoko-datetime .mops/_github/motoko-datetime#v0.1.1/src \
     -v --max-stable-pages 786432 -no-check-ir
 
