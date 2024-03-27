@@ -32,7 +32,7 @@ function checkVersion(tool, expectedVersion, command) {
   });
 }
 // Checking versions of tools ('Tool', 'Reccomended version', 'Command to check version')');
-checkVersion("dfx", "0.14.3", "dfx --version");
+checkVersion("dfx", "0.18.0", "dfx --version");
 checkVersion("sns-cli", "0.1.0", "sns-cli --version");
 checkVersion("quill", "v0.4.0", "quill -V");
 checkVersion("didc", "0.3.0", "didc --version");

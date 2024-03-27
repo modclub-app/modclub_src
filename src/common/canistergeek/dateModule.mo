@@ -306,6 +306,7 @@ module {
         time / (24 * 60 * 60 * Constants.ONE_SECOND_NANOS)
       );
       let date : ChronosphereDate.Date = #Date base;
+      date
     };
 
     private func toDateTime(time : Int) : ChronosphereDate.DateTime {
@@ -313,6 +314,7 @@ module {
       let timeBase : Int = timeToSeconds % (24 * 60 * 60);
       let base : Int32 = Int32.fromInt(timeBase);
       let date : ChronosphereDate.DateTime = #DateTime base;
+      date
     };
 
   };

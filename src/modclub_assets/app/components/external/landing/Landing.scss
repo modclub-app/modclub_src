@@ -1,0 +1,127 @@
+@import "../../../common.scss";
+
+a.navbar-item {
+  font-weight: 700;
+  color: $white;
+
+  &:hover {
+    background: none;
+    color: $white;
+  }
+}
+
+.landing-page.info ul {
+  padding-left: 2rem;
+}
+
+.landing-page.info .section {
+  // border: 2px solid lime;
+  margin-top: 3rem;
+  padding-top: 3rem;
+}
+
+.landing-page .section {
+  // border-top: 1px solid red;
+  margin-top: 6rem;
+  padding-top: 6rem;
+  padding-bottom: 0;
+  position: relative;
+
+  &:not(.no-border)::before {
+    content: "";
+    display: block;
+    background: #3e4348;
+    height: 1px;
+    width: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+  }
+
+  &.no-border {
+    padding-top: 0;
+  }
+}
+
+@media screen and (min-width: 769px), print {
+  .landing-divider {
+    margin: 100px;
+  }
+
+  .hero.is-medium .hero-body {
+    padding: 4rem 16% 0;
+  }
+
+  .roadmapLine + .column {
+    margin-right: 3rem;
+  }
+
+  section.Tokenomics .column .columns .column:first-child {
+    margin-right: 1.5rem !important;
+  }
+}
+
+@media screen and (min-width: 2023px), print {
+  .hero.is-medium .hero-body {
+    padding: 9rem 4.5rem;
+  }
+}
+
+.RewardsImg {
+  text-align: center;
+
+  @media screen and (min-width: 1023px), print {
+    text-align: right;
+  }
+}
+
+section.Tokenomics .card.has-gradient {
+  width: 180px;
+  height: 170px;
+
+  .card-content {
+    height: calc(100% - 2px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.roadmapLine {
+  width: 1rem;
+  height: 700px;
+  border-radius: 1rem;
+  background-color: $secondary;
+  background-image: linear-gradient($primary, $secondary);
+  position: absolute;
+  left: auto;
+  right: auto;
+  top: 1rem;
+}
+
+.card {
+  &.arrow-left::after,
+  &.arrow-right:after {
+    content: "";
+    position: absolute;
+    left: -15px;
+    top: 15px;
+    border-top: 15px solid transparent;
+    border-right: 15px solid $dark;
+    border-left: none;
+    border-bottom: 15px solid transparent;
+
+    @media screen and (max-width: 768px) {
+      content: none;
+    }
+  }
+
+  &.arrow-right::after {
+    left: auto;
+    right: -15px;
+    border-right: none;
+    border-left: 15px solid $dark;
+  }
+}

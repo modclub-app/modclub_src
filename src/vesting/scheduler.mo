@@ -59,7 +59,7 @@ module Scheduler = {
         for (job in jobs.vals()) {
           if (job.dissolve_at_time <= now) {
             executedJobs.add(job);
-            ignore Timer.setTimer(
+            ignore Timer.setTimer<system>(
               #seconds(0),
               func() : async () { ignore handleJob(job) }, // for async/parallel execution
             );
@@ -67,7 +67,7 @@ module Scheduler = {
         };
         let _ = dropFromSchedule(uid, executedJobs);
       };
-      scheduler := Timer.setTimer(
+      scheduler := Timer.setTimer<system>(
         #seconds(Constants.STAKING_UNLOCK_HANDLER_INTERVAL_SECONDS),
         reviewJobs
       );
@@ -101,9 +101,9 @@ module Scheduler = {
       };
     };
 
-    public func startScheduler() : Bool {
+    public func startScheduler<system>() : Bool {
       if (scheduler == 0) {
-        scheduler := Timer.setTimer(
+        scheduler := Timer.setTimer<system>(
           #seconds(Constants.STAKING_UNLOCK_HANDLER_INTERVAL_SECONDS),
           reviewJobs
         );

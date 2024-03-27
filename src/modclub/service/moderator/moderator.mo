@@ -31,8 +31,8 @@ module ModeratorModule {
     #providerNotFound;
   };
 
-  public func subscribeOnEvents(env : CommonTypes.ENV, topic : Text) : () {
-    ignore Timer.setTimer(
+  public func subscribeOnEvents<system>(env : CommonTypes.ENV, topic : Text) : () {
+    ignore Timer.setTimer<system>(
       #seconds(0),
       func() : async () {
         await ModSecurity.Guard(env, "MODERATOR_SERVICE").getRSActor().subscribe(topic);

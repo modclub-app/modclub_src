@@ -44,7 +44,7 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
   var logger = Helpers.getLogger(canistergeekLogger);
   let authGuard = ModSecurity.Guard(env, "VESTING_CANISTER");
   var scheduler = Scheduler.Scheduler(ledger, logger, authGuard);
-  ignore scheduler.startScheduler();
+  ignore scheduler.startScheduler<system>();
   ignore authGuard.setUpDefaultAdmins(List.nil<Principal>(), deployer, authGuard.getCanisterId(#modclub));
   authGuard.subscribe("admins");
   authGuard.subscribe("secrets");
@@ -171,11 +171,11 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
     return #Ok("success");
   };
 
-  ignore Timer.setTimer(
+  ignore Timer.setTimer<system>(
     #seconds 0,
     func() : async () {
       canistergeekMonitor.collectMetrics();
-      ignore Timer.recurringTimer(
+      ignore Timer.recurringTimer<system>(
         #nanoseconds(GlobalConstants.FIVE_MIN_NANO_SECS),
         func() : async () { canistergeekMonitor.collectMetrics() }
       );
@@ -194,8 +194,8 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
   system func postupgrade() {
     ledger.fromPersistedStorage(persistedVestingsStorage);
 
-    authGuard.subscribe("admins");
-    authGuard.subscribe("secrets");
+    authGuard.subscribe<system>("admins");
+    authGuard.subscribe<system>("secrets");
     ignore authGuard.setUpDefaultAdmins(
       List.nil<Principal>(),
       deployer,
@@ -209,7 +209,7 @@ shared ({ caller = deployer }) actor class Vesting(env : CommonTypes.ENV) = this
 
     scheduler.fromPersistentSchedule(persistedStakingUnlocks);
     scheduler.fromPersistentFailedJobs(persistedFailedUnlocks);
-    ignore scheduler.startScheduler();
+    ignore scheduler.startScheduler<system>();
   };
 
   system func inspect({

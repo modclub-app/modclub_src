@@ -21,9 +21,9 @@ module ModSecurity {
     var admins : List.List<Principal> = List.nil<Principal>();
     var secrets : List.List<CommonTypes.Secret> = List.nil<CommonTypes.Secret>();
 
-    public func subscribe(topic : Text) : () {
-      ignore Timer.setTimer(
-        #seconds(0),
+    public func subscribe<system>(topic : Text) : () {
+      ignore Timer.setTimer<system>(
+        #seconds(1),
         func() : async () {
           await getAuthActor().subscribe(topic);
         }

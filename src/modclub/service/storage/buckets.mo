@@ -477,7 +477,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   };
 
   public shared ({ caller }) func subscribeOnAdmins() : async () {
-    authGuard.subscribe("admins");
+    authGuard.subscribe<system>("admins");
   };
 
   public shared ({ caller }) func subscribeOnSecrets() : async () {
@@ -624,7 +624,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
 
   stable var stateShared : DataCanisterSharedState = emptyDataCanisterSharedState();
 
-  ignore Timer.setTimer(
+  ignore Timer.setTimer<system>(
     #seconds 0,
     func() : async () {
       canistergeekMonitor.collectMetrics();
@@ -632,14 +632,14 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
         case (?tid) { Timer.cancelTimer(tid) };
         case (null) {};
       };
-      canistergeekTimer := ?Timer.recurringTimer(
+      canistergeekTimer := ?Timer.recurringTimer<system>(
         #nanoseconds(Constants.ONE_HOUR_NANO_SECS),
         func() : async () {
           Helpers.logMessage(canistergeekLogger, "Running Collecting Metrics job.", #info);
           canistergeekMonitor.collectMetrics();
         }
       );
-      deleteContentTimer := ?Timer.recurringTimer(
+      deleteContentTimer := ?Timer.recurringTimer<system>(
         #nanoseconds(Constants.TWENTY_FOUR_HOUR_NANO_SECS),
         func() : async () {
           Helpers.logMessage(canistergeekLogger, "Running Delete ContentId job.", #info);
@@ -660,13 +660,13 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
   };
 
   system func postupgrade() {
-    authGuard.subscribe("admins");
+    authGuard.subscribe<system>("admins");
     ignore authGuard.setUpDefaultAdmins(
       List.nil<Principal>(),
       deployer,
       Principal.fromActor(this)
     );
-    authGuard.subscribe("secrets");
+    authGuard.subscribe<system>("secrets");
     state := toDataCanisterState(stateShared);
     stateShared := emptyDataCanisterSharedState();
     canistergeekMonitor.postupgrade(_canistergeekMonitorUD);

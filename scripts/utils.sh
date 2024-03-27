@@ -26,6 +26,7 @@ function generate_declarations() {
   local a=$(get_canister_name_by_env "$1" "airdrop")
   
   dfx generate "$m" --network=$network -v &&
+  dfx generate "${m}_assets" --network=$network -v &&
   dfx generate "$w" --network=$network -v &&
   dfx generate "$v" --network=$network -v &&
   dfx generate "$r" --network=$network -v &&

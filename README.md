@@ -4,8 +4,8 @@ ModClub is a moderation platform for online apps deployed on the IC. Moderation 
 
 # Prerequisites
 
-- Dfx 0.14.3
-- Node.js >=18.0.0
+- Dfx 0.18.0
+- Node.js >=20.0.0
 
 # Quick start
 
