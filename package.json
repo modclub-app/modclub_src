@@ -17,6 +17,7 @@
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
     "deploy_prod_frontend": "export DEV_ENV=production && source ./scripts/utils.sh && generate_declarations prod ic && node scripts/build/gen_files_by_env.cjs && dfx generate modclub_assets --network ic && dfx deploy modclub_assets --network ic && npm run add_tags_prod",
     "deploy_dev_frontend": "export DEV_ENV=dev && source ./scripts/utils.sh && generate_declarations dev ic && node scripts/build/gen_files_by_env.cjs && dfx generate modclub_dev_assets --network ic && dfx deploy modclub_dev_assets --network ic",
+    "deploy_qa_frontend": "export DEV_ENV=qa && source ./scripts/utils.sh && generate_declarations qa ic && node scripts/build/gen_files_by_env.cjs && dfx generate modclub_qa_assets --network ic && dfx deploy modclub_qa_assets --network ic",
     "prepare": "husky install"
   },
   "devDependencies": {

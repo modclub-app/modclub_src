@@ -6,7 +6,7 @@ gzip_and_deploy() {
   local canister_name=$1
   local network=$2
   local env_vars=$3
-  local mode=${4:-"install"}
+  local mode=${4:-"upgrade"}
 
   echo "Creating canister ${canister_name}..."
   dfx canister create ${canister_name}
