@@ -114,7 +114,7 @@ function init_canisters() {
 
   log "Init ${env} Canisters..."
   dfx canister call ${modclub_canister_name} adminInit --network=$network
-  dfx canister call ${modclub_canister_name} configurePohForProvider "(principal \"$(dfx canister id ${modclub_canister_name})\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)" --network=$network
+  dfx canister call ${modclub_canister_name} configurePohForProvider "(principal \"$(dfx canister id ${modclub_canister_name} --network=$network)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)" --network=$network
   dfx canister call ${modclub_canister_name} populateChallenges --network=$network
   log "${env} Canisters INITIALIZED"
   return 0;
