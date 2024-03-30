@@ -56,10 +56,7 @@ jobs:
           IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_QA }}
 
       - name: Install mops
-        run: |
-          npm i ic-mops -g
-          mops -v
-          mops install
+        uses: ZenVoich/setup-mops@v1
 
       - name: dfx start
         run: |
