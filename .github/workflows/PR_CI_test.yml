@@ -79,10 +79,7 @@ jobs:
 
       - name: install moc
         if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
-        run: |
-          npm i ic-mops -g
-          mops -v
-          mops install
+        uses: ZenVoich/setup-mops@v1
 
       - name: dfx start
         if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
