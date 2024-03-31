@@ -31,6 +31,7 @@ module {
     #addSecret : () -> CommonTypes.Secret;
     #removeSecret : () -> Text;
     #getSecrets : () -> ();
+    #getGuardSecrets : () -> ();
     #subscribe : () -> (Text);
     #manualPublish : () -> ();
     #unregisterAdmin : () -> Text;

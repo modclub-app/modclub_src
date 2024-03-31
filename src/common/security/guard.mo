@@ -67,6 +67,10 @@ module ModSecurity {
       List.toArray(admins);
     };
 
+    public func getSecrets() : [CommonTypes.Secret] {
+      List.toArray(secrets);
+    };
+
     public func isAdmin(caller : Principal) : Bool {
       List.some<Principal>(
         admins,
