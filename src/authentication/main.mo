@@ -39,7 +39,6 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     let payload = await getPublicationPayload(topic);
     for (subscriber in List.toArray(subscriptions).vals()) {
       if (subscriber.topic == topic) {
-        await subscriber._actor.handleSubscription(await getPublicationPayload(topic));
         ignore Timer.setTimer(
           #seconds(0),
           func() : async () {
