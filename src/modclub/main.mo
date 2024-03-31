@@ -2064,25 +2064,16 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public query ({ caller }) func getCanisterMetrics(
     parameters : Canistergeek.GetMetricsParameters
   ) : async ?Canistergeek.CanisterMetrics {
-    if (not authGuard.allowedCanistergeekCaller(caller)) {
-      throw Error.reject("Unauthorized");
-    };
     canistergeekMonitor.getMetrics(parameters);
   };
 
   public shared ({ caller }) func collectCanisterMetrics() : async () {
-    if (not authGuard.allowedCanistergeekCaller(caller)) {
-      throw Error.reject("Unauthorized");
-    };
     canistergeekMonitor.collectMetrics();
   };
 
   public query ({ caller }) func getCanisterLog(
     request : ?LoggerTypesModule.CanisterLogRequest
   ) : async ?LoggerTypesModule.CanisterLogResponse {
-    if (not authGuard.allowedCanistergeekCaller(caller)) {
-      throw Error.reject("Unauthorized");
-    };
     logger.logMessage("getCanisterLog - request from caller: " # Principal.toText(caller));
     canistergeekLogger.getLog(request);
   };
