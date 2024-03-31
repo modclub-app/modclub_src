@@ -317,7 +317,6 @@ function quick_build() {
     --package serde .mops/serde@2.0.4/src \
     --package itertools .mops/itertools@0.1.2/src \
     --package candid .mops/candid@1.0.2/src \
-    --package xtended-numbers .mops/xtended-numbers@0.2.1/src \
     --package map .mops/map@8.1.0/src \
     --package motoko-sequence .mops/_github/motoko-sequence#master@366c4191d856ed4842267f5ab89d7222ed2d71d0/src \
     --package motoko-matchers .mops/_github/motoko-matchers#master@3dac8a071b69e4e651b25a7d9683fe831eb7cffd/src \
