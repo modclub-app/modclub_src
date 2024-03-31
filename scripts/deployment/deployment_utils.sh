@@ -6,7 +6,7 @@ gzip_and_deploy() {
   local canister_name=$1
   local network=$2
   local env_vars=$3
-  local mode=${4:-"install"}
+  local mode=${4:-"upgrade"}
 
   echo "Creating canister ${canister_name}..."
   dfx canister create ${canister_name}
@@ -95,7 +95,7 @@ function deploy_canisters() {
 
     gzip_and_deploy $rs_canister_name $network "'(${env_vars})'" &&
     gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'" &&
-    init_canisters $env &&
+    init_canisters $env $network &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
     DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
@@ -109,13 +109,13 @@ function deploy_canisters() {
 # Run init
 function init_canisters() {
   local env=$1
-
+  local network=${2:-local}
   local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
 
   log "Init ${env} Canisters..."
-  dfx canister call ${modclub_canister_name} adminInit &&
-  dfx canister call ${modclub_canister_name} configurePohForProvider "(principal \"$(dfx canister id ${modclub_canister_name})\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)" &&
-  dfx canister call ${modclub_canister_name} populateChallenges
+  dfx canister call ${modclub_canister_name} adminInit --network=$network
+  dfx canister call ${modclub_canister_name} configurePohForProvider "(principal \"$(dfx canister id ${modclub_canister_name} --network=$network)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365:nat, false)" --network=$network
+  dfx canister call ${modclub_canister_name} populateChallenges --network=$network
   log "${env} Canisters INITIALIZED"
   return 0;
 }

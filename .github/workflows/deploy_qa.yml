@@ -108,11 +108,8 @@ jobs:
         env:
           IC_IDENTITY_FILE: ${{ secrets.IC_IDENTITY_FILE_QA }}
 
-      - name: install mops
-        run: |
-          npm i ic-mops -g
-          mops -v
-          mops install
+      - name: Install mops
+        uses: ZenVoich/setup-mops@v1
 
       - name: create-wallet_qa
         run: |
