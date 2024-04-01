@@ -28,7 +28,7 @@ gzip_and_deploy() {
 
   echo "Env vars ${env_vars}"
 
-  local cmd="dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument=${env_vars} $canister_name"
+  local cmd="dfx canister install --network=${network} --wasm $canister_output_gzipped --mode install --argument=${env_vars} $canister_name"
 
   if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
       cmd+=" --yes"
