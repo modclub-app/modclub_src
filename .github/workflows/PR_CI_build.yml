@@ -62,6 +62,10 @@ jobs:
 
       - name: Build BE canisters
         run: |
+          echo "========[SHOW_FACT_CACHE_DFINITY_VERSIONS]========="
+          ls -la /home/runner/.cache/dfinity/versions
+          echo "========[SHOW_DFX_LOCAL]========="
+          ls -la ./.dfx/local
           source scripts/deployment/build_utils.sh
           source scripts/utils.sh
           DEV_ENV=qa create_canisters qa && build_be_canisters_quick qa local
