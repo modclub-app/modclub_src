@@ -2,7 +2,7 @@
 set -e
 current_dir="$(dirname "$0")"
 
-local mode=${1:-"upgrade"}
+mode=${1:-"upgrade"}
 
 source "${current_dir}/../utils.sh"
 source "${current_dir}/deployment_utils.sh"
