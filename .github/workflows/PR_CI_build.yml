@@ -68,6 +68,8 @@ jobs:
           ls -la /home/runner/.cache/dfinity/versions/0.14.3
           echo "========[SHOW_DFX_folder]========="
           ls -la .dfx
+          echo "========[SHOW_DFX_NETWORK_FOLDER]========="
+          ls -la .dfx/network
           echo "========[SHOW_DFX_LOCAL]========="
           ls -la .dfx/local
           source scripts/deployment/build_utils.sh
