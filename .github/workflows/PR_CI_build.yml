@@ -40,7 +40,8 @@ jobs:
           cmd: install
 
       - name: Install dfx
-        env: DFX_VERSION: "0.14.3"
+        env:
+          DFX_VERSION: "0.14.3"
         uses: dfinity/setup-dfx@main
 
       - name: Set up dfx identity
