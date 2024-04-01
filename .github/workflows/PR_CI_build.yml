@@ -45,7 +45,10 @@ jobs:
           source "$HOME/.local/share/dfx/env"
           echo "$HOME/.local/share/dfx/bin" >> $GITHUB_PATH
           dfx --version
-          ls -la /home/runner/.cache/dfinity/versions
+          ls -la /home/runner/.cache
+          echo "==================="
+          ls -la /home/runner/.cache/dfinity
+          echo "==================="
 
       - name: Set up dfx identity
         run: |
