@@ -53,6 +53,7 @@ jobs:
       - name: Set up dfx identity
         run: |
           mkdir -p ~/.config/dfx/identity/default/
+          mkdir /home/runner/.cache/dfinity
           echo "$IC_IDENTITY_FILE" > ~/.config/dfx/identity/default/identity.pem
           dfx identity get-principal
           cat ~/.config/dfx/identity/default/identity.pem
