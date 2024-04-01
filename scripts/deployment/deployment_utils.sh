@@ -244,6 +244,9 @@ function quick_build_and_deploy_canister() {
     local canister_output
     local canister_name_with_env=canister_name
 
+    echo "====[DEBUG]===="
+    ls -la "./.dfx/network/local"
+
     ls -la "./.dfx/network/local/canisters" ||
     mkdir "./.dfx/network/local/canisters" 
     if [ "$env" == "prod" ]; then
