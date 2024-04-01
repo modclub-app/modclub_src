@@ -244,17 +244,17 @@ function quick_build_and_deploy_canister() {
     local canister_output
     local canister_name_with_env=canister_name
 
-    ls -la "./.dfx/local/canisters" ||
-    mkdir "./.dfx/local/canisters" 
+    ls -la "./.dfx/network/local/canisters" ||
+    mkdir "./.dfx/network/local/canisters" 
     if [ "$env" == "prod" ]; then
-      mkdir "./.dfx/${network}/canisters/${canister_name}/" ||
+      mkdir "./.dfx/network/${network}/canisters/${canister_name}/" ||
       log "Canister ${canister_name} directory already exists."
-      canister_output="./.dfx/${network}/canisters/${canister_name}/${canister_name}.wasm"
+      canister_output="./.dfx/network/${network}/canisters/${canister_name}/${canister_name}.wasm"
     else
       canister_name_with_env="${canister_name}_${env}"
-      mkdir "./.dfx/${network}/canisters/${canister_name_with_env}/" ||
+      mkdir "./.dfx/network/${network}/canisters/${canister_name_with_env}/" ||
       log "Canister ${canister_name_with_env} directory already exists."
-      canister_output="./.dfx/${network}/canisters/${canister_name_with_env}/${canister_name_with_env}.wasm"
+      canister_output="./.dfx/network/${network}/canisters/${canister_name_with_env}/${canister_name_with_env}.wasm"
     fi
 
     quick_build ${canister_name} ${env} ${network} &&
@@ -287,23 +287,23 @@ function quick_build() {
     local canister_name_with_env=canister_name
     # Adjust the wasm folder based on the canister name and env
 
-    ls -la "./.dfx/local/canisters" ||
-    mkdir "./.dfx/local/canisters" 
+    ls -la "./.dfx/network/local/canisters" ||
+    mkdir "./.dfx/network/local/canisters" 
     if [ "$env" == "prod" ]; then
-      mkdir "./.dfx/${network}/canisters/${canister_name}/" ||
+      mkdir "./.dfx/network/${network}/canisters/${canister_name}/" ||
       log "Canister ${canister_name} directory already exists."
-      canister_output="./.dfx/${network}/canisters/${canister_name}/${canister_name}.wasm"
+      canister_output="./.dfx/network/${network}/canisters/${canister_name}/${canister_name}.wasm"
     else
       canister_name_with_env="${canister_name}_${env}"
-      mkdir "./.dfx/${network}/canisters/${canister_name_with_env}/" ||
+      mkdir "./.dfx/network/${network}/canisters/${canister_name_with_env}/" ||
       log "Canister ${canister_name_with_env} directory already exists."
-      canister_output="./.dfx/${network}/canisters/${canister_name_with_env}/${canister_name_with_env}.wasm"
+      canister_output="./.dfx/network/${network}/canisters/${canister_name_with_env}/${canister_name_with_env}.wasm"
     fi
 
     # Building the canister using the moc command
     # TODO: Create a Mops parser and use that to generate the moc command
     ~/.cache/dfinity/versions/0.14.3/moc $canister_source -o $canister_output -c --debug --idl --stable-types \
-    --public-metadata candid:service --public-metadata candid:args --actor-idl ./.dfx/local/canisters/idl/ \
+    --public-metadata candid:service --public-metadata candid:args --actor-idl ./.dfx/network/local/canisters/idl/ \
     --actor-alias $canister_name_with_env $(dfx canister id $canister_name_with_env) \
     --package base .mops/base@0.9.7/src \
     --package uuid .mops/_github/uuid#v0.2.0/src \
