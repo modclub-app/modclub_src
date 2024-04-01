@@ -31,14 +31,30 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   stable var _canistergeekLoggerUD : ?Canistergeek.LoggerUpgradeData = null;
   private let canistergeekLogger = Canistergeek.Logger();
 
+  private let logger = Helpers.getLogger(canistergeekLogger);
+
   var authGuard = Security.Guard(env, "AUTH_CANISTER");
 
   private func publish(topic : Text) : async () {
+    let payload = await getPublicationPayload(topic);
     for (subscriber in List.toArray(subscriptions).vals()) {
       if (subscriber.topic == topic) {
-        await subscriber._actor.handleSubscription(await getPublicationPayload(topic));
+        ignore Timer.setTimer(
+          #seconds(0),
+          func() : async () {
+            try {
+              logger.logMessage("[EVENT_BUS]::[PUBLISH] Topic: <" # topic # "> for " # Principal.toText(subscriber.consumer));
+              await subscriber._actor.handleSubscription(payload);
+              logger.logMessage("[EVENT_BUS]::[PUBLISH]::[SUCCESS] Topic: <" # topic # "> for " # Principal.toText(subscriber.consumer));
+            } catch (err) {
+              logger.logMessage("[EVENT_BUS]::[PUBLISH]::[FAIL] Topic: <" # topic # "> for " # Principal.toText(subscriber.consumer) # " Err_Message: " # Error.message(err));
+            };
+          }
+        );
       };
     };
+    authGuard.handleSubscription(payload);
+    return;
   };
 
   private func getPublicationPayload(topic : Text) : async AuthTypes.ConsumerPayload {
@@ -277,5 +293,13 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     canistergeekLogger.postupgrade(_canistergeekLoggerUD);
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
+
+    ignore Timer.setTimer(
+      #seconds(0),
+      func() : async () {
+        await publish("admins");
+        await publish("secrets");
+      }
+    );
   };
 };
