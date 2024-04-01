@@ -98,7 +98,7 @@ jobs:
         if: ${{ steps.check-mo-file-change.outputs.skip != 'true' }}
         run: |
           dfx identity use default
-          DEPLOY_MODE=install ./scripts/deployment/gh_actions_deploy.sh
+          DEPLOY_MODE=install ./scripts/deployment/gh_actions_deploy.sh install
           find .dfx/local/canisters -name "*.wasm" -exec ls -l {} \;
           dfx canister call modclub_qa adminInit
           dfx canister call modclub_qa configurePohForProvider "(principal \"$(dfx canister id modclub_qa)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)"
