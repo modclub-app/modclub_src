@@ -6,7 +6,7 @@ gzip_and_deploy() {
   local canister_name=$1
   local network=$2
   local env_vars=$3
-  local mode=${4:-"upgrade"}
+  local mode=${4:-"install"}
 
   echo "Creating canister ${canister_name}..."
   dfx canister create ${canister_name}
@@ -29,18 +29,13 @@ gzip_and_deploy() {
   echo "Env vars ${env_vars}"
 
   local cmd="dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument=${env_vars} $canister_name"
-  local cmd_install="dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument=${env_vars} $canister_name"
-  
+
   if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
       cmd+=" --yes"
-      cmd_install+=" --yes"
   fi
 
   eval $cmd &&
-  echo "[DEPLOY] Canister ${canister_name} deployed successfully." && return 0 ||
-  eval $cmd_install &&
   echo "[DEPLOY] Canister ${canister_name} deployed successfully." && return 0;
-
   
   echo "[ERROR] Unable to deploy ${canister_name}" && exit 1
 }
