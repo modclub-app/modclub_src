@@ -54,6 +54,8 @@ jobs:
           ls -la /home/runner/.cache
           echo "========[SHOW_FACT_CACHE_DFINITY]========="
           ls -la /home/runner/.cache/dfinity
+          echo "========[SHOW_FACT_CACHE_DFINITY_VERSIONS]========="
+          ls -la /home/runner/.cache/dfinity/versions
           echo "==================="
 
       - name: Set up dfx identity
