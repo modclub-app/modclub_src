@@ -6,7 +6,7 @@ gzip_and_deploy() {
   local canister_name=$1
   local network=$2
   local env_vars=$3
-  local mode=${4:-"upgrade"}
+  local mode=${4:-"install"}
 
   echo "Creating canister ${canister_name}..."
   dfx canister create ${canister_name}
@@ -29,7 +29,7 @@ gzip_and_deploy() {
   echo "Env vars ${env_vars}"
 
   local cmd="dfx canister install --network=${network} --wasm $canister_output_gzipped --mode $mode --argument=${env_vars} $canister_name"
-  
+
   if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
       cmd+=" --yes"
   fi
@@ -46,6 +46,7 @@ function deploy_canisters() {
   local old_modclub_inst=$3
 
   local canister_only=${4:-ALL}
+  local mode=${5:-"upgrade"}
 
   export DEV_ENV=$env
   local env_vars=$(get_env_canisters_vars $env $network $old_modclub_inst)
@@ -73,28 +74,28 @@ function deploy_canisters() {
     DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
   elif [ "$canister_only" = "modclub" ]; then
-    gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'"
+    gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'" $mode
   elif [ "$canister_only" = "auth" ]; then
-    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'"
+    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'" $mode
   elif [ "$canister_only" = "wallet" ]; then
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity
   elif [ "$canister_only" = "vesting" ]; then
     deploy_vesting_canister $env $network $old_modclub_inst
   elif [ "$canister_only" = "airdrop" ]; then
-    gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'"
+    gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'" $mode
   elif [ "$canister_only" = "rs" ]; then
-    gzip_and_deploy $rs_canister_name $network "'(${env_vars})'"
+    gzip_and_deploy $rs_canister_name $network "'(${env_vars})'" $mode
   elif [ "$canister_only" = "ALL" ]; then
     set -x
     set -e
     log "Deploy ${env} Canisters..."
-    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'" &&
+    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'" $mode &&
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
     deploy_vesting_canister $env $network $old_modclub_inst &&
-    gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'" &&  
+    gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'" $mode &&  
 
-    gzip_and_deploy $rs_canister_name $network "'(${env_vars})'" &&
-    gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'" &&
+    gzip_and_deploy $rs_canister_name $network "'(${env_vars})'" $mode &&
+    gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'" $mode &&
     init_canisters $env $network &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
@@ -203,7 +204,7 @@ function get_env_canisters_vars() {
     wallet_canister_id=$wallet_canister
   fi
 
-  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; decideid_assets_canister_id = principal \"$(dfx canister id ${decideid_assets_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; }"
+  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; decideid_assets_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; }"
 }
 
 
@@ -317,7 +318,6 @@ function quick_build() {
     --package serde .mops/serde@2.0.4/src \
     --package itertools .mops/itertools@0.1.2/src \
     --package candid .mops/candid@1.0.2/src \
-    --package xtended-numbers .mops/xtended-numbers@0.2.1/src \
     --package map .mops/map@8.1.0/src \
     --package motoko-sequence .mops/_github/motoko-sequence#master@366c4191d856ed4842267f5ab89d7222ed2d71d0/src \
     --package motoko-matchers .mops/_github/motoko-matchers#master@3dac8a071b69e4e651b25a7d9683fe831eb7cffd/src \
