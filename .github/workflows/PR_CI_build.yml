@@ -64,8 +64,12 @@ jobs:
         run: |
           echo "========[SHOW_FACT_CACHE_DFINITY_VERSIONS]========="
           ls -la /home/runner/.cache/dfinity/versions
+          echo "========[SHOW_FACT_CACHE_DFINITY_VERSION_0.14.3]========="
+          ls -la /home/runner/.cache/dfinity/versions/0.14.3
+          echo "========[SHOW_DFX_folder]========="
+          ls -la .dfx
           echo "========[SHOW_DFX_LOCAL]========="
-          ls -la ./.dfx/local
+          ls -la .dfx/local
           source scripts/deployment/build_utils.sh
           source scripts/utils.sh
           DEV_ENV=qa create_canisters qa && build_be_canisters_quick qa local
