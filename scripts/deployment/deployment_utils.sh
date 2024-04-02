@@ -190,9 +190,10 @@ function get_env_canisters_vars() {
   local network=$2
   local old_modclub_inst=$3
 
-  local decideid_assets_canister_name="$(get_canister_name_by_env $env "decideid")_assets"
+  # local decideid_assets_canister_name="$(get_canister_name_by_env $env "decideid")_assets"
 
   local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
+  local modclub_assets_canister_name="$(get_canister_name_by_env $env 'modclub')_assets"
   local rs_canister_name=$(get_canister_name_by_env $env "rs")
   local wallet_canister_name=$(get_canister_name_by_env $env "wallet")
   local auth_canister_name=$(get_canister_name_by_env $env "auth")
@@ -204,7 +205,8 @@ function get_env_canisters_vars() {
     wallet_canister_id=$wallet_canister
   fi
 
-  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; decideid_assets_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; }"
+  echo "record { modclub_canister_id = principal \"$(dfx canister id ${modclub_canister_name} --network=${network})\"; old_modclub_canister_id = principal \"${old_modclub_inst}\"; modclub_assets_canister_id = principal \"$(dfx canister id ${modclub_assets_canister_name} --network=${network})\"; rs_canister_id = principal \"$(dfx canister id ${rs_canister_name} --network=${network})\"; wallet_canister_id = principal \"${wallet_canister_id}\"; auth_canister_id = principal \"$(dfx canister id ${auth_canister_name} --network=${network})\"; vesting_canister_id = principal \"$(dfx canister id ${vesting_canister_name} --network=${network})\"; }"
+
 }
 
 
@@ -303,10 +305,10 @@ function quick_build() {
 
     # Building the canister using the moc command
     # TODO: Create a Mops parser and use that to generate the moc command
-    ~/.cache/dfinity/versions/0.14.3/moc $canister_source -o $canister_output -c --debug --idl --stable-types \
+    ~/.cache/dfinity/versions/0.18.0/moc $canister_source -o $canister_output -c --debug --idl --stable-types \
     --public-metadata candid:service --public-metadata candid:args --actor-idl ./.dfx/local/canisters/idl/ \
     --actor-alias $canister_name_with_env $(dfx canister id $canister_name_with_env) \
-    --package base .mops/base@0.9.7/src \
+    --package base .mops/base@0.11.1/src \
     --package uuid .mops/_github/uuid#v0.2.0/src \
     --package encoding .mops/_github/encoding#v0.3.1/src \
     --package array .mops/_github/array#v0.1.1/src \
@@ -318,12 +320,14 @@ function quick_build() {
     --package serde .mops/serde@2.0.4/src \
     --package itertools .mops/itertools@0.1.2/src \
     --package candid .mops/candid@1.0.2/src \
-    --package map .mops/map@8.1.0/src \
+    --package xtended-numbers .mops/xtended-numbers@0.2.1/src \
+    --package map .mops/map@9.0.1/src \
     --package motoko-sequence .mops/_github/motoko-sequence#master@366c4191d856ed4842267f5ab89d7222ed2d71d0/src \
     --package motoko-matchers .mops/_github/motoko-matchers#master@3dac8a071b69e4e651b25a7d9683fe831eb7cffd/src \
-    --package backup .mops/backup@1.1.1/src \
+    --package memory-region .mops/memory-region@0.1.1/src \
+    --package stableheapbtreemap .mops/stableheapbtreemap@1.3.0/src \
     --package linked-list .mops/linked-list@0.1.0/src \
-    --package http-types .mops/http-types@1.0.0/src \
+    --package http-types .mops/http-types@1.0.1/src \
     --package motoko-datetime .mops/_github/motoko-datetime#v0.1.1/src \
     -v --max-stable-pages 786432 -no-check-ir
 

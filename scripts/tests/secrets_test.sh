@@ -30,16 +30,18 @@ function check_auth_secrets() {
 }
 
 dfx identity use default
+echo "check_canister_subscriptions..."
 check_canister_subscription modclub_qa
 check_canister_subscription vesting_qa
 check_canister_subscription rs_qa
 
+echo "removing test secrets..."
 dfx canister call auth_qa removeSecret 'my_secret_1'
 dfx canister call auth_qa removeSecret 'my_secret_2'
 dfx canister call auth_qa removeSecret 'allowed_cg_callers'
 
 principal_1=$(dfx identity get-principal)
-
+echo "Adding test secrets..."
 dfx canister call auth_qa addSecret '(record { name = "my_secret_1"; value = "abcd" })'
 dfx canister call auth_qa addSecret '(record { name = "my_secret_1"; value = "efgh" })'
 dfx canister call auth_qa addSecret '(record { name = "my_secret_2"; value = "12345" })'
@@ -49,7 +51,7 @@ function expected_unauthorized_collectCanisterMetrics_call() {
     local canister_name=$1
     local output=$(dfx canister call "$canister_name" collectCanisterMetrics 2>&1) || true
 
-    local expected_error="The replica returned a replica error: Replica Error: reject code CanisterReject, reject message Unauthorized, error code None"
+    local expected_error="reject message Unauthorized"
 
     if [[ "$output" == *"$expected_error"* ]]; then
         echo "Expected error occurred for $canister_name: $expected_error"
@@ -59,16 +61,17 @@ function expected_unauthorized_collectCanisterMetrics_call() {
     fi
 }
 
+echo "Testing expected_unauthorized_collectCanisterMetrics_call..."
 expected_unauthorized_collectCanisterMetrics_call modclub_qa
 expected_unauthorized_collectCanisterMetrics_call rs_qa
 expected_unauthorized_collectCanisterMetrics_call vesting_qa
 
-
+echo "Adding test Principal \"$principal_1\" to allowed_cg_callers secret..."
 dfx canister call auth_qa addSecret "(record { name = \"allowed_cg_callers\"; value = \"$principal_1\" })"
 
 check_auth_secrets my_secret_1 "abcd,efgh"
 check_auth_secrets my_secret_2 "12345"
-
+echo "Check collect Meticks call..."
 dfx canister call modclub_qa collectCanisterMetrics
 dfx canister call rs_qa collectCanisterMetrics
 dfx canister call vesting_qa collectCanisterMetrics

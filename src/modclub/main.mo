@@ -1,6 +1,6 @@
 import Array "mo:base/Array";
 import Base32 "mo:encoding/Base32";
-import Backup "mo:backup";
+import Backup "../common/backup/lib";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
@@ -129,7 +129,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   private var verifiedCredentialsWLBuf = Buffer.Buffer<Principal>(100);
 
   private var commonTimer = CommonTimer.CommonTimer(env, "CommonTimer");
-  commonTimer.initTimer(canistergeekMonitor);
+  commonTimer.initTimer<system>(canistergeekMonitor);
 
   private var authGuard = ModSecurity.Guard(env, "MODCLUB_CANISTER");
   authGuard.subscribe("admins");
@@ -176,7 +176,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   public shared func subscribeOnRsEvets() : async () {
     try {
-      ModeratorManager.subscribeOnEvents(env, Constants.TOPIC_MODERATOR_PROMOTED_TO_SENIOR);
+      ModeratorManager.subscribeOnEvents<system>(env, Constants.TOPIC_MODERATOR_PROMOTED_TO_SENIOR);
     } catch e {
 
     };
@@ -223,7 +223,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     switch (isEnabled) {
       case (true) {
         if (not Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
-          let resp = await (actor (Principal.toText(env.decideid_assets_canister_id)) : Types.VCIssuer).add_poh_verified(caller);
+          let resp = await (actor (Principal.toText(env.modclub_assets_canister_id)) : Types.VCIssuer).add_poh_verified(caller);
           switch (resp) {
             case (#Ok(_)) {
               verifiedCredentialsWLBuf.add(caller);
@@ -236,7 +236,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       };
       case (false) {
         if (Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal)) {
-          let resp = await (actor (Principal.toText(env.decideid_assets_canister_id)) : Types.VCIssuer).remove_poh_verified(caller);
+          let resp = await (actor (Principal.toText(env.modclub_assets_canister_id)) : Types.VCIssuer).remove_poh_verified(caller);
           switch (resp) {
             case (#Ok(_)) {
               verifiedCredentialsWLBuf.filterEntries(func(_, vcWlPid) = not Principal.equal(vcWlPid, caller));
@@ -2849,13 +2849,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   system func postupgrade() {
     logger.logMessage("MODCLUB POSTUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
 
-    authGuard.subscribe("admins");
+    authGuard.subscribe<system>("admins");
     admins := authGuard.setUpDefaultAdmins(
       admins,
       deployer,
       Principal.fromActor(this)
     );
-    authGuard.subscribe("secrets");
+    authGuard.subscribe<system>("secrets");
     claimRewardsWhitelistBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(claimRewardsWhitelist));
 
     verifiedCredentialsWLBuf := Buffer.fromIter<Principal>(List.toIter<Principal>(verifiedCredentialsWL));
@@ -2920,11 +2920,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   // Canister Geek timer collection of metrics
-  ignore Timer.setTimer(
+  ignore Timer.setTimer<system>(
     #seconds 0,
     func() : async () {
       canistergeekMonitor.collectMetrics();
-      ignore Timer.recurringTimer(
+      ignore Timer.recurringTimer<system>(
         #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
         func() : async () { canistergeekMonitor.collectMetrics() }
       );

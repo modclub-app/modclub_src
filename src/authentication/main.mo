@@ -39,7 +39,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     let payload = await getPublicationPayload(topic);
     for (subscriber in List.toArray(subscriptions).vals()) {
       if (subscriber.topic == topic) {
-        ignore Timer.setTimer(
+        ignore Timer.setTimer<system>(
           #seconds(0),
           func() : async () {
             try {
@@ -85,7 +85,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
       );
     };
 
-    ignore Timer.setTimer(
+    ignore Timer.setTimer<system>(
       #seconds(0),
       func() : async () {
         await publish("admins");
@@ -271,11 +271,11 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     };
   };
 
-  ignore Timer.setTimer(
+  ignore Timer.setTimer<system>(
     #seconds 0,
     func() : async () {
       canistergeekMonitor.collectMetrics();
-      ignore Timer.recurringTimer(
+      ignore Timer.recurringTimer<system>(
         #nanoseconds(GlobalConstants.FIVE_MIN_NANO_SECS),
         func() : async () { canistergeekMonitor.collectMetrics() }
       );
@@ -294,7 +294,7 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
     _canistergeekLoggerUD := null;
     canistergeekLogger.setMaxMessagesCount(3000);
 
-    ignore Timer.setTimer(
+    ignore Timer.setTimer<system>(
       #seconds(0),
       func() : async () {
         await publish("admins");

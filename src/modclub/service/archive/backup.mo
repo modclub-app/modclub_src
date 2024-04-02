@@ -1,6 +1,6 @@
 import Int "mo:base/Int";
 import Array "mo:base/Array";
-import Backup "mo:backup";
+import Backup "../../../common/backup/lib";
 import Blob "mo:base/Blob";
 import Buffer "mo:base/Buffer";
 import Error "mo:base/Error";

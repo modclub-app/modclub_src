@@ -41,15 +41,15 @@ module CommonTimer {
       });
     };
 
-    public func initTimer(
+    public func initTimer<system>(
       canistergeekMonitor : Canistergeek.Monitor
     ) : () {
       if (not isTimerSet) {
-        ignore Timer.setTimer(
+        ignore Timer.setTimer<system>(
           #seconds(0),
           func() : async () {
             let _ = await emailtimer();
-            ignore Timer.recurringTimer(
+            ignore Timer.recurringTimer<system>(
               #nanoseconds(Constants.FIVE_MIN_NANO_SECS),
               emailtimer
             );
