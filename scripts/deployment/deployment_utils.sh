@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 
 gzip_and_deploy() {
   local canister_name=$1
