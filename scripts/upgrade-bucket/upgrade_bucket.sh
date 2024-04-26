@@ -8,7 +8,7 @@ bucketIds=""
 canisterPostfix=""
 
 function get_local_canisters() {
-  echo "record { modclub_canister_id = principal \"$(dfx canister --network $network id modclub$canisterPostfix)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; rs_canister_id = principal \"$(dfx canister --network $network id rs$canisterPostfix)\"; wallet_canister_id = principal \"$(dfx canister --network $network id wallet$canisterPostfix)\"; auth_canister_id = principal \"$(dfx canister --network $network id auth$canisterPostfix)\"; vesting_canister_id = principal \"$(dfx canister --network $network id vesting$canisterPostfix)\"; decideid_assets_canister_id = principal \"$(dfx canister --network $network id decideid$(canisterPostfix)_assets)\"; }"
+  echo "record { modclub_canister_id = principal \"$(dfx canister --network $network id modclub$canisterPostfix)\"; old_modclub_canister_id = principal \"t6rzw-2iaaa-aaaaa-aaama-cai\"; modclub_assets_canister_id = principal \"$(dfx canister id ${modclub_assets_canister_name} --network=${network})\"; rs_canister_id = principal \"$(dfx canister --network $network id rs$canisterPostfix)\"; wallet_canister_id = principal \"$(dfx canister --network $network id wallet$canisterPostfix)\"; auth_canister_id = principal \"$(dfx canister --network $network id auth$canisterPostfix)\"; vesting_canister_id = principal \"$(dfx canister --network $network id vesting$canisterPostfix)\"; decideid_assets_canister_id = principal \"$(dfx canister --network $network id decideid$(canisterPostfix)_assets)\"; }"
 }
 
 if [[ "$PWD" != *"scripts/upgrade-bucket"* ]]; then
