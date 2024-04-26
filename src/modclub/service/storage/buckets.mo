@@ -374,7 +374,7 @@ shared ({ caller = deployer }) actor class Bucket(env : CommonTypes.ENV) = this 
           };
         };
 
-        if (apiKey != _lambdaKey[0] and not (isUserAllowed(jwt, contentId!))) {
+        if (apiKey != ?_lambdaKey[0] and not (isUserAllowed(jwt, contentId!))) {
           let msg : Text = if (apiKey == null) {
             "401 Unauthorized - Invalid JWT";
           } else {

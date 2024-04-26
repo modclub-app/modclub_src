@@ -77,7 +77,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   private stable var startTimeForPOHEmail = Helpers.timeNow();
   private stable var keyToCallLambda : Text = "";
-  private stable var keyToCallLambdaForPOH : Text = "";
   private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
   stable var allowSubmissionFlag : Bool = true;
@@ -3015,12 +3014,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
       };
       case ("/pohRegister") {
-        // Log that we received a POH registration request
+        // Log that we received a POH registration requess
+        let keyToCallLambdaForPOH = authGuard.getSecretVals("POH_LAMBDA_KEY");
+        if (keyToCallLambdaForPOH.size() == 0) {
+          throw Error.reject("POH Lambda key is not provided. Please ask admin to set the POH_LAMBDA_KEY for lambda calls.");
+        };
+
 
         let userPrincipal = await RequestHandler.handlePohRegister(
           request,
           pohEngine,
-          keyToCallLambdaForPOH,
+          keyToCallLambdaForPOH[0],
           logger
         );
 
