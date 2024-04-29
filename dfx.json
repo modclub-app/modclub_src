@@ -134,6 +134,11 @@
       "type": "custom",
       "candid": "src/airdrop/airdrop.did",
       "wasm": "src/airdrop/airdrop.wasm"
+    },
+    "neuron_controller": {
+      "type": "custom",
+      "candid": "src/neuron_controller/neuron_controller.did",
+      "wasm": "src/neuron_controller/neuron_controller.wasm.gz"
     }
   },
   "defaults": {
