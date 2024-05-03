@@ -8,4 +8,5 @@ exports.canisterCommands = [
   "dfx canister id rs",
   "dfx canister id vesting",
   "dfx canister id modclub_assets",
+  "dfx canister id neuron_controller",
 ];
