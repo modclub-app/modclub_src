@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import PropTypes from "prop-types";
+import infoIconImage from "../../../../assets/info_icon_new.svg";
 
 const InfoButton = ({ message, style }) => {
   const [showMessage, setShowMessage] = useState(false);
@@ -17,22 +18,12 @@ const InfoButton = ({ message, style }) => {
     <div
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      style={{ display: "inline-block", cursor: "pointer", ...style }}
+      className="info-icon-button"
+      style={{ ...style }}
     >
-      ℹ️
+      <img src={infoIconImage} />
       {showMessage && (
-        <div
-          style={{
-            position: "absolute",
-            backgroundColor: "lightgrey",
-            color: "black",
-            padding: "0.2rem",
-            width: "150px",
-            top: "1rem",
-            right: "1rem",
-            zIndex: 9999,
-          }}
-        >
+        <div className="info-bubble-modal">
           {message}
         </div>
       )}

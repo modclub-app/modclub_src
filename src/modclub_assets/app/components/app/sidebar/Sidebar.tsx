@@ -11,7 +11,7 @@ import {
   Dropdown,
   Notification,
 } from "react-bulma-components";
-import LogoImg from "../../../../assets/logo.png";
+import LogoImg from "../../../../assets/full_logo_black.svg";
 import SidebarUser from "./SidebarUser";
 import { useConnect } from "@connect2icmodclub/react";
 import { Principal } from "@dfinity/principal";
@@ -23,6 +23,8 @@ import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
 import logger from "../../../utils/logger";
 import { useActors } from "../../../hooks/actors";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+
+import { SidebarMenuList } from './SidebarMenuList';
 
 const InviteModerator = ({ toggle }) => {
   const link = "Coming Soon"; //`${window.location.origin}/referral=${Date.now()}`
@@ -195,18 +197,12 @@ export default function Sidebar() {
   return (
     <Columns.Column
       size="one-fifth"
-      backgroundColor="black"
-      style={{ minWidth: 230, minHeight: "calc(100vh - 293px)" }}
+      backgroundColor="white"
+      style={{ minWidth: 230, minHeight: "calc(100vh - 293px)", borderRight: '1px solid #E8ECEC' }}
     >
-      <Menu className="p-3">
+      <Menu>
         <div className="is-flex is-align-items-center mt-3">
-          <Image src={LogoImg} size={32} />
-          <Heading
-            className="ml-2"
-            style={{ fontFamily: "sans-serif", whiteSpace: "nowrap" }}
-          >
-            MODCLUB
-          </Heading>
+          <Image src={LogoImg} size={155} />
         </div>
         {process.env.DEV_ENV !== "production" &&
           process.env.DEV_ENV !== "prod" && (
@@ -219,48 +215,13 @@ export default function Sidebar() {
 
         <hr />
 
-        {isConnected && appState.userProfile && <SidebarUser />}
-
         <Menu.List>
-          <Link to="/app">
-            <Icon>
-              <span className="material-icons">playlist_add_check</span>
-            </Icon>
-            Tasks
-          </Link>
-          {level != "novice" && (
-            <Link to="/app/poh">
-              <Icon>
-                <span className="material-icons">check_circle_outline</span>
-              </Icon>
-              Human Verification
-            </Link>
-          )}
-          {/* ADMIN POH CONTENT APPROVED AND REJECTED */}
-          {appState?.userProfile && appState?.isAdminUser && (
-            <Link to="/app/admin/poh">
-              <Icon>
-                <span className="material-icons">check_circle_outline</span>
-              </Icon>
-              Admin POH Content
-            </Link>
-          )}
-          {/* END ADMIN POH CONTENT APPROVED AND REJECTED */}
-          {appState?.userProfile && appState?.isAdminUser && (
-            <Link to="/app/leaderboard">
-              <Icon>
-                <span className="material-icons">stars</span>
-              </Icon>
-              Leaderboard
-            </Link>
-          )}
-
-          <Link to="/how-to">
-            <Icon>
-              <span className="material-icons">help</span>
-            </Icon>
-            How To
-          </Link>
+          <SidebarMenuList 
+            isShowProfile={(isConnected && appState.userProfile)}
+            isShowPoh={(level != "novice")}
+            isShowAdminPoh={(appState?.userProfile && appState?.isAdminUser)}
+            isShowLeaderBoard={(appState?.userProfile && appState?.isAdminUser)}
+          />
           {providers.length > 0 ? (
             <>
               {selectedProvider ? (
@@ -316,36 +277,6 @@ export default function Sidebar() {
             ""
           )}
         </Menu.List>
-        {appState.userProfile && appState.userProfile.email && (
-          <div>
-            <strong
-              style={{
-                position: "relative",
-                top: "10px",
-                marginRight: "20px",
-                marginLeft: "20px",
-                color: "#FFF",
-              }}
-            >
-              Alerts?
-            </strong>
-            <ToggleSwitch
-              id="userAlerts"
-              checked={userAlertVal}
-              onChange={subscribeToAlert}
-              style={{ top: "10px" }}
-            />
-            {loadSpinner && (
-              <div
-                className="loader is-loading"
-                style={{
-                  display: "inline-block",
-                  top: "13px",
-                }}
-              ></div>
-            )}
-          </div>
-        )}
         <Button
           color="primary"
           fullwidth

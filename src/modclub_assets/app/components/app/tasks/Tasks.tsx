@@ -21,6 +21,9 @@ import { useActors } from "../../../hooks/actors";
 import { Principal } from "@dfinity/principal";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
 
+// Icons
+import arrowDownIconSvg from '../../../../assets/arrow_down_icon.svg';
+
 const FILTER_ALREADY_VOTED = true;
 
 const Task = ({ task }) => {
@@ -96,11 +99,19 @@ const Task = ({ task }) => {
   return (
     <Columns.Column size={12}>
       <Card>
-        <Card.Header>
-          <Card.Header.Title>
-            <span> Submitted by </span> {":  " + task.providerName}
-            <span> {formatDate(task.createdAt)} </span>
-            <span>Category</span> {":  " + task.contentCategory}
+        <Card.Header className="card-task-preview">
+          <Card.Header.Title className="card-task-preview-title">
+            <div className="card-task-preview-label">
+              <div className="has-text-light">Submitted by:</div>
+              <div>{task.providerName}</div>
+            </div>
+            <div className="card-task-preview-label">
+              <div>{formatDate(task.createdAt)}</div>
+            </div>
+            <div className="card-task-preview-label">
+              <div className="has-text-light">Category:</div>
+              <div>{task.contentCategory}</div>
+            </div>
           </Card.Header.Title>
         </Card.Header>
         <Card.Content>
@@ -243,7 +254,7 @@ export default function Tasks() {
                   <Columns.Column size={4}>
                     <span>By Provider:</span>
                     <Dropdown
-                      className="mr-5"
+                      className="mr-5 dropdown-has-text-dark-green"
                       right
                       label={appState.contentProviders.reduce(
                         (l, p) =>
@@ -251,8 +262,8 @@ export default function Tasks() {
                         ""
                       )}
                       icon={
-                        <Icon color="white">
-                          <span className="material-icons">expand_more</span>
+                        <Icon>
+                          <img src={arrowDownIconSvg} alt="arrow_down" />
                         </Icon>
                       }
                     >
@@ -261,7 +272,7 @@ export default function Tasks() {
                         value={null}
                         renderAs="a"
                         className={
-                          !appState.contentProvidersFilter && "is-active"
+                          !appState.contentProvidersFilter && "is-dropdown-item-active"
                         }
                         onMouseDown={() => setFilterByProvider(null)}
                       >
@@ -274,7 +285,7 @@ export default function Tasks() {
                           renderAs="a"
                           className={
                             p.id == appState.contentProvidersFilter &&
-                            "is-active"
+                            "is-dropdown-item-active"
                           }
                           onMouseDown={() => setFilterByProvider(p.id)}
                         >
@@ -286,7 +297,7 @@ export default function Tasks() {
                   <Columns.Column size={4}>
                     <span>By Category:</span>
                     <Dropdown
-                      className="mr-5"
+                      className="mr-5 dropdown-has-text-dark-green"
                       right
                       label={appState.contentCategories.reduce(
                         (l, c) =>
@@ -296,8 +307,8 @@ export default function Tasks() {
                         ""
                       )}
                       icon={
-                        <Icon color="white">
-                          <span className="material-icons">expand_more</span>
+                        <Icon>
+                          <img src={arrowDownIconSvg} alt="arrow_down" />
                         </Icon>
                       }
                     >
@@ -306,7 +317,7 @@ export default function Tasks() {
                         value={null}
                         renderAs="a"
                         className={
-                          !appState.contentCategoriesFilter && "is-active"
+                          !appState.contentCategoriesFilter && "is-dropdown-item-active"
                         }
                         onMouseDown={() => setFilterByCategory(null)}
                       >
@@ -319,7 +330,7 @@ export default function Tasks() {
                           renderAs="a"
                           className={
                             c.id == appState.contentCategoriesFilter &&
-                            "is-active"
+                            "is-dropdown-item-active"
                           }
                           onMouseDown={() => setFilterByCategory(c.id)}
                         >

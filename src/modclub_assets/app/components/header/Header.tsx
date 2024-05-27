@@ -1,20 +1,27 @@
-import * as React from "react";
+import React, { useState } from "react";
 import { HashLink } from "react-router-hash-link";
-import { Navbar, Container, Image, Heading } from "react-bulma-components";
-import LogoImg from "../../../assets/logo.png";
+import { useHistory } from "react-router-dom";
+import { Navbar, Container, Image, Button } from "react-bulma-components";
+import { useConnect } from "@connect2icmodclub/react";
+import LogoImg from "../../../assets/full_logo_black.svg";
 import Hamburger from "./Hamburger";
 
 export default function Header() {
-  return (
-    <Navbar backgroundColor="black" className="py-5">
+  const history = useHistory();
+  const { disconnect } = useConnect();
+  const handleLogOut = async () => {
+    disconnect();
+  };
+
+  const isMatchAppUrl = /^\/app/.test(history.location.pathname);
+
+  return isMatchAppUrl ? null : (
+    <Navbar backgroundColor="white" className="py-2">
       <Container>
         <Navbar.Brand>
-          <a id="main" href="/">
-            <div className="is-flex is-align-items-center">
-              <Image src={LogoImg} size={32} />
-              <Heading className="ml-2" style={{ fontFamily: "sans-serif" }}>
-                MODCLUB
-              </Heading>
+          <div className="is-flex is-flex-direction-column">
+            <a id="main" href="/">
+              <Image src={LogoImg} size={155} />
               {process.env.DEV_ENV !== "production" &&
                 process.env.DEV_ENV !== "prod" && (
                   <p>
@@ -23,12 +30,12 @@ export default function Header() {
                       : process.env.DEV_ENV}
                   </p>
                 )}
-            </div>
-          </a>
+            </a>
+          </div>
 
           <Hamburger />
         </Navbar.Brand>
-        <Navbar.Menu>
+        <Navbar.Menu className="is-align-items-center">
           <Navbar.Container align="right">
             <HashLink className="navbar-item" to="/#developers">
               Developers
@@ -45,6 +52,15 @@ export default function Header() {
             >
               Whitepaper
             </a>
+
+            <div className="pl-3">
+              <Button 
+                color="primary"
+                onClick={handleLogOut}
+              >
+                Logout
+              </Button>
+            </div>
           </Navbar.Container>
         </Navbar.Menu>
       </Container>

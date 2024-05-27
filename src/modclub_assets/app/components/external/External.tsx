@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../header/Header";
 import { Route, Switch } from "react-router-dom";
 import Home from "./Home";

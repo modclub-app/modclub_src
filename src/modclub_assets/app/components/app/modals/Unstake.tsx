@@ -26,11 +26,11 @@ const UpdateTable = ({
   );
   return (
     <>
-      <Level className="has-text-silver px-5">
+      <Level className="has-text-dark-green px-5">
         <span>Current Stake</span>
         <span className="has-text-weight-bold">{stake}</span>
       </Level>
-      <Level className="has-text-silver px-5">
+      <Level className="has-text-dark-green px-5">
         <span>After Unstake</span>
         <span className="has-text-weight-bold">
           {Math.max(0, stake - amount)}
@@ -148,7 +148,14 @@ export default function Unstake({
               }
             }}
           />
-          <Icon align="right" color="white" className="mr-4">
+          <Icon
+            className="mr-5 justify-content-center icon-dark-green"
+            style={{ 
+              marginLeft: "1.5rem", 
+              fontSize: '1.25rem', 
+              right: 0 
+            }}
+          >
             MOD
           </Icon>
         </div>

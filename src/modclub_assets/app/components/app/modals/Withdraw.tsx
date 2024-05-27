@@ -23,15 +23,15 @@ const UpdateTable = ({ amount }) => {
   );
   return (
     <>
-      <Level className="has-text-silver px-5">
+      <Level className="has-text-dark-green px-5">
         <span>Available:</span>
         <span className="has-text-weight-bold">{systemBalance}</span>
       </Level>
-      <Level className="has-text-silver px-5">
+      <Level className="has-text-dark-green px-5">
         <span>Transaction fee:</span>
         <span className="has-text-weight-bold">{feeTokens}</span>
       </Level>
-      <Level className="has-text-silver px-5">
+      <Level className="has-text-dark-green px-5">
         <span>Available after:</span>
         <span className="has-text-weight-bold">{availableAfter}</span>
       </Level>
@@ -112,8 +112,8 @@ export default function Withdraw({
             }}
           />
         </div>
-        <label className="label">Enter your withdraw amount:</label>
         <br />
+        <label className="label">Enter your withdraw amount:</label>
         <div className="control has-icons-right">
           <Field
             name="amount"
@@ -142,7 +142,14 @@ export default function Withdraw({
               }
             }}
           />
-          <Icon align="right" color="white" className="mr-4">
+          <Icon
+            className="mr-5 justify-content-center icon-dark-green"
+            style={{ 
+              marginLeft: "1.5rem", 
+              fontSize: '1.25rem', 
+              right: 0 
+            }}
+          >
             MOD
           </Icon>
         </div>

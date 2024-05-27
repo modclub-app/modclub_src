@@ -629,7 +629,7 @@ a.box:active {
 
 .button:focus,
 .button.is-focused {
-  border-color: #485fc7;
+  border-color: #66DD95;
   color: #363636;
 }
 
@@ -3701,7 +3701,7 @@ fieldset[disabled] .select select:-ms-input-placeholder,
 
 .input,
 .textarea {
-  box-shadow: inset 0 0.0625em 0.125em rgba(10, 10, 10, 0.05);
+  /* box-shadow: inset 0 0.0625em 0.125em rgba(10, 10, 10, 0.05); */
   max-width: 100%;
   width: 100%;
 }
@@ -5181,8 +5181,9 @@ fieldset[disabled] .select select:hover {
 .card {
   background-color: white;
   border-radius: 0.25rem;
-  box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1),
-    0 0px 0 1px rgba(10, 10, 10, 0.02);
+  border: 1px solid #F4F6F6;
+  /* box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1),
+    0 0px 0 1px rgba(10, 10, 10, 0.02); */
   color: #4a4a4a;
   max-width: 100%;
   position: relative;
