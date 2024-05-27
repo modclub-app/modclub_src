@@ -210,11 +210,10 @@ export default function Activity() {
   }, [appState.userProfile, currentFilter, modclub]);
 
   const displayEmail = () => (
-    <p className="is-flex is-justify-content-center has-text-white">
+    <p className="is-flex is-justify-content-center has-text-dark">
       {appState.userProfile?.email || ""}
       <Icon
-        color="white"
-        className="ml-3 is-clickable"
+        className="ml-3 is-clickable icon-dark-green"
         onClick={() => {
           navigator.clipboard.writeText(appState.userProfile?.email || "");
         }}
@@ -222,8 +221,8 @@ export default function Activity() {
         <span className="material-icons">file_copy</span>
       </Icon>
       <Icon
-        color="white"
-        className="ml-3 is-clickable"
+        color="light"
+        className="ml-3 is-clickable icon-dark-green"
         onClick={() => {
           setEditEmail(true);
         }}
@@ -285,9 +284,9 @@ export default function Activity() {
       <Columns>
         {activeProvider.meta.id === "ii" && (
           <Columns.Column size={12}>
-            <Card className="has-gradient">
+            <Card>
               <Card.Content textAlign="center">
-                <label className="label">Verified Credentials</label>
+                <label className="label card_label_title">Verified Credentials</label>
                 <p className="pb-2">
                   {`Your Verified Credentials is currently ${
                     vcStatus ? "Enable" : "Disable"
@@ -305,9 +304,9 @@ export default function Activity() {
 
         {/* Email */}
         <Columns.Column size={12}>
-          <Card className="has-gradient">
+          <Card>
             <Card.Content textAlign="center">
-              <label className="label">My Email:</label>
+              <label className="label card_label_title">My Email:</label>
               {editEmail ? displayEmailEdit() : displayEmail()}
             </Card.Content>
           </Card>
@@ -315,14 +314,13 @@ export default function Activity() {
 
         {/* Principal ID */}
         <Columns.Column size={12}>
-          <Card className="has-gradient">
+          <Card>
             <Card.Content textAlign="center">
-              <label className="label">My Principal ID</label>
-              <p className="is-flex is-justify-content-center has-text-white">
+              <label className="label card_label_title">My Principal ID</label>
+              <p className="is-flex is-justify-content-center has-text-dark">
                 {principal}
                 <Icon
-                  color="white"
-                  className="ml-3 is-clickable"
+                  className="ml-3 is-clickable icon-dark-green"
                   onClick={() => {
                     navigator.clipboard.writeText(principal);
                   }}
@@ -365,15 +363,15 @@ export default function Activity() {
 
               <Button.Group className="is-hidden-mobile">
                 <Button
-                  color={currentFilter === "new" ? "primary" : "ghost"}
-                  className="has-text-white mr-0"
+                  color={currentFilter === "new" ? "primary" : "linear"}
+                  className="has-text-dark-green mr-0"
                   onClick={() => handleFilterChange("new")}
                 >
                   In Progress
                 </Button>
                 <Button
-                  color={currentFilter === "completed" ? "primary" : "ghost"}
-                  className="has-text-white mr-0"
+                  color={currentFilter === "completed" ? "primary" : "linear"}
+                  className="has-text-dark-green mr-0"
                   onClick={() => handleFilterChange("completed")} // Update to use handleFilterChange
                 >
                   Completed

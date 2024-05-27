@@ -11,6 +11,9 @@
   &.has-text-white {
     -webkit-text-fill-color: $white;
   }
+  &.has-text-dark-green {
+    -webkit-text-fill-color: $green-01;
+  }
   &.has-text-primary {
     -webkit-text-fill-color: $primary;
   }
@@ -31,7 +34,7 @@ html,
 #app {
   font-family: "Poppins", sans-serif;
   font-size: 14px;
-  background: $dark;
+  background: $grey-04;
   height: 100%;
 }
 
@@ -47,14 +50,14 @@ a {
 }
 
 .title {
-  color: #fff;
+  color: $green-01;
   font-weight: 700;
   line-height: 1.25;
   padding: 0;
 }
 
 .subtitle {
-  color: #fff;
+  color: $green-01;
   font-weight: 700;
 }
 
@@ -68,9 +71,9 @@ a {
 }
 
 hr {
-  background: $dark;
+  background: $green-08;
   height: 1px;
-  margin: 2.5rem 0;
+  margin: 1.5rem 0;
 }
 
 .has-text-secondary {
@@ -80,26 +83,52 @@ hr {
   color: $silver;
 }
 .has-text-light {
-  color: $light !important;
+  color: $green-05 !important;
+}
+
+.has-text-dark-green {
+  color: $green-01;
+}
+
+.dropdown-has-text-dark-green {
+  button {
+    color: $green-01;
+
+    &:hover {
+      color: $green-03;
+    }
+  }
 }
 
 .menu-list {
   a {
-    color: $white;
-    font-weight: 700;
+    color: $green-01;
+    font-size: 1rem;
+    font-weight: 500;
     line-height: 1em;
     white-space: nowrap;
     display: flex;
     align-items: center;
 
-    &:hover {
-      background: none;
-    }
-
     span.icon {
       margin-right: 1rem;
     }
+
+    &:hover {
+      background-color: $light-green-09;
+      border-radius: 6px;
+    }
   }
+}
+
+.menu-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+._active-menu-list-item {
+  background-color: $light-green-09;
 }
 
 .buttons {
@@ -154,18 +183,35 @@ hr {
   }
 
   &.is-primary {
-    background: $primary;
-    border-color: $primary !important;
+    background: $green-01;
+    border-color: $green-01 !important;
     &:hover {
-      background: $primary-hover;
+      background: $green-03;
     }
     &[disabled] {
-      background: $primary;
+      background: $grey-01;
+      border: none;
+      color: $green-03;
+      pointer-events: none;
     }
   }
 
   &.is-dark {
     background: $dark;
+  }
+
+  &.is-linear {
+    background: $white;
+    color: $green-01;
+    border: 1px solid $green-08;
+
+    &:hover {
+      background-color: $grey-05;
+    }
+
+    &[disabled] {
+      pointer-events: none;
+    }
   }
 
   &.is-danger {
@@ -220,9 +266,31 @@ hr {
   height: 100%;
 }
 
+.poh-phrase-item {
+  border: 1px solid $green-08;
+  color: $green-01;
+  border-radius: 6px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poh-card {
+  background: transparent !important;
+
+  & .poh-card-content {
+    background: $white;
+  }
+}
+
 .card {
-  background: $black;
-  color: $light;
+  background: $white;
+  color: $green-01;
+
+  &.is-background-grey {
+    background-color: $grey-05;
+  }
 
   &.is-fullheight {
     display: flex;
@@ -249,7 +317,7 @@ hr {
     overflow: auto;
 
     .card-content {
-      background: $black;
+      background: $white;
       margin: 2px;
     }
   }
@@ -295,7 +363,7 @@ hr {
 }
 
 .modal-card {
-  background-color: $black;
+  background-color: $white;
   background-size: cover;
   &.is-small {
     width: 480px;
@@ -304,7 +372,7 @@ hr {
 
 .modal-card-body {
   background: none;
-  color: $white;
+  color: $green-01;
   padding: 3rem 4rem;
 }
 .modal-card-foot {
@@ -312,9 +380,6 @@ hr {
   padding: 1rem 4rem 3rem;
   border-top: 0;
   justify-content: space-between;
-  border-bottom: 2px solid;
-  border-image-source: linear-gradient(to left, $primary, $secondary);
-  border-image-slice: 1;
 
   a {
     text-decoration: underline;
@@ -376,14 +441,99 @@ hr {
       display: block;
       width: 100%;
       height: 2rem;
-      background-image: linear-gradient(to top, $black, transparent);
+      background-image: linear-gradient(to top, $white, transparent);
     }
   }
 }
 
+.card-task-preview {
+  box-shadow: none;
+
+  & .card-task-preview-label {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px dashed $green-08;
+    padding-right: 8px;
+    padding-left: 8px;
+
+    font-weight: normal;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      border-right: none;
+    }
+
+    & div:last-child {
+      color: $green-01;
+      font-weight: 500;
+    }
+  }
+}
+
+.text-emphasis {
+  padding: 0.5rem;
+  background-color: $grey-01;
+}
+
+.icon-dark-green {
+  color: $green-01;
+  background: $green-01;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  &:hover {
+    background: $green-03;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  &[disabled] {
+    background: $grey-05;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+.info-icon-button {
+  cursor: pointer;
+  background-color: $grey-04;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+
+  &:hover {
+    background-color: $light-green-09;
+  }
+}
+
+.info-bubble-modal {
+  position: absolute;
+  background-color: $grey-01;
+  color: $green-01;
+  padding: 0.75rem;
+  width: 150px;
+  top: 1.5rem;
+  right: 1rem;
+  z-index: 9999;
+}
+
 .label {
-  color: $silver;
+  color: $green-01;
   line-height: 1.25rem;
+}
+
+.label.card_label_title {
+  color: $green-01;
 }
 
 label.checkbox {
@@ -456,7 +606,7 @@ label.checkbox {
     right: 0;
     width: 3rem;
     height: 1.5rem;
-    background: $black;
+    background: $green-05;
     content: "";
   }
   + label:after {
@@ -474,7 +624,7 @@ label.checkbox {
   }
   &:checked {
     + label:before {
-      background: linear-gradient(to left, $primary, $secondary);
+      background: $light-green-01;
     }
     + label:after {
       right: 0.25rem;
@@ -494,21 +644,21 @@ label.checkbox {
 
 .progress {
   &::-webkit-progress-bar {
-    background-color: $dark;
+    background-color: $grey-01;
   }
 
   &::-webkit-progress-value {
-    background: linear-gradient(to right, $primary, $secondary);
+    background: $light-green-01;
     border-radius: 4px;
   }
 
   &::-moz-progress-bar {
-    background: linear-gradient(to right, $primary, $secondary);
+    background: $light-green-01;
     border-radius: 4px;
   }
 
   &::-ms-fill {
-    background: linear-gradient(to right, $primary, $secondary);
+    background: $light-green-01;
     border-radius: 4px;
   }
 }
@@ -516,10 +666,10 @@ label.checkbox {
 .table {
   width: 100%;
   background: none;
-  color: $light;
+  color: $green-01;
 
   thead {
-    border-bottom: 1px solid $black;
+    border-bottom: 1px solid $grey-01;
 
     th {
       color: $white;
@@ -556,7 +706,7 @@ label.checkbox {
   }
 
   &.is-striped tbody tr:not(.is-selected):nth-child(odd) {
-    background: $dark;
+    background: $grey-01;
 
     .progress {
       &::-webkit-progress-bar {
@@ -565,10 +715,10 @@ label.checkbox {
     }
   }
   &.is-striped tbody tr:not(.is-selected):nth-child(even) {
-    background: $black;
+    background: $white;
 
     .button.is-black {
-      background: $dark;
+      background: $white;
     }
   }
 
@@ -598,9 +748,9 @@ label.checkbox {
 
 .input,
 .textarea {
-  background: $dark;
-  border: 0;
-  color: $white;
+  background-color: $white;
+  border: 1px solid $green-08;
+  color: $green-01;
   height: 3rem;
   padding: 0 1.25rem;
   font-weight: 700;
@@ -729,22 +879,29 @@ input[type="number"]::-webkit-inner-spin-button {
   }
 
   .dropdown-content {
-    background: $dark;
+    background: $grey-01;
   }
   .dropdown-divider {
-    background: $black;
+    background: $green-11;
   }
 
   a.dropdown-item {
     display: flex;
-    color: $white;
+    color: $green-01;
     align-items: center;
     white-space: normal;
     text-align: left;
+    translate: all 0.2s linear;
 
     &:hover {
-      background: $black;
+      background: $light-green-09;
+      color: $green-01 !important;
     }
+  }
+
+  a.is-dropdown-item-active {
+    background-color: $green-01;
+    color: $white !important;
   }
 
   &.is-active,
@@ -769,6 +926,14 @@ input[type="number"]::-webkit-inner-spin-button {
     padding: 2px;
     border-radius: 0.25rem;
   }
+}
+
+.divider {
+  margin: 0.5rem 0;
+  display: block;
+  height: 1px;
+  width: 100%;
+  background-color: $green-10;
 }
 
 .is-divider {
@@ -809,8 +974,8 @@ input[type="number"]::-webkit-inner-spin-button {
       max-height: 100px;
       background: linear-gradient(
         to bottom,
-        rgba(18, 18, 18, 0) 0,
-        rgba(18, 18, 18, 1) 70%
+        #fff,
+        #fff
       );
       position: absolute;
       bottom: 0;
@@ -833,7 +998,7 @@ input[type="number"]::-webkit-inner-spin-button {
   }
 
   hr {
-    background: #383838;
+    background: $green-08;
   }
 
   pre,

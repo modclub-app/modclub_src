@@ -9,7 +9,9 @@ const Popup = ({ rules, toggle }) => {
         <Modal.Card.Body className="px-3">
           <ul style={{ listStyle: "disc", paddingLeft: "2rem", color: "#fff" }}>
             {rules.map((rule) => (
-              <li key={rule.id}>{rule.description}</li>
+              <li key={rule.id}>
+                <div className="has-text-dark-green">{rule.description}</div>
+              </li>
             ))}
           </ul>
         </Modal.Card.Body>

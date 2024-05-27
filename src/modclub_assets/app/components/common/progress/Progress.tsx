@@ -42,7 +42,7 @@ export default function Progress_({ value, min, gradient = false }) {
       ) : (
         <span
           style={{
-            color: "white",
+            color: "#1b4444",
             width: "100%",
             fontSize: ".75rem",
             lineHeight: "1.5rem",

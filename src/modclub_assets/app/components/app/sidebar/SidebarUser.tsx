@@ -19,7 +19,6 @@ const DropdownLabel = ({ pic, user, toggle }) => {
         style={{
           display: "flex",
           alignItems: "center",
-          background: "linear-gradient(to left, #3d52fa, #c91988",
           padding: 2,
           borderRadius: "50%",
         }}
@@ -35,7 +34,7 @@ const DropdownLabel = ({ pic, user, toggle }) => {
         <Heading size={6} marginless>
           {snippet(user.userName, 15)}
         </Heading>
-        <p className="has-text-white is-size-7">{snippet(user.email, 18)}</p>
+        <p className="has-text-dark-green is-size-7">{snippet(user.email, 18)}</p>
       </div>
     </div>
   );

@@ -77,7 +77,11 @@ export default function PopupModal({
               </Modal.Card.Body>
               <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
                 <Button.Group>
-                  <Button disabled={loader} color="dark" onClick={cancelModal}>
+                  <Button 
+                    disabled={loader} 
+                    color="linear" 
+                    onClick={cancelModal}
+                  >
                     Cancel
                   </Button>
                   <Button

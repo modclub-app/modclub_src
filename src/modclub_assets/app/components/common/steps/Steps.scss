@@ -21,21 +21,16 @@
         content: "";
         display: block;
         position: absolute;
-        height: 0.2em;
+        height: 1px;
         width: 100%;
         bottom: 0;
         left: -50%;
-        top: 1rem;
+        top: 1.2rem;
       }
     }
 
     &::before {
-      background: linear-gradient(
-        to left,
-        $dark 50%,
-        $primary 50%,
-        $secondary 100%
-      );
+      border-bottom: 1px dashed $green-08;
       background-size: 200% 100%;
       background-position: right bottom;
     }
@@ -45,7 +40,9 @@
         background-position: left bottom;
       }
       .step-marker {
-        background: linear-gradient(to left, $primary, $secondary);
+        span {
+          border: 1px solid $light-green-01;
+        }
       }
     }
 
@@ -54,8 +51,10 @@
         background-position: left bottom;
       }
       .step-marker {
-        color: $silver;
-        background-color: $black;
+        span {
+          background-color: $light-green-09;
+          border: 1px solid $light-green-01;
+        }
       }
     }
   }
@@ -63,19 +62,19 @@
   .step-marker {
     border-radius: 50%;
     z-index: 1;
-    height: 2rem;
-    width: 2rem;
+    height: 2.5rem;
+    width: 2.5rem;
     position: absolute;
     left: calc(50% - 1rem);
     padding: 2px;
-    background: $silver;
 
     span {
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      background: $dark;
+      background: $white;
+      border: 1px solid $green-08;
       height: 100%;
       width: 100%;
       font-weight: 700;
@@ -94,6 +93,6 @@
     margin-top: 0.5rem;
     font-size: 0.85rem;
     font-weight: 600;
-    color: $white;
+    color: $green-01;
   }
 }
