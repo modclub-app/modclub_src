@@ -71,7 +71,7 @@ export default function FormModal({
               </Modal.Card.Body>
               <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
                 <Button.Group>
-                  <Button color="dark" disabled={submitting} onClick={toggle}>
+                  <Button color="linear" disabled={submitting} onClick={toggle}>
                     Cancel
                   </Button>
                   <Button

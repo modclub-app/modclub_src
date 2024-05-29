@@ -1,9 +1,9 @@
 import React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { Columns, Button } from "react-bulma-components";
-import walletImg from "../../../../assets/wallet.svg";
-import stakedImg from "../../../../assets/staked.svg";
-import performanceImg from "../../../../assets/performance.svg";
+import walletImg from "../../../../assets/wallet_new.svg";
+import stakedImg from "../../../../assets/staked_new.svg";
+import performanceImg from "../../../../assets/performance_new.svg";
 import Withdraw from "../modals/Withdraw";
 import Stake from "../modals/Stake";
 import Unstake from "../modals/Unstake";
@@ -185,7 +185,7 @@ export default function Userstats({ detailed = false }) {
           >
             <Button.Group>
               <Button
-                color="dark"
+                color="linear"
                 fullwidth
                 onClick={
                   toggleFetchPersonalBalance &&
@@ -198,7 +198,7 @@ export default function Userstats({ detailed = false }) {
                 Deposit
               </Button>
               <Button
-                color="dark"
+                color="linear"
                 fullwidth
                 onClick={toggleFetchSystemBalance && toggleWithdraw}
                 disabled={appState.systemBalanceLoading}
@@ -239,7 +239,7 @@ export default function Userstats({ detailed = false }) {
         >
           <Button.Group>
             <Button
-              color="dark"
+              color="linear"
               fullwidth
               onClick={toggleFetchStakeBalance && toggleStake}
               disabled={appState.stakeBalanceLoading}
@@ -248,7 +248,7 @@ export default function Userstats({ detailed = false }) {
               Stake
             </Button>
             <Button
-              color="dark"
+              color="linear"
               fullwidth
               onClick={toggleFetchStakeBalance && toggleUnstake}
               disabled={appState.stakeBalanceLoading}
@@ -270,7 +270,7 @@ export default function Userstats({ detailed = false }) {
         >
           <Button.Group>
             <Button
-              color="dark"
+              color="linear"
               onClick={toggleClaim}
               disabled={
                 level == "novice" ||

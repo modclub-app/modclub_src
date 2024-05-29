@@ -7,11 +7,15 @@
       "optimize": "cycles"
     },
     "modclub_assets": {
-      "type": "custom",
-      "candid": "src/modclub_assets/modclub_assets.did",
-      "wasm": "src/modclub_assets/modclub_assets.wasm.gz",
-      "build": "src/modclub_assets/build.sh",
-      "frontend": {}
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
+      "type": "assets"
     },
     "modclub_dev": {
       "main": "src/modclub/main.mo",
@@ -20,11 +24,15 @@
       "optimize": "cycles"
     },
     "modclub_dev_assets": {
-      "type": "custom",
-      "candid": "src/modclub_assets/modclub_assets.did",
-      "wasm": "src/modclub_assets/modclub_assets.wasm.gz",
-      "build": "src/modclub_assets/build.sh",
-      "frontend": {}
+      "frontend": {
+        "entrypoint": "src/modclub_assets/src/index.html"
+      },
+      "source": [
+        "src/modclub_assets/assets",
+        "dist/modclub_assets/",
+        "src/well-known/"
+      ],
+      "type": "assets"
     },
     "modclub_qa": {
       "main": "src/modclub/main.mo",

@@ -99,8 +99,8 @@ export default function AdminActivity() {
   return (
     <>
       <Button
-        color={"ghost"}
-        className="has-text-white mr-0"
+        color="light"
+        className="mb-2"
         onClick={() => history.push("/provider/admin")}
       >
         <b>{"< Back To Dashboard"}</b>
@@ -114,8 +114,8 @@ export default function AdminActivity() {
                 {filters.map((filter) => (
                   <Button
                     key={filter}
-                    color={currentFilter === filter ? "primary" : "ghost"}
-                    className="has-text-white mr-0"
+                    color={currentFilter === filter ? "primary" : "light"}
+                    className="mr-0"
                     onClick={() => setCurrentFilter(filter)}
                   >
                     {getLabel(filter)}

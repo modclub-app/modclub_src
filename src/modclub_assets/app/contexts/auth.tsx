@@ -86,7 +86,6 @@ export function AuthProvider({ children }) {
             env !== "local"
               ? derivationOrigins[process.env.DEV_ENV]
               : undefined,
-          dev: false,
         },
       });
 

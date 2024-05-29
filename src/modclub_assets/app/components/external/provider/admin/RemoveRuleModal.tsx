@@ -1,3 +1,4 @@
+import React from 'react';
 import { Principal } from "@dfinity/principal";
 import FormModal from "../../../app/modals/FormModal";
 import { useActors } from "../../../../hooks/actors";
@@ -37,10 +38,11 @@ const RemoveRuleModal = ({ toggle, rule }) => {
       toggle={toggle}
       handleSubmit={onRemoveRuleFormSubmit}
     >
-      <strong style={{ color: "#fff" }}>
+      <div className='has-text-dark-green'>
         Are you really sure to remove following rule?
-      </strong>
-      <p style={{ marginTop: 8 }}>"{rule.description}"</p>
+      </div>
+      <br />
+      <p className='to-be-rounded has-text-dark-green grey-text-background text-emphasis'>"{rule.description}"</p>
     </FormModal>
   );
 };

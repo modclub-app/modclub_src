@@ -12,6 +12,7 @@ import {
 } from "react-bulma-components";
 import MicRecorder from "mic-recorder-to-mp3";
 import { format } from "date-fns";
+import deleteIconSvg from '../../../../assets/delete_icon.svg';
 import { MAX_CHUNK_SIZE, MIN_FILE_SIZE } from "../../../utils/config";
 import { processAndUploadChunk, useActors } from "../../../utils";
 import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
@@ -241,14 +242,13 @@ export default function UserPhrases({ step, goToNextStep }) {
                   margin: "auto",
                   width: "3rem",
                   height: "3rem",
-                  background: "rgba(46, 49, 54, 0.6)",
+                  background: "#F4F6F6",
+                  padding: "0",
                   border: 0,
                 }}
                 onClick={resetAudio}
               >
-                <Icon color="white">
-                  <span className="material-icons">delete</span>
-                </Icon>
+                <img src={deleteIconSvg}/>
               </Button>
             </>
           ) : (
@@ -312,18 +312,16 @@ export default function UserPhrases({ step, goToNextStep }) {
           </Heading>
           {phrases.map((phrase, index) => (
             <Columns.Column key={phrase} size={4}>
-              <Button fullwidth isStatic>
-                <span className="ml-2" style={{ width: 40 }}>
-                  {phrase}
-                </span>
-              </Button>
+              <div className="poh-phrase-item">
+                {phrase}
+              </div>
             </Columns.Column>
           ))}
         </Card.Content>
       </Card>
 
       <Button.Group align="right">
-        <Link to="/app/" className="button is-black">
+        <Link to="/app/" className="button is-linear">
           Cancel
         </Link>
         <Button
