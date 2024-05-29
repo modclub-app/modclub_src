@@ -1,3 +1,5 @@
+@import "../../../../../../common.scss";
+
 .stat-box {
   position: relative;
 
@@ -6,11 +8,11 @@
 
   border-radius: 0.25rem;
 
-  background-color: #121212;
+  background-color: $white;
 
   &_label {
     font-size: 14px;
-    color: #c4c4c4;
+    color: $green-01;
   }
 
   &_title {
@@ -18,7 +20,7 @@
     font-weight: 700;
     line-height: 1;
 
-    color: #fff;
+    color: $green-01;
   }
 
   &_message {

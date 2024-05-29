@@ -121,7 +121,7 @@ const ConfirmationModal = ({
           </Modal.Card.Body>
           <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
             <Button.Group>
-              <Button color="dark" onClick={toggle}>
+              <Button color="linear" onClick={toggle}>
                 Cancel
               </Button>
               <Button
@@ -219,7 +219,7 @@ export default function ConfirmationModalToggle({
           <p className="mb-3">
             These are the failed requirements you selected:
           </p>
-          <Card backgroundColor="dark">
+          <Card backgroundColor="grey">
             <Card.Content>
               <ul>
                 {Object.keys(values).map(

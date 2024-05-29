@@ -46,7 +46,7 @@ export default function UserVideo({ data }: { data: PohTaskData }) {
         <Card.Content className="columns is-multiline">
           {phrases.map((phrase, index) => (
             <Columns.Column key={phrase} size={4}>
-              <Button fullwidth isStatic>
+              <Button color="light" fullwidth isStatic>
                 {index + 1} <span className="ml-2">{phrase}</span>
               </Button>
             </Columns.Column>

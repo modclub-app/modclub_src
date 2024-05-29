@@ -1,3 +1,4 @@
+import React from 'react';
 import { Field } from "react-final-form";
 import { Icon, Notification } from "react-bulma-components";
 import { useEffect, useState } from "react";
@@ -77,11 +78,11 @@ export default function ProviderDepositPopup({ toggle, show }: DepositProps) {
               Step 1:
             </h1>
             <h2>Manually deposit into your provider account:</h2>
-            <p className="is-flex is-justify-content-center has-text-white has-background-grey-darker">
+            <p className="is-flex is-justify-content-center has-text-dark-green grey-text-background text-emphasis">
               {principal}
               <Icon
-                color="white"
-                className="ml-3 is-clickable"
+                color="green"
+                className="ml-3 is-clickable icon-dark-green icon"
                 onClick={() => {
                   navigator.clipboard.writeText(principal);
                 }}
@@ -167,14 +168,12 @@ export default function ProviderDepositPopup({ toggle, show }: DepositProps) {
                   }
                 }}
               />
-              <Icon
-                align="right"
-                color="white"
-                className="mr-5 justify-content-center"
-                style={{ marginLeft: "1.5rem" }}
+              <div
+                className="mr-5 justify-content-center icon-dark-green"
+                style={{ marginLeft: "1.5rem", fontSize: '1.25rem' }}
               >
                 MOD
-              </Icon>
+              </div>
             </div>
           </div>
         </div>

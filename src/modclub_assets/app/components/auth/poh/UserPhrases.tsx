@@ -321,7 +321,7 @@ export default function UserPhrases({ step, goToNextStep }) {
       </Card>
 
       <Button.Group align="right">
-        <Link to="/app/" className="button is-black">
+        <Link to="/app/" className="button is-linear">
           Cancel
         </Link>
         <Button

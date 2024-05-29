@@ -5,15 +5,15 @@ import { SignIn } from "../../auth/SignIn";
 export default function NotAuthenticated() {
   return (
     <Modal show={true} closeOnBlur={false} showClose={false}>
-      <Modal.Card backgroundColor="circles" className="is-small">
+      <Modal.Card backgroundColor="circles" className="is-small auth-modal">
         <Modal.Card.Body textAlign="center">
-          <Heading subtitle style={{ lineHeight: 1.5 }}>
+          <Heading subtitle>
             You need to be logged in
             <br />
             to view this page
           </Heading>
         </Modal.Card.Body>
-        <Modal.Card.Footer className="pt-0 is-justify-content-flex-end is-block">
+        <Modal.Card.Footer className="pt-10 is-justify-content-flex-end is-block">
           <SignIn />
         </Modal.Card.Footer>
       </Modal.Card>

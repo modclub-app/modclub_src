@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Link } from "react-router-dom";
 import {
   Columns,
   Menu,
@@ -8,23 +7,20 @@ import {
   Icon,
   Button,
   Modal,
-  Dropdown,
   Notification,
 } from "react-bulma-components";
 import LogoImg from "../../../../assets/full_logo_black.svg";
-import SidebarUser from "./SidebarUser";
 import { useConnect } from "@connect2icmodclub/react";
 import { Principal } from "@dfinity/principal";
 import { useProfile } from "../../../contexts/profile";
-import { SignIn } from "../../auth/SignIn";
 import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ToggleSwitch from "../../common/toggleSwitch/toggle-switch";
 import logger from "../../../utils/logger";
 import { useActors } from "../../../hooks/actors";
-import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
+import { useAppState } from "../state_mgmt/context/state";
 
 import { SidebarMenuList } from './SidebarMenuList';
+import { DashboardMenuList } from './DashboardMenuList';
 
 const InviteModerator = ({ toggle }) => {
   const link = "Coming Soon"; //`${window.location.origin}/referral=${Date.now()}`
@@ -70,21 +66,6 @@ const InviteModerator = ({ toggle }) => {
         </Modal.Card.Footer>
       </Modal.Card>
     </Modal>
-  );
-};
-
-const DropdownLabel = ({ toggle }) => {
-  return (
-    <>
-      <Icon style={{ marginLeft: "3px" }}>
-        <span className="material-icons">assignment_ind</span>
-      </Icon>
-      <div className="is-flex" onClick={toggle}>
-        <div className="ml-4 is-flex is-flex-direction-column is-justify-content-center has-text-left">
-          <Heading size={6}>Switch to Provider Dashboard</Heading>
-        </div>
-      </div>
-    </>
   );
 };
 
@@ -212,70 +193,19 @@ export default function Sidebar() {
                 : process.env.DEV_ENV}
             </p>
           )}
-
-        <hr />
-
+        <br />
+        <div className="divider" />
         <Menu.List>
+          {providers.length > 0 && (
+            <DashboardMenuList />
+          )}
+
           <SidebarMenuList 
             isShowProfile={(isConnected && appState.userProfile)}
             isShowPoh={(level != "novice")}
             isShowAdminPoh={(appState?.userProfile && appState?.isAdminUser)}
             isShowLeaderBoard={(appState?.userProfile && appState?.isAdminUser)}
           />
-          {providers.length > 0 ? (
-            <>
-              {selectedProvider ? (
-                <Link
-                  to="/app"
-                  onClick={() => setSelectedProvider(null)}
-                  style={{
-                    position: "absolute",
-                    top: "0px",
-                    right: "2.5em",
-                    maxWidth: "18em",
-                  }}
-                >
-                  <Icon>
-                    <span className="material-icons">playlist_add_check</span>
-                  </Icon>
-                  Switch to Moderator Dashboard
-                </Link>
-              ) : (
-                <Dropdown
-                  className="mb-5"
-                  color="ghost"
-                  style={{
-                    position: "absolute",
-                    top: "0.5em",
-                    right: "1em",
-                    maxWidth: "18em",
-                    zIndex: 999,
-                  }}
-                  icon={
-                    <Icon color="white">
-                      <span className="material-icons">expand_more</span>
-                    </Icon>
-                  }
-                  label={<DropdownLabel toggle={toggle} />}
-                >
-                  {providers.map((provider) => {
-                    return (
-                      <Link
-                        to="/provider/admin"
-                        key={provider["id"]}
-                        className="dropdown-item"
-                        onClick={() => setSelectedProvider(provider)}
-                      >
-                        {provider["name"]}
-                      </Link>
-                    );
-                  })}
-                </Dropdown>
-              )}
-            </>
-          ) : (
-            ""
-          )}
         </Menu.List>
         <Button
           color="primary"
