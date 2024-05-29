@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Media, Image, Icon } from "react-bulma-components";
 import { Principal } from "@dfinity/principal";
 import { ImageData } from "../../../../utils/types";
@@ -77,7 +77,11 @@ const EditProviderLogo = ({
         accept="image/*"
         type="file"
       />
-      <Media justifyContent="center" onClick={() => inputFile.current.click()}>
+      <Media
+        className="userUploadPhoto"
+        justifyContent="center" 
+        onClick={() => inputFile.current.click()}
+      >
         <Image
           src={
             logoPicSrc

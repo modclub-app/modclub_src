@@ -234,7 +234,7 @@ const ConfirmationModal = ({
               </Modal.Card.Body>
               <Modal.Card.Footer className="pt-4 is-justify-content-flex-end">
                 <Button.Group>
-                  <Button color="dark" onClick={toggle}>
+                  <Button color="linear" onClick={toggle}>
                     Cancel
                   </Button>
                   <Button

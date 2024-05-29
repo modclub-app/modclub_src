@@ -1,3 +1,5 @@
+
+import React from 'react';
 import { Field } from "react-final-form";
 import FormModal from "../../../app/modals/FormModal";
 import { Principal } from "@dfinity/principal";

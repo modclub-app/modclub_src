@@ -1,6 +1,9 @@
 import * as React from "react";
 import { Card, Dropdown, Button, Icon } from "react-bulma-components";
 
+// Icons
+import arrowDownIconSvg from '../../../../assets/arrow_down_icon.svg';
+
 export default function Confirm({
   apps,
   currentApp,
@@ -26,12 +29,12 @@ export default function Confirm({
             <p className="has-text-light mr-5">Choose your favorite app:</p>
 
             <Dropdown
-              className="mr-5"
+              className="mr-5 dropdown-has-text-dark-green"
               right
               label={currentApp ? currentApp : "All Apps"}
               icon={
-                <Icon color="white">
-                  <span className="material-icons">expand_more</span>
+                <Icon>
+                  <img className="mx-2" src={arrowDownIconSvg} alt="arrow_down" />
                 </Icon>
               }
               style={{ width: 100 }}
@@ -54,12 +57,12 @@ export default function Confirm({
         {filters && (
           <>
             <Dropdown
-              className="is-hidden-tablet"
+              className="is-hidden-tablet dropdown-has-text-dark-green"
               right
               label="Filter"
               icon={
-                <Icon color="white">
-                  <span className="material-icons">expand_more</span>
+                <Icon>
+                  <img src={arrowDownIconSvg} className="mx-2" alt="arrow_down" />
                 </Icon>
               }
               style={{ width: 100 }}
@@ -81,8 +84,8 @@ export default function Confirm({
               {filters.map((filter) => (
                 <Button
                   key={filter}
-                  color={currentFilter === filter ? "primary" : "ghost"}
-                  className="has-text-white mr-0"
+                  color={currentFilter === filter ? "primary" : "light"}
+                  className="mr-0"
                   onClick={() => onFilterChange(filter)}
                 >
                   {filter}

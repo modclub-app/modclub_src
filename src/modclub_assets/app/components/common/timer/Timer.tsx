@@ -1,5 +1,5 @@
+import React, { useEffect, useState } from "react";
 import moment from "moment";
-import { useEffect, useState } from "react";
 import { GTMManager, GTMEvent, GTMTypes } from "../../../utils/gtm";
 import { useAppState } from "../../app/state_mgmt/context/state";
 

@@ -1,0 +1,21 @@
+@import '../../../../common.scss';
+
+.dateTimeContainer {
+  padding: 12px;
+  box-sizing: border-box;
+
+  width: 100%;
+}
+
+.submittedDateTime {
+  padding: 6px;
+  box-sizing: border-box;
+
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  border-radius: 4px;
+  background-color: $grey-04;
+}

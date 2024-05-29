@@ -20,7 +20,7 @@ export default function Footer_() {
             <Image src={modclubImg} size={64} />
           </Columns.Column>
           <Columns.Column size="one-fifth">
-            <Heading subtitle>Menu</Heading>
+            <Heading subtitle className="has-text-white">Menu</Heading>
             <HashLink to="/#developers" className="is-block has-text-white">
               Developers
             </HashLink>
@@ -35,7 +35,7 @@ export default function Footer_() {
             </Link>
           </Columns.Column>
           <Columns.Column size="one-fifth">
-            <Heading subtitle>Company</Heading>
+            <Heading subtitle className="has-text-white">Company</Heading>
             <a
               href="mailto:team@modclub.app"
               className="is-block has-text-white"

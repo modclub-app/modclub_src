@@ -29,8 +29,7 @@ export function SignIn() {
           <Button
             key={provider.meta.id}
             fullwidth
-            color="gradient"
-            className="is-outlined mb-4"
+            className="mb-4 is-providers"
             onClick={() => connect(provider.meta.id)}
           >
             <span className="mr-2">Login</span>
