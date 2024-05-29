@@ -10,4 +10,4 @@ network="${NETWORK:-ic}"
 printf "network=%s, DEV_ENV=%s\n" "$network" "$DEV_ENV"
 
 canister_only="${CANISTER_ONLY:-ALL}"
-dfx canister uninstall-code --network ic --all
+dfx canister uninstall-code vesting_dev --network ic
