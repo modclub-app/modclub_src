@@ -461,7 +461,7 @@ fn collect_assets_rec(dir: &Dir, assets: &mut Vec<Asset>) {
                     url_path,
                     content: content.clone(),
                     encoding: ContentEncoding::Identity,
-                    content_type: ContentType::HTML,
+                    content_type: ContentType::TEXT,
                 });
             }
         }

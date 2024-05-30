@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+TARGET_ENV=$1
 
 # Make sure we always run from the issuer root
 VC_ISSUER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -21,8 +22,14 @@ yarn run build &&
 mkdir ../../dist/modclub_assets/shapes &&
 mkdir ../../dist/modclub_assets/.well-known &&
 cp ./assets/shapes/* ../../dist/modclub_assets/shapes &&
-cp ./assets/.well-known/* ../../dist/modclub_assets/.well-known &&
 rsync -vt ./assets/* ../../dist/modclub_assets
+
+if [[ "${TARGET_ENV}" == "qa" ]]
+then
+	cp ../qa_custom_domain/well-known/.well-known/* ../../dist/modclub_assets/.well-known
+else
+	cp ../well-known/.well-known/* ../../dist/modclub_assets/.well-known
+fi
 
 # Define the directory to search in
 DIRECTORY="../../dist/modclub_assets" &&
