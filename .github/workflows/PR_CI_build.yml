@@ -79,7 +79,7 @@ jobs:
         run: |
           source scripts/deployment/build_utils.sh
           source scripts/utils.sh
-          build_fe_canisters qa
+          DEV_ENV=qa build_fe_canisters qa
 
       - name: Check result
         run: |
