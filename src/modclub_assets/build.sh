@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TARGET_ENV=$1
-
 # Make sure we always run from the issuer root
 VC_ISSUER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$VC_ISSUER_DIR"
@@ -24,7 +22,7 @@ mkdir ../../dist/modclub_assets/.well-known &&
 cp ./assets/shapes/* ../../dist/modclub_assets/shapes &&
 rsync -vt ./assets/* ../../dist/modclub_assets
 
-if [[ "${TARGET_ENV}" == "qa" ]]
+if [[ "${DEV_ENV}" == "qa" ]]
 then
 	cp ../qa_custom_domain/well-known/.well-known/* ../../dist/modclub_assets/.well-known
 else
