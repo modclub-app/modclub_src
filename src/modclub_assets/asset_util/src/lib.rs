@@ -350,6 +350,7 @@ pub enum ContentEncoding {
 #[allow(clippy::upper_case_acronyms)]
 pub enum ContentType {
     HTML,
+    TEXT,
     JS,
     MAP,
     JSON,
@@ -368,6 +369,7 @@ impl ContentType {
     pub fn to_mime_type_string(self) -> String {
         match self {
             ContentType::HTML => "text/html".to_string(),
+            ContentType::TEXT => "text/text".to_string(),
             ContentType::JS => "text/javascript".to_string(),
             ContentType::MAP => "application/json".to_string(),
             ContentType::JSON => "application/json".to_string(),
@@ -444,18 +446,22 @@ fn collect_assets_rec(dir: &Dir, assets: &mut Vec<Asset>) {
 
             let url_paths = filepath_to_urlpaths(asset.path().to_str().unwrap().to_string());
             for url_path in url_paths {
-                // XXX: we clone the content for each asset instead of doing something smarter
-                // for simplicity & because the only assets that currently may be duplicated are
-                // small HTML files.
-                //
-                // XXX: the behavior is undefined for assets with overlapping URL paths (e.g. "foo.html" &
-                // "foo/index.html"). This assumes that the bundler creating the assets directory
-                // creates sensible assets.
                 assets.push(Asset {
                     url_path,
                     content: content.clone(),
                     encoding,
                     content_type,
+                });
+            }
+        } else {
+            let content = asset.contents().to_vec();
+            let url_paths = filepath_to_urlpaths(asset.path().to_str().unwrap().to_string());
+            for url_path in url_paths {
+                assets.push(Asset {
+                    url_path,
+                    content: content.clone(),
+                    encoding: ContentEncoding::Identity,
+                    content_type: ContentType::HTML,
                 });
             }
         }
@@ -490,6 +496,7 @@ fn content_type_and_encoding(asset_path: &Path) -> (ContentType, ContentEncoding
     let content_type = match extension {
         "css" => ContentType::CSS,
         "html" => ContentType::HTML,
+        "" => ContentType::TEXT,
         "ico" => ContentType::ICO,
         "json" => ContentType::JSON,
         "js" => ContentType::JS,

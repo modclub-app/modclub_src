@@ -19,7 +19,9 @@ cd src/modclub_assets &&
 yarn install &&
 yarn run build &&
 mkdir ../../dist/modclub_assets/shapes &&
+mkdir ../../dist/modclub_assets/.well-known &&
 cp ./assets/shapes/* ../../dist/modclub_assets/shapes &&
+cp ./assets/.well-known/* ../../dist/modclub_assets/.well-known &&
 rsync -vt ./assets/* ../../dist/modclub_assets
 
 # Define the directory to search in
