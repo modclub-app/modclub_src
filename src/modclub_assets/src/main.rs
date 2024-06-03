@@ -102,6 +102,7 @@ impl Storable for IssuerConfig {
 impl Default for IssuerConfig {
     fn default() -> Self {
         let derivation_origin = format!("https://{}.icp0.io", ic_cdk::id().to_text());
+
         Self {
             ic_root_key_raw: extract_raw_root_pk_from_der(IC_ROOT_PK_DER)
                 .expect("failed to extract raw root pk from der"),
