@@ -301,6 +301,7 @@ fn extract_subject(claims: &JwtClaims<Value>) -> Result<Principal, JwtValidation
 }
 
 fn extract_id_alias(claims: &JwtClaims<Value>) -> Result<AliasTuple, JwtValidationError> {
+    // panic!("[DEBUG]::[extract_id_alias]::[CLAIMS]::{:?}", &claims);
     let id_dapp = extract_subject(claims)?;
     let vc = claims.vc().ok_or(inconsistent_jwt_claims(
         "missing \"vc\" claim in id_alias JWT claims",
@@ -311,13 +312,21 @@ fn extract_id_alias(claims: &JwtClaims<Value>) -> Result<AliasTuple, JwtValidati
     let subject = Subject::from_json_value(subject_value.clone()).map_err(|_| {
         inconsistent_jwt_claims("malformed \"credentialSubject\" claim in id_alias JWT vc")
     })?;
-    let Value::String(ref alias) = subject.properties["has_id_alias"] else {
+    let Value::Object(ref spec) = subject.properties["InternetIdentityIdAlias"] else {
         return Err(inconsistent_jwt_claims(
-            "missing \"has_id_alias\" claim in id_alias JWT vc",
+            "missing \"InternetIdentityIdAlias\" claim in id_alias JWT vc",
         ));
     };
-    let id_alias = principal_for_did(alias).map_err(|_| {
-        inconsistent_jwt_claims("malformed \"has_id_alias\" claim in id_alias JWT vc")
+    let alias_value = spec.get("hasIdAlias").ok_or(inconsistent_jwt_claims(
+        "missing \"hasIdAlias\" parameter in id_alias JWT vc",
+    ))?;
+    let Value::String(alias) = alias_value else {
+        return Err(inconsistent_jwt_claims(
+            "wrong type of \"hasIdAlias\" value in id_alias JWT vc",
+        ));
+    };
+    let id_alias = Principal::from_text(alias).map_err(|_| {
+        inconsistent_jwt_claims("malformed \"hasIdAlias\"-value claim in id_alias JWT vc")
     })?;
     Ok(AliasTuple { id_alias, id_dapp })
 }
