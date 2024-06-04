@@ -8,4 +8,4 @@ steps:
       message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
       footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
     env:
-      SLACK_WEBHOOK_URL: ${{ secrets.ENGINEERING_NOTIFICATION_SLACK_HO
+      SLACK_WEBHOOK_URL: ${{ secrets.ENG_NOTIF_SLACK_HK }}
