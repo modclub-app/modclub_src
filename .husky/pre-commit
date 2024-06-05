@@ -13,5 +13,5 @@ fi
 
 . "$(dirname -- "$0")/_/husky.sh"
 
-# npx pretty-quick --staged
-# cd new_frontend && npm run lint:fix
+npx pretty-quick --staged
+cd new_frontend && npm run lint:fix
