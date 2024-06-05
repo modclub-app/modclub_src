@@ -6,7 +6,7 @@ const CompressionPlugin = require("compression-webpack-plugin");
 
 const ROOT_DIR = __dirname + "/../../";
 
-let localCanisters, prodCanisters, canisters, network;
+let localCanisters, prodCanisters, canisters={}, network;
 
 function initCanisterIds() {
   try {
@@ -29,12 +29,12 @@ function initCanisterIds() {
     process.env.DFX_NETWORK ||
     (process.env.NODE_ENV === "production" ? "ic" : "local");
 
-  canisters = network === "local" ? localCanisters : prodCanisters;
+  const _canisters = network === "local" ? localCanisters : prodCanisters;
 
-  for (const canister in canisters) {
-    process.env[canister.toUpperCase() + "_CANISTER_ID"] =
-      canisters[canister][network];
+  for (const canister in _canisters) {
+      canisters[canister]= _canisters[canister][network]
   }
+
 }
 initCanisterIds();
 
@@ -56,11 +56,11 @@ let LOCAL_II_CANISTER_SAFARI = "";
 try {
   LOCAL_II_CANISTER_SAFARI =
     network === "local"
-      ? `http://localhost:8000/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
+      ? `http://localhost:8000/?canisterId=${canisters['internet_identity']}`
       : `https://identity.ic0.app`;
   LOCAL_II_CANISTER =
     network === "local"
-      ? `http://${process.env["INTERNET_IDENTITY_CANISTER_ID"]}.localhost:8000`
+      ? `http://${canisters['internet_identity']}.localhost:8000`
       : `https://identity.ic0.app`;
 } catch (e) {
   console.error("Error setting LOCAL_II_CANISTER: ", e);
