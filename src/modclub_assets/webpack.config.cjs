@@ -6,13 +6,16 @@ const CompressionPlugin = require("compression-webpack-plugin");
 
 const ROOT_DIR = __dirname + "/../../";
 
-let localCanisters, prodCanisters, canisters, network;
+let localCanisters, prodCanisters, canisters={}, network;
 
 function initCanisterIds() {
   try {
-    localCanisters = require(
-      path.resolve(ROOT_DIR, ".dfx", "local", "canister_ids.json")
-    );
+    localCanisters = require(path.resolve(
+      ROOT_DIR,
+      ".dfx",
+      "local",
+      "canister_ids.json"
+    ));
   } catch (error) {
     console.log("No local canister_ids.json found. Continuing production");
   }
@@ -26,12 +29,12 @@ function initCanisterIds() {
     process.env.DFX_NETWORK ||
     (process.env.NODE_ENV === "production" ? "ic" : "local");
 
-  canisters = network === "local" ? localCanisters : prodCanisters;
+  const _canisters = network === "local" ? localCanisters : prodCanisters;
 
-  for (const canister in canisters) {
-    process.env[canister.toUpperCase() + "_CANISTER_ID"] =
-      canisters[canister][network];
+  for (const canister in _canisters) {
+      canisters[canister]= _canisters[canister][network]
   }
+
 }
 initCanisterIds();
 
@@ -53,11 +56,11 @@ let LOCAL_II_CANISTER_SAFARI = "";
 try {
   LOCAL_II_CANISTER_SAFARI =
     network === "local"
-      ? `http://localhost:8000/?canisterId=${process.env["INTERNET_IDENTITY_CANISTER_ID"]}`
+      ? `http://localhost:8000/?canisterId=${canisters['internet_identity']}`
       : `https://identity.ic0.app`;
   LOCAL_II_CANISTER =
     network === "local"
-      ? `http://${process.env["INTERNET_IDENTITY_CANISTER_ID"]}.localhost:8000`
+      ? `http://${canisters['internet_identity']}.localhost:8000`
       : `https://identity.ic0.app`;
 } catch (e) {
   console.error("Error setting LOCAL_II_CANISTER: ", e);
@@ -164,55 +167,26 @@ module.exports = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       MODCLUB_ASSET_OLD_CANISTER_ID: "ljyte-qiaaa-aaaah-qaiva-cai",
-      MODCLUB_CANISTER_ID:
-        (canisters["modclub"] && canisters["modclub"][network]) || "aaaaa-aa",
-      CANISTER_ID_MODCLUB_DEV:
-        (canisters["modclub_dev"] && canisters["modclub_dev"][network]) ||
-        "aaaaa-aa",
-      CANISTER_ID_MODCLUB_QA:
-        (canisters["modclub_qa"] && canisters["modclub_qa"][network]) ||
-        "aaaaa-aa",
-      CANISTER_ID_WALLET:
-        (canisters["wallet"] && canisters["wallet"][network]) || "aaaaa-aa",
-      CANISTER_ID_WALLET_DEV:
-        (canisters["wallet_dev"] && canisters["wallet_dev"][network]) ||
-        "aaaaa-aa",
-      CANISTER_ID_WALLET_QA:
-        (canisters["wallet_qa"] && canisters["wallet_qa"][network]) ||
-        "aaaaa-aa",
-      CANISTER_ID_RS:
-        (canisters["rs"] && canisters["rs"][network]) || "aaaaa-aa",
-      CANISTER_ID_RS_DEV:
-        (canisters["rs_dev"] && canisters["rs_dev"][network]) || "aaaaa-aa",
-      CANISTER_ID_RS_QA:
-        (canisters["rs_qa"] && canisters["rs_qa"][network]) || "aaaaa-aa",
-      CANISTER_ID_VESTING:
-        (canisters["vesting"] && canisters["vesting"][network]) || "aaaaa-aa",
-      CANISTER_ID_VESTING_DEV:
-        (canisters["vesting_dev"] && canisters["vesting_dev"][network]) ||
-        "aaaaa-aa",
-      CANISTER_ID_VESTING_QA:
-        (canisters["vesting_qa"] && canisters["vesting_qa"][network]) ||
-        "aaaaa-aa",
-      CANISTER_ID_AIRDROP:
-        (canisters["airdrop"] && canisters["airdrop"][network]) || "aaaaa-aa",
-      CANISTER_ID_AIRDROP_DEV:
-        (canisters["airdrop_dev"] && canisters["airdrop_dev"][network]) ||
-        "aaaaa-aa",
-      CANISTER_ID_AIRDROP_QA:
-        (canisters["airdrop_qa"] && canisters["airdrop_qa"][network]) ||
-        "aaaaa-aa",
-      CANISTER_ID_MODCLUB_ASSETS:
-        (canisters["modclub_assets"] && canisters["modclub_assets"][network]) ||
-        "aaaaa-aa",
+      CANISTER_ID_MODCLUB: canisters["modclub"] || "aaaaa-aa",
+      CANISTER_ID_MODCLUB_DEV: canisters["modclub_dev"] || "aaaaa-aa",
+      CANISTER_ID_MODCLUB_QA: canisters["modclub_qa"] || "aaaaa-aa",
+      CANISTER_ID_WALLET: canisters["wallet"] || "aaaaa-aa",
+      CANISTER_ID_WALLET_DEV: canisters["wallet_dev"] || "aaaaa-aa",
+      CANISTER_ID_WALLET_QA: canisters["wallet_qa"] || "aaaaa-aa",
+      CANISTER_ID_RS: canisters["rs"] || "aaaaa-aa",
+      CANISTER_ID_RS_DEV: canisters["rs_dev"] || "aaaaa-aa",
+      CANISTER_ID_RS_QA: canisters["rs_qa"] || "aaaaa-aa",
+      CANISTER_ID_VESTING: canisters["vesting"] || "aaaaa-aa",
+      CANISTER_ID_VESTING_DEV: canisters["vesting_dev"] || "aaaaa-aa",
+      CANISTER_ID_VESTING_QA: canisters["vesting_qa"] || "aaaaa-aa",
+      CANISTER_ID_AIRDROP: canisters["airdrop"] || "aaaaa-aa",
+      CANISTER_ID_AIRDROP_DEV: canisters["airdrop_dev"] || "aaaaa-aa",
+      CANISTER_ID_AIRDROP_QA: canisters["airdrop_qa"] || "aaaaa-aa",
+      CANISTER_ID_MODCLUB_ASSETS: canisters["modclub_assets"] || "aaaaa-aa",
       CANISTER_ID_MODCLUB_DEV_ASSETS:
-        (canisters["modclub_dev_assets"] &&
-          canisters["modclub_dev_assets"][network]) ||
-        "aaaaa-aa",
+        canisters["modclub_dev_assets"] || "aaaaa-aa",
       CANISTER_ID_MODCLUB_QA_ASSETS:
-        (canisters["modclub_qa_assets"] &&
-          canisters["modclub_qa_assets"][network]) ||
-        "aaaaa-aa",
+        canisters["modclub_qa_assets"] || "aaaaa-aa",
       LOCAL_II_CANISTER,
       LOCAL_II_CANISTER_SAFARI,
       DFX_NETWORK: process.env.DFX_NETWORK || "local",
