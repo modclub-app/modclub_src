@@ -42,12 +42,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      # - name: Exit if the branch is not main
-      #   run: |
-      #     if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
-      #       echo "Branch is not main, exiting."
-      #       exit 1
-      #     fi
+      - name: Exit if the branch is not main
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "Branch is not main, exiting."
+            exit 1
+          fi
 
       - name: Set Node.js 18.x
         uses: actions/setup-node@v3
