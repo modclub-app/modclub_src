@@ -1,6 +1,33 @@
 #!/bin/bash
 set -e
 
+standard_deploy() {
+  local canister_name=$1
+  local network=$2
+  local env_vars=$3
+
+  echo "Creating canister ${canister_name}..."
+  dfx canister create ${canister_name}
+
+  echo "Building ${canister_name}..."
+  dfx build ${canister_name}
+
+  echo "Deploying ${canister_name}..."
+
+  echo "Env vars ${env_vars}"
+
+  local cmd="dfx deploy ${canister_name} --network=${network} --argument=${env_vars}"
+
+  if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
+      cmd+=" --yes"
+  fi
+
+  eval $cmd &&
+  echo "[DEPLOY] Canister ${canister_name} deployed successfully." && return 0;
+  
+  echo "[ERROR] Unable to deploy ${canister_name}" && exit 1
+}
+
 gzip_and_deploy() {
   local canister_name=$1
   local network=$2
@@ -75,7 +102,7 @@ function deploy_canisters() {
   elif [ "$canister_only" = "modclub" ]; then
     gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'" $mode
   elif [ "$canister_only" = "auth" ]; then
-    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'" $mode
+    standard_deploy $auth_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "wallet" ]; then
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity
   elif [ "$canister_only" = "vesting" ]; then
@@ -88,7 +115,7 @@ function deploy_canisters() {
     set -x
     set -e
     log "Deploy ${env} Canisters..."
-    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'" $mode &&
+    standard_deploy $auth_canister_name $network "'(${env_vars})'" &&
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
     deploy_vesting_canister $env $network $old_modclub_inst &&
     gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'" $mode &&  
