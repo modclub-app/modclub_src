@@ -43,7 +43,7 @@ type ConfigCell = StableCell<IssuerConfig, Memory>;
 type PohVCCell = StableCell<PohVerifiedCredentials, Memory>;
 
 const MINUTE_NS: u64 = 60 * 1_000_000_000;
-const PROD_II_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
+const II_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
 const LOCAL_II_CANISTER_ID: &str = "aax3a-h4aaa-aaaaa-qaahq-cai";
 // The expiration of issued verifiable credentials.
 const VC_EXPIRATION_PERIOD_NS: u64 = 15 * MINUTE_NS;
@@ -101,12 +101,13 @@ impl Storable for IssuerConfig {
 
 impl Default for IssuerConfig {
     fn default() -> Self {
-        let derivation_origin = format!("https://{}.ic0.app", ic_cdk::id().to_text());
+        let derivation_origin = format!("https://{}.icp0.io", ic_cdk::id().to_text());
+
         Self {
             ic_root_key_raw: extract_raw_root_pk_from_der(IC_ROOT_PK_DER)
                 .expect("failed to extract raw root pk from der"),
             idp_canister_ids: vec![
-                Principal::from_text(PROD_II_CANISTER_ID).unwrap(),
+                Principal::from_text(II_CANISTER_ID).unwrap(),
                 Principal::from_text(LOCAL_II_CANISTER_ID).unwrap(),
             ],
             derivation_origin: derivation_origin.clone(),
@@ -348,7 +349,7 @@ fn authorize_vc_request(
         let verification = get_verified_id_alias_from_jws(
             &alias.credential_jws,
             expected_vc_subject,
-            &Principal::from_text(LOCAL_II_CANISTER_ID).unwrap(),
+            &Principal::from_text(II_CANISTER_ID).unwrap(),
             &config.ic_root_key_raw,
             current_time_ns,
         );
