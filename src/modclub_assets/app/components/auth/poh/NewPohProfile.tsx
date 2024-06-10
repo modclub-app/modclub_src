@@ -178,10 +178,6 @@ export default function NewPohProfile({ match }) {
     );
   };
 
-  const handleLogOut = async () => {
-    disconnect();
-  };
-
   return (
     <>
       {loading && (
@@ -190,15 +186,9 @@ export default function NewPohProfile({ match }) {
         </Modal>
       )}
 
-      <div className="is-flex is-justify-content-flex-end">
-        <Button className="is-danger m-5" onClick={handleLogOut}>
-          Logout
-        </Button>
-      </div>
-
-      <Columns centered vCentered multiline className="is-fullheight">
+      <Columns centered vCentered multiline className="mt-5">
         <Columns.Column size={6}>
-          <Card>
+          <Card className="poh-card">
             <Card.Content>
               {steps && (
                 <>
@@ -217,7 +207,7 @@ export default function NewPohProfile({ match }) {
                     />
                   </Steps>
 
-                  <Card backgroundColor="dark" className="mt-6">
+                  <Card className="mt-6 poh-card-content">
                     <Card.Content>
                       <Switch>
                         <Route path={`${match.path}/:challenge-profile-pic`}>

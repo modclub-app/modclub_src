@@ -19,6 +19,10 @@ import { useAppState } from "../../app/state_mgmt/context/state";
 import { GTMEvent, GTMManager, GTMTypes } from "../../../utils/gtm";
 import { useConnect } from "@connect2icmodclub/react";
 
+// Icons
+import userIconSvg from '../../../../assets/user_icon.svg';
+import letterIconSvg from '../../../../assets/letter_icon.svg';
+
 export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
   const history = useHistory();
   const appState = useAppState();
@@ -128,7 +132,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
                             placeholder="Username"
                           />
                           <Icon align="left">
-                            <span className="material-icons">person</span>
+                            <img src={userIconSvg} alt="user" />
                           </Icon>
                         </div>
                       </div>
@@ -142,7 +146,7 @@ export default function NewProfile({ isPohFlow }: { isPohFlow: boolean }) {
                             className="input is-medium"
                           />
                           <Icon align="left">
-                            <span className="material-icons">email</span>
+                            <img src={letterIconSvg} alt="user" />
                           </Icon>
                         </div>
                       </div>

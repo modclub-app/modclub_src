@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Principal } from "@dfinity/principal";
 import {
   Columns,
@@ -162,7 +161,7 @@ export default function Admin() {
                     />
                   </Media.Item>
                   <Media.Item>
-                    <table className="table is-label">
+                    <table className="table is-label adminInfo">
                       <tbody>
                         <tr>
                           <td>App Name:</td>
@@ -181,7 +180,7 @@ export default function Admin() {
                         </tr>
                       </tbody>
                     </table>
-                    <Button color="dark" onClick={toggleEditApp}>
+                    <Button color="darkGreen" onClick={toggleEditApp}>
                       Edit App
                     </Button>
                   </Media.Item>
@@ -227,7 +226,7 @@ export default function Admin() {
                     </tr> */}
                   </tbody>
                 </table>
-                <Link to="/provider/admin/activity/" className="button ml-6">
+                <Link to="/provider/admin/activity/" className="is-linear is-fullwidth button">
                   See Recent Activity
                 </Link>
               </Card.Content>
@@ -254,7 +253,7 @@ export default function Admin() {
               </Card.Content>
               <Card.Footer style={{ border: 0 }}>
                 <Button.Group>
-                  <Button color="dark" fullwidth onClick={toggleDeposit}>
+                  <Button color="darkGreen" fullwidth onClick={toggleDeposit}>
                     Deposit
                   </Button>
                 </Button.Group>
@@ -264,11 +263,13 @@ export default function Admin() {
 
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 6 }}>
             <Card className="is-fullheight">
-              <Card.Header>
-                <Card.Header.Title textSize={5}>Rules</Card.Header.Title>
-                <Button color="dark" onClick={toggleEditRules}>
-                  Add Rules
-                </Button>
+              <Card.Header className="is-justify-content-space-between">
+                <Heading subtitle marginless>Rules</Heading>
+                <Button.Group className="is-hidden-mobile">
+                  <Button color="darkGreen" onClick={toggleEditRules}>
+                    Add Rules
+                  </Button>
+                </Button.Group>
               </Card.Header>
               <Card.Content>
                 <table className="table is-striped has-text-left">

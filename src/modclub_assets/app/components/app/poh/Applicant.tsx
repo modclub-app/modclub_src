@@ -36,7 +36,7 @@ const CheckBox = ({ id, label, values }) => {
         <Button.Group justifyContent="flex-end">
           <Button
             renderAs="label"
-            color={values[id] === "confirm" && "primary"}
+            color={values[id] === "confirm" && "lightGreen"}
             className="is-size-7 has-text-weight-normal"
             style={{ paddingLeft: 6, borderColor: "white", borderRadius: 3 }}
           >
@@ -250,12 +250,10 @@ export default function PohApplicant() {
           <form onSubmit={handleSubmit}>
             <Card>
               <Card.Header>
-                <Card.Header.Title>
-                  <span
-                    style={{ marginLeft: 0, paddingLeft: 0, borderLeft: 0 }}
-                  >
+                <Card.Header.Title className="card-task-preview-title">
+                  <div className="has-text-light">
                     Submitted {formatDate(content.updatedAt)}
-                  </span>
+                  </div>
                 </Card.Header.Title>
               </Card.Header>
 
@@ -264,11 +262,11 @@ export default function PohApplicant() {
                   <Heading subtitle className="mb-3">
                     {formatTitle(task.challengeId)}
                   </Heading>
-                  <Card backgroundColor="dark">
+                  <Card backgroundColor="white">
                     {renderChallenge(task.challengeId, task)}
                   </Card>
                   <Card.Footer
-                    backgroundColor="dark"
+                    backgroundColor="green"
                     className="is-block m-0 px-5"
                     style={{ borderColor: "#000" }}
                   >
@@ -302,8 +300,8 @@ export default function PohApplicant() {
                   >
                     <Button
                       fullwidth
-                      className="is-outlined"
-                      style={{ paddingLeft: 0, paddingRight: 0 }}
+                      color="primary"
+                      style={{ paddingLeft: 0, paddingRight: 0, height: '2.5rem' }}
                       onClick={toggleReserveModal}
                     >
                       <Icon

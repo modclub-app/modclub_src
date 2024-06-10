@@ -5,7 +5,7 @@ import { getUrlForData } from "../../../utils/util";
 import { modclub_types } from "../../../utils/types";
 import { useActors } from "../../../utils";
 import { useAppState, useAppStateDispatch } from "../state_mgmt/context/state";
-import { ReservedPohButton } from "./ReservedPohButton";
+import { ReservedPohButton } from "./ReservedPohButton/ReservedPohButton";
 import { fetchObjectUrl } from "../../../utils/jwt";
 import { Link } from "react-router-dom";
 import ReserveModal from "../../common/reservemodal/ReserveModal";
@@ -118,7 +118,7 @@ const ApplicantSnippet = ({
       {reserved ? (
         <Link
           to={`/app/poh/${applicant.packageId}`}
-          className="card is-flex is-flex-direction-column is-justify-content-flex-end"
+          className="is-flex is-flex-direction-column is-justify-content-flex-end"
         >
           <Button.Group
             className="is-flex-wrap-nowrap mt-5"
@@ -126,8 +126,8 @@ const ApplicantSnippet = ({
           >
             <Button
               fullwidth
-              className="is-outlined"
-              style={{ paddingLeft: 0, paddingRight: 0 }}
+              color="primary"
+              style={{ paddingLeft: 0, paddingRight: 0, height: '2.5rem' }}
             >
               <Icon align="left" size="small" className="has-text-white">
                 View
@@ -142,8 +142,8 @@ const ApplicantSnippet = ({
         >
           <Button
             fullwidth
-            className="is-outlined"
-            style={{ paddingLeft: 0, paddingRight: 0 }}
+            color="primary"
+            style={{ paddingLeft: 0, paddingRight: 0, height: '2.5rem' }}
             onClick={toggleReserveModal}
           >
             <Icon align="left" size="small" className="has-text-white">

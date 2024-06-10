@@ -285,10 +285,15 @@ export default function Task() {
         <Columns>
           <Columns.Column tablet={{ size: 12 }} desktop={{ size: 8 }}>
             <Card>
-              <Card.Header>
-                <Card.Header.Title>
-                  <span>{task.sourceId}</span>
-                  <span>Submitted by</span> {task.providerName}
+              <Card.Header className="card-task-preview">
+                <Card.Header.Title className="card-task-preview-title">
+                  <div className="card-task-preview-label">
+                    <div className="has-text-light">Submitted by:</div>
+                    <div>{task.providerName}</div>
+                  </div>
+                  <div className="card-task-preview-label">
+                    <div>{task.sourceId}</div>
+                  </div>
                 </Card.Header.Title>
               </Card.Header>
               <Card.Content>

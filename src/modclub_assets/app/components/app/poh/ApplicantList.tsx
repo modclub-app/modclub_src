@@ -123,7 +123,7 @@ export default function PohApplicantList() {
   }
   if (appState.userProfile && applicants.length === 0) {
     return (
-      <section className="hero is-black is-medium">
+      <section className="hero has-background-grey is-medium">
         <div className="hero-body container has-text-centered">
           <p className="has-text-silver is-size-4 has-text-centered mb-6">
             There are no proof of humanity applicants at the moment.

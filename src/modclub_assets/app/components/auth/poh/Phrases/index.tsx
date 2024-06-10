@@ -18,13 +18,11 @@ export const Phrases: React.FC<PhrasesProps> = ({ phrases }) => (
         <br /> numbers in order:
       </Heading>
 
-      {phrases.map((phrase, index) => (
+      {phrases.map((phrase) => (
         <Columns.Column key={phrase} size={4}>
-          <Button fullwidth isStatic>
-            <span className="ml-2" style={{ width: 40 }}>
-              {phrase}
-            </span>
-          </Button>
+          <div className="poh-phrase-item">
+            {phrase}
+          </div>
         </Columns.Column>
       ))}
     </Card.Content>

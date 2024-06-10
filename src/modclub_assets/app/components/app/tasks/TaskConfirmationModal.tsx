@@ -148,7 +148,7 @@ const ConfirmationModal = ({
             </p>
             <p>Voting incorrectly will result in some loss of staked tokens.</p>
 
-            <Card backgroundColor="dark" className="mt-5">
+            <Card className="mt-5 is-background-grey">
               <Card.Content>
                 <Heading subtitle className="mb-3">
                   {task.providerName}'s Rules
@@ -157,7 +157,6 @@ const ConfirmationModal = ({
                   style={{
                     listStyle: "disc",
                     paddingLeft: "2rem",
-                    color: "#fff",
                   }}
                 >
                   {rules.map((rule) => (
@@ -179,10 +178,14 @@ const ConfirmationModal = ({
         setContent(
           <>
             <p className="mb-3">Select which rules were broken:</p>
-            <Card backgroundColor="dark">
+            <Card className="is-background-grey"> 
               <Card.Content>
                 {rules.map((rule) => (
-                  <Toggle key={rule.id} id={rule.id} label={rule.description} />
+                  <Toggle 
+                    key={rule.id} 
+                    id={rule.id} 
+                    label={rule.description} 
+                  />
                 ))}
               </Card.Content>
             </Card>
@@ -229,9 +232,9 @@ const ConfirmationModal = ({
                     </>
                   )}
               </Modal.Card.Body>
-              <Modal.Card.Footer className="pt-0 is-justify-content-flex-end">
+              <Modal.Card.Footer className="pt-4 is-justify-content-flex-end">
                 <Button.Group>
-                  <Button color="dark" onClick={toggle}>
+                  <Button color="linear" onClick={toggle}>
                     Cancel
                   </Button>
                   <Button

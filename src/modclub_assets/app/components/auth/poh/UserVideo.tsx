@@ -212,7 +212,7 @@ export default function UserVideo({ step, goToNextStep }) {
       <Phrases phrases={phrases} />
 
       <Button.Group align="right">
-        <Link to="/app/" className="button is-black">
+        <Link to="/app/" className="button is-linear">
           Cancel
         </Link>
         <Button

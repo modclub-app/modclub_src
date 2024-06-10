@@ -48,7 +48,7 @@ const PowerBar: React.FC<PowerBarProps> = ({
           style={{
             borderRadius: "5px",
             background: "-webkit-linear-gradient(right,#3d52fa, #c91988)",
-            color: "white",
+            color: "#1b4444",
             width: "100%",
             fontSize: ".75rem",
             lineHeight: "1.5rem",
@@ -65,7 +65,7 @@ const PowerBar: React.FC<PowerBarProps> = ({
       ) : (
         <span
           style={{
-            color: "white",
+            color: "#1b4444",
             width: "100%",
             fontSize: ".75rem",
             lineHeight: "1.5rem",
