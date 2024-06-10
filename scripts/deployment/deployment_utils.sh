@@ -115,7 +115,7 @@ function deploy_canisters() {
     set -x
     set -e
     log "Deploy ${env} Canisters..."
-    gzip_and_deploy $auth_canister_name $network "'(${env_vars})'" $mode &&
+    standard_deploy $auth_canister_name $network "'(${env_vars})'" &&
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
     deploy_vesting_canister $env $network $old_modclub_inst &&
     gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'" $mode &&  
