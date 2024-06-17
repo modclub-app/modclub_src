@@ -7,12 +7,11 @@ use ic_certification::{
 };
 use ic_representation_independent_hash::{representation_independent_hash, Value};
 use include_dir::Dir;
-
 use lazy_static::lazy_static;
 use serde::Serialize;
 use sha2::Digest;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub const IC_CERTIFICATE_HEADER: &str = "IC-Certificate";
 pub const IC_CERTIFICATE_EXPRESSION_HEADER: &str = "IC-CertificateExpression";
@@ -24,7 +23,7 @@ pub const IC_CERTIFICATE_EXPRESSION: &str =
     "default_certification(ValidationArgs{certification:Certification{no_request_certification: Empty{},\
     response_certification:ResponseCertification{response_header_exclusions:ResponseHeaderList{headers:[]}}}})";
 
-pub type HeaderField = (String, String);
+type HeaderField = (String, String);
 
 /// Struct to hold assets together with the necessary certification trees.
 /// The [CertifiedAssets::root_hash] must be included in the canisters [certified_data](https://internetcomputer.org/docs/current/references/ic-interface-spec/#system-api-certified-data)
@@ -34,6 +33,8 @@ pub struct CertifiedAssets {
     assets: HashMap<String, CertifiedAsset>,
     certification_v1: RbTree<String, Hash>,
     certification_v2: NestedTree<Vec<u8>, Vec<u8>>,
+    /// Headers shared by all assets; stored separately to avoid duplication
+    pub shared_headers: Box<[HeaderField]>,
 }
 
 #[derive(Debug, Clone)]
@@ -63,7 +64,12 @@ impl CertifiedAssets {
     /// The [CertifiedAssets::root_hash] must be included in the canisters `certified_data` for the
     /// certification to be valid.
     pub fn certify_assets(assets: Vec<Asset>, shared_headers: &[HeaderField]) -> Self {
-        let mut certified_assets = Self::default();
+        let mut certified_assets = Self {
+            assets: HashMap::new(),
+            certification_v1: RbTree::new(),
+            certification_v2: NestedTree::default(),
+            shared_headers: shared_headers.to_vec().into_boxed_slice(),
+        };
         for asset in assets {
             certified_assets.certify_asset(asset, shared_headers);
         }
@@ -120,11 +126,6 @@ impl CertifiedAssets {
                 content,
             },
         );
-    }
-
-
-    pub fn get_certified_assets(&self) -> Vec<String> {
-        self.assets.clone().into_keys().collect()
     }
 
     /// Returns the root_hash of the asset certification tree.
@@ -268,7 +269,7 @@ impl CertifiedAssets {
         &self,
         absolute_path: &str,
         sigs_tree: Option<HashTree>,
-    ) -> Vec<(String, String)> {
+    ) -> Vec<HeaderField> {
         let certificate = data_certificate().unwrap_or_else(|| {
             trap("data certificate is only available in query calls");
         });
@@ -388,6 +389,14 @@ impl ContentType {
 
 lazy_static! {
     pub static ref EXPR_HASH: Hash = sha2::Sha256::digest(IC_CERTIFICATE_EXPRESSION).into();
+    // Some files served by a canister are by definitions required not to have extensions,
+    // so we white-list them and their predefined type & encoding.
+    static ref KNOWN_FILES: HashMap<PathBuf, (ContentType, ContentEncoding)> = {
+        let mut map = HashMap::new();
+        map.insert(Path::new(".well-known/ic-domains").to_owned(), (ContentType::JSON, ContentEncoding::Identity));
+        map.insert(Path::new(".well-known/ii-alternative-origins").to_owned(), (ContentType::JSON, ContentEncoding::Identity));
+        map
+    };
 }
 
 fn response_hash(status_code: u16, headers: &[HeaderField], body_hash: &Hash) -> Hash {
@@ -437,33 +446,25 @@ pub fn collect_assets(dir: &Dir, html_transformer: Option<fn(&str) -> String>) -
 /// Collects all assets from the given directory (mutably into the accumulator).
 /// NOTE: behavior is undefined with symlinks (and esp. symlink loops)!
 fn collect_assets_rec(dir: &Dir, assets: &mut Vec<Asset>) {
-    println!("[DEBUG]::[_COLLECT_ASSETS_]::[_DIR_]::{:?}", &dir);
     for asset in dir.files() {
-        println!("[DEBUG]::[_COLLECT_ASSETS_]::[_FILE_]::{:?}", &asset);
-        if asset.path().extension().is_some() {
-            let content = asset.contents().to_vec();
-            let (content_type, encoding) = content_type_and_encoding(asset.path());
+        let content = asset.contents().to_vec();
+        let (content_type, encoding) = content_type_and_encoding(asset.path());
 
-            let url_paths = filepath_to_urlpaths(asset.path().to_str().unwrap().to_string());
-            for url_path in url_paths {
-                assets.push(Asset {
-                    url_path,
-                    content: content.clone(),
-                    encoding,
-                    content_type,
-                });
-            }
-        } else {
-            let content = asset.contents().to_vec();
-            let url_paths = filepath_to_urlpaths(asset.path().to_str().unwrap().to_string());
-            for url_path in url_paths {
-                assets.push(Asset {
-                    url_path,
-                    content: content.clone(),
-                    encoding: ContentEncoding::Identity,
-                    content_type: ContentType::TEXT,
-                });
-            }
+        let url_paths = filepath_to_urlpaths(asset.path().to_str().unwrap().to_string());
+        for url_path in url_paths {
+            // XXX: we clone the content for each asset instead of doing something smarter
+            // for simplicity & because the only assets that currently may be duplicated are
+            // small HTML files.
+            //
+            // XXX: the behavior is undefined for assets with overlapping URL paths (e.g. "foo.html" &
+            // "foo/index.html"). This assumes that the bundler creating the assets directory
+            // creates sensible assets.
+            assets.push(Asset {
+                url_path,
+                content: content.clone(),
+                encoding,
+                content_type,
+            });
         }
     }
 
@@ -472,14 +473,22 @@ fn collect_assets_rec(dir: &Dir, assets: &mut Vec<Asset>) {
     }
 }
 
-/// Returns the content type and the encoding type of the given file, based on the extension(s).
+/// Returns the content type and the encoding type of the given file, either
+/// because the file is on a "white-list" of known files, or based on the extension(s),
 /// If the text after the last dot is "gz" (i.e. this is a gzipped file), then content type
 /// is determined by the text after the second to last dot and the last dot in the file name,
 /// e.g. `ContentType::JS` for "some.gzipped.file.js.gz", and the encoding is `ContentEncoding::GZip`.
 /// Otherwise the content type is determined by the text after the last dot in the file name,
 /// and the encoding is `ContentEncoding::Identity`.
 fn content_type_and_encoding(asset_path: &Path) -> (ContentType, ContentEncoding) {
-    let extension = asset_path.extension().unwrap().to_str().unwrap();
+    if let Some((content_type, content_encoding)) = KNOWN_FILES.get(asset_path) {
+        return (*content_type, *content_encoding);
+    }
+    let extension = asset_path
+        .extension()
+        .unwrap_or_else(|| panic!("Unsupported file without extension: {:?}", asset_path))
+        .to_str()
+        .unwrap();
     let (extension, encoding) = if extension == "gz" {
         let type_extension = asset_path
             .file_name()
@@ -643,6 +652,16 @@ fn test_filepath_urlpaths() {
 #[test]
 fn should_return_correct_extension() {
     let path_extension_encoding = [
+        (
+            ".well-known/ic-domains",
+            ContentType::JSON,
+            ContentEncoding::Identity,
+        ),
+        (
+            ".well-known/ii-alternative-origins",
+            ContentType::JSON,
+            ContentEncoding::Identity,
+        ),
         (
             "path1/some_css_file.css",
             ContentType::CSS,

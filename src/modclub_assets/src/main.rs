@@ -141,9 +141,9 @@ struct IssuerInit {
 }
 
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Debug)]
 struct PohVerifiedCredentials {
-    verified: Vec<Principal>,
+    verified: Option<Vec<Principal>>,
 }
 
 impl Storable for PohVerifiedCredentials {
@@ -151,7 +151,16 @@ impl Storable for PohVerifiedCredentials {
         Cow::Owned(candid::encode_one(self).expect("failed to encode PohVerifiedCredentials"))
     }
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        candid::decode_one(&bytes).expect("failed to decode PohVerifiedCredentials")
+        let ln = &bytes.len();
+        if ln > &0 {
+            match candid::decode_one(&bytes) {
+                Ok(vcs) => return vcs,
+                Err(e) => {
+                    return Self::default();
+                },
+            }
+        };
+        return Self::default();
     }
     const BOUND: Bound = Bound::Unbounded;
 }
@@ -159,7 +168,7 @@ impl Storable for PohVerifiedCredentials {
 impl Default for PohVerifiedCredentials {
     fn default() -> Self {
         Self {
-            verified: vec![],
+            verified: Some(vec![]),
         }
     }
 }
@@ -167,7 +176,7 @@ impl Default for PohVerifiedCredentials {
 impl PohVerifiedCredentials {
     fn from_state(verified : HashSet<Principal>) -> Self {
         Self {
-            verified: Vec::from_iter(verified.clone()),
+            verified: Some(Vec::from_iter(verified.clone())),
         }
     }
 }
@@ -188,11 +197,18 @@ fn post_upgrade(_init_arg: Option<IssuerInit>) {
     init_mc_ids();
     POH_VC_STABLE.with_borrow(|poh_vc_stable_cell| {
         let poh_vc_stable = poh_vc_stable_cell.get();
-        POH_VERIFIED.with_borrow_mut(|poh_verified_users| {
-            for v_pid in poh_vc_stable.verified.iter() {
-                poh_verified_users.insert(v_pid.clone());
-            }
-        });
+        match &poh_vc_stable.verified {
+          Some(v) => {
+            POH_VERIFIED.with_borrow_mut(|poh_verified_users| {
+                for v_pid in v.iter() {
+                    poh_verified_users.insert(v_pid.clone());
+                }
+            });
+          },
+          None => {
+            println!("[DEBUG]::[POST_UPGRADE]::[POH_VERIFIED_RESTORE]::No Verified Users found for restoration.");
+          },
+        };
     });
 }
 
@@ -239,13 +255,9 @@ fn init_mc_ids() {
 #[candid_method(query)]
 pub fn http_request(req: HttpRequest) -> HttpResponse {
     let parts: Vec<&str> = req.url.split('?').collect();
-    println!("[DEBUG]::[HTTP_REQUEST]::{:?}", &parts);
     let path = parts[0];
     let sigs_root_hash =
         SIGNATURES.with_borrow(|sigs| pruned(labeled_hash(LABEL_SIG, &sigs.root_hash())));
-    let _assets_keys: Vec<String> = ASSETS.with_borrow(|assets| {
-        assets.get_certified_assets()
-    });
 
     let maybe_asset = ASSETS.with_borrow(|assets| {
         assets.get_certified_asset(path, req.certificate_version, Some(sigs_root_hash))
@@ -255,11 +267,12 @@ pub fn http_request(req: HttpRequest) -> HttpResponse {
     match maybe_asset {
         Some(asset) => {
             headers.extend(asset.headers);
-            HttpResponse {
+            let resp = HttpResponse {
                 status_code: 200,
                 body: ByteBuf::from(asset.content),
                 headers,
-            }
+            };
+            return resp;
         }
         None => HttpResponse {
             status_code: 404,
@@ -286,7 +299,6 @@ fn static_headers() -> Vec<(String, String)> {
 static ASSET_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/../../dist/modclub_assets");
 pub fn init_assets() {
     ASSETS.with_borrow_mut(|assets| {
-        println!("[DEBUG]::[_INIT_ASSETS_]::[_CALL_]::{:?}", &assets);
         *assets = CertifiedAssets::certify_assets(
             collect_assets(&ASSET_DIR, Some(fixup_html)),
             &static_headers(),
@@ -587,11 +599,15 @@ fn add_poh_verified(uid: Principal) -> Result<u32, String> {
         assert!(mc_ids.contains(&(caller().to_text())));
     });
     POH_VERIFIED.with_borrow_mut(|poh_verified_users| {
+        let status = poh_verified_users.insert(uid.clone());
         println!(
-            "*** [DEBUG] [add_poh_verified] [User_ID] {:?}\n",
-            uid
+            "***_2 [DEBUG] [add_poh_verified] [INSERT_STATUS] {:?}\n",
+            status
         );
-        poh_verified_users.insert(uid.clone());
+        // println!(
+        //     "***_3 [DEBUG] [add_poh_verified] [NEW_LIST] {:?}\n",
+        //     poh_verified_users.clone()
+        // );
     });
 
     let new_len : u32 = POH_VERIFIED.with_borrow(|pvu| {
@@ -671,15 +687,15 @@ fn prepare_credential_payload(
     alias_tuple: &AliasTuple,
 ) -> Result<Credential, IssueCredentialError> {
     match credential_type {
-        ProofOfHumanity(poph_vc) => {
-            let verification = POH_VERIFIED.with_borrow(|poph_verified| {
-                verify_authorized_principal(credential_type, alias_tuple, poph_verified)
+        ProofOfHumanity(poh_vc) => {
+            let verification = POH_VERIFIED.with_borrow(|poh_verified| {
+                verify_authorized_principal(credential_type, alias_tuple, poh_verified)
             });
             match verification {
                 Ok(_) => {
                     return Ok(poh_credential(
                         alias_tuple.id_alias,
-                        poph_vc,
+                        poh_vc,
                     ));
                 }
                 Err(e) => {
