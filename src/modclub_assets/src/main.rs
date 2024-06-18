@@ -438,7 +438,7 @@ async fn prepare_credential(
         let mut sigs = sigs.borrow_mut();
         sigs.add_signature(seed.as_ref(), msg_hash);
     });
-    // update_root_hash();
+    update_root_hash();
     Ok(PreparedCredentialData {
         prepared_context: Some(ByteBuf::from(credential_jwt.as_bytes())),
     })
