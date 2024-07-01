@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 standard_deploy() {
   local canister_name=$1
