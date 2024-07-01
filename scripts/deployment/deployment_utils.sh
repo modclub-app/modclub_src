@@ -14,9 +14,13 @@ standard_deploy() {
 
   echo "Deploying ${canister_name}..."
 
-  echo "Env vars ${env_vars}"
+  echo "Env vars: ${env_vars}"
 
-  local cmd="dfx deploy ${canister_name} --network=${network} --argument=${env_vars}"
+  if [ -z "${env_vars}" ]; then
+    local cmd="dfx deploy ${canister_name} --network=${network}"
+  else
+    local cmd="dfx deploy ${canister_name} --network=${network} --argument=${env_vars}"
+  fi
 
   if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
       cmd+=" --yes"
@@ -123,7 +127,7 @@ function deploy_canisters() {
     init_canisters $env $network &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
-    DEV_ENV=$env standard_deploy ${assets_canister_name} $network "'()'"&&
+    DEV_ENV=$env standard_deploy ${assets_canister_name} $network &&
     log "${env} Canisters DEPLOYED"
   fi
 
