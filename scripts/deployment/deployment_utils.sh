@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 standard_deploy() {
   local canister_name=$1
@@ -14,9 +14,13 @@ standard_deploy() {
 
   echo "Deploying ${canister_name}..."
 
-  echo "Env vars ${env_vars}"
+  echo "Env vars: ${env_vars}"
 
-  local cmd="dfx deploy ${canister_name} --network=${network} --argument=${env_vars}"
+  if [ -z "${env_vars}" ]; then
+    local cmd="dfx deploy ${canister_name} --network=${network}"
+  else
+    local cmd="dfx deploy ${canister_name} --network=${network} --argument=${env_vars}"
+  fi
 
   if [[ $BYPASS_PROMPT_YES == "yes" || $BYPASS_PROMPT_YES == "Yes" || $BYPASS_PROMPT_YES == "YES" ]]; then
       cmd+=" --yes"
@@ -88,8 +92,6 @@ function deploy_canisters() {
   local assets_canister_name="$(get_canister_name_by_env $env "modclub")_assets"
   local airdrop_canister_name=$(get_canister_name_by_env $env "airdrop")
 
-  local decideid_assets_canister_name="$(get_canister_name_by_env $env "desideid")_assets"
-
   if [ "$canister_only" != "ALL" ]; then
     log "[${env}] Only deploy $canister_only"
   fi
@@ -100,17 +102,17 @@ function deploy_canisters() {
     DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
     log "${env} Canisters DEPLOYED"
   elif [ "$canister_only" = "modclub" ]; then
-    gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'" $mode
+    standard_deploy $modclub_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "auth" ]; then
     standard_deploy $auth_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "wallet" ]; then
-    deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity
+    standard_deploy $env $network $ledger_minter_identity $ledger_account_identity
   elif [ "$canister_only" = "vesting" ]; then
-    deploy_vesting_canister $env $network $old_modclub_inst
+    standard_deploy $env $network $old_modclub_inst
   elif [ "$canister_only" = "airdrop" ]; then
-    gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'" $mode
+    standard_deploy $airdrop_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "rs" ]; then
-    gzip_and_deploy $rs_canister_name $network "'(${env_vars})'" $mode
+    standard_deploy $rs_canister_name $network "'(${env_vars})'"
   elif [ "$canister_only" = "ALL" ]; then
     set -x
     set -e
@@ -118,14 +120,14 @@ function deploy_canisters() {
     standard_deploy $auth_canister_name $network "'(${env_vars})'" &&
     deploy_wallet_canister $env $network $ledger_minter_identity $ledger_account_identity &&
     deploy_vesting_canister $env $network $old_modclub_inst &&
-    gzip_and_deploy $airdrop_canister_name $network "'(${env_vars})'" $mode &&  
+    standard_deploy $airdrop_canister_name $network "'(${env_vars})'" &&  
 
-    gzip_and_deploy $rs_canister_name $network "'(${env_vars})'" $mode &&
-    gzip_and_deploy $modclub_canister_name $network "'(${env_vars})'" $mode &&
+    standard_deploy $rs_canister_name $network "'(${env_vars})'" &&
+    standard_deploy $modclub_canister_name $network "'(${env_vars})'" &&
     init_canisters $env $network &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
-    DEV_ENV=$env dfx deploy ${assets_canister_name} --network=${network} &&
+    DEV_ENV=$env standard_deploy ${assets_canister_name} $network &&
     log "${env} Canisters DEPLOYED"
   fi
 
@@ -215,8 +217,6 @@ function get_env_canisters_vars() {
   local env=$1
   local network=$2
   local old_modclub_inst=$3
-
-  # local decideid_assets_canister_name="$(get_canister_name_by_env $env "decideid")_assets"
 
   local modclub_canister_name=$(get_canister_name_by_env $env "modclub")
   local modclub_assets_canister_name="$(get_canister_name_by_env $env 'modclub')_assets"
