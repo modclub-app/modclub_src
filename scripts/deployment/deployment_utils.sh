@@ -125,7 +125,7 @@ function deploy_canisters() {
     init_canisters $env $network &&
     generate_declarations $env $network &&
     node "$current_dir/../build/gen_files_by_env.cjs" &&
-    DEV_ENV=$env standard_deploy ${assets_canister_name} --network=${network} &&
+    DEV_ENV=$env standard_deploy ${assets_canister_name} --network=${network} "'()'"&&
     log "${env} Canisters DEPLOYED"
   fi
 
