@@ -4,40 +4,46 @@
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
+      "optimize": "cycles",
+      "gzip": true
     },
     "modclub_assets": {
       "type": "custom",
       "candid": "src/modclub_assets/modclub_assets.did",
-      "wasm": "src/modclub_assets/modclub_assets.wasm.gz",
+      "wasm": "src/modclub_assets/modclub_assets.wasm",
       "build": "src/modclub_assets/build.sh",
-      "frontend": {}
+      "frontend": {},
+      "gzip": true
     },
     "modclub_dev": {
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
+      "optimize": "cycles",
+      "gzip": true
     },
     "modclub_dev_assets": {
       "type": "custom",
       "candid": "src/modclub_assets/modclub_assets.did",
-      "wasm": "src/modclub_assets/modclub_assets.wasm.gz",
+      "wasm": "src/modclub_assets/modclub_assets.wasm",
       "build": "src/modclub_assets/build.sh",
-      "frontend": {}
+      "frontend": {},
+      "gzip": true
     },
     "modclub_qa": {
       "main": "src/modclub/main.mo",
       "type": "motoko",
       "args": "-v --max-stable-pages 786432",
-      "optimize": "cycles"
+      "optimize": "cycles",
+      "gzip": true
     },
     "modclub_qa_assets": {
       "type": "custom",
       "candid": "src/modclub_assets/modclub_assets.did",
-      "wasm": "src/modclub_assets/modclub_assets.wasm.gz",
+      "wasm": "src/modclub_assets/modclub_assets.wasm",
       "build": "src/modclub_assets/build.sh",
-      "frontend": {}
+      "frontend": {},
+      "gzip": true
     },
     "wallet": {
       "build": "",
@@ -63,39 +69,48 @@
     },
     "rs": {
       "main": "src/rs/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "rs_qa": {
       "main": "src/rs/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "rs_dev": {
       "main": "src/rs/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "auth": {
       "main": "src/authentication/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "auth_dev": {
       "main": "src/authentication/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "auth_qa": {
       "main": "src/authentication/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "vesting": {
       "main": "src/vesting/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "vesting_dev": {
       "main": "src/vesting/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "vesting_qa": {
       "main": "src/vesting/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "internet_identity": {
       "type": "custom",
@@ -110,7 +125,8 @@
     },
     "bucket_qa": {
       "main": "src/modclub/service/storage/buckets.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "gzip": true
     },
     "airdrop": {
       "type": "custom",
