@@ -4,6 +4,8 @@ import App from "./App";
 import { AuthProvider } from "./contexts/auth";
 import { Connect2ICProvider } from "@connect2icmodclub/react";
 
+import  { canistersClient } from "./canistersClient";
+
 import "./index.scss";
 
 /**
@@ -12,9 +14,10 @@ import "./index.scss";
 window.global = window;
 
 const root = ReactDOM.createRoot(document.getElementById('app'));
+
 root.render(
   <React.StrictMode>
-    <AuthProvider>
+    <AuthProvider client={canistersClient}>
       <App />
     </AuthProvider>
   </React.StrictMode>
