@@ -74,6 +74,6 @@ export const canistersClient = createClient({
       env !== "local"
         ? derivationOrigins[process.env.DEV_ENV]
         : undefined,
-    // dev: false,
+    dev: env === "local",
   },
 });
