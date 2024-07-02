@@ -23,16 +23,16 @@ export default function Footer_() {
           </Columns.Column>
           <Columns.Column size="one-fifth">
             <Heading subtitle className="">Menu</Heading>
-            <HashLink to="/#developers" className="is-block ">
+            <HashLink to="/#developers" className="is-block has-text-black">
               Developers
             </HashLink>
-            <HashLink to="/#tokenomics" className="is-block ">
+            <HashLink to="/#tokenomics" className="is-block has-text-black">
               Tokenomics
             </HashLink>
-            <HashLink to="/#roadmap" className="is-block ">
+            <HashLink to="/#roadmap" className="is-block has-text-black">
               Roadmap
             </HashLink>
-            <Link to="/how-to" className="is-block ">
+            <Link to="/how-to" className="is-block has-text-black">
               How To
             </Link>
           </Columns.Column>
@@ -40,14 +40,14 @@ export default function Footer_() {
             <Heading subtitle className="">Company</Heading>
             <a
               href="mailto:team@modclub.app"
-              className="is-block "
+              className="is-block has-text-black"
             >
               Contact
             </a>
-            <Link to="/privacy" className="is-block ">
+            <Link to="/privacy" className="is-block has-text-black">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="is-block ">
+            <Link to="/terms" className="is-block has-text-black">
               Terms of Service
             </Link>
           </Columns.Column>
