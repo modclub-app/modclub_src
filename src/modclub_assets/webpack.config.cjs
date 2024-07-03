@@ -162,6 +162,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: path.join(ROOT_DIR, asset_entry),
+      favicon: path.join(ROOT_DIR, "src/modclub_assets/assets/favicons/favicon.ico"),
       cache: false,
     }),
     new webpack.EnvironmentPlugin({
