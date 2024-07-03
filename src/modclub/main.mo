@@ -70,6 +70,7 @@ import ModclubBackup "./service/archive/backup";
 import Content "./service/queue/state";
 import Staking "./service/staking/staking";
 import SerializationGlobalStateUtil "./serialization/serialization_global_state";
+import MessagesHelper "../common/messagesHelper";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
 
@@ -172,6 +173,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   let vestingActor = authGuard.getVestingActor();
   let ledger = authGuard.getWalletActor();
   let rs = authGuard.getRSActor();
+  private var messagesHelper = MessagesHelper.Messages();
 
   public shared func subscribeOnRsEvets() : async () {
     try {
@@ -316,10 +318,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Text {
     switch (stateV2.providersWhitelist.get(caller)) {
       case (null) {
-        logger.logMessage(
-          "registerProvider - Provider not in allow list with provider ID: " #
-          Principal.toText(caller)
-        );
+        messagesHelper.logMessage(logger, "ProviderNotInAllowList", Principal.toText(caller));
+
         return "Caller " # Principal.toText(caller) # " not in allow list";
       };
       case (?_)();
@@ -548,7 +548,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
-    logger.logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
+    messagesHelper.logMessage(logger, "SubmitHtmlContent", sourceId # " " # Principal.toText(caller));
+
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -620,7 +621,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
-    logger.logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
+    messagesHelper.logMessage(logger, "SubmitHtmlContent", sourceId # " " # Principal.toText(caller));
+
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -867,10 +869,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     filterVoted : Bool,
     filters : Types.ModerationTasksFilter
   ) : async [Types.ContentPlus] {
-    logger.logMessage(
-      "getTasks - provider called with provider ID: " #
-      Principal.toText(caller)
-    );
+    messagesHelper.logMessage(logger, "GetTasks", Principal.toText(caller));
+
     switch (PermissionsModule.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
@@ -916,10 +916,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         throw Error.reject(e);
       };
       case (#ok(tasks)) {
-        logger.logMessage(
-          "getTasks - FINISHED - provider called with provider ID: " #
-          Principal.toText(caller)
-        );
+        messagesHelper.logMessage(logger, "GetTasksFinished", Principal.toText(caller));
         return tasks;
       };
     };
@@ -1278,12 +1275,18 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     var voteCount = getVoteCount(contentId, ?caller);
-    logger.logMessage(
-      "vote - User ID: " # Principal.toText(caller) # " approved: " # Bool.toText(
-        decision == #approved
-      ) # " voting on content ID : " # contentId # " approve count : " # Nat.toText(
-        voteCount.approvedCount
-      ) # " rejected count : " # Nat.toText(voteCount.rejectedCount)
+    messagesHelper.logMessage(
+      logger,
+      "Vote", 
+      Principal.toText(caller) 
+       # " approved: " 
+       # Bool.toText(decision == #approved)
+       # " voting on content ID : " 
+       # contentId 
+       # " approve count : " 
+       # Nat.toText(voteCount.approvedCount) 
+       # " rejected count : " 
+       # Nat.toText(voteCount.rejectedCount)
     );
     await ContentVotingManager.vote({
       userId = caller;
@@ -1438,8 +1441,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (caller != Principal.fromActor(this)) {
       throw Error.reject("Unauthorized");
     };
-    logger.logMessage(
-      "pohCallbackForModclub - status:  " # pohEngine.statusToString(
+    messagesHelper.logMessage(
+      logger,
+      "PohCallbackForModclub", 
+      pohEngine.statusToString(
         message.status
       ) # " submittedAt: " # Int.toText(Option.get(message.submittedAt, -1)) # " requestedAt: " # Int.toText(
         Option.get(message.requestedAt, -1)
@@ -2082,7 +2087,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (not authGuard.allowedCanistergeekCaller(caller)) {
       throw Error.reject("Unauthorized");
     };
-    logger.logMessage("getCanisterLog - request from caller: " # Principal.toText(caller));
+    messagesHelper.logMessage(logger, "GetCanisterLog", Principal.toText(caller));
     canistergeekLogger.getLog(request);
   };
 
@@ -2161,7 +2166,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       pohContentQueueManager
     );
     if (finishedVoting == #ok(true)) {
-      logger.logMessage("Voting completed for packageId: " # packageId);
+      messagesHelper.logMessage(logger, "VotingCompleted", packageId);
       let finalDecision = pohContentQueueManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
       var contentIds : [Text] = [];
@@ -2171,9 +2176,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           packageId,
           #verified
         );
-        logger.logMessage(
-          "Voting completed for packageId: " # packageId # " Final decision: approved"
-        );
+        messagesHelper.logMessage(logger, "VotingCompletedApproved", packageId);
       } else {
         contentIds := pohEngine.changeChallengePackageStatus(
           packageId,
@@ -2201,9 +2204,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           };
           case (_) {};
         };
-        logger.logMessage(
-          "Voting completed for packageId: " # packageId # " Final decision: rejected"
-        );
+        messagesHelper.logMessage(logger, "VotingCompletedRejected", packageId);
       };
 
       // mark content not accessible
@@ -2224,8 +2225,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               };
               isVoteCorrect := true;
             };
-            logger.logMessage(
-              "User:" # Principal.toText(v.userId) # ":Voting for packageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(isVoteCorrect)
+            messagesHelper.logMessage(
+              logger, 
+              "UserVoting", 
+              "UserId:" # Principal.toText(v.userId) # ": PackageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(isVoteCorrect)
             );
             usersToRewardRS.add({
               userId = v.userId;
@@ -2254,8 +2257,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           subaccount = moderator.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
         };
         let fullReward = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
-        logger.logMessage(
-          "UserID:" # Principal.toText(userVote.userId) # "RS Before Vote POH:" # Float.toText(userVote.rsBeforeVoting) # "Full rewards" # Float.toText(fullReward)
+        messagesHelper.logMessage(
+          logger,
+          "UserVoting", 
+          "UserID:" # Principal.toText(userVote.userId) # " RS Before Vote POH: " # Float.toText(userVote.rsBeforeVoting) # "Full rewards " # Float.toText(fullReward)
         );
         let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
         let _ = await ledger.icrc1_transfer({
@@ -2801,7 +2806,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
 
   system func preupgrade() {
-    logger.logMessage("MODCLUB PREUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
+    messagesHelper.logMessage(logger, "PreUpgrade", Int.toText(Helpers.timeNow()));
     stateSharedV2 := StateV2.fromState(stateV2);
 
     storageStateStable := storageSolution.getStableState();
@@ -2846,7 +2851,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var globalStateMigrationDone = false;
 
   system func postupgrade() {
-    logger.logMessage("MODCLUB POSTUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
+    messagesHelper.logMessage(logger, "PostUpgrade", Int.toText(Helpers.timeNow()));
 
     authGuard.subscribe<system>("admins");
     admins := authGuard.setUpDefaultAdmins(
@@ -2990,7 +2995,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func http_request(request : Types.HttpRequest) : async Types.HttpResponse {
-    logger.logMessage("http_request - called for url " # request.url);
+    messagesHelper.logMessage(logger, "HttpRequest", request.url);
     return {
       status_code = 200;
       headers = [];
@@ -3001,7 +3006,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
-    logger.logMessage("http_request_update - called for url " # request.url);
+    messagesHelper.logMessage(logger, "HttpRequest", request.url);
     let temp = RequestHandler.parseUrlAndGetPath(request);
 
     switch (temp) {
@@ -3149,7 +3154,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func importAirdropMetadata(payload : Types.AirdropMetadataImportPayload) : async {
     status : Bool;
   } {
-    logger.logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show payload);
+    messagesHelper.logMessage(logger, "ImportAirdropMetadataCall", debug_show payload);
+
     importedProfilesStable := List.nil<(Principal, Nat)>();
     importedProfiles.clear();
 
@@ -3162,7 +3168,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         logger.logError("AN ERROR OCCURS DURING userPoints import :: " # Error.message(e));
       };
     };
-    logger.logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show importedProfilesStable);
+    messagesHelper.logMessage(logger, "ImportAirdropMetadataProfiles", debug_show importedProfilesStable);
     { status = true };
   };
 
