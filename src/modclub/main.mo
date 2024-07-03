@@ -319,7 +319,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     switch (stateV2.providersWhitelist.get(caller)) {
       case (null) {
         messagesHelper.logMessage(logger, "ProviderNotInAllowList", Principal.toText(caller));
-
         return "Caller " # Principal.toText(caller) # " not in allow list";
       };
       case (?_)();
@@ -549,7 +548,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     category : ?Text
   ) : async Text {
     messagesHelper.logMessage(logger, "SubmitHtmlContent", sourceId # " " # Principal.toText(caller));
-
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -622,7 +620,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     category : ?Text
   ) : async Text {
     messagesHelper.logMessage(logger, "SubmitHtmlContent", sourceId # " " # Principal.toText(caller));
-
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -870,7 +867,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     filters : Types.ModerationTasksFilter
   ) : async [Types.ContentPlus] {
     messagesHelper.logMessage(logger, "GetTasks", Principal.toText(caller));
-
     switch (PermissionsModule.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
@@ -2852,7 +2848,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   system func postupgrade() {
     messagesHelper.logMessage(logger, "PostUpgrade", Int.toText(Helpers.timeNow()));
-
     authGuard.subscribe<system>("admins");
     admins := authGuard.setUpDefaultAdmins(
       admins,
@@ -3155,7 +3150,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     status : Bool;
   } {
     messagesHelper.logMessage(logger, "ImportAirdropMetadataCall", debug_show payload);
-
     importedProfilesStable := List.nil<(Principal, Nat)>();
     importedProfiles.clear();
 
