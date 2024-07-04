@@ -34,8 +34,6 @@ import RSConstants "../rs/constants";
 import RSTypes "../rs/types";
 import Types "../modclub/types";
 import ModClubParam "../modclub/service/parameters/params";
-import VoteManager "../modclub/service/vote/vote";
-import StorageSolution "../modclub/service/storage/storage";
 
 module Helpers {
 
@@ -495,29 +493,4 @@ module Helpers {
       };
     };
   };
-
-  // Stores the submitted challenge data blob in a data canister and returns its ID.
-  public func storeDataInCanister(
-    attemptId : Text,
-    pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
-    storageSolution: StorageSolution
-  ) : async ?Principal {
-    switch (pohDataRequest.challengeDataBlob) {
-      case (null) {
-        // challengeDataBlob is null this shouldn't happen
-        throw Error.reject("Challenge data blob is null.");
-      };
-      case (?blob) {
-        return await storageSolution.putBlobsInDataCanister(
-          attemptId,
-          blob,
-          pohDataRequest.offset,
-          pohDataRequest.numOfChunks,
-          pohDataRequest.mimeType,
-          pohDataRequest.dataSize
-        );
-      };
-    };
-  };
-
 };

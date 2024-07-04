@@ -16,9 +16,6 @@ import Principal "mo:base/Principal";
 import CommonTypes "types";
 import Constants "constants";
 import Helpers "helpers";
-import PohTypes "../modclub/service/poh/types";
-import POH "../modclub/service/poh/poh";
-import VoteManager "../modclub/service/vote/vote";
 
 module {
   public type Timestamp = Int;
@@ -119,58 +116,5 @@ module {
       };
     };
     chunks;
-  };
-
-  public func pohVerificationRequestHelper(
-    providerUserId : Text,
-    providerId : Principal,
-    pohEngine: POH.PohEngine,
-    voteManager: VoteManager.VoteManager
-  ) : Result.Result<PohTypes.PohVerificationResponsePlus, PohTypes.PohError> {
-    if (
-      Principal.equal(providerId, Principal.fromActor(this)) and voteManager.isAutoApprovedPOHUser(
-        Principal.fromText(providerUserId)
-      )
-    ) {
-      return #ok({
-        providerUserId = providerUserId;
-        providerId = providerId;
-        status = #verified;
-        challenges = [];
-        requestedAt = null;
-        submittedAt = null;
-        completedAt = null;
-        token = null;
-        rejectionReasons = [];
-        isFirstAssociation = true;
-      });
-    };
-    let pohVerificationRequest : PohTypes.PohVerificationRequestV1 = {
-      requestId = Helpers.generateId(providerId, "pohRequest", stateV2);
-      providerUserId = providerUserId;
-      providerId = providerId;
-    };
-    switch (pohEngine.getPohCallback(providerId)) {
-      case (#err(er)) {
-        return #err(er);
-      };
-      case (_)();
-    };
-    // validity and rules needs to come from admin dashboard here
-    switch (pohEngine.getProviderPohConfiguration(providerId, stateV2)) {
-      case (#ok(providerPohConfig)) {
-        let verificationResponse = pohEngine.pohVerificationRequest(
-          pohVerificationRequest,
-          providerPohConfig.expiry,
-          providerPohConfig.challengeIds,
-          voteManager.getAllUniqueViolatedRules,
-          pohContentQueueManager.getContentStatus
-        );
-        #ok(verificationResponse);
-      };
-      case (#err(er)) {
-        return #err(er);
-      };
-    };
   };
 };
