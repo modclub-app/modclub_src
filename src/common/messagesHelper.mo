@@ -15,7 +15,7 @@ module {
       ("VotingCompleted", "Voting completed for packageId: "),
       ("VotingCompletedApproved", "Voting completed. Final decision: approved for packageId: "),
       ("VotingCompletedRejected", "Voting completed. Final decision: rejected for packageId: "),
-      ("UserVoting", "User: Voting for packageId: Decision: VoteCorrect: "),
+      ("UserVoting", "User Voting "),
       ("UserIDVoting", "UserID: RS Before Vote POH: Full rewards"),
       ("PreUpgrade", "MODCLUB PREUPGRADE at time: "),
       ("PostUpgrade", "MODCLUB POSTUPGRADE at time: "),

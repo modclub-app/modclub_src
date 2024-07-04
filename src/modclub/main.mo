@@ -424,20 +424,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return psa;
   };
 
-  private func getVoteParamsByComplexity(complexity : ?Types.Level) : Types.VoteParameters {
-    let now = Helpers.timeNow();
-    return {
-      id = "requiredVotesParameter-0"; // redundant structure
-      requiredVotes = ModClubParam.getVotesByComplexity(Option.get(complexity, #simple));
-      createdAt = now;
-      updatedAt = now;
-      complexity = {
-        level = Option.get(complexity, #simple);
-        expiryTime = now + Constants.EXPIRE_VOTE_TIME;
-      };
-    };
-  };
-
   public shared ({ caller }) func addRules(
     rules : [Text],
     providerId : ?Principal
@@ -563,7 +549,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (?p) p;
       case (_) throw Error.reject("Unauthorized");
     };
-    let voteParam = getVoteParamsByComplexity(complexity);
+    let voteParam = Helpers.getVoteParamsByComplexity(complexity);
     let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
@@ -635,7 +621,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_) throw Error.reject("Unauthorized. No Provider found.");
     };
 
-    let voteParam = getVoteParamsByComplexity(complexity);
+    let voteParam = Helpers.getVoteParamsByComplexity(complexity);
     let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
@@ -708,7 +694,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_) throw Error.reject("Unauthorized");
     };
 
-    let voteParam = getVoteParamsByComplexity(complexity);
+    let voteParam = Helpers.getVoteParamsByComplexity(complexity);
     let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
@@ -1364,25 +1350,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  private func findRejectionReasons(userId : Principal, challengeIds : [Text]) : [
-    Text
-  ] {
-    let rejectedPackageId = pohEngine.retrieveRejectedPackageId(
-      userId,
-      challengeIds,
-      pohContentQueueManager.getContentStatus
-    );
-    switch (rejectedPackageId) {
-      case (null) {
-        return [];
-      };
-      case (?id) {
-        let violatedRules = voteManager.getAllUniqueViolatedRules(id);
-        return pohEngine.resolveViolatedRulesById(violatedRules);
-      };
-    };
-  };
-
   //----------------------POH Methods For ModClub------------------------------
   // for modclub only
 
@@ -1552,7 +1519,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       caller
     );
     try {
-      let dataCanisterId = await storeDataInCanister(attemptId, pohDataRequest);
+      let dataCanisterId = await Helpers.storeDataInCanister(attemptId, pohDataRequest, storageSolution);
 
       if (pohDataRequest.offset == pohDataRequest.numOfChunks) {
         // Associate the challenge record with the data canister's ID
@@ -1565,7 +1532,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
           await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
         } else {
-          await handlePackageCreation(caller, pohDataRequest.challengeId);
+          await Helpers.handlePackageCreation(caller, pohDataRequest.challengeId, pohEngine, pohContentQueueManager);
         };
       };
     } catch e {
@@ -1581,66 +1548,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = #ok;
-    };
-  };
-
-  // Stores the submitted challenge data blob in a data canister and returns its ID.
-  private func storeDataInCanister(
-    attemptId : Text,
-    pohDataRequest : PohTypes.PohChallengeSubmissionRequest
-  ) : async ?Principal {
-    switch (pohDataRequest.challengeDataBlob) {
-      case (null) {
-        // challengeDataBlob is null this shouldn't happen
-        throw Error.reject("Challenge data blob is null.");
-      };
-      case (?blob) {
-        return await storageSolution.putBlobsInDataCanister(
-          attemptId,
-          blob,
-          pohDataRequest.offset,
-          pohDataRequest.numOfChunks,
-          pohDataRequest.mimeType,
-          pohDataRequest.dataSize
-        );
-      };
-    };
-  };
-  private func handlePackageCreation(
-    caller : Principal,
-    challengeId : Text
-  ) : async () {
-    let _ = pohEngine.changeChallengeTaskStatus(
-      challengeId,
-      caller,
-      #pending
-    );
-
-    //TODO: We may have to move the updateDataCanisterId back here, if POH is failing
-
-    // Create challenge packages for voting if applicable
-    let challengePackages = pohEngine.createChallengePackageForVoting(
-      caller,
-      pohContentQueueManager.getContentStatus,
-      stateV2,
-      canistergeekLogger
-    );
-
-    // Process each created package: update content status and issue callbacks to providers
-    for (package in challengePackages.vals()) {
-      pohContentQueueManager.changeContentStatus(package.id, #new);
-      switch (pohEngine.getPohChallengePackage(package.id)) {
-        case (null)();
-        case (?package) {
-          await pohEngine.issueCallbackToProviders(
-            package.userId,
-            stateV2,
-            voteManager.getAllUniqueViolatedRules,
-            pohContentQueueManager.getContentStatus,
-            canistergeekLogger
-          );
-        };
-      };
     };
   };
 
@@ -3030,7 +2937,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
         switch (userPrincipal) {
           case (?principal) {
-            await handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID);
+            await Helpers.handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID, pohEngine, pohContentQueueManager);
             return RequestHandler.createHttpResponse(200, "Package created for " # Principal.toText(principal));
           };
           case (_) {
