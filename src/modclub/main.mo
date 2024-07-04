@@ -495,14 +495,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   // ----------------------Content Related Methods------------------------------
   public query ({ caller }) func getContent(id : Text) : async ?Types.ContentPlus {
-    let voteCount = getVoteCount(id, Principal.fromActor(this));
+    let voteCount = getVoteCount(id, ?caller);
     return ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
   };
 
   public query ({ caller }) func getContentResult(
     id : Text
   ) : async Types.ContentResult {
-    let voteCount = getVoteCount(id, Principal.fromActor(this));
+    let voteCount = getVoteCount(id, ?caller);
     let cp = ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
     switch (cp) {
       case (?result) {
@@ -790,7 +790,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     Buffer.iterate<Types.ContentPlus>(
       content,
       func(c) {
-        let voteCount = MainHelpers.getVoteCount(c.id, Principal.fromActor(this), ?caller, stateV2);
+        let voteCount = getVoteCount(c.id, ?caller);
         let votingStats : Types.VotingStats = {
           cid = c.id;
           sourceId = c.sourceId;
@@ -1277,7 +1277,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
 
-    var voteCount = MainHelpers.getVoteCount(contentId, Principal.fromActor(this), ?caller, stateV2);
+    let voteCount = getVoteCount(contentId, ?caller);
     messagesHelper.logMessage(
       logger,
       "Vote", 
@@ -1532,10 +1532,7 @@ private func storeDataInCanister(
     };
   };
   
-  private func getVoteCount(
-    contentId : Types.ContentId,
-    providerId : Principal
-  ) : Types.VoteCount {
+  private func getVoteCount(contentId : Types.ContentId, caller : ?Principal) : Types.VoteCount {
     var voteApproved : Nat = 0;
     var voteRejected : Nat = 0;
     var hasVoted : Bool = false;
@@ -1558,7 +1555,7 @@ private func storeDataInCanister(
           // simplifies switch braches
           if (not hasVoted) {
             hasVoted := Principal.equal(
-              Option.get(caller, providerId),
+              Option.get(caller, Principal.fromActor(this)),
               v.userId
             );
           };
@@ -1569,7 +1566,7 @@ private func storeDataInCanister(
             );
           };
         };
-        case (_) ();
+        case (_)();
       };
     };
 
@@ -2549,7 +2546,7 @@ private func storeDataInCanister(
       case (#err(e)) { throw Error.reject("Unauthorized") };
       case (_)();
     };
-    let voteCount = MainHelpers.getVoteCount(contentId, Principal.fromActor(this), ?caller, stateV2);
+    let voteCount = getVoteCount(contentId, ?caller);
     let reserved = await ContentManager.createReservation(
       contentId,
       voteCount,
