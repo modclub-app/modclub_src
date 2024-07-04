@@ -1532,7 +1532,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
           await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
         } else {
-          await Helpers.handlePackageCreation(caller, pohDataRequest.challengeId, pohEngine, pohContentQueueManager);
+          await handlePackageCreation(caller, pohDataRequest.challengeId);
         };
       };
     } catch e {
@@ -1548,6 +1548,44 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = #ok;
+    };
+  };
+
+  private func handlePackageCreation(
+    caller : Principal,
+    challengeId : Text
+  ) : async () {
+    let _ = pohEngine.changeChallengeTaskStatus(
+      challengeId,
+      caller,
+      #pending
+    );
+
+    //TODO: We may have to move the updateDataCanisterId back here, if POH is failing
+
+    // Create challenge packages for voting if applicable
+    let challengePackages = pohEngine.createChallengePackageForVoting(
+      caller,
+      pohContentQueueManager.getContentStatus,
+      stateV2,
+      canistergeekLogger
+    );
+
+    // Process each created package: update content status and issue callbacks to providers
+    for (package in challengePackages.vals()) {
+      pohContentQueueManager.changeContentStatus(package.id, #new);
+      switch (pohEngine.getPohChallengePackage(package.id)) {
+        case (null)();
+        case (?package) {
+          await pohEngine.issueCallbackToProviders(
+            package.userId,
+            stateV2,
+            voteManager.getAllUniqueViolatedRules,
+            pohContentQueueManager.getContentStatus,
+            canistergeekLogger
+          );
+        };
+      };
     };
   };
 
@@ -2937,7 +2975,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
         switch (userPrincipal) {
           case (?principal) {
-            await Helpers.handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID, pohEngine, pohContentQueueManager);
+            await handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID);
             return RequestHandler.createHttpResponse(200, "Package created for " # Principal.toText(principal));
           };
           case (_) {
