@@ -818,9 +818,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      Utils.pohVerificationRequestHelper(
         Principal.toText(caller),
-        Principal.fromActor(this)
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -860,9 +862,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      Utils.pohVerificationRequestHelper(
         Principal.toText(caller),
-        Principal.fromActor(this)
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1058,9 +1062,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      Utils.pohVerificationRequestHelper(
         Principal.toText(caller),
-        Principal.fromActor(this)
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1240,9 +1246,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      Utils.pohVerificationRequestHelper(
         Principal.toText(caller),
-        Principal.fromActor(this)
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1287,7 +1295,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   //----------------------POH Methods For Providers------------------------------
   public shared ({ caller }) func verifyHumanity(providerUserId : Text) : async PohTypes.PohVerificationResponsePlus {
-    switch (pohVerificationRequestHelper(providerUserId, caller)) {
+    switch (
+      Utils.pohVerificationRequestHelper(
+        providerUserId,
+        caller,
+        pohEngine,
+        voteManager
+      )
+    ) {
       case (#ok(verificationResponse)) {
         return verificationResponse;
       };
@@ -1299,57 +1314,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  private func pohVerificationRequestHelper(
-    providerUserId : Text,
-    providerId : Principal
-  ) : Result.Result<PohTypes.PohVerificationResponsePlus, PohTypes.PohError> {
-    if (
-      Principal.equal(providerId, Principal.fromActor(this)) and voteManager.isAutoApprovedPOHUser(
-        Principal.fromText(providerUserId)
-      )
-    ) {
-      return #ok({
-        providerUserId = providerUserId;
-        providerId = providerId;
-        status = #verified;
-        challenges = [];
-        requestedAt = null;
-        submittedAt = null;
-        completedAt = null;
-        token = null;
-        rejectionReasons = [];
-        isFirstAssociation = true;
-      });
-    };
-    let pohVerificationRequest : PohTypes.PohVerificationRequestV1 = {
-      requestId = Helpers.generateId(providerId, "pohRequest", stateV2);
-      providerUserId = providerUserId;
-      providerId = providerId;
-    };
-    switch (pohEngine.getPohCallback(providerId)) {
-      case (#err(er)) {
-        return #err(er);
-      };
-      case (_)();
-    };
-    // validity and rules needs to come from admin dashboard here
-    switch (pohEngine.getProviderPohConfiguration(providerId, stateV2)) {
-      case (#ok(providerPohConfig)) {
-        let verificationResponse = pohEngine.pohVerificationRequest(
-          pohVerificationRequest,
-          providerPohConfig.expiry,
-          providerPohConfig.challengeIds,
-          voteManager.getAllUniqueViolatedRules,
-          pohContentQueueManager.getContentStatus
-        );
-        #ok(verificationResponse);
-      };
-      case (#err(er)) {
-        return #err(er);
-      };
-    };
-  };
-
   //----------------------POH Methods For ModClub------------------------------
   // for modclub only
 
@@ -1357,7 +1321,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerUserId : Text,
     providerId : Principal
   ) : async PohTypes.PohVerificationResponsePlus {
-    switch (pohVerificationRequestHelper(providerUserId, providerId)) {
+    switch (
+      Utils.pohVerificationRequestHelper(
+        providerUserId,
+        providerId,
+        pohEngine,
+        voteManager
+      )
+    ) {
       case (#ok(verificationResponse)) {
         return verificationResponse;
       };
@@ -1386,7 +1357,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       caller
     );
 
-    switch (pohVerificationRequestHelper(Principal.toText(caller), Principal.fromActor(this))) {
+    switch (
+      Utils.pohVerificationRequestHelper(
+        Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
+      )
+    ) {
       case (#ok(verificationResponse)) {
         return verificationResponse;
       };
@@ -1694,9 +1672,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      Utils.pohVerificationRequestHelper(
         Principal.toText(caller),
-        Principal.fromActor(this)
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1789,9 +1769,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      Utils.pohVerificationRequestHelper(
         Principal.toText(caller),
-        Principal.fromActor(this)
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -2070,9 +2052,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     // validates that user can do POH voting/review
     switch (
-      pohVerificationRequestHelper(
+      Utils.pohVerificationRequestHelper(
         Principal.toText(caller),
-        Principal.fromActor(this)
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -2308,9 +2292,11 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      Utils.pohVerificationRequestHelper(
         Principal.toText(caller),
-        Principal.fromActor(this)
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager
       )
     ) {
       case (#ok(verificationResponse)) {

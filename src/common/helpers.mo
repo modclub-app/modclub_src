@@ -36,7 +36,6 @@ import Types "../modclub/types";
 import ModClubParam "../modclub/service/parameters/params";
 import VoteManager "../modclub/service/vote/vote";
 import StorageSolution "../modclub/service/storage/storage";
-import QueueManager "../modclub/service/queue/queue";
 
 module Helpers {
 
