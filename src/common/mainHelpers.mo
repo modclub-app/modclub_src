@@ -23,6 +23,7 @@ import POH "../modclub/service/poh/poh";
 import VoteManager "../modclub/service/vote/vote";
 import StateV2 "../modclub/statev2";
 import QueueManager "../modclub/service/queue/queue";
+import Canistergeek "../common/canistergeek/canistergeek";
 
 module MainHelpers {
   public func pohVerificationRequestHelper(
@@ -31,10 +32,11 @@ module MainHelpers {
     pohEngine : POH.PohEngine,
     voteManager : VoteManager.VoteManager,
     stateV2 : StateV2.State,
-    pohContentQueueManager: QueueManager.QueueManager
+    pohContentQueueManager : QueueManager.QueueManager,
+    principalActor : Principal
   ) : Result.Result<PohTypes.PohVerificationResponsePlus, PohTypes.PohError> {
     if (
-      Principal.equal(providerId, Principal.fromActor(this)) and voteManager.isAutoApprovedPOHUser(
+      Principal.equal(providerId, principalActor) and voteManager.isAutoApprovedPOHUser(
         Principal.fromText(providerUserId)
       )
     ) {
@@ -80,54 +82,46 @@ module MainHelpers {
     };
   };
 
-  public func getVoteCount(
-    contentId : Types.ContentId,
-    providerId : Principal,
-    caller : ?Principal,
+  public func handlePackageCreation(
+    caller : Principal,
+    challengeId : Text,
+    pohEngine : POH.PohEngine,
     stateV2 : StateV2.State,
-  ) : Types.VoteCount {
-    var voteApproved : Nat = 0;
-    var voteRejected : Nat = 0;
-    var hasVoted : Bool = false;
-    let violatedRulesCount = HashMap.HashMap<Types.RuleId, Nat>(
-      1,
-      Text.equal,
-      Text.hash
+    pohContentQueueManager : QueueManager.QueueManager,
+    voteManager: VoteManager.VoteManager,
+    canistergeekLogger: Canistergeek.Logger
+  ) : async () {
+    let _ = pohEngine.changeChallengeTaskStatus(
+      challengeId,
+      caller,
+      #pending
     );
-    for (vid in stateV2.content2votes.get0(contentId).vals()) {
-      switch (stateV2.votes.get(vid)) {
-        case (?v) {
-          if (v.level != #novice) {
-            if (v.decision == #approved) {
-              voteApproved += 1;
-            } else {
-              voteRejected += 1;
-            };
-          };
-          // if caller is null, consider it as modclub calling it so that operation evaluates to false
-          // simplifies switch braches
-          if (not hasVoted) {
-            hasVoted := Principal.equal(
-              Option.get(caller, providerId),
-              v.userId
-            );
-          };
-          for (vRuleId in Option.get(v.violatedRules, []).vals()) {
-            violatedRulesCount.put(
-              vRuleId,
-              Option.get(violatedRulesCount.get(vRuleId), 0) + 1
-            );
-          };
-        };
-        case (_) ();
-      };
-    };
 
-    return {
-      approvedCount = voteApproved;
-      rejectedCount = voteRejected;
-      hasVoted = hasVoted;
-      violatedRulesCount = violatedRulesCount;
+    //TODO: We may have to move the updateDataCanisterId back here, if POH is failing
+
+    // Create challenge packages for voting if applicable
+    let challengePackages = pohEngine.createChallengePackageForVoting(
+      caller,
+      pohContentQueueManager.getContentStatus,
+      stateV2,
+      canistergeekLogger
+    );
+
+    // Process each created package: update content status and issue callbacks to providers
+    for (package in challengePackages.vals()) {
+      pohContentQueueManager.changeContentStatus(package.id, #new);
+      switch (pohEngine.getPohChallengePackage(package.id)) {
+        case (null) ();
+        case (?package) {
+          await pohEngine.issueCallbackToProviders(
+            package.userId,
+            stateV2,
+            voteManager.getAllUniqueViolatedRules,
+            pohContentQueueManager.getContentStatus,
+            canistergeekLogger
+          );
+        };
+      };
     };
   };
 };

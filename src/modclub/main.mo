@@ -495,14 +495,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   // ----------------------Content Related Methods------------------------------
   public query ({ caller }) func getContent(id : Text) : async ?Types.ContentPlus {
-    let voteCount = MainHelpers.getVoteCount(id, Principal.fromActor(this), ?caller, stateV2);
+    let voteCount = getVoteCount(id, Principal.fromActor(this));
     return ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
   };
 
   public query ({ caller }) func getContentResult(
     id : Text
   ) : async Types.ContentResult {
-    let voteCount = MainHelpers.getVoteCount(id, Principal.fromActor(this), ?caller, stateV2);
+    let voteCount = getVoteCount(id, Principal.fromActor(this));
     let cp = ContentManager.getContent(caller, id, voteCount, stateV2, storageSolution, content2Category);
     switch (cp) {
       case (?result) {
@@ -825,7 +825,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -871,7 +872,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1073,7 +1075,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1259,7 +1262,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1311,7 +1315,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1339,7 +1344,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1377,7 +1383,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1524,6 +1531,55 @@ private func storeDataInCanister(
       };
     };
   };
+  
+  private func getVoteCount(
+    contentId : Types.ContentId,
+    providerId : Principal
+  ) : Types.VoteCount {
+    var voteApproved : Nat = 0;
+    var voteRejected : Nat = 0;
+    var hasVoted : Bool = false;
+    let violatedRulesCount = HashMap.HashMap<Types.RuleId, Nat>(
+      1,
+      Text.equal,
+      Text.hash
+    );
+    for (vid in stateV2.content2votes.get0(contentId).vals()) {
+      switch (stateV2.votes.get(vid)) {
+        case (?v) {
+          if (v.level != #novice) {
+            if (v.decision == #approved) {
+              voteApproved += 1;
+            } else {
+              voteRejected += 1;
+            };
+          };
+          // if caller is null, consider it as modclub calling it so that operation evaluates to false
+          // simplifies switch braches
+          if (not hasVoted) {
+            hasVoted := Principal.equal(
+              Option.get(caller, providerId),
+              v.userId
+            );
+          };
+          for (vRuleId in Option.get(v.violatedRules, []).vals()) {
+            violatedRulesCount.put(
+              vRuleId,
+              Option.get(violatedRulesCount.get(vRuleId), 0) + 1
+            );
+          };
+        };
+        case (_) ();
+      };
+    };
+
+    return {
+      approvedCount = voteApproved;
+      rejectedCount = voteRejected;
+      hasVoted = hasVoted;
+      violatedRulesCount = violatedRulesCount;
+    };
+  };
 
   // Handles storing challenge data in a canister and manages package creation after storage.
   private func processChallengeData(
@@ -1548,7 +1604,14 @@ private func storeDataInCanister(
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
           await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
         } else {
-          await handlePackageCreation(caller, pohDataRequest.challengeId);
+          await MainHelpers.handlePackageCreation(
+            caller,
+            pohDataRequest.challengeId,
+            pohEngine,
+            stateV2,
+            pohContentQueueManager,
+            voteManager, canistergeekLogger
+          );
         };
       };
     } catch e {
@@ -1564,44 +1627,6 @@ private func storeDataInCanister(
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = #ok;
-    };
-  };
-
-  private func handlePackageCreation(
-    caller : Principal,
-    challengeId : Text
-  ) : async () {
-    let _ = pohEngine.changeChallengeTaskStatus(
-      challengeId,
-      caller,
-      #pending
-    );
-
-    //TODO: We may have to move the updateDataCanisterId back here, if POH is failing
-
-    // Create challenge packages for voting if applicable
-    let challengePackages = pohEngine.createChallengePackageForVoting(
-      caller,
-      pohContentQueueManager.getContentStatus,
-      stateV2,
-      canistergeekLogger
-    );
-
-    // Process each created package: update content status and issue callbacks to providers
-    for (package in challengePackages.vals()) {
-      pohContentQueueManager.changeContentStatus(package.id, #new);
-      switch (pohEngine.getPohChallengePackage(package.id)) {
-        case (null)();
-        case (?package) {
-          await pohEngine.issueCallbackToProviders(
-            package.userId,
-            stateV2,
-            voteManager.getAllUniqueViolatedRules,
-            pohContentQueueManager.getContentStatus,
-            canistergeekLogger
-          );
-        };
-      };
     };
   };
 
@@ -1716,7 +1741,8 @@ private func storeDataInCanister(
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -1815,7 +1841,8 @@ private func storeDataInCanister(
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -2100,7 +2127,8 @@ private func storeDataInCanister(
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -2342,7 +2370,8 @@ private func storeDataInCanister(
         pohEngine,
         voteManager,
         stateV2,
-        pohContentQueueManager
+        pohContentQueueManager,
+        Principal.fromActor(this)
       )
     ) {
       case (#ok(verificationResponse)) {
@@ -2961,7 +2990,14 @@ private func storeDataInCanister(
 
         switch (userPrincipal) {
           case (?principal) {
-            await handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID);
+            await MainHelpers.handlePackageCreation(
+              principal,
+              POH.CHALLENGE_UNIQUE_POH_ID,
+              pohEngine,
+              stateV2,
+              pohContentQueueManager,
+              voteManager, canistergeekLogger
+            );
             return RequestHandler.createHttpResponse(200, "Package created for " # Principal.toText(principal));
           };
           case (_) {
