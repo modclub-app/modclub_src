@@ -12,6 +12,7 @@ import StateV2 "../modclub/statev2";
 import QueueManager "../modclub/service/queue/queue";
 import Canistergeek "../common/canistergeek/canistergeek";
 import ModSecurity "./security/guard";
+import VoteTypes "../modclub/service/vote/types";
 
 module MainHelpers {
   public func pohVerificationRequestHelper(
@@ -160,6 +161,22 @@ module MainHelpers {
         );
         false;
       };
+    };
+  };
+
+  public func updateVote(vote : VoteTypes.PohVote, newTotalReward : Float, newLockedReward : Float, rsReceived : Float) : VoteTypes.PohVote {
+    {
+      id = vote.id;
+      contentId = vote.contentId;
+      userId = vote.userId;
+      decision = vote.decision;
+      rsBeforeVoting = vote.rsBeforeVoting;
+      level = vote.level;
+      violatedRules = vote.violatedRules;
+      createdAt = vote.createdAt;
+      totalReward = ?newTotalReward;
+      lockedReward = ?newLockedReward;
+      rsReceived = ?rsReceived;
     };
   };
 };

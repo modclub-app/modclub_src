@@ -64,12 +64,7 @@ import SerializationGlobalStateUtil "./serialization/serialization_global_state"
 import MessagesHelper "../common/messagesHelper";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
-
-  let MAX_WAIT_LIST_SIZE = 20000;
-
-  private stable var startTimeForPOHEmail = Helpers.timeNow();
   private stable var keyToCallLambda : Text = "";
-  private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
   stable var allowSubmissionFlag : Bool = true;
 
@@ -2035,22 +2030,6 @@ private func storeDataInCanister(
     canistergeekLogger.getLog(request);
   };
 
-  private func _updateVote(vote : VoteTypes.PohVote, newTotalReward : Float, newLockedReward : Float, rsReceived : Float) : VoteTypes.PohVote {
-    {
-      id = vote.id;
-      contentId = vote.contentId;
-      userId = vote.userId;
-      decision = vote.decision;
-      rsBeforeVoting = vote.rsBeforeVoting;
-      level = vote.level;
-      violatedRules = vote.violatedRules;
-      createdAt = vote.createdAt;
-      totalReward = ?newTotalReward;
-      lockedReward = ?newLockedReward;
-      rsReceived = ?rsReceived;
-    };
-  };
-
   public shared ({ caller }) func votePohContent(
     packageId : Text,
     decision : Types.Decision,
@@ -2245,7 +2224,7 @@ private func storeDataInCanister(
 
         let rsAfterVoting = (await rs.queryRSAndLevelByPrincipal(userVote.userId)).score;
         let rsReceived : Float = Float.fromInt(rsAfterVoting) - userVote.rsBeforeVoting;
-        voteManager.setPOHVote(userVote.id, _updateVote(userVote, fullReward, lockedReward, rsReceived));
+        voteManager.setPOHVote(userVote.id, MainHelpers.updateVote(userVote, fullReward, lockedReward, rsReceived));
       };
 
       let _ = await authGuard.getRSActor().updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
