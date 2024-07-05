@@ -1,22 +1,9 @@
-import P "mo:base/Prelude";
 import Types "../modclub/types";
-import Array "mo:base/Array";
-import Option "mo:base/Option";
-import Int "mo:base/Int";
-import Nat "mo:base/Nat";
-import Nat8 "mo:base/Nat8";
-import Float "mo:base/Float";
 import Text "mo:base/Text";
-import Bool "mo:base/Bool";
-import Blob "mo:base/Blob";
-import Buffer "mo:base/Buffer";
-import Char "mo:base/Char";
 import Result "mo:base/Result";
-import Debug "mo:base/Debug";
-import HashMap "mo:base/HashMap";
+import Error "mo:base/Error";
 import Principal "mo:base/Principal";
 import CommonTypes "types";
-import Constants "constants";
 import Helpers "helpers";
 import PohTypes "../modclub/service/poh/types";
 import POH "../modclub/service/poh/poh";
@@ -24,6 +11,7 @@ import VoteManager "../modclub/service/vote/vote";
 import StateV2 "../modclub/statev2";
 import QueueManager "../modclub/service/queue/queue";
 import Canistergeek "../common/canistergeek/canistergeek";
+import ModSecurity "./security/guard";
 
 module MainHelpers {
   public func pohVerificationRequestHelper(
@@ -88,8 +76,8 @@ module MainHelpers {
     pohEngine : POH.PohEngine,
     stateV2 : StateV2.State,
     pohContentQueueManager : QueueManager.QueueManager,
-    voteManager: VoteManager.VoteManager,
-    canistergeekLogger: Canistergeek.Logger
+    voteManager : VoteManager.VoteManager,
+    canistergeekLogger : Canistergeek.Logger
   ) : async () {
     let _ = pohEngine.changeChallengeTaskStatus(
       challengeId,
@@ -121,6 +109,56 @@ module MainHelpers {
             canistergeekLogger
           );
         };
+      };
+    };
+  };
+
+  public func initiateUniquePohProcessing(
+    caller : Principal,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
+    dataCanisterId : ?Principal,
+    pohEngine : POH.PohEngine,
+    authGuard : ModSecurity.Guard,
+    transform : shared query Types.TransformArgs -> async Types.CanisterHttpResponsePayload,
+    canistergeekLogger : Canistergeek.Logger,
+    logger: CommonTypes.ModclubLogger
+  ) : async () {
+    let _ = do ? {
+      let contentId = pohEngine.changeChallengeTaskStatus(
+        pohDataRequest.challengeId,
+        caller,
+        #processing
+      );
+
+      let hosts : [Text] = authGuard.getSecretVals("POH_LAMBDA_HOST");
+      let keyToCallLambdaForPOH = authGuard.getSecretVals("POH_LAMBDA_KEY");
+      if (hosts.size() == 0) {
+        throw Error.reject("POH Lambda HOST is not provided. Please ask admin to set the POH_LAMBDA_HOST for lambda calls.");
+      };
+      if (keyToCallLambdaForPOH.size() == 0) {
+        throw Error.reject("POH Lambda key is not provided. Please ask admin to set the POH_LAMBDA_KEY for lambda calls.");
+      };
+
+      // Initiate lambda trigger to process face
+      try {
+        await pohEngine.httpCallForProcessing(
+          caller,
+          dataCanisterId!,
+          contentId!,
+          keyToCallLambdaForPOH[0],
+          hosts[0],
+          transform,
+          canistergeekLogger
+        );
+      } catch (e) {
+        // Set the status to failed
+        logger.logError("initiateUniquePohProcessing - Failure to initiate processing setting task to #failed " # Error.message(e));
+        let _ = pohEngine.changeChallengeTaskStatus(
+          pohDataRequest.challengeId,
+          caller,
+          #rejected
+        );
+        false;
       };
     };
   };

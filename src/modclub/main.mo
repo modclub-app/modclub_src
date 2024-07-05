@@ -1,12 +1,10 @@
 import Array "mo:base/Array";
-import Base32 "mo:encoding/Base32";
 import Backup "../common/backup/lib";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Canistergeek "../common/canistergeek/canistergeek";
 import ContentVotingManager "./service/content/vote";
-import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
@@ -22,12 +20,10 @@ import ModClubParam "service/parameters/params";
 import ModeratorManager "./service/moderator/moderator";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
-import Order "mo:base/Order";
 import POH "./service/poh/poh";
 import PohStateV2 "./service/poh/statev2";
 import PohTypes "./service/poh/types";
 import VoteTypes "./service/vote/types";
-import Prim "mo:prim";
 import Principal "mo:base/Principal";
 import Cycles "mo:base/ExperimentalCycles";
 import JSON "mo:json/JSON";
@@ -37,22 +33,18 @@ import QueueManager "./service/queue/queue";
 import QueueState "./service/queue/state";
 import Random "mo:base/Random";
 import Rel "./data_structures/Rel";
-import RelObj "./data_structures/RelObj";
 import Result "mo:base/Result";
 import RequestHandler "./service/api/requestHandler";
 import StateV2 "./statev2";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
-import Time "mo:base/Time";
 import Types "./types";
 import MsgInspectTypes "msgInspectTypes";
 import EmailManager "./service/email/email";
 import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
-
 import VoteStateV3 "./service/vote/pohVoteState";
-
 import RSTypes "../rs/types";
 import ICRCTypes "../common/ICRCTypes";
 import Utils "../common/utils";
@@ -60,7 +52,6 @@ import ContentManager "./service/content/content";
 import ContentStateManager "./service/content/reserved";
 import ContentState "./service/content/state";
 import CommonTypes "../common/types";
-import Reserved "service/content/reserved";
 import Constants "../common/constants";
 import RSConstants "../rs/constants";
 import Timer "mo:base/Timer";
@@ -68,7 +59,6 @@ import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import CommonTimer "../common/timer/timer";
 import ModclubBackup "./service/archive/backup";
-import Content "./service/queue/state";
 import Staking "./service/staking/staking";
 import SerializationGlobalStateUtil "./serialization/serialization_global_state";
 import MessagesHelper "../common/messagesHelper";
@@ -1599,7 +1589,16 @@ private func storeDataInCanister(
         );
 
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
-          await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
+          await MainHelpers.initiateUniquePohProcessing(
+            caller,
+            pohDataRequest,
+            dataCanisterId,
+            pohEngine,
+            authGuard,
+            transform, 
+            canistergeekLogger,
+            logger
+          );
         } else {
           await MainHelpers.handlePackageCreation(
             caller,
@@ -1607,7 +1606,8 @@ private func storeDataInCanister(
             pohEngine,
             stateV2,
             pohContentQueueManager,
-            voteManager, canistergeekLogger
+            voteManager,
+            canistergeekLogger
           );
         };
       };
@@ -1624,51 +1624,6 @@ private func storeDataInCanister(
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = #ok;
-    };
-  };
-
-  private func initiateUniquePohProcessing(
-    caller : Principal,
-    pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
-    dataCanisterId : ?Principal
-  ) : async () {
-    let _ = do ? {
-      let contentId = pohEngine.changeChallengeTaskStatus(
-        pohDataRequest.challengeId,
-        caller,
-        #processing
-      );
-
-      let hosts : [Text] = authGuard.getSecretVals("POH_LAMBDA_HOST");
-      let keyToCallLambdaForPOH = authGuard.getSecretVals("POH_LAMBDA_KEY");
-      if (hosts.size() == 0) {
-        throw Error.reject("POH Lambda HOST is not provided. Please ask admin to set the POH_LAMBDA_HOST for lambda calls.");
-      };
-      if (keyToCallLambdaForPOH.size() == 0) {
-        throw Error.reject("POH Lambda key is not provided. Please ask admin to set the POH_LAMBDA_KEY for lambda calls.");
-      };
-
-      // Initiate lambda trigger to process face
-      try {
-        await pohEngine.httpCallForProcessing(
-          caller,
-          dataCanisterId!,
-          contentId!,
-          keyToCallLambdaForPOH[0],
-          hosts[0],
-          transform,
-          canistergeekLogger
-        );
-      } catch (e) {
-        // Set the status to failed
-        logger.logError("initiateUniquePohProcessing - Failure to initiate processing setting task to #failed " # Error.message(e));
-        let _ = pohEngine.changeChallengeTaskStatus(
-          pohDataRequest.challengeId,
-          caller,
-          #rejected
-        );
-        false;
-      };
     };
   };
 
