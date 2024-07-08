@@ -1,0 +1,10 @@
+services:
+  app:
+    container_name: decideaiapp
+    environment:
+      DFX_VERSION: 0.20.1
+      NODE_VERSION: 21.5.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64

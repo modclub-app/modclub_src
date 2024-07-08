@@ -8,7 +8,6 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-source ./scripts/infra/up_infra.sh
 
 function run_tests() {
 	clear
@@ -20,6 +19,6 @@ function run_tests() {
 	source ./scripts/tests/e2e_test.sh
 }
 
-run_tests
+source ./scripts/infra/up_infra.sh && run_tests
 
 source ./scripts/tests/infra/shutdown_infra.sh
