@@ -560,9 +560,7 @@ module {
   };
 
   public type UserStat = {
-    id : UserId;
-    userName : Text;
-    email : Text;
+    totalUsers : Nat;
     totalVotes : Nat;
   };
 };

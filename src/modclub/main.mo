@@ -3494,8 +3494,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  public query ({ caller }) func getStats() : async List.List<Types.UserStat> {
+  public query ({ caller }) func getStats() : async Types.UserStat {
     Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
-    UserManager.getStats(stateV2)
+    UserManager.getStats(stateV2);
   };
 };
