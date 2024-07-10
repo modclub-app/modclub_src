@@ -10,7 +10,11 @@ build:
 	docker compose build
 
 test:
-	docker compose run --rm --build app /scripts/tests/test.sh --colors=always
+	docker compose up -d --build app
+	@echo "Waiting for the app container to be ready..."
+	@while ! docker compose ps | grep "app" | grep "healthy"; do sleep 1; done
+	docker compose exec app ./scripts/tests/test_local.sh
+	docker compose down -v
 
 reset:
 	@docker volume prune -f

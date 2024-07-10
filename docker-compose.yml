@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: decideaiapp
+    container_name: modclub_src
     environment:
       DFX_VERSION: 0.20.1
       NODE_VERSION: 21.5.0
@@ -8,3 +8,9 @@ services:
       context: .
       dockerfile: Dockerfile
     platform: linux/amd64
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s

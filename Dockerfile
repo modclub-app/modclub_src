@@ -1,20 +1,57 @@
-FROM ghcr.io/dfinity/icp-dev-env:latest
 LABEL maintainer="DecideAI"
+
+FROM --platform=linux/amd64 rust:1.79-slim-bookworm
+
+ENV NVM_DIR=/root/.nvm
+ENV NVM_VERSION=v0.39.7
+ENV NODE_VERSION=21.5.0
+ENV DFX_VERSION=0.19.0
+ENV POCKET_IC_SERVER_VERSION=3.0.1
+ENV POCKET_IC_PYTHON_VERSION=2.1.0
+
+RUN apt -yq update
+RUN apt -yqq install --no-install-recommends curl ca-certificates libunwind-dev git python3 python3-pip ssh
+
+# Install Node.js using nvm
+ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+RUN curl --fail -sSf https://raw.githubusercontent.com/creationix/nvm/${NVM_VERSION}/install.sh | bash
+RUN . "${NVM_DIR}/nvm.sh" && nvm install ${NODE_VERSION}
+RUN . "${NVM_DIR}/nvm.sh" && nvm use v${NODE_VERSION}
+RUN . "${NVM_DIR}/nvm.sh" && nvm alias default v${NODE_VERSION}
+
+# Install dfx
+RUN DFXVM_INIT_YES=true sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+ENV PATH="/root/.local/share/dfx/bin:$PATH"
+ENV DFX_VERSION=0.20.1
+
+# Add wasm32-unknown-unknown target
+RUN rustup target add wasm32-unknown-unknown
+
+# Install PocketIC Python
+RUN pip3 install pocket-ic==${POCKET_IC_PYTHON_VERSION} --break-system-packages
+
+# Download the PocketIC server
+RUN curl -Ls https://github.com/dfinity/pocketic/releases/download/${POCKET_IC_SERVER_VERSION}/pocket-ic-x86_64-linux.gz -o pocket-ic.gz
+RUN gzip -d pocket-ic.gz
+RUN chmod +x pocket-ic
+
+# Clean apt
+RUN apt-get autoremove && apt-get clean
+
+# Set the working directory inside the container
+WORKDIR /app
 
 COPY . .
 
-ENV DFX_VERSION=0.20.1
 ENV HOME /root
 
 RUN corepack enable
 RUN yarn install
 
+HEALTHCHECK --interval=5s --timeout=3s --retries=5 CMD curl -f http://localhost:8000/health || exit 1
+
 RUN dfxvm install ${DFX_VERSION}
 
-#RUN mkdir -p $HOME/.config/dfx/identity/default/
-#RUN echo "k2n4s-jhqtt-naez5-aa4el-r5dap-2npqk-s53zq-jj4ij-6cs66-mshkg-kae" > $HOME/.config/dfx/identity/default/identity.pem
-#RUN dfx identity get-principal
+RUN npm i -g ic-mops
 
-RUN curl -fsSL cli.mops.one/install.sh | bash
-
-ENTRYPOINT ["/bin/sh", "-c", "dfx start --clean"]
+ENTRYPOINT ["/bin/sh", "-c", "rm -rf .dfx && dfx start --clean"]
