@@ -10,15 +10,15 @@ EXPORT LEDGER_IDENTITY="qa_ledger_identity"
 EXPORT PLEDGER_MINTER_IDENTITY="qa_ledger_minter"
 EXPORT PROVIDER_IDENTITY="qa_test_provider"
 
-source ./scripts/infra/up_infra.sh
+function run_tests() {
+	clear
+	printf "${GREEN}[TEST] ${YELLOW}Modclub Tests started ...${NC}\n"
 
-# Run tests
-echo "Running tests"
-./scripts/deployment/gh_pr_pipeline_test_runner.sh
+	source ./scripts/tests/security_test.sh
+	source ./scripts/tests/ledger_tests.sh
+	source ./scripts/tests/vesting_canister_tests.sh
+	source ./scripts/tests/e2e_test.sh
+}
 
-if [ $? -eq 0 ]; then
-  echo "Success!"
- else
-   echo "Script failed"
-   exit 1
-fi
+source ./scripts/infra/up_infra.sh && run_tests
+
