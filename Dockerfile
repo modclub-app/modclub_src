@@ -1,6 +1,6 @@
-LABEL maintainer="DecideAI"
-
 FROM --platform=linux/amd64 rust:1.79-slim-bookworm
+
+LABEL maintainer="DecideAI"
 
 ENV NVM_DIR=/root/.nvm
 ENV NVM_VERSION=v0.39.7
