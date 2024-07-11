@@ -65,3 +65,8 @@ utils/apis are also provided:
 ## Auto-generated files by environment
 
 The [declarations_by_env.ts](src/modclub_assets/src/declarations_by_env.ts) file is [automatically generated](scripts/build/gen_files_by_env.cjs) to offer declarations specific to the current environment(prod/qa/dev).
+
+## Running Local Tests
+
+1. Ensure you have docker running 
+2. Run `make run`

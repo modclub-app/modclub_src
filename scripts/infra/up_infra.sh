@@ -48,7 +48,7 @@ function create_qa_canisters() {
 }
 
 function deploy_wallet_canister() {
-  dfx identity use default 
+  dfx identity use default
 	if ! dfx identity use qa_ledger_minter >/dev/null 2>&1; then
 		dfx identity new qa_ledger_minter --disable-encryption
 		dfx identity use qa_ledger_minter
@@ -66,7 +66,7 @@ function deploy_wallet_canister() {
   local TOKEN_NAME="Modclub_test_token"
   local TOKEN_SYMBOL=MODT
 
-  dfx deploy wallet_qa --argument '(variant { Init = 
+  dfx deploy wallet_qa --argument '(variant { Init =
       record {
         token_name = "'${TOKEN_NAME}'";
         token_symbol = "'${TOKEN_SYMBOL}'";
@@ -91,7 +91,7 @@ function deploy_wallet_canister() {
         }
   }})'
 
-  dfx deploy wallet_dev --argument '(variant { Init = 
+  dfx deploy wallet_dev --argument '(variant { Init =
       record {
         token_name = "'${TOKEN_NAME}'";
         token_symbol = "'${TOKEN_SYMBOL}'";
@@ -116,7 +116,7 @@ function deploy_wallet_canister() {
         }
   }})'
 
-  
+
 
   return 0;
 }
@@ -159,6 +159,7 @@ function deploy_qa_canisters() {
 # Run init
 function init_qa_canisters() {
   printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}Init QA Canisters...${NC}\n"
+
   dfx canister call modclub_qa adminInit &&
   dfx canister call modclub_qa configurePohForProvider "(principal \"$(dfx canister id modclub_qa)\", vec {\"challenge-user-audio\";\"challenge-user-video\"}, 365, false)" &&
   dfx canister call modclub_qa populateChallenges &&
