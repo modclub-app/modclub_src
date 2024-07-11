@@ -5,7 +5,7 @@ LABEL maintainer="DecideAI"
 ENV NVM_DIR=/root/.nvm
 ENV NVM_VERSION=v0.39.7
 ENV NODE_VERSION=21.5.0
-ENV DFX_VERSION=0.19.0
+ENV DFX_VERSION=0.20.1
 ENV POCKET_IC_SERVER_VERSION=3.0.1
 ENV POCKET_IC_PYTHON_VERSION=2.1.0
 
@@ -22,7 +22,6 @@ RUN . "${NVM_DIR}/nvm.sh" && nvm alias default v${NODE_VERSION}
 # Install dfx
 RUN DFXVM_INIT_YES=true sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
 ENV PATH="/root/.local/share/dfx/bin:$PATH"
-ENV DFX_VERSION=0.20.1
 
 # Add wasm32-unknown-unknown target
 RUN rustup target add wasm32-unknown-unknown
