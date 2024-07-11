@@ -6,7 +6,6 @@ import ICRCTypes "../common/ICRCTypes";
 import Types "./types";
 import Principal "mo:base/Principal";
 import RSTypes "../rs/types";
-import List "mo:base/List";
 
 module {
 
