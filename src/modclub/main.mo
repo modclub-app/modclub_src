@@ -70,6 +70,7 @@ import ModclubBackup "./service/archive/backup";
 import Content "./service/queue/state";
 import Staking "./service/staking/staking";
 import SerializationGlobalStateUtil "./serialization/serialization_global_state";
+import UserManager "./service/user/user";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
 
@@ -3493,4 +3494,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
+  public query ({ caller }) func getStats() : async Types.UserStat {
+    Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
+    UserManager.getStats(stateV2);
+  };
 };
