@@ -4,15 +4,15 @@ import Result "mo:base/Result";
 import Error "mo:base/Error";
 import Principal "mo:base/Principal";
 import CommonTypes "types";
-import Helpers "helpers";
-import PohTypes "../modclub/service/poh/types";
-import POH "../modclub/service/poh/poh";
-import VoteManager "../modclub/service/vote/vote";
-import StateV2 "../modclub/statev2";
-import QueueManager "../modclub/service/queue/queue";
+import Helpers "../common/helpers";
+import PohTypes "./service/poh/types";
+import POH "./service/poh/poh";
+import VoteManager "./service/vote/vote";
+import StateV2 "./statev2";
+import QueueManager "./service/queue/queue";
 import Canistergeek "../common/canistergeek/canistergeek";
-import ModSecurity "./security/guard";
-import VoteTypes "../modclub/service/vote/types";
+import ModSecurity "../common/security/guard";
+import VoteTypes "./service/vote/types";
 
 module MainHelpers {
   public func pohVerificationRequestHelper(

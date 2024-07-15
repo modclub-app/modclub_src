@@ -10,7 +10,7 @@ import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import Trie "mo:base/Trie";
 import Helpers "../common/helpers";
-import MainHelpers "../common/mainHelpers";
+import MainHelpers "./mainHelpers";
 import ModSecurity "../common/security/guard";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
