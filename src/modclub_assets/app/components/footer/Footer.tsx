@@ -9,43 +9,45 @@ import {
   Heading,
   Level,
 } from "react-bulma-components";
-import modclubImg from "../../../assets/logo.png";
+import LogoImg from "../../../assets/full_logo_black.svg";
 
 export default function Footer_() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <Footer backgroundColor="black">
+    <Footer>
       <Container marginless>
         <Columns>
           <Columns.Column size="one-fifth">
-            <Image src={modclubImg} size={64} />
+            <Image src={LogoImg} size={66} />
           </Columns.Column>
           <Columns.Column size="one-fifth">
-            <Heading subtitle className="has-text-white">Menu</Heading>
-            <HashLink to="/#developers" className="is-block has-text-white">
+            <Heading subtitle className="">Menu</Heading>
+            <HashLink to="/#developers" className="is-block has-text-black">
               Developers
             </HashLink>
-            <HashLink to="/#tokenomics" className="is-block has-text-white">
+            <HashLink to="/#tokenomics" className="is-block has-text-black">
               Tokenomics
             </HashLink>
-            <HashLink to="/#roadmap" className="is-block has-text-white">
+            <HashLink to="/#roadmap" className="is-block has-text-black">
               Roadmap
             </HashLink>
-            <Link to="/how-to" className="is-block has-text-white">
+            <Link to="/how-to" className="is-block has-text-black">
               How To
             </Link>
           </Columns.Column>
           <Columns.Column size="one-fifth">
-            <Heading subtitle className="has-text-white">Company</Heading>
+            <Heading subtitle className="">Company</Heading>
             <a
               href="mailto:team@modclub.app"
-              className="is-block has-text-white"
+              className="is-block has-text-black"
             >
               Contact
             </a>
-            <Link to="/privacy" className="is-block has-text-white">
+            <Link to="/privacy" className="is-block has-text-black">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="is-block has-text-white">
+            <Link to="/terms" className="is-block has-text-black">
               Terms of Service
             </Link>
           </Columns.Column>
@@ -54,16 +56,10 @@ export default function Footer_() {
         <hr />
 
         <Level>
-          <p className="has-text-silver">&copy; MODCLUB Foundation 2023</p>
+          <p className="has-text-silver">&copy; DecideAI DAO LLC {currentYear}</p>
           <a href="#" className="has-text-silver">
             Go to the top
           </a>
-        </Level>
-        <Level>
-          <p className="has-text-silver">
-            MODCLUB FOUNDATION Torre Advanced Building, 1st Floor Ricardo Arlas
-            Street Panama City, Republic of Panama
-          </p>
         </Level>
       </Container>
     </Footer>

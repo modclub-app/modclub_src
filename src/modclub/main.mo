@@ -62,6 +62,7 @@ import ModclubBackup "./service/archive/backup";
 import Staking "./service/staking/staking";
 import SerializationGlobalStateUtil "./serialization/serialization_global_state";
 import MessagesHelper "../common/messagesHelper";
+import UserManager "./service/user/user";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
   private stable var keyToCallLambda : Text = "";
@@ -3391,4 +3392,8 @@ private func storeDataInCanister(
     };
   };
 
+  public query ({ caller }) func getStats() : async Types.UserStat {
+    Utils.mod_assert(authGuard.isAdmin(caller), ModSecurity.AccessMode.NotPermitted);
+    UserManager.getStats(stateV2);
+  };
 };

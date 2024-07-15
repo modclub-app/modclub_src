@@ -136,6 +136,7 @@ module {
     #getAirdropBalance : () -> ();
     #airdropMigratedUser : () -> (Principal, ?Nat);
     #subscribeOnRsEvets : () -> ();
+    #getStats : () -> ();
   };
 
 };

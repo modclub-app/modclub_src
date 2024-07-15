@@ -1,13 +1,14 @@
 #!/bin/bash
 
-clear
+export BYPASS_PROMPT_YES=yes
+export DEV_ENV=qa
+export ENV=qa
+export OLD_MODCLUB_INSTANCE=la3yy-gaaaa-aaaah-qaiuq-cai
+export NETWORK=local
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
+EXPORT LEDGER_IDENTITY="qa_ledger_identity"
+EXPORT PLEDGER_MINTER_IDENTITY="qa_ledger_minter"
+EXPORT PROVIDER_IDENTITY="qa_test_provider"
 
 function run_tests() {
 	clear
@@ -21,4 +22,3 @@ function run_tests() {
 
 source ./scripts/infra/up_infra.sh && run_tests
 
-source ./scripts/tests/infra/shutdown_infra.sh

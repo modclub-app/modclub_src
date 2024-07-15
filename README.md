@@ -4,7 +4,7 @@ ModClub is a moderation platform for online apps deployed on the IC. Moderation 
 
 # Prerequisites
 
-- Dfx 0.18.0
+- Dfx 0.20.1
 - Node.js >=20.0.0
 
 # Quick start
@@ -65,3 +65,8 @@ utils/apis are also provided:
 ## Auto-generated files by environment
 
 The [declarations_by_env.ts](src/modclub_assets/src/declarations_by_env.ts) file is [automatically generated](scripts/build/gen_files_by_env.cjs) to offer declarations specific to the current environment(prod/qa/dev).
+
+## Running Local Tests
+
+1. Ensure you have docker running 
+2. Run `make run`

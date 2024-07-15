@@ -559,4 +559,8 @@ module {
     totalCost : Nat;
   };
 
+  public type UserStat = {
+    totalUsers : Nat;
+    totalVotes : Nat;
+  };
 };

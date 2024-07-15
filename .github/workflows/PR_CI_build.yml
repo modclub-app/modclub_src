@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dfx
         env:
-          DFX_VERSION: "0.18.0"
+          DFX_VERSION: "0.20.1"
         uses: dfinity/setup-dfx@main
 
       - name: Set Rust target to WASM32
