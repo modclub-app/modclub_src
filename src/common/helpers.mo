@@ -33,6 +33,7 @@ import GlobalState "../modclub/statev2";
 import RSConstants "../rs/constants";
 import RSTypes "../rs/types";
 import Types "../modclub/types";
+import ModClubParam "../modclub/service/parameters/params";
 
 module Helpers {
 
@@ -477,5 +478,19 @@ module Helpers {
     };
 
     return userEmailIDs;
+  };
+
+  public func getVoteParamsByComplexity(complexity : ?Types.Level) : Types.VoteParameters {
+    let now = Helpers.timeNow();
+    return {
+      id = "requiredVotesParameter-0"; // redundant structure
+      requiredVotes = ModClubParam.getVotesByComplexity(Option.get(complexity, #simple));
+      createdAt = now;
+      updatedAt = now;
+      complexity = {
+        level = Option.get(complexity, #simple);
+        expiryTime = now + Constants.EXPIRE_VOTE_TIME;
+      };
+    };
   };
 };

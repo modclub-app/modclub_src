@@ -1,17 +1,16 @@
 import Array "mo:base/Array";
-import Base32 "mo:encoding/Base32";
 import Backup "../common/backup/lib";
 import Blob "mo:base/Blob";
 import Bool "mo:base/Bool";
 import Buffer "mo:base/Buffer";
 import Canistergeek "../common/canistergeek/canistergeek";
 import ContentVotingManager "./service/content/vote";
-import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Float "mo:base/Float";
 import HashMap "mo:base/HashMap";
 import Trie "mo:base/Trie";
 import Helpers "../common/helpers";
+import MainHelpers "./mainHelpers";
 import ModSecurity "../common/security/guard";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
@@ -21,12 +20,10 @@ import ModClubParam "service/parameters/params";
 import ModeratorManager "./service/moderator/moderator";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
-import Order "mo:base/Order";
 import POH "./service/poh/poh";
 import PohStateV2 "./service/poh/statev2";
 import PohTypes "./service/poh/types";
 import VoteTypes "./service/vote/types";
-import Prim "mo:prim";
 import Principal "mo:base/Principal";
 import Cycles "mo:base/ExperimentalCycles";
 import JSON "mo:json/JSON";
@@ -36,22 +33,18 @@ import QueueManager "./service/queue/queue";
 import QueueState "./service/queue/state";
 import Random "mo:base/Random";
 import Rel "./data_structures/Rel";
-import RelObj "./data_structures/RelObj";
 import Result "mo:base/Result";
 import RequestHandler "./service/api/requestHandler";
 import StateV2 "./statev2";
 import StorageSolution "./service/storage/storage";
 import StorageState "./service/storage/storageState";
 import Text "mo:base/Text";
-import Time "mo:base/Time";
 import Types "./types";
 import MsgInspectTypes "msgInspectTypes";
 import EmailManager "./service/email/email";
 import EmailState "./service/email/state";
 import VoteManager "./service/vote/vote";
-
 import VoteStateV3 "./service/vote/pohVoteState";
-
 import RSTypes "../rs/types";
 import ICRCTypes "../common/ICRCTypes";
 import Utils "../common/utils";
@@ -59,7 +52,6 @@ import ContentManager "./service/content/content";
 import ContentStateManager "./service/content/reserved";
 import ContentState "./service/content/state";
 import CommonTypes "../common/types";
-import Reserved "service/content/reserved";
 import Constants "../common/constants";
 import RSConstants "../rs/constants";
 import Timer "mo:base/Timer";
@@ -67,18 +59,13 @@ import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
 import CommonTimer "../common/timer/timer";
 import ModclubBackup "./service/archive/backup";
-import Content "./service/queue/state";
 import Staking "./service/staking/staking";
 import SerializationGlobalStateUtil "./serialization/serialization_global_state";
+import MessagesHelper "../common/messagesHelper";
 import UserManager "./service/user/user";
 
 shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this {
-
-  let MAX_WAIT_LIST_SIZE = 20000;
-
-  private stable var startTimeForPOHEmail = Helpers.timeNow();
   private stable var keyToCallLambda : Text = "";
-  private var ranPOHUserEmailsOnce : Bool = false;
   stable var signingKey = "";
   stable var allowSubmissionFlag : Bool = true;
 
@@ -173,6 +160,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   let vestingActor = authGuard.getVestingActor();
   let ledger = authGuard.getWalletActor();
   let rs = authGuard.getRSActor();
+  private var messagesHelper = MessagesHelper.Messages();
 
   public shared func subscribeOnRsEvets() : async () {
     try {
@@ -317,10 +305,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   ) : async Text {
     switch (stateV2.providersWhitelist.get(caller)) {
       case (null) {
-        logger.logMessage(
-          "registerProvider - Provider not in allow list with provider ID: " #
-          Principal.toText(caller)
-        );
+        messagesHelper.logMessage(logger, "ProviderNotInAllowList", Principal.toText(caller));
         return "Caller " # Principal.toText(caller) # " not in allow list";
       };
       case (?_)();
@@ -424,20 +409,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_) return throw Error.reject("Providers Subaccount doesn't exist.");
     };
     return psa;
-  };
-
-  private func getVoteParamsByComplexity(complexity : ?Types.Level) : Types.VoteParameters {
-    let now = Helpers.timeNow();
-    return {
-      id = "requiredVotesParameter-0"; // redundant structure
-      requiredVotes = ModClubParam.getVotesByComplexity(Option.get(complexity, #simple));
-      createdAt = now;
-      updatedAt = now;
-      complexity = {
-        level = Option.get(complexity, #simple);
-        expiryTime = now + Constants.EXPIRE_VOTE_TIME;
-      };
-    };
   };
 
   public shared ({ caller }) func addRules(
@@ -549,7 +520,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
-    logger.logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
+    messagesHelper.logMessage(logger, "SubmitHtmlContent", sourceId # " " # Principal.toText(caller));
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -565,7 +536,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (?p) p;
       case (_) throw Error.reject("Unauthorized");
     };
-    let voteParam = getVoteParamsByComplexity(complexity);
+    let voteParam = Helpers.getVoteParamsByComplexity(complexity);
     let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
@@ -621,7 +592,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     complexity : ?Types.Level,
     category : ?Text
   ) : async Text {
-    logger.logMessage("submitHtmlContent sourceId: " # sourceId # " " # Principal.toText(caller));
+    messagesHelper.logMessage(logger, "SubmitHtmlContent", sourceId # " " # Principal.toText(caller));
     if (allowSubmissionFlag == false) {
       throw Error.reject("Submissions are disabled");
     };
@@ -637,7 +608,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_) throw Error.reject("Unauthorized. No Provider found.");
     };
 
-    let voteParam = getVoteParamsByComplexity(complexity);
+    let voteParam = Helpers.getVoteParamsByComplexity(complexity);
     let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
@@ -710,7 +681,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_) throw Error.reject("Unauthorized");
     };
 
-    let voteParam = getVoteParamsByComplexity(complexity);
+    let voteParam = Helpers.getVoteParamsByComplexity(complexity);
     let taskCost = ProviderManager.getTaskCost(voteParam.requiredVotes);
     await ProviderManager.checkAndTopUpProviderBalance(provider, env, Principal.fromActor(this), taskCost);
 
@@ -834,8 +805,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      MainHelpers.pohVerificationRequestHelper(
         Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
         Principal.fromActor(this)
       )
     ) {
@@ -868,10 +844,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     filterVoted : Bool,
     filters : Types.ModerationTasksFilter
   ) : async [Types.ContentPlus] {
-    logger.logMessage(
-      "getTasks - provider called with provider ID: " #
-      Principal.toText(caller)
-    );
+    messagesHelper.logMessage(logger, "GetTasks", Principal.toText(caller));
     switch (PermissionsModule.checkProfilePermission(caller, #getContent, stateV2)) {
       case (#err(e)) {
         throw Error.reject("Unauthorized");
@@ -879,8 +852,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      MainHelpers.pohVerificationRequestHelper(
         Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
         Principal.fromActor(this)
       )
     ) {
@@ -917,10 +895,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         throw Error.reject(e);
       };
       case (#ok(tasks)) {
-        logger.logMessage(
-          "getTasks - FINISHED - provider called with provider ID: " #
-          Principal.toText(caller)
-        );
+        messagesHelper.logMessage(logger, "GetTasksFinished", Principal.toText(caller));
         return tasks;
       };
     };
@@ -1080,8 +1055,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      MainHelpers.pohVerificationRequestHelper(
         Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
         Principal.fromActor(this)
       )
     ) {
@@ -1262,8 +1242,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      MainHelpers.pohVerificationRequestHelper(
         Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
         Principal.fromActor(this)
       )
     ) {
@@ -1278,13 +1263,19 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
 
-    var voteCount = getVoteCount(contentId, ?caller);
-    logger.logMessage(
-      "vote - User ID: " # Principal.toText(caller) # " approved: " # Bool.toText(
-        decision == #approved
-      ) # " voting on content ID : " # contentId # " approve count : " # Nat.toText(
-        voteCount.approvedCount
-      ) # " rejected count : " # Nat.toText(voteCount.rejectedCount)
+    let voteCount = getVoteCount(contentId, ?caller);
+    messagesHelper.logMessage(
+      logger,
+      "Vote", 
+      Principal.toText(caller) 
+       # " approved: " 
+       # Bool.toText(decision == #approved)
+       # " voting on content ID : " 
+       # contentId 
+       # " approve count : " 
+       # Nat.toText(voteCount.approvedCount) 
+       # " rejected count : " 
+       # Nat.toText(voteCount.rejectedCount)
     );
     await ContentVotingManager.vote({
       userId = caller;
@@ -1303,7 +1294,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
   //----------------------POH Methods For Providers------------------------------
   public shared ({ caller }) func verifyHumanity(providerUserId : Text) : async PohTypes.PohVerificationResponsePlus {
-    switch (pohVerificationRequestHelper(providerUserId, caller)) {
+    switch (
+      MainHelpers.pohVerificationRequestHelper(
+        providerUserId,
+        caller,
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
+        Principal.fromActor(this)
+      )
+    ) {
       case (#ok(verificationResponse)) {
         return verificationResponse;
       };
@@ -1315,76 +1316,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
-  private func pohVerificationRequestHelper(
-    providerUserId : Text,
-    providerId : Principal
-  ) : Result.Result<PohTypes.PohVerificationResponsePlus, PohTypes.PohError> {
-    if (
-      Principal.equal(providerId, Principal.fromActor(this)) and voteManager.isAutoApprovedPOHUser(
-        Principal.fromText(providerUserId)
-      )
-    ) {
-      return #ok({
-        providerUserId = providerUserId;
-        providerId = providerId;
-        status = #verified;
-        challenges = [];
-        requestedAt = null;
-        submittedAt = null;
-        completedAt = null;
-        token = null;
-        rejectionReasons = [];
-        isFirstAssociation = true;
-      });
-    };
-    let pohVerificationRequest : PohTypes.PohVerificationRequestV1 = {
-      requestId = Helpers.generateId(providerId, "pohRequest", stateV2);
-      providerUserId = providerUserId;
-      providerId = providerId;
-    };
-    switch (pohEngine.getPohCallback(providerId)) {
-      case (#err(er)) {
-        return #err(er);
-      };
-      case (_)();
-    };
-    // validity and rules needs to come from admin dashboard here
-    switch (pohEngine.getProviderPohConfiguration(providerId, stateV2)) {
-      case (#ok(providerPohConfig)) {
-        let verificationResponse = pohEngine.pohVerificationRequest(
-          pohVerificationRequest,
-          providerPohConfig.expiry,
-          providerPohConfig.challengeIds,
-          voteManager.getAllUniqueViolatedRules,
-          pohContentQueueManager.getContentStatus
-        );
-        #ok(verificationResponse);
-      };
-      case (#err(er)) {
-        return #err(er);
-      };
-    };
-  };
-
-  private func findRejectionReasons(userId : Principal, challengeIds : [Text]) : [
-    Text
-  ] {
-    let rejectedPackageId = pohEngine.retrieveRejectedPackageId(
-      userId,
-      challengeIds,
-      pohContentQueueManager.getContentStatus
-    );
-    switch (rejectedPackageId) {
-      case (null) {
-        return [];
-      };
-      case (?id) {
-        let violatedRules = voteManager.getAllUniqueViolatedRules(id);
-        return pohEngine.resolveViolatedRulesById(violatedRules);
-      };
-    };
-  };
-
   //----------------------POH Methods For ModClub------------------------------
   // for modclub only
 
@@ -1392,7 +1323,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     providerUserId : Text,
     providerId : Principal
   ) : async PohTypes.PohVerificationResponsePlus {
-    switch (pohVerificationRequestHelper(providerUserId, providerId)) {
+    switch (
+      MainHelpers.pohVerificationRequestHelper(
+        providerUserId,
+        providerId,
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
+        Principal.fromActor(this)
+      )
+    ) {
       case (#ok(verificationResponse)) {
         return verificationResponse;
       };
@@ -1421,7 +1362,17 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       caller
     );
 
-    switch (pohVerificationRequestHelper(Principal.toText(caller), Principal.fromActor(this))) {
+    switch (
+      MainHelpers.pohVerificationRequestHelper(
+        Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
+        Principal.fromActor(this)
+      )
+    ) {
       case (#ok(verificationResponse)) {
         return verificationResponse;
       };
@@ -1439,8 +1390,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (caller != Principal.fromActor(this)) {
       throw Error.reject("Unauthorized");
     };
-    logger.logMessage(
-      "pohCallbackForModclub - status:  " # pohEngine.statusToString(
+    messagesHelper.logMessage(
+      logger,
+      "PohCallbackForModclub", 
+      pohEngine.statusToString(
         message.status
       ) # " submittedAt: " # Int.toText(Option.get(message.submittedAt, -1)) # " requestedAt: " # Int.toText(
         Option.get(message.requestedAt, -1)
@@ -1542,6 +1495,75 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
   };
 
+  // Stores the submitted challenge data blob in a data canister and returns its ID.
+private func storeDataInCanister(
+    attemptId : Text,
+    pohDataRequest : PohTypes.PohChallengeSubmissionRequest
+  ) : async ?Principal {
+    switch (pohDataRequest.challengeDataBlob) {
+      case (null) {
+        // challengeDataBlob is null this shouldn't happen
+        throw Error.reject("Challenge data blob is null.");
+      };
+      case (?blob) {
+        return await storageSolution.putBlobsInDataCanister(
+          attemptId,
+          blob,
+          pohDataRequest.offset,
+          pohDataRequest.numOfChunks,
+          pohDataRequest.mimeType,
+          pohDataRequest.dataSize
+        );
+      };
+    };
+  };
+  
+  private func getVoteCount(contentId : Types.ContentId, caller : ?Principal) : Types.VoteCount {
+    var voteApproved : Nat = 0;
+    var voteRejected : Nat = 0;
+    var hasVoted : Bool = false;
+    let violatedRulesCount = HashMap.HashMap<Types.RuleId, Nat>(
+      1,
+      Text.equal,
+      Text.hash
+    );
+    for (vid in stateV2.content2votes.get0(contentId).vals()) {
+      switch (stateV2.votes.get(vid)) {
+        case (?v) {
+          if (v.level != #novice) {
+            if (v.decision == #approved) {
+              voteApproved += 1;
+            } else {
+              voteRejected += 1;
+            };
+          };
+          // if caller is null, consider it as modclub calling it so that operation evaluates to false
+          // simplifies switch braches
+          if (not hasVoted) {
+            hasVoted := Principal.equal(
+              Option.get(caller, Principal.fromActor(this)),
+              v.userId
+            );
+          };
+          for (vRuleId in Option.get(v.violatedRules, []).vals()) {
+            violatedRulesCount.put(
+              vRuleId,
+              Option.get(violatedRulesCount.get(vRuleId), 0) + 1
+            );
+          };
+        };
+        case (_)();
+      };
+    };
+
+    return {
+      approvedCount = voteApproved;
+      rejectedCount = voteRejected;
+      hasVoted = hasVoted;
+      violatedRulesCount = violatedRulesCount;
+    };
+  };
+
   // Handles storing challenge data in a canister and manages package creation after storage.
   private func processChallengeData(
     caller : Principal,
@@ -1563,9 +1585,26 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         );
 
         if (POH.CHALLENGE_UNIQUE_POH_ID == pohDataRequest.challengeId) {
-          await initiateUniquePohProcessing(caller, pohDataRequest, dataCanisterId);
+          await MainHelpers.initiateUniquePohProcessing(
+            caller,
+            pohDataRequest,
+            dataCanisterId,
+            pohEngine,
+            authGuard,
+            transform, 
+            canistergeekLogger,
+            logger
+          );
         } else {
-          await handlePackageCreation(caller, pohDataRequest.challengeId);
+          await MainHelpers.handlePackageCreation(
+            caller,
+            pohDataRequest.challengeId,
+            pohEngine,
+            stateV2,
+            pohContentQueueManager,
+            voteManager,
+            canistergeekLogger
+          );
         };
       };
     } catch e {
@@ -1581,111 +1620,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return {
       challengeId = pohDataRequest.challengeId;
       submissionStatus = #ok;
-    };
-  };
-
-  // Stores the submitted challenge data blob in a data canister and returns its ID.
-  private func storeDataInCanister(
-    attemptId : Text,
-    pohDataRequest : PohTypes.PohChallengeSubmissionRequest
-  ) : async ?Principal {
-    switch (pohDataRequest.challengeDataBlob) {
-      case (null) {
-        // challengeDataBlob is null this shouldn't happen
-        throw Error.reject("Challenge data blob is null.");
-      };
-      case (?blob) {
-        return await storageSolution.putBlobsInDataCanister(
-          attemptId,
-          blob,
-          pohDataRequest.offset,
-          pohDataRequest.numOfChunks,
-          pohDataRequest.mimeType,
-          pohDataRequest.dataSize
-        );
-      };
-    };
-  };
-  private func handlePackageCreation(
-    caller : Principal,
-    challengeId : Text
-  ) : async () {
-    let _ = pohEngine.changeChallengeTaskStatus(
-      challengeId,
-      caller,
-      #pending
-    );
-
-    //TODO: We may have to move the updateDataCanisterId back here, if POH is failing
-
-    // Create challenge packages for voting if applicable
-    let challengePackages = pohEngine.createChallengePackageForVoting(
-      caller,
-      pohContentQueueManager.getContentStatus,
-      stateV2,
-      canistergeekLogger
-    );
-
-    // Process each created package: update content status and issue callbacks to providers
-    for (package in challengePackages.vals()) {
-      pohContentQueueManager.changeContentStatus(package.id, #new);
-      switch (pohEngine.getPohChallengePackage(package.id)) {
-        case (null)();
-        case (?package) {
-          await pohEngine.issueCallbackToProviders(
-            package.userId,
-            stateV2,
-            voteManager.getAllUniqueViolatedRules,
-            pohContentQueueManager.getContentStatus,
-            canistergeekLogger
-          );
-        };
-      };
-    };
-  };
-
-  private func initiateUniquePohProcessing(
-    caller : Principal,
-    pohDataRequest : PohTypes.PohChallengeSubmissionRequest,
-    dataCanisterId : ?Principal
-  ) : async () {
-    let _ = do ? {
-      let contentId = pohEngine.changeChallengeTaskStatus(
-        pohDataRequest.challengeId,
-        caller,
-        #processing
-      );
-
-      let hosts : [Text] = authGuard.getSecretVals("POH_LAMBDA_HOST");
-      let keyToCallLambdaForPOH = authGuard.getSecretVals("POH_LAMBDA_KEY");
-      if (hosts.size() == 0) {
-        throw Error.reject("POH Lambda HOST is not provided. Please ask admin to set the POH_LAMBDA_HOST for lambda calls.");
-      };
-      if (keyToCallLambdaForPOH.size() == 0) {
-        throw Error.reject("POH Lambda key is not provided. Please ask admin to set the POH_LAMBDA_KEY for lambda calls.");
-      };
-
-      // Initiate lambda trigger to process face
-      try {
-        await pohEngine.httpCallForProcessing(
-          caller,
-          dataCanisterId!,
-          contentId!,
-          keyToCallLambdaForPOH[0],
-          hosts[0],
-          transform,
-          canistergeekLogger
-        );
-      } catch (e) {
-        // Set the status to failed
-        logger.logError("initiateUniquePohProcessing - Failure to initiate processing setting task to #failed " # Error.message(e));
-        let _ = pohEngine.changeChallengeTaskStatus(
-          pohDataRequest.challengeId,
-          caller,
-          #rejected
-        );
-        false;
-      };
     };
   };
 
@@ -1749,8 +1683,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      MainHelpers.pohVerificationRequestHelper(
         Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
         Principal.fromActor(this)
       )
     ) {
@@ -1844,8 +1783,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      MainHelpers.pohVerificationRequestHelper(
         Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
         Principal.fromActor(this)
       )
     ) {
@@ -2083,24 +2027,8 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     if (not authGuard.allowedCanistergeekCaller(caller)) {
       throw Error.reject("Unauthorized");
     };
-    logger.logMessage("getCanisterLog - request from caller: " # Principal.toText(caller));
+    messagesHelper.logMessage(logger, "GetCanisterLog", Principal.toText(caller));
     canistergeekLogger.getLog(request);
-  };
-
-  private func _updateVote(vote : VoteTypes.PohVote, newTotalReward : Float, newLockedReward : Float, rsReceived : Float) : VoteTypes.PohVote {
-    {
-      id = vote.id;
-      contentId = vote.contentId;
-      userId = vote.userId;
-      decision = vote.decision;
-      rsBeforeVoting = vote.rsBeforeVoting;
-      level = vote.level;
-      violatedRules = vote.violatedRules;
-      createdAt = vote.createdAt;
-      totalReward = ?newTotalReward;
-      lockedReward = ?newLockedReward;
-      rsReceived = ?rsReceived;
-    };
   };
 
   public shared ({ caller }) func votePohContent(
@@ -2125,8 +2053,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
     // validates that user can do POH voting/review
     switch (
-      pohVerificationRequestHelper(
+      MainHelpers.pohVerificationRequestHelper(
         Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
         Principal.fromActor(this)
       )
     ) {
@@ -2162,7 +2095,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       pohContentQueueManager
     );
     if (finishedVoting == #ok(true)) {
-      logger.logMessage("Voting completed for packageId: " # packageId);
+      messagesHelper.logMessage(logger, "VotingCompleted", packageId);
       let finalDecision = pohContentQueueManager.getContentStatus(packageId);
       let votesId = voteManager.getPOHVotesId(packageId);
       var contentIds : [Text] = [];
@@ -2172,9 +2105,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           packageId,
           #verified
         );
-        logger.logMessage(
-          "Voting completed for packageId: " # packageId # " Final decision: approved"
-        );
+        messagesHelper.logMessage(logger, "VotingCompletedApproved", packageId);
       } else {
         contentIds := pohEngine.changeChallengePackageStatus(
           packageId,
@@ -2202,9 +2133,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           };
           case (_) {};
         };
-        logger.logMessage(
-          "Voting completed for packageId: " # packageId # " Final decision: rejected"
-        );
+        messagesHelper.logMessage(logger, "VotingCompletedRejected", packageId);
       };
 
       // mark content not accessible
@@ -2225,8 +2154,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
               };
               isVoteCorrect := true;
             };
-            logger.logMessage(
-              "User:" # Principal.toText(v.userId) # ":Voting for packageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(isVoteCorrect)
+            messagesHelper.logMessage(
+              logger, 
+              "UserVoting", 
+              "UserId:" # Principal.toText(v.userId) # ": PackageId: " # packageId # ":Decision:" #debug_show (v.decision) # ":VoteCorrect:" # Bool.toText(isVoteCorrect)
             );
             usersToRewardRS.add({
               userId = v.userId;
@@ -2255,8 +2186,10 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
           subaccount = moderator.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
         };
         let fullReward = (userVote.rsBeforeVoting * ModClubParam.GAMMA_M * CT) / sumRS;
-        logger.logMessage(
-          "UserID:" # Principal.toText(userVote.userId) # "RS Before Vote POH:" # Float.toText(userVote.rsBeforeVoting) # "Full rewards" # Float.toText(fullReward)
+        messagesHelper.logMessage(
+          logger,
+          "UserVoting", 
+          "UserID:" # Principal.toText(userVote.userId) # " RS Before Vote POH: " # Float.toText(userVote.rsBeforeVoting) # "Full rewards " # Float.toText(fullReward)
         );
         let modDistTokens = Utils.floatToTokens(fullReward * Constants.REWARD_DEVIATION);
         let _ = await ledger.icrc1_transfer({
@@ -2292,7 +2225,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
         let rsAfterVoting = (await rs.queryRSAndLevelByPrincipal(userVote.userId)).score;
         let rsReceived : Float = Float.fromInt(rsAfterVoting) - userVote.rsBeforeVoting;
-        voteManager.setPOHVote(userVote.id, _updateVote(userVote, fullReward, lockedReward, rsReceived));
+        voteManager.setPOHVote(userVote.id, MainHelpers.updateVote(userVote, fullReward, lockedReward, rsReceived));
       };
 
       let _ = await authGuard.getRSActor().updateRSBulk(Buffer.toArray<RSTypes.UserAndVote>(usersToRewardRS));
@@ -2363,8 +2296,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
       case (_)();
     };
     switch (
-      pohVerificationRequestHelper(
+      MainHelpers.pohVerificationRequestHelper(
         Principal.toText(caller),
+        Principal.fromActor(this),
+        pohEngine,
+        voteManager,
+        stateV2,
+        pohContentQueueManager,
         Principal.fromActor(this)
       )
     ) {
@@ -2562,52 +2500,6 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     return await ContentManager.canReserveContent(contentId, caller, stateV2);
   };
 
-  private func getVoteCount(contentId : Types.ContentId, caller : ?Principal) : Types.VoteCount {
-    var voteApproved : Nat = 0;
-    var voteRejected : Nat = 0;
-    var hasVoted : Bool = false;
-    let violatedRulesCount = HashMap.HashMap<Types.RuleId, Nat>(
-      1,
-      Text.equal,
-      Text.hash
-    );
-    for (vid in stateV2.content2votes.get0(contentId).vals()) {
-      switch (stateV2.votes.get(vid)) {
-        case (?v) {
-          if (v.level != #novice) {
-            if (v.decision == #approved) {
-              voteApproved += 1;
-            } else {
-              voteRejected += 1;
-            };
-          };
-          // if caller is null, consider it as modclub calling it so that operation evaluates to false
-          // simplifies switch braches
-          if (not hasVoted) {
-            hasVoted := Principal.equal(
-              Option.get(caller, Principal.fromActor(this)),
-              v.userId
-            );
-          };
-          for (vRuleId in Option.get(v.violatedRules, []).vals()) {
-            violatedRulesCount.put(
-              vRuleId,
-              Option.get(violatedRulesCount.get(vRuleId), 0) + 1
-            );
-          };
-        };
-        case (_)();
-      };
-    };
-
-    return {
-      approvedCount = voteApproved;
-      rejectedCount = voteRejected;
-      hasVoted = hasVoted;
-      violatedRulesCount = violatedRulesCount;
-    };
-  };
-
   public shared ({ caller }) func setRandomization(isRandom : Bool) : async () {
     randomizationEnabled := isRandom;
   };
@@ -2802,7 +2694,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
 
   system func preupgrade() {
-    logger.logMessage("MODCLUB PREUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
+    messagesHelper.logMessage(logger, "PreUpgrade", Int.toText(Helpers.timeNow()));
     stateSharedV2 := StateV2.fromState(stateV2);
 
     storageStateStable := storageSolution.getStableState();
@@ -2847,8 +2739,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var globalStateMigrationDone = false;
 
   system func postupgrade() {
-    logger.logMessage("MODCLUB POSTUPGRRADE at time: " # Int.toText(Helpers.timeNow()));
-
+    messagesHelper.logMessage(logger, "PostUpgrade", Int.toText(Helpers.timeNow()));
     authGuard.subscribe<system>("admins");
     admins := authGuard.setUpDefaultAdmins(
       admins,
@@ -2991,7 +2882,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public query ({ caller }) func http_request(request : Types.HttpRequest) : async Types.HttpResponse {
-    logger.logMessage("http_request - called for url " # request.url);
+    messagesHelper.logMessage(logger, "HttpRequest", request.url);
     return {
       status_code = 200;
       headers = [];
@@ -3002,7 +2893,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   };
 
   public shared ({ caller }) func http_request_update(request : Types.HttpRequest) : async Types.HttpResponse {
-    logger.logMessage("http_request_update - called for url " # request.url);
+    messagesHelper.logMessage(logger, "HttpRequest", request.url);
     let temp = RequestHandler.parseUrlAndGetPath(request);
 
     switch (temp) {
@@ -3031,7 +2922,14 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
 
         switch (userPrincipal) {
           case (?principal) {
-            await handlePackageCreation(principal, POH.CHALLENGE_UNIQUE_POH_ID);
+            await MainHelpers.handlePackageCreation(
+              principal,
+              POH.CHALLENGE_UNIQUE_POH_ID,
+              pohEngine,
+              stateV2,
+              pohContentQueueManager,
+              voteManager, canistergeekLogger
+            );
             return RequestHandler.createHttpResponse(200, "Package created for " # Principal.toText(principal));
           };
           case (_) {
@@ -3150,7 +3048,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   public shared ({ caller }) func importAirdropMetadata(payload : Types.AirdropMetadataImportPayload) : async {
     status : Bool;
   } {
-    logger.logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show payload);
+    messagesHelper.logMessage(logger, "ImportAirdropMetadataCall", debug_show payload);
     importedProfilesStable := List.nil<(Principal, Nat)>();
     importedProfiles.clear();
 
@@ -3163,7 +3061,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
         logger.logError("AN ERROR OCCURS DURING userPoints import :: " # Error.message(e));
       };
     };
-    logger.logMessage("MODCLUB Instanse has importAirdropMetadata call:: " # debug_show importedProfilesStable);
+    messagesHelper.logMessage(logger, "ImportAirdropMetadataProfiles", debug_show importedProfilesStable);
     { status = true };
   };
 
