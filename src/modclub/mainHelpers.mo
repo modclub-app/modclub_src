@@ -1,9 +1,9 @@
-import Types "../modclub/types";
+import Types "./types";
 import Text "mo:base/Text";
 import Result "mo:base/Result";
 import Error "mo:base/Error";
 import Principal "mo:base/Principal";
-import CommonTypes "types";
+import CommonTypes "../common/types";
 import Helpers "../common/helpers";
 import PohTypes "./service/poh/types";
 import POH "./service/poh/poh";
