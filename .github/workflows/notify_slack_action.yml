@@ -1,11 +1,20 @@
-steps:
-  - uses: ravsamhq/notify-slack-action@v2.5.0
-    if: always()
-    with:
-      status: ${{ job.status }}
-      token: ${{ secrets.GITHUB_TOKEN }}
-      notification_title: "{workflow} has {status_message}"
-      message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
-      footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.ENG_NOTIF_SLACK_HK }}
+# .github/workflows/notify_slack_action.yml
+on:
+  # Trigger the workflow on all push and pull request events
+  push:
+  pull_request:
+
+jobs:
+  notify_slack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ravsamhq/notify-slack-action@v2.5.0
+        if: always()
+        with:
+          status: ${{ job.status }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          notification_title: "{workflow} has {status_message}"
+          message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
+          footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.ENG_NOTIF_SLACK_HK }}
