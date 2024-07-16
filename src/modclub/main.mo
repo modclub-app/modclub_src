@@ -75,6 +75,9 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
   stable var storageStateStable = StorageState.emptyStableState();
   stable var retiredDataCanisterId : [Text] = [];
 
+  private stable var startTimeForPOHEmail = Helpers.timeNow();
+  private var ranPOHUserEmailsOnce : Bool = false;
+
   stable var pohStableStateV2 = PohStateV2.emptyStableState();
   stable var pohCallbackDataByProvider : [(Principal, [(Text, [(Text, Int)])])] = [];
   stable var provider2ProviderUserId2Ip : [(Principal, [(Text, Text)])] = [];
