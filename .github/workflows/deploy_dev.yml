@@ -73,6 +73,28 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+      
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            ${{ runner.os }}-cargo-base-
+            ${{ runner.os }}-cargo-
+    
+      # Add some caching
+      - name: Cache yarn dependencies
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: yarn install
         uses: borales/actions-yarn@v4

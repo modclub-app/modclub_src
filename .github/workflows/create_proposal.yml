@@ -94,6 +94,19 @@ jobs:
           chmod +x quill
           sudo mv quill /usr/local/bin/
 
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            ${{ runner.os }}-cargo-base-
+            ${{ runner.os }}-cargo-
+
       # Install dfx.
       - name: Install dfx
         run: |
