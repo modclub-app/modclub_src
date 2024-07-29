@@ -1,6 +1,8 @@
 import {
   providerBalanceLoading,
   fetchProviderBalance,
+  providerBufferBalanceLoading,
+  fetchProviderBufferBalance,
   fetchContentProviders,
   setProviderId,
 } from "./provider";
@@ -15,6 +17,14 @@ export const getProviderReducers = (state, icContext, dispatch) => {
     [
       "fetchProviderBalance",
       (payload) => fetchProviderBalance(context, payload),
+    ],
+    [
+      "providerBufferBalanceLoading",
+      (payload) => providerBufferBalanceLoading(context, payload),
+    ],
+    [
+      "fetchProviderBufferBalance",
+      (payload) => fetchProviderBufferBalance(context, payload),
     ],
     [
       "fetchContentProviders",

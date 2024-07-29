@@ -59,10 +59,17 @@ export default function Admin() {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [loader, setLoader] = useState(false);
   const [providerSubAcc, setProviderSubAcc] = useState(null);
+  const [providerBufferSubAcc, setProviderBufferSubAcc] = useState(null);
   const [modclubCanId, setModclubCanId] = useState("MODCLUB_CANISTER_ID");
 
   const providerBalance = convert_to_mod(
     appState.providerBalance,
+    BigInt(appState.decimals),
+    2
+  );
+
+  const providerBufferBalance = convert_to_mod(
+    appState.providerBufferBalance,
     BigInt(appState.decimals),
     2
   );
@@ -85,9 +92,16 @@ export default function Admin() {
       const sub_acc_rec = appState.selectedProvider.subaccounts.find(
         (item) => item[0] === "RESERVE"
       );
+      const buffer_acc_rec = appState.selectedProvider.subaccounts.find(
+        (item) => item[0] === "ACCOUNT_PAYABLE"
+      );
       if (sub_acc_rec && sub_acc_rec.length > 1) {
-        const buffer = new Uint8Array(sub_acc_rec[1]);
-        setProviderSubAcc(new TextDecoder().decode(buffer));
+        const sub_acc_blob = new Uint8Array(sub_acc_rec[1]);
+        setProviderSubAcc(new TextDecoder().decode(sub_acc_blob));
+      }
+      if (buffer_acc_rec && sub_acc_rec.length > 1) {
+        const buffer_sa_blob = new Uint8Array(buffer_acc_rec[1]);
+        setProviderBufferSubAcc(new TextDecoder().decode(buffer_sa_blob));
       }
     }
   }, [appState.selectedProvider]);
@@ -233,7 +247,7 @@ export default function Admin() {
             </Card>
           </Columns.Column>
 
-          <Columns.Column tablet={{ size: 6 }} desktop={{ size: 4 }}>
+          <Columns.Column tablet={{ size: 6 }} desktop={{ size: 6 }}>
             <Card backgroundColor="circles" className="is-fullheight">
               <Card.Content className="is-flex is-align-items-center pb-0">
                 <img src={walletImg} />
@@ -244,7 +258,14 @@ export default function Admin() {
                   <Heading size={1} className="level">
                     <span>{providerBalance}</span>
                     <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
-                      MOD
+                      DCD
+                      <br />
+                      tokens
+                    </span>
+                    <br/>
+                    <span style={{marginLeft: "0.75rem", fontWeight: 300, fontSize: "24px"}} >Lock:{providerBufferBalance}</span>
+                    <span className="is-size-6 has-text-light has-text-weight-normal ml-3">
+                      DCD
                       <br />
                       tokens
                     </span>
