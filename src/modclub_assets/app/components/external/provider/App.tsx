@@ -48,12 +48,12 @@ export default function ProviderLayout() {
   useEffect(() => {
     if (
       isConnected &&
-      appState.providerBalanceLoading &&
       appState.selectedProvider
     ) {
-      dispatch({ type: "fetchProviderBalance" });
+      appState.providerBalanceLoading && dispatch({ type: "fetchProviderBalance" });
+      appState.providerBufferBalanceLoading && dispatch({ type: "fetchProviderBufferBalance" });
     }
-  }, [isConnected, appState.providerBalanceLoading, appState.selectedProvider]);
+  }, [isConnected, appState.providerBalanceLoading, appState.providerBufferBalanceLoading, appState.selectedProvider]);
 
   useEffect(() => {
     if (isConnected && appState.selectedProvider) {

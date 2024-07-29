@@ -116,6 +116,18 @@ export function reducers(state, action) {
 
       return { ...state, providerBalance, providerBalanceLoading };
     }
+    case "providerBufferBalanceLoading": {
+      return {
+        ...state,
+        providerBufferBalanceLoading: action.providerBufferBalanceLoading,
+      };
+    }
+    case "fetchProviderBufferBalance": {
+      let providerBufferBalance = action.providerBufferBalance;
+      let providerBufferBalanceLoading = action.providerBufferBalanceLoading;
+
+      return { ...state, providerBufferBalance, providerBufferBalanceLoading };
+    }
     case "rsLoading": {
       return { ...state, rsLoading: action.rsLoading };
     }

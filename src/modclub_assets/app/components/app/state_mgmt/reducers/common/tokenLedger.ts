@@ -72,6 +72,10 @@ export async function depositToBalance(context, payload) {
             type: "providerBalanceLoading",
             providerBalanceLoading: true,
           });
+          context.dispatch({
+            type: "providerBufferBalanceLoading",
+            providerBufferBalanceLoading: true,
+          });
         }
       } else {
         const transferError = Object.keys(res.Err)[0];

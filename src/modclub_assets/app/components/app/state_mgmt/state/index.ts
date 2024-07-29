@@ -24,6 +24,7 @@ export const initialState = {
   claimedStakeBalance: 0,
   pendingStakeBalance: 0,
   providerBalance: 0,
+  providerBufferBalance: 0,
   pohReservedContent: null,
   contentReservedTime: 0,
   selectedProvider: null,
@@ -42,6 +43,7 @@ export const initialState = {
   releaseUnStakedLoading: false,
   unlockStakeLoading: true,
   providerBalanceLoading: true,
+  providerBufferBalanceLoading: true,
   moderationTasksLoading: false,
   claimedStakeLoading: true,
   // === System Signals

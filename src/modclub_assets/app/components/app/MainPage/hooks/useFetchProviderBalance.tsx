@@ -16,3 +16,15 @@ export const useFetchProviderBalance = () => {
       dispatch({ type: "fetchProviderBalance" });
   }, [isConnected, providerBalanceLoading]);
 };
+
+export const useFetchProviderBufferBalance = () => {
+  const { isConnected } = useConnect();
+  // @ts-ignore
+  const { providerBufferBalanceLoading } = useAppState();
+  const dispatch = useAppStateDispatch();
+
+  useEffect(() => {
+    if (isConnected && providerBufferBalanceLoading)
+      dispatch({ type: "fetchProviderBufferBalance" });
+  }, [isConnected, providerBufferBalanceLoading]);
+};
