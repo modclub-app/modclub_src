@@ -2692,6 +2692,21 @@ private func storeDataInCanister(
     return #ok(contentSummaries);
   };
 
+  public query ({ caller }) func getProviderPendingSummaries(providerId : Principal) : async Result.Result<Types.ProviderPendingSummaries, Text> {
+    switch (PermissionsModule.checkProviderPermission(caller, ?providerId, stateV2)) {
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p))();
+    };
+    let contentSummaries = ContentManager.getProviderPendingContentSummaries(
+      providerId,
+      stateV2,
+      content2Category,
+      getVoteCount
+    );
+
+    return #ok(contentSummaries);
+  };
+
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
