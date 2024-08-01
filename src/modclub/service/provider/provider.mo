@@ -235,6 +235,37 @@ module ProviderModule {
     });
   };
 
+  public func releaseBufferedTokens(provider : Principal, pendingContentCost : Nat) : Result.Result<Bool, Text> {
+    let guard = ModSecurity.Guard(env, "PROVIDER_SERVICE");
+    let ledger = guard.getWalletActor();
+    let modclubCanisterId = guard.getCanisterId(#modclub);
+    let accountPayable = {
+      owner = modclubCanisterId;
+      subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
+    };
+    let providerAPBalance = await ledger.icrc1_balance_of(accountPayable);
+    if (providerAPBalance > pendingContentCost and (pendingContentCost + 100000) < providerAPBalance) {
+      let tokensToRelease = providerAPBalance - pendingContentCost;
+      let res = await ledger.icrc1_transfer({
+        from_subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
+        to = {
+          owner = modclubCanisterId;
+          subaccount = provider.subaccounts.get(Constants.ACCOUNT_RESERVE_FIELD);
+        };
+        amount = tokensToRelease;
+        created_at_time = null;
+        fee = null;
+        memo = null;
+      });
+      switch (res) {
+        case(#Ok(txNum)) { return #ok(txNum); };
+        case(#Err(e)) { return #err("Cant transfer tokens from ACCOUNT_PAYABLE subaccount.") };
+      };
+    };
+
+    return #err("No tokens can be transfered from ACCOUNT_PAYABLE subaccount.");
+  };
+
   public func addRules(
     providerId : Principal,
     rules : [Text],
@@ -617,7 +648,7 @@ module ProviderModule {
     let tokens = Utils.floatToTokens(amount);
     let ledger = ModSecurity.Guard(env, "PROVIDER_SERVICE").getWalletActor();
     let res = await ledger.icrc1_transfer({
-      from_subaccount = provider.subaccounts.get("RESERVE");
+      from_subaccount = provider.subaccounts.get(Constants.ACCOUNT_RESERVE_FIELD);
       to = {
         owner = modclubCanisterPrincipal;
         subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);

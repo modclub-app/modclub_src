@@ -245,6 +245,32 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
   };
 
+  public shared ({ caller }) func releaseBufferedTokens(providerId : ?Principal) : Result.Result<Nat, Text> {
+    let pid = switch (providerId) {
+      case (?pid) {
+        switch (PermissionsModule.checkProviderPermission(caller, ?pid, stateV2)) {
+          case (#err(error)) return throw Error.reject("Unauthorized");
+          case (#ok(p)) {};
+        };
+        pid;
+      };
+      case (_) caller;
+    };
+    let provider = switch (stateV2.providers.get(pid)) {
+      case (?p) p;
+      case (_) return throw Error.reject("Provider doesn't exist.");
+    };
+
+    let contentSummaries = ContentManager.getProviderPendingContentSummaries(
+      providerId,
+      stateV2,
+      content2Category,
+      getVoteCount
+    );
+
+    ProviderManager.releaseBufferedTokens(provider, contentSummaries.totalCost);
+  };
+
   public query ({ caller }) func isEnabledVCForUser() : async Bool {
     Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal);
   };
