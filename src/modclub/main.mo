@@ -245,7 +245,7 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
   };
 
-  public shared ({ caller }) func releaseBufferedTokens(providerId : ?Principal) : Result.Result<Nat, Text> {
+  public shared ({ caller }) func releaseBufferedTokens(providerId : ?Principal) : async Result.Result<Nat, Text> {
     let pid = switch (providerId) {
       case (?pid) {
         switch (PermissionsModule.checkProviderPermission(caller, ?pid, stateV2)) {
@@ -262,13 +262,13 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     };
 
     let contentSummaries = ContentManager.getProviderPendingContentSummaries(
-      providerId,
+      pid,
       stateV2,
       content2Category,
       getVoteCount
     );
 
-    ProviderManager.releaseBufferedTokens(provider, contentSummaries.totalCost);
+    await ProviderManager.releaseBufferedTokens(env, provider, contentSummaries);
   };
 
   public query ({ caller }) func isEnabledVCForUser() : async Bool {

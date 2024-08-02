@@ -8,10 +8,13 @@ import Bool "mo:base/Bool";
 import List "mo:base/List";
 import Float "mo:base/Float";
 import Int "mo:base/Int";
+import Int64 "mo:base/Int64";
 import Nat "mo:base/Nat";
+import Nat64 "mo:base/Nat64";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Result "mo:base/Result";
 
 import GlobalState "../../statev2";
 import QueueManager "../queue/queue";
@@ -235,7 +238,7 @@ module ProviderModule {
     });
   };
 
-  public func releaseBufferedTokens(provider : Principal, pendingContentCost : Nat) : Result.Result<Bool, Text> {
+  public func releaseBufferedTokens(env : CommonTypes.ENV, provider : Types.Provider, pendingContentSummaries : Types.ProviderPendingSummaries) : async Result.Result<Nat, Text> {
     let guard = ModSecurity.Guard(env, "PROVIDER_SERVICE");
     let ledger = guard.getWalletActor();
     let modclubCanisterId = guard.getCanisterId(#modclub);
@@ -244,8 +247,13 @@ module ProviderModule {
       subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
     };
     let providerAPBalance = await ledger.icrc1_balance_of(accountPayable);
-    if (providerAPBalance > pendingContentCost and (pendingContentCost + 100000) < providerAPBalance) {
-      let tokensToRelease = providerAPBalance - pendingContentCost;
+    let feePerTask = 3 * 10000; // fee for reward distribution transactions
+    let totalFee = pendingContentSummaries.totalPending * feePerTask;
+    let totalCostTokens = Utils.floatToTokens(Float.fromInt64(Int64.fromNat64(Nat64.fromNat(pendingContentSummaries.totalCost))));
+    let requiredAmount = totalCostTokens + totalFee + 10000; // 10000 is a fee for current refund transaction
+
+    if (requiredAmount < providerAPBalance) {
+      let tokensToRelease = providerAPBalance - requiredAmount;
       let res = await ledger.icrc1_transfer({
         from_subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
         to = {

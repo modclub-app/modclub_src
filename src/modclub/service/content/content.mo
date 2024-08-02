@@ -246,7 +246,7 @@ module ContentModule {
       let voteCount = getVoteCount(cid, ?providerId);
       switch (getContentPlus(cid, ?providerId, voteCount, globalState, content2Category)) {
         case (?cp) {
-          let taskCost = cp.receipt.cost;
+          let taskCost = Option.unwrap(Nat.fromText(Int.toText(cp.receipt.cost)));
           switch (cp.status) {
             case (#new) {
               totalCost += taskCost;
