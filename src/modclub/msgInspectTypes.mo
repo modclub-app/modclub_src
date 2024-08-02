@@ -67,6 +67,7 @@ module {
     #getProviderAdmins : () -> Principal;
     #getProviderContent : () -> (Principal, Types.ContentStatus, Nat, Nat);
     #getProviderSummaries : () -> Principal;
+    #getProviderPendingSummaries : () -> Principal;
     #getProviderRules : () -> ();
     #getProviderSa : () -> (Text, ?Principal);
     #getReservedByContentId : () -> Text;
@@ -83,6 +84,7 @@ module {
     #populateChallenges : () -> ();
     #registerAdmin : () -> Principal;
     #registerModerator : () -> (Text, ?Text);
+    #releaseBufferedTokens : () -> ?Principal;
     #setLambdaToken : () -> (Text);
     #setPohLambdaToken : () -> (Text);
     #registerProvider : () -> (Text, Text, ?Types.Image);

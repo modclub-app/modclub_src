@@ -233,6 +233,37 @@ module ContentModule {
     };
   };
 
+  public func getProviderPendingContentSummaries(
+    providerId : Principal,
+    globalState : GlobalState.State,
+    content2Category : HashMap.HashMap<Types.ContentId, Types.CategoryId>,
+    getVoteCount : (Types.ContentId, ?Principal) -> Types.VoteCount
+  ) : Types.ProviderPendingSummaries {
+    var totalPending : Nat = 0;
+    var totalCost : Nat = 0;
+
+    for (cid in globalState.provider2content.get0(providerId).vals()) {
+      let voteCount = getVoteCount(cid, ?providerId);
+      switch (getContentPlus(cid, ?providerId, voteCount, globalState, content2Category)) {
+        case (?cp) {
+          let taskCost = Option.unwrap(Nat.fromText(Int.toText(cp.receipt.cost)));
+          switch (cp.status) {
+            case (#new) {
+              totalCost += taskCost;
+              totalPending += 1;
+            };
+            case (_) {};
+          };
+        };
+        case (_) {};
+      };
+    };
+    return {
+      totalPending;
+      totalCost;
+    };
+  };
+
   public func getAllContent(
     caller : Principal,
     status : Types.ContentStatus,

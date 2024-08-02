@@ -559,6 +559,11 @@ module {
     totalCost : Nat;
   };
 
+  public type ProviderPendingSummaries = {
+    totalPending : Nat;
+    totalCost : Nat;
+  };
+
   public type UserStat = {
     totalUsers : Nat;
     totalVotes : Nat;
