@@ -36,32 +36,4 @@ const useGetProviderSummaries = () => {
   return { providerSummaries };
 };
 
-const useGetProviderPendingSummaries = () => {
-  const appState = useAppState();
-  const { modclub } = useActors();
-  const [providerSummaries, setProviderSummaries] =
-    useState<ProviderSummariesTypes | null>();
-
-  const getProviderPendingSummaries = async () => {
-    try {
-      const providerPendingSummaries = await modclub.getProviderPendingSummaries(
-        appState.selectedProvider.id
-      );
-      if (providerPendingSummaries.ok) {
-        setProviderSummaries({ ...providerPendingSummaries.ok });
-      }
-    } catch (e) {
-      console.log("Error in getProviderSummaries function:: ", e);
-    }
-  };
-
-  useEffect(() => {
-    if (appState.selectedProvider) {
-      getProviderPendingSummaries();
-    }
-  }, [appState.selectedProvider]);
-
-  return { getProviderPendingSummaries };
-};
-
 export default useGetProviderSummaries;
