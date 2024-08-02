@@ -2914,6 +2914,7 @@ private func storeDataInCanister(
       case (#airdropMigratedUser _) { authGuard.isAdmin(caller) };
       case (#airdropMigratedUsers _) { authGuard.isAdmin(caller) };
       case (#getModeratorLeaderboard _) { authGuard.isAdmin(caller) };
+      case (#releaseBufferedTokens _) { authGuard.isAdmin(caller) };
       case (#releaseTokensFor _) {
         authGuard.isAdmin(caller) or authGuard.isModclubVesting(caller);
       };
