@@ -2218,9 +2218,9 @@ private func storeDataInCanister(
                 subaccount = ?Constants.ICRC_VESTING_SA;
               };
               amount = lockedRewardToken;
-              fee = null;
-              memo = null;
-              created_at_time = null;
+              fee = null;  // If the caller does not set the fee argument, the ledger applies the default transfer fee. 
+              memo = null; // The memo parameter is an arbitrary blob that has no meaning to the ledger
+              created_at_time = null; // If the client did not set the created_at_time field, the ledger SHOULD NOT deduplicate the transaction.
             });
           };
           case (_)(throw Error.reject("Unable to lock Reward Tokens: " # Nat.toText(lockedRewardToken)));
