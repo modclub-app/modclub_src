@@ -192,10 +192,11 @@ shared ({ caller = deployer }) actor class ModclubAuth(env : CommonTypes.ENV) = 
   };
 
   public shared ({ caller }) func unregisterAdmin(id : Text) : async Result.Result<AuthTypes.AdminsList, Text> {
+    let idPrincipal = Principal.fromText(id);
     var adminList = admins;
     adminList := List.filter<Principal>(
       adminList,
-      func(val : Principal) : Bool { not Principal.equal(val, caller) }
+      func(val : Principal) : Bool { not Principal.equal(val, idPrincipal) }
     );
     admins := adminList;
     await publish("admins");
