@@ -252,7 +252,7 @@ module ProviderModule {
     let totalCostTokens = Utils.floatToTokens(Float.fromInt64(Int64.fromNat64(Nat64.fromNat(pendingContentSummaries.totalCost))));
     let requiredAmount = totalCostTokens + totalFee + 10000; // 10000 is a fee for current refund transaction
 
-    if (requiredAmount < providerAPBalance) {
+    if (requiredAmount <= providerAPBalance) {
       let tokensToRelease = providerAPBalance - requiredAmount;
       let res = await ledger.icrc1_transfer({
         from_subaccount = provider.subaccounts.get(Constants.ACCOUNT_PAYABLE_FIELD);
