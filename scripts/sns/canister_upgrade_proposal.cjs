@@ -68,12 +68,24 @@ function getInput(index, envVar, question) {
         "./scripts/deployment/get_env_arguments.sh"
       )} ${environment} ${network}`
     );
-    upgradeArg = upgradeArgRaw
-      .substring(upgradeArgRaw.search(/record {/g))
-      .replace(/[\n,\r]/g, "");
-    if (!upgradeArg.length) {
-      throw new Error("No Arguments found for canister deploy.");
+
+    // Function to extract a clean record
+    const extractCleanRecord = (input) => {
+      const records = input.match(/record \{[^}]+\}/g);
+      return records ? records[0] : null;
+    };
+
+    // Extract the first clean record
+    upgradeArg = extractCleanRecord(upgradeArgRaw);
+
+    if (!upgradeArg) {
+      throw new Error(
+        "No valid record found in the arguments for canister deploy."
+      );
     }
+
+    console.log("upgradeArg:", upgradeArg); // For debugging
+
     makeProposalCommand = `quill sns --canister-ids-file ${snsCanisterIdsFile} --pem-file ${pemFilePath} make-upgrade-canister-proposal  --summary "${summary}" --title "${title}" --url "${url}" --target-canister-id ${canisterId} --wasm-path "${wasmPath}" --canister-upgrade-arg '(${upgradeArg})' ${developerNeuronId} > upgrade.json`;
     await shellExec(makeProposalCommand);
 
