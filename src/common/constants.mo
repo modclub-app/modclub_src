@@ -43,6 +43,7 @@ module Constants {
   public let EMAIL_NOTIFICATION_USER_VERIFICATION = "user_verification_notification" : Text;
 
   public let ACCOUNT_PAYABLE_FIELD = "ACCOUNT_PAYABLE";
+  public let ACCOUNT_RESERVE_FIELD = "RESERVE";
 
   // --- Secrets ----
   public let SECRET_VALUE_DELIMITER = ',';

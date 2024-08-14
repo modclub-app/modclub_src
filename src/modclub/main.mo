@@ -245,6 +245,32 @@ shared ({ caller = deployer }) actor class ModClub(env : CommonTypes.ENV) = this
     );
   };
 
+  public shared ({ caller }) func releaseBufferedTokens(providerId : ?Principal) : async Result.Result<Nat, Text> {
+    let pid = switch (providerId) {
+      case (?pid) {
+        switch (PermissionsModule.checkProviderPermission(caller, ?pid, stateV2)) {
+          case (#err(error)) return throw Error.reject("Unauthorized");
+          case (#ok(p)) {};
+        };
+        pid;
+      };
+      case (_) caller;
+    };
+    let provider = switch (stateV2.providers.get(pid)) {
+      case (?p) p;
+      case (_) return throw Error.reject("Provider doesn't exist.");
+    };
+
+    let contentSummaries = ContentManager.getProviderPendingContentSummaries(
+      pid,
+      stateV2,
+      content2Category,
+      getVoteCount
+    );
+
+    await ProviderManager.releaseBufferedTokens(env, provider, contentSummaries);
+  };
+
   public query ({ caller }) func isEnabledVCForUser() : async Bool {
     Buffer.contains<Principal>(verifiedCredentialsWLBuf, caller, Principal.equal);
   };
@@ -2692,6 +2718,21 @@ private func storeDataInCanister(
     return #ok(contentSummaries);
   };
 
+  public query ({ caller }) func getProviderPendingSummaries(providerId : Principal) : async Result.Result<Types.ProviderPendingSummaries, Text> {
+    switch (PermissionsModule.checkProviderPermission(caller, ?providerId, stateV2)) {
+      case (#err(error)) return throw Error.reject("Unauthorized");
+      case (#ok(p))();
+    };
+    let contentSummaries = ContentManager.getProviderPendingContentSummaries(
+      providerId,
+      stateV2,
+      content2Category,
+      getVoteCount
+    );
+
+    return #ok(contentSummaries);
+  };
+
   // Upgrade logic / code
   stable var provider2IpRestriction : Trie.Trie<Principal, Bool> = Trie.empty();
   stable var stateSharedV2 : StateV2.StateShared = StateV2.emptyShared();
@@ -2873,6 +2914,7 @@ private func storeDataInCanister(
       case (#airdropMigratedUser _) { authGuard.isAdmin(caller) };
       case (#airdropMigratedUsers _) { authGuard.isAdmin(caller) };
       case (#getModeratorLeaderboard _) { authGuard.isAdmin(caller) };
+      case (#releaseBufferedTokens _) { authGuard.isAdmin(caller) };
       case (#releaseTokensFor _) {
         authGuard.isAdmin(caller) or authGuard.isModclubVesting(caller);
       };
