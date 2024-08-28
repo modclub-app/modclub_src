@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 # ic dependencies
-candid = "0.10"
+candid = "0.10.10"
 ic-certification = "2.2"
 ic-crypto-standalone-sig-verifier = { git = "https://github.com/dfinity/ic", rev = "e69bcc7b319cbb3ebc22ec55af35287741244db6" }
 ic-types = { git = "https://github.com/dfinity/ic", rev = "e69bcc7b319cbb3ebc22ec55af35287741244db6" }
