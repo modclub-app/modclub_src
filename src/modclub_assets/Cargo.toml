@@ -10,9 +10,9 @@ canister_sig_util = { path = "./canister_sig_util" }
 asset_util = { path = "./asset_util" }
 vc_util = { path = "./vc_util" }
 # ic dependencies
-candid = "0.10"
-ic-cdk = "0.12"
-ic-cdk-macros = "0.8"
+candid = "0.10.10"
+ic-cdk = "0.12.2"
+ic-cdk-macros = "0.8.2"
 ic-certification = "2.2"
 ic-stable-structures = "0.6.0"
 # vc dependencies
