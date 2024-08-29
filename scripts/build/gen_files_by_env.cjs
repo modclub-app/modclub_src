@@ -10,7 +10,7 @@ if (!DEV_ENV) {
 
 console.log(`Current DEV_ENV=${DEV_ENV}`);
 let postfix;
-if (DEV_ENV === "production" || DEV_ENV === "prod") {
+if (DEV_ENV === "production" || DEV_ENV === "prod" || DEV_ENV === "local") {
   postfix = "";
 } else if (DEV_ENV === "dev") {
   postfix = "_dev";

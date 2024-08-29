@@ -46,16 +46,14 @@
       "gzip": true
     },
     "wallet": {
-      "build": "",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/rs/rosetta-api/icrc1/ledger/ledger.did",
       "remote": {
         "id": {
-          "ic": "xsi2v-cyaaa-aaaaq-aabfq-cai",
-          "local": "r7inp-6aaaa-aaaaa-aaabq-cai"
+          "ic": "xsi2v-cyaaa-aaaaq-aabfq-cai"
         }
       },
       "type": "custom",
-      "wasm": ""
+      "wasm": "https://download.dfinity.systems/ic/b9d14e71b857ceca7087b31f5a32618d25555f29/canisters/ic-icrc1-ledger.wasm.gz"
     },
     "wallet_qa": {
       "type": "custom",
