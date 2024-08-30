@@ -4,8 +4,8 @@ const path = require("path");
 let DEV_ENV = process.env.DEV_ENV;
 
 if (!DEV_ENV) {
-  DEV_ENV = "qa";
-  console.warn("DEV_ENV is not set. Default the value to 'qa' ");
+  DEV_ENV = "local";
+  console.warn("DEV_ENV is not set. Default the value to 'local' ");
 }
 
 console.log(`Current DEV_ENV=${DEV_ENV}`);

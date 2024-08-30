@@ -12,6 +12,7 @@ module.exports = {
     "@babel/plugin-transform-runtime",
     "@babel/plugin-syntax-dynamic-import",
     "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-syntax-bigint"
   ],
   env: {
     production: {
