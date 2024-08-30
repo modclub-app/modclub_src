@@ -7,7 +7,7 @@ get_canister_name_by_env() {
   local env="$1"
   local name="$2"
 
-  if [ "$env" = "production" ] || [ "$env" = "prod" ]; then
+  if [ "$env" = "production" ] || [ "$env" = "prod" ] || [ "$env" = "local" ]; then
     echo "$name"
   else
     echo "${name}_${env}"

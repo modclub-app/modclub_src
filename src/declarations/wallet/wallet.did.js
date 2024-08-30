@@ -1,48 +1,154 @@
 export const idlFactory = ({ IDL }) => {
-  const ENV = IDL.Record({
-    'wallet_canister_id' : IDL.Principal,
-    'vesting_canister_id' : IDL.Principal,
-    'old_modclub_canister_id' : IDL.Principal,
-    'modclub_canister_id' : IDL.Principal,
-    'rs_canister_id' : IDL.Principal,
-    'auth_canister_id' : IDL.Principal,
+  const Value = IDL.Rec();
+  const MetadataValue = IDL.Variant({
+    'Int' : IDL.Int,
+    'Nat' : IDL.Nat,
+    'Blob' : IDL.Vec(IDL.Nat8),
+    'Text' : IDL.Text,
   });
   const Subaccount = IDL.Vec(IDL.Nat8);
   const Account = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
   });
-  const LedgerInitParams = IDL.Record({
-    'decimals' : IDL.Nat8,
+  const ChangeFeeCollector = IDL.Variant({
+    'SetTo' : Account,
+    'Unset' : IDL.Null,
+  });
+  const UpgradeArgs = IDL.Record({
+    'token_symbol' : IDL.Opt(IDL.Text),
+    'transfer_fee' : IDL.Opt(IDL.Nat64),
+    'metadata' : IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Text, MetadataValue))),
+    'change_fee_collector' : IDL.Opt(ChangeFeeCollector),
+    'token_name' : IDL.Opt(IDL.Text),
+  });
+  const InitArgs = IDL.Record({
     'token_symbol' : IDL.Text,
-    'transfer_fee' : IDL.Nat,
+    'transfer_fee' : IDL.Nat64,
+    'metadata' : IDL.Vec(IDL.Tuple(IDL.Text, MetadataValue)),
     'minting_account' : Account,
-    'initial_mints' : IDL.Vec(
-      IDL.Record({ 'account' : Account, 'amount' : IDL.Nat })
-    ),
-    'ledger_account' : Account,
+    'initial_balances' : IDL.Vec(IDL.Tuple(Account, IDL.Nat64)),
+    'fee_collector_account' : IDL.Opt(Account),
+    'archive_options' : IDL.Record({
+      'num_blocks_to_archive' : IDL.Nat64,
+      'trigger_threshold' : IDL.Nat64,
+      'max_message_size_bytes' : IDL.Opt(IDL.Nat64),
+      'cycles_for_archive_creation' : IDL.Opt(IDL.Nat64),
+      'node_max_memory_size_bytes' : IDL.Opt(IDL.Nat64),
+      'controller_id' : IDL.Principal,
+    }),
     'token_name' : IDL.Text,
   });
-  const Tokens = IDL.Nat;
-  const Result__1_1 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
-  const Result__1 = IDL.Variant({
-    'ok' : IDL.Vec(IDL.Principal),
-    'err' : IDL.Text,
+  const LedgerArg = IDL.Variant({
+    'Upgrade' : IDL.Opt(UpgradeArgs),
+    'Init' : InitArgs,
   });
-  const Event = IDL.Record({ 'topic' : IDL.Text, 'payload' : IDL.Principal });
-  const ConsumerPayload = IDL.Variant({
-    'events' : IDL.Vec(Event),
-    'admins' : IDL.Vec(IDL.Principal),
+  const BlockIndex = IDL.Nat;
+  const GetBlocksArgs = IDL.Record({
+    'start' : BlockIndex,
+    'length' : IDL.Nat,
   });
-  const Value = IDL.Variant({
-    'Int' : IDL.Int,
-    'Nat' : IDL.Nat,
-    'Blob' : IDL.Vec(IDL.Nat8),
-    'Text' : IDL.Text,
+  const Map = IDL.Vec(IDL.Tuple(IDL.Text, Value));
+  Value.fill(
+    IDL.Variant({
+      'Int' : IDL.Int,
+      'Map' : Map,
+      'Nat' : IDL.Nat,
+      'Nat64' : IDL.Nat64,
+      'Blob' : IDL.Vec(IDL.Nat8),
+      'Text' : IDL.Text,
+      'Array' : IDL.Vec(Value),
+    })
+  );
+  const Block = Value;
+  const BlockRange = IDL.Record({ 'blocks' : IDL.Vec(Block) });
+  const QueryBlockArchiveFn = IDL.Func(
+      [GetBlocksArgs],
+      [BlockRange],
+      ['query'],
+    );
+  const GetBlocksResponse = IDL.Record({
+    'certificate' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'first_index' : BlockIndex,
+    'blocks' : IDL.Vec(Block),
+    'chain_length' : IDL.Nat64,
+    'archived_blocks' : IDL.Vec(
+      IDL.Record({
+        'callback' : QueryBlockArchiveFn,
+        'start' : BlockIndex,
+        'length' : IDL.Nat,
+      })
+    ),
   });
-  const Memo = IDL.Vec(IDL.Nat8);
-  const Timestamp = IDL.Nat64;
+  const DataCertificate = IDL.Record({
+    'certificate' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'hash_tree' : IDL.Vec(IDL.Nat8),
+  });
   const TxIndex = IDL.Nat;
+  const GetTransactionsRequest = IDL.Record({
+    'start' : TxIndex,
+    'length' : IDL.Nat,
+  });
+  const Transaction = IDL.Record({
+    'burn' : IDL.Opt(
+      IDL.Record({
+        'from' : Account,
+        'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+        'created_at_time' : IDL.Opt(IDL.Nat64),
+        'amount' : IDL.Nat,
+      })
+    ),
+    'kind' : IDL.Text,
+    'mint' : IDL.Opt(
+      IDL.Record({
+        'to' : Account,
+        'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+        'created_at_time' : IDL.Opt(IDL.Nat64),
+        'amount' : IDL.Nat,
+      })
+    ),
+    'timestamp' : IDL.Nat64,
+    'transfer' : IDL.Opt(
+      IDL.Record({
+        'to' : Account,
+        'fee' : IDL.Opt(IDL.Nat),
+        'from' : Account,
+        'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+        'created_at_time' : IDL.Opt(IDL.Nat64),
+        'amount' : IDL.Nat,
+      })
+    ),
+  });
+  const TransactionRange = IDL.Record({
+    'transactions' : IDL.Vec(Transaction),
+  });
+  const QueryArchiveFn = IDL.Func(
+      [GetTransactionsRequest],
+      [TransactionRange],
+      ['query'],
+    );
+  const GetTransactionsResponse = IDL.Record({
+    'first_index' : TxIndex,
+    'log_length' : IDL.Nat,
+    'transactions' : IDL.Vec(Transaction),
+    'archived_transactions' : IDL.Vec(
+      IDL.Record({
+        'callback' : QueryArchiveFn,
+        'start' : TxIndex,
+        'length' : IDL.Nat,
+      })
+    ),
+  });
+  const Tokens = IDL.Nat;
+  const Timestamp = IDL.Nat64;
+  const TransferArg = IDL.Record({
+    'to' : Account,
+    'fee' : IDL.Opt(Tokens),
+    'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'from_subaccount' : IDL.Opt(Subaccount),
+    'created_at_time' : IDL.Opt(Timestamp),
+    'amount' : Tokens,
+  });
   const TransferError = IDL.Variant({
     'GenericError' : IDL.Record({
       'message' : IDL.Text,
@@ -50,83 +156,30 @@ export const idlFactory = ({ IDL }) => {
     }),
     'TemporarilyUnavailable' : IDL.Null,
     'BadBurn' : IDL.Record({ 'min_burn_amount' : Tokens }),
-    'Duplicate' : IDL.Record({ 'duplicate_of' : TxIndex }),
+    'Duplicate' : IDL.Record({ 'duplicate_of' : BlockIndex }),
     'BadFee' : IDL.Record({ 'expected_fee' : Tokens }),
-    'CreatedInFuture' : IDL.Record({ 'ledger_time' : Timestamp }),
+    'CreatedInFuture' : IDL.Record({ 'ledger_time' : IDL.Nat64 }),
     'TooOld' : IDL.Null,
     'InsufficientFunds' : IDL.Record({ 'balance' : Tokens }),
   });
-  const Result = IDL.Variant({ 'Ok' : TxIndex, 'Err' : TransferError });
-  const AllowanceArgs = IDL.Record({
-    'account' : Account,
-    'spender' : IDL.Principal,
+  const TransferResult = IDL.Variant({
+    'Ok' : BlockIndex,
+    'Err' : TransferError,
   });
-  const Allowance = IDL.Record({
-    'allowance' : IDL.Nat,
-    'expires_at' : IDL.Opt(IDL.Nat64),
-  });
-  const ApproveArgs = IDL.Record({
-    'fee' : IDL.Opt(Tokens),
-    'memo' : IDL.Opt(Memo),
-    'from_subaccount' : IDL.Opt(Subaccount),
-    'created_at_time' : IDL.Opt(Timestamp),
-    'amount' : IDL.Int,
-    'expires_at' : IDL.Opt(IDL.Nat64),
-    'spender' : IDL.Principal,
-  });
-  const ApproveError = IDL.Variant({
-    'GenericError' : IDL.Record({
-      'message' : IDL.Text,
-      'error_code' : IDL.Nat,
-    }),
-    'TemporarilyUnavailable' : IDL.Null,
-    'Duplicate' : IDL.Record({ 'duplicate_of' : TxIndex }),
-    'BadFee' : IDL.Record({ 'expected_fee' : Tokens }),
-    'CreatedInFuture' : IDL.Record({ 'ledger_time' : Timestamp }),
-    'TooOld' : IDL.Null,
-    'Expired' : IDL.Record({ 'ledger_time' : IDL.Nat64 }),
-    'InsufficientFunds' : IDL.Record({ 'balance' : Tokens }),
-  });
-  const Result_2 = IDL.Variant({ 'Ok' : TxIndex, 'Err' : ApproveError });
-  const TransferFromArgs = IDL.Record({
-    'to' : Account,
-    'fee' : IDL.Opt(Tokens),
-    'from' : Account,
-    'memo' : IDL.Opt(Memo),
-    'created_at_time' : IDL.Opt(Timestamp),
-    'amount' : Tokens,
-  });
-  const TransferFromError = IDL.Variant({
-    'GenericError' : IDL.Record({
-      'message' : IDL.Text,
-      'error_code' : IDL.Nat,
-    }),
-    'TemporarilyUnavailable' : IDL.Null,
-    'InsufficientAllowance' : IDL.Record({ 'allowance' : IDL.Nat }),
-    'BadBurn' : IDL.Record({ 'min_burn_amount' : Tokens }),
-    'Duplicate' : IDL.Record({ 'duplicate_of' : TxIndex }),
-    'BadFee' : IDL.Record({ 'expected_fee' : Tokens }),
-    'CreatedInFuture' : IDL.Record({ 'ledger_time' : Timestamp }),
-    'TooOld' : IDL.Null,
-    'InsufficientFunds' : IDL.Record({ 'balance' : Tokens }),
-  });
-  const Result_1 = IDL.Variant({ 'Ok' : TxIndex, 'Err' : TransferFromError });
-  const TransferToProviderArgs = IDL.Record({
-    'to' : Account,
-    'from' : Account,
-    'amount' : Tokens,
-  });
-  const Wallet = IDL.Service({
-    'burn' : IDL.Func([IDL.Opt(Subaccount), IDL.Nat], [], []),
-    'claimStakedTokens' : IDL.Func([Tokens], [Result__1_1], []),
-    'getAdmins' : IDL.Func([], [Result__1], ['query']),
-    'handleSubscription' : IDL.Func([ConsumerPayload], [], []),
+  return IDL.Service({
+    'get_blocks' : IDL.Func([GetBlocksArgs], [GetBlocksResponse], ['query']),
+    'get_data_certificate' : IDL.Func([], [DataCertificate], ['query']),
+    'get_transactions' : IDL.Func(
+        [GetTransactionsRequest],
+        [GetTransactionsResponse],
+        ['query'],
+      ),
     'icrc1_balance_of' : IDL.Func([Account], [Tokens], ['query']),
     'icrc1_decimals' : IDL.Func([], [IDL.Nat8], ['query']),
-    'icrc1_fee' : IDL.Func([], [IDL.Nat], ['query']),
+    'icrc1_fee' : IDL.Func([], [Tokens], ['query']),
     'icrc1_metadata' : IDL.Func(
         [],
-        [IDL.Vec(IDL.Tuple(IDL.Text, Value))],
+        [IDL.Vec(IDL.Tuple(IDL.Text, MetadataValue))],
         ['query'],
       ),
     'icrc1_minting_account' : IDL.Func([], [IDL.Opt(Account)], ['query']),
@@ -138,54 +191,52 @@ export const idlFactory = ({ IDL }) => {
       ),
     'icrc1_symbol' : IDL.Func([], [IDL.Text], ['query']),
     'icrc1_total_supply' : IDL.Func([], [Tokens], ['query']),
-    'icrc1_transfer' : IDL.Func(
-        [
-          IDL.Record({
-            'to' : Account,
-            'fee' : IDL.Opt(Tokens),
-            'memo' : IDL.Opt(Memo),
-            'from_subaccount' : IDL.Opt(Subaccount),
-            'created_at_time' : IDL.Opt(Timestamp),
-            'amount' : Tokens,
-          }),
-        ],
-        [Result],
-        [],
-      ),
-    'icrc2_allowance' : IDL.Func([AllowanceArgs], [Allowance], ['query']),
-    'icrc2_approve' : IDL.Func([ApproveArgs], [Result_2], []),
-    'icrc2_transfer_from' : IDL.Func([TransferFromArgs], [Result_1], []),
-    'ledger_account' : IDL.Func([], [Account], ['query']),
-    'releaseTokens' : IDL.Func([Tokens], [Result], []),
-    'stakeTokens' : IDL.Func([IDL.Nat], [Result], []),
-    'transferToProvider' : IDL.Func([TransferToProviderArgs], [Result], []),
+    'icrc1_transfer' : IDL.Func([TransferArg], [TransferResult], []),
   });
-  return Wallet;
 };
 export const init = ({ IDL }) => {
-  const ENV = IDL.Record({
-    'wallet_canister_id' : IDL.Principal,
-    'vesting_canister_id' : IDL.Principal,
-    'old_modclub_canister_id' : IDL.Principal,
-    'modclub_canister_id' : IDL.Principal,
-    'rs_canister_id' : IDL.Principal,
-    'auth_canister_id' : IDL.Principal,
+  const MetadataValue = IDL.Variant({
+    'Int' : IDL.Int,
+    'Nat' : IDL.Nat,
+    'Blob' : IDL.Vec(IDL.Nat8),
+    'Text' : IDL.Text,
   });
   const Subaccount = IDL.Vec(IDL.Nat8);
   const Account = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
   });
-  const LedgerInitParams = IDL.Record({
-    'decimals' : IDL.Nat8,
+  const ChangeFeeCollector = IDL.Variant({
+    'SetTo' : Account,
+    'Unset' : IDL.Null,
+  });
+  const UpgradeArgs = IDL.Record({
+    'token_symbol' : IDL.Opt(IDL.Text),
+    'transfer_fee' : IDL.Opt(IDL.Nat64),
+    'metadata' : IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Text, MetadataValue))),
+    'change_fee_collector' : IDL.Opt(ChangeFeeCollector),
+    'token_name' : IDL.Opt(IDL.Text),
+  });
+  const InitArgs = IDL.Record({
     'token_symbol' : IDL.Text,
-    'transfer_fee' : IDL.Nat,
+    'transfer_fee' : IDL.Nat64,
+    'metadata' : IDL.Vec(IDL.Tuple(IDL.Text, MetadataValue)),
     'minting_account' : Account,
-    'initial_mints' : IDL.Vec(
-      IDL.Record({ 'account' : Account, 'amount' : IDL.Nat })
-    ),
-    'ledger_account' : Account,
+    'initial_balances' : IDL.Vec(IDL.Tuple(Account, IDL.Nat64)),
+    'fee_collector_account' : IDL.Opt(Account),
+    'archive_options' : IDL.Record({
+      'num_blocks_to_archive' : IDL.Nat64,
+      'trigger_threshold' : IDL.Nat64,
+      'max_message_size_bytes' : IDL.Opt(IDL.Nat64),
+      'cycles_for_archive_creation' : IDL.Opt(IDL.Nat64),
+      'node_max_memory_size_bytes' : IDL.Opt(IDL.Nat64),
+      'controller_id' : IDL.Principal,
+    }),
     'token_name' : IDL.Text,
   });
-  return [IDL.Record({ 'env' : ENV, 'ledgerInit' : LedgerInitParams })];
+  const LedgerArg = IDL.Variant({
+    'Upgrade' : IDL.Opt(UpgradeArgs),
+    'Init' : InitArgs,
+  });
+  return [LedgerArg];
 };
