@@ -150,7 +150,7 @@ function deploy_canisters() {
 	dfx deploy modclub --argument="($local_env)" &&
   generate_declarations "$DEV_ENV" &&
   node "$ROOT_DIR/scripts/build/gen_files_by_env.cjs" &&
-  DEV_ENV=qa dfx deploy modclub_assets &&
+  DEV_ENV=local dfx deploy modclub_assets &&
   dfx ledger fabricate-cycles --canister $(dfx canister id modclub) --amount 10 &&
 	printf "${GREEN}[TEST] ${CYAN}[INFRA] ${YELLOW}QA Canisters DEPLOYED${NC}\n"
 	return 0;
