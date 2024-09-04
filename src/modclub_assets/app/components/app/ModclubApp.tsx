@@ -63,7 +63,7 @@ export default function ModclubApp() {
       setJwt(true);
     }
   };
-
+ 
   useSetLoginPrincipalId();
   useFetchUserAdminTasks();
   useReFetchContentModerationTasks();

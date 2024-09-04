@@ -19,15 +19,11 @@ export default function App() {
       <ProfileProvider>
         <Router>
           <Routes>
-            <Route path="/app" element={<ModclubApp />} />
+            <Route path="/app/*" element={<ModclubApp />} />
+            <Route path="/*" element={<External />} />
           </Routes>
         </Router>
       </ProfileProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<External />} />
-        </Routes>
-      </Router>
     </StateProvider>
   );
 }

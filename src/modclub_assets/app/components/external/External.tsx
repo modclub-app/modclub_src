@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Header from "../header/Header";
-import { Route, Switch } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Home from "./Home";
 import NewProfile from "../auth/new_profile/NewProfile";
 import NewPohProfile from "../auth/poh/NewPohProfile";
@@ -17,22 +17,22 @@ export default function External() {
   return (
     <>
       <Header />
-      <Switch>
-        <Route exact path="/" component={Home} />
-        <Route path="/logout" component={Logout} />
-        <Route path="/signup" component={NewProfile} />
-        <Route path="/new-poh-profile" component={NewPohProfile} />
-        <Route path="/admin-identity" component={AdminIdentity} />
-        <Route path="/provider" component={ProviderApp} />
-        <Route path="/privacy" component={Privacy} />
-        <Route path="/terms" component={Terms} />
-        <Route path="/how-to" component={HowTo} />
-        <Route path="/airdrop" component={Airdrop} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/signup" element={<NewProfile />} />
+        <Route path="/new-poh-profile" element={<NewPohProfile />} />
+        <Route path="/admin-identity" element={<AdminIdentity />} />
+        <Route path="/provider" element={<ProviderApp />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/how-to" element={<HowTo />} />
+        <Route path="/airdrop" element={<Airdrop />} />
         <Route
           path="/migrated-users-airdrop"
-          component={MigratedUsersAirdrop}
+          element={<MigratedUsersAirdrop />}
         />
-      </Switch>
+      </Routes>
     </>
   );
 }
