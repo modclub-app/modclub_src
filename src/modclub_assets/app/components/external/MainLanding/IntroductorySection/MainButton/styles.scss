@@ -1,0 +1,26 @@
+.main-button {
+  padding: 22px 40px;
+  box-sizing: border-box;
+
+  color: #000;
+  background-color: #FF7538;
+  border: none;
+
+  font-size: 18px;
+  line-height: normal;
+  font-weight: normal;
+
+  cursor: pointer;
+  border-radius: 8px;
+
+  &:hover {
+    color: #000;
+    background-color: #ff611e;
+  }
+
+  @media (min-width: 1440px) {
+    padding: 1vw 1.8vw;
+    font-size: 1vw;
+    border-radius: 0.5vw;
+  }
+}

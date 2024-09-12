@@ -1,0 +1,76 @@
+.ticker {
+  &-container {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+  }
+
+  &-text {
+    display: inline-block;
+    font-size: 10rem;
+  
+    @media (min-width: 768px) {
+      font-size: 13.75rem;
+    }
+  
+    @media (min-width: 1280px) {
+      font-size: 15.27vw;
+    }
+  
+    font-weight: 500;
+    color: #000;
+    line-height: 1;
+  }
+
+  &-divider {
+    position: absolute;
+    bottom: 0;
+    height: 1px;
+    width: 100%;
+    background-color: #000;
+  }
+}
+
+.ticker-icon {
+  &-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-top: 30px;
+    padding-bottom: 40px;
+  
+    @media (min-width: 768px) {
+      padding-top: 60px;
+      padding-bottom: 60px;
+    }
+  
+    @media (min-width: 1280px) {
+      padding-top: 4.16vw;
+      padding-bottom: 4.16vw;
+    }
+  }
+
+  &-svg {
+    width: 47px;
+    height: 47px;
+    animation: spin 10s linear infinite;
+  
+    @media (min-width: 1280px) {
+      width: 3.26vw;
+      height: 3.26vw;
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

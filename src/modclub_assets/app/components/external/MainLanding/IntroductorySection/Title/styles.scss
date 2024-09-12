@@ -1,0 +1,19 @@
+.title {
+  color: #FFF;
+  font-family: 'Neue Montreal', sans-serif;
+  line-height: 1;
+  font-weight: bold;
+  font-size: 4.125rem;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 15.375vw;
+  }
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: 8.375vw;
+  }
+}

@@ -1,0 +1,46 @@
+.projects {
+  &-section {
+    padding: 80px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    @media (min-width: 780px) {
+      padding: 120px 20px;
+      gap: 40px;
+    }
+
+    @media (min-width: 1440px) {
+      padding: 5.55vw 1.38vw;
+      gap: 2.7vw;
+    }
+  }
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  @media (min-width: 1440px) {
+    gap: 0.69vw;
+  }
+
+  &-item {
+    flex-basis: 100%;
+
+    @media (min-width: 780px) {
+      flex-basis: calc(50% - 5px);
+      
+      &._large {
+        flex-basis: 100%;
+      }
+    }
+
+    @media (min-width: 1440px) {
+      flex-basis: calc(50% - 0.3472vw);
+    }
+  }
+}
