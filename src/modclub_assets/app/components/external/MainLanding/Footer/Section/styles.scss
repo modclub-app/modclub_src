@@ -1,0 +1,21 @@
+.section {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin: 0 auto;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  @media (min-width: 1280px) {
+    padding-top: 2.77vw;
+    padding-bottom: 2.77vw;
+  }
+}

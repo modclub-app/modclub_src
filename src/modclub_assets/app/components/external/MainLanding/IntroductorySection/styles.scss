@@ -1,0 +1,37 @@
+.introductory {
+  position: relative;
+
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+
+  @media (min-width: 1440px) {
+    padding: 1.38vw;
+  }
+ 
+  &-container {
+    position: relative;
+    z-index: 10;
+
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    flex-direction: column;
+    gap: 20px;
+
+    @media (min-width: 1024px) {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+  }
+
+  &-content {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    text-align: center;
+  }
+}

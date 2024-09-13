@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Header from "../header/Header";
+// import Header from "../header/Header";
 import { Route, Switch } from "react-router-dom";
-import Home from "./Home";
+import MainLanding from "./MainLanding";
 import NewProfile from "../auth/new_profile/NewProfile";
 import NewPohProfile from "../auth/poh/NewPohProfile";
 import AdminIdentity from "./AdminIdentity";
@@ -16,9 +16,9 @@ import ProviderApp from "./provider/App";
 export default function External() {
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <Switch>
-        <Route exact path="/" component={Home} />
+        <Route exact path="/" component={MainLanding} />
         <Route path="/logout" component={Logout} />
         <Route path="/signup" component={NewProfile} />
         <Route path="/new-poh-profile" component={NewPohProfile} />

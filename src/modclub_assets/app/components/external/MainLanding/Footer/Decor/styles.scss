@@ -1,0 +1,26 @@
+.decor-container {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  height: 100px;
+
+  @media (min-width: 768px) {
+    height: 138px;
+  }
+
+  @media (min-width: 1280px) {
+    height: 9.58vw;
+  }
+
+  border-bottom: 1px solid #000;
+}
+
+.ticker-animation {
+  position: absolute;
+  height: 55px;
+
+  @media (min-width: 1280px) {
+    height: 3.819vw;
+  }
+}

@@ -1,0 +1,43 @@
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: fixed;
+  top: 1.25rem;
+  left: 1.25rem;
+  right: 1.25rem;
+
+  z-index: 20;
+
+  @media (min-width: 1440px) {
+    top: 1.38vw;
+    left: 1.38vw;
+    right: 1.38vw;
+  }
+
+  &-logo {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+
+    & svg {
+      width: 135px;
+      height: 32px;
+    }
+
+    @media (min-width: 1440px) {
+      & svg {
+        width: 7.375vw;
+        height: 2.22vw;
+      }
+    }
+  }
+
+  &-tag {
+    font-size: 14px;
+    
+    @media (min-width: 1440px) {
+      font-size: 0.97vw;
+    }
+  }
+}

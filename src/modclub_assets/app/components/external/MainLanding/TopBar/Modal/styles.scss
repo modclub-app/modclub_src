@@ -1,0 +1,81 @@
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 50;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 64px;
+  overflow-y: scroll;
+
+  background-color: rgba(0, 0, 0, 0.5);
+  
+  @media (min-width: 1024px) {
+    align-items: center;
+    padding: 40px 40px;
+  }
+  
+  @media (min-width: 1440px) {
+    padding: 2.7vw 2.7vw;
+  }
+
+  &-wrapper {
+    position: relative;
+
+    padding: 32px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    max-width: 672px;
+    width: 100%;
+
+    background-color: #fff;
+    border-radius: 16px;
+
+    @media (min-width: 1440px) {
+      padding: 2.2vw;
+      gap: 1.1vw;
+
+      max-width: 46.6vw;
+      border-radius: 1.1vw;
+    }
+  }
+
+  &-close {
+    position: absolute;
+    top: -16px;
+    right: -16px;
+
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #fff;
+    border: none;
+
+    cursor: pointer;
+
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+
+    @media (min-width: 1440px) {
+      top: -1.1vw;
+      right: -1.1vw;
+
+      padding: 0.5vw;
+
+      & svg {
+        width: 1.6vw;
+        height: 1.6vw;
+      }
+    }
+  }
+}

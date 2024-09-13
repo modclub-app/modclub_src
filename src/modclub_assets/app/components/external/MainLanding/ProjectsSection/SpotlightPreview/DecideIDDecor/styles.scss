@@ -1,0 +1,85 @@
+.decideid {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: 1024px) {
+    width: 13.8vw;
+    height: 13.8vw;
+  }
+
+  .square {
+    position: absolute;
+    border: 2px solid white;
+    transition: transform 1.5s ease-in-out;
+
+    @media (min-width: 1024px) {
+      border-width: 0.138vw;
+    }
+  }
+
+  & ._square1 {
+    width: 100px;
+    height: 100px;
+
+    @media (min-width: 1024px) {
+      width: 6.94vw;
+      height: 6.94vw;
+    }
+  }
+
+  & ._square2 {
+    width: 125px;
+    height: 125px;
+
+    @media (min-width: 1024px) {
+      width: 8.68vw;
+      height: 8.68vw;
+    }
+  }
+
+  & ._square3 {
+    width: 150px;
+    height: 150px;
+
+    @media (min-width: 1024px) {
+      width: 10.41vw;
+      height: 10.41vw;
+    }
+  }
+}
+
+.animate {
+  ._square1 {
+    transform: rotate(360deg);
+    transition-delay: 0.1s;
+  }
+
+  ._square2 {
+    transform: rotate(360deg);
+    transition-delay: 0.2s;
+  }
+
+  ._square3 {
+    transform: rotate(360deg);
+    transition-delay: 0.3s;
+  }
+}
+
+.decideid-circle {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  background-color: #FF6F3E;
+  border-radius: 50%;
+  z-index: 10;
+
+  @media (min-width: 1024px) {
+    width: 1.38vw;
+    height: 1.38vw;
+  }
+}

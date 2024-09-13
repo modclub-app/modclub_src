@@ -1,0 +1,24 @@
+.ticker {
+  &-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  &-animate {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    animation: ticker 50s linear infinite;
+  }
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
