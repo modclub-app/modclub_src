@@ -1,1 +1,0 @@
-export { ModclubLogo } from "./ModclubLogo";
