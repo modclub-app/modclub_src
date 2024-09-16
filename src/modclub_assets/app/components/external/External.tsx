@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 // import Header from "../header/Header";
 import { Route, Switch } from "react-router-dom";
 import MainLanding from "./MainLanding";
