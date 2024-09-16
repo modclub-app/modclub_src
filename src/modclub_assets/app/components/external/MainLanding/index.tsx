@@ -1,5 +1,4 @@
 import React from 'react';
-import '../landing/Landing.scss';
 
 // Components
 import { PageMainStyles } from './PageMainStyles';
