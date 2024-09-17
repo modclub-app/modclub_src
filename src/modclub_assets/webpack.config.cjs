@@ -119,7 +119,7 @@ module.exports = {
       },
       {
         test: /\.(sa|sc|c)ss$/,
-        include: path.resolve(ROOT_DIR, "src/modclub_assets/app"),
+        include: path.resolve(ROOT_DIR, "src/modclub_assets/app/components/external/MainLanding"),
         use: [
           // Creates `style` nodes from JS strings
           "style-loader",
@@ -130,6 +130,35 @@ module.exports = {
               modules: {
                 localIdentName: "[name]__[local]___[hash:base64:5]",
               },
+              sourceMap: true,
+            },
+          },
+          {
+            loader: "resolve-url-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+          {
+            loader: "sass-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+        ],
+      },
+      {
+        test: /\.(sa|sc|c)ss$/,
+        include: path.resolve(ROOT_DIR, "src/modclub_assets/app"),
+        exclude: path.resolve(ROOT_DIR, "src/modclub_assets/app/components/external/MainLanding"),
+        use: [
+          // Creates `style` nodes from JS strings
+          "style-loader",
+          // Translates CSS into CommonJS
+          {
+            loader: "css-loader",
+            options: {
+              modules: false,
               sourceMap: true,
             },
           },
